@@ -199,7 +199,7 @@ describe('Skill file-manager & Safe Batch Operations Engine', () => {
       const summary = formatPostOperationSummary(result);
 
       expect(summary).toBe(
-        ['✓ Complete', '  - Moved: 38 files', '  - Skipped: 3 files', '  - Errors: 0'].join('\n')
+        [' Complete', '  - Moved: 38 files', '  - Skipped: 3 files', '  - Errors: 0'].join('\n')
       );
     });
   });
@@ -216,7 +216,7 @@ describe('Skill file-manager & Safe Batch Operations Engine', () => {
       expect(content).toContain('/file-manager');
       expect(content).toContain('The following operations will be performed:');
       expect(content).toContain('Confirm?');
-      expect(content).toContain('✓ Complete');
+      expect(content).toContain(' Complete');
     });
 
     it('verifies all 4 technical reference manuals exist in references/', () => {

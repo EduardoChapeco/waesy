@@ -164,7 +164,7 @@ export function ShippingLabelModal({
             onValueChange={(v) => setActiveTab(v as any)}
             className="w-full mt-3"
           >
-            <TabsList className="grid grid-cols-3 h-8 p-1 bg-background border border-border/50 rounded-lg">
+            <TabsList className="grid grid-cols-1 sm:grid-cols-3 h-8 p-1 bg-background border border-border/50 rounded-lg">
               <TabsTrigger value="thermal" className="text-xs font-medium rounded-lg">
                 Etiqueta Térmica (100x150mm)
               </TabsTrigger>

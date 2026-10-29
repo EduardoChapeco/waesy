@@ -81,7 +81,7 @@ function PublicLeadPassageirosPage() {
 
   if (!leadData || leadData.error) {
     return (
-      <div className="min-h-[100dvh] bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
         <div className="max-w-md w-full p-8 rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-4 shadow-xs">
           <div className="size-14 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
             <AlertCircle className="size-7" />
@@ -167,7 +167,7 @@ function PublicLeadPassageirosPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-[100dvh] bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
         <div className="max-w-md w-full p-8 rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-5 shadow-xs animate-in fade-in zoom-in-95 duration-300">
           <div className="size-16 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20 shadow-xs">
             <CheckCircle2 className="size-8" />
@@ -216,7 +216,7 @@ function PublicLeadPassageirosPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-neutral-50 dark:bg-neutral-950 text-foreground py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
+    <div className="min-h-dvh bg-neutral-50 dark:bg-neutral-950 text-foreground py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
       <div className="max-w-2xl mx-auto w-full space-y-6">
         {/* Cabeçalho da Agência */}
         <header className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm flex items-center justify-between gap-4">

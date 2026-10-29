@@ -270,7 +270,7 @@ function SystemLogsPage() {
             <Surface className="p-4 flex items-center justify-between border-border/70">
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Rota Mais Ativa</p>
-                <p className="text-sm font-bold tracking-tight text-foreground mt-1 truncate max-w-[140px]" title={topRouteInfo?.route}>
+                <p className="text-sm font-bold tracking-tight text-foreground mt-1 truncate max-w-35" title={topRouteInfo?.route}>
                   {topRouteInfo?.route || "Nenhuma"}
                 </p>
                 <p className="text-2xs text-muted-foreground mt-1">

@@ -47,7 +47,9 @@ const testConfig = {
     'DL-27': { severity: 'P3', enabled: true },
     'DL-28': { severity: 'P1', enabled: true },
     'DL-29': { severity: 'P2', enabled: true },
-    'DL-30': { severity: 'P2', enabled: true }
+    'DL-30': { severity: 'P2', enabled: true },
+    'DL-31': { severity: 'P0', enabled: true },
+    'DL-32': { severity: 'P1', enabled: true }
   },
   allowlist: [
     {
@@ -382,6 +384,35 @@ runTest('DL-29: Permite grid responsivo guardado por breakpoints', () => {
 });
 
 // 25. DL-30: Overflow horizontal em superfície de app
+runTest('DL-31: Detecta containeritis (card com border/bg-card envolvendo card component)', () => {
+  const code = `<div className="rounded-xl border border-border/60 bg-card px-2">\n  <IFoodStoreFeedCard store={s} />\n</div>`;
+  const violations = lintSource(code, 'src/routes/store/home.tsx', testConfig);
+  const dl31 = violations.filter(v => v.id === 'DL-31');
+  assert.strictEqual(dl31.length, 1);
+  assert.strictEqual(dl31[0].severity, 'P0');
+});
+
+runTest('DL-31: Permite card component como elemento soberano sem containeritis', () => {
+  const code = `<div className="space-y-3">\n  <IFoodStoreFeedCard store={s} />\n</div>`;
+  const violations = lintSource(code, 'src/routes/store/home.tsx', testConfig);
+  const dl31 = violations.filter(v => v.id === 'DL-31');
+  assert.strictEqual(dl31.length, 0);
+});
+
+runTest('DL-32: Detecta grade de 3 colunas para cards de layout horizontal', () => {
+  const code = `<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">\n  <IFoodStoreFeedCard store={s} variant="list" />\n</div>`;
+  const violations = lintSource(code, 'src/routes/store/home.tsx', testConfig);
+  const dl32 = violations.filter(v => v.id === 'DL-32');
+  assert.strictEqual(dl32.length, 1);
+  assert.strictEqual(dl32[0].severity, 'P1');
+});
+
+runTest('DL-32: Permite grade ergonômica de 2 colunas para cards horizontais', () => {
+  const code = `<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">\n  <IFoodStoreFeedCard store={s} variant="list" />\n</div>`;
+  const violations = lintSource(code, 'src/routes/store/home.tsx', testConfig);
+  const dl32 = violations.filter(v => v.id === 'DL-32');
+  assert.strictEqual(dl32.length, 0);
+});
 runTest('DL-30: Detecta overflow-x-auto fora de container de tabela/carrossel', () => {
   const code = `<div className="overflow-x-auto p-4">Conteúdo Estourado</div>`;
   const violations = lintSource(code, 'src/routes/workspace/box.tsx', testConfig);

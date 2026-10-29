@@ -28,7 +28,7 @@ export interface TravelVoucherItem {
   hotelName: string;
   checkInDate: string;
   checkOutDate: string;
-  flightRouteText?: string; // ex: "GRU ➔ MCZ (GOL G3 1542)"
+  flightRouteText?: string; // ex: "GRU &rarr; MCZ (GOL G3 1542)"
   travelersText: string;
   status: "confirmed" | "pending" | "completed" | "cancelled";
   statusText: string;
@@ -44,37 +44,10 @@ export interface CustomerTravelPortalProps {
   onExploreMore?: () => void;
 }
 
-const DEFAULT_VOUCHERS: TravelVoucherItem[] = [
-  {
-    id: "vouch_1",
-    locatorCode: "WAE-89214",
-    destination: "Maceió, Alagoas",
-    hotelName: "Rede Andrade Porto Mar (Quarto Standard Casal)",
-    checkInDate: "28/11/2026",
-    checkOutDate: "05/12/2026",
-    flightRouteText: "GRU ➔ MCZ (Direto • Voo GOL 1542)",
-    travelersText: "2 Adultos (Eduardo Ramos, Convidado)",
-    status: "confirmed",
-    statusText: "Confirmado & Emitido",
-  },
-  {
-    id: "vouch_2",
-    locatorCode: "WAE-67102",
-    destination: "Rio de Janeiro, RJ",
-    hotelName: "Windsor Leme Hotel (Suíte Vista Mar)",
-    checkInDate: "11/11/2026",
-    checkOutDate: "15/11/2026",
-    flightRouteText: "XAP ➔ SDU (Conexão VCP • Azul 4210)",
-    travelersText: "1 Adulto (Eduardo Ramos)",
-    status: "completed",
-    statusText: "Viagem Concluída",
-  },
-];
-
 export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
   headline = "Minhas Viagens & Vouchers",
   subheadline = "Acesse seus comprovantes, passagens aéreas e detalhes da sua reserva",
-  vouchers = DEFAULT_VOUCHERS,
+  vouchers = [],
   clientName = "Viajante",
   whatsappPhone = "",
   onExploreMore,

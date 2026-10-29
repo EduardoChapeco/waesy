@@ -199,7 +199,7 @@ export function AIActivityTrail({
                     className="relative flex items-start justify-between gap-3 text-2xs group"
                   >
                     {/* Marcador na linha */}
-                    <div className="absolute -left-[1.3125rem] top-1 size-2 rounded-full border border-background bg-border group-hover:bg-primary transition-colors" />
+                    <div className="absolute -left-5 top-1 size-2 rounded-full border border-background bg-border group-hover:bg-primary transition-colors" />
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">

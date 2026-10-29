@@ -108,7 +108,7 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
   };
 
   return (
-    <div className="my-2.5 rounded-lg border border-border/60 bg-muted/50 overflow-hidden text-xs font-mono">
+    <div className="my-2 rounded-lg border border-border/60 bg-muted/50 overflow-hidden text-xs font-mono">
       <div className="flex items-center justify-between px-3 py-2 bg-muted/80 border-b border-border/40 text-2xs text-muted-foreground">
         <div className="flex items-center gap-2 font-semibold uppercase tracking-wider">
           <CodeIcon className="size-3 text-primary" />
@@ -207,7 +207,7 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
 
           // Citações em estilo callout moderno
           blockquote: ({ children }) => (
-            <blockquote className="my-2.5 pl-3.5 py-2 border-l-2 border-primary bg-primary/5 rounded-r-lg text-foreground/90 italic text-xs leading-relaxed">
+            <blockquote className="my-2 pl-4 py-2 border-l-2 border-primary bg-primary/5 rounded-r-lg text-foreground/90 italic text-xs leading-relaxed">
               {children}
             </blockquote>
           ),

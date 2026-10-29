@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Plus, Layers, FileText, Palette, Database, Sliders, Settings, HelpCircle } from "lucide-react";
+import { Plus, Layers, FileText, Palette, Database, LayoutGrid, Code2, Sliders, Settings, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type DockedRailActivePanel = "add" | "layers" | "pages" | "design" | "cms" | null;
+export type DockedRailActivePanel = "add" | "layers" | "pages" | "design" | "cms" | "apps" | "code" | null;
 
 export interface BuilderDockedRailProps {
  activePanel: DockedRailActivePanel;
@@ -40,10 +40,20 @@ export function BuilderDockedRail({
  },
  {
  id: "cms" as const,
- label: "Gerenciador de Dados (CMS)",
- icon: Database,
- },
- ];
+		label: "Gerenciador de Dados (CMS)",
+		icon: Database,
+	},
+	{
+		id: "apps" as const,
+		label: "Omni Apps Market",
+		icon: LayoutGrid,
+	},
+	{
+		id: "code" as const,
+		label: "Explorador de Código",
+		icon: Code2,
+	},
+	];
 
  return (
  <aside className="w-12 bg-card border-r border-border/80 flex flex-col items-center justify-between py-3 flex-none select-none z-30">

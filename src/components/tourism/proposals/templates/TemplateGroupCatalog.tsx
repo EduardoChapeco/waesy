@@ -29,7 +29,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
         ) : (
           <div className="absolute inset-0 w-full h-full bg-slate-900" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
+        <div className="absolute inset-0 bg-black/60" />
 
         <div className="absolute top-8 left-8">
           {vm.agency.logo_url ? (
@@ -71,7 +71,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
         </div>
       </div>
 
-      <div className="px-12 py-12 grid grid-cols-3 gap-8">
+      <div className="px-12 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
         {/* COLUNA ESQUERDA - DESCRIÇÃO E ROTEIRO (Ocupa 2 colunas) */}
         <div className="col-span-2 space-y-8">
           <div className="bg-card rounded-lg p-8 border border-slate-200 break-inside-avoid">

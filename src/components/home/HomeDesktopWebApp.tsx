@@ -30,6 +30,12 @@ import { NoorNativeCategoryDock } from "@/components/home/NoorNativeCategoryDock
 import { IFoodSquareCategoryButton } from "@/components/home/IFoodSquareCategoryButton";
 import { BentoGridTetris } from "@/components/home/BentoGridTetris";
 import { HomePostsShowcase } from "@/components/home/HomePostsShowcase";
+import { PromoCouponBanner } from "@/components/home/PromoCouponBanner";
+import { IFoodRecentStoresRail, type RecentStoreItem } from "@/components/commerce/ifood/IFoodRecentStoresRail";
+import { IFoodFeatureMiniBannersRail } from "@/components/commerce/ifood/IFoodFeatureMiniBannersRail";
+import { IFoodVisualSpotlightRail } from "@/components/commerce/ifood/IFoodVisualSpotlightRail";
+import { IFoodFilterChipsBar } from "@/components/commerce/ifood/IFoodFilterChipsBar";
+import { IFoodStoreFeedCard, type IFoodStoreCardData } from "@/components/commerce/ifood/IFoodStoreFeedCard";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { formatStoreCategory } from "@/lib/niches/niche-manifest";
 import {
@@ -42,15 +48,16 @@ import type { JobItemDTO } from "@/services/jobs.functions";
 import type { HomeDiscoveryViewProps } from "./HomeMobileNativeApp";
 
 export function HomeDesktopWebApp({
+  homeSections = [],
   heroSection,
   quickCategoriesSection,
   socialPostsSection,
-  customSections,
-  editorialHotpages,
-  banners,
-  middleBanners,
-  footerBanners,
-  showcasePosts,
+  customSections = [],
+  editorialHotpages = [],
+  banners = [],
+  middleBanners = [],
+  footerBanners = [],
+  showcasePosts = [],
   engineMode,
   onEngineModeChange,
   search,
@@ -60,30 +67,145 @@ export function HomeDesktopWebApp({
   onSelectCategory,
   viewMode,
   onViewModeChange,
-  filteredPlaces,
-  filteredMarketplaceProducts,
-  filteredClassifieds,
-  filteredNews,
-  filteredJobs,
-  filteredEvents,
-  unifiedItems,
+  filteredPlaces = [],
+  filteredMarketplaceProducts = [],
+  filteredClassifieds = [],
+  filteredNews = [],
+  filteredJobs = [],
+  filteredEvents = [],
+  unifiedItems = [],
   formatMoney,
 }: HomeDiscoveryViewProps) {
   const navigate = useNavigate();
+  const [activeFilters, setActiveFilters] = React.useState<string[]>([]);
+  const [favoriteIds, setFavoriteIds] = React.useState<Record<string, boolean>>({});
+
+  const sectionMap = React.useMemo(() => {
+    const map = new Map<string, HomePageSectionDTO>();
+    for (const sec of homeSections) {
+      if (sec?.section_key) {
+        map.set(sec.section_key, sec);
+      }
+    }
+    return map;
+  }, [homeSections]);
+
+  const isSectionActive = React.useCallback(
+    (key: string, defaultActive: boolean): boolean => {
+      const sec = sectionMap.get(key);
+      if (!sec) return defaultActive;
+      return sec.is_active === true;
+    },
+    [sectionMap],
+  );
+
+  const getSectionMeta = React.useCallback(
+    (key: string, defaultTitle: string, defaultSubtitle?: string) => {
+      const sec = sectionMap.get(key);
+      return {
+        title: sec?.title || defaultTitle,
+        subtitle: sec?.subtitle ?? defaultSubtitle,
+        showTitle: sec ? sec.show_title !== false : true,
+        showSubtitle: sec ? sec.show_subtitle !== false : Boolean(defaultSubtitle),
+        items: sec?.items || [],
+      };
+    },
+    [sectionMap],
+  );
+
+  const liveStores: IFoodStoreCardData[] = React.useMemo(() => {
+    return (filteredPlaces || []).map((place: DirectoryListingDTO, idx: number) => ({
+      id: place.id || `pl-${idx}`,
+      name: place.business_name || "Estabelecimento Local",
+      slug: (place as any).slug || place.id || "",
+      logoUrl: place.avatar_url || place.banner_url || null,
+      coverUrl: place.banner_url || place.avatar_url || null,
+      isAd: Boolean((place as any).is_featured || (place as any).is_promoted),
+      rating: place.rating && place.reviews_count > 0 ? Number(place.rating) : null,
+      reviewCount: place.reviews_count && place.reviews_count > 0 ? Number(place.reviews_count) : null,
+      deliveryTime: (place as any).delivery_time || null,
+      deliveryFee: (place as any).delivery_fee || null,
+      couponBadge: (place as any).coupon_badge || null,
+      secondaryBadges: place.category ? [formatStoreCategory(place.category)] : [],
+      hasHighlightCrown: Boolean(place.is_verified),
+      isFavorite: Boolean(favoriteIds[place.id]),
+    }));
+  }, [filteredPlaces, favoriteIds]);
+
+  const recentStores: RecentStoreItem[] = React.useMemo(() => {
+    return liveStores.slice(0, 10).map((s) => ({
+      id: s.id,
+      name: s.name,
+      slug: s.slug,
+      logoUrl: s.logoUrl,
+      badge: s.deliveryFee === "Grátis" ? "Grátis" : (s.couponBadge || undefined),
+    }));
+  }, [liveStores]);
+
+  const spotlightRestaurants: IFoodStoreCardData[] = React.useMemo(() => {
+    return liveStores.slice(0, 8);
+  }, [liveStores]);
+
+  const spotlightPharmaciesAndMarkets: IFoodStoreCardData[] = React.useMemo(() => {
+    const sub = liveStores.slice(2, 10);
+    return sub.length > 0 ? sub : liveStores.slice(0, 6);
+  }, [liveStores]);
+
+  const storeFeedItems: IFoodStoreCardData[] = React.useMemo(() => {
+    let list = [...liveStores];
+    if (activeFilters.includes("free_delivery")) {
+      list = list.filter((p) => p.deliveryFee === "Grátis" || !p.deliveryFee);
+    }
+    if (activeFilters.includes("super")) {
+      list = list.filter((p) => p.hasHighlightCrown);
+    }
+    return list;
+  }, [liveStores, activeFilters]);
+
+  const handleToggleFilter = (filterId: string) => {
+    setActiveFilters((prev) =>
+      prev.includes(filterId) ? prev.filter((id) => id !== filterId) : [...prev, filterId],
+    );
+  };
+
+  const handleToggleFavorite = (id: string) => {
+    setFavoriteIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const getDesktopGridCols = (count: number) => {
     if (count <= 1) return "md:grid-cols-1";
     if (count === 2) return "md:grid-cols-2";
     if (count === 3) return "md:grid-cols-3";
     if (count === 4) return "md:grid-cols-4";
+    if (count <= 5) return "md:grid-cols-5";
     if (count <= 6) return "md:grid-cols-3 lg:grid-cols-6";
     return "md:grid-cols-4 lg:grid-cols-8";
   };
 
+  const hasActiveCoupons = React.useMemo(() => {
+    const sec = sectionMap.get("promo_coupon_banner");
+    const hasCustomItems = (sec?.items || []).some(
+      (it) => it.is_active !== false && (Boolean(it.title?.trim()) || Boolean(it.image_url)),
+    );
+    if (hasCustomItems) return true;
+    const hasStoreCoupons = (filteredPlaces || []).some((p: any) => Boolean(p.coupon_badge || p.couponBadge));
+    const hasProductCoupons = (filteredMarketplaceProducts || []).some(
+      (p: any) => Boolean(p.has_flash_offer || (p.discount_percent && p.discount_percent > 0)),
+    );
+    return hasStoreCoupons || hasProductCoupons;
+  }, [sectionMap, filteredPlaces, filteredMarketplaceProducts]);
+
   return (
-    <div className="hidden md:block w-full space-y-6 pb-14" data-testid="home-desktop-web-app">
+    <div className="w-full space-y-6 pb-16" data-testid="home-desktop-web-app">
+      {isSectionActive("promo_coupon_banner", true) && hasActiveCoupons && (
+        <PromoCouponBanner
+          title={getSectionMeta("promo_coupon_banner", "Você ganhou 2 meses grátis em cupons!").title}
+          actionUrl="/ofertas"
+        />
+      )}
+
       {/* ── 1. PALCO HERO WIDESCREEN COMPLETO (Proporção 16:9 Intacta em 100% da Largura) ── */}
-      {(() => {
+      {isSectionActive("hero_banners", true) && (() => {
         const validHeroItems = (heroSection?.items || []).filter(
           (it) =>
             it.is_active !== false &&
@@ -121,7 +243,7 @@ export function HomeDesktopWebApp({
       })()}
 
       {/* ── 2. CATEGORIAS RÁPIDAS DESKTOP (Grade Widescreen Simétrica 100% Preenchida — Omissão se Vazio) ── */}
-      {(() => {
+      {isSectionActive("quick_categories_ifood", true) && (() => {
         const validQuickItems = (quickCategoriesSection?.items || []).filter(
           (it) =>
             it.is_active !== false &&
@@ -158,8 +280,92 @@ export function HomeDesktopWebApp({
         );
       })()}
 
+      {/* ── 2B. TRILHOS CANÔNICOS IFOOD / SUPERAPP ATIVOS POR PADRÃO NO CMS ── */}
+      {isSectionActive("recent_stores_rail", true) && recentStores.length > 0 && (
+        <IFoodRecentStoresRail
+          title={getSectionMeta("recent_stores_rail", "Últimas lojas").title}
+          stores={recentStores}
+          viewMoreTo="/diretorio"
+        />
+      )}
+
+      {isSectionActive("feature_mini_banners", true) && (
+        <IFoodFeatureMiniBannersRail
+          title={getSectionMeta("feature_mini_banners", "No Waesy também tem").title}
+        />
+      )}
+
+      {isSectionActive("spotlight_restaurants", true) && spotlightRestaurants.length > 0 && (
+        <IFoodVisualSpotlightRail
+          title={getSectionMeta("spotlight_restaurants", "Restaurantes com Cupom").title}
+          subtitle={getSectionMeta("spotlight_restaurants", "Restaurantes com Cupom", "Seleção especial com entrega rápida").subtitle}
+          isAd={true}
+          stores={spotlightRestaurants}
+          viewMoreTo="/gastronomia"
+          onFavoriteToggle={handleToggleFavorite}
+        />
+      )}
+
+      {isSectionActive("spotlight_pharmacies", true) && spotlightPharmaciesAndMarkets.length > 0 && (
+        <IFoodVisualSpotlightRail
+          title={getSectionMeta("spotlight_pharmacies", "Farmácias & Mercados Famosos").title}
+          subtitle={getSectionMeta("spotlight_pharmacies", "Farmácias & Mercados Famosos", "Conveniência e saúde em minutos na sua porta").subtitle}
+          stores={spotlightPharmaciesAndMarkets}
+          viewMoreTo="/farmacia"
+          onFavoriteToggle={handleToggleFavorite}
+        />
+      )}
+
+      {isSectionActive("filter_chips_bar", true) && (
+        <IFoodFilterChipsBar
+          activeFilters={activeFilters}
+          onToggleFilter={handleToggleFilter}
+        />
+      )}
+
+      {isSectionActive("stores_feed_list", true) && (
+        <section aria-label="Lojas e Estabelecimentos" className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-foreground tracking-tight">
+              {getSectionMeta("stores_feed_list", "Lojas").title}
+            </h2>
+            <span className="text-xs text-muted-foreground font-medium">
+              {storeFeedItems.length} {storeFeedItems.length === 1 ? "disponível" : "disponíveis"}
+            </span>
+          </div>
+          {storeFeedItems.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {storeFeedItems.map((store) => (
+                <IFoodStoreFeedCard
+                  key={store.id}
+                  store={store}
+                  variant="list"
+                  onFavoriteToggle={handleToggleFavorite}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 rounded-xl border border-border/60 bg-card text-center space-y-2">
+              <Storefront size={28} className="mx-auto text-muted-foreground/50" />
+              <p className="text-sm font-bold text-foreground">
+                Nenhuma loja encontrada com este filtro
+              </p>
+              {activeFilters.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveFilters([])}
+                  className="h-11 min-h-11 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Limpar filtros
+                </button>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* ── 3. SEÇÕES MODULARES DO CMS NO DESKTOP (Omissão Estrita de Seções Sem Imagem Válida) ── */}
-      {customSections.map((sec: HomePageSectionDTO) => {
+      {(customSections || []).map((sec: HomePageSectionDTO) => {
         const activeSecItems = (sec.items || []).filter(
           (it) =>
             it.is_active !== false &&
@@ -215,37 +421,45 @@ export function HomeDesktopWebApp({
         );
       })}
 
-      {/* ── 4. HOTPAGES EDITORIAIS (Trilho Limpo Sem Fundo Semi-Transparente e Sem Badges) ── */}
-      {editorialHotpages && editorialHotpages.length > 0 && (
+      {/* ── 4. HOTPAGES EDITORIAIS (Oculto por padrão — ativável no CMS) ── */}
+      {isSectionActive("hotpages_grid", false) && editorialHotpages && editorialHotpages.length > 0 && (
         <HotpagesRail hotpages={editorialHotpages} cleanMode={true} />
       )}
 
-      {/* ── 5. BARRA DE COMANDO E NAVEGAÇÃO TRI-ENGINE UNIFICADA (Sem Duplicação de Categorias) ── */}
-      <div className="space-y-3">
-        <VitrineEngineSelector
-          activeMode={engineMode}
-          onModeChange={onEngineModeChange}
-        />
+      {/* ── 5. BARRA DE COMANDO E NAVEGAÇÃO TRI-ENGINE UNIFICADA (Oculta por padrão — ativável no CMS) ── */}
+      {(isSectionActive("vitrine_engine_selector", false) || isSectionActive("discovery_control_bar", false)) && (
+        <div className="space-y-3">
+          {isSectionActive("vitrine_engine_selector", false) && (
+            <VitrineEngineSelector
+              activeMode={engineMode}
+              onModeChange={onEngineModeChange}
+            />
+          )}
 
-        <DiscoveryControlBar
-          search={search}
-          onSearchChange={onSearchChange}
-          searchPlaceholder="Buscar empresas, produtos, classificados ou vagas..."
-          categories={categories}
-          activeCategory={activeCategory}
-          onSelectCategory={onSelectCategory}
-          viewMode={viewMode}
-          onViewModeChange={onViewModeChange}
-          allowedViewModes={["feed", "grid", "list"]}
-          stickyMode="none"
-        />
-      </div>
+          {isSectionActive("discovery_control_bar", false) && (
+            <DiscoveryControlBar
+              search={search}
+              onSearchChange={onSearchChange}
+              searchPlaceholder="Buscar empresas, produtos, classificados ou vagas..."
+              categories={categories}
+              activeCategory={activeCategory}
+              onSelectCategory={onSelectCategory}
+              viewMode={viewMode}
+              onViewModeChange={onViewModeChange}
+              allowedViewModes={["feed", "grid", "list"]}
+              stickyMode="none"
+            />
+          )}
+        </div>
+      )}
 
       {/* ── 6. MODO 1: FEED WIDESCREEN (PRATELEIRAS PROPORCIONAIS) ── */}
       {viewMode === "feed" && (
         <div className="space-y-6">
           {/* PLACES / GUIA COMERCIAL */}
-          {(activeCategory === "todos" || activeCategory === "places") && filteredPlaces.length > 0 && (
+          {isSectionActive("places_directory_rail", false) &&
+            (activeCategory === "todos" || activeCategory === "places") &&
+            filteredPlaces.length > 0 && (
             <HorizontalRail
               title="Lugares e Empresas"
               subtitle="Estabelecimentos e serviços locais verificados"
@@ -346,7 +560,8 @@ export function HomeDesktopWebApp({
           )}
 
           {/* MARKETPLACE DE EMPRESAS */}
-          {(activeCategory === "todos" || activeCategory === "marketplace") && (
+          {isSectionActive("marketplace_products_rail", false) &&
+            (activeCategory === "todos" || activeCategory === "marketplace") && (
             filteredMarketplaceProducts.length > 0 ? (
               activeCategory === "marketplace" ? (
                 <section aria-label="Catálogo de Produtos de Empresas" className="space-y-4">
@@ -396,7 +611,9 @@ export function HomeDesktopWebApp({
           )}
 
           {/* CLASSIFICADOS */}
-          {(activeCategory === "todos" || activeCategory === "classificados") && filteredClassifieds.length > 0 && (
+          {isSectionActive("classifieds_rail", false) &&
+            (activeCategory === "todos" || activeCategory === "classificados") &&
+            filteredClassifieds.length > 0 && (
             <HorizontalRail
               title="Classificados"
               subtitle="Oportunidades e negociação direta na região"
@@ -468,8 +685,8 @@ export function HomeDesktopWebApp({
           )}
 
           {/* FEED DA CIDADE */}
-          {(activeCategory === "todos" || activeCategory === "feed") &&
-            (socialPostsSection ? socialPostsSection.is_active : true) && (
+          {isSectionActive("social_posts_vitrine", false) &&
+            (activeCategory === "todos" || activeCategory === "feed") && (
             <HomePostsShowcase
               posts={showcasePosts && showcasePosts.length > 0 ? showcasePosts : []}
               title={socialPostsSection?.title || "Feed da Cidade"}
@@ -481,7 +698,9 @@ export function HomeDesktopWebApp({
           )}
 
           {/* NOTÍCIAS */}
-          {(activeCategory === "todos" || activeCategory === "noticias") && filteredNews.length > 0 && (
+          {isSectionActive("news_rail", false) &&
+            (activeCategory === "todos" || activeCategory === "noticias") &&
+            filteredNews.length > 0 && (
             <HorizontalRail
               title="Notícias"
               actionLabel="Ver mais"
@@ -496,7 +715,9 @@ export function HomeDesktopWebApp({
           )}
 
           {/* EMPREGOS */}
-          {(activeCategory === "todos" || activeCategory === "empregos") && filteredJobs.length > 0 && (
+          {isSectionActive("jobs_rail", false) &&
+            (activeCategory === "todos" || activeCategory === "empregos") &&
+            filteredJobs.length > 0 && (
             <HorizontalRail
               title="Vagas e Empregos"
               subtitle="Oportunidades com recrutamento aberto na região"
@@ -556,7 +777,8 @@ export function HomeDesktopWebApp({
           )}
 
           {/* AGENDA & EVENTOS (Unificado Sem Duplicação) */}
-          {(activeCategory === "todos" || activeCategory === "eventos" || activeCategory === "agenda") &&
+          {isSectionActive("events_rail", false) &&
+            (activeCategory === "todos" || activeCategory === "eventos" || activeCategory === "agenda") &&
             filteredEvents.length > 0 && (
               <HorizontalRail
                 title="Agenda e Eventos"
@@ -729,7 +951,7 @@ export function HomeDesktopWebApp({
           )}
 
           {/* SCROLL INFINITO DE DESCOBERTA */}
-          {activeCategory === "todos" && (
+          {isSectionActive("procedural_infinite_feed", false) && activeCategory === "todos" && (
             <ProceduralInfiniteFeed
               initialExcludedStoreIds={filteredPlaces.map((p: any) => p.store_id || p.id).filter(Boolean)}
               initialExcludedProductIds={[]}

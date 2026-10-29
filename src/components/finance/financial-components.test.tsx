@@ -5,6 +5,7 @@ import { FinancialHeroCard } from "./FinancialHeroCard";
 import { FinancialActionGrid } from "./FinancialActionGrid";
 import { InAppNumericKeypad } from "./InAppNumericKeypad";
 import { PaymentSuccessReceipt } from "./PaymentSuccessReceipt";
+import { CreditCardHomeWidget } from "./CreditCardHomeWidget";
 
 describe("Waesy Bank Financial Components (99Pay Parity)", () => {
   describe("FinancialHeroCard", () => {
@@ -13,6 +14,8 @@ describe("Waesy Bank Financial Components (99Pay Parity)", () => {
         <FinancialHeroCard
           balanceCents={2000000} // R$ 20.000,00
           yieldRateText="120% CDI ↑"
+          isYieldEnabled={true}
+          showInlineActionButtons={true}
           cashbackText="1% de cashback"
         />
       );
@@ -78,6 +81,33 @@ describe("Waesy Bank Financial Components (99Pay Parity)", () => {
       expect(html).toContain("Para João Pedro Gonçalves");
       expect(html).toContain("PICPAY");
       expect(html).toContain("TX-99887766");
+    });
+  });
+
+  describe("CreditCardHomeWidget", () => {
+    it("renders credit card metaphor widget with limit and due date when hasCard is true", () => {
+      const html = renderToStaticMarkup(
+        <CreditCardHomeWidget
+          hasCard={true}
+          usedLimitCents={245800}
+          totalLimitCents={1000000}
+          dueDateText="15 out"
+        />
+      );
+
+      expect(html).toContain("Cartão de crédito");
+      expect(html).toContain("Fatura atual");
+      expect(html).toContain("15 out");
+      expect(html).toContain("Limite disponível");
+      expect(html).toContain("Utilizado");
+      expect(html).toContain("Limite total");
+    });
+
+    it("renders honest activation state when user has no active card", () => {
+      const html = renderToStaticMarkup(<CreditCardHomeWidget hasCard={false} />);
+      expect(html).toContain("Cartão de crédito");
+      expect(html).toContain("Cartão Virtual Waesy");
+      expect(html).toContain("Ativar Cartão Gratuito");
     });
   });
 });

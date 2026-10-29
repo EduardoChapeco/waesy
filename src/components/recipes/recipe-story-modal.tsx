@@ -70,7 +70,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md w-full p-4 sm:p-6 bg-card border-border/60 rounded-lg overflow-hidden flex flex-col max-h-[90vh]">
+      <DialogContent className="max-w-md w-full p-4 sm:p-6 bg-card border-border/60 rounded-lg overflow-hidden flex flex-col max-h-(--spacing-screen-90,90vh)">
         <DialogHeader className="pb-2 border-b border-border/40">
           <DialogTitle className="text-sm font-semibold text-foreground flex items-center justify-between">
             <span className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
                 crossOrigin="anonymous"
                 className="size-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-black/50" />
               {recipe.total_time && (
                 <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-zinc-900/90 px-2 py-1 rounded-md text-2xs font-mono text-zinc-200">
                   <Clock className="size-3 text-amber-400" />

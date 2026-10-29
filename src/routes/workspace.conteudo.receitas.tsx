@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { listAdminMinedRecipesFn, updateMinedRecipeFn, toggleMinedRecipeVisibilityFn, duplicateMinedRecipeFn, deleteMinedRecipeFn, createMinedRecipeFn, type MinedRecipeDTO } from "@/services/mining.functions";
 import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/conteudo/receitas")({
@@ -476,7 +477,7 @@ function WorkspaceRecipesManagementPage() {
 
       {/* ── 5. Modal de Edição Completa da Receita ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-card border border-border/60 p-5 space-y-4">
+        <DialogContent className="max-w-2xl max-h-(--spacing-screen-90,90vh) overflow-y-auto rounded-lg bg-card border border-border/60 p-5 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <ChefHat className="size-4 text-primary" />
@@ -518,7 +519,7 @@ function WorkspaceRecipesManagementPage() {
             </div>
 
             {/* Tempos & Rendimento */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <label className="font-semibold text-foreground">Tempo Preparo</label>
                 <Input
@@ -548,14 +549,18 @@ function WorkspaceRecipesManagementPage() {
               </div>
             </div>
 
-            {/* URL da Imagem */}
+            {/* Imagem de Capa via Upload Direto no Bucket */}
             <div className="space-y-1">
-              <label className="font-semibold text-foreground">URL da Imagem de Capa</label>
-              <Input
-                value={editForm.cover_image_url}
-                onChange={(e) => setEditForm((p) => ({ ...p, cover_image_url: e.target.value }))}
-                placeholder="https://..."
-                className="h-9 text-xs rounded-lg bg-background"
+              <label className="font-semibold text-foreground">Imagem de Capa da Receita</label>
+              <MediaUploader
+                value={editForm.cover_image_url ? [editForm.cover_image_url] : []}
+                onChange={(urls) => setEditForm((p) => ({ ...p, cover_image_url: urls[0] || "" }))}
+                maxFiles={1}
+                bucket="recipes"
+                folder="covers"
+                aspect={16 / 9}
+                accept="image"
+                label="Capa da Receita (16:9)"
               />
             </div>
 

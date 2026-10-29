@@ -125,10 +125,10 @@ export function CommunityJoinSheet({
             <span className="text-xs font-semibold text-foreground">
               Notificações do Grupo:
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
-                className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-0.5 border transition-colors duration-200 cursor-pointer select-none ${
+                className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 border transition-colors duration-200 cursor-pointer select-none ${
                   notificationLevel === "all"
                     ? "bg-primary/10 border-primary text-primary"
                     : "border-border/60 text-muted-foreground hover:bg-muted/40"
@@ -141,7 +141,7 @@ export function CommunityJoinSheet({
 
               <button
                 type="button"
-                className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-0.5 border transition-colors duration-200 cursor-pointer select-none ${
+                className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 border transition-colors duration-200 cursor-pointer select-none ${
                   notificationLevel === "highlights"
                     ? "bg-primary/10 border-primary text-primary"
                     : "border-border/60 text-muted-foreground hover:bg-muted/40"
@@ -154,7 +154,7 @@ export function CommunityJoinSheet({
 
               <button
                 type="button"
-                className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-0.5 border transition-colors duration-200 cursor-pointer select-none ${
+                className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 border transition-colors duration-200 cursor-pointer select-none ${
                   notificationLevel === "mute"
                     ? "bg-primary/10 border-primary text-primary"
                     : "border-border/60 text-muted-foreground hover:bg-muted/40"

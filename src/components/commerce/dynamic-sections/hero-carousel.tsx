@@ -50,7 +50,7 @@ export function HeroCarousel({
   const heightMode = String(content.desktopHeight || "proportional");
   const heightClass =
     heightMode === "full"
-      ? "h-[85dvh] @md:h-[100dvh]"
+      ? "h-[85dvh] @md:h-dvh"
       : heightMode === "square"
       ? "aspect-square"
       : heightMode === "natural"
@@ -139,7 +139,7 @@ export function HeroCarousel({
                           heightMode === "natural"
                             ? "h-auto object-contain"
                             : "h-full object-contain"
-                        } transition-transform duration-1000 group-hover:scale-105 select-none`}
+                        } transition-transform duration-200 group-hover:scale-105 select-none`}
                       />
                     </picture>
                   </div>

@@ -397,7 +397,7 @@ export function PlacesMiningPanel() {
                   )}
                   {place.rating && (
                     <Badge variant="outline" className="text-2xs font-mono border-amber-500/30 text-amber-400">
-                      ★ {place.rating} ({place.reviewsCount})
+                       {place.rating} ({place.reviewsCount})
                     </Badge>
                   )}
                   <Badge variant="outline" className="text-3xs text-muted-foreground">

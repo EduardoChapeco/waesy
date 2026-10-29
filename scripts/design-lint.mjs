@@ -831,6 +831,10 @@ export function lintSource(content, filePath, customConfig = null) {
 
           const lineOfMatch = lines[matchLine - 1] || '';
           if (lineOfMatch.trim().startsWith('//') || lineOfMatch.trim().startsWith('*') || lineOfMatch.trim().startsWith('/*')) continue;
+          // Se o elemento pai possui h-11 ou min-h-11, classes internas (como size-4 de ícones) não violam o piso do botão
+          if (tag.tagContent.includes('min-h-11') || /\bh-11\b/.test(tag.tagContent) || /\bh-(?:1[1-9]|[2-9]\d)\b/.test(tag.tagContent)) continue;
+          // Se a própria linha contém min-h-11 ou compensação de toque tátil
+          if (lineOfMatch.includes('min-h-11') || /\bh-11\b/.test(lineOfMatch)) continue;
           if (isExempt('DL-14', matchLine) || isExempt('DL-14', tag.line)) continue;
 
           violations.push({
@@ -871,7 +875,8 @@ export function lintSource(content, filePath, customConfig = null) {
 
   // --- REGRAS EM NÍVEL DE ARQUIVO (FILE-LEVEL CHECKS) ---
 
-  const isViewRoute = relFile.endsWith('.tsx') && (relFile.includes('src/routes/') || relFile.includes('src/components/'));
+  const normRel = relFile.replace(/\\/g, '/');
+  const isViewRoute = normRel.endsWith('.tsx') && (normRel.includes('src/routes/') || normRel.includes('src/components/'));
 
   if (isViewRoute && !isExempt('DL-11', 1)) {
     // DL-11: Superfície de dados assíncrona sem skeleton/loading
@@ -961,6 +966,52 @@ export function lintSource(content, filePath, customConfig = null) {
           match: 'animate-* sem motion-reduce',
           message: `Animação ativa sem tratamento para preferências de movimento reduzido (motion-reduce:transition-none).`
         });
+      }
+    }
+
+    // DL-31: Containeritis / Card dentro de Card (Aninhamento redundante de superfícies)
+    if (isRuleActive('DL-31')) {
+      const cardInCardRegex = /<div[^>]*className=["'][^"']*(?:rounded-[a-z0-9]+|border)[^"']*(?:bg-card|border-border)[^"']*["'][^>]*>\s*<(?:IFoodStoreFeedCard|OfferCard|StoreCard|ClassifiedItemCard|NewsCard|DirectoryBusinessCard)[^>]*>/g;
+      let m;
+      while ((m = cardInCardRegex.exec(content)) !== null) {
+        const textBefore = content.slice(0, m.index);
+        const matchLine = (textBefore.match(/\n/g) || []).length + 1;
+        if (!isExempt('DL-31', matchLine)) {
+          violations.push({
+            id: 'DL-31',
+            rule: 'DL-31',
+            file: relFile,
+            module: fileModule,
+            line: matchLine,
+            column: 1,
+            severity: getSeverity('DL-31'),
+            match: m[0].replace(/\s+/g, ' ').slice(0, 80),
+            message: `Containeritis detectado: contêiner com borda/bg-card envolve diretamente componente de card já delimitado. Adote a Single Surface Rule.`
+          });
+        }
+      }
+    }
+
+    // DL-32: Grade com mais de 2 colunas para cards de layout horizontal
+    if (isRuleActive('DL-32')) {
+      const horizontalCardDenseGridRegex = /<div[^>]*className=["'][^"']*\bgrid\b[^"']*(?:grid-cols-3|grid-cols-4|lg:grid-cols-3|lg:grid-cols-4|md:grid-cols-3)[^"']*["'][^>]*>[\s\S]{1,400}?<(?:IFoodStoreFeedCard[^>]*variant=["']list["'])/g;
+      let m;
+      while ((m = horizontalCardDenseGridRegex.exec(content)) !== null) {
+        const textBefore = content.slice(0, m.index);
+        const matchLine = (textBefore.match(/\n/g) || []).length + 1;
+        if (!isExempt('DL-32', matchLine)) {
+          violations.push({
+            id: 'DL-32',
+            rule: 'DL-32',
+            file: relFile,
+            module: fileModule,
+            line: matchLine,
+            column: 1,
+            severity: getSeverity('DL-32'),
+            match: m[0].replace(/\s+/g, ' ').slice(0, 80),
+            message: `Cards de layout horizontal operando em 3+ colunas comprimem o conteúdo útil. Use no máximo grid-cols-1 lg:grid-cols-2.`
+          });
+        }
       }
     }
   }

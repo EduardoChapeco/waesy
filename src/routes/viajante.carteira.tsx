@@ -19,13 +19,13 @@ export const Route = createFileRoute("/viajante/carteira")({
 function getPassConfig(type: PassType) {
   switch (type) {
     case "boarding_pass":
-      return { icon: Plane, label: "Embarque", bg: "bg-gradient-to-br from-zinc-900 to-zinc-950" };
+      return { icon: Plane, label: "Embarque", bg: "bg-card border border-border" };
     case "insurance":
-      return { icon: ShieldAlert, label: "Seguro Viagem", bg: "bg-gradient-to-br from-zinc-900 to-zinc-950" };
+      return { icon: ShieldAlert, label: "Seguro Viagem", bg: "bg-card border border-border" };
     case "ticket":
-      return { icon: Ticket, label: "Ingresso", bg: "bg-gradient-to-br from-zinc-900 to-zinc-950" };
+      return { icon: Ticket, label: "Ingresso", bg: "bg-card border border-border" };
     default:
-      return { icon: Hotel, label: "Hospedagem", bg: "bg-gradient-to-br from-zinc-900 to-zinc-950" };
+      return { icon: Hotel, label: "Hospedagem", bg: "bg-card border border-border" };
   }
 }
 

@@ -139,7 +139,7 @@ export function QuickStoreEditorDialog({
  };
 
  return (
- <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
+ <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot footer" expiry:"2027-12-31" */ /* design-lint-ignore DL-14 reason:"slots JSX no prop footer contem icones size-4" expiry:"2027-12-31" */
  open={open}
  onOpenChange={onOpenChange}
  title="Configurações da Loja & Espaço"
@@ -160,16 +160,16 @@ export function QuickStoreEditorDialog({
  <Button
  onClick={handleSave}
  disabled={isSaving}
- className="rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground"
+ className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground"
  >
  {isSaving ? (
  <>
- <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+ <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
  <span>Salvando...</span>
  </>
  ) : (
  <>
- <Check className="size-3.5" />
+ <Check className="size-4" />
  <span>Salvar Alterações</span>
  </>
  )}
@@ -179,7 +179,7 @@ export function QuickStoreEditorDialog({
  >
  <form onSubmit={handleSave} className="space-y-6 pt-2">
  <Tabs defaultValue="visual" className="w-full">
- <TabsList className="grid grid-cols-3 w-full bg-muted/60 p-1 rounded-lg mb-4">
+ <TabsList className="grid grid-cols-1 sm:grid-cols-3 w-full bg-muted/60 p-1 rounded-lg mb-4">
  <TabsTrigger value="visual" className="rounded-lg text-xs font-semibold">
  Identidade Visual
  </TabsTrigger>
@@ -210,22 +210,14 @@ export function QuickStoreEditorDialog({
  </div>
  </div>
 
- {/* Capa / Banner */}
- <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">
- Banner de Cabeçalho / Capa Panorâmica
- </Label>
- <div className="w-full">
- <ImageUpload
- value={bannerUrl}
- onChange={(url) => setBannerUrl(url)}
- aspectPreset="widescreen"
- bucket="cms-media"
- helperText="Upload com recorte panorâmico 16:10 para topo da vitrine"
- />
- </div>
- </div>
- </TabsContent>
+ {/* Informação sobre Capa de Feeds & Vitrines */}
+                <div className="rounded-lg bg-card border border-border/50 p-3 space-y-2 text-xs">
+                  <p className="font-semibold text-foreground">Capa da Empresa nos Feeds & Vitrines</p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    A capa oficial da sua empresa é exibida nos cards de destaque dos feeds, buscas e vitrines. Ela é configurada e padronizada diretamente no Brand Kit do Workspace.
+                  </p>
+                </div>
+              </TabsContent>
 
  {/* ABA 2: Dados Básicos */}
  <TabsContent value="dados" className="space-y-4">

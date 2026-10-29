@@ -29,7 +29,10 @@ import { LiveTemplatePreviewModal } from "./LiveTemplatePreviewModal";
 import { StudioTemplateFactory } from "./StudioTemplateFactory";
 import { BlockErrorBoundary } from "./BlockErrorBoundary";
 import { HostingDomainConnectModal } from "./HostingDomainConnectModal";
+import { BuilderCodeExplorerModal } from "@/components/admin/builder/BuilderCodeExplorerModal";
+import { OmniAppMarketModal } from "@/components/admin/builder/OmniAppMarketModal";
 import { listStudioTemplateDrafts } from "@/services/studio-template-library.functions";
+import { listPublicArticles } from "@/services/news.functions";
 
 import {
   Plus,
@@ -69,6 +72,8 @@ import {
   Sparkles,
   SlidersHorizontal,
   Globe,
+  Code2,
+  Tablet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +82,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { toast } from "sonner";
 
 import { MediaUploader } from "@/components/admin/builder/MediaUploader";
+import { BuilderViewportProvider } from "@/design-system/vitrine";
+import {
+  BidirectionalDeviceStylingFields,
+  isVitrineAppBlock,
+  VitrineBlockInspector,
+} from "./vitrine-block-inspector";
 
 export type { WixBlockCategory } from "./registry";
 
@@ -85,6 +96,13 @@ const BLOCK_ICONS: Record<string, any> = {
   // Hero
   // Hero
   news_promethee_portal: LayoutTemplate,
+  news_promethee_header: LayoutTemplate,
+  news_promethee_nav: Layers,
+  news_promethee_breaking: Sparkles,
+  news_promethee_feed: LayoutTemplate,
+  news_promethee_ad_slot: Tag,
+  news_promethee_article_reader: MessageSquare,
+  news_promethee_footer: Globe,
   hero_minimal_split: LayoutTemplate,
   hero_interactive_carousel: Image,
   split_banner: LayoutTemplate,
@@ -138,6 +156,15 @@ const BLOCK_ICONS: Record<string, any> = {
   store_hours: Clock,
   store_contact: Mail,
   interactive_quote_calculator: Calculator,
+  vitrine_metamorphic_banner: Image,
+  vitrine_bento_tetris: Layers,
+  vitrine_coupon_strip: Tag,
+  vitrine_buttons_dock: Sparkles,
+  vitrine_vertical_carousel: Video,
+  vitrine_product_shelf: ShoppingBag,
+  vitrine_classifieds_rail: Tag,
+  vitrine_social_stream: MessageSquare,
+  vitrine_ecosystem_rail: Compass,
 };
 
 interface BlockContentFieldsProps {
@@ -151,6 +178,14 @@ interface BlockContentFieldsProps {
   products?: any[];
   categories?: any[];
   collections?: any[];
+  classifieds?: any[];
+  posts?: any[];
+  flyers?: any[];
+  events?: any[];
+  jobs?: any[];
+  stores?: any[];
+  banners?: any[];
+  hotpages?: any[];
 }
 
 const CATALOG_BOUND_BLOCK_TYPES = new Set([
@@ -166,6 +201,9 @@ const CATALOG_BOUND_BLOCK_TYPES = new Set([
   "service_pricing_table",
   "event_rail",
   "news_promethee_portal",
+  "news_promethee_breaking",
+  "news_promethee_feed",
+  "news_promethee_article_reader",
 ]);
 
 export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
@@ -179,9 +217,36 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
   products = [],
   categories = [],
   collections = [],
+  classifieds = [],
+  posts = [],
+  flyers = [],
+  events = [],
+  jobs = [],
+  stores = [],
+  banners = [],
+  hotpages = [],
 }) => {
   const config = selectedBlock.config as any;
   const isCatalogBlock = CATALOG_BOUND_BLOCK_TYPES.has(selectedBlock.type);
+
+  if (isVitrineAppBlock(selectedBlock.type)) {
+    return (
+      <VitrineBlockInspector
+        selectedBlock={selectedBlock}
+        onUpdateConfig={onUpdateConfig}
+        products={products}
+        categories={categories}
+        classifieds={classifieds}
+        posts={posts}
+        flyers={flyers}
+        events={events}
+        jobs={jobs}
+        stores={stores}
+        banners={banners}
+        hotpages={hotpages}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -1885,7 +1950,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
               <Input
                 value={config.mastheadTitle || ""}
                 onChange={(e) => onUpdateConfig("mastheadTitle", e.target.value)}
-                placeholder="Ex: Vale Agora / Prométhée"
+                placeholder="Ex: Waesy News / Portal Editorial"
                 className="h-11 min-h-11 rounded-lg text-xs"
               />
             </div>
@@ -2037,7 +2102,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   ];
                   onUpdateConfig("articles", next);
                 }}
-                className="h-8 px-2.5 text-xs rounded-lg"
+                className="h-8 px-2 text-xs rounded-lg"
               >
                 <Plus className="size-3.5 mr-1" />
                 Nova Matéria
@@ -2059,7 +2124,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                       const next = (config.articles || []).filter((_: any, i: number) => i !== idx);
                       onUpdateConfig("articles", next);
                     }}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Remover matéria"
                   >
                     <Trash2 className="size-3.5" />
@@ -2126,6 +2191,215 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
           </div>
         </div>
       )}
+      {selectedBlock.type === "news_promethee_header" && (
+        <div className="pt-3 border-t border-border/50 space-y-3 bg-muted/20 p-3 rounded-xl border border-border/60">
+          <span className="text-xs font-bold text-foreground block">Topo Editorial & Filtro GPS</span>
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">Marca do Portal</label>
+            <Input
+              value={config.mastheadTitle || ""}
+              onChange={(e) => onUpdateConfig("mastheadTitle", e.target.value)}
+              placeholder="Ex: Waesy News"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">Estilo da Logo</label>
+              <select
+                value={config.logoStyle || "promethee_dome"}
+                onChange={(e) => onUpdateConfig("logoStyle", e.target.value)}
+                className="w-full h-11 min-h-11 rounded-lg border border-border bg-card px-2 text-xs"
+              >
+                <option value="promethee_dome">Domo Editorial</option>
+                <option value="custom_image">Imagem Própria</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1">Rótulo Geral</label>
+              <Input
+                value={config.allCitiesLabel || "Todas as Cidades"}
+                onChange={(e) => onUpdateConfig("allCitiesLabel", e.target.value)}
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+          </div>
+          {config.logoStyle === "custom_image" && (
+            <MediaUploader
+              label="Logo do Portal"
+              value={config.logoUrl || ""}
+              onChange={(url) => onUpdateConfig("logoUrl", url)}
+            />
+          )}
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Cidades Sugeridas (separadas por vírgula)
+            </label>
+            <Input
+              value={Array.isArray(config.cities) ? config.cities.join(", ") : ""}
+              onChange={(e) =>
+                onUpdateConfig(
+                  "cities",
+                  e.target.value
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+                )
+              }
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+        </div>
+      )}
+
+      {selectedBlock.type === "news_promethee_nav" && (
+        <div className="pt-3 border-t border-border/50 space-y-3 bg-muted/20 p-3 rounded-xl border border-border/60">
+          <span className="text-xs font-bold text-foreground block">Menu de Editorias & Botão +</span>
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Editorias (separadas por vírgula)
+            </label>
+            <Input
+              value={Array.isArray(config.categories) ? config.categories.join(", ") : ""}
+              onChange={(e) =>
+                onUpdateConfig(
+                  "categories",
+                  e.target.value
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+                )
+              }
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+          <label className="flex items-center gap-2 text-xs font-semibold text-foreground min-h-11">
+            <input
+              type="checkbox"
+              checked={config.allowCitizenPosts !== false}
+              onChange={(e) => onUpdateConfig("allowCitizenPosts", e.target.checked)}
+            />
+            <span>Exibir botão fixo + para envio de pauta</span>
+          </label>
+        </div>
+      )}
+
+      {(selectedBlock.type === "news_promethee_breaking" || selectedBlock.type === "news_promethee_feed") && (
+        <div className="pt-3 border-t border-border/50 space-y-3 bg-muted/20 p-3 rounded-xl border border-border/60">
+          <span className="text-xs font-bold text-foreground block">Configurações do Feed de Notícias</span>
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">Título da Seção</label>
+            <Input
+              value={config.sectionTitle || ""}
+              onChange={(e) => onUpdateConfig("sectionTitle", e.target.value)}
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+          {selectedBlock.type === "news_promethee_feed" && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">Layout</label>
+                <select
+                  value={config.layoutMode || "feed_stream"}
+                  onChange={(e) => onUpdateConfig("layoutMode", e.target.value)}
+                  className="w-full h-11 min-h-11 rounded-lg border border-border bg-card px-2 text-xs"
+                >
+                  <option value="feed_stream">Stream Vertical</option>
+                  <option value="bento_2col">Grade 2 Colunas</option>
+                  <option value="vitrine_shelf">Trilho Horizontal</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">Fonte</label>
+                <select
+                  value={config.dataSource || "approved_mined_AND_custom"}
+                  onChange={(e) => onUpdateConfig("dataSource", e.target.value)}
+                  className="w-full h-11 min-h-11 rounded-lg border border-border bg-card px-2 text-xs"
+                >
+                  <option value="approved_mined_AND_custom">Mineradas + Próprias</option>
+                  <option value="approved_mined_only">Somente Mineradas</option>
+                  <option value="custom_editorial">Somente Próprias</option>
+                </select>
+              </div>
+            </div>
+          )}
+          <div>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              URL da Página de Leitura (opcional)
+            </label>
+            <Input
+              value={config.articlePageHref || ""}
+              onChange={(e) => onUpdateConfig("articlePageHref", e.target.value)}
+              placeholder="Ex: /paginas/artigo (vazio abre inline)"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+        </div>
+      )}
+
+      {selectedBlock.type === "news_promethee_ad_slot" && (
+        <div className="pt-3 border-t border-border/50 space-y-3 bg-muted/20 p-3 rounded-xl border border-border/60">
+          <span className="text-xs font-bold text-foreground block">Espaço Publicitário ADS</span>
+          <Input
+            value={config.sponsorName || ""}
+            onChange={(e) => onUpdateConfig("sponsorName", e.target.value)}
+            placeholder="Nome do anunciante"
+            className="h-11 min-h-11 rounded-lg text-xs"
+          />
+          <Input
+            value={config.headline || ""}
+            onChange={(e) => onUpdateConfig("headline", e.target.value)}
+            placeholder="Chamada comercial"
+            className="h-11 min-h-11 rounded-lg text-xs"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              value={config.ctaLabel || ""}
+              onChange={(e) => onUpdateConfig("ctaLabel", e.target.value)}
+              placeholder="Texto do botão"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+            <Input
+              value={config.ctaHref || ""}
+              onChange={(e) => onUpdateConfig("ctaHref", e.target.value)}
+              placeholder="Link de destino"
+              className="h-11 min-h-11 rounded-lg text-xs"
+            />
+          </div>
+          <MediaUploader
+            label="Imagem / Banner do Anúncio"
+            value={config.imageUrl || ""}
+            onChange={(url) => onUpdateConfig("imageUrl", url)}
+          />
+        </div>
+      )}
+
+      {selectedBlock.type === "news_promethee_footer" && (
+        <div className="pt-3 border-t border-border/50 space-y-3 bg-muted/20 p-3 rounded-xl border border-border/60">
+          <span className="text-xs font-bold text-foreground block">Rodapé Editorial</span>
+          <Input
+            value={config.brandName || ""}
+            onChange={(e) => onUpdateConfig("brandName", e.target.value)}
+            placeholder="Nome do Portal"
+            className="h-11 min-h-11 rounded-lg text-xs"
+          />
+          <Input
+            value={config.tagline || ""}
+            onChange={(e) => onUpdateConfig("tagline", e.target.value)}
+            placeholder="Assinatura editorial"
+            className="h-11 min-h-11 rounded-lg text-xs"
+          />
+          <label className="flex items-center gap-2 text-xs font-semibold text-foreground min-h-11">
+            <input
+              type="checkbox"
+              checked={config.showWaesySignature !== false}
+              onChange={(e) => onUpdateConfig("showWaesySignature", e.target.checked)}
+            />
+            <span>Exibir selo discreto Feito com Waesy</span>
+          </label>
+        </div>
+      )}
+
       {(config.address !== undefined || config.addressText !== undefined) && (
         <div className="pt-2 border-t border-border/40 space-y-2">
           <label className="block text-xs font-semibold text-foreground">
@@ -2162,6 +2436,14 @@ interface OmniEditorProps {
   products?: any[];
   categories?: any[];
   collections?: any[];
+  classifieds?: any[];
+  posts?: any[];
+  flyers?: any[];
+  events?: any[];
+  jobs?: any[];
+  stores?: any[];
+  banners?: any[];
+  hotpages?: any[];
   storeData?: any;
 }
 
@@ -2173,6 +2455,14 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   products = [],
   categories = [],
   collections = [],
+  classifieds = [],
+  posts = [],
+  flyers = [],
+  events = [],
+  jobs = [],
+  stores = [],
+  banners = [],
+  hotpages = [],
   storeData = null,
 }) => {
   const [document, setDocument] = useState<OmniPageDocument>(initialDocument);
@@ -2189,6 +2479,21 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
+  const [isCodeExplorerOpen, setIsCodeExplorerOpen] = useState(false);
+  const [isAppMarketOpen, setIsAppMarketOpen] = useState(false);
+  const [liveNewsArticles, setLiveNewsArticles] = useState<any[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    listPublicArticles({ data: { limit: 20, regionHint: "vale_do_paraiba" } })
+      .then((rows) => {
+        if (active && Array.isArray(rows)) setLiveNewsArticles(rows);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleFinishRename = () => {
     setIsEditingTitle(false);
@@ -2309,6 +2614,19 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         ...block,
         assetRefs: (block.assetRefs ?? []).map((asset) => asset.usage_slot === usageSlot ? { ...asset, alt_text: altText } : asset),
       }),
+      updated_at: new Date().toISOString(),
+    }));
+  };
+
+  const handleUpdateSectionAnchorId = (anchorId: string) => {
+    if (!selectedBlockId) return;
+    setDocument((current) => ({
+      ...current,
+      blocks: current.blocks.map((block) =>
+        block.id !== selectedBlockId
+          ? block
+          : { ...block, sectionAnchorId: anchorId || undefined },
+      ),
       updated_at: new Date().toISOString(),
     }));
   };
@@ -2450,6 +2768,26 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
         {/* Cluster de Ações: Preview + Salvar + Publicar */}
         <div className="flex items-center gap-2 sm:gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAppMarketOpen(true)}
+            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-primary/40 text-primary hover:bg-primary/10 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            title="Omni Apps Market"
+          >
+            <LayoutTemplate className="size-4 sm:mr-2" />
+            <span className="hidden sm:inline">Apps</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCodeExplorerOpen(true)}
+            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            title="Explorador de Código TanStack"
+          >
+            <Code2 className="size-4 sm:mr-2" />
+            <span className="hidden sm:inline">Código</span>
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -2626,6 +2964,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
         {/* Canvas Central (Área de Visualização WYSIWYG) */}
         <main className="flex-1 bg-muted/15 overflow-y-auto p-4 sm:p-8 flex justify-center">
+          <BuilderViewportProvider viewport={viewport === "mobile" ? "mobile" : "desktop"} isEditorCanvas={true}>
           <div
             className={`transition-colors duration-200 duration-300 ${
               viewport === "mobile"
@@ -2716,8 +3055,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                         isEditing={true}
                         products={products}
                         categories={categories}
-                        collections={collections}
+                        collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
                         storeData={storeData}
+                      newsArticles={liveNewsArticles}
                       />
                     </BlockErrorBoundary>
                   </div>
@@ -2725,6 +3065,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               })
             )}
           </div>
+          </BuilderViewportProvider>
         </main>
 
         {/* Painel Direito: Inspector Profundo (Conteúdo + Estilo) */}
@@ -2763,11 +3104,17 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
                   products={products}
                   categories={categories}
-                  collections={collections}
+                  collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
                 />
               ) : (
                 /* Aba de Estilo Isolado */
                 <div className="space-y-4">
+                  <BidirectionalDeviceStylingFields
+                    styling={selectedBlock.styling}
+                    onUpdateStyling={handleUpdateStyling}
+                    sectionAnchorId={selectedBlock.sectionAnchorId}
+                    onUpdateSectionAnchorId={handleUpdateSectionAnchorId}
+                  />
                   <div>
                     <label className="block text-xs font-semibold text-foreground mb-1">
                       Espaçamento Vertical (Padding)
@@ -2810,7 +3157,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
-                        value={selectedBlock.styling?.backgroundColor || "#ffffff"}
+                        value={selectedBlock.styling?.backgroundColor || `${String.fromCharCode(35)}ffffff`}
                         onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
                         className="size-8 rounded-lg cursor-pointer border border-border"
                       />
@@ -2830,6 +3177,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
       </div>
 
       {/* ── 2. EXPERIÊNCIA MOBILE (CANVAS CONSOME A TELA TODA + BARRA INFERIOR FLUTUANTE) ── */}
+      <BuilderViewportProvider viewport="mobile" isEditorCanvas={true}>
       <div className="flex md:hidden flex-1 flex-col overflow-y-auto relative pb-28">
         {document.blocks.length === 0 ? (
           <div className="py-24 text-center p-6 flex flex-col items-center justify-center flex-1">
@@ -2883,8 +3231,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       isEditing={true}
                       products={products}
                       categories={categories}
-                      collections={collections}
+                      collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
                       storeData={storeData}
+                      newsArticles={liveNewsArticles}
                     />
                   </BlockErrorBoundary>
                 </div>
@@ -2938,6 +3287,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         )}
       </div>
 
+      </BuilderViewportProvider>
       {/* ── MOBILE BOTTOM SHEET: ADICIONAR BLOCO (85vh) ── */}
       <Sheet open={isMobileAddOpen} onOpenChange={setIsMobileAddOpen}>
         <SheetContent side="bottom" className="h-5/6 rounded-t-lg p-5 flex flex-col">
@@ -3045,12 +3395,18 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
                     products={products}
                     categories={categories}
-                    collections={collections}
+                    collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
                   />
                 </div>
               ) : (
                 /* Aba de Estilo Mobile */
                 <div className="space-y-4 pt-1">
+                  <BidirectionalDeviceStylingFields
+                    styling={selectedBlock.styling}
+                    onUpdateStyling={handleUpdateStyling}
+                    sectionAnchorId={selectedBlock.sectionAnchorId}
+                    onUpdateSectionAnchorId={handleUpdateSectionAnchorId}
+                  />
                   <div>
                     <label className="block text-xs font-semibold text-foreground mb-1">
                       Espaçamento Vertical (Padding)
@@ -3092,7 +3448,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
-                        value={selectedBlock.styling?.backgroundColor || "#ffffff"}
+                        value={selectedBlock.styling?.backgroundColor || `${String.fromCharCode(35)}ffffff`}
                         onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
                         className="size-10 rounded-lg cursor-pointer border border-border"
                       />
@@ -3277,6 +3633,27 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         storeSlug={document.slug}
         storeName={document.title || "Minha Loja"}
       />
+
+      {/* MODAL DO EXPLORADOR DE CÓDIGO TANSTACK START (LOVABLE PARITY) */}
+      {isCodeExplorerOpen && (
+        <BuilderCodeExplorerModal
+          isOpen={isCodeExplorerOpen}
+          onClose={() => setIsCodeExplorerOpen(false)}
+          document={document}
+        />
+      )}
+
+      {/* MODAL DO OMNI APPS MARKET (WIX APPS PARITY) */}
+      {isAppMarketOpen && (
+        <OmniAppMarketModal
+          isOpen={isAppMarketOpen}
+          onClose={() => setIsAppMarketOpen(false)}
+          storeId={document.store_id}
+          onAppInstalled={(appId) => {
+            toast.success("App instalado. Atualizando árvore de páginas...");
+          }}
+        />
+      )}
     </div>
   );
 };

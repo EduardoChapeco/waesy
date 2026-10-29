@@ -412,7 +412,7 @@ function HrFinancePage() {
             </div>
 
             {/* Resumo Financeiro */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="p-3 rounded-lg border border-border/70 bg-card space-y-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Créditos (+)</span>
                 <div className="text-sm font-mono font-bold text-emerald-600">

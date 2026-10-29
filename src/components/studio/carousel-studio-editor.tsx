@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Download, Copy, Check, Share2, ChevronLeft, ChevronRight, Star, Layers, Palette, Type, Maximize2, Save, RefreshCw, X } from "lucide-react";
@@ -570,12 +571,16 @@ export function CarouselStudioEditor({
 
               <div className="space-y-3">
                 <div>
-                  <Label className="text-xs font-medium text-foreground">URL da Imagem</Label>
-                  <Input
-                    value={currentSlide.background_url || ""}
-                    onChange={(e) => updateCurrentSlide({ background_url: e.target.value })}
-                    placeholder="https://..."
-                    className="h-9 mt-1 text-xs rounded-lg font-mono text-2xs"
+                  <Label className="text-xs font-medium text-foreground block mb-1">Mídia de Fundo do Slide</Label>
+                  <MediaUploader
+                    value={currentSlide.background_url ? [currentSlide.background_url] : []}
+                    onChange={(urls) => updateCurrentSlide({ background_url: urls[0] || "" })}
+                    maxFiles={1}
+                    bucket="post-media"
+                    folder="studio-carousel"
+                    aspect={aspectRatio === "portrait_4_5" ? 4 / 5 : 1}
+                    accept="image"
+                    label="Fundo do Slide"
                   />
                 </div>
 
@@ -760,7 +765,7 @@ export function CarouselStudioEditor({
 
                     {variant.rationale && (
                       <p className="text-2xs text-primary/80 italic bg-primary/5 p-2 rounded-lg border border-primary/10">
-                        💡 {variant.rationale}
+                         {variant.rationale}
                       </p>
                     )}
                   </div>

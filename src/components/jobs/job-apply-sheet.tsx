@@ -264,7 +264,7 @@ export function JobApplySheet({
                           onClick={() => setPreviousCompanyRating(star)}
                           className="text-amber-500 hover:scale-125 transition-transform cursor-pointer text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          {previousCompanyRating >= star ? "★" : "☆"}
+                          {previousCompanyRating >= star ? "" : ""}
                         </button>
                       ))}
                     </div>

@@ -210,7 +210,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                     </div>
                     <div className="p-6">
                       <h3 className="text-2xl font-bold text-slate-900 mb-6">{h.name}</h3>
-                      <div className="grid grid-cols-3 gap-px bg-slate-200 border border-slate-200 rounded-card overflow-hidden">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-slate-200 border border-slate-200 rounded-card overflow-hidden">
                         <div className="bg-slate-50 p-4">
                           <div className="ds-meta uppercase text-slate-500 font-bold mb-1">
                             Check-in

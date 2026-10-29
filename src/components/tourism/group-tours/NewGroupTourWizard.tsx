@@ -1341,7 +1341,7 @@ export function NewGroupTourWizard({
               </Button>
             ) : (
               <Button
-                variant="default"
+                variant="outline"
                 type="submit"
                 disabled={submitting}
                 className="w-40 font-bold tracking-wider"

@@ -21,8 +21,14 @@ import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { listPublishedProducts } from "@/services/catalog.functions";
+import { getPublicClassifieds } from "@/services/classifieds.functions";
 import type { ProductCardDTO } from "@/types/catalog";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
+import {
+  CommercialShowcaseTemplate,
+  mapSurfaceFeedToCommercialShowcase,
+} from "@/components/commerce/ifood/CommercialShowcaseTemplate";
 
 const SearchSchema = z.object({
  q: z.string().optional(),
@@ -34,13 +40,15 @@ const SearchSchema = z.object({
 type ConstrucaoSearch = z.infer<typeof SearchSchema>;
 
 const CONSTRUCAO_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo", icon: Tag },
- { id: "tintas", label: "Tintas e Acabamento", icon: PaintBrush },
- { id: "ferramentas", label: "Ferramentas Manuais e Elétricas", icon: Hammer },
- { id: "eletrica", label: "Elétrica e Iluminação", icon: Lightbulb },
- { id: "hidraulica", label: "Hidráulica e Tubos", icon: Drop },
- { id: "decoracao", label: "Decoração e Móveis", icon: Armchair },
- { id: "fixacao", label: "Parafusos e Ferragens", icon: Wrench },
+  { id: "todos", label: "Tudo na Obra", icon: Tag },
+  { id: "prestadores", label: "Prestadores (Pedreiro, Eletricista, Encanador)", icon: Wrench },
+  { id: "lojas", label: "Lojas & Depósitos", icon: Storefront },
+  { id: "tintas", label: "Tintas e Acabamento", icon: PaintBrush },
+  { id: "ferramentas", label: "Ferramentas & Maquinário", icon: Hammer },
+  { id: "eletrica", label: "Elétrica e Iluminação", icon: Lightbulb },
+  { id: "hidraulica", label: "Hidráulica e Tubos", icon: Drop },
+  { id: "decoracao", label: "Decoração e Interiores", icon: Armchair },
+  { id: "fixacao", label: "Parafusos e Ferragens", icon: Wrench },
 ];
 
 export const Route = createFileRoute("/_store/construcao")({
@@ -60,21 +68,23 @@ export const Route = createFileRoute("/_store/construcao")({
  loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
    try {
- const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
+ const [banners, hotpages, marketplaceFeed, productsRes, serviceProviders] = await Promise.all([
  listActiveBanners({ data: { placement: "construcao", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "construcao" } }).catch(() => []),
  getModularSurfaceFeed({ data: { surfaceSlug: "construcao", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "construcao", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
+ getPublicClassifieds({ city: activeCity, category: "services" } as any).catch(() => []),
  ]);
  return {
  banners,
  hotpages,
  marketplaceFeed,
  catalogProducts: (productsRes as any).data ?? [],
+ serviceProviders: Array.isArray(serviceProviders) ? serviceProviders : [],
  };
    } catch (err) {
      console.error("[loader:_store.construcao] Unhandled error:", err);
-     return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
+     return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null, serviceProviders: [] };
    }
  },
  component: ConstrucaoVerticalPage,
@@ -82,12 +92,32 @@ export const Route = createFileRoute("/_store/construcao")({
 });
 
 function ConstrucaoVerticalPage() {
- const { banners, hotpages, marketplaceFeed } = ((Route.useLoaderData?.() as any) || {});
+ const { banners, hotpages, marketplaceFeed, serviceProviders } = ((Route.useLoaderData?.() as any) || {});
  const search = Route.useSearch();
  const navigate = useNavigate({ from: Route.fullPath });
 
  const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
  const [viewMode, setViewMode] = useState<ViewModeType>(search.view || "feed");
+
+ const constructionProviders = useMemo(() => {
+   const list = (serviceProviders || []) as any[];
+   return list.filter((p: any) => {
+     const text = `${p.title || ""} ${p.content || ""} ${p.category || ""}`.toLowerCase();
+     return (
+       text.includes("pedreir") ||
+       text.includes("eletric") ||
+       text.includes("encan") ||
+       text.includes("pinto") ||
+       text.includes("serralh") ||
+       text.includes("gesso") ||
+       text.includes("obra") ||
+       text.includes("reforma") ||
+       text.includes("constru") ||
+       text.includes("calha") ||
+       text.includes("marcen")
+     );
+   });
+ }, [serviceProviders]);
 
  const handleDepartmentChange = (depId: string) => {
  setActiveDepartment(depId);
@@ -134,7 +164,7 @@ function ConstrucaoVerticalPage() {
  ["construcao", "ferramentas", "tintas", "eletrica", "hidraulica", "casa"].includes(t),
  );
 
- if (activeDepartment === "todos") return isConstructionItem || allProducts.length <= 10;
+ if (activeDepartment === "todos") return isConstructionItem;
  if (activeDepartment === "tintas")
  return titleLower.includes("tinta") || titleLower.includes("verniz") || titleLower.includes("rolo");
  if (activeDepartment === "ferramentas")
@@ -170,6 +200,35 @@ function ConstrucaoVerticalPage() {
  );
  });
  }, [marketplaceFeed]);
+
+ const { isCompact } = useWindowSizeClass();
+ const [activeFilters, setActiveFilters] = useState<string[]>([]);
+ const showcaseData = useMemo(
+   () => mapSurfaceFeedToCommercialShowcase(marketplaceFeed, "construcao", "Depósito & Ferragens"),
+   [marketplaceFeed],
+ );
+
+ if (isCompact) {
+   return (
+     <CommercialShowcaseTemplate
+       nicheId="construcao"
+       nicheTitle="Construção & Ferramentas"
+       subcategories={CONSTRUCAO_DEPARTMENTS.map((d) => ({ id: d.id, label: d.label, icon: d.icon as any }))}
+       activeSubcategoryId={activeDepartment}
+       onSelectSubcategory={handleDepartmentChange}
+       banners={banners || []}
+       featureMiniBanners={showcaseData.featureMiniBanners}
+       recentStores={showcaseData.recentStores}
+       stores={showcaseData.stores}
+       spotlightStores={showcaseData.spotlightStores}
+       products={filteredProducts}
+       activeFilters={activeFilters}
+       onToggleFilter={(id) =>
+         setActiveFilters((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+       }
+     />
+   );
+ }
 
  return (
  <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">

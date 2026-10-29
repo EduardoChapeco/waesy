@@ -1331,7 +1331,7 @@ function AdminOrdersPage() {
                   className="p-4 rounded-xl border border-border/70 bg-card space-y-3 shadow-2xs hover:border-primary/40 transition-colors"
                 >
                   {/* Top Bar: Order ID + Channel + Status */}
-                  <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2.5">
+                  <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="font-mono tabular-nums font-bold text-sm text-foreground truncate">
                         {orderCode}
@@ -1669,7 +1669,7 @@ function AdminOrdersPage() {
                 <div className="divide-y divide-border/40 rounded-lg border border-border/50 overflow-hidden bg-card">
                   {(selectedOrderDetail.items_snapshot || []).map((item: any, idx: number) => (
                     <div key={idx} className="p-3 flex items-center justify-between text-xs">
-                      <div className="space-y-0.5 min-w-0 pr-2">
+                      <div className="space-y-1 min-w-0 pr-2">
                         <p className="font-medium text-foreground truncate">{item.title || item.product_name || "Item"}</p>
                         <p className="text-muted-foreground font-mono tabular-nums">{item.quantity || 1}x {formatMoney(item.unit_price_cents || item.price_cents || 0)}</p>
                       </div>

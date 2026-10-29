@@ -84,7 +84,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                   <img
                     src={banner.image_url}
                     alt={banner.title || section.title}
-                    className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                     loading="lazy"
                   />
                 ) : (
@@ -140,7 +140,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                       <img
                         src={b.image_url}
                         alt={b.title || "Banner"}
-                        className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                         loading="lazy"
                       />
                     ) : (

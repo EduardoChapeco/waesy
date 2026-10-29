@@ -451,7 +451,7 @@ function WorkspaceStoreHotpagesPage() {
  <Button
  onClick={handleSave}
  disabled={isSubmitting}
- className="h-11 px-6 rounded-lg text-sm font-bold bg-primary text-primary-foreground min-w-[120px] shadow-xs cursor-pointer"
+ className="h-11 px-6 rounded-lg text-sm font-bold bg-primary text-primary-foreground min-w-30 shadow-xs cursor-pointer"
  >
  {isSubmitting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" /> : "Salvar Destaque"}
  </Button>

@@ -256,6 +256,7 @@ function BookingIndexPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         allowedViewModes={["feed", "grid", "list"]}
+        hideMobileSearch={true}
       />
 
       {/* ── ESTADOS DE CARREGAMENTO E VAZIO ── */}
@@ -305,7 +306,7 @@ function BookingIndexPage() {
                             <img
                               src={service.image_url}
                               alt={service.title}
-                              className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                               loading="lazy"
                             />
                           ) : (
@@ -383,7 +384,7 @@ function BookingIndexPage() {
                             <img
                               src={service.image_url}
                               alt={service.title}
-                              className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                               loading="lazy"
                             />
                           ) : (
@@ -460,7 +461,7 @@ function BookingIndexPage() {
                         <img
                           src={service.image_url}
                           alt={service.title}
-                          className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                           loading="lazy"
                         />
                       ) : (
@@ -645,7 +646,7 @@ function BookingIndexPage() {
                   {/* 1. Escolha do Dia */}
                   <div className="space-y-2">
                     <Label className="text-xs font-bold text-foreground">1. Escolha a Data</Label>
-                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 sm:grid-cols-7 gap-2">
                       {nextDays.map((day) => {
                         const isSelected = selectedDate === day.iso;
                         return (
@@ -689,7 +690,7 @@ function BookingIndexPage() {
                         Nenhum horário disponível para esta data. Selecione outro dia.
                       </div>
                     ) : (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1">
                         {slots.map((slotIso: string) => {
                           const timeStr = new Date(slotIso).toLocaleTimeString("pt-BR", {
                             hour: "2-digit",

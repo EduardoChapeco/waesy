@@ -27,6 +27,19 @@ import {
   LogOut,
   ChevronRight,
   CheckCircle,
+  Tag,
+  MessageSquare,
+  Bookmark,
+  Ticket,
+  Plane,
+  Calendar,
+  Car,
+  FileText,
+  Coins,
+  CreditCard,
+  Gift,
+  Handshake,
+  BadgeCheck,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -95,9 +108,6 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
         side="bottom"
         className="h-[88dvh] max-h-[88dvh] p-0 flex flex-col rounded-t-3xl border-t border-border bg-background z-50 overflow-hidden"
       >
-        {/* Apple HIG Grab Handle */}
-        <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto my-3 shrink-0" />
-
         {/* Top Header */}
         <SheetHeader className="px-4 pb-3 border-b border-border/40 flex flex-row items-center justify-between space-y-0">
           <div>
@@ -128,7 +138,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <h3 className="font-bold text-sm text-foreground truncate">
                       {userFullName}
                     </h3>
@@ -149,18 +159,24 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                 </Badge>
               </div>
 
-              {/* Seletor de Perfis e Contextos */}
+              {/* Seletor de Perfis e Contextos (TetrisGrid 2x2) */}
               <div className="space-y-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
-                  Alternar Identidade
-                </span>
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Alternar Identidade
+                  </span>
+                  <Badge variant="outline" className="text-2xs font-medium px-2 py-1">
+                    Multi-Tenant
+                  </Badge>
+                </div>
+
                 <div className="grid grid-cols-2 gap-2">
                   {/* Perfil Civil */}
                   <button
                     type="button"
                     onClick={() => handleSwitchContext("civil")}
                     className={cn(
-                      "h-14 min-h-14 px-3 rounded-xl border flex items-center gap-2.5 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "h-14 min-h-14 px-3 rounded-xl border flex items-center gap-2 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       currentContext === "civil"
                         ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                         : "border-border/60 bg-muted/30 hover:bg-muted/60 text-foreground"
@@ -180,7 +196,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     type="button"
                     onClick={() => handleSwitchContext("store")}
                     className={cn(
-                      "h-14 min-h-14 px-3 rounded-xl border flex items-center gap-2.5 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "h-14 min-h-14 px-3 rounded-xl border flex items-center gap-2 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       currentContext === "store"
                         ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                         : "border-border/60 bg-muted/30 hover:bg-muted/60 text-foreground"
@@ -200,7 +216,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     type="button"
                     onClick={() => handleSwitchContext("courier")}
                     className={cn(
-                      "h-14 min-h-14 px-3 rounded-xl border flex items-center gap-2.5 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "h-14 min-h-14 px-3 rounded-xl border flex items-center gap-2 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       currentContext === "courier"
                         ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                         : "border-border/60 bg-muted/30 hover:bg-muted/60 text-foreground"
@@ -220,7 +236,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     type="button"
                     onClick={() => handleSwitchContext("creator")}
                     className={cn(
-                      "h-14 min-h-14 px-3 rounded-xl border flex items-center gap-2.5 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "h-14 min-h-14 px-3 rounded-xl border flex items-center gap-2 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       currentContext === "creator"
                         ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
                         : "border-border/60 bg-muted/30 hover:bg-muted/60 text-foreground"
@@ -237,96 +253,259 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                 </div>
               </div>
 
-              {/* Atalhos Rápidos da Conta */}
-              <div className="space-y-1 pt-1">
+              {/* Serviços Pessoais — Arquitetura TetrisGrid / Grade Modular */}
+              <div className="space-y-3 pt-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
                   Serviços Pessoais
                 </span>
 
-                <button
-                  type="button"
-                  onClick={() => handleNavigate("/conta/financas")}
-                  className="w-full h-12 min-h-12 px-3 rounded-xl hover:bg-muted/50 transition-colors flex items-center justify-between group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-foreground">
-                      <Wallet className="size-4" />
+                {/* Bloco 1: Destaques Hero 2x1 */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/financas")}
+                    className="h-20 min-h-11 p-3 rounded-2xl border border-border/60 bg-muted/30 hover:bg-muted/60 transition-colors flex flex-col justify-between text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                        <Wallet className="size-4" />
+                      </div>
+                      <ChevronRight className="size-4 text-muted-foreground" />
                     </div>
-                    <div className="text-left">
-                      <span className="text-xs font-bold block text-foreground">Carteira e Finanças</span>
-                      <span className="text-2xs text-muted-foreground block">Saldo, Pix e Pagamentos</span>
+                    <div>
+                      <span className="text-xs font-bold block text-foreground leading-tight">Carteira & Saldo</span>
+                      <span className="text-2xs text-muted-foreground block truncate">Pix e Pagamentos</span>
                     </div>
-                  </div>
-                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </button>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleNavigate("/conta/pedidos")}
-                  className="w-full h-12 min-h-12 px-3 rounded-xl hover:bg-muted/50 transition-colors flex items-center justify-between group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-foreground">
-                      <ShoppingBag className="size-4" />
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/pedidos")}
+                    className="h-20 min-h-11 p-3 rounded-2xl border border-border/60 bg-muted/30 hover:bg-muted/60 transition-colors flex flex-col justify-between text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                        <ShoppingBag className="size-4" />
+                      </div>
+                      <ChevronRight className="size-4 text-muted-foreground" />
                     </div>
-                    <div className="text-left">
-                      <span className="text-xs font-bold block text-foreground">Minhas Compras</span>
-                      <span className="text-2xs text-muted-foreground block">Pedidos e Rastreamento</span>
+                    <div>
+                      <span className="text-xs font-bold block text-foreground leading-tight">Pedidos & Compras</span>
+                      <span className="text-2xs text-muted-foreground block truncate">Rastrear entrega</span>
                     </div>
-                  </div>
-                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </button>
+                  </button>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleNavigate("/conta/enderecos")}
-                  className="w-full h-12 min-h-12 px-3 rounded-xl hover:bg-muted/50 transition-colors flex items-center justify-between group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-foreground">
-                      <MapPin className="size-4" />
+                {/* Bloco 2: Benefícios & Comunicação 2x1 */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/creditos")}
+                    className="h-16 min-h-11 px-3 py-2 rounded-xl border border-border/60 bg-muted/30 hover:bg-muted/60 transition-colors flex items-center gap-2 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
+                      <Tag className="size-4 text-primary" />
                     </div>
-                    <div className="text-left">
-                      <span className="text-xs font-bold block text-foreground">Endereços Salvos</span>
-                      <span className="text-2xs text-muted-foreground block">Locais de Entrega</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-bold block text-foreground leading-tight truncate">Clube & Cupons</span>
+                      <span className="text-2xs text-muted-foreground block truncate">Descontos ativos</span>
                     </div>
-                  </div>
-                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </button>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleNavigate("/conta/seguranca")}
-                  className="w-full h-12 min-h-12 px-3 rounded-xl hover:bg-muted/50 transition-colors flex items-center justify-between group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-foreground">
-                      <ShieldCheck className="size-4" />
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/conversas")}
+                    className="h-16 min-h-11 px-3 py-2 rounded-xl border border-border/60 bg-muted/30 hover:bg-muted/60 transition-colors flex items-center gap-2 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
+                      <MessageSquare className="size-4 text-foreground" />
                     </div>
-                    <div className="text-left">
-                      <span className="text-xs font-bold block text-foreground">Segurança e Senha</span>
-                      <span className="text-2xs text-muted-foreground block">Autenticação e Dispositivos</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-bold block text-foreground leading-tight truncate">Mensagens</span>
+                      <span className="text-2xs text-muted-foreground block truncate">Avisos e chats</span>
                     </div>
-                  </div>
-                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </button>
+                  </button>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleNavigate("/conta/suporte")}
-                  className="w-full h-12 min-h-12 px-3 rounded-xl hover:bg-muted/50 transition-colors flex items-center justify-between group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-muted flex items-center justify-center text-foreground">
-                      <HelpCircle className="size-4" />
-                    </div>
-                    <div className="text-left">
-                      <span className="text-xs font-bold block text-foreground">Central de Ajuda</span>
-                      <span className="text-2xs text-muted-foreground block">FAQ e Atendimento</span>
-                    </div>
+                {/* Bloco 3: Mosaico Tetris (Grid 2 a 3 Colunas Responsivo) */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {/* Salvos / Favoritos */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/salvos")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Bookmark className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Favoritos</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Itens salvos</span>
+                  </button>
+
+                  {/* Endereços */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/enderecos")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <MapPin className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Endereços</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Locais salvos</span>
+                  </button>
+
+                  {/* Meus Anúncios */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/classificados")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Store className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Anúncios</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Classificados</span>
+                  </button>
+
+                  {/* Ingressos */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/ingressos")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Ticket className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Ingressos</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Shows & eventos</span>
+                  </button>
+
+                  {/* Viagens */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/viagens")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Plane className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Viagens</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Pacotes</span>
+                  </button>
+
+                  {/* Agendamentos */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/agendamentos")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Calendar className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Agendas</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Serviços</span>
+                  </button>
+
+                  {/* Waesy Go */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/mobilidade")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Car className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Waesy Go</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Caronas</span>
+                  </button>
+
+                  {/* Currículo */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/curriculo")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <FileText className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Currículo</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Carreiras</span>
+                  </button>
+
+                  {/* Tokens WZ */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/tokens")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Coins className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Tokens WZ</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Cashback</span>
+                  </button>
+
+                  {/* Carnês */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/carnes")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <CreditCard className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Carnês</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Faturas</span>
+                  </button>
+
+                  {/* Gift Cards */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/gift-cards")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Gift className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Gift Cards</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Presentes</span>
+                  </button>
+
+                  {/* Negociações */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavigate("/conta/negociacoes")}
+                    className="h-20 min-h-11 p-2 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/50 transition-colors flex flex-col justify-center items-center text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Handshake className="size-5 text-foreground mb-1" />
+                    <span className="text-xs font-medium text-foreground block truncate w-full">Trocas</span>
+                    <span className="text-2xs text-muted-foreground block truncate w-full">Propostas</span>
+                  </button>
+                </div>
+
+                {/* Bloco 4: Governança & Ajuda */}
+                <div className="space-y-2 pt-2 border-t border-border/40">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+                    Governança & Ajuda
+                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate("/conta/seguranca")}
+                      className="h-11 min-h-11 px-3 rounded-xl border border-border/40 hover:bg-muted/50 transition-colors flex items-center justify-between group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <ShieldCheck className="size-4 text-muted-foreground shrink-0" />
+                        <span className="text-xs font-medium text-foreground truncate">Segurança & Senha</span>
+                      </div>
+                      <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground shrink-0" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate("/conta/verificacao")}
+                      className="h-11 min-h-11 px-3 rounded-xl border border-border/40 hover:bg-muted/50 transition-colors flex items-center justify-between group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <BadgeCheck className="size-4 text-muted-foreground shrink-0" />
+                        <span className="text-xs font-medium text-foreground truncate">Verificação Civil</span>
+                      </div>
+                      <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground shrink-0" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleNavigate("/conta/suporte")}
+                      className="h-11 min-h-11 px-3 rounded-xl border border-border/40 hover:bg-muted/50 transition-colors flex items-center justify-between group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <HelpCircle className="size-4 text-muted-foreground shrink-0" />
+                        <span className="text-xs font-medium text-foreground truncate">Central de Ajuda</span>
+                      </div>
+                      <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground shrink-0" />
+                    </button>
                   </div>
-                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </button>
+                </div>
               </div>
 
               {/* Botão de Desconectar */}

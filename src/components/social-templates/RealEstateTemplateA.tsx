@@ -54,7 +54,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
           className="w-full h-full object-cover object-center transform scale-102"
         />
         {/* Gradiente cinemático de estúdio imobiliário */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/75" />
+        <div className="absolute inset-0 bg-black/60" />
       </div>
 
       {/* 2. Conteúdo Sobreposto */}
@@ -132,7 +132,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
 
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/10 backdrop-blur-md border border-white/15 text-foreground/90 text-xs sm:text-sm font-bold shrink-0">
             <ShieldCheck className="size-5 text-emerald-400 shrink-0" />
-            <span className="truncate max-w-[180px]">{storeName}</span>
+            <span className="truncate max-w-45">{storeName}</span>
           </div>
         </div>
       </div>

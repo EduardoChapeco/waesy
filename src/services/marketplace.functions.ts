@@ -69,7 +69,8 @@ export const NICHE_STORE_KEYWORDS: Record<string, string[]> = {
     "pizzaria",
     "cafeteria",
     "lanchonete",
-    "bar",
+    "boteco",
+    "choperia",
     "doceria",
     "gastronomia",
     "pastelaria",
@@ -93,17 +94,17 @@ export const NICHE_STORE_KEYWORDS: Record<string, string[]> = {
     "joalheria",
     "otica",
     "brecho",
-    "estilo",
     "lingerie",
   ],
   casa: [
-    "casa",
+    "artigos para casa",
     "moveis",
     "decoracao",
     "decor",
     "iluminacao",
     "bazar",
     "utilidades",
+    "utilidades domesticas",
     "cama",
     "colchoes",
     "tapetes",
@@ -124,13 +125,13 @@ export const NICHE_STORE_KEYWORDS: Record<string, string[]> = {
     "pisos",
   ],
   pet: [
-    "pet",
+    "pet shop",
+    "petshop",
     "veterinaria",
     "agropecuaria",
     "racao",
     "banho e tosa",
-    "petshop",
-    "animais",
+    "animais de estimacao",
     "clinica veterinaria",
   ],
   farmacia: [
@@ -227,6 +228,26 @@ export const NICHE_STORE_KEYWORDS: Record<string, string[]> = {
     "atracoes",
   ],
 };
+
+/**
+ * isMatchNicheKeyword — Validador com word boundary para evitar colisões de substring
+ * (ex: 'pet' não colide com 'petiscos', 'bar' não colide com 'barbearia', 'moda' não colide com 'à moda').
+ */
+export function isMatchNicheKeyword(text: string, keyword: string): boolean {
+  if (!text || !keyword) return false;
+  const clean = text.toLowerCase();
+  const kw = keyword.toLowerCase().trim();
+
+  // Correspondência de frase
+  if (kw.includes(" ") || kw.includes("-")) {
+    return clean.includes(kw);
+  }
+
+  // Limite estrito de palavras em português
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(^|[^a-zA-Z0-9áéíóúâêîôûãõçÁÉÍÓÚÂÊÎÔÛÃÕÇ])${escaped}($|[^a-zA-Z0-9áéíóúâêîôûãõçÁÉÍÓÚÂÊÎÔÛÃÕÇ])`, "i");
+  return regex.test(clean);
+}
 
 // ─── 2. FUNÇÃO SERVER BFF: getMarketplaceFeed ─────────────────────────────────
 export const getMarketplaceFeed = createServerFn({ method: "GET" })
@@ -547,70 +568,70 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
       {
         nicho: "gastronomia",
         label: "Gastronomia e Delivery",
-        emoji: "🍔",
+        emoji: "",
         color: "from-orange-600 to-red-600",
         to: "/gastronomia",
       },
       {
         nicho: "mercado",
         label: "Mercado e Hortifrúti",
-        emoji: "🛒",
+        emoji: "",
         color: "from-emerald-700 to-teal-600",
         to: "/mercado",
       },
       {
         nicho: "farmacia",
         label: "Farmácia e Saúde",
-        emoji: "💊",
+        emoji: "",
         color: "from-blue-600 to-cyan-600",
         to: "/farmacia",
       },
       {
         nicho: "moda",
         label: "Moda e Acessórios",
-        emoji: "👗",
+        emoji: "",
         color: "from-pink-600 to-rose-600",
         to: "/moda",
       },
       {
         nicho: "eletronicos",
         label: "Eletrônicos e Tech",
-        emoji: "💻",
+        emoji: "",
         color: "from-indigo-600 to-violet-600",
         to: "/eletronicos",
       },
       {
         nicho: "beleza",
         label: "Beleza e Bem-Estar",
-        emoji: "💄",
+        emoji: "",
         color: "from-fuchsia-600 to-pink-600",
         to: "/beleza",
       },
       {
         nicho: "pet",
         label: "Pet Shop",
-        emoji: "🐾",
+        emoji: "",
         color: "from-amber-600 to-orange-600",
         to: "/pet",
       },
       {
         nicho: "acougue",
         label: "Açougue e Churrasco",
-        emoji: "🥩",
+        emoji: "",
         color: "from-red-700 to-rose-700",
         to: "/acougue",
       },
       {
         nicho: "bebidas",
         label: "Bebidas e Adega",
-        emoji: "🍻",
+        emoji: "",
         color: "from-yellow-600 to-amber-600",
         to: "/bebidas",
       },
       {
         nicho: "casa",
         label: "Casa e Decoração",
-        emoji: "🏠",
+        emoji: "",
         color: "from-teal-600 to-green-600",
         to: "/casa",
       },

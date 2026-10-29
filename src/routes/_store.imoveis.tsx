@@ -3,7 +3,7 @@ import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { House, Key, Buildings, Tree, MapPin, FileText, PhoneCall, MagnifyingGlass, ArrowRight, ShieldCheck } from "@phosphor-icons/react";
+import { House, Key, Buildings, Tree, MapPin, FileText, PhoneCall, MagnifyingGlass, ArrowRight, ShieldCheck, Bed } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,7 @@ import { getPublicClassifieds } from "@/services/classifieds.functions";
 
 const SearchSchema = z.object({
   q: z.string().optional(),
-  tipo: z.enum(["todos", "aluguel", "venda", "comercial", "terreno", "rural"]).default("todos").optional(),
+  tipo: z.enum(["todos", "aluguel", "temporada", "venda", "comercial", "terreno", "rural"]).default("todos").optional(),
   bairro: z.string().optional(),
   view: z.enum(["feed", "grid", "list"]).default("grid").optional(),
 });
@@ -34,7 +34,8 @@ type ImoveisSearch = z.infer<typeof SearchSchema>;
 
 const IMOVEIS_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Todos", icon: Tag },
-  { id: "aluguel", label: "Aluguel", icon: Key },
+  { id: "aluguel", label: "Aluguel Mensal", icon: Key },
+  { id: "temporada", label: "Temporada & Hospedagem", icon: Bed },
   { id: "venda", label: "Venda", icon: House },
   { id: "comercial", label: "Comercial", icon: Buildings },
   { id: "terreno", label: "Terrenos", icon: MapPin },
@@ -134,9 +135,22 @@ function ImoveisVerticalPage() {
     let list = classifieds || [];
     if (activeCategory !== "todos") {
       list = list.filter((c: any) => {
-        if (activeCategory === "aluguel") return c.deal_type === "aluguel" || c.deal_type === "temporada";
-        if (activeCategory === "venda") return c.deal_type === "venda";
         const text = `${c.title || ""} ${c.content || ""}`.toLowerCase();
+        if (activeCategory === "aluguel") {
+          return c.deal_type === "aluguel" && !text.includes("temporada") && !text.includes("diária");
+        }
+        if (activeCategory === "temporada") {
+          return (
+            c.deal_type === "temporada" ||
+            c.pricing_type === "daily" ||
+            text.includes("temporada") ||
+            text.includes("hospedagem") ||
+            text.includes("pousada") ||
+            text.includes("chalé") ||
+            text.includes("diária")
+          );
+        }
+        if (activeCategory === "venda") return c.deal_type === "venda";
         return text.includes(activeCategory);
       });
     }
@@ -211,6 +225,7 @@ function ImoveisVerticalPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         allowedViewModes={["feed", "grid", "list"]}
+        hideMobileSearch={true}
       />
 
       {/* ── 4. Imobiliárias & Correspondentes da Cidade ── */}
@@ -321,7 +336,7 @@ function PropertyCard({ item }: { item: any }) {
       <Link to="/classificados/$id" params={{ id: item.id }} className="block flex-1 flex flex-col">
         <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/40 flex items-center justify-center">
           {img ? (
-            <img src={img} alt={item.title} className="size-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <img src={img} alt={item.title} className="size-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy" />
           ) : (
             <div className="size-full bg-muted/30 flex items-center justify-center">
               <House size={32} className="text-muted-foreground/30" />
@@ -378,7 +393,7 @@ function PropertyListItem({ item }: { item: any }) {
     >
       <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-lg overflow-hidden bg-muted/60">
         {img ? (
-          <img src={img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <img src={img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted/40">
             <House size={24} className="text-muted-foreground/40" />

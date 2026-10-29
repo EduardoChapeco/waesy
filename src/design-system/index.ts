@@ -18,3 +18,4 @@ export * from "./travel";
 export * from "./commerce";
 export * from "./crm";
 export * from "./workspace";
+export * from "./vitrine";

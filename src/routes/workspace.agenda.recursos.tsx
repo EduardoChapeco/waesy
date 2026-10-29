@@ -267,7 +267,7 @@ function AdminResourcesPage() {
                   size="icon"
                   variant="secondary"
                   onClick={() => openEditResourceModal(res)}
-                  className="min-h-11 min-w-[44px] sm:size-8 rounded-lg cursor-pointer shadow-xs"
+                  className="min-h-11 min-w-11 sm:size-8 rounded-lg cursor-pointer shadow-xs"
                   title="Editar Recurso"
                 >
                   <Settings2 className="size-4" />
@@ -280,7 +280,7 @@ function AdminResourcesPage() {
 
       {/* ── Dialog de Criação / Edição de Recurso ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent size="lg" className="rounded-lg max-w-xl max-h-[90vh] overflow-y-auto">
+        <DialogContent size="lg" className="rounded-lg max-w-xl max-h-(--spacing-screen-90,90vh) overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold">
               {selectedId ? "Editar Recurso da Agenda" : "Novo Recurso da Agenda"}

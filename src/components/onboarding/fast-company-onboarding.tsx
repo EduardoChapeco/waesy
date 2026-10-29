@@ -959,7 +959,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           {/* Dados da Loja */}
           <div className="p-4 space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <div className="space-y-0.5 min-w-0">
+              <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-black text-base text-foreground tracking-tight truncate">
                     {name || "Nome da Sua Empresa"}

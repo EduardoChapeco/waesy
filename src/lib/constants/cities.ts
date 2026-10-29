@@ -125,6 +125,23 @@ export const CANONICAL_CITIES: CityRecord[] = [
  { id: "nonoai-rs", name: "Nonoai", state: "RS", label: "Nonoai - RS", region: "Norte RS", lat: -27.3592, lng: -52.7744 },
  { id: "frederico-westphalen-rs", name: "Frederico Westphalen", state: "RS", label: "Frederico Westphalen - RS", region: "Norte RS", lat: -27.3589, lng: -53.3961 },
 
+ // ── Vale do Paraíba, Litoral Norte & Serra da Mantiqueira (SP) ──
+ { id: "sao-jose-dos-campos-sp", name: "São José dos Campos", state: "SP", label: "São José dos Campos - SP", region: "Vale do Paraíba SP", lat: -23.1896, lng: -45.8841 },
+ { id: "taubate-sp", name: "Taubaté", state: "SP", label: "Taubaté - SP", region: "Vale do Paraíba SP", lat: -23.0205, lng: -45.5564 },
+ { id: "jacarei-sp", name: "Jacareí", state: "SP", label: "Jacareí - SP", region: "Vale do Paraíba SP", lat: -23.3053, lng: -45.9658 },
+ { id: "pindamonhangaba-sp", name: "Pindamonhangaba", state: "SP", label: "Pindamonhangaba - SP", region: "Vale do Paraíba SP", lat: -22.9244, lng: -45.4617 },
+ { id: "guaratingueta-sp", name: "Guaratinguetá", state: "SP", label: "Guaratinguetá - SP", region: "Vale do Paraíba SP", lat: -22.8164, lng: -45.1925 },
+ { id: "cacapava-sp", name: "Caçapava", state: "SP", label: "Caçapava - SP", region: "Vale do Paraíba SP", lat: -23.1008, lng: -45.7069 },
+ { id: "lorena-sp", name: "Lorena", state: "SP", label: "Lorena - SP", region: "Vale do Paraíba SP", lat: -22.7308, lng: -45.1253 },
+ { id: "aparecida-sp", name: "Aparecida", state: "SP", label: "Aparecida - SP", region: "Vale do Paraíba SP", lat: -22.8469, lng: -45.2297 },
+ { id: "cruzeiro-sp", name: "Cruzeiro", state: "SP", label: "Cruzeiro - SP", region: "Vale do Paraíba SP", lat: -22.5761, lng: -44.9614 },
+ { id: "caraguatatuba-sp", name: "Caraguatatuba", state: "SP", label: "Caraguatatuba - SP", region: "Litoral Norte SP", lat: -23.6204, lng: -45.4132 },
+ { id: "ubatuba-sp", name: "Ubatuba", state: "SP", label: "Ubatuba - SP", region: "Litoral Norte SP", lat: -23.4339, lng: -45.0711 },
+ { id: "sao-sebastiao-sp", name: "São Sebastião", state: "SP", label: "São Sebastião - SP", region: "Litoral Norte SP", lat: -23.8063, lng: -45.4017 },
+ { id: "ilhabela-sp", name: "Ilhabela", state: "SP", label: "Ilhabela - SP", region: "Litoral Norte SP", lat: -23.7785, lng: -45.3581 },
+ { id: "campos-do-jordao-sp", name: "Campos do Jordão", state: "SP", label: "Campos do Jordão - SP", region: "Serra da Mantiqueira SP", lat: -22.7394, lng: -45.5914 },
+ { id: "santo-antonio-do-pinhal-sp", name: "Santo Antônio do Pinhal", state: "SP", label: "Santo Antônio do Pinhal - SP", region: "Serra da Mantiqueira SP", lat: -22.8256, lng: -45.6625 },
+
  // ── Demais Capitais e Polos Nacionais ──
  { id: "sao-paulo-sp", name: "São Paulo", state: "SP", label: "São Paulo - SP", region: "Sudeste", lat: -23.5505, lng: -46.6333 },
  { id: "campinas-sp", name: "Campinas", state: "SP", label: "Campinas - SP", region: "Interior SP", lat: -22.9056, lng: -47.0608 },
@@ -236,5 +253,53 @@ export function findClosestCanonicalCity(
  }
 
  return closest;
+}
+
+export function getRegionalNeighboringCities(cityName?: string, maxResults = 8): CityRecord[] {
+  if (!cityName || cityName === "Todas" || cityName === "Todas as Cidades" || cityName === "Global" || cityName === "all") {
+    const defaults = ["sao-miguel-do-oeste-sc", "chapeco-sc", "xanxere-sc", "concordia-sc", "florianopolis-sc", "sao-jose-dos-campos-sp"];
+    return CANONICAL_CITIES.filter((c) => defaults.includes(c.id)).slice(0, maxResults);
+  }
+
+  const normalize = (str: string) =>
+    str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+  const targetNorm = normalize(cityName);
+  const currentCity = CANONICAL_CITIES.find(
+    (c) =>
+      normalize(c.name) === targetNorm ||
+      normalize(c.label) === targetNorm ||
+      normalize(c.id) === targetNorm
+  );
+
+  if (!currentCity) {
+    const partial = CANONICAL_CITIES.filter((c) => normalize(c.name).includes(targetNorm));
+    if (partial.length > 0) {
+      return CANONICAL_CITIES.filter((c) => c.region === partial[0].region && c.id !== partial[0].id).slice(0, maxResults);
+    }
+    return CANONICAL_CITIES.slice(0, maxResults);
+  }
+
+  if (typeof currentCity.lat === "number" && typeof currentCity.lng === "number") {
+    const scored = CANONICAL_CITIES.filter((c) => c.id !== currentCity.id && typeof c.lat === "number" && typeof c.lng === "number")
+      .map((c) => {
+        const distanceKm = calculateHaversineDistanceKm(currentCity.lat!, currentCity.lng!, c.lat!, c.lng!);
+        const sameRegion = c.region === currentCity.region;
+        return { city: c, distanceKm, sameRegion };
+      })
+      .sort((a, b) => {
+        if (a.sameRegion && !b.sameRegion) return -1;
+        if (!a.sameRegion && b.sameRegion) return 1;
+        return a.distanceKm - b.distanceKm;
+      });
+
+    return scored.slice(0, maxResults).map((s) => s.city);
+  }
+
+  return CANONICAL_CITIES.filter((c) => c.region === currentCity.region && c.id !== currentCity.id).slice(0, maxResults);
 }
 

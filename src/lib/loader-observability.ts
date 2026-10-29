@@ -27,7 +27,7 @@ export function logLoaderError<T>(
  };
 
  console.error(
- `🚨 [Observability] Falha na consulta [${context.route} -> ${context.action}]:`,
+ `[ALERTA] [Observability] Falha na consulta [${context.route} -> ${context.action}]:`,
  JSON.stringify(errorDetails, null, 2)
  );
 

@@ -74,7 +74,7 @@ export async function renderFinancialReceiptCanvas(
   // Status Concluído
   ctx.fillStyle = "#10B981";
   ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
-  ctx.fillText("✓ CONCLUÍDO", 60, 140);
+  ctx.fillText(" CONCLUÍDO", 60, 140);
 
   const formattedDate =
     typeof data.date === "string"

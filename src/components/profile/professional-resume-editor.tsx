@@ -309,12 +309,12 @@ export function ProfessionalResumeEditor({
 
  const badge =
  score >= 90
- ? "Perfil Campeão 🏆"
+ ? "Perfil Campeão "
  : score >= 70
- ? "Nível Avançado 🚀"
+ ? "Nível Avançado "
  : score >= 40
- ? "Nível Intermediário ⚡"
- : "Iniciante 🌱";
+ ? "Nível Intermediário "
+ : "Iniciante ";
 
  return { score: Math.min(100, score), tips, badge };
  }, [avatarUrl, resumeData, availability, experiences, normalizedEducations, skills, certifications, projects, languages]);
@@ -354,7 +354,7 @@ export function ProfessionalResumeEditor({
  onClick={() => setIsProfessionSearchOpen(true)}
  className="h-8 rounded-lg text-xs gap-2 font-bold border-border/60 hover:bg-muted/30 text-foreground"
  >
- <Search className="size-3.5 text-primary" />
+ <Search className="size-4 text-primary" />
  <span>Buscar Cargo CBO</span>
  </Button>
  </div>
@@ -434,7 +434,7 @@ export function ProfessionalResumeEditor({
   }}
   className="rounded-lg text-xs font-bold h-11 px-3 gap-1 cursor-pointer"
  >
-  <Plus className="size-3.5" />
+  <Plus className="size-4" />
   <span>Adicionar</span>
  </Button>
  </div>
@@ -487,7 +487,7 @@ export function ProfessionalResumeEditor({
  }}
  className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar</span>
  </Button>
  </div>
@@ -540,7 +540,7 @@ export function ProfessionalResumeEditor({
  }}
  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  </div>
  ))}
@@ -570,7 +570,7 @@ export function ProfessionalResumeEditor({
  }}
  className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar</span>
  </Button>
  </div>
@@ -614,7 +614,7 @@ export function ProfessionalResumeEditor({
  }}
  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  </div>
  ))}
@@ -644,7 +644,7 @@ export function ProfessionalResumeEditor({
  }}
  className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar</span>
  </Button>
  </div>
@@ -698,7 +698,7 @@ export function ProfessionalResumeEditor({
  }}
  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  </div>
  ))}
@@ -728,7 +728,7 @@ export function ProfessionalResumeEditor({
           }}
           className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
         >
-          <Plus className="size-3.5" />
+          <Plus className="size-4" />
           <span>Adicionar</span>
         </Button>
       </div>
@@ -795,7 +795,7 @@ export function ProfessionalResumeEditor({
                 }}
                 className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
               >
-                <Edit3 className="size-3.5" />
+                <Edit3 className="size-4" />
               </Button>
             </div>
           ))}
@@ -825,7 +825,7 @@ export function ProfessionalResumeEditor({
  }}
  className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar</span>
  </Button>
  </div>
@@ -856,7 +856,7 @@ export function ProfessionalResumeEditor({
  }}
  className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
  >
- <Edit3 className="size-3.5" />
+ <Edit3 className="size-4" />
  </Button>
  </div>
 
@@ -1026,7 +1026,7 @@ export function ProfessionalResumeEditor({
  }}
  className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar</span>
  </Button>
  </div>
@@ -1481,10 +1481,10 @@ function AvailabilityEditSheet({
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
- <SelectItem value="open_to_work">🟢 #OpenToWork (Buscando recolocação ativa)</SelectItem>
- <SelectItem value="open_to_proposals">🟡 Aberto a Novas Propostas</SelectItem>
- <SelectItem value="hiring">🔵 #Contratando Talentos (Recrutador / Empresa)</SelectItem>
- <SelectItem value="not_looking">⚪ Não Disponível no Momento</SelectItem>
+ <SelectItem value="open_to_work"> #OpenToWork (Buscando recolocação ativa)</SelectItem>
+ <SelectItem value="open_to_proposals"> Aberto a Novas Propostas</SelectItem>
+ <SelectItem value="hiring"> #Contratando Talentos (Recrutador / Empresa)</SelectItem>
+ <SelectItem value="not_looking"> Não Disponível no Momento</SelectItem>
  </SelectContent>
  </Select>
  </div>
@@ -1604,7 +1604,7 @@ function AvailabilityEditSheet({
 /**
  * Modal de Experiência Profissional
  */
-function ExperienceEditSheet({
+export function ExperienceEditSheet({
   open,
   onOpenChange,
   item,
@@ -1857,7 +1857,7 @@ function ExperienceEditSheet({
             <div className="pt-4 border-t border-border/40 space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-                  <Building2 className="size-3.5 text-primary" />
+                  <Building2 className="size-4 text-primary" />
                   <span>Avaliação e Salário (Comunidade de Talentos)</span>
                 </Label>
                 <span className="text-xs text-muted-foreground font-mono">Opcional</span>
@@ -1983,7 +1983,7 @@ function ExperienceEditSheet({
                 onClick={() => onSave(null, true)}
                 className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
               >
-                <Trash2 className="size-3.5 mr-1" /> Excluir
+                <Trash2 className="size-4 mr-1" /> Excluir
               </Button>
             ) : <div />}
 
@@ -2145,7 +2145,7 @@ export function ProfessionalLicenseEditSheet({
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="col-span-2 space-y-2">
                 <Label className="text-xs font-bold">Número de Registro *</Label>
                 <Input
@@ -2212,7 +2212,7 @@ export function ProfessionalLicenseEditSheet({
                   disabled={isUploadingDoc}
                   className="h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
                 >
-                  <Upload className="size-3.5" />
+                  <Upload className="size-4" />
                   <span>{isUploadingDoc ? "Enviando..." : documentUrl ? "Alterar Arquivo" : "Anexar Comprovante"}</span>
                 </Button>
                 {documentUrl && (
@@ -2239,7 +2239,7 @@ export function ProfessionalLicenseEditSheet({
                 onClick={() => onSave(null, true)}
                 className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
               >
-                <Trash2 className="size-3.5 mr-1" /> Excluir
+                <Trash2 className="size-4 mr-1" /> Excluir
               </Button>
             ) : <div />}
 
@@ -2404,7 +2404,7 @@ function EducationEditSheet({
  onClick={() => onSave(null, true)}
  className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
- <Trash2 className="size-3.5 mr-1" /> Excluir
+ <Trash2 className="size-4 mr-1" /> Excluir
  </Button>
  ) : <div />}
 
@@ -2528,7 +2528,7 @@ function CertificationEditSheet({
  onClick={() => onSave(null, true)}
  className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
- <Trash2 className="size-3.5 mr-1" /> Excluir
+ <Trash2 className="size-4 mr-1" /> Excluir
  </Button>
  ) : <div />}
 
@@ -2690,7 +2690,7 @@ function ProjectEditSheet({
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold">Fotos / Mídias do Projeto</Label>
  <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 hover:bg-muted text-xs font-bold text-foreground cursor-pointer transition-colors">
- <Upload className="size-3.5" />
+ <Upload className="size-4" />
  <span>{isUploading ? "Enviando..." : "+ Foto com Recorte"}</span>
  <input type="file" accept="image/*" onChange={handleSelectFile} className="hidden" />
  </label>
@@ -2728,7 +2728,7 @@ function ProjectEditSheet({
  onClick={() => onSave(null, true)}
  className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
- <Trash2 className="size-3.5 mr-1" /> Excluir
+ <Trash2 className="size-4 mr-1" /> Excluir
  </Button>
  ) : <div />}
 
@@ -2850,7 +2850,7 @@ function VolunteeringEditSheet({
  onClick={() => onSave(null, true)}
  className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
- <Trash2 className="size-3.5 mr-1" /> Excluir
+ <Trash2 className="size-4 mr-1" /> Excluir
  </Button>
  ) : <div />}
 
@@ -3032,7 +3032,7 @@ function LanguageEditSheet({
  onClick={() => onSave(null, true)}
  className="text-destructive text-xs hover:bg-destructive/10 rounded-lg"
  >
- <Trash2 className="size-3.5 mr-1" /> Excluir
+ <Trash2 className="size-4 mr-1" /> Excluir
  </Button>
  ) : <div />}
 

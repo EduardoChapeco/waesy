@@ -964,7 +964,7 @@ function AdminMiningHubPage() {
                     Pré-Visualização Fidedigna
                   </span>
                   <span className="text-2xs font-medium text-muted-foreground">
-                    {isHealthyImageUrl(focusedArticle.ai_suggested_cover_url) ? "✅ Capa Íntegra" : "🎨 Fallback Fotográfico"}
+                    {isHealthyImageUrl(focusedArticle.ai_suggested_cover_url) ? " Capa Íntegra" : " Fallback Fotográfico"}
                   </span>
                 </div>
 

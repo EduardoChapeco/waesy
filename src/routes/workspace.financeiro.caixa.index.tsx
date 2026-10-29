@@ -270,7 +270,7 @@ function CashRegisterManagerPage() {
  <Button
  asChild
  size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground h-9 px-4 cursor-pointer shadow-xs"
+ className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground h-11 min-h-11 sm:h-9 px-4 cursor-pointer shadow-xs"
  >
  <Link to="/workspace/pdv">
  <Layers className="size-3.5" />
@@ -283,7 +283,7 @@ function CashRegisterManagerPage() {
  onClick={() => openMovementDialog("suprimento")}
  size="sm"
  variant="outline"
- className="rounded-lg text-xs font-bold h-9 gap-1"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1"
  >
  <ArrowDownLeft className="size-3.5 text-emerald-500" />
  <span>Suprimento</span>
@@ -292,7 +292,7 @@ function CashRegisterManagerPage() {
  onClick={() => openMovementDialog("sangria")}
  size="sm"
  variant="outline"
- className="rounded-lg text-xs font-bold h-9 gap-1"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1"
  >
  <ArrowUpRight className="size-3.5 text-rose-500" />
  <span>Sangria</span>
@@ -301,7 +301,7 @@ function CashRegisterManagerPage() {
  onClick={() => setIsCloseModalOpen(true)}
  size="sm"
  variant="destructive"
- className="rounded-lg text-xs font-bold h-9 gap-1"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1"
  >
  <Lock className="size-3.5" />
  <span>Fechar Turno</span>
@@ -312,7 +312,7 @@ function CashRegisterManagerPage() {
  onClick={() => setIsOpenModalOpen(true)}
  size="sm"
  variant="outline"
- className="rounded-lg text-xs font-bold h-9 gap-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
  >
  <Play className="size-3.5" />
  <span>Abrir Turno de Caixa</span>
@@ -438,7 +438,7 @@ function CashRegisterManagerPage() {
  {/* ── Abas de Governança: Extrato do Turno & Histórico ── */}
  <Tabs defaultValue="current" className="space-y-4">
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-lg px-4 py-3">
- <TabsList className="flex overflow-x-auto no-scrollbar h-8">
+ <TabsList className="flex overflow-x-auto no-scrollbar h-11 min-h-11 sm:h-11 min-h-11 sm:h-9">
  <TabsTrigger value="current" className="text-xs shrink-0">
  Lançamentos do Turno Atual ({register?.recentEntries?.length || 0})
  </TabsTrigger>
@@ -468,7 +468,7 @@ function CashRegisterManagerPage() {
  <Button
  onClick={() => setIsOpenModalOpen(true)}
  size="sm"
- className="rounded-lg text-xs font-bold h-9"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9"
  >
  <Play className="size-3.5 mr-1" />
  Abrir Turno de Caixa
@@ -663,7 +663,7 @@ function CashRegisterManagerPage() {
 
                   {activeEntry.order_id && (
                     <div className="pt-2">
-                      <Button asChild variant="outline" size="sm" className="w-full text-xs font-semibold rounded-lg h-9">
+                      <Button asChild variant="outline" size="sm" className="w-full text-xs font-semibold rounded-lg h-11 min-h-11 sm:h-9">
                         <Link to={`/workspace/pedidos/${activeEntry.order_id}` as any}>
                           <span>Ver Pedido Completo</span>
                           <ChevronRight className="size-3.5 ml-1" />
@@ -837,7 +837,7 @@ function CashRegisterManagerPage() {
                   )}
                 </div>
 
-                <div className="pt-2 border-t border-border/40 grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="pt-2 border-t border-border/40 grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs">
                   <div className="p-2 rounded-lg bg-muted/30">
                     <span className="text-xs text-muted-foreground block">Troco</span>
                     <span className="font-mono font-bold text-foreground">{formatMoney(turn.initial_balance_cents)}</span>
@@ -916,7 +916,7 @@ function CashRegisterManagerPage() {
                     </TableCell>
                     <TableCell className="text-center py-4">
                       {turn.status === "open" ? (
-                        <Badge variant="default" className="text-xs">
+                        <Badge variant="outline" className="text-xs">
                           Aberto
                         </Badge>
                       ) : diff === 0 ? (
@@ -1032,7 +1032,7 @@ function CashRegisterManagerPage() {
  <Input
  placeholder="100,00"
  {...field}
- className="h-10 text-sm font-mono rounded-lg"
+ className="h-11 min-h-11 text-sm font-mono rounded-lg"
  autoFocus
  />
  </FormControl>
@@ -1068,14 +1068,14 @@ function CashRegisterManagerPage() {
  type="button"
  variant="outline"
  onClick={() => setIsOpenModalOpen(false)}
- className="h-10 rounded-lg text-xs"
+ className="h-11 min-h-11 rounded-lg text-xs"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting}
- className="h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  {isSubmitting ? "Abrindo..." : "Confirmar Abertura"}
  </Button>
@@ -1128,7 +1128,7 @@ function CashRegisterManagerPage() {
  <Input
  placeholder="Informe o dinheiro contado"
  {...field}
- className="h-10 text-sm font-mono rounded-lg"
+ className="h-11 min-h-11 text-sm font-mono rounded-lg"
  autoFocus
  />
  </FormControl>
@@ -1164,7 +1164,7 @@ function CashRegisterManagerPage() {
  type="button"
  variant="outline"
  onClick={() => setIsCloseModalOpen(false)}
- className="h-10 rounded-lg text-xs"
+ className="h-11 min-h-11 rounded-lg text-xs"
  >
  Cancelar
  </Button>
@@ -1172,7 +1172,7 @@ function CashRegisterManagerPage() {
  type="submit"
  disabled={isSubmitting}
  variant="destructive"
- className="h-10 rounded-lg text-xs font-bold"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold"
  >
  {isSubmitting ? "Fechando..." : "Confirmar Fechamento"}
  </Button>
@@ -1226,7 +1226,7 @@ function CashRegisterManagerPage() {
  <Input
  placeholder="Ex: 50,00"
  {...field}
- className="h-10 text-sm font-mono rounded-lg"
+ className="h-11 min-h-11 text-sm font-mono rounded-lg"
  autoFocus
  />
  </FormControl>
@@ -1251,7 +1251,7 @@ function CashRegisterManagerPage() {
  : "Ex: Troco moedas 1 real, reforço inicial..."
  }
  {...field}
- className="h-10 text-xs rounded-lg"
+ className="h-11 min-h-11 text-xs rounded-lg"
  />
  </FormControl>
  <FormMessage className="text-xs" />
@@ -1265,14 +1265,14 @@ function CashRegisterManagerPage() {
  type="button"
  variant="outline"
  onClick={() => setIsMovementModalOpen(false)}
- className="h-10 rounded-lg text-xs"
+ className="h-11 min-h-11 rounded-lg text-xs"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isSubmitting}
- className="h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  {isSubmitting ? "Processando..." : "Confirmar Movimentação"}
  </Button>

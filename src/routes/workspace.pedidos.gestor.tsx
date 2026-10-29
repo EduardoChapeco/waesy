@@ -980,7 +980,7 @@ function KDSPage() {
  <div className="w-full bg-muted/60 h-1.5 rounded-full overflow-hidden mt-1">
  <div
  className={cn(
- "h-full transition-colors duration-200 duration-500",
+ "h-full transition-colors duration-200 duration-200",
  elapsedMinutes > 30
  ? "bg-rose-500"
  : elapsedMinutes > 20

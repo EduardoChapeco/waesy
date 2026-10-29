@@ -4,7 +4,7 @@ import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { Heartbeat, Scissors, Drop, Sun, HandSoap, FirstAid, Smiley } from "@phosphor-icons/react";
+import { Heartbeat, Scissors, Drop, Sun, HandSoap, FirstAid, Smiley, Sparkle } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,11 @@ import { listPublicStorePackages } from "@/services/service-packages.functions";
 import { listPublishedProducts } from "@/services/catalog.functions";
 import type { ProductCardDTO } from "@/types/catalog";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
+import {
+  CommercialShowcaseTemplate,
+  mapSurfaceFeedToCommercialShowcase,
+} from "@/components/commerce/ifood/CommercialShowcaseTemplate";
 
 const SearchSchema = z.object({
  q: z.string().optional(),
@@ -36,14 +41,18 @@ const SearchSchema = z.object({
 type BelezaSearch = z.infer<typeof SearchSchema>;
 
 const BELEZA_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo em Beleza e Saúde", icon: Tag },
- { id: "perfumaria", label: "Perfumaria e Fragrâncias", icon: Drop },
- { id: "cabelos", label: "Cuidados com Cabelos", icon: Scissors },
- { id: "skincare", label: "Skincare e Rosto", icon: Sun },
- { id: "corpo-banho", label: "Corpo e Banho", icon: HandSoap },
- { id: "maquiagem", label: "Maquiagem e Unhas", icon: Smiley },
- { id: "dermocosmeticos", label: "Dermocosméticos e Farmácia", icon: FirstAid },
- { id: "suplementos", label: "Suplementos e Bem-Estar", icon: Heartbeat },
+  { id: "todos", label: "Tudo em Beleza e Saúde", icon: Tag },
+  { id: "barbearia", label: "Barbearias (Masculino)", icon: Scissors },
+  { id: "salao", label: "Salões & Cabelereiros", icon: Scissors },
+  { id: "estetica", label: "Estética & SPA", icon: Sparkle },
+  { id: "saude", label: "Saúde & Terapias", icon: Heartbeat },
+  { id: "perfumaria", label: "Perfumaria e Fragrâncias", icon: Drop },
+  { id: "cabelos", label: "Cuidados com Cabelos", icon: Scissors },
+  { id: "skincare", label: "Skincare e Rosto", icon: Sun },
+  { id: "corpo-banho", label: "Corpo e Banho", icon: HandSoap },
+  { id: "maquiagem", label: "Maquiagem e Unhas", icon: Smiley },
+  { id: "dermocosmeticos", label: "Dermocosméticos e Farmácia", icon: FirstAid },
+  { id: "suplementos", label: "Suplementos e Bem-Estar", icon: Heartbeat },
 ];
 
 export const Route = createFileRoute("/_store/beleza")({
@@ -132,24 +141,23 @@ function BelezaVerticalPage() {
  const isBeautyItem =
  titleLower.includes("shampoo") ||
  titleLower.includes("perfume") ||
- titleLower.includes("creme") ||
- titleLower.includes("máscara") ||
+ titleLower.includes("hidratante") ||
+ titleLower.includes("máscara facial") ||
+ titleLower.includes("máscara capilar") ||
  titleLower.includes("maquiagem") ||
  titleLower.includes("batom") ||
  titleLower.includes("sérum") ||
- titleLower.includes("hidratante") ||
- titleLower.includes("protetor") ||
+ titleLower.includes("protetor solar") ||
  titleLower.includes("condicionador") ||
- titleLower.includes("vitamina") ||
  titleLower.includes("esmalte") ||
  titleLower.includes("loção") ||
  tags.some((t: string) => ["beleza", "cosmeticos", "perfumaria", "cabelo", "skincare", "saude"].includes(t));
 
- if (activeDepartment === "todos") return isBeautyItem || allProducts.length <= 12;
+ if (activeDepartment === "todos") return isBeautyItem;
  if (activeDepartment === "perfumaria")
  return titleLower.includes("perfume") || titleLower.includes("colônia") || titleLower.includes("fragrância") || titleLower.includes("desodorante");
  if (activeDepartment === "cabelos")
- return titleLower.includes("shampoo") || titleLower.includes("condicionador") || titleLower.includes("máscara") || titleLower.includes("óleo");
+ return titleLower.includes("shampoo") || titleLower.includes("condicionador") || titleLower.includes("capilar") || titleLower.includes("cabelo");
  if (activeDepartment === "skincare")
  return titleLower.includes("sérum") || titleLower.includes("protetor") || titleLower.includes("facial") || titleLower.includes("limpeza facial");
  if (activeDepartment === "corpo-banho")
@@ -184,6 +192,45 @@ function BelezaVerticalPage() {
  );
  });
  }, [marketplaceFeed]);
+
+ const { isCompact } = useWindowSizeClass();
+ const [activeFilters, setActiveFilters] = useState<string[]>([]);
+ const showcaseData = useMemo(
+   () => mapSurfaceFeedToCommercialShowcase(marketplaceFeed, "beleza", "Perfumaria & Cosméticos"),
+   [marketplaceFeed],
+ );
+
+ if (isCompact) {
+   return (
+     <CommercialShowcaseTemplate
+       nicheId="beleza"
+       nicheTitle="Beleza & Perfumaria"
+       subcategories={BELEZA_DEPARTMENTS.map((d) => ({ id: d.id, label: d.label, icon: d.icon as any }))}
+       activeSubcategoryId={activeDepartment}
+       onSelectSubcategory={handleDepartmentChange}
+       banners={banners || []}
+       featureMiniBanners={showcaseData.featureMiniBanners}
+       recentStores={showcaseData.recentStores}
+       stores={showcaseData.stores}
+       spotlightStores={showcaseData.spotlightStores}
+       products={filteredProducts}
+       activeFilters={activeFilters}
+       onToggleFilter={(id) =>
+         setActiveFilters((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+       }
+     >
+       {packages && packages.length > 0 && (
+         <section aria-label="Pacotes de Estética" className="px-3 sm:px-4">
+           <ServicePackagesRail
+             packages={packages}
+             title="Pacotes de Estética"
+             subtitle="Adquira combos de sessões e cuidados com desconto garantido."
+           />
+         </section>
+       )}
+     </CommercialShowcaseTemplate>
+   );
+ }
 
  return (
  <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">

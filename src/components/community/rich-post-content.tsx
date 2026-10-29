@@ -9,14 +9,57 @@ export interface RichPostContentProps {
   maxCharacters?: number;
 }
 
+const HIGHLIGHTER_PALETTES: Record<string, { bg: string; text: string }> = {
+  yellow: { bg: "bg-amber-300/90 dark:bg-amber-300/90", text: "text-neutral-950" },
+  cyan: { bg: "bg-cyan-300/90 dark:bg-cyan-300/90", text: "text-neutral-950" },
+  blue: { bg: "bg-sky-300/90 dark:bg-sky-300/90", text: "text-neutral-950" },
+  pink: { bg: "bg-pink-300/90 dark:bg-pink-300/90", text: "text-neutral-950" },
+  green: { bg: "bg-emerald-300/90 dark:bg-emerald-300/90", text: "text-neutral-950" },
+  purple: { bg: "bg-purple-300/90 dark:bg-purple-300/90", text: "text-neutral-950" },
+  orange: { bg: "bg-orange-300/90 dark:bg-orange-300/90", text: "text-neutral-950" },
+};
+
 /**
- * RichPostContent — Renderizador de Texto com Marcador Estilo Threads (Highlighter Note)
+ * Renderiza subformatações estilo WhatsApp / Markdown: *bold*, _italic_, ~strike~, `code`
+ */
+function renderInlineFormatting(text: string, baseKey: string): React.ReactNode {
+  // Regex para capturar *bold*, _italic_, ~strike~, `code`
+  const formattingRegex = /(\*[^*]+\*|_[^_]+_|~[^~]+~|`[^`]+`)/g;
+  const parts = text.split(formattingRegex);
+
+  if (parts.length === 1) return text;
+
+  return parts.map((part, i) => {
+    const key = `${baseKey}-fmt-${i}`;
+    if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
+      return <strong key={key} className="font-bold text-foreground">{part.slice(1, -1)}</strong>;
+    }
+    if (part.startsWith("_") && part.endsWith("_") && part.length > 2) {
+      return <em key={key} className="italic">{part.slice(1, -1)}</em>;
+    }
+    if (part.startsWith("~") && part.endsWith("~") && part.length > 2) {
+      return <del key={key} className="line-through opacity-80">{part.slice(1, -1)}</del>;
+    }
+    if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+      return (
+        <code key={key} className="px-2 py-1 rounded-sm bg-muted text-xs font-mono text-primary font-semibold">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
+}
+
+/**
+ * RichPostContent — Renderizador de Texto com Marcador Dinâmico (Highlighter Note)
  * 
  * Suporta:
- * 1. Marca-texto Threads Style via sintaxe `==texto destacado==`
- * 2. Menções a usuários `@usuario`
- * 3. Hashtags `#tema`
- * 4. Links automáticos
+ * 1. Marca-texto cromático: `==cor:texto==` (yellow, cyan, pink, green, purple, orange) e `==texto==`
+ * 2. Formatações inline: `*bold*`, `_italic_`, `~strike~`, `` `code` ``
+ * 3. Menções a usuários `@usuario`
+ * 4. Hashtags `#tema`
+ * 5. Links automáticos
  */
 export function RichPostContent({
   content,
@@ -30,26 +73,36 @@ export function RichPostContent({
     ? `${content.slice(0, maxCharacters)}...`
     : content;
 
-  // Regex para capturar `==destaque==`, URLs, hashtags e menções
-  // Delimitador `==` captura grupos
+  // Regex para capturar `==destaque==` ou `==cor:destaque==`
   const parts = displayContent.split(/(==[^=]+==)/g);
 
   return (
     <span className={cn("whitespace-pre-wrap leading-relaxed font-sans", className)}>
       {parts.map((part, index) => {
-        // 1. Marca-texto estilo Threads: ==texto==
+        // 1. Marca-texto cromático: ==texto== ou ==cor:texto==
         if (part.startsWith("==") && part.endsWith("==") && part.length > 4) {
-          const highlightedText = part.slice(2, -2);
+          const rawInner = part.slice(2, -2);
+          let colorKey = "yellow";
+          let highlightedText = rawInner;
+
+          const matchColor = rawInner.match(/^([a-z]+):(.*)$/);
+          if (matchColor && HIGHLIGHTER_PALETTES[matchColor[1].toLowerCase()]) {
+            colorKey = matchColor[1].toLowerCase();
+            highlightedText = matchColor[2];
+          }
+
+          const palette = HIGHLIGHTER_PALETTES[colorKey] || HIGHLIGHTER_PALETTES.yellow;
+
           return (
             <span
               key={index}
-              className="relative inline-block px-2 py-1 mx-1 text-neutral-950 dark:text-neutral-950 font-bold leading-tight select-text rounded-xs"
+              className={cn("relative inline-block px-2 py-1 mx-1 font-bold leading-tight select-text rounded-xs", palette.text)}
             >
               <span
-                className="absolute inset-x-0 bottom-0.5 top-0.5 bg-amber-300/90 dark:bg-amber-300/95 -rotate-1 rounded-xs -z-10 shadow-2xs transition-transform"
+                className={cn("absolute inset-x-0 inset-y-0 -rotate-1 rounded-xs -z-10 shadow-2xs transition-transform", palette.bg)}
                 aria-hidden="true"
               />
-              {highlightedText}
+              {renderInlineFormatting(highlightedText, `hl-${index}`)}
             </span>
           );
         }
@@ -105,7 +158,8 @@ export function RichPostContent({
                 );
               }
 
-              return token;
+              // Renderiza formatações inline de texto (*bold*, _italic_, ~strike~, `code`)
+              return <React.Fragment key={subIndex}>{renderInlineFormatting(token, `t-${index}-${subIndex}`)}</React.Fragment>;
             })}
           </React.Fragment>
         );

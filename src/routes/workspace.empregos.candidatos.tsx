@@ -406,14 +406,14 @@ function WorkspaceCandidatesPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsPaywallOpen(true)}
-              className="h-11 sm:h-9 rounded-lg text-xs font-semibold gap-2 border-border text-foreground hover:bg-muted cursor-pointer"
+              className="h-11 sm:h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold gap-2 border-border text-foreground hover:bg-muted cursor-pointer"
             >
               <Lock className="size-3" />
               <span>Assinar PRO</span>
             </Button>
           )}
 
-          <Button asChild variant="outline" size="sm" className="h-11 sm:h-9 rounded-lg text-xs font-semibold">
+          <Button asChild variant="outline" size="sm" className="h-11 sm:h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold">
             <Link to="/workspace">Voltar</Link>
           </Button>
         </div>
@@ -449,7 +449,7 @@ function WorkspaceCandidatesPage() {
               size="sm"
               variant="default"
               onClick={() => setIsPaywallOpen(true)}
-              className="rounded-lg text-xs font-semibold h-11 sm:h-9"
+              className="rounded-lg text-xs font-semibold h-11 sm:h-11 min-h-11 sm:h-9"
             >
               <Lock className="size-3 mr-1" /> Desbloquear Acesso
             </Button>
@@ -466,13 +466,13 @@ function WorkspaceCandidatesPage() {
                 value={hunterSearchQuery}
                 onChange={(e) => setHunterSearchQuery(e.target.value)}
                 placeholder="Cargo ou competência..."
-                className="h-11 sm:h-9 text-xs rounded-lg w-full sm:w-60 bg-background"
+                className="h-11 sm:h-11 min-h-11 sm:h-9 text-xs rounded-lg w-full sm:w-60 bg-background"
               />
               <Button
                 type="submit"
                 size="sm"
                 disabled={isSearchingHunter}
-                className="rounded-lg h-11 sm:h-9 text-xs font-semibold gap-1 shrink-0"
+                className="rounded-lg h-11 sm:h-11 min-h-11 sm:h-9 text-xs font-semibold gap-1 shrink-0"
               >
                 {isSearchingHunter ? <Loader2 className="size-3 animate-spin motion-reduce:animate-none" /> : <Search className="size-3" />}
                 <span>Buscar</span>
@@ -514,7 +514,7 @@ function WorkspaceCandidatesPage() {
             placeholder="Buscar por candidato ou vaga..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 rounded-lg text-xs bg-card"
+            className="pl-9 h-11 min-h-11 sm:h-9 rounded-lg text-xs bg-card"
           />
         </div>
       </div>
@@ -574,7 +574,7 @@ function WorkspaceCandidatesPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                    <Button asChild variant="outline" size="sm" className="h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold">
+                    <Button asChild variant="outline" size="sm" className="h-11 sm:h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold">
                       <Link to={"/u/" + candidate.username} target="_blank">
                         <ExternalLink className="size-3 mr-1" /> Perfil
                       </Link>
@@ -788,7 +788,7 @@ function WorkspaceCandidatesPage() {
                         setInterviewModalApp(app);
                         setInterviewDate("");
                       }}
-                      className="rounded-lg text-xs font-semibold gap-1 h-9"
+                      className="rounded-lg text-xs font-semibold gap-1 h-11 min-h-11 sm:h-9"
                     >
                       <Calendar className="size-3.5" />
                       <span>Entrevista</span>
@@ -798,7 +798,7 @@ function WorkspaceCandidatesPage() {
                       <Button
                         size="sm"
                         onClick={() => handleOpenHireModal(app)}
-                        className="rounded-lg text-xs font-semibold gap-1 h-9 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                        className="rounded-lg text-xs font-semibold gap-1 h-11 min-h-11 sm:h-9 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                       >
                         <UserCheck className="size-3.5" />
                         <span>Contratar</span>
@@ -808,7 +808,7 @@ function WorkspaceCandidatesPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleOpenDossier(app)}
-                        className="rounded-lg text-xs h-9 text-muted-foreground"
+                        className="rounded-lg text-xs h-11 min-h-11 sm:h-9 text-muted-foreground"
                       >
                         Dossiê
                       </Button>
@@ -860,7 +860,7 @@ function WorkspaceCandidatesPage() {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="h-10 rounded-lg justify-start gap-2 text-xs font-semibold"
+                    className="h-11 min-h-11 rounded-lg justify-start gap-2 text-xs font-semibold"
                   >
                     <a href={`tel:${dossierCandidate.candidate_phone}`}>
                       <Phone className="size-3.5 text-primary" />
@@ -873,7 +873,7 @@ function WorkspaceCandidatesPage() {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="h-10 rounded-lg justify-start gap-2 text-xs font-semibold truncate"
+                    className="h-11 min-h-11 rounded-lg justify-start gap-2 text-xs font-semibold truncate"
                   >
                     <a href={`mailto:${dossierCandidate.candidate_email}`}>
                       <Mail className="size-3.5 text-primary" />
@@ -885,7 +885,7 @@ function WorkspaceCandidatesPage() {
 
               {/* Currículo e Carta */}
               {dossierCandidate.resume_url && (
-                <Button asChild variant="secondary" className="w-full h-10 rounded-lg text-xs font-semibold gap-2">
+                <Button asChild variant="secondary" className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2">
                   <a href={dossierCandidate.resume_url} target="_blank" rel="noreferrer">
                     <FileText className="size-4" />
                     <span>Visualizar Currículo Completo</span>
@@ -930,7 +930,7 @@ function WorkspaceCandidatesPage() {
                   size="sm"
                   variant="outline"
                   onClick={() => handleSaveInternalNote(dossierCandidate.id)}
-                  className="h-11 sm:h-9 rounded-lg text-xs font-semibold"
+                  className="h-11 sm:h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold"
                 >
                   Salvar Nota
                 </Button>
@@ -995,7 +995,7 @@ function WorkspaceCandidatesPage() {
                 type="datetime-local"
                 value={interviewDate}
                 onChange={(e) => setInterviewDate(e.target.value)}
-                className="rounded-lg text-xs h-10"
+                className="rounded-lg text-xs h-11 min-h-11"
               />
             </div>
 
@@ -1005,19 +1005,19 @@ function WorkspaceCandidatesPage() {
                 placeholder="Deixe em branco para gerar sala de vídeo automática"
                 value={meetingUrl}
                 onChange={(e) => setMeetingUrl(e.target.value)}
-                className="rounded-lg text-xs h-10"
+                className="rounded-lg text-xs h-11 min-h-11"
               />
             </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setInterviewModalApp(null)} className="rounded-lg h-10 text-xs">
+            <Button variant="outline" onClick={() => setInterviewModalApp(null)} className="rounded-lg h-11 min-h-11 text-xs">
               Cancelar
             </Button>
             <Button
               onClick={handleScheduleInterview}
               disabled={isProcessing}
-              className="rounded-lg font-semibold text-xs h-10 bg-primary text-primary-foreground"
+              className="rounded-lg font-semibold text-xs h-11 min-h-11 bg-primary text-primary-foreground"
             >
               Confirmar Agendamento
             </Button>
@@ -1050,7 +1050,7 @@ function WorkspaceCandidatesPage() {
                   value={hiredRole}
                   onChange={(e) => setHiredRole(e.target.value)}
                   placeholder="Ex: Vendedor, Caixa, Cozinheiro..."
-                  className="rounded-lg text-xs h-10"
+                  className="rounded-lg text-xs h-11 min-h-11"
                 />
               </div>
 
@@ -1059,7 +1059,7 @@ function WorkspaceCandidatesPage() {
                 <select
                   value={hireSystemRole}
                   onChange={(e) => setHireSystemRole(e.target.value as any)}
-                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-xs focus-visible:outline-hidden"
+                  className="w-full h-11 min-h-11 rounded-lg border border-input bg-background px-3 text-xs focus-visible:outline-hidden"
                 >
                   <option value="seller">Vendedor / Comercial</option>
                   <option value="support">Atendimento / Suporte</option>
@@ -1076,7 +1076,7 @@ function WorkspaceCandidatesPage() {
                 <select
                   value={hireEmploymentType}
                   onChange={(e) => setHireEmploymentType(e.target.value as any)}
-                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-xs focus-visible:outline-hidden"
+                  className="w-full h-11 min-h-11 rounded-lg border border-input bg-background px-3 text-xs focus-visible:outline-hidden"
                 >
                   <option value="clt">CLT (Carteira Assinada)</option>
                   <option value="pj">PJ (Prestador de Serviço)</option>
@@ -1091,7 +1091,7 @@ function WorkspaceCandidatesPage() {
                   value={hiredSalaryCents}
                   onChange={setHiredSalaryCents}
                   placeholder="0,00"
-                  className="rounded-lg text-xs h-10"
+                  className="rounded-lg text-xs h-11 min-h-11"
                 />
               </div>
             </div>
@@ -1103,7 +1103,7 @@ function WorkspaceCandidatesPage() {
                   type="date"
                   value={hireDate}
                   onChange={(e) => setHireDate(e.target.value)}
-                  className="rounded-lg text-xs h-10"
+                  className="rounded-lg text-xs h-11 min-h-11"
                 />
               </div>
 
@@ -1122,20 +1122,20 @@ function WorkspaceCandidatesPage() {
                   value={hirePin}
                   onChange={(e) => setHirePin(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="4 dígitos numéricos"
-                  className="rounded-lg text-xs h-10 font-mono tracking-widest"
+                  className="rounded-lg text-xs h-11 min-h-11 font-mono tracking-widest"
                 />
               </div>
             </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setHireModalApp(null)} className="rounded-lg h-10 text-xs">
+            <Button variant="outline" onClick={() => setHireModalApp(null)} className="rounded-lg h-11 min-h-11 text-xs">
               Cancelar
             </Button>
             <Button
               onClick={handleConfirmHire}
               disabled={isProcessing}
-              className="rounded-lg font-semibold text-xs h-10 bg-emerald-600 text-foreground hover:bg-emerald-700 cursor-pointer"
+              className="rounded-lg font-semibold text-xs h-11 min-h-11 bg-emerald-600 text-foreground hover:bg-emerald-700 cursor-pointer"
             >
               {isProcessing ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-1" /> : <UserCheck className="size-4 mr-1" />}
               <span>Efetivar Admissão</span>
@@ -1185,13 +1185,13 @@ function WorkspaceCandidatesPage() {
                   setTimeout(() => setCopiedPin(false), 2500);
                 }
               }}
-              className="w-full sm:w-auto flex-1 rounded-lg h-10 text-xs font-semibold gap-2"
+              className="w-full sm:w-auto flex-1 rounded-lg h-11 min-h-11 text-xs font-semibold gap-2"
             >
               {copiedPin ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
               <span>{copiedPin ? "Copiado!" : "Copiar Dados"}</span>
             </Button>
 
-            <Button asChild className="w-full sm:w-auto flex-1 rounded-lg h-10 text-xs font-semibold">
+            <Button asChild className="w-full sm:w-auto flex-1 rounded-lg h-11 min-h-11 text-xs font-semibold">
               <Link to="/workspace/rh/ponto">
                 Ver no Espelho de Ponto
               </Link>

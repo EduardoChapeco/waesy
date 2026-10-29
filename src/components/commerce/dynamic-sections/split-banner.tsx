@@ -153,7 +153,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
           src={mediaUrl}
           alt={title || "Banner promocional"}
           loading="lazy"
-          className="relative size-full object-contain sm:object-cover transition-transform duration-700 hover:scale-105 select-none"
+          className="relative size-full object-contain sm:object-cover transition-transform duration-200 hover:scale-105 select-none"
         />
       </div>
     );

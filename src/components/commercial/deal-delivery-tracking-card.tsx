@@ -75,7 +75,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
   const hasLiveGps = Boolean(dispatch.currentLat && dispatch.currentLng && dispatch.status === "in_transit");
 
   return (
-    <div className="rounded-lg border border-primary/25 bg-gradient-to-br from-primary/5 via-background to-primary/5 p-4 sm:p-5 space-y-4 shadow-2xs">
+    <div className="rounded-lg border border-primary/25 bg-card p-4 sm:p-5 space-y-4 shadow-2xs">
       {/* Header do Card */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
         <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
       </div>
 
       {/* Linha do Tempo Visual de 3 Etapas */}
-      <div className="grid grid-cols-3 gap-2 py-1">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-1">
         <div className={`p-3 rounded-lg border text-center transition-colors duration-200 ${
           statusConfig.step >= 1 ? "bg-primary/10 border-primary/30 text-foreground font-semibold" : "bg-muted/20 border-border/40 text-muted-foreground opacity-60"
         }`}>

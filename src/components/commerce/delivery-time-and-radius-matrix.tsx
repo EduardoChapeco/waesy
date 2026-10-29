@@ -214,7 +214,7 @@ export function DeliveryTimeAndRadiusMatrix({
  {storeBannerUrl ? (
  <img src={storeBannerUrl} alt={storeName} className="size-full object-cover" />
  ) : (
- <div className="size-full bg-gradient-to-r from-zinc-800 to-zinc-900 flex items-center justify-center text-muted-foreground/40">
+ <div className="size-full bg-muted flex items-center justify-center text-muted-foreground/40">
  <Store className="size-8" />
  </div>
  )}
@@ -282,7 +282,7 @@ export function DeliveryTimeAndRadiusMatrix({
 
  {/* Tabela de Tiers */}
  <div className="rounded-lg border border-border/60 overflow-hidden bg-card divide-y divide-border/50">
- <div className="grid grid-cols-12 bg-muted/50 p-3 text-xs font-bold text-muted-foreground">
+ <div className="grid grid-cols-1 md:grid-cols-12 bg-muted/50 p-3 text-xs font-bold text-muted-foreground">
  <span className="col-span-3">Raio (km)</span>
  <span className="col-span-4">Tempo Total (Preparo+Viagem)</span>
  <span className="col-span-3 text-right">Taxa (R$)</span>
@@ -293,7 +293,7 @@ export function DeliveryTimeAndRadiusMatrix({
  {tiers.map((tier) => {
  const totalTimeForTier = currentPrepTime + tier.transitTimeMin;
  return (
- <div key={tier.id} className="grid grid-cols-12 p-3 text-xs items-center hover:bg-muted/20 transition-colors">
+ <div key={tier.id} className="grid grid-cols-1 md:grid-cols-12 p-3 text-xs items-center hover:bg-muted/20 transition-colors">
  <span className="col-span-3 font-semibold text-foreground">
  Até {tier.radiusKm} km
  </span>
@@ -326,7 +326,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Adicionar Nova Faixa de Raio
  </span>
- <div className="grid grid-cols-12 gap-2">
+ <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
  <Input
  type="number"
  step="0.1"
@@ -464,7 +464,7 @@ export function DeliveryTimeAndRadiusMatrix({
 
  {/* Heatmap Visual da Semana */}
  <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
- <div className="grid grid-cols-8 gap-2 text-center text-xs font-bold text-muted-foreground border-b border-border/40 pb-2">
+ <div className="grid grid-cols-2 md:grid-cols-4 md:grid-cols-8 gap-2 text-center text-xs font-bold text-muted-foreground border-b border-border/40 pb-2">
  <span>Hora</span>
  <span>Seg</span>
  <span>Ter</span>
@@ -486,7 +486,7 @@ export function DeliveryTimeAndRadiusMatrix({
  { hour: "21:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Jantar" },
  { hour: "22:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Encerramento" },
  ].map((row) => (
- <div key={row.hour} className="grid grid-cols-8 gap-2 items-center text-center">
+ <div key={row.hour} className="grid grid-cols-2 md:grid-cols-4 md:grid-cols-8 gap-2 items-center text-center">
  <span className="font-mono text-xs text-muted-foreground">{row.hour}</span>
  {[1, 2, 3, 4, 5, 6, 7].map((day) => (
  <div

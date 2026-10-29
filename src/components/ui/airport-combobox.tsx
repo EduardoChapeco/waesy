@@ -8,6 +8,7 @@ import {
   getAirportByIata,
   searchAirportsCatalog,
 } from "@/lib/data/airports-catalog";
+import { searchGlobalAirports } from "@/services/tourism-airports.functions";
 
 // ── Vaul Drawer primitives (mobile) ─────────────────────────────────────────
 import { Drawer as DrawerPrimitive } from "vaul";
@@ -117,6 +118,28 @@ function AirportPickerPanel({
   countryFilter?: string;
 }) {
   const isSearchEmpty = !searchQuery.trim();
+  const [serverAirports, setServerAirports] = useState<AirportRecord[] | null>(null);
+
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) {
+      setServerAirports(null);
+      return;
+    }
+    let cancelled = false;
+    searchGlobalAirports({
+      data: { query: trimmed, country: countryFilter, limit: 30 },
+    })
+      .then((res) => {
+        if (!cancelled && Array.isArray(res?.airports) && res.airports.length > 0) {
+          setServerAirports(res.airports);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [searchQuery, countryFilter]);
 
   // Quando vazio, exibe apenas os aeroportos mais procurados (evita poluição da lista)
   const defaultAirports = React.useMemo(() => {
@@ -127,7 +150,8 @@ function AirportPickerPanel({
 
   const filteredAirports = isSearchEmpty
     ? defaultAirports
-    : searchAirportsCatalog(searchQuery, {
+    : serverAirports ??
+      searchAirportsCatalog(searchQuery, {
         country: countryFilter,
         limit: 30,
       });

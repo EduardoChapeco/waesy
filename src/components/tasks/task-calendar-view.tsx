@@ -165,7 +165,7 @@ export function TaskCalendarView({
  </div>
 
  {/* Cabeçalho dos Dias da Semana */}
- <div className="grid grid-cols-7 border-b border-border/60 bg-muted/10 text-center text-2xs font-bold text-muted-foreground uppercase tracking-wider py-3">
+ <div className="grid sm:grid-cols-7 border-b border-border/60 bg-muted/10 text-center text-2xs font-bold text-muted-foreground uppercase tracking-wider py-3">
  {DAYS_OF_WEEK.map((d, i) => (
  <div key={d} className={cn(i === 0 || i === 6 ? "text-muted-foreground/70" : "")}>
  {d}
@@ -174,7 +174,7 @@ export function TaskCalendarView({
  </div>
 
  {/* Grade de Células de Dias */}
- <div className="grid grid-cols-7 flex-1 auto-rows-fr divide-x divide-y divide-border/50 overflow-y-auto no-scrollbar min-h-[550px]">
+ <div className="grid sm:grid-cols-7 flex-1 auto-rows-fr divide-x divide-y divide-border/50 overflow-y-auto no-scrollbar min-h-[550px]">
  {calendarDays.map((cell) => {
  const dayTasks = tasksByDate.get(cell.dateStr) || [];
  const dayNumber = cell.date.getDate();

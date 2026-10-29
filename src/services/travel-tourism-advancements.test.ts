@@ -102,15 +102,15 @@ describe('[ONDA 1 AUDIT] Turismo: Hotéis 1-Clique, Lâminas WhatsApp & Frota 2D
  };
 
  const hotelHighlight = proposal.hotels?.[0]?.hotel_name;
- const flightHighlight = `Voo ${proposal.flights[0].airline_name} (${proposal.flights[0].origin_iata} ➔ ${proposal.flights[0].destination_iata})`;
+ const flightHighlight = `Voo ${proposal.flights[0].airline_name} (${proposal.flights[0].origin_iata} -> ${proposal.flights[0].destination_iata})`;
  const publicUrl = `https://app.usewaesy.com/proposta/${proposal.public_token}`;
 
- const msg = `Olá ${proposal.client_name}! ✈️🌟\nDestino: *${proposal.destination_city}*\nHotel: ${hotelHighlight}\nAéreo: ${flightHighlight}\nLink: ${publicUrl}`;
+ const msg = `Olá ${proposal.client_name}! ️\nDestino: *${proposal.destination_city}*\nHotel: ${hotelHighlight}\nAéreo: ${flightHighlight}\nLink: ${publicUrl}`;
 
  expect(msg).toContain('Ana Carolina');
  expect(msg).toContain('Porto de Galinhas, PE');
  expect(msg).toContain('Enotel Porto de Galinhas');
- expect(msg).toContain('Voo Azul (VCP ➔ REC)');
+ expect(msg).toContain('Voo Azul (VCP -> REC)');
  expect(msg).toContain('https://app.usewaesy.com/proposta/pk_test_123');
  });
 });

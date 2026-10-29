@@ -284,7 +284,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
 
  {/* Modal / Dialog de Criação/Edição */}
  <Dialog open={modalOpen} onOpenChange={setModalOpen}>
- <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-lg max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar">
  <DialogHeader>
  <DialogTitle className="text-base font-bold">
  {editingGroup ? "Editar Grupo de Complementos" : "Novo Grupo de Complementos"}

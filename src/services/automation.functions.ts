@@ -279,7 +279,7 @@ export const triggerTravelReminders24h = createServerFn({ method: "POST" })
         await supabase.from("notifications").insert({
           user_id: b.customer_id,
           type: "travel_reminder_24h",
-          title: "Sua viagem é amanhã! ✈️",
+          title: "Sua viagem é amanhã! ️",
           message: `Lembrete: sua viagem para ${b.destination || 'o destino'} parte em breve. Verifique seu voucher digital e documentos.`,
           link_url: `/conta/viagens`,
           is_read: false,

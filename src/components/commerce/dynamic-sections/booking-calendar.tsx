@@ -191,7 +191,7 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
  Nenhum horário livre neste dia.
  </div>
  ) : (
- <div className="grid grid-cols-3 gap-2">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
  {slots.map((slot) => {
  const dateObj = new Date(slot);
  return (

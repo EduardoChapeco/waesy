@@ -16,9 +16,25 @@ import {
   OmniBlockStylingSchema,
   PricingBlockDataSchema,
   PrometheeNewsPortalBlockDataSchema,
+  PrometheeNewsHeaderBlockDataSchema,
+  PrometheeNewsNavBlockDataSchema,
+  PrometheeNewsBreakingBlockDataSchema,
+  PrometheeNewsFeedBlockDataSchema,
+  PrometheeNewsAdSlotBlockDataSchema,
+  PrometheeNewsArticleReaderBlockDataSchema,
+  PrometheeNewsFooterBlockDataSchema,
   TestimonialItemSchema,
   TestimonialsBlockDataSchema,
   CarouselSlideItemSchema,
+  VitrineMetamorphicBannerBlockDataSchema,
+  VitrineBentoTetrisBlockDataSchema,
+  VitrineCouponStripBlockDataSchema,
+  VitrineButtonsDockBlockDataSchema,
+  VitrineVerticalCarouselBlockDataSchema,
+  VitrineProductShelfBlockDataSchema,
+  VitrineClassifiedsRailBlockDataSchema,
+  VitrineSocialStreamBlockDataSchema,
+  VitrineEcosystemRailBlockDataSchema,
 } from "@/types/omni-builder";
 
 export const STUDIO_MANIFEST_SCHEMA_VERSION = 1 as const;
@@ -101,6 +117,22 @@ export const STUDIO_TEMPLATE_BLOCK_CONFIG_SCHEMAS = {
   interactive_comparison_slider: ComparisonSliderBlockDataSchema.strict(),
   interactive_lead_quiz_flow: LeadQuizBlockDataSchema.strict(),
   news_promethee_portal: PrometheeNewsPortalBlockDataSchema.strict(),
+  news_promethee_header: PrometheeNewsHeaderBlockDataSchema.strict(),
+  news_promethee_nav: PrometheeNewsNavBlockDataSchema.strict(),
+  news_promethee_breaking: PrometheeNewsBreakingBlockDataSchema.strict(),
+  news_promethee_feed: PrometheeNewsFeedBlockDataSchema.strict(),
+  news_promethee_ad_slot: PrometheeNewsAdSlotBlockDataSchema.strict(),
+  news_promethee_article_reader: PrometheeNewsArticleReaderBlockDataSchema.strict(),
+  news_promethee_footer: PrometheeNewsFooterBlockDataSchema.strict(),
+  vitrine_metamorphic_banner: VitrineMetamorphicBannerBlockDataSchema,
+  vitrine_bento_tetris: VitrineBentoTetrisBlockDataSchema,
+  vitrine_coupon_strip: VitrineCouponStripBlockDataSchema,
+  vitrine_buttons_dock: VitrineButtonsDockBlockDataSchema,
+  vitrine_vertical_carousel: VitrineVerticalCarouselBlockDataSchema,
+  vitrine_product_shelf: VitrineProductShelfBlockDataSchema,
+  vitrine_classifieds_rail: VitrineClassifiedsRailBlockDataSchema,
+  vitrine_social_stream: VitrineSocialStreamBlockDataSchema,
+  vitrine_ecosystem_rail: VitrineEcosystemRailBlockDataSchema,
 } as const;
 
 export const StudioAssetSlotSchema = z.object({
@@ -137,14 +169,15 @@ export type StudioAssetSlot = z.infer<typeof StudioAssetSlotSchema>;
 
 export const StudioTemplateBlockSchema = z.object({
   sectionKey: SlugSchema.optional(),
-  type: z.enum(STUDIO_BLOCK_TYPES),
+  type: z.string().min(1),
   // O serializer TanStack não aceita `unknown`; cada tipo abaixo continua sujeito à validação Zod estrita em superRefine.
   config: z.record(z.any()),
   styling: OmniBlockStylingSchema.optional(),
   isHidden: z.boolean().optional(),
   sectionAnchorId: z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/).optional(),
 }).strict().superRefine((block, ctx) => {
-  const blockSchema = STUDIO_TEMPLATE_BLOCK_CONFIG_SCHEMAS[block.type];
+  const blockSchema = (STUDIO_TEMPLATE_BLOCK_CONFIG_SCHEMAS as Record<string, z.ZodTypeAny | undefined>)[block.type];
+  if (!blockSchema) return;
   const parsedConfig = blockSchema.safeParse(block.config);
   if (!parsedConfig.success) {
     for (const issue of parsedConfig.error.issues) {
@@ -164,7 +197,7 @@ export const StudioTemplateBlockSchema = z.object({
     if (!value || typeof value !== "object") return;
     for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
       const childPath = [...path, key];
-      if (/href$/i.test(key) && typeof child === "string" && !isSafeBuilderHref(child)) {
+      if (/href$/i.test(key) && typeof child === "string" && child.trim() && !isSafeBuilderHref(child)) {
         ctx.addIssue({ code: "custom", path: ["config", ...childPath], message: "Link de template inseguro ou não permitido." });
       } else {
         inspectLinks(child, childPath);

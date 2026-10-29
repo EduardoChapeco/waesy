@@ -20,6 +20,8 @@ export interface BuilderTopBarProps {
  handlePublish: () => void;
  isSaving: boolean;
  isPublishing: boolean;
+ onOpenCodeExplorer?: () => void;
+ onOpenAppMarket?: () => void;
 }
 
 export function BuilderTopBar({
@@ -37,6 +39,8 @@ export function BuilderTopBar({
  handlePublish,
  isSaving,
  isPublishing,
+ onOpenCodeExplorer,
+ onOpenAppMarket,
 }: BuilderTopBarProps) {
  const navigate = useNavigate();
 
@@ -72,7 +76,7 @@ export function BuilderTopBar({
 
  <div className="flex flex-col min-w-0">
  <div className="flex items-center gap-2">
- <span className="text-sm font-bold text-foreground truncate max-w-[180px] sm:max-w-[260px]">
+ <span className="text-sm font-bold text-foreground truncate max-w-45 sm:max-w-65">
  {document?.title || (isStorefront ? "Vitrine Principal da Loja" : "Página sem Título")}
  </span>
  <Badge
@@ -95,6 +99,21 @@ export function BuilderTopBar({
 
  {/* ── Centro: Seletor de Viewport / Responsividade (Apple HIG) ── */}
  <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60">
+ <button
+ type="button"
+ onClick={() => setViewport("tablet")}
+ title="Modo Tablet (768px)"
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+ viewport === "tablet"
+ ? "bg-background text-foreground shadow-2xs font-bold"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ <Tablet className="size-3.5" />
+ <span className="hidden md:inline">Tablet</span>
+ </button>
+
  <button
  type="button"
  onClick={() => setViewport("desktop")}
@@ -124,6 +143,21 @@ export function BuilderTopBar({
  <Smartphone className="size-3.5" />
  <span className="hidden md:inline">Mobile</span>
  </button>
+
+ <button
+ type="button"
+ onClick={() => setViewport("native_app")}
+ title="Modo App Nativo (PWA / iOS / Android)"
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+ "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+ viewport === "native_app"
+ ? "bg-background text-primary shadow-2xs font-bold"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ <Smartphone className="size-3.5 text-primary" />
+ <span className="hidden md:inline">App Nativo</span>
+ </button>
  </div>
 
  {/* ── Direita: Histórico, Pré-visualização e Ações de Salvamento ── */}
@@ -149,6 +183,34 @@ export function BuilderTopBar({
  <Redo2 className="size-4" />
  </button>
  </div>
+
+ {/* Omni Apps Market */}
+ {onOpenAppMarket && (
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={onOpenAppMarket}
+ className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 hidden xl:inline-flex cursor-pointer border-primary/30 text-primary hover:bg-primary/10"
+ >
+ <LayoutTemplate className="size-3.5" />
+ <span>Apps</span>
+ </Button>
+ )}
+
+ {/* Explorador de Código TanStack */}
+ {onOpenCodeExplorer && (
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={onOpenCodeExplorer}
+ className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 hidden lg:inline-flex cursor-pointer"
+ >
+ <ExternalLink className="size-3.5 text-muted-foreground" />
+ <span>Código</span>
+ </Button>
+ )}
 
  {/* Trocar Tema / Template */}
  <Button

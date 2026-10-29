@@ -33,6 +33,8 @@ Qualquer alteração deve reforçar a integridade transacional, a governança mu
 - DL-03 (Espaçamento fora da grade de 4px) → Detecção de valores mágicos não múltiplos de 4px → Severidade P1 (Bloqueia merge).
 - DL-14 (Alvo de toque abaixo de 44px no mobile) → Detecção de altura/largura inferior a `h-11` (44px) → Severidade P1 (Bloqueia merge).
 - DL-11/DL-12/DL-13 (Ausência de loading/empty/error state) → Inspeção de visualizações de dados → Severidade P1 (Bloqueia merge).
+- DL-31 (Containeritis / Card dentro de Card) → Detecção de contêiner com borda e fundo envolvendo diretamente cartões filhos com borda e fundo → Severidade P0 (Bloqueia entrega).
+- DL-32 (Grade dentro de Grade / Mais de 2 Colunas para Cards Horizontais) → Detecção de grid aninhado sem descompressão ou excesso de colunas comprimindo cards horizontais → Severidade P1 (Bloqueia merge).
 
 ## B.5 Fluxo Obrigatório de Trabalho
 1. Especificar: Declarar a spec em sintaxe EARS com entradas, saídas, invariantes e evidências.
@@ -47,7 +49,9 @@ Qualquer alteração deve reforçar a integridade transacional, a governança mu
 - Proibido resumo redundante do pedido do usuário ou conclusão motivacional ("Espero ter ajudado!").
 - Relatórios numéricos devem ser apresentados em formato tabular Markdown estrito.
 
-## B.7 Economia de Contexto
+## B.7 Economia de Contexto & Regra Pétrea de Mutação Cirúrgica
+- **Regra Pétrea de Mutação Cirúrgica (Anti-Reescrita):** É expressamente proibido reescrever arquivos inteiros (write_file com Overwrite=true) para aplicar correções, refinamentos de UI ou extensões em código existente. Toda manutenção DEVE utilizar edit_file com bloco contíguo delimitado (Target e Replacement). O uso de write_file é restrito a arquivos virgens (novas rotas, componentes criados do zero, novas migrações SQL ou novas specs).
+- Proibição de alucinação e quebra colateral: Refinamentos pontuais devem alterar apenas as linhas necessárias, preservando 100% das regras e lógicas adjacentes.
 - Memória persistida em disco (`docs/design/`, `auditoria/`) em vez de retenção em histórico de chat.
 - Uma sessão por módulo de trabalho; leitura cirúrgica por janela delimitada (`StartLine`/`EndLine`).
 - Handoff padronizado de no máximo 12 linhas ao final de cada fase em `docs/design/DECISIONS.md`.
@@ -72,6 +76,9 @@ Qualquer alteração deve reforçar a integridade transacional, a governança mu
 - Proibido exibir abas, chips ou botões de seção quando a coleção correspondente de dados estiver vazia ou não preenchida.
 - Proibido truncar ou omitir biografias de perfis públicos cadastrados por usuários; o texto deve renderizar de forma integral respeitando quebras de linha (`whitespace-pre-line break-words`).
 - Proibido sobreposição de barras inferiores flutuantes sobre modais ou drawers; barras sticky devem possuir z-index estritamente menor (`z-30`) que o overlay do diálogo (`z-50`) e contêineres de rolagem devem possuir folga de no mínimo `pb-32 pb-safe` para evitar oclusão de cards informativos.
+- Proibido "card dentro de card" (Containeritis): É terminantemente vedado envolver um componente de cartão já delimitado (ex: `IFoodStoreFeedCard`, `OfferCard`, `StoreCard`, `ClassifiedItemCard`, `DirectoryBusinessCard`) dentro de outro contêiner com borda e background (`rounded-* border bg-card`). Cada entidade visual deve ter uma única casca soberana.
+- Proibido "grid dentro de grid" e colunas excessivas que comprimem conteúdo horizontal: É terminantemente vedado aninhar `grid` dentro de célula de outra `grid` sem `col-span-full`, ou declarar mais de 2 colunas no desktop para cartões horizontais densos (logo + texto + metadados), os quais devem operar estritamente em `grid-cols-1 lg:grid-cols-2`, preservando largura mínima útil de 400px por cartão.
+- Proibido acúmulo de padding lateral no mobile (< 600px): Telas móveis devem preservar no mínimo 92% da largura para o conteúdo, sendo proibido acumular padding na página (`px-4`), na seção (`px-4`), no contêiner (`p-4`) e no card (`p-4`), o que espreme o conteúdo em faixas estreitas. Containers de página devem adotar `px-0 sm:px-4` ou utilitário canônico sem redundância.
 
 ## B.9 Definition of Done
 - [ ] Especificação técnica aprovada e registrada em `docs/specs/`.
@@ -229,4 +236,9 @@ O agente deve interromper imediatamente o trabalho e devolver a decisão ao huma
 - **Inteligência Anti-Truncate em Squircles Grandes:** Informações essenciais (títulos, preços, parcelamentos, metadados de nicho) NÃO PODEM sofrer truncamento cego com `truncate` ou reticências de linha única (`...`). O contêiner acomoda o texto na íntegra via adaptação tipográfica proporcional e quebra orgânica (`break-words text-wrap leading-tight`), utilizando truncamento estruturado multilinha (`line-clamp-2`) apenas onde o grid exigir controle rigoroso de altura.
 - **Anti-AI Smell & Títulos Diretos:** Proibidos textos explicativos que explicam a própria tela, saudações prolixas e emojis no produto. Títulos de tela possuem teto máximo de 6 palavras; rótulos de botão contêm no máximo 3 palavras (`[Verbo] + [Substantivo]`); subtítulos que repetem o título com mais de 70% de similaridade lexical são terminantemente vetados.
 - **Anti-Chunks & Governança de Orçamento Cloudflare Pages:** Divisão cirúrgica de rotas com lazy loading sem bundles monolíticos desnecessários, zero dependências circulares (`check:cycles` = 0) e estrita conformidade com o orçamento gzip por rota (`check:route-budget`).
+## B.49 Invariante Soberana Anti-Containeritis, Anti-Card-in-Card e Descompressão de Grades
+- **Regra da Superfície Única (Single Surface Rule):** É terminantemente proibido o aninhamento redundante de superfícies ("card dentro de card" ou "containeritis"). Cada item de dados visual (estabelecimento, produto, classificado, notícia, vaga, evento) DEVE renderizar exatamente UMA única superfície estrutural com borda e background (`rounded-* border bg-card`). Wrappers pai em loops (`.map(...)`) DEVEM atuar exclusivamente como agentes de fluxo estrutural (`space-y-*` ou célula direta de `grid`), sendo proibido adicionar bordas, backgrounds ou paddings extras que gerem molduras duplicadas e espremam o conteúdo.
+- **Ergonomia e Descompressão de Grades Desktop (>= 840px):** Cartões de layout horizontal denso (onde logo/imagem, título, tags de nicho, badges e botões coexistem lado a lado, ex: `IFoodStoreFeedCard variant="list"`) DEVEM operar no máximo em 2 colunas no desktop (`grid grid-cols-1 lg:grid-cols-2 gap-4`), garantindo largura útil mínima de 400px por cartão. É terminantemente proibido forçar 3 ou mais colunas para cartões horizontais densos ao lado da barra lateral de 280px, o que colapsa o conteúdo e força quebras de linha artificiais nos títulos.
+- **Ergonomia Mobile e Eliminação de Margens Excessivas (< 600px):** No ecossistema móvel, é expressamente vetada a sobreposição de paddings (`px-4`/`p-4` na casca + `px-4` na página + `p-4` no contêiner da seção + `p-4` no card), que consome a largura da tela e espreme o conteúdo útil para menos de 70% da viewport. Containers de página móvel devem adotar `px-0 sm:px-4`, garantindo que no mínimo 92% da largura física do smartphone seja dedicada à leitura e toque do usuário. Cartões no mobile devem renderizar em fluxo vertical unificado (1 coluna, `space-y-2.5` ou `grid-cols-1`), exceto botões de atalho 1:1 e chips de filtro.
+- **Proibição de Grade dentro de Grade:** É proibido aninhar uma tag com display `grid` como filha direta de outra célula de `grid` sem a declaração explícita de `col-span-full`, prevenindo a fragmentação da grade em subcolunas microscópicas ininteligíveis.
 

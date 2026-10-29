@@ -984,7 +984,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <option value="" disabled>Escolha um hotel/resort cadastrado...</option>
  {hotelsBank.map((hb: any) => (
  <option key={hb.id} value={hb.id}>
- {hb.name} ({hb.stars}★ - {hb.regime_options?.[0] || "Padrão"})
+ {hb.name} ({hb.stars} - {hb.regime_options?.[0] || "Padrão"})
  </option>
  ))}
  </select>
@@ -1257,7 +1257,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
              onChange={(e) => handleUpdateTransfer(idx, { description: e.target.value })}
              className="h-11 text-xs rounded-lg"
            />
-           <div className="grid grid-cols-3 gap-2">
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
              <select
                value={tr.type === "shared" ? "shared" : "private"}
                onChange={(e) => handleUpdateTransfer(idx, { type: e.target.value })}

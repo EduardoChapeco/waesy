@@ -395,7 +395,7 @@ export function BrandBriefingPage() {
           <div className="mt-3">
             <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full transition-colors duration-200 duration-700"
+                className="h-full rounded-full transition-colors duration-200 duration-200"
                 style={{
                   width: `${score}%`,
                   background: `linear-gradient(to right, ${scoreColor}88, ${scoreColor})`,

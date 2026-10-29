@@ -3,10 +3,9 @@ import { OmniBlockStyling } from "./types";
 
 /**
  * getSectionStyle — Mapeia o OmniBlockStyling para classes utilitárias e estilos CSS inline isolados.
- * Garante que personalização profunda (cor de fundo, padding, cantos arredondados, cor do texto)
- * opere em escopo atômico no bloco, sem poluir variáveis globais ou outros blocos.
+ * Suporta padding bidirecional (mobilePaddingY vs paddingY), presets de superfície e escopo atômico.
  */
-export function getSectionStyle(styling?: OmniBlockStyling): {
+export function getSectionStyle(styling?: OmniBlockStyling, isMobile = false): {
   className: string;
   style: React.CSSProperties;
 } {
@@ -32,10 +31,32 @@ export function getSectionStyle(styling?: OmniBlockStyling): {
     lg: "rounded-lg",
     xl: "rounded-lg",
     "2xl": "rounded-lg",
+    full: "rounded-full",
   };
 
-  const pyClass = paddingYMap[styling.paddingY || "md"] || "py-20 lg:py-28";
+  const surfaceMap: Record<string, string> = {
+    default: "",
+    muted: "bg-muted/40",
+    card: "bg-card border border-border/60",
+    accent: "bg-primary/5 border border-primary/20",
+  };
+
+  const maxWidthMap: Record<string, string> = {
+    sm: "max-w-2xl mx-auto",
+    md: "max-w-4xl mx-auto",
+    lg: "max-w-5xl mx-auto",
+    xl: "max-w-6xl mx-auto",
+    "7xl": "max-w-7xl mx-auto",
+    full: "w-full",
+  };
+
+  const activePaddingKey =
+    isMobile && styling.mobilePaddingY ? styling.mobilePaddingY : styling.paddingY || "md";
+  const pyClass = paddingYMap[activePaddingKey] || "py-20 lg:py-28";
   const roundedClass = roundedMap[styling.borderRadius || "xl"] || "";
+  const surfaceClass = styling.surfacePreset ? surfaceMap[styling.surfacePreset] || "" : "";
+  const widthClass = styling.maxWidth ? maxWidthMap[styling.maxWidth] || "" : "";
+  const borderClass = styling.border ? "border border-border/70" : "";
 
   const style: React.CSSProperties = {};
   if (styling.backgroundColor) {
@@ -46,7 +67,10 @@ export function getSectionStyle(styling?: OmniBlockStyling): {
   }
 
   return {
-    className: `${pyClass} ${roundedClass}`.trim(),
+    className: [pyClass, roundedClass, surfaceClass, widthClass, borderClass]
+      .filter(Boolean)
+      .join(" ")
+      .trim(),
     style,
   };
 }

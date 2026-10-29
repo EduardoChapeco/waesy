@@ -298,7 +298,7 @@ export default function TravelProjectDetailPage() {
                 onClick={() => setModalOpen(false)}
                 className="text-muted-foreground hover:text-foreground text-sm font-semibold p-1 size-11 min-h-11 min-w-11 rounded-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
               >
-                ✕
+                
               </button>
             </div>
 

@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/start-server-core";
 import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
 import { getServerClient } from "@/lib/supabase";
+import { logSystemError } from "@/lib/logger";
 import { getIdentity } from "./identity.functions";
 import { requireAdmin } from "@/lib/server-access";
 import { z } from "zod";
@@ -1707,12 +1708,22 @@ export const upsertClassified = createServerFn({ method: "POST" })
               });
             }
           } catch (telemetryErr: any) {
-            console.warn(
-              "[classifieds] Telemetria de ponto comercial registrada com fallback:",
-              telemetryErr?.message,
-            );
+            logSystemError({
+              route: "classifieds.upsertClassified",
+              contract_name: "commercial_point_telemetry",
+              table_name: "commercial_point_telemetry",
+              schema_name: "public",
+              operation: "INSERT",
+              error: telemetryErr,
+            });
           }
-        })().catch(() => {});
+        })().catch((err) => {
+          logSystemError({
+            route: "classifieds.upsertClassified",
+            contract_name: "async_telemetry_runner",
+            error: err,
+          });
+        });
       }
     }
 
@@ -2225,7 +2236,17 @@ export const trackClassifiedView = createServerFn({ method: "POST" })
             event_type: "view",
             store_id: current.store_id || null,
           }),
-        ).catch(() => null);
+        ).catch((err) => {
+          logSystemError({
+            route: "classifieds.trackClassifiedView",
+            contract_name: "ad_telemetry_events",
+            table_name: "ad_telemetry_events",
+            schema_name: "public",
+            operation: "INSERT",
+            error: err,
+          });
+          return null;
+        });
       }
       return { success: true };
     } catch (err) {

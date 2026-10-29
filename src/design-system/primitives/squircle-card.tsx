@@ -10,13 +10,14 @@ import { cn } from "@/lib/utils";
  * ============================================================================
  */
 
-export interface SquircleCardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface AppleSquircleCardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "elevated" | "subtle" | "interactive";
   size?: "default" | "lg" | "compact";
   asChild?: boolean;
 }
+export type { AppleSquircleCardProps as SquircleCardProps };
 
-export const SquircleCard = React.forwardRef<HTMLDivElement, SquircleCardProps>(
+export const SquircleCard = React.forwardRef<HTMLDivElement, AppleSquircleCardProps>(
   (
     {
       className,

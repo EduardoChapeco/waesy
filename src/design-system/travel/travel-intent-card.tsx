@@ -83,7 +83,7 @@ export function TravelIntentCard({
       </div>
 
       {/* Meta Grid */}
-      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/30 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border/30 text-xs">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="size-3.5 shrink-0" />
           <span className="text-foreground font-medium truncate">{dates}</span>

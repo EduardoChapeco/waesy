@@ -79,7 +79,7 @@ export function TravelAiImporterBanner({ onExtracted, className = "" }: TravelAi
 
   return (
     <div
-      className={`rounded-lg border border-primary/30 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent p-4 sm:p-5 transition-colors duration-200 ${className}`}
+      className={`rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-5 transition-colors duration-200 ${className}`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">

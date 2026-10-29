@@ -110,13 +110,13 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-slate-300 text-2xs font-mono font-bold text-slate-500 uppercase">
  <div className="flex items-center gap-1">
  <div className="size-7 rounded-lg bg-slate-300 flex items-center justify-center text-slate-700">
- 💺
+ 
  </div>
  <span>Motorista</span>
  </div>
 
  <div className="px-2 py-1 rounded bg-slate-200 text-slate-600">
- 🚪 Entrada
+  Entrada
  </div>
  </div>
 
@@ -155,10 +155,10 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  {/* Fundo do Ônibus (Banheiro & Frigobar) */}
  <div className="flex items-center justify-between pt-3 border-t-2 border-dashed border-slate-300 text-2xs font-mono font-bold text-slate-500 uppercase">
  <div className="px-2 py-1 rounded bg-slate-200 text-slate-600">
- 🧊 Frigobar
+  Frigobar
  </div>
  <div className="px-2 py-1 rounded bg-slate-200 text-slate-600">
- 🚻 Banheiro
+  Banheiro
  </div>
  </div>
  </div>

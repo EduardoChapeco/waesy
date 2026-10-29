@@ -175,7 +175,7 @@ function ConvitePage() {
               </span>
               <span className="text-muted-foreground font-mono">
                 {overview.isAmbassadorActive
-                  ? "Título Ativo ✓"
+                  ? "Título Ativo "
                   : `Faltam ${overview.monthlyRemainingToAmbassador} convites para ativar`}
               </span>
             </div>

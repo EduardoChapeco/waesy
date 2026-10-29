@@ -734,7 +734,7 @@ function AnunciosWorkspacePage() {
         <Sheet open={maxUpsellOpen} onOpenChange={setMaxUpsellOpen}>
           <SheetContent side="bottom" className="rounded-t-lg max-w-xl mx-auto p-6 space-y-5">
             <SheetHeader className="space-y-1 text-left">
-              <Badge variant="default" className="w-fit text-xs">Exclusivo Waesy Max</Badge>
+              <Badge variant="outline" className="w-fit text-xs">Exclusivo Waesy Max</Badge>
               <SheetTitle className="text-lg font-bold">Tráfego Externo</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
                 Conecte Meta Ads e Google Ads via OAuth 2.0, gere anúncios direto do seu catálogo e receba 50% de subsídio em todos os destaques internos da vitrine.
@@ -823,7 +823,7 @@ function AnunciosWorkspacePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-foreground">Meta Ads e Instagram</h3>
-                    <Badge variant="default" className="text-xs">Conectado</Badge>
+                    <Badge variant="outline" className="text-xs">Conectado</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Conta vinculada ({channelsSettings?.meta_ads?.ad_account_id || "ativa"}) com catálogo sincronizado.
@@ -922,7 +922,7 @@ function AnunciosWorkspacePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-foreground">Google Ads e Merchant Center</h3>
-                    <Badge variant="default" className="text-xs">Conectado</Badge>
+                    <Badge variant="outline" className="text-xs">Conectado</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Conta vinculada ({channelsSettings?.google_ads?.customer_id || "ativa"}) com catálogo sincronizado.
@@ -1577,7 +1577,7 @@ function AnunciosWorkspacePage() {
 
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                     <Button
-                      variant="default"
+                      variant="outline"
                       size="sm"
                       onClick={async () => {
                         setUpdatingId(c.id);

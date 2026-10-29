@@ -113,7 +113,7 @@ export function UnifiedFeedCard({
           )}
         </div>
 
-        <p className="text-xs sm:text-[13px] text-foreground/95 font-medium leading-relaxed line-clamp-4 my-auto">
+        <p className="text-xs sm:text-xs text-foreground/95 font-medium leading-relaxed line-clamp-4 my-auto">
           {textContent || "Nota publicada"}
         </p>
 

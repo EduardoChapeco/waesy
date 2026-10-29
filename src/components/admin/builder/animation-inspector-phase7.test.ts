@@ -8,13 +8,13 @@ function testResolveAnimationClasses(designTokens?: Record<string, any>, layoutR
  const classes: string[] = ["transition-colors duration-200"];
 
  if (anim.trigger === "fade_up") {
- classes.push("animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out fill-mode-both");
+ classes.push("animate-in fade-in slide-in-from-bottom-6 duration-200 ease-out fill-mode-both");
  } else if (anim.trigger === "zoom_in") {
- classes.push("animate-in fade-in zoom-in-95 duration-500 ease-out fill-mode-both");
+ classes.push("animate-in fade-in zoom-in-95 duration-200 ease-out fill-mode-both");
  } else if (anim.trigger === "slide_left") {
- classes.push("animate-in fade-in slide-in-from-left-6 duration-600 ease-out fill-mode-both");
+ classes.push("animate-in fade-in slide-in-from-left-6 duration-200 ease-out fill-mode-both");
  } else if (anim.trigger === "parallax") {
- classes.push("motion-safe:hover:-translate-y-1 transition-transform duration-500");
+ classes.push("motion-safe:hover:-translate-y-1 transition-transform duration-200");
  }
 
  if (anim.hover === "lift") {
@@ -38,7 +38,7 @@ describe('[FASE 7 AUDIT] Wix Studio Standard Animation Engine & Builder Inspecto
  });
  expect(fadeUpClasses).toContain("animate-in");
  expect(fadeUpClasses).toContain("slide-in-from-bottom-6");
- expect(fadeUpClasses).toContain("duration-700");
+ expect(fadeUpClasses).toContain("duration-200");
 
  const zoomClasses = testResolveAnimationClasses({
  animation: { trigger: "zoom_in", speed: "fast" }

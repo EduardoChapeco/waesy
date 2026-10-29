@@ -269,7 +269,7 @@ export function CommunityFeedCard({
  {pollData.user_voted_option && (
  <div
  className={cn(
- "absolute top-0 bottom-0 left-0 transition-colors duration-200 duration-500 rounded-lg opacity-20",
+ "absolute top-0 bottom-0 left-0 transition-colors duration-200 duration-200 rounded-lg opacity-20",
  isSelected ? "bg-primary" : "bg-foreground"
  )}
  style={{ width: `${percent}%` }}

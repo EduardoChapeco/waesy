@@ -47,61 +47,18 @@ export interface InstallmentTimelineDrawerProps {
   className?: string;
 }
 
-const DEFAULT_INSTALLMENTS: InstallmentItem[] = [
-  {
-    number: 1,
-    dueDate: "15/08/2026",
-    amountCents: 18742,
-    status: "paid",
-    paidDate: "14/08/2026",
-  },
-  {
-    number: 2,
-    dueDate: "15/09/2026",
-    amountCents: 18742,
-    status: "paid",
-    paidDate: "15/09/2026",
-  },
-  {
-    number: 3,
-    dueDate: "15/10/2026",
-    amountCents: 18742,
-    status: "due",
-  },
-  {
-    number: 4,
-    dueDate: "15/11/2026",
-    amountCents: 18742,
-    status: "future",
-    discountCentsIfEarly: 1850,
-  },
-  {
-    number: 5,
-    dueDate: "15/12/2026",
-    amountCents: 18742,
-    status: "future",
-    discountCentsIfEarly: 3200,
-  },
-  {
-    number: 6,
-    dueDate: "15/01/2027",
-    amountCents: 18742,
-    status: "future",
-    discountCentsIfEarly: 4500,
-  },
-];
-
 export function InstallmentTimelineDrawer({
   open,
   onOpenChange,
-  contractTitle = "Empréstimo Pessoal Waesy #9482",
-  totalInstallments = 6,
-  installments = DEFAULT_INSTALLMENTS,
+  contractTitle = "Contrato de Pagamento Parcelado",
+  totalInstallments,
+  installments = [],
   onPayEarlyClick,
   className,
 }: InstallmentTimelineDrawerProps) {
+  const effectiveTotal = totalInstallments || (installments.length > 0 ? installments.length : 1);
   const paidCount = installments.filter((i) => i.status === "paid").length;
-  const progressPercent = Math.round((paidCount / totalInstallments) * 100);
+  const progressPercent = installments.length > 0 ? Math.round((paidCount / effectiveTotal) * 100) : 0;
   const totalEarlyDiscountCents = installments
     .filter((i) => i.status === "future" && i.discountCentsIfEarly)
     .reduce((acc, curr) => acc + (curr.discountCentsIfEarly || 0), 0);
@@ -116,7 +73,7 @@ export function InstallmentTimelineDrawer({
       <SheetContent
         side="bottom"
         className={cn(
-          "w-full max-w-lg mx-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 bg-card border-border/80 shadow-xl max-h-[92vh] overflow-y-auto no-scrollbar",
+          "w-full max-w-lg mx-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 bg-card border-border/80 shadow-md max-h-dvh overflow-y-auto no-scrollbar",
           className
         )}
       >
@@ -130,14 +87,22 @@ export function InstallmentTimelineDrawer({
             </div>
             <Badge
               variant="outline"
-              className="rounded-full px-2.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary border-primary/20"
+              className="rounded-full px-3 py-1 text-xs font-semibold bg-primary/10 text-primary border-primary/20"
             >
-              {paidCount} de {totalInstallments} pagas
+              {paidCount} de {effectiveTotal} pagas
             </Badge>
           </div>
         </SheetHeader>
 
         <div className="space-y-4 pt-3">
+          {installments.length === 0 ? (
+            <div className="py-12 text-center space-y-2 p-6 rounded-2xl bg-muted/20 border border-dashed border-border/60">
+              <Calendar className="size-8 mx-auto text-muted-foreground/40" />
+              <p className="text-xs font-bold text-foreground">Nenhuma parcela ativa encontrada</p>
+              <p className="text-3xs text-muted-foreground">Você não possui contratos de pagamento parcelado em aberto no momento.</p>
+            </div>
+          ) : (
+            <>
           {/* ── 1. Barra de Progresso de Amortização ── */}
           <div className="bg-card border border-border/60 rounded-xl p-4 space-y-2">
             <div className="flex items-center justify-between text-xs">
@@ -147,7 +112,7 @@ export function InstallmentTimelineDrawer({
 
             <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                className="h-full bg-emerald-500 rounded-full transition-colors duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -155,8 +120,8 @@ export function InstallmentTimelineDrawer({
 
           {/* ── 2. Card de Desconto por Antecipação ── */}
           {totalEarlyDiscountCents > 0 && (
-            <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-500/10 via-primary/5 to-transparent border border-emerald-500/20 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
                 <TrendingDown className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <div>
                   <span className="text-2xs text-muted-foreground uppercase tracking-wider block">
@@ -192,7 +157,7 @@ export function InstallmentTimelineDrawer({
                 <div
                   key={inst.number}
                   className={cn(
-                    "flex items-center justify-between p-3.5 rounded-xl border transition-colors",
+                    "flex items-center justify-between p-4 rounded-xl border transition-colors",
                     inst.status === "paid" && "bg-muted/20 border-border/30 opacity-80",
                     inst.status === "due" && "bg-card border-primary/40 shadow-xs ring-1 ring-primary/20",
                     inst.status === "future" && "bg-muted/30 border-border/40"
@@ -247,6 +212,8 @@ export function InstallmentTimelineDrawer({
               ))}
             </div>
           </div>
+          </>
+          )}
         </div>
       </SheetContent>
     </Sheet>

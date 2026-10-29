@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.commercial_invoices (
     CHECK (status IN ('draft', 'sent', 'approved', 'converted_to_contract', 'invoiced', 'paid', 'cancelled')),
 
   -- Token Público Criptográfico para Visualização Externa sem Autenticação
-  public_token TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(24), 'hex'),
+  public_token TEXT NOT NULL UNIQUE DEFAULT encode(extensions.gen_random_bytes(24), 'hex'),
 
   -- Snapshots Imutáveis do Cliente e da Empresa Emissora
   customer_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb,

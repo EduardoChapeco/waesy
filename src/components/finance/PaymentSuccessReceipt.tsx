@@ -1,19 +1,22 @@
 /**
  * ============================================================================
- * Waesy Platform — PaymentSuccessReceipt.tsx (Tela de Sucesso 99Pay Parity)
+ * Waesy Platform — PaymentSuccessReceipt.tsx (Copycat Minimalist Success Screen)
  * ============================================================================
- * Tela de confirmação e sucesso de transferência com animação spring suave:
- * - Círculo com checkmark verde em mola suave (framer-motion).
- * - Valor em destaque gigante e dados do recebedor (nome, banco, data/hora).
- * - Botão primário "Ver comprovante" e secundário "Compartilhar".
- * Ref: Prints Captura de tela 2026-10-16 155905.png (Tela 2), Screenshot_2026-10-26-08-34-12-868
+ * Tela de confirmação e sucesso de transferência/depósito/Pix (Conforme tela 2 do design anexo):
+ * - Botão superior fechar (X) no canto esquerdo com alvo de toque de 44px.
+ * - Círculo verde-limão com aura suave e checkmark nítido.
+ * - Título em destaque: "Pix enviado com sucesso!" (ou customizável para depósito/transferência).
+ * - Subtítulo explicativo: "Sua transferência foi concluída e o valor já está disponível."
+ * - Valor em destaque gigante com tipografia de alta legibilidade.
+ * - Identificação do destinatário/pagador e cartão de metadados (Instituição, Quando, ID).
+ * - Botões de ação inferiores idênticos:
+ *   - "Ver comprovante" (Verde-limão primário h-12)
+ *   - "Compartilhar" (Neutro secundário h-12)
  * ============================================================================
  */
 
 import React from "react";
-import { motion } from "framer-motion";
-import { Check, Share2, FileText, ArrowRight, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check, Share2, FileText, X } from "lucide-react";
 import { formatCents, cn } from "@/lib/utils";
 
 export interface PaymentSuccessReceiptProps {
@@ -22,6 +25,8 @@ export interface PaymentSuccessReceiptProps {
   recipientInstitution?: string;
   transactionId?: string;
   dateText?: string;
+  title?: string;
+  subtitle?: string;
   onViewReceipt?: () => void;
   onShareReceipt?: () => void;
   onDone?: () => void;
@@ -31,9 +36,11 @@ export interface PaymentSuccessReceiptProps {
 export function PaymentSuccessReceipt({
   amountCents,
   recipientName,
-  recipientInstitution = "Waesy Pagamentos IP S.A.",
-  transactionId = "WAESY-" + Math.random().toString(36).substring(2, 10).toUpperCase(),
+  recipientInstitution = "Waesy Pagamentos e Tecnologia",
+  transactionId = "TX-" + Math.random().toString(36).substring(2, 10).toUpperCase(),
   dateText = "Agora",
+  title = "Pix enviado com sucesso!",
+  subtitle = "Sua transferência foi concluída e o valor já está disponível.",
   onViewReceipt,
   onShareReceipt,
   onDone,
@@ -42,113 +49,102 @@ export function PaymentSuccessReceipt({
   return (
     <div
       className={cn(
-        "w-full max-w-md mx-auto p-4 sm:p-6 flex flex-col items-center justify-between text-center select-none animate-in fade-in duration-300 min-h-[500px]",
+        "w-full max-w-md mx-auto p-4 sm:p-6 flex flex-col items-center justify-between text-center select-none bg-background min-h-[520px]",
         className
       )}
     >
-      {/* Top Close (X) */}
-      <div className="w-full flex justify-end">
+      {/* ── Top Bar: Botão Fechar (X) no topo esquerdo conforme tela 2 anexa ── */}
+      <div className="w-full flex items-center justify-start">
         {onDone && (
           <button
             type="button"
             onClick={onDone}
-            aria-label="Fechar comprovante"
-            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Fechar tela de sucesso"
+            className="size-11 min-h-11 min-w-11 rounded-full bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
           >
             <X className="size-5" />
           </button>
         )}
       </div>
 
-      {/* Círculo Animado com Checkmark Verde Suave */}
-      <div className="my-6 flex flex-col items-center">
-        <motion.div
-          initial={{ scale: 0.2, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 350, damping: 25 }}
-          className="size-24 rounded-full bg-emerald-500/15 border-2 border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm relative"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.15, type: "spring", stiffness: 400, damping: 20 }}
-            className="size-16 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md"
-          >
-            <Check className="size-9 stroke-[3]" />
-          </motion.div>
-        </motion.div>
+      {/* ── Círculo Verde-Limão com Halo Suave & Checkmark ── */}
+      <div className="my-4 flex flex-col items-center w-full">
+        <div className="size-28 rounded-full bg-lime-400/25 flex items-center justify-center shrink-0">
+          <div className="size-20 rounded-full bg-lime-400 text-zinc-950 flex items-center justify-center shadow-xs">
+            <Check className="size-10 stroke-[3]" />
+          </div>
+        </div>
 
+        {/* Título & Subtítulo */}
         <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mt-5">
-          Pix enviado com sucesso!
+          {title}
         </h2>
-        <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-          Sua transferência foi concluída e o valor já está disponível para o recebedor.
+        <p className="text-xs text-muted-foreground mt-2 max-w-xs mx-auto leading-relaxed">
+          {subtitle}
         </p>
 
-        {/* Valor Gigante */}
-        <div className="text-3xl sm:text-4xl font-black text-foreground font-mono mt-4">
+        {/* Valor Gigante em Destaque */}
+        <div className="text-3xl sm:text-4xl font-black text-foreground font-mono tracking-tight mt-4">
           {formatCents(amountCents)}
         </div>
-        <p className="text-xs font-semibold text-foreground/80 mt-1">
+
+        {/* Nome do Destinatário */}
+        <p className="text-xs font-semibold text-foreground/80 mt-2">
           Para {recipientName}
         </p>
       </div>
 
-      {/* Cartão de Metadados da Transação */}
-      <div className="w-full rounded-2xl border border-border/70 bg-card p-4 space-y-2 text-xs text-left shadow-xs my-4">
-        <div className="flex items-center justify-between py-1 border-b border-border/30">
-          <span className="text-muted-foreground">Instituição</span>
-          <span className="font-semibold text-foreground truncate max-w-[180px]">
+      {/* ── Cartão de Metadados da Transação ── */}
+      <div className="w-full rounded-2xl bg-zinc-50 border border-zinc-200/60 p-4 space-y-2 text-xs text-left shadow-2xs my-4">
+        <div className="flex items-center justify-between py-1 border-b border-border/40">
+          <span className="text-muted-foreground font-medium">Instituição</span>
+          <span className="font-bold text-foreground truncate max-w-50">
             {recipientInstitution}
           </span>
         </div>
-        <div className="flex items-center justify-between py-1 border-b border-border/30">
-          <span className="text-muted-foreground">Quando</span>
+
+        <div className="flex items-center justify-between py-1 border-b border-border/40">
+          <span className="text-muted-foreground font-medium">Quando</span>
           <span className="font-semibold text-foreground">{dateText}</span>
         </div>
+
         <div className="flex items-center justify-between py-1">
-          <span className="text-muted-foreground">ID da Transação</span>
-          <span className="font-mono text-2xs text-foreground/80 truncate max-w-[180px]">
+          <span className="text-muted-foreground font-medium">ID da Transação</span>
+          <span className="font-mono text-2xs text-foreground/80 truncate max-w-45">
             {transactionId}
           </span>
         </div>
       </div>
 
-      {/* Botões de Ação Inferiores */}
+      {/* ── Botões de Ação Inferiores (Ver comprovante & Compartilhar) ── */}
       <div className="w-full space-y-2 pt-2">
-        {onViewReceipt && (
-          <Button
-            type="button"
-            onClick={onViewReceipt}
-            className="w-full h-12 min-h-12 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          >
-            <FileText className="size-4" />
-            <span>Ver Comprovante Detalhado</span>
-          </Button>
-        )}
+        <button
+          type="button"
+          onClick={onViewReceipt || onDone}
+          className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+        >
+          <FileText className="size-4" />
+          <span>Ver comprovante</span>
+        </button>
 
-        {onShareReceipt && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onShareReceipt}
-            className="w-full h-11 min-h-11 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border-border/70 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <Share2 className="size-4" />
-            <span>Compartilhar Comprovante</span>
-          </Button>
-        )}
-
-        {onDone && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onDone}
-            className="w-full h-11 min-h-11 rounded-xl text-muted-foreground hover:text-foreground font-semibold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            Concluído
-          </Button>
-        )}
+        <button
+          type="button"
+          onClick={
+            onShareReceipt ||
+            (() => {
+              if (typeof navigator !== "undefined" && navigator.share) {
+                navigator.share({
+                  title: "Comprovante Pix Waesy",
+                  text: `Pix de ${formatCents(amountCents)} para ${recipientName} realizado com sucesso. ID: ${transactionId}`,
+                });
+              }
+            })
+          }
+          className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+        >
+          <Share2 className="size-4" />
+          <span>Compartilhar</span>
+        </button>
       </div>
     </div>
   );

@@ -271,7 +271,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
               value={selectedBudget?.id}
               onValueChange={(id) => setSelectedBudget(budgets.find((b) => b.id === id))}
             >
-              <SelectTrigger className="h-11 rounded-lg text-xs w-[140px]">
+              <SelectTrigger className="h-11 rounded-lg text-xs w-35">
                 <SelectValue placeholder="Versão" />
               </SelectTrigger>
               <SelectContent>

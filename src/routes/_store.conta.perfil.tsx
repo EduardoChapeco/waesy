@@ -83,12 +83,11 @@ function ProfileCivilPage() {
   const [showCivilInfo, setShowCivilInfo] = useState(false);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
 
   // Estados de Recorte de Imagem (1:1 Avatar, 21:9 Capa)
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
-  const [cropperType, setCropperType] = useState<"avatar" | "cover">("avatar");
+  const [cropperType, setCropperType] = useState<"avatar">("avatar");
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   const initialResume = profile?.resume_data || {};
@@ -561,23 +560,23 @@ function ProfileCivilPage() {
           ══════════════════════════════════════════════════════════════ */}
           <TabsContent value="dados" className="space-y-5">
             {/* Card 1: Fotos Pessoais (Avatar 1:1 e Capa 3:1) */}
-            {/* Card 1: Identidade Visual Canônica: Foto 1:1 Squircle ao lado da Capa 21:9 */}
+            {/* Card 1: Identidade Visual Canônica (Avatar 1:1 — Apple HIG / Threads) */}
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center justify-between pb-3 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                   <Camera className="size-4 text-primary shrink-0" />
-                  <span>Identidade Visual</span>
+                  <span>Foto de Perfil</span>
                 </div>
-                <Badge variant="outline" className="text-2xs font-mono border-primary/30 text-primary">
-                  1:1 Squircle + 21:9 Panorâmica
+                <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+                  1:1 Squircle
                 </Badge>
               </div>
 
-              {/* Linha Canônica: Avatar Squircle 1:1 ao lado da Capa 21:9 */}
-              <div className="flex items-center gap-3 sm:gap-5 w-full">
+              {/* Linha Canônica: Avatar Squircle 1:1 e Diretriz Oficial */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full">
                 {/* Avatar Squircle 1:1 */}
                 <div className="relative group shrink-0">
-                  <div className="size-20 sm:size-28 md:size-32 rounded-lg bg-card border-2 border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
+                  <div className="size-24 sm:size-28 rounded-2xl bg-card border-2 border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
                     {formData.avatarUrl ? (
                       <img
                         src={formData.avatarUrl}
@@ -585,7 +584,7 @@ function ProfileCivilPage() {
                         className="size-full object-cover select-none"
                       />
                     ) : (
-                      <div className="size-full bg-muted flex items-center justify-center text-xl sm:text-3xl font-black text-primary">
+                      <div className="size-full bg-muted flex items-center justify-center text-2xl sm:text-3xl font-black text-primary">
                         {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : "U"}
                       </div>
                     )}
@@ -595,11 +594,11 @@ function ProfileCivilPage() {
                     type="button"
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={isUploadingMedia}
-                    className="absolute inset-0 bg-foreground/40 text-foreground rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute inset-0 bg-foreground/40 text-foreground rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Alterar Foto de Perfil (1:1)"
                   >
                     <Camera className="size-4 sm:size-5" />
-                    <span className="text-2xs">Alterar</span>
+                    <span className="text-xs">Alterar</span>
                   </button>
                   <input
                     ref={avatarInputRef}
@@ -610,51 +609,17 @@ function ProfileCivilPage() {
                   />
                 </div>
 
-                {/* Mini-Banner Discreto Canônico 3:1 */}
-                <div className="flex-1 min-w-0 h-16 sm:h-20 rounded-lg bg-muted/20 relative overflow-hidden flex items-center group border border-border/40">
-                  {formData.coverUrl ? (
-                    <img
-                      src={formData.coverUrl}
-                      alt="Mini-Banner do Perfil"
-                      className="size-full object-cover select-none"
-                    />
-                  ) : (
-                    <div className="size-full bg-muted/40 flex items-center justify-center text-muted-foreground p-3 text-center">
-                      <span className="text-xs font-medium">Sem banner (Proporção 3:1 Compacta & Discreta)</span>
-                    </div>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => coverInputRef.current?.click()}
-                    disabled={isUploadingMedia}
-                    className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background backdrop-blur-md border border-border/80 text-foreground px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    title="Alterar Banner (3:1)"
-                  >
-                    <Camera className="size-3.5" />
-                    <span className="hidden sm:inline">Banner (3:1)</span>
-                  </button>
-                  <input
-                    ref={coverInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleFileSelected(e, "cover")}
-                  />
+                {/* Diretriz Canônica de Perfil e Brand Kit */}
+                <div className="flex-1 min-w-0 rounded-xl bg-muted/20 border border-border/40 p-4 space-y-2 text-xs">
+                  <p className="font-bold text-foreground">Padrão Canônico de Identidade (1:1)</p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Sua foto de perfil é a representação oficial em toda a rede. Perfis de membros, criadores e lojas seguem o formato unificado sem capas panorâmicas no cabeçalho.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    A imagem de capa oficial de empresas e lojas para vitrines, buscas e feeds é configurada exclusivamente no <strong>Brand Kit</strong> do Workspace.
+                  </p>
                 </div>
               </div>
-
-              {formData.coverUrl && (
-                <div className="flex justify-end pt-1">
-                  <button
-                    type="button"
-                    onClick={() => set("coverUrl", "")}
-                    className="text-2xs text-destructive hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    Remover Imagem de Capa
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* Card 2: Dados Básicos & Documentos Civis (CPF, Nome, Nascimento) */}
@@ -1142,7 +1107,7 @@ function ProfileCivilPage() {
                             <ExternalLink className="size-4" />
                           </div>
                         )}
-                        <div className="min-w-0 space-y-0.5">
+                        <div className="min-w-0 space-y-1">
                           <p className="text-xs font-semibold text-foreground truncate">
                             {link.label || link.title}
                           </p>
@@ -1524,7 +1489,7 @@ function ProfileCivilPage() {
             if (!v) setCropperOpen(false);
           }}
           imageSrc={cropperSrc}
-          aspect={cropperType === "avatar" ? 1 : 3}
+          aspect={1}
           cropShape="rect"
           lockAspect={true}
           title={

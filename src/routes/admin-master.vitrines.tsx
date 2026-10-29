@@ -98,6 +98,10 @@ function AdminMasterVitrinesPage() {
   const [endsAt, setEndsAt] = useState("");
   const [autoArchiveAt, setAutoArchiveAt] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customButtons, setCustomButtons] = useState<Array<{ id: string; label: string; iconName: string; badge?: string }>>([]);
+  const [newBtnLabel, setNewBtnLabel] = useState("");
+  const [newBtnIcon, setNewBtnIcon] = useState("SuitcaseRolling");
+  const [newBtnBadge, setNewBtnBadge] = useState("");
 
   // Carrega seções da superfície selecionada
   const fetchSections = async (slug: string) => {
@@ -269,7 +273,7 @@ function AdminMasterVitrinesPage() {
               onClick={() => handleSelectSurface(s.slug)}
               className={`h-11 sm:h-8 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 isSelected
-                  ? "bg-primary text-primary-foreground shadow-2xs font-bold"
+                  ? "bg-primary text-primary-foreground font-bold"
                   : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/50"
               }`}
             >
@@ -613,6 +617,131 @@ function AdminMasterVitrinesPage() {
                 />
               </div>
             </div>
+
+            {/* Editor de Botões para Trilho de Atalhos / Menu CVC */}
+            {type === "custom_buttons_rail" && (
+              <div className="rounded-xl border border-border/80 bg-muted/20 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-xs font-bold text-foreground">Botões & Atalhos do Menu</Label>
+                    <p className="text-3xs text-muted-foreground">Personalize os canais de navegação da vitrine.</p>
+                  </div>
+                  <span className="text-3xs font-mono font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
+                    {customButtons.length} botões ativos
+                  </span>
+                </div>
+
+                {/* Lista de Botões Atuais */}
+                {customButtons.length > 0 && (
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {customButtons.map((btn, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-card border border-border/70 text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-mono text-3xs text-muted-foreground">#{idx + 1}</span>
+                          <span className="font-bold text-foreground truncate">{btn.label}</span>
+                          <span className="text-3xs font-mono text-muted-foreground">({btn.iconName})</span>
+                          {btn.badge && (
+                            <span className="text-3xs bg-primary/20 text-primary px-2 py-1 rounded-full font-bold">
+                              {btn.badge}
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCustomButtons(customButtons.filter((_, i) => i !== idx))}
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Formulário para Adicionar Novo Botão */}
+                <div className="pt-2 border-t border-border/40 space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <Input
+                      value={newBtnLabel}
+                      onChange={(e) => setNewBtnLabel(e.target.value)}
+                      placeholder="Rótulo (ex: Cruzeiros)"
+                      className="h-9 text-xs"
+                    />
+                    <Select value={newBtnIcon} onValueChange={setNewBtnIcon}>
+                      <SelectTrigger className="h-9 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="SuitcaseRolling">Mala (Pacotes)</SelectItem>
+                        <SelectItem value="AirplaneTilt">Avião (Passagens)</SelectItem>
+                        <SelectItem value="Bed">Cama (Hotéis)</SelectItem>
+                        <SelectItem value="Sailboat">Barco (Cruzeiros)</SelectItem>
+                        <SelectItem value="Car">Carro (Aluguel)</SelectItem>
+                        <SelectItem value="ShieldCheck">Escudo (Seguros)</SelectItem>
+                        <SelectItem value="Camera">Câmera (Passeios)</SelectItem>
+                        <SelectItem value="Bus">Ônibus (Rodoviário)</SelectItem>
+                        <SelectItem value="Briefcase">Maleta (Corporativo)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      value={newBtnBadge}
+                      onChange={(e) => setNewBtnBadge(e.target.value)}
+                      placeholder="Badge (opcional)"
+                      className="h-9 text-xs"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setCustomButtons([
+                            { id: "pacotes", label: "Pacotes", iconName: "SuitcaseRolling", badge: "Mais Buscado" },
+                            { id: "aereos", label: "Passagens", iconName: "AirplaneTilt" },
+                            { id: "hospedagens", label: "Hotéis", iconName: "Bed" },
+                            { id: "cruzeiros", label: "Cruzeiros", iconName: "Sailboat" },
+                            { id: "aluguel", label: "Aluguel", iconName: "Car" },
+                            { id: "seguros", label: "Seguros", iconName: "ShieldCheck" },
+                            { id: "passeios", label: "Passeios", iconName: "Camera" },
+                            { id: "onibus", label: "Ônibus", iconName: "Bus" },
+                            { id: "corporativo", label: "Corporativo", iconName: "Briefcase", badge: "VOLL" },
+                          ]);
+                        }}
+                        className="h-8 text-3xs font-semibold px-2"
+                      >
+                        Carregar Preset CVC Completo
+                      </Button>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (!newBtnLabel.trim()) return;
+                        setCustomButtons([
+                          ...customButtons,
+                          {
+                            id: newBtnLabel.toLowerCase().replace(/\s+/g, "-"),
+                            label: newBtnLabel.trim(),
+                            iconName: newBtnIcon,
+                            badge: newBtnBadge.trim() || undefined,
+                          },
+                        ]);
+                        setNewBtnLabel("");
+                        setNewBtnBadge("");
+                      }}
+                      className="h-8 text-xs font-bold px-3"
+                    >
+                      + Adicionar Botão
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Seletor de Cidade / Localidade Alvo */}
             <div className="space-y-2">

@@ -122,7 +122,7 @@ export function NativeCalendarWidget({
       </div>
 
       {/* Week Day Labels */}
-      <div className="grid grid-cols-7 gap-1 py-2 text-center text-2xs font-medium text-muted-foreground">
+      <div className="grid sm:grid-cols-7 gap-1 py-2 text-center text-2xs font-medium text-muted-foreground">
         {weekDayNames.map((d) => (
           <div key={d} className="h-6 flex items-center justify-center">
             {d}
@@ -131,7 +131,7 @@ export function NativeCalendarWidget({
       </div>
 
       {/* Day Cells Grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid sm:grid-cols-7 gap-1">
         {days.map((item, idx) => {
           const isSelected = item.dateStr === selectedDate;
           const isToday = item.dateStr === todayStr;

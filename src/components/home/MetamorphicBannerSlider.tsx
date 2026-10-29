@@ -45,7 +45,7 @@ export function MetamorphicBannerSlider({
       case "16:9":
         return "aspect-banner-cinema md:aspect-banner-slim md:max-h-72 lg:max-h-80";
       case "ifood":
-        return "aspect-banner-ifood md:aspect-banner-slim md:max-h-72 lg:max-h-80";
+        return "aspect-banner-hero md:aspect-banner-slim md:max-h-72 lg:max-h-80";
       case "4:3":
         return "aspect-banner-classic";
       case "1:1":

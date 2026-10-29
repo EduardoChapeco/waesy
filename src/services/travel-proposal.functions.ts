@@ -1094,6 +1094,28 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
       throw new Error("A agência não recebeu confirmação persistida do aceite. Tente novamente.");
     }
     const replayed = Boolean(acceptanceResult.replayed);
+
+    // Enfileira notificação automática de contrato e portal no WhatsApp do passageiro líder
+    if (leadPassenger?.phone && !replayed) {
+      const cleanPhone = leadPassenger.phone.replace(/\D/g, "");
+      if (cleanPhone.length >= 10) {
+        try {
+          await supabase.from("whatsapp_outbox_queue").insert({
+            recipient_phone: cleanPhone,
+            message_type: "proposal_accepted_contract",
+            payload: {
+              text: `Olá, ${leadPassenger.name}! Recebemos a aprovação da sua proposta.\nNossa equipe vinculou seu contrato digital. Você pode assinar eletronicamente e acompanhar sua viagem em tempo real no seu portal oficial:\n https://waesy.com.br/conta/viagens`,
+              proposal_id: proposal.id,
+              acceptance_id: acceptanceResult.acceptance_id,
+            },
+            status: "queued",
+            created_at: new Date().toISOString(),
+          });
+        } catch (err: any) {
+          console.warn("[approveTravelProposal] WhatsApp outbox insert ignored:", err?.message);
+        }
+      }
+    }
     return {
       success: true,
       acceptanceId: acceptanceResult.acceptance_id,

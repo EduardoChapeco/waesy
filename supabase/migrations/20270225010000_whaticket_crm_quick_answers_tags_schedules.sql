@@ -100,14 +100,9 @@ CREATE POLICY store_quick_answers_tenant_isolation ON public.store_quick_answers
   FOR ALL TO authenticated
   USING (
     EXISTS (
-      SELECT 1 FROM public.store_collaborators sc
+      SELECT 1 FROM public.store_members sc
       WHERE sc.store_id = store_quick_answers.store_id
         AND sc.profile_id = auth.uid()
-        AND sc.status = 'active'
-    ) OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = store_quick_answers.store_id
-        AND s.owner_profile_id = auth.uid()
     ) OR EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = auth.uid()
@@ -120,14 +115,9 @@ CREATE POLICY chat_thread_tags_tenant_isolation ON public.chat_thread_tags
   FOR ALL TO authenticated
   USING (
     EXISTS (
-      SELECT 1 FROM public.store_collaborators sc
+      SELECT 1 FROM public.store_members sc
       WHERE sc.store_id = chat_thread_tags.store_id
         AND sc.profile_id = auth.uid()
-        AND sc.status = 'active'
-    ) OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = chat_thread_tags.store_id
-        AND s.owner_profile_id = auth.uid()
     ) OR EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = auth.uid()
@@ -140,14 +130,9 @@ CREATE POLICY chat_thread_tag_assignments_tenant_isolation ON public.chat_thread
   FOR ALL TO authenticated
   USING (
     EXISTS (
-      SELECT 1 FROM public.store_collaborators sc
+      SELECT 1 FROM public.store_members sc
       WHERE sc.store_id = chat_thread_tag_assignments.store_id
         AND sc.profile_id = auth.uid()
-        AND sc.status = 'active'
-    ) OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = chat_thread_tag_assignments.store_id
-        AND s.owner_profile_id = auth.uid()
     ) OR EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = auth.uid()
@@ -160,14 +145,9 @@ CREATE POLICY whatsapp_scheduled_messages_tenant_isolation ON public.whatsapp_sc
   FOR ALL TO authenticated
   USING (
     EXISTS (
-      SELECT 1 FROM public.store_collaborators sc
+      SELECT 1 FROM public.store_members sc
       WHERE sc.store_id = whatsapp_scheduled_messages.store_id
         AND sc.profile_id = auth.uid()
-        AND sc.status = 'active'
-    ) OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = whatsapp_scheduled_messages.store_id
-        AND s.owner_profile_id = auth.uid()
     ) OR EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = auth.uid()

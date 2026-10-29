@@ -94,7 +94,7 @@ export function ProductRailSkeleton({
 
 export function PageSkeleton() {
  return (
- <div className="mx-auto max-w-screen-xl px-4 py-12 md:px-6 w-full animate-in fade-in duration-500">
+ <div className="mx-auto max-w-screen-xl px-4 py-12 md:px-6 w-full animate-in fade-in duration-200">
  <div className="mb-12 space-y-4">
  <Skeleton className="h-10 w-1/2 md:w-1/3" />
  <Skeleton className="h-5 w-3/4 md:w-1/2" />

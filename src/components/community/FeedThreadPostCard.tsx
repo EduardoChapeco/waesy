@@ -12,6 +12,7 @@ import {
   MoreHorizontal,
   MapPin,
   Calendar,
+  Plus,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -142,20 +143,28 @@ export function FeedThreadPostCard({
               onClick={() => setIsProfilePeekOpen(true)}
               aria-label={`Ver perfil de ${authorName}`}
             >
-              <Avatar className="size-11 min-h-11 min-w-11 rounded-full border border-border/40">
-                {authorAvatar && (
-                  <AvatarImage
-                    src={authorAvatar}
-                    alt={authorName}
-                    className="object-cover"
-                  />
-                )}
-                <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
-                  {authorInitial}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="size-11 min-h-11 min-w-11 rounded-full border border-border/40">
+                  {authorAvatar && (
+                    <AvatarImage
+                      src={authorAvatar}
+                      alt={authorName}
+                      className="object-cover"
+                    />
+                  )}
+                  <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
+                    {authorInitial}
+                  </AvatarFallback>
+                </Avatar>
+                <div
+                  className="absolute bottom-0 right-0 size-4 rounded-full bg-foreground text-background flex items-center justify-center border border-background shadow-2xs"
+                  aria-hidden="true"
+                >
+                  <Plus className="size-3 stroke-2" />
+                </div>
+              </div>
             </button>
-            {/* Linha vertical conectora de Thread estilo Threads */}
+            {/* Linha vertical conectora de publicação contínua */}
             <div className="w-0.5 grow min-h-4 bg-muted/50 rounded-full mt-2" />
           </div>
 
@@ -195,7 +204,7 @@ export function FeedThreadPostCard({
               />
             </div>
 
-            {/* Texto da Publicação (Threads Rich Highlighter & Anti-Truncate) */}
+            {/* Texto da Publicação (Marcador Dinâmico & Anti-Truncate) */}
             {post.content_text && (
               <div className="text-xs sm:text-sm leading-relaxed text-foreground whitespace-pre-line break-words text-anti-truncate">
                 <RichPostContent content={post.content_text} isExpanded />

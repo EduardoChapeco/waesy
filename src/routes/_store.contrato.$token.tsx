@@ -117,7 +117,7 @@ function PublicTravelContractSignaturePage() {
  </span>
  {isAlreadySigned ? (
  <Badge className="bg-emerald-600 text-foreground text-2xs font-bold">
- ✓ Assinado Eletronicamente
+  Assinado Eletronicamente
  </Badge>
  ) : (
  <Badge variant="outline" className="text-2xs font-mono font-bold">

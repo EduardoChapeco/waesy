@@ -219,7 +219,7 @@ function AdminMasterMarcaPage() {
  </Badge>
  ) : (
  <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-semibold px-3 py-1">
- ✓ Sincronizado com o sistema
+  Sincronizado com o sistema
  </Badge>
  )}
  </div>
@@ -734,7 +734,7 @@ function AdminMasterMarcaPage() {
  onValueChange={(v) => setPreviewTab(v as any)}
  className="w-full"
  >
- <TabsList className="w-full grid grid-cols-3 sm:grid-cols-3 h-8 p-1 bg-muted/40 rounded-lg">
+ <TabsList className="w-full grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-3 h-8 p-1 bg-muted/40 rounded-lg">
  <TabsTrigger value="topbar" className="text-2xs rounded-lg">
  Barra de Topo
  </TabsTrigger>
@@ -773,7 +773,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* Busca Simulada */}
- <div className="hidden sm:flex flex-1 max-w-[140px] mx-1">
+ <div className="hidden sm:flex flex-1 max-w-35 mx-1">
  <div className="w-full flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 text-2xs text-muted-foreground border border-border/30">
  <Search className="size-3" />
  <span>Buscar produtos...</span>
@@ -883,7 +883,7 @@ function AdminMasterMarcaPage() {
  className="absolute inset-0 size-full object-cover"
  />
  ) : (
- <div className="absolute inset-0 size-full bg-gradient-to-br from-zinc-900 to-black flex items-center justify-center p-4">
+ <div className="absolute inset-0 size-full bg-zinc-950 flex items-center justify-center p-4">
  <span className="text-2xs text-foreground/50 text-center">
  Background padrão ativo (Envie uma foto para customizar)
  </span>

@@ -12,9 +12,11 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
     try {
       const [res, catalogRes] = await Promise.all([
         getPublicExperienceDocumentBySlug({
-          data: { slug: params.slug, document_type: "storefront" },
+          data: { slug: params.slug },
         }),
-        import("@/services/catalog.functions").then(m => m.listPublishedProducts({ data: { limit: 20 } })).catch(() => ({ status: "error", data: [] })),
+        import("@/services/catalog.functions")
+          .then((m) => m.listPublishedProducts({ data: { limit: 20 } }))
+          .catch(() => ({ status: "error", data: [] })),
       ]);
 
       if (res.status === "not_found" || res.status === "unconfigured") {
@@ -25,11 +27,25 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
         throw new Error("Erro ao carregar a página.");
       }
 
-      const storeProducts = Array.isArray(res.data?.products) && res.data.products.length > 0 ? res.data.products : null;
-      const fallbackProducts = catalogRes?.status === "ok" && Array.isArray(catalogRes.data) ? catalogRes.data : [];
+      const storeProducts =
+        Array.isArray((res.data as any)?.products) && (res.data as any).products.length > 0 ? (res.data as any).products : null;
+      const fallbackProducts =
+        catalogRes?.status === "ok" && Array.isArray(catalogRes.data) ? catalogRes.data : [];
       const products = storeProducts ?? fallbackProducts;
-      const categories = Array.isArray(res.data?.categories) ? res.data.categories : [];
-      const storeData = res.data?.storeData ?? null;
+      const categories = Array.isArray((res.data as any)?.categories) ? (res.data as any).categories : [];
+      const storeData = (res.data as any)?.storeData ?? null;
+      const newsArticles = Array.isArray((res.data as any)?.newsArticles)
+        ? (res.data as any).newsArticles
+        : [];
+      const sponsors = Array.isArray((res.data as any)?.sponsors) ? (res.data as any).sponsors : [];
+      const classifieds = Array.isArray((res.data as any)?.classifieds) ? (res.data as any).classifieds : [];
+      const posts = Array.isArray((res.data as any)?.posts) ? (res.data as any).posts : [];
+      const flyers = Array.isArray((res.data as any)?.flyers) ? (res.data as any).flyers : [];
+      const events = Array.isArray((res.data as any)?.events) ? (res.data as any).events : [];
+      const jobs = Array.isArray((res.data as any)?.jobs) ? (res.data as any).jobs : [];
+      const stores = Array.isArray((res.data as any)?.stores) ? (res.data as any).stores : [];
+      const banners = Array.isArray((res.data as any)?.banners) ? (res.data as any).banners : [];
+      const hotpages = Array.isArray((res.data as any)?.hotpages) ? (res.data as any).hotpages : [];
 
       return {
         document: res.data.document,
@@ -37,13 +53,39 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
         products,
         categories,
         storeData,
+        newsArticles,
+        sponsors,
+        classifieds,
+        posts,
+        flyers,
+        events,
+        jobs,
+        stores,
+        banners,
+        hotpages,
       };
     } catch (err) {
       if (isNotFound(err) || isRedirect(err)) {
         throw err;
       }
       console.error("[loader:_store.paginas.$slug] Unhandled error:", err);
-      return { document: null, tree: null, products: [], categories: [], storeData: null };
+      return {
+        document: null,
+        tree: null,
+        products: [],
+        categories: [],
+        storeData: null,
+        newsArticles: [],
+        sponsors: [],
+        classifieds: [],
+        posts: [],
+        flyers: [],
+        events: [],
+        jobs: [],
+        stores: [],
+        banners: [],
+        hotpages: [],
+      };
     }
   },
   head: ({ loaderData, params }) => {
@@ -66,11 +108,7 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
     }
     return (
       <div className="flex flex-col items-center justify-center min-h-dvh p-4 bg-background">
-        <Surface
-          variant="default"
-          padding="lg"
-          className="max-w-md w-full text-center"
-        >
+        <Surface variant="default" padding="lg" className="max-w-md w-full text-center">
           <AlertCircle className="size-12 text-destructive mx-auto mb-4" />
           <h2 className="font-semibold text-2xl mb-2 text-foreground">Erro no Carregamento</h2>
           <p className="font-sans text-muted-foreground mb-6">{error.message}</p>
@@ -83,11 +121,7 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
   },
   notFoundComponent: () => (
     <div className="flex flex-col items-center justify-center min-h-dvh p-4 bg-background">
-      <Surface
-        variant="default"
-        padding="lg"
-        className="max-w-md w-full text-center"
-      >
+      <Surface variant="outline" padding="lg" className="max-w-md w-full text-center">
         <FileQuestion className="size-12 text-foreground mx-auto mb-4 opacity-50" />
         <h2 className="font-semibold text-2xl mb-2">Página Vazia</h2>
         <p className="font-sans text-muted-foreground mb-6">
@@ -102,16 +136,29 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
 });
 
 function PublicPage() {
-  const { document, tree, products, categories, storeData } = ((Route.useLoaderData?.() as any) || {});
+  const {
+    document,
+    tree,
+    products,
+    categories,
+    storeData,
+    newsArticles,
+    sponsors,
+    classifieds,
+    posts,
+    flyers,
+    events,
+    jobs,
+    stores,
+    banners,
+    hotpages,
+  } =
+    (Route.useLoaderData?.() as any) || {};
 
   if (!document) {
     return (
       <div className="flex flex-col items-center justify-center min-h-dvh p-4 bg-background">
-        <Surface
-          variant="default"
-          padding="lg"
-          className="max-w-md w-full text-center"
-        >
+        <Surface variant="outline" padding="lg" className="max-w-md w-full text-center">
           <FileQuestion className="size-12 text-foreground mx-auto mb-4 opacity-50" />
           <h2 className="font-semibold text-2xl mb-2">Página Indisponível</h2>
           <p className="font-sans text-muted-foreground mb-6">
@@ -125,14 +172,33 @@ function PublicPage() {
     );
   }
 
-  if (document?.settings?.omni_page?.blocks && Array.isArray(document.settings.omni_page.blocks) && document.settings.omni_page.blocks.length > 0) {
+  const omniDoc =
+    document?.settings?.omni_page ||
+    document?.settings?.omni_page_published ||
+    document?.settings?.omni_page_draft;
+
+  if (
+    omniDoc?.blocks &&
+    Array.isArray(omniDoc.blocks) &&
+    omniDoc.blocks.length > 0
+  ) {
     return (
       <main className="w-full flex flex-col gap-0 min-h-dvh bg-background">
         <OmniPageRenderer
-          document={document.settings.omni_page}
+          document={omniDoc}
           products={products}
           categories={categories}
           storeData={storeData}
+          newsArticles={newsArticles}
+          sponsors={sponsors}
+          classifieds={classifieds}
+          posts={posts}
+          flyers={flyers}
+          events={events}
+          jobs={jobs}
+          stores={stores}
+          banners={banners}
+          hotpages={hotpages}
         />
       </main>
     );

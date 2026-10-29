@@ -303,6 +303,18 @@ export default function CompanyCorporateTravelPage() {
     return approvals.filter((a) => a.status === "pending");
   }, [approvals]);
 
+  const outsidePolicyCount = useMemo(() => {
+    return approvals.filter((a) => a.policy_violation_reasons && a.policy_violation_reasons.length > 0).length;
+  }, [approvals]);
+
+  const withinPolicyCount = useMemo(() => {
+    return Math.max(0, approvals.length - outsidePolicyCount);
+  }, [approvals, outsidePolicyCount]);
+
+  const totalAirCreditsCents = useMemo(() => {
+    return airCredits.reduce((acc: number, c: any) => acc + (c.remaining_amount_cents || 0), 0);
+  }, [airCredits]);
+
   // ── MODAL: CRIAR PROJETO ──
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [isSubmittingProject, setIsSubmittingProject] = useState(false);
@@ -576,23 +588,96 @@ export default function CompanyCorporateTravelPage() {
       </WorkspaceCanonicalToolbar>
 
       <div className="p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-6">
-        {/* Painel de Métricas Tufte (Sem Card Soup) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-lg border border-border bg-card space-y-1">
-            <span className="text-xs text-muted-foreground">Aprovações Pendentes</span>
-            <p className="text-2xl font-bold text-foreground">{pendingApprovals.length}</p>
+        {/* Painel de Métricas Canônicas VOLL (Image 2) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Card 1: Destaque Laranja VOLL de Aprovações Pendentes */}
+          <div className="p-4 rounded-xl border border-orange-500/30 bg-orange-500/10 space-y-1 relative">
+            <span className="text-xs font-bold text-orange-600 dark:text-orange-400">Aprovações Pendentes</span>
+            <div className="flex items-baseline justify-between pt-1">
+              <p className="text-3xl font-extrabold text-foreground">{pendingApprovals.length}</p>
+              <button
+                type="button"
+                aria-label="Revisar solicitações pendentes de aprovação"
+                onClick={() => setActiveTab("aprovacoes")}
+                className="h-11 min-h-11 px-3 text-xs font-semibold text-orange-600 hover:text-orange-700 flex items-center gap-1 cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span>Revisar</span>
+                <ArrowRight className="size-3" />
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">Requerem validação de gestor</p>
           </div>
-          <div className="p-4 rounded-lg border border-border bg-card space-y-1">
-            <span className="text-xs text-muted-foreground">Viagens Registradas</span>
+
+          {/* Card 2: Aéreo & Créditos */}
+          <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Aéreo / Bilhetes</span>
+              <Plane className="size-3.5 text-sky-500" />
+            </div>
             <p className="text-2xl font-bold text-foreground">{trips.length}</p>
+            <p className="text-xs text-muted-foreground font-mono">
+              Créditos retidos: {formatMoney(totalAirCreditsCents)}
+            </p>
           </div>
-          <div className="p-4 rounded-lg border border-border bg-card space-y-1">
-            <span className="text-xs text-muted-foreground">Projetos Ativos</span>
+
+          {/* Card 3: Projetos Ativos */}
+          <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Projetos Corporativos</span>
+              <FolderKanban className="size-3.5 text-indigo-500" />
+            </div>
             <p className="text-2xl font-bold text-foreground">{projects.length}</p>
+            <p className="text-xs text-muted-foreground">Logística e equipes vinculadas</p>
           </div>
-          <div className="p-4 rounded-lg border border-border bg-card space-y-1">
-            <span className="text-xs text-muted-foreground">Créditos de Bilhete Aéreo</span>
-            <p className="text-2xl font-bold text-foreground">{airCredits.length}</p>
+
+          {/* Card 4: Viajantes Cadastrados */}
+          <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Viajantes Homologados</span>
+              <Users className="size-3.5 text-emerald-500" />
+            </div>
+            <p className="text-2xl font-bold text-foreground">{travelers.length}</p>
+            <p className="text-xs text-muted-foreground">Perfis e documentos no cofre</p>
+          </div>
+
+          {/* Card 5: Faturamento & Faturas */}
+          <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Faturas B2B</span>
+              <Receipt className="size-3.5 text-amber-500" />
+            </div>
+            <p className="text-2xl font-bold text-foreground">{invoices.length}</p>
+            <p className="text-xs text-muted-foreground">Ciclo quinzenal / mensal ativo</p>
+          </div>
+        </div>
+
+        {/* ── Barra Canônica de Conformidade com a Política (VOLL Image 2: Compliance Ratio) ── */}
+        <div className="p-4 rounded-xl border border-border/80 bg-card/60 space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <span className="font-bold text-foreground">Conformidade com a Política de Viagens</span>
+            <div className="flex items-center gap-3 text-xs font-semibold">
+              <span className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                <span className="size-2 rounded-full bg-rose-500 inline-block" />
+                {outsidePolicyCount} Fora da política
+              </span>
+              <span className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                <span className="size-2 rounded-full bg-emerald-500 inline-block" />
+                {withinPolicyCount} Dentro da política
+              </span>
+              <span className="text-muted-foreground font-mono">
+                {approvals.length} Total
+              </span>
+            </div>
+          </div>
+          <div className="w-full h-2 rounded-full bg-muted overflow-hidden flex">
+            <div
+              className="bg-rose-500 transition-colors duration-300"
+              style={{ width: approvals.length > 0 ? `${(outsidePolicyCount / approvals.length) * 100}%` : "0%" }}
+            />
+            <div
+              className="bg-emerald-500 transition-colors duration-300"
+              style={{ width: approvals.length > 0 ? `${(withinPolicyCount / approvals.length) * 100}%` : "100%" }}
+            />
           </div>
         </div>
 
@@ -738,7 +823,7 @@ export default function CompanyCorporateTravelPage() {
                               Recusar
                             </Button>
                             <Button
-                              variant="default"
+                              variant="outline"
                               className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
                               onClick={() =>
                                 handleOpenReview(

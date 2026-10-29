@@ -49,6 +49,46 @@ interface TemplateItem {
 
 const TEMPLATES_GALLERY: TemplateItem[] = [
  {
+ id: "template_waesy_super_vitrine",
+ title: "Super Vitrine • Idêntica ao App Waesy",
+ niche: "Vitrines Completas & Multi-Módulo",
+ category: "varejo",
+ tagline: "Banner metamórfico 28:9/16:9, dock/grade 4x2 de botões, malha Bento Tetris, trilho Hits com card líder, Reels 9:16, anúncios e feed social.",
+ badge: "Idêntica ao App",
+ imageUrl: "",
+ features: ["Banner Bidirecional", "Dock + Grade 4x2", "Bento Tetris", "Reels 9:16 + Catálogo"],
+ },
+ {
+ id: "template_ifood_delivery_vitrine",
+ title: "Express • Delivery & Mercado Estilo App",
+ niche: "Gastronomia, Mercados & Conveniência",
+ category: "food",
+ tagline: "Pílulas de entrega/retirada, ticket de cupom copiável, banner 21:9, departamentos 4x2, encartes 3:4 e cardápio direto.",
+ badge: "App Delivery",
+ imageUrl: "",
+ features: ["Grade 4x2 Mobile", "Cupom Copiável", "Encartes 3:4", "Cardápio Vivo"],
+ },
+ {
+ id: "template_classifieds_portal_vitrine",
+ title: "Portal • Veículos, Imóveis & Classificados",
+ niche: "Revendas, Imobiliárias & Oportunidades",
+ category: "imoveis",
+ tagline: "Banner Duo Split no desktop (16:9 no celular), filtros táteis e trilhos isolados por nicho sem corte de especificações.",
+ badge: "Multi-Nicho",
+ imageUrl: "",
+ features: ["Banner Duo Split", "Isolamento por Nicho", "Ficha Sem Corte", "Captação Direta"],
+ },
+ {
+ id: "template_social_creator_store",
+ title: "Creator • Vitrine Social, Reels & Loja Oficial",
+ niche: "Criadores, Marcas Autorais & Social",
+ category: "editorial",
+ tagline: "Cabeçalho verificado, cards de ação 2x2, anéis de Stories no desktop / Reels 9:16 no mobile, loja 1:1 e mural social.",
+ badge: "Creator & Loja",
+ imageUrl: "",
+ features: ["Stories Ring / Reels", " Loja Quadrada 1:1", "Mural de Posts", "Cards de Ação"],
+ },
+ {
  id: "hotpage_flash_sale",
  title: "Hotpage Flash • Queima de Estoque 50% OFF",
  niche: "Ofertas Relâmpago & Campanhas",
@@ -677,7 +717,7 @@ function WorkspaceSitesHubPage() {
  <img
  src={tpl.imageUrl}
  alt={tpl.title}
- className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  <div className="absolute top-2.5 right-2.5">
  <Badge variant="secondary" className="text-xs font-semibold bg-background/90 backdrop-blur-md">
@@ -788,6 +828,10 @@ function WorkspaceSitesHubPage() {
  </SelectTrigger>
  <SelectContent className="text-xs">
  <SelectItem value="blank">Começar em Branco (Livre)</SelectItem>
+ <SelectItem value="template_waesy_super_vitrine">Super Vitrine Estilo App Waesy</SelectItem>
+ <SelectItem value="template_ifood_delivery_vitrine">Delivery & Mercado Express (Estilo App)</SelectItem>
+ <SelectItem value="template_classifieds_portal_vitrine">Portal de Veículos, Imóveis & Classificados</SelectItem>
+ <SelectItem value="template_social_creator_store">Vitrine Social, Reels & Loja Oficial</SelectItem>
  <SelectItem value="classic_commerce">Vitrine de Coleção Completa</SelectItem>
  <SelectItem value="hotpage_flash_sale">Hotpage com Cronômetro e Ofertas</SelectItem>
  <SelectItem value="tourism_excelencia">Roteiro de Viagens e Turismo</SelectItem>

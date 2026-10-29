@@ -416,7 +416,7 @@ async function hydrateBindings(
             imageUrl: d.cover_image_url || d.gallery_urls?.[0] || undefined,
             badge:
               d.iata_gateway ||
-              (d.average_rating ? `★ ${Number(d.average_rating).toFixed(1)}` : undefined),
+              (d.average_rating ? ` ${Number(d.average_rating).toFixed(1)}` : undefined),
           }));
         }
       } catch (err) {
@@ -573,6 +573,113 @@ export const listExperienceDocuments = createServerFn({ method: "GET" })
     }
   });
 
+async function hydrateOmniVitrineCollections(db: any, storeId: string | null): Promise<{
+  classifieds: Array<Record<string, any>>;
+  posts: Array<Record<string, any>>;
+  flyers: Array<Record<string, any>>;
+  events: Array<Record<string, any>>;
+  jobs: Array<Record<string, any>>;
+  stores: Array<Record<string, any>>;
+  banners: Array<Record<string, any>>;
+  hotpages: Array<Record<string, any>>;
+}> {
+  const safeQuery = async (promise: PromiseLike<{ data?: any }>): Promise<Array<Record<string, any>>> => {
+    try {
+      const res = await promise;
+      return Array.isArray(res?.data) ? (res.data as Array<Record<string, any>>) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const [classifieds, posts, flyers, events, jobs, stores, banners, hotpages] = await Promise.all([
+    storeId
+      ? safeQuery(
+          db
+            .from("classifieds")
+            .select("*")
+            .eq("store_id", storeId)
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(24),
+        )
+      : Promise.resolve([]),
+    storeId
+      ? safeQuery(
+          db
+            .from("posts")
+            .select("*")
+            .eq("store_id", storeId)
+            .order("created_at", { ascending: false })
+            .limit(24),
+        )
+      : Promise.resolve([]),
+    storeId
+      ? safeQuery(
+          db
+            .from("store_promotional_flyers")
+            .select("*")
+            .eq("store_id", storeId)
+            .eq("is_active", true)
+            .order("created_at", { ascending: false })
+            .limit(16),
+        )
+      : Promise.resolve([]),
+    storeId
+      ? safeQuery(
+          db
+            .from("events")
+            .select("*")
+            .eq("store_id", storeId)
+            .eq("status", "published")
+            .order("event_date", { ascending: true })
+            .limit(16),
+        )
+      : Promise.resolve([]),
+    storeId
+      ? safeQuery(
+          db
+            .from("jobs")
+            .select("*")
+            .eq("store_id", storeId)
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(16),
+        )
+      : Promise.resolve([]),
+    safeQuery(
+      db
+        .from("stores")
+        .select("id, name, slug, category, city, state, logo_url, cover_url, is_verified")
+        .eq("is_active", true)
+        .limit(16),
+    ),
+    storeId
+      ? safeQuery(
+          db
+            .from("banners")
+            .select("*")
+            .eq("store_id", storeId)
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+            .limit(12),
+        )
+      : Promise.resolve([]),
+    storeId
+      ? safeQuery(
+          db
+            .from("hotpages")
+            .select("id, slug, title, subtitle, category, cover_url, is_published")
+            .eq("store_id", storeId)
+            .eq("is_published", true)
+            .limit(12),
+        )
+      : Promise.resolve([]),
+  ]);
+
+  return { classifieds, posts, flyers, events, jobs, stores, banners, hotpages };
+}
+
 export const getExperienceDocument = createServerFn({ method: "GET" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data: input }) => {
@@ -644,7 +751,12 @@ export const getExperienceDocument = createServerFn({ method: "GET" })
 
       return {
         status: "ok" as const,
-        data: { document: doc as ExperienceDocument, version, nodes },
+        data: {
+          document: doc as ExperienceDocument,
+          version,
+          nodes,
+          ...(await hydrateOmniVitrineCollections(db, storeId)),
+        },
       };
     } catch (e: any) {
       if (e instanceof SupabaseUnconfiguredError) throw e;
@@ -2217,17 +2329,7 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
   .validator(
     z.object({
       slug: z.string(),
-      document_type: z
-        .enum([
-          "storefront",
-          "biolink",
-          "pwa",
-          "campaign",
-          "seller_showcase",
-          "product_template",
-          "campaign_popup",
-        ])
-        .default("storefront"),
+      document_type: z.string().optional(),
       storeId: z.string().optional(),
     }),
   )
@@ -2395,8 +2497,77 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
 
       const effectiveDocStoreId = doc.store_id || storeId;
 
-      // Suporte a Documento Moderno Omni-Builder com hidratação da loja proprietária
-      const omniDoc = (doc.settings as any)?.omni_page;
+      // Suporte a Documento Moderno Omni-Builder com hidratação da loja proprietária e portal de notícias
+      let omniDoc =
+        (doc.settings as any)?.omni_page_published ||
+        (doc.settings as any)?.omni_page ||
+        (doc.settings as any)?.omni_page_draft ||
+        null;
+
+      if (!omniDoc) {
+        const { data: recentVersions } = await db
+          .from("experience_versions")
+          .select("*")
+          .eq("document_id", doc.id)
+          .order("version_number", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        const targetVer =
+          recentVersions?.find((v) => v.status === "published" && v.document_snapshot) ||
+          recentVersions?.find((v) => v.document_snapshot) ||
+          null;
+
+        if (targetVer?.document_snapshot) {
+          omniDoc = targetVer.document_snapshot;
+        }
+      }
+
+      const hasNewsBlocks = Boolean(
+        omniDoc?.blocks?.some?.((b: any) => typeof b?.type === "string" && b.type.startsWith("news_promethee_")),
+      );
+      let hydratedNewsArticles: any[] = [];
+      let hydratedSponsors: any[] = [];
+      if (hasNewsBlocks) {
+        const [tenantNewsRes, tenantSponsorsRes] = await Promise.all([
+          effectiveDocStoreId
+            ? db
+                .from("news_articles")
+                .select(
+                  "id, store_id, author_name, source_url, ai_summary, title, slug, kicker, subtitle, content_sections, cover_media_url, cover_media_type, category, tags, reading_time_minutes, status, published_at, created_at",
+                )
+                .eq("store_id", effectiveDocStoreId)
+                .eq("status", "published")
+                .order("published_at", { ascending: false })
+                .limit(24)
+            : Promise.resolve({ data: [] }),
+          effectiveDocStoreId
+            ? db
+                .from("sponsors")
+                .select("*")
+                .eq("store_id", effectiveDocStoreId)
+                .eq("active", true)
+                .order("created_at", { ascending: false })
+                .limit(8)
+            : Promise.resolve({ data: [] }),
+        ]);
+
+        hydratedNewsArticles = tenantNewsRes.data || [];
+        hydratedSponsors = tenantSponsorsRes.data || [];
+
+        if (hydratedNewsArticles.length === 0) {
+          const { data: globalNews } = await db
+            .from("news_articles")
+            .select(
+              "id, store_id, author_name, source_url, ai_summary, title, slug, kicker, subtitle, content_sections, cover_media_url, cover_media_type, category, tags, reading_time_minutes, status, published_at, created_at",
+            )
+            .eq("status", "published")
+            .order("published_at", { ascending: false })
+            .limit(24);
+          hydratedNewsArticles = globalNews || [];
+        }
+      }
+
       if (omniDoc?.blocks && Array.isArray(omniDoc.blocks) && omniDoc.blocks.length > 0) {
         const [storeRes, productsRes, categoriesRes] = await Promise.all([
           effectiveDocStoreId
@@ -2427,11 +2598,25 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
         return {
           status: "ok" as const,
           data: {
-            document: doc as ExperienceDocument,
+            document: {
+              ...(doc as ExperienceDocument),
+              settings: {
+                ...((doc.settings as Record<string, unknown>) || {}),
+                omni_page: omniDoc,
+                omni_page_published: omniDoc,
+              },
+            },
             tree: [],
             storeData: storeRes.data || null,
             products: productsRes.data || [],
             categories: categoriesRes.data || [],
+            newsArticles: hydratedNewsArticles,
+            sponsors: hydratedSponsors,
+            ...(omniDoc.blocks.some(
+              (b: any) => typeof b?.type === "string" && b.type.startsWith("vitrine_"),
+            )
+              ? await hydrateOmniVitrineCollections(db, effectiveDocStoreId)
+              : {}),
           },
         };
       }
@@ -3003,11 +3188,11 @@ export const duplicateExperienceDocument = createServerFn({ method: "POST" })
     const db = getServerClient();
 
     // 1. Get original doc
-    const original = await getExperienceDocument({ data: { id: input.id } });
+    const original: any = await getExperienceDocument({ data: { id: input.id } });
     if (!original.data?.document) throw new Error("Documento original não encontrado.");
 
     const origDoc = original.data.document;
-    const origNodes = original.data.nodes || [];
+    const origNodes: any[] = original.data.nodes || [];
 
     const newSlug = `${origDoc.slug}-copia-${Date.now().toString().slice(-4)}`;
     const newTitle = `${origDoc.title} (Cópia)`;
@@ -3048,7 +3233,7 @@ export const duplicateExperienceDocument = createServerFn({ method: "POST" })
         return idMap.get(oldId)!;
       };
 
-      const nodesToInsert = origNodes.map((node) => ({
+      const nodesToInsert = origNodes.map((node: any) => ({
         id: getNewId(node.id),
         version_id: newVersion.id,
         parent_id: node.parent_id ? getNewId(node.parent_id) : null,
@@ -3848,6 +4033,147 @@ export const provisionFormLeadWixAppSuiteFn = createServerFn({ method: "POST" })
               omni_page_draft: omniDoc,
               omni_page: omniDoc,
               wix_app_suite: "form_lead_suite_v1",
+            },
+          })
+          .select("id")
+          .single();
+
+        if (createErr || !createdDoc) continue;
+
+        omniDoc.id = createdDoc.id;
+
+        const { data: ver } = await db
+          .from("experience_versions")
+          .insert({
+            document_id: createdDoc.id,
+            version_number: 1,
+            status: "published",
+            document_snapshot: omniDoc,
+            published_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        if (ver?.id) {
+          await db
+            .from("experience_documents")
+            .update({ published_version_id: ver.id })
+            .eq("id", createdDoc.id);
+        }
+
+        provisionedPages.push({
+          id: createdDoc.id,
+          slug: def.slug,
+          title: def.title,
+          created: true,
+        });
+      }
+    }
+
+    return {
+      status: "ok" as const,
+      pagesCount: provisionedPages.length,
+      pages: provisionedPages,
+    };
+  },
+);
+
+export const provisionNewsWixAppSuiteFn = createServerFn({ method: "POST" }).handler(
+  async () => {
+    await requireAdmin();
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    if (!identity.store_id) {
+      throw new Error("Loja não identificada para instalar a suíte do Portal de Notícias.");
+    }
+
+    const db = getServerClient();
+    const { createEmptyOmniPage } = await import("@/types/omni-builder");
+    const { NEWS_WIX_APP_PAGES, applyTemplateToPage } = await import("@/lib/builder/omni-templates");
+
+    const suiteDefinitions = [
+      {
+        templateId: "wix_news_home",
+        title: "Portal Regional de Notícias",
+        slug: "noticias",
+        documentType: "storefront",
+      },
+      {
+        templateId: "wix_news_article",
+        title: "Reportagem Completa",
+        slug: "artigo",
+        documentType: "storefront",
+      },
+      {
+        templateId: "wix_news_advertise",
+        title: "Anuncie no Portal",
+        slug: "anuncie",
+        documentType: "campaign",
+      },
+      {
+        templateId: "wix_news_submit",
+        title: "Enviar Pauta para a Redação",
+        slug: "enviar-pauta",
+        documentType: "campaign",
+      },
+    ] as const;
+
+    const provisionedPages: Array<{ id: string; slug: string; title: string; created: boolean }> = [];
+
+    for (const def of suiteDefinitions) {
+      const tplExists = NEWS_WIX_APP_PAGES.some((t) => t.id === def.templateId);
+      if (!tplExists) continue;
+
+      let omniDoc = createEmptyOmniPage(def.slug, def.title, "media" as any);
+      omniDoc = applyTemplateToPage(omniDoc, def.templateId);
+      omniDoc.published_at = new Date().toISOString();
+
+      const { data: existing } = await db
+        .from("experience_documents")
+        .select("id, settings")
+        .eq("store_id", identity.store_id)
+        .eq("slug", def.slug)
+        .maybeSingle();
+
+      if (existing?.id) {
+        omniDoc.id = existing.id;
+        const mergedSettings = {
+          ...((existing.settings as Record<string, unknown>) || {}),
+          template_id: def.templateId,
+          omni_page_draft: omniDoc,
+          omni_page: omniDoc,
+          wix_app_suite: "news_portal_suite_v1",
+        };
+        await db
+          .from("experience_documents")
+          .update({
+            title: def.title,
+            is_active: true,
+            settings: mergedSettings,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+
+        provisionedPages.push({
+          id: existing.id,
+          slug: def.slug,
+          title: def.title,
+          created: false,
+        });
+      } else {
+        const { data: createdDoc, error: createErr } = await db
+          .from("experience_documents")
+          .insert({
+            store_id: identity.store_id,
+            title: def.title,
+            slug: def.slug,
+            document_type: def.documentType,
+            is_active: true,
+            settings: {
+              template_id: def.templateId,
+              omni_page_draft: omniDoc,
+              omni_page: omniDoc,
+              wix_app_suite: "news_portal_suite_v1",
             },
           })
           .select("id")

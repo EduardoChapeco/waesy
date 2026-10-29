@@ -324,7 +324,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
 
               {selectedConnector.provider === "email" && (
                 <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/20">
-                  <div className="space-y-0.5 pr-2">
+                  <div className="space-y-1 pr-2">
                     <span className="text-xs font-semibold text-foreground block">
                       Barreira de Envio de E-mails
                     </span>

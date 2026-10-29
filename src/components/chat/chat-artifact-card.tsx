@@ -396,7 +396,7 @@ export function ChatArtifactCard({
 
     {/* ── Modal de Pré-Visualização In-Place (Garante Zero 404) ── */}
     <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card border-border">
+      <DialogContent className="max-w-2xl max-h-dvh flex flex-col p-0 gap-0 overflow-hidden bg-card border-border">
         <DialogHeader className="p-4 border-b border-border bg-muted/20 shrink-0">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-2xs font-mono h-4 px-2 border-border/40">

@@ -341,7 +341,7 @@ function AdminAppointmentsPage() {
  variant="ghost"
  size="icon"
  onClick={() => setSelectedDate((prev) => subDays(prev, 1))}
- className="min-h-11 min-w-[44px] rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  aria-label="Dia anterior"
  >
  <ChevronLeft className="size-4" />
@@ -381,7 +381,7 @@ function AdminAppointmentsPage() {
  variant="ghost"
  size="icon"
  onClick={() => setSelectedDate((prev) => addDays(prev, 1))}
- className="min-h-11 min-w-[44px] rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  aria-label="Próximo dia"
  >
  <ChevronRight className="size-4" />

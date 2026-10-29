@@ -139,7 +139,7 @@ function QuickOpenRegisterInlineCard() {
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  placeholder="Ex: Turno da Tarde / Balcão 1"
- className="text-xs rounded-lg h-10"
+ className="text-xs rounded-lg h-11 min-h-11"
  />
  </div>
 
@@ -920,7 +920,7 @@ function PdvTerminal() {
             variant="ghost"
             size="sm"
             onClick={() => setCart([])}
-            className="h-8 px-3 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+            className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
           >
             Limpar
           </Button>
@@ -1033,7 +1033,7 @@ function PdvTerminal() {
               size="sm"
               onClick={handleOpenCheckout}
               disabled={cart.length === 0}
-              className="w-full h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer"
+              className="w-full h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer"
             >
               <CreditCard className="size-3.5" />
               <span>Receber / Cobrar no Balcão [F4]</span>
@@ -1067,7 +1067,7 @@ function PdvTerminal() {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder={semantics.searchItemPlaceholder || "Buscar por nome ou código de barras... [F2]"}
- className="pl-9 h-10 text-xs rounded-lg bg-background border-border/80 focus-visible:ring-1"
+ className="pl-9 h-11 min-h-11 text-xs rounded-lg bg-background border-border/80 focus-visible:ring-1"
  autoFocus
  />
  </div>
@@ -1104,7 +1104,7 @@ function PdvTerminal() {
  placeholder={currentModeObj.placeholder}
  value={tableOrComandaNumber}
  onChange={(e) => setTableOrComandaNumber(e.target.value)}
- className="h-9 text-xs rounded-lg font-mono text-center bg-background"
+ className="h-11 min-h-11 sm:h-9 text-xs rounded-lg font-mono text-center bg-background"
  />
  </div>
  );
@@ -1118,7 +1118,7 @@ function PdvTerminal() {
  variant="outline"
  size="sm"
  onClick={() => openQuickMovement("sangria")}
- className="h-9 rounded-lg text-xs font-bold gap-1 px-3"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-1 px-3"
  title="Sangria Rápida [F7]"
  >
  <ArrowUpRight className="size-3.5 text-rose-500" />
@@ -1129,7 +1129,7 @@ function PdvTerminal() {
  variant="outline"
  size="sm"
  onClick={() => openQuickMovement("suprimento")}
- className="h-9 rounded-lg text-xs font-bold gap-1 px-3"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-1 px-3"
  title="Suprimento Rápido [F8]"
  >
  <ArrowDownLeft className="size-3.5 text-emerald-500" />
@@ -1140,7 +1140,7 @@ function PdvTerminal() {
  variant="outline"
  size="sm"
  onClick={handlePrintBlindClosing}
- className="h-9 rounded-lg text-xs font-bold gap-1 px-3 border-border/80 text-foreground hover:bg-muted"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-1 px-3 border-border/80 text-foreground hover:bg-muted"
  title="Fechamento de Turno"
  >
  <Printer className="size-3.5 text-primary" />
@@ -1177,7 +1177,7 @@ function PdvTerminal() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg text-xs font-bold gap-1"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-1"
  title="Cozinha (KDS)"
  >
  <Link to="/workspace/pdv/cozinha">
@@ -1190,7 +1190,7 @@ function PdvTerminal() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg text-xs font-bold gap-1"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-1"
  title="Comandas"
  >
  <Link to="/workspace/pdv/comandas">
@@ -1203,7 +1203,7 @@ function PdvTerminal() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg text-xs font-bold gap-1"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-1"
  title="Mapa de Reservas do Salão"
  >
  <Link to="/workspace/reservas">
@@ -1216,7 +1216,7 @@ function PdvTerminal() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg text-xs font-bold gap-1"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-1"
  >
  <Link to="/workspace/financeiro/caixa">
  <Clock className="size-3.5 text-emerald-500" />
@@ -1386,7 +1386,7 @@ function PdvTerminal() {
                     setIsFloorPlanModalOpen(false);
                     toast.info("Atendimento alterado para Balcão");
                   }}
-                  className="text-xs h-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="text-xs h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   Desvincular Mesa
                 </Button>
@@ -1559,7 +1559,7 @@ function PdvTerminal() {
                     key={val}
                     type="button"
                     onClick={() => setPaymentAmountInput(`${val},00`)}
-                    className="flex-1 h-10 sm:h-9 rounded-lg border border-border/80 text-xs font-bold font-mono hover:bg-muted active:scale-95 transition-transform duration-200 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex-1 h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 rounded-lg border border-border/80 text-xs font-bold font-mono hover:bg-muted active:scale-95 transition-transform duration-200 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     R$ {val}
                   </button>
@@ -1613,7 +1613,7 @@ function PdvTerminal() {
  placeholder="Ex: 000.000.000-00"
  value={customerDoc}
  onChange={(e) => setCustomerDoc(e.target.value)}
- className="h-10 text-xs rounded-lg font-mono"
+ className="h-11 min-h-11 text-xs rounded-lg font-mono"
  />
  </div>
  </div>
@@ -1792,7 +1792,7 @@ function PdvTerminal() {
  <DialogFooter>
  <Button
  onClick={() => setShortcutsModalOpen(false)}
- className="w-full h-10 rounded-lg text-xs font-bold"
+ className="w-full h-11 min-h-11 rounded-lg text-xs font-bold"
  >
  Fechar
  </Button>
@@ -1821,7 +1821,7 @@ function PdvTerminal() {
  placeholder="Ex: 50,00"
  value={quickMovementAmount}
  onChange={(e) => setQuickMovementAmount(e.target.value)}
- className="h-10 text-sm font-mono rounded-lg"
+ className="h-11 min-h-11 text-sm font-mono rounded-lg"
  autoFocus
  />
  </div>
@@ -1836,7 +1836,7 @@ function PdvTerminal() {
  }
  value={quickMovementReason}
  onChange={(e) => setQuickMovementReason(e.target.value)}
- className="h-10 text-xs rounded-lg"
+ className="h-11 min-h-11 text-xs rounded-lg"
  />
  </div>
 
@@ -1845,13 +1845,13 @@ function PdvTerminal() {
  type="button"
  variant="outline"
  onClick={() => setQuickMovementModalOpen(false)}
- className="h-10 rounded-lg text-xs"
+ className="h-11 min-h-11 rounded-lg text-xs"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
- className="h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
  >
  Confirmar {quickMovementType === "sangria" ? "Sangria" : "Suprimento"}
  </Button>
@@ -1882,7 +1882,7 @@ function PdvTerminal() {
 
       {/* ── MODAL DIGITAL COMPANION CARD 9:16 (COMPROVANTE DE BALCÃO / CARNÊ WHATSAPP) ── */}
       <Dialog open={companionCardOpen} onOpenChange={setCompanionCardOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
+        <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
             <DialogTitle>Comprovante Digital 9:16 de Venda</DialogTitle>
           </DialogHeader>
@@ -1922,7 +1922,7 @@ function PdvTerminal() {
           <Button
             size="sm"
             onClick={() => setMobileTicketOpen(true)}
-            className="h-10 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground shrink-0 gap-2 shadow-xs cursor-pointer"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground shrink-0 gap-2 shadow-xs cursor-pointer"
           >
             <span>Ver Ticket / Cobrar</span>
             <ArrowUpRight className="size-3.5" />

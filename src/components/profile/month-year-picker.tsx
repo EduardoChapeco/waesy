@@ -185,7 +185,7 @@ export function ExperienceDateRangeGroup({
 
           {isCurrent ? (
             <div className="h-9 rounded-lg border border-dashed border-primary/40 bg-primary/5 flex items-center px-3 text-xs text-primary font-bold">
-              ⚡ Cargo Atual (Presente)
+               Cargo Atual (Presente)
             </div>
           ) : (
             <MonthYearPicker

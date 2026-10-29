@@ -126,7 +126,7 @@ export function PublishMomentModal({
 
  return (
  <Dialog open={isModalOpen} onOpenChange={(v) => { if (!v) handleClose(); }}>
- <DialogContent className="sm:max-w-[480px] sm:rounded-lg bg-card sm:p-6 p-5 max-h-[90vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-[480px] sm:rounded-lg bg-card sm:p-6 p-5 max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar">
  <DialogHeader className="space-y-1">
  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-1">
  <Camera size={20} weight="bold" />

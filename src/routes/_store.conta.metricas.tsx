@@ -263,7 +263,7 @@ function MemberMetricsPage() {
  </AvatarFallback>
  </Avatar>
  <div className="text-xs">
- <p className="font-bold text-foreground truncate max-w-[140px]">
+ <p className="font-bold text-foreground truncate max-w-35">
  {f.full_name}
  </p>
  <p className="text-muted-foreground text-2xs">
@@ -393,13 +393,13 @@ function MemberMetricsPage() {
  </h3>
  <div className="space-y-3 text-xs text-muted-foreground">
  <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
- <p className="font-bold text-foreground">💡 Poste com Mídias e Galerias</p>
+ <p className="font-bold text-foreground"> Poste com Mídias e Galerias</p>
  <p className="text-2xs">
  Publicações com carrosséis e fotos de alta qualidade têm 4x mais retenção.
  </p>
  </div>
  <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-1">
- <p className="font-bold text-foreground">📍 Marque Sua Localização</p>
+ <p className="font-bold text-foreground"> Marque Sua Localização</p>
  <p className="text-2xs">
  Posts geolocalizados aparecem automaticamente no Mapa Social da Cidade.
  </p>

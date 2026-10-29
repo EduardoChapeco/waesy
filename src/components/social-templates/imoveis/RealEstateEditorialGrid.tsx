@@ -66,12 +66,12 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
         <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between">
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-950/80 backdrop-blur-md text-foreground/90 text-xs sm:text-sm font-semibold">
             <MapPin className="size-4 text-amber-400 shrink-0" />
-            <span className="truncate max-w-[260px]">{destinationOrLocation || "Localização Privilegiada"}</span>
+            <span className="truncate max-w-65">{destinationOrLocation || "Localização Privilegiada"}</span>
           </div>
 
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card/90 backdrop-blur-md text-slate-900 text-xs font-bold shadow-sm">
             <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
-            <span className="truncate max-w-[120px]">{storeName}</span>
+            <span className="truncate max-w-30">{storeName}</span>
           </div>
         </div>
       </div>

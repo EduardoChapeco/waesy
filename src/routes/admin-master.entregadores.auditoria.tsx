@@ -252,7 +252,7 @@ function AdminCourierAuditPage() {
       {/* Modal de Inspeção Forense Lado a Lado */}
       {selectedApp && (
         <Dialog open={!!selectedApp} onOpenChange={() => setSelectedApp(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg">
+          <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto rounded-lg">
             <DialogHeader>
               <DialogTitle className="text-base font-bold flex items-center justify-between">
                 <span>Dossiê Forense de Credenciamento de Parceiro</span>

@@ -56,9 +56,9 @@ async function generateDeviceFingerprint(): Promise<DeviceFingerprint> {
  ctx.fillRect(125, 1, 62, 20);
  ctx.fillStyle = '#069';
  ctx.font = '11pt no-real-font-xyz';
- ctx.fillText('Waesy 🔐 Sentinel v1', 2, 15);
+ ctx.fillText('Waesy  Sentinel v1', 2, 15);
  ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
- ctx.fillText('Waesy 🔐 Sentinel v1', 4, 17);
+ ctx.fillText('Waesy  Sentinel v1', 4, 17);
  const raw = canvas.toDataURL();
  canvasHash = raw.substring(raw.length - 32); // Últimos 32 chars são únicos
  }

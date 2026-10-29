@@ -93,7 +93,7 @@ export function TimelineHistory({ content, design_tokens }: TimelineHistoryProps
  <img
  src={event.image_url}
  alt={event.title}
- className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500"
+ className="w-full h-48 object-cover hover:scale-105 transition-transform duration-200"
  />
  </div>
  )}

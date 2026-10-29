@@ -34,7 +34,7 @@ export function ProposalShareWhatsappModal({
  const hotelHighlight = proposal.hotels?.[0]?.hotel_name || 'Hospedagem Selecionada';
  const f = proposal.flights?.[0] as any;
  const flightHighlight = f
- ? `Voo ${f.airline_name || f.airline || 'Aéreo'} (${f.origin_iata || f.origin || ''} ➔ ${f.destination_iata || f.destination || ''})`
+ ? `Voo ${f.airline_name || f.airline || 'Aéreo'} (${f.origin_iata || f.origin || ''} &rarr; ${f.destination_iata || f.destination || ''})`
  : 'Aéreo conforme roteiro';
 
  const defaultMessage = `Olá ${proposal.client_name}!

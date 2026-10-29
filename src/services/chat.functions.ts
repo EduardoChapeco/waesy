@@ -86,7 +86,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  if (!identity?.store_id) {
  return {
  threads: [],
- metrics: { total: 0, open: 0, closed: 0, avg_rating: 5.0, sla_first_response_min: 0 },
+ metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
  };
  }
 
@@ -136,7 +136,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  console.warn("[chat.functions] Erro ao consultar chat_threads:", error.message);
  return {
  threads: [],
- metrics: { total: 0, open: 0, closed: 0, avg_rating: 5.0, sla_first_response_min: 0 },
+ metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
  };
  }
 
@@ -205,13 +205,26 @@ export const listChatThreads = createServerFn({ method: "GET" })
  };
  });
 
- // Métricas de Governança
+ const ratedThreads = threadsList.filter(
+  (t: any) => typeof t.satisfaction_rating === "number" && t.satisfaction_rating > 0,
+ );
+ const avg_rating =
+  ratedThreads.length > 0
+   ? Number(
+     (
+      ratedThreads.reduce((acc: number, t: any) => acc + t.satisfaction_rating, 0) /
+      ratedThreads.length
+     ).toFixed(1),
+    )
+   : null;
+
+ // Métricas de Governança Autênticas (Zero Mocks / Invariante B.33)
  const metrics = {
  total: threadsList.length,
  open: threadsList.filter((t) => t.status === "open").length,
  closed: threadsList.filter((t) => t.status === "closed" || t.status === "resolved").length,
- avg_rating: 4.8,
- sla_first_response_min: 3.5,
+ avg_rating,
+ sla_first_response_min: null,
  };
 
  return {
@@ -222,7 +235,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  console.warn("[chat.functions] Falha inesperada ao listar threads:", error?.message || error);
  return {
  threads: [],
- metrics: { total: 0, open: 0, closed: 0, avg_rating: 5.0, sla_first_response_min: 0 },
+ metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
  };
  }
  });
@@ -397,10 +410,12 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
 
  const db = getServerClient();
 
- const [profileRes, ordersRes, ticketsRes] = await Promise.all([
+ const [profileRes, ordersRes, ticketsRes, tripsRes, creditsRes] = await Promise.all([
  db.from("profiles").select("id, full_name, phone, avatar_url, created_at").eq("id", data.customerId).single(),
  db.from("orders").select("id, total_amount_cents, status, created_at, payment_method").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("created_at", { ascending: false }).limit(10),
  db.from("store_support_tickets").select("*").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("created_at", { ascending: false }),
+ db.from("tourism_trips").select("id, trip_number, title, destination_city, travel_start_date, travel_end_date, total_cents, status").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("travel_start_date", { ascending: false }).limit(5),
+ db.from("air_ticket_credits").select("id, airline, original_pnr, remaining_amount_cents, expires_at, status").eq("agency_id", data.storeId).eq("status", "active").limit(5),
  ]);
 
  const orders = ordersRes.data || [];
@@ -416,7 +431,10 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  active_tickets_count: (ticketsRes.data || []).filter((t) => t.status === "open" || t.status === "under_review").length,
  },
  orders,
+ trips: (tripsRes?.data as any[]) || [],
+ credits: (creditsRes?.data as any[]) || [],
  tickets: ticketsRes.data || [],
+
  };
  });
 
@@ -482,6 +500,7 @@ export const getCustomerChatThread = createServerFn({ method: "GET" })
  payload: m.payload || {},
  })),
  tickets: ticketsRes.data || [],
+
  };
  } catch (e: any) {
  console.error("[chat] getCustomerChatThread error:", e);

@@ -1,32 +1,53 @@
 import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tanstack/react-router";
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, lazy } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Sparkles, ExternalLink, Film } from 'lucide-react';
-import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
-import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
+import type { StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
+import type { ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
-import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
-import { AiWritingCopilotSheet } from "@/components/classifieds/ai-writing-copilot-sheet";
 import type { CopilotScope, CopilotWorkingDraft, EditorialFieldKey } from "@/lib/classifieds/ai-writing-copilot";
-import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
-import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
-import {
-  EventClassifiedShowcaseView,
-  type EventTicketTier,
-  type EventScheduleItem,
-  type EventSpeaker,
-  type EventSponsor,
-  type EventSurvey,
-  type EventPollOptionNormalized,
+import type {
+  EventTicketTier,
+  EventScheduleItem,
+  EventSpeaker,
+  EventSponsor,
+  EventSurvey,
+  EventPollOptionNormalized,
 } from "@/components/classifieds/event-classified-showcase-view";
+
+const StoryHighlightUploader = lazy(() =>
+  import("@/components/classifieds/story-highlight-uploader").then((m) => ({ default: m.StoryHighlightUploader })),
+);
+const ItineraryDayEditor = lazy(() =>
+  import("@/components/classifieds/itinerary-day-editor").then((m) => ({ default: m.ItineraryDayEditor })),
+);
+const EditorialShowcaseView = lazy(() =>
+  import("@/components/classifieds/editorial-showcase-view").then((m) => ({ default: m.EditorialShowcaseView })),
+);
+const AiWritingCopilotSheet = lazy(() =>
+  import("@/components/classifieds/ai-writing-copilot-sheet").then((m) => ({ default: m.AiWritingCopilotSheet })),
+);
+const UniversalClassifiedShowcase = lazy(() =>
+  import("@/components/classifieds/universal-classified-showcase").then((m) => ({ default: m.UniversalClassifiedShowcase })),
+);
+const ConvenienceShowcaseView = lazy(() =>
+  import("@/components/classifieds/convenience-showcase-view").then((m) => ({ default: m.ConvenienceShowcaseView })),
+);
+const TravelPromoFlyerModal = lazy(() =>
+  import("@/components/tourism/promotional-flyer/travel-promo-flyer-modal").then((m) => ({ default: m.TravelPromoFlyerModal })),
+);
+const FipeVehicleSelector = lazy(() =>
+  import("@/components/classifieds/fipe-vehicle-selector").then((m) => ({ default: m.FipeVehicleSelector })),
+);
+const DigitalFileDropzone = lazy(() =>
+  import("@/components/classifieds/digital-file-dropzone").then((m) => ({ default: m.DigitalFileDropzone })),
+);
 import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
 import { ClassifiedTemplateStyle, ClassifiedDisplayMode, CivilInquiryQuestion, CivilInquiryConfig } from "@/types/unified-ad-engine";
-import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
-import { FipeVehicleSelector } from "@/components/classifieds/fipe-vehicle-selector";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -42,7 +63,6 @@ import { Label } from "@/components/ui/label";
 import { formatMoney } from "@/lib/money";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaUploader } from "@/components/ui/media-uploader";
-import { DigitalFileDropzone } from "@/components/classifieds/digital-file-dropzone";
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
 import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";

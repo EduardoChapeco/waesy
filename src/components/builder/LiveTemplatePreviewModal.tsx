@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { NicheTemplateDefinition, applyTemplateToPage } from "./templates";
 import { createEmptyOmniPage, OmniPageDocument } from "./types";
 import { OmniPageRenderer } from "./OmniPageRenderer";
+import { BuilderViewportProvider } from "@/design-system/vitrine";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -115,7 +116,9 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
                 : "w-full max-w-6xl shadow-xs bg-background rounded-lg border border-border/60 my-2"
             }`}
           >
-            <OmniPageRenderer document={previewDocument} />
+            <BuilderViewportProvider viewport={viewport}>
+              <OmniPageRenderer document={previewDocument} />
+            </BuilderViewportProvider>
           </div>
         </div>
       </DialogContent>

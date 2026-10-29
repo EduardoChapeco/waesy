@@ -198,7 +198,7 @@ export function CarouselWizardModal({
 
  <div className="space-y-2">
  <label className="text-xs font-bold text-foreground">Densidade de Camadas</label>
- <div className="grid grid-cols-3 gap-3">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  {[
  { id: 'low', label: 'Minimal', desc: 'Tipografia limpa e foco no texto' },
  { id: 'medium', label: 'Equilibrado', desc: 'Badges + iluminação sutil' },

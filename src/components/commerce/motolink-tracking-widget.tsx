@@ -83,7 +83,7 @@ export function MotoLinkTrackingWidget({
       </div>
 
       {/* Dynamic Stage Timeline */}
-      <div className="grid grid-cols-4 gap-2 pt-1">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
         {stages.map((stage) => {
           const Icon = stage.icon;
           return (

@@ -268,7 +268,7 @@ export const createGroupTour = createServerFn({ method: "POST" })
         store_id: effectiveStoreId,
         author_profile_id: identity.id,
         title: input.title.trim(),
-        subtitle: `${input.departureCity} ➔ ${input.destination} (${input.departureDate})`,
+        subtitle: `${input.departureCity} -> ${input.destination} (${input.departureDate})`,
         category: "group_tour",
         destination: input.destination.trim(),
         destination_city: input.destination.trim(),

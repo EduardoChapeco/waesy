@@ -107,7 +107,7 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
       aria-label="Nova versão disponível"
       className={cn(
         // Posicionamento: acima do BottomNav mobile (bottom-20) e livre no desktop (bottom-6)
-        "fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[9999]",
+        "fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50",
         // Entrada animada
         "animate-in slide-in-from-bottom-4 fade-in duration-300",
         className

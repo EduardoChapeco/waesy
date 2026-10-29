@@ -342,7 +342,7 @@ function DoacoesPage() {
       <div className="relative w-full overflow-hidden">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background via-background/70 to-transparent z-10"
+          className="pointer-events-none absolute inset-y-0 right-0 w-12 z-10"
         />
         <div
           role="tablist"
@@ -463,9 +463,9 @@ function DoacoesPage() {
                     src={cat.coverImage}
                     alt={cat.label}
                     loading="lazy"
-                    className="w-full h-full object-cover opacity-20 dark:opacity-15 group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover opacity-20 dark:opacity-15 group-hover:scale-105 transition-transform duration-200"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/70 to-background/30" />
+                  <div className="absolute inset-0 bg-background/80" />
                 </div>
               )}
 
@@ -655,7 +655,7 @@ function DoacoesPage() {
           aria-label="Anunciar Doação"
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/60 backdrop-blur-xs animate-in fade-in duration-150"
         >
-          <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[90dvh] sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden shadow-2xl">
+          <div className="w-full h-dvh sm:h-auto sm:max-h-[90dvh] sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden shadow-2xl">
             {/* Sheet Top Bar */}
             <div className="px-4 h-14 border-b border-border/60 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">

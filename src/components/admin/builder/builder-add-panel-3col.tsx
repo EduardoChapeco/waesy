@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { X, Search, Plus, ImageIcon, ShoppingBag, AlignLeft, Star, Zap, Store, LayoutTemplate, SlidersHorizontal, ArrowRight, Sliders, Grid, Film, CheckCircle2, Plane, Flame, Calendar, UtensilsCrossed, Shirt, Home, Link2, HelpCircle, Clock, Layers, MapPin, Mail, UserCheck, Route, Landmark, Map, Tags, Timer, FileText, ChevronDown, CheckSquare, MousePointer2, CreditCard, DollarSign, MessageCircle, Briefcase, Table as TableIcon, ClipboardList, Images } from 'lucide-react';
+import { X, Search, Plus, ImageIcon, ShoppingCart, ShoppingBag, AlignLeft, Star, Zap, Store, LayoutTemplate, SlidersHorizontal, ArrowRight, Sliders, Grid, Film, CheckCircle2, Plane, Flame, Calendar, UtensilsCrossed, Shirt, Home, Link2, HelpCircle, Clock, Layers, MapPin, Mail, UserCheck, Route, Landmark, Map, Tags, Timer, FileText, ChevronDown, CheckSquare, MousePointer2, CreditCard, DollarSign, MessageCircle, Briefcase, Table as TableIcon, ClipboardList, Images } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,32 @@ const CATEGORY_TREE: CategoryDefinition[] = [
  icon: ShoppingBag,
  subcategories: [
  { id: "prod_hits", label: "Top Mais Vendidos (Hits)", templateIds: ["curated_hits_rail", "dynamic_product_carousel", "product_carousel"] },
- { id: "prod_grid", label: "Grade de Produtos", templateIds: ["product_grid", "product_carousel"] },
+   {
+  id: "supermarket",
+  label: "Supermercado & Varejo",
+  icon: ShoppingCart,
+  subcategories: [
+  { id: "super_hero", label: "Capa & Carrossel Contínuo", templateIds: ["supermarket_hero_carousel"] },
+  { id: "super_dock", label: "Departamentos Circulares", templateIds: ["supermarket_category_dock"] },
+  { id: "super_shelf", label: "Ofertas & Clube K", templateIds: ["supermarket_product_shelf"] },
+  { id: "super_fulfillment", label: "Entrega e Retirada", templateIds: ["supermarket_fulfillment_pill"] },
+  ],
+  },
+  {
+  id: "omni_apps",
+  label: "Omni Apps (Pacotes)",
+  icon: LayoutTemplate,
+  subcategories: [
+  { id: "apps_supermarket", label: "Supermercado & Atacarejo", templateIds: [] },
+  { id: "apps_delivery", label: "Gastronomia & Delivery", templateIds: [] },
+  { id: "apps_events", label: "Eventos & Ingressos", templateIds: [] },
+  { id: "apps_appointments", label: "Agendamentos & Clínicas", templateIds: [] },
+  { id: "apps_ecommerce", label: "E-Commerce B2B/B2C", templateIds: [] },
+  { id: "apps_biolink", label: "BioLink Pro (Hopp)", templateIds: [] },
+  { id: "apps_news", label: "Portal de Notícias & Blog", templateIds: [] },
+  ],
+  },
+  { id: "prod_grid", label: "Grade de Produtos", templateIds: ["product_grid", "product_carousel"] },
  { id: "prod_carousel", label: "Carrosséis", templateIds: ["dynamic_product_carousel", "product_carousel"] },
  { id: "prod_categories", label: "Categorias e Coleções", templateIds: ["category_icon_grid", "category_cards_grid", "featured_collection_banner"] },
  ],
@@ -151,6 +176,7 @@ const CATEGORY_TREE: CategoryDefinition[] = [
  { id: "blocos_viagem", label: "Viagem e Turismo", templateIds: [] },
  { id: "blocos_negocios", label: "Negócios e E-commerce", templateIds: [] },
  { id: "blocos_basico", label: "Básicos e Utilitários", templateIds: [] },
+ { id: "blocos_jornalismo", label: "Portal de Notícias & Jornal", templateIds: [] },
  ],
  },
  {
@@ -175,7 +201,7 @@ interface SingleBlockDef {
  template: Record<string, any>;
 }
 
-const SINGLE_BLOCKS: Record<"viagem" | "negocios" | "basico", SingleBlockDef[]> = {
+const SINGLE_BLOCKS: Record<"viagem" | "negocios" | "basico" | "jornalismo", SingleBlockDef[]> = {
  viagem: [
   { type: "itinerary", icon: Route, label: "Roteiro Completo", template: { title: "Meu Roteiro", destination: "Rio de Janeiro", startDate: new Date().toISOString(), endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), travelersCount: 2, showMap: true, mapCenter: { lat: -22.9068, lng: -43.1729 }, mapZoom: 12, days: [{ id: crypto.randomUUID(), dayNumber: 1, title: "Chegada e Exploração", description: "Primeiro dia na cidade", activities: [] }] } },
   { type: "destinationHeader", icon: MapPin, label: "Info Destino", template: { name: "Nome do Destino", country: "País", backgroundImage: "", temperature: [{ day: "SEG", value: "28°" }, { day: "TER", value: "29°" }] } },
@@ -216,12 +242,22 @@ const SINGLE_BLOCKS: Record<"viagem" | "negocios" | "basico", SingleBlockDef[]> 
   { type: "acceptCheckbox", icon: CheckSquare, label: "Caixa de Aceite", template: { label: "Li e aceito os termos e condições", required: true } },
   { type: "floatingButtons", icon: MousePointer2, label: "Botões Flutuantes", template: { buttons: [{ id: "1", type: "whatsapp", label: "WhatsApp", value: "5511999999999", position: "bottom-right", backgroundColor: "var(--success)", textColor: "var(--success-foreground)" }] } },
  ],
+ jornalismo: [
+  { type: "news_promethee_header", icon: LayoutTemplate, label: "Topo Editorial & GPS", template: { mastheadTitle: "Waesy News", showCityFilter: true, showSearch: true, showUrgentBell: true } },
+  { type: "news_promethee_nav", icon: Layers, label: "Menu de Editorias & +", template: { allowCitizenPosts: true, showSavedTab: true } },
+  { type: "news_promethee_breaking", icon: Flame, label: "Carrossel Plantão", template: { sectionTitle: "Plantão Regional", badgeLabel: "BREAKING NEWS", maxItems: 6 } },
+  { type: "news_promethee_feed", icon: FileText, label: "Feed de Notícias Reais", template: { sectionTitle: "Destaques", layoutMode: "feed_stream", readMoreLabel: "Ler mais" } },
+  { type: "news_promethee_ad_slot", icon: Zap, label: "Espaço Publicitário ADS", template: { format: "banner", sponsorName: "Publicidade Regional", ctaLabel: "Anunciar" } },
+  { type: "news_promethee_article_reader", icon: AlignLeft, label: "Leitor de Reportagem", template: { backLabel: "Voltar", showExecutiveSummary: true, showComments: true } },
+  { type: "news_promethee_footer", icon: Link2, label: "Rodapé Editorial", template: { brandName: "Waesy News", showWaesySignature: true } },
+ ],
 };
 
-const SINGLE_BLOCK_SUBCATEGORIES: { id: "viagem" | "negocios" | "basico"; label: string; icon: any }[] = [
+const SINGLE_BLOCK_SUBCATEGORIES: { id: "viagem" | "negocios" | "basico" | "jornalismo"; label: string; icon: any }[] = [
  { id: "viagem", label: "Viagem e Turismo", icon: Plane },
  { id: "negocios", label: "Negócios e E-commerce", icon: ShoppingBag },
  { id: "basico", label: "Básicos e Utilitários", icon: Layers },
+ { id: "jornalismo", label: "Portal de Notícias & Jornal", icon: FileText },
 ];
 
 export function BuilderAddPanel3Col({
@@ -233,7 +269,7 @@ export function BuilderAddPanel3Col({
  const [selectedCatId, setSelectedCatId] = useState("hero");
  const [selectedSubId, setSelectedSubId] = useState("hero_destaque");
  const [searchQuery, setSearchQuery] = useState("");
- const [singleBlockSub, setSingleBlockSub] = useState<"viagem" | "negocios" | "basico">("viagem");
+ const [singleBlockSub, setSingleBlockSub] = useState<"viagem" | "negocios" | "basico" | "jornalismo">("viagem");
 
  if (!isOpen) return null;
 

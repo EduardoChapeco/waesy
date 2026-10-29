@@ -18,6 +18,31 @@ import { InfiniteMarqueeRibbon } from "./blocks/InfiniteMarqueeRibbon";
 import { InteractiveComparisonSlider } from "./blocks/InteractiveComparisonSlider";
 import { InteractiveLeadQuizFlow } from "./blocks/InteractiveLeadQuizFlow";
 import { PrometheeNewsPortalBlock } from "./blocks/PrometheeNewsPortalBlock";
+import { PrometheeNewsHeaderBlock } from "./blocks/PrometheeNewsHeaderBlock";
+import { PrometheeNewsNavBlock } from "./blocks/PrometheeNewsNavBlock";
+import { PrometheeNewsBreakingBlock } from "./blocks/PrometheeNewsBreakingBlock";
+import { PrometheeNewsFeedBlock } from "./blocks/PrometheeNewsFeedBlock";
+import { PrometheeNewsAdSlotBlock } from "./blocks/PrometheeNewsAdSlotBlock";
+import { PrometheeNewsArticleReaderBlock } from "./blocks/PrometheeNewsArticleReaderBlock";
+import { PrometheeNewsFooterBlock } from "./blocks/PrometheeNewsFooterBlock";
+import {
+  VitrineMetamorphicBannerBlock,
+  VitrineBentoTetrisBlock,
+  VitrineCouponStripBlock,
+  VitrineButtonsDockBlock,
+  VitrineVerticalCarouselBlock,
+  VitrineProductShelfBlock,
+  VitrineClassifiedsRailBlock,
+  VitrineSocialStreamBlock,
+  VitrineEcosystemRailBlock,
+  VitrineLateralDrawerBlock,
+  VitrineVisualSpotlightRailBlock,
+  VitrineIFoodHeaderBlock,
+  VitrineSubcategoryPillsBlock,
+  VitrineRecentStoresRailBlock,
+  VitrineFeatureMiniBannersBlock,
+  VitrineStoresFeedListBlock,
+} from "./blocks/vitrine-app-blocks";
 
 import { createClassicOmniBlock } from "./ClassicBlockAdapter";
 
@@ -114,6 +139,13 @@ import type {
   ComparisonSliderBlockData,
   LeadQuizBlockData,
   PrometheeNewsPortalBlockData,
+  PrometheeNewsHeaderBlockData,
+  PrometheeNewsNavBlockData,
+  PrometheeNewsBreakingBlockData,
+  PrometheeNewsFeedBlockData,
+  PrometheeNewsAdSlotBlockData,
+  PrometheeNewsArticleReaderBlockData,
+  PrometheeNewsFooterBlockData,
 } from "./types";
 
 export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
@@ -126,7 +158,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     capabilities: ["responsive", "cms", "media"],
     component: PrometheeNewsPortalBlock as any,
     defaultProps: {
-      mastheadTitle: "Vale Agora",
+      mastheadTitle: "Waesy News",
       mastheadSubtitle: "Jornalismo Regional & Curadoria Editorial",
       logoStyle: "promethee_dome",
       logoUrl: "",
@@ -203,6 +235,141 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
         },
       ],
     } as PrometheeNewsPortalBlockData,
+  },
+  {
+    id: "news_promethee_header",
+    name: "Topo Editorial & Filtro GPS",
+    category: "media",
+    description: "Cabeçalho minimalista com marca editorial, seletor real de cidade via GPS, busca e alerta de plantão.",
+    capabilities: ["responsive", "cms"],
+    component: PrometheeNewsHeaderBlock as any,
+    defaultProps: {
+      mastheadTitle: "Waesy News",
+      logoStyle: "promethee_dome",
+      logoUrl: "",
+      showCityFilter: true,
+      allCitiesLabel: "Todas as Cidades",
+      cities: [
+        "Todas as Cidades",
+        "São José dos Campos",
+        "Taubaté",
+        "Jacareí",
+        "Pindamonhangaba",
+        "Guaratinguetá",
+        "Caraguatatuba",
+        "Campos do Jordão",
+      ],
+      showSearch: true,
+      showUrgentBell: true,
+      actionLabel: "",
+      actionHref: "",
+    } as PrometheeNewsHeaderBlockData,
+  },
+  {
+    id: "news_promethee_nav",
+    name: "Menu de Editorias & Botão +",
+    category: "media",
+    description: "Régua contínua de editorias com botão + fixo em ícone 44px para envio de pautas e relatos.",
+    capabilities: ["responsive", "cms", "form"],
+    component: PrometheeNewsNavBlock as any,
+    defaultProps: {
+      allowCitizenPosts: true,
+      showSavedTab: true,
+      categories: [
+        "Para você",
+        "Urgente",
+        "Política",
+        "Segurança",
+        "Economia",
+        "Esportes",
+        "Tecnologia",
+        "Cultura",
+      ],
+    } as PrometheeNewsNavBlockData,
+  },
+  {
+    id: "news_promethee_breaking",
+    name: "Carrossel Plantão Regional",
+    category: "media",
+    description: "Trilho horizontal de plantão alimentado automaticamente pelas notícias reais aprovadas.",
+    capabilities: ["responsive", "cms", "media"],
+    component: PrometheeNewsBreakingBlock as any,
+    defaultProps: {
+      sectionTitle: "Plantão Regional",
+      badgeLabel: "BREAKING NEWS",
+      maxItems: 6,
+      articlePageHref: "",
+      articles: [],
+    } as PrometheeNewsBreakingBlockData,
+  },
+  {
+    id: "news_promethee_feed",
+    name: "Feed de Notícias Reais",
+    category: "media",
+    description: "Stream editorial estilo Threads/Prométhée com capas fotográficas reais, estúdio PNG e compartilhamento no domínio próprio.",
+    capabilities: ["responsive", "cms", "media"],
+    component: PrometheeNewsFeedBlock as any,
+    defaultProps: {
+      sectionTitle: "Destaques",
+      layoutMode: "feed_stream",
+      dataSource: "approved_mined_AND_custom",
+      maxItems: 12,
+      readMoreLabel: "Ler mais",
+      articlePageHref: "",
+      showInFeedAd: true,
+      articles: [],
+    } as PrometheeNewsFeedBlockData,
+  },
+  {
+    id: "news_promethee_ad_slot",
+    name: "Espaço Publicitário ADS",
+    category: "media",
+    description: "Bloco nativo de publicidade regional com segmentação por cidade e patrocinadores reais.",
+    capabilities: ["responsive", "cms"],
+    component: PrometheeNewsAdSlotBlock as any,
+    defaultProps: {
+      format: "banner",
+      sponsorName: "Publicidade Regional",
+      headline: "Destaque sua marca para leitores da sua cidade",
+      description: "Formatos integrados com segmentação geográfica por município.",
+      ctaLabel: "Anunciar",
+      ctaHref: "/paginas/anuncie",
+      imageUrl: "",
+      targetCity: "",
+    } as PrometheeNewsAdSlotBlockData,
+  },
+  {
+    id: "news_promethee_article_reader",
+    name: "Leitor de Reportagem & Comentários",
+    category: "media",
+    description: "Visualizador minimalista de matéria completa com síntese executiva, estúdio PNG e comentários reais.",
+    capabilities: ["responsive", "cms", "media"],
+    component: PrometheeNewsArticleReaderBlock as any,
+    defaultProps: {
+      backLabel: "Voltar",
+      backHref: "/paginas/noticias",
+      showExecutiveSummary: true,
+      showComments: true,
+      showInArticleAd: true,
+    } as PrometheeNewsArticleReaderBlockData,
+  },
+  {
+    id: "news_promethee_footer",
+    name: "Rodapé Editorial do Portal",
+    category: "cta_footer",
+    description: "Rodapé limpo com links institucionais personalizáveis e assinatura discreta Feito com Waesy.",
+    capabilities: ["responsive", "cms"],
+    component: PrometheeNewsFooterBlock as any,
+    defaultProps: {
+      brandName: "Waesy News",
+      tagline: "Jornalismo regional independente",
+      links: [
+        { id: "f1", label: "Início", href: "/paginas/noticias" },
+        { id: "f2", label: "Enviar Pauta", href: "/paginas/enviar-pauta" },
+        { id: "f3", label: "Anuncie", href: "/paginas/anuncie" },
+      ],
+      showWaesySignature: true,
+    } as PrometheeNewsFooterBlockData,
   },
   // ── 1. APRESENTAÇÃO & HERO ──
   {
@@ -1434,8 +1601,8 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     defaultProps: {
       title: "Resultados Reais: Antes & Depois",
       subtitle: "Arraste o divisor para comparar as transformações e entregas do nosso serviço.",
-      beforeImageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80",
-      afterImageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80",
+      beforeImageUrl: "",
+      afterImageUrl: "",
       beforeLabel: "Antes",
       afterLabel: "Depois",
       defaultSplitPercentage: 50,
@@ -1481,6 +1648,395 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
       successMessage: "Diagnóstico enviado com sucesso! Retornaremos em breve.",
     } as LeadQuizBlockData,
   },
+
+  // ── 12. VITRINE & APP WAESY (PARIDADE 100% BIDIRECIONAL MOBILE / DESKTOP) ──
+  {
+    id: "vitrine_metamorphic_banner",
+    name: "Banner Metamórfico App (Mobile + Desktop)",
+    category: "vitrine_app",
+    description:
+      "Slider e banner oficial das vitrines Waesy com artes separadas para Mobile e Desktop, proporções 28:9, 21:9, 16:9, Duo, 4:5 e 9:16, vídeo nativo e botão de ação.",
+    capabilities: ["responsive", "media", "motion", "cms"],
+    component: VitrineMetamorphicBannerBlock as any,
+    defaultProps: {
+      sectionTitle: "",
+      sectionSubtitle: "",
+      dataSource: "manual",
+      desktopAspectRatio: "slim",
+      mobileAspectRatio: "cinema",
+      autoPlay: true,
+      intervalSeconds: 5,
+      showArrows: true,
+      showDots: true,
+      rounded: "lg",
+      slides: [
+        {
+          id: "vb-1",
+          badge: "Destaque Oficial",
+          title: "Ofertas e novidades selecionadas para você",
+          subtitle: "Envie artes dedicadas para celular e computador ou conecte seus banners ativos.",
+          ctaLabel: "Explorar Catálogo",
+          href: "#produtos",
+          imageDesktopUrl: "",
+          imageMobileUrl: "",
+          imageAlt: "Banner principal da vitrine",
+          showOverlay: true,
+        },
+      ],
+    },
+  },
+  {
+    id: "vitrine_buttons_dock",
+    name: "Carrossel & Grade de Botões Editáveis",
+    category: "vitrine_app",
+    description:
+      "Menu de botões e categorias 100% personalizáveis com modos independentes no celular e computador: Dock deslizante, Grade Compacta 4x2, Pílulas Duplas e Cartões de Ação.",
+    capabilities: ["responsive", "cms", "commerce"],
+    component: VitrineButtonsDockBlock as any,
+    defaultProps: {
+      sectionTitle: "",
+      sectionSubtitle: "",
+      dataSource: "manual",
+      desktopLayout: "noor_dock",
+      mobileLayout: "ifood_grid",
+      desktopColumns: 8,
+      mobileColumns: 4,
+      defaultShape: "squircle",
+      items: [
+        { id: "btn-1", label: "Ofertas", iconName: "Tag", tone: "primary", href: "#ofertas" },
+        { id: "btn-2", label: "Catálogo", iconName: "ShoppingBag", tone: "default", href: "#produtos" },
+        { id: "btn-3", label: "Serviços", iconName: "Wrench", tone: "default", href: "#servicos" },
+        { id: "btn-4", label: "Novidades", iconName: "Sparkles", badge: "Novo", tone: "default", href: "#novidades" },
+        { id: "btn-5", label: "Agenda", iconName: "Calendar", tone: "default", href: "#agenda" },
+        { id: "btn-6", label: "Localização", iconName: "MapPin", tone: "default", href: "#contato" },
+        { id: "btn-7", label: "Cupons", iconName: "Ticket", tone: "accent", href: "#cupons" },
+        { id: "btn-8", label: "WhatsApp", iconName: "MessageCircle", tone: "default", href: "#contato" },
+      ],
+    },
+  },
+  {
+    id: "vitrine_coupon_strip",
+    name: "Faixa de Cupom & Aviso Rápido",
+    category: "vitrine_app",
+    description:
+      "Faixa promocional Waesy com código de cupom copiável em 1 clique, selo de campanha e botão de destino.",
+    capabilities: ["responsive", "commerce"],
+    component: VitrineCouponStripBlock as any,
+    defaultProps: {
+      variant: "coupon",
+      badge: "Cupom Ativo",
+      title: "Condição especial para pedidos na vitrine oficial",
+      subtitle: "Copie o código abaixo e utilize no fechamento do pedido.",
+      couponCode: "BEMVINDO",
+      ctaLabel: "Ver Itens",
+      href: "#produtos",
+      dismissible: false,
+    },
+  },
+  {
+    id: "vitrine_bento_tetris",
+    name: "Mosaico Bento & Tetris Bidirecional",
+    category: "vitrine_app",
+    description:
+      "Grade densa inteligente estilo Apple e Waesy App com controle de colunas e linhas por card, imagens mobile/desktop e fechamento automático sem lacunas.",
+    capabilities: ["responsive", "media"],
+    component: VitrineBentoTetrisBlock as any,
+    defaultProps: {
+      sectionTitle: "Destaques da Semana",
+      sectionSubtitle: "Acesso direto às principais coleções e experiências.",
+      desktopColumns: 3,
+      mobileColumns: 2,
+      tiles: [
+        {
+          id: "tile-1",
+          tag: "Coleção Principal",
+          title: "Seleção especial com entrega rápida",
+          subtitle: "Itens curados diretamente do estoque oficial.",
+          ctaLabel: "Conferir Agora",
+          href: "#produtos",
+          spanX: 2,
+          spanY: 2,
+          mobileSpanX: 2,
+        },
+        {
+          id: "tile-2",
+          tag: "Atendimento",
+          title: "Consultoria sob medida",
+          subtitle: "Fale direto com nossa equipe.",
+          ctaLabel: "Chamar",
+          href: "#contato",
+          spanX: 1,
+          spanY: 1,
+          mobileSpanX: 1,
+        },
+        {
+          id: "tile-3",
+          tag: "Retirada Expressa",
+          title: "Compre online e retire na loja",
+          subtitle: "Praticidade sem filas.",
+          ctaLabel: "Como Funciona",
+          href: "#contato",
+          spanX: 1,
+          spanY: 1,
+          mobileSpanX: 1,
+        },
+      ],
+    },
+  },
+  {
+    id: "vitrine_vertical_carousel",
+    name: "Carrossel Vertical (Stories, Reels & Encartes)",
+    category: "vitrine_app",
+    description:
+      "Trilho vertical em proporção 9:16 (Reels/Stories), 4:5 (Retrato), 3:4 (Encartes e Tabloides), Anéis de Stories ou Grade 2x2 com suporte a vídeo nativo e lightbox.",
+    capabilities: ["responsive", "media", "motion", "cms"],
+    component: VitrineVerticalCarouselBlock as any,
+    defaultProps: {
+      sectionTitle: "Bastidores & Destaques em Vídeo",
+      sectionSubtitle: "Toque para assistir em tela cheia ou conferir os detalhes.",
+      dataSource: "manual",
+      desktopFormat: "stories_9_16",
+      mobileFormat: "stories_9_16",
+      items: [
+        {
+          id: "v-1",
+          badge: "Destaque",
+          title: "Novidades da Semana",
+          subtitle: "Confira os lançamentos recém-chegados",
+          ctaLabel: "Ver Detalhes",
+          href: "#produtos",
+        },
+        {
+          id: "v-2",
+          badge: "Oferta",
+          title: "Seleção Promocional",
+          subtitle: "Condições válidas enquanto durar o estoque",
+          ctaLabel: "Conferir",
+          href: "#produtos",
+        },
+        {
+          id: "v-3",
+          badge: "Atendimento",
+          title: "Como Fazemos",
+          subtitle: "Qualidade e cuidado em cada etapa",
+          ctaLabel: "Saiba Mais",
+          href: "#contato",
+        },
+      ],
+    },
+  },
+  {
+    id: "vitrine_product_shelf",
+    name: "Carrossel de Produtos & Ofertas App",
+    category: "vitrine_app",
+    description:
+      "Prateleira idêntica ao App Waesy com OfferCard padronizado, card líder opcional (HitsLeadCard), modo carrossel, grade 4 colunas ou lista compacta conectada ao catálogo real.",
+    capabilities: ["responsive", "commerce", "cms"],
+    component: VitrineProductShelfBlock as any,
+    defaultProps: {
+      sectionTitle: "Ofertas em Destaque",
+      sectionSubtitle: "Produtos selecionados com compra rápida.",
+      viewAllLabel: "Ver Catálogo",
+      viewAllHref: "/mercado",
+      dataSource: "store_products",
+      categoryFilter: "all",
+      onlyPromotions: false,
+      maxItems: 8,
+      cardAspect: "4_3",
+      ctaLabel: "Ver Oferta",
+      desktopLayout: "horizontal_rail",
+      mobileLayout: "horizontal_rail",
+      leadCard: {
+        enabled: false,
+        badge: "Top 10",
+        title: "Mais Pedidos da Loja",
+        subtitle: "Escolhidos pelos clientes nesta semana.",
+        actionLabel: "Ver Todos",
+        href: "#produtos",
+      },
+      items: [],
+    },
+  },
+  {
+    id: "vitrine_classifieds_rail",
+    name: "Carrossel & Grade de Classificados e Anúncios",
+    category: "vitrine_app",
+    description:
+      "Vitrine reutilizável de anúncios para veículos, imóveis, pacotes turísticos, serviços e oportunidades conectada aos classificados da loja ou curadoria manual.",
+    capabilities: ["responsive", "commerce", "cms"],
+    component: VitrineClassifiedsRailBlock as any,
+    defaultProps: {
+      sectionTitle: "Anúncios & Oportunidades",
+      sectionSubtitle: "Confira veículos, imóveis, pacotes e serviços disponíveis.",
+      viewAllLabel: "Ver Todos",
+      viewAllHref: "/classificados",
+      dataSource: "store_classifieds",
+      nicheFilter: "all",
+      maxItems: 8,
+      ctaLabel: "Ver Anúncio",
+      desktopLayout: "horizontal_rail",
+      mobileLayout: "horizontal_rail",
+      items: [],
+    },
+  },
+  {
+    id: "vitrine_social_stream",
+    name: "Carrossel & Feed de Posts Sociais",
+    category: "vitrine_app",
+    description:
+      "Mural social idêntico ao App Waesy em carrossel, grade 3 colunas ou stream contínuo, suportando vídeos nativos, fotos 3:4 e cartões tipográficos honestos.",
+    capabilities: ["responsive", "media", "cms"],
+    component: VitrineSocialStreamBlock as any,
+    defaultProps: {
+      sectionTitle: "Publicações & Mural Oficial",
+      sectionSubtitle: "Acompanhe comunicados, fotos e atualizações recentes.",
+      viewAllLabel: "Ver Mural",
+      viewAllHref: "/feed",
+      dataSource: "store_posts",
+      maxItems: 6,
+      desktopLayout: "carousel_3col",
+      mobileLayout: "carousel",
+      items: [],
+    },
+  },
+  {
+    id: "vitrine_lateral_drawer",
+    name: "Menu Lateral Deslizante (Canvas Nativo)",
+    category: "vitrine_app",
+    description:
+      "Menu lateral de navegação com empurrão de tela suave, alternador Grade/Lista, seções temáticas, cards amplos e squircles com badges.",
+    capabilities: ["responsive", "cms", "commerce"],
+    component: VitrineLateralDrawerBlock as any,
+    defaultProps: {
+      greetingTitle: "Aproveite o nosso App!",
+      greetingSubtitle: "Explore categorias e atalhos rápidos",
+      showViewModeToggle: true,
+      defaultViewMode: "grid",
+      sections: [
+        {
+          id: "sec-categorias",
+          title: "Categorias",
+          items: [
+            { id: "it-1", label: "Restaurantes", href: "/gastronomia", cardVariant: "wide", icon: "Utensils", isActive: true },
+            { id: "it-2", label: "Mercados", href: "/mercado", cardVariant: "wide", icon: "ShoppingCart", isActive: true },
+            { id: "it-3", label: "Farmácias", href: "/farmacia", cardVariant: "wide", icon: "Cross", isActive: true },
+          ],
+        },
+        {
+          id: "sec-explorar",
+          title: "Destaques para Explorar",
+          items: [
+            { id: "it-4", label: "Corridas", href: "/mobilidade", cardVariant: "squircle", badge: "Novo", icon: "Car", isActive: true },
+            { id: "it-5", label: "Viagens", href: "/turismo", cardVariant: "squircle", icon: "Plane", isActive: true },
+            { id: "it-6", label: "Eventos", href: "/eventos", cardVariant: "squircle", badge: "Novo", icon: "Ticket", isActive: true },
+          ],
+        },
+      ],
+    },
+  },
+    {
+    id: "vitrine_visual_spotlight_rail",
+    name: "Trilho Visual Spotlight (Cards Amplos)",
+    category: "vitrine_app",
+    description:
+      "Carrossel horizontal de cards visuais amplos com fotos de comida/capa, nota com coroa, botão de favorito, dados de entrega e cupom (Restaurantes com Cupom).",
+    capabilities: ["responsive", "cms", "commerce"],
+    component: VitrineVisualSpotlightRailBlock as any,
+    defaultProps: {
+      title: "Restaurantes com Cupom",
+      subtitle: "Destaques e promoções da sua região",
+      isAd: true,
+      viewMoreTo: "/gastronomia",
+      viewMoreLabel: "Ver mais",
+    },
+  },
+  {
+    id: "vitrine_ecosystem_rail",
+    name: "Conexão de Ecossistema (Eventos, Vagas, Lojas)",
+    category: "vitrine_app",
+    description:
+      "Bloco dinâmico conectado à agenda de eventos e ingressos, vagas de emprego da empresa, diretório de lojas parceiras ou páginas especiais.",
+    capabilities: ["responsive", "cms"],
+    component: VitrineEcosystemRailBlock as any,
+    defaultProps: {
+      sectionTitle: "Agenda & Oportunidades",
+      sectionSubtitle: "Conectado em tempo real aos módulos oficiais da plataforma.",
+      viewAllLabel: "Explorar",
+      viewAllHref: "/eventos",
+      moduleType: "events",
+      dataSource: "live",
+      maxItems: 6,
+      desktopLayout: "horizontal_rail",
+      mobileLayout: "horizontal_rail",
+      items: [],
+    },
+  },
+  {
+    id: "vitrine_ifood_header",
+    name: "Cabeçalho SuperApp (Endereço + Notificações)",
+    category: "vitrine_app",
+    description:
+      "Cabeçalho nativo padrão SuperApp com seletor de endereço centralizado, sino de notificações com badge e busca integrada opcional.",
+    capabilities: ["responsive", "cms"],
+    component: VitrineIFoodHeaderBlock as any,
+    defaultProps: {
+      showSearch: false,
+      searchPlaceholder: "Buscar lojas, pratos ou produtos...",
+    },
+  },
+  {
+    id: "vitrine_subcategory_pills",
+    name: "Pílulas de Subcategorias Visuais",
+    category: "vitrine_app",
+    description:
+      "Trilho horizontal de subnichos com foto/ícone, selo de destaque e texto posicionado dentro ou abaixo do card.",
+    capabilities: ["responsive", "cms", "commerce"],
+    component: VitrineSubcategoryPillsBlock as any,
+    defaultProps: {
+      showText: true,
+      textPosition: "below",
+      items: [],
+    },
+  },
+  {
+    id: "vitrine_recent_stores_rail",
+    name: "Trilho de Últimas Lojas (Avatares Circulares)",
+    category: "vitrine_app",
+    description:
+      "Carrossel horizontal de estabelecimentos visitados ou comprados recentemente com avatares circulares e link Ver mais.",
+    capabilities: ["responsive", "cms", "commerce"],
+    component: VitrineRecentStoresRailBlock as any,
+    defaultProps: {
+      title: "Últimas lojas",
+      viewMoreTo: "/diretorio",
+    },
+  },
+  {
+    id: "vitrine_feature_mini_banners",
+    name: "Mini-Banners Verticais (No Waesy também tem)",
+    category: "vitrine_app",
+    description:
+      "Trilho de mini-banners promocionais verticais com badge superior, chamada de desconto e imagem de produto.",
+    capabilities: ["responsive", "cms", "media"],
+    component: VitrineFeatureMiniBannersBlock as any,
+    defaultProps: {
+      title: "No Waesy também tem",
+      items: [],
+    },
+  },
+  {
+    id: "vitrine_stores_feed_list",
+    name: "Lista de Lojas + Chips de Filtro Rápidos",
+    category: "vitrine_app",
+    description:
+      "Régua de chips de filtro (Ordenar, Entrega Grátis, Super, Promoções) integrada ao feed vertical de estabelecimentos com avaliação, tempo, frete e cupom.",
+    capabilities: ["responsive", "cms", "commerce"],
+    component: VitrineStoresFeedListBlock as any,
+    defaultProps: {
+      title: "Lojas",
+      showFilterChips: true,
+    },
+  },
 ];
 
 export function getSiteBlocksByCategory(category: string): SiteBuilderBlockDefinition[] {
@@ -1510,10 +2066,14 @@ import {
   Compass,
   Share2,
   HelpCircle,
+  Sparkles,
+  Newspaper,
 } from "lucide-react";
 
 export type WixBlockCategory =
   | "all"
+  | "vitrine_app"
+  | "news_editorial"
   | "hero"
   | "gastronomy"
   | "commerce"
@@ -1525,6 +2085,8 @@ export type WixBlockCategory =
 
 export const WIX_CATEGORY_CONFIG: { id: WixBlockCategory; label: string; icon: any }[] = [
   { id: "all", label: "Todos", icon: LayoutGrid },
+  { id: "vitrine_app", label: "Vitrine & App", icon: Sparkles },
+  { id: "news_editorial", label: "Notícias & Jornal", icon: Newspaper },
   { id: "hero", label: "Apresentação", icon: LayoutTemplate },
   { id: "gastronomy", label: "Gastronomia", icon: UtensilsCrossed },
   { id: "commerce", label: "Catálogo", icon: ShoppingBag },
@@ -1538,7 +2100,14 @@ export const WIX_CATEGORY_CONFIG: { id: WixBlockCategory; label: string; icon: a
 export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   // Hero
   // Hero
-  news_promethee_portal: "hero",
+  news_promethee_portal: "news_editorial",
+  news_promethee_header: "news_editorial",
+  news_promethee_nav: "news_editorial",
+  news_promethee_breaking: "news_editorial",
+  news_promethee_feed: "news_editorial",
+  news_promethee_ad_slot: "news_editorial",
+  news_promethee_article_reader: "news_editorial",
+  news_promethee_footer: "news_editorial",
   hero_minimal_split: "hero",
   hero_interactive_carousel: "hero",
   infinite_marquee_ribbon: "hero",
@@ -1631,4 +2200,22 @@ export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   store_hours: "faq",
   store_contact: "faq",
   newsletter_capture: "faq",
+
+  // Vitrine & App Waesy (Paridade Bidirecional)
+  vitrine_metamorphic_banner: "vitrine_app",
+  vitrine_buttons_dock: "vitrine_app",
+  vitrine_coupon_strip: "vitrine_app",
+  vitrine_bento_tetris: "vitrine_app",
+  vitrine_vertical_carousel: "vitrine_app",
+  vitrine_product_shelf: "vitrine_app",
+  vitrine_classifieds_rail: "vitrine_app",
+  vitrine_social_stream: "vitrine_app",
+  vitrine_ecosystem_rail: "vitrine_app",
+  vitrine_lateral_drawer: "vitrine_app",
+  vitrine_visual_spotlight_rail: "vitrine_app",
+  vitrine_ifood_header: "vitrine_app",
+  vitrine_subcategory_pills: "vitrine_app",
+  vitrine_recent_stores_rail: "vitrine_app",
+  vitrine_feature_mini_banners: "vitrine_app",
+  vitrine_stores_feed_list: "vitrine_app",
 };

@@ -183,7 +183,7 @@ export function NewTaskModal({
           {/* Prioridade — botões visuais */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-foreground">Prioridade</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {(["urgent", "high", "medium", "low"] as TaskPriority[]).map((p) => {
                 const cfg = PRIORITY_CONFIG[p];
                 return (

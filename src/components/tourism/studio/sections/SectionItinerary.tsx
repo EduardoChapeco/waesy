@@ -99,7 +99,7 @@ export function SectionItinerary({ draft, save }: Props) {
     <Accordion title={`Roteiro (${itinerary.length} dias)`}>
       {itinerary.map((d, i) => (
         <Card key={d.id || i} onRemove={() => remove(i)}>
-          <div className="grid grid-cols-3 gap-2 mb-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
             <L label="Label">
               <Inp value={String(d.day ?? "")} onChange={(v) => upd(i, { day: v })} ph={`Dia ${i + 1}`} />
             </L>
@@ -117,7 +117,7 @@ export function SectionItinerary({ draft, save }: Props) {
               onChange={(e) => upd(i, { description: e.target.value })}
             />
           </L>
-          <div className="mt-2 grid grid-cols-3 gap-2">
+          <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
             <L label="Cidade">
               <Inp value={d.city ?? ""} onChange={(v) => upd(i, { city: v })} ph="Ex: Paris" />
             </L>

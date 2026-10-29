@@ -851,7 +851,7 @@ export function OperatorVoucherImportSheet({
                           <div className="flex items-center gap-2">
                             <Plane className="size-4 text-primary" />
                             <span className="text-xs font-bold text-foreground">
-                              {flight.airline} {flight.flight_number} ({flight.origin} ➔ {flight.destination})
+                              {flight.airline} {flight.flight_number} ({flight.origin}  {flight.destination})
                             </span>
                           </div>
                           <button
@@ -1189,10 +1189,10 @@ export function OperatorVoucherImportSheet({
                               Trecho:
                             </label>
                             <Input
-                              value={`${trf.origin || ""} ➔ ${trf.destination || ""}`}
+                              value={`${trf.origin || ""}  ${trf.destination || ""}`}
                               onChange={(e) => {
                                 const updated = [...parsedData.transfers];
-                                const parts = e.target.value.split("➔");
+                                const parts = e.target.value.split("");
                                 updated[index].origin = parts[0]?.trim();
                                 updated[index].destination = parts[1]?.trim();
                                 setParsedData({ ...parsedData, transfers: updated });

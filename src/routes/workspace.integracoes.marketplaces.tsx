@@ -492,12 +492,12 @@ function MarketplaceHubPage() {
         />
         <div className="flex items-center gap-2">
           
-          <Button asChild variant="outline" className="h-11 sm:h-9 px-4 rounded-lg text-xs font-medium cursor-pointer">
+          <Button asChild variant="outline" className="h-11 sm:h-11 min-h-11 sm:h-9 px-4 rounded-lg text-xs font-medium cursor-pointer">
             <Link to="/workspace/fiscal/nfe">
               Módulo Fiscal (NF-e)
             </Link>
           </Button>
-          <Button asChild className="h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold bg-primary text-primary-foreground cursor-pointer">
+          <Button asChild className="h-11 sm:h-11 min-h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold bg-primary text-primary-foreground cursor-pointer">
             <Link to="/workspace/pedidos/expedicao">
               Expedição WMS
             </Link>
@@ -614,7 +614,7 @@ function MarketplaceHubPage() {
             <Button
               size="sm"
               variant={categoryFilter === "all" ? "default" : "outline"}
-              className="h-8 rounded-lg text-xs"
+              className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 rounded-lg text-xs"
               onClick={() => setCategoryFilter("all")}
             >
               Todos ({PLATFORMS_CATALOG.length})
@@ -622,7 +622,7 @@ function MarketplaceHubPage() {
             <Button
               size="sm"
               variant={categoryFilter === "ecommerce" ? "default" : "outline"}
-              className="h-8 rounded-lg text-xs"
+              className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 rounded-lg text-xs"
               onClick={() => setCategoryFilter("ecommerce")}
             >
               Marketplaces E-Commerce
@@ -630,7 +630,7 @@ function MarketplaceHubPage() {
             <Button
               size="sm"
               variant={categoryFilter === "food" ? "default" : "outline"}
-              className="h-8 rounded-lg text-xs"
+              className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 rounded-lg text-xs"
               onClick={() => setCategoryFilter("food")}
             >
               Delivery e Restaurantes
@@ -638,7 +638,7 @@ function MarketplaceHubPage() {
             <Button
               size="sm"
               variant={categoryFilter === "logistics" ? "default" : "outline"}
-              className="h-8 rounded-lg text-xs"
+              className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 rounded-lg text-xs"
               onClick={() => setCategoryFilter("logistics")}
             >
               Frete e Logística
@@ -729,7 +729,7 @@ function MarketplaceHubPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive cursor-pointer"
+                            className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-2 text-xs text-muted-foreground hover:text-destructive cursor-pointer"
                             onClick={() => disconnectMutation.mutate(item.platform)}
                             disabled={disconnectMutation.isPending}
                             title="Desconectar"
@@ -739,7 +739,7 @@ function MarketplaceHubPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 px-3 text-xs font-medium cursor-pointer"
+                            className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 text-xs font-medium cursor-pointer"
                             onClick={() => syncMutation.mutate(item.platform)}
                             disabled={syncMutation.isPending}
                           >
@@ -749,7 +749,7 @@ function MarketplaceHubPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 px-3 text-xs font-medium cursor-pointer"
+                            className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 text-xs font-medium cursor-pointer"
                             onClick={() => handleOpenConfig(item)}
                           >
                             Ajustes
@@ -758,7 +758,7 @@ function MarketplaceHubPage() {
                       ) : (
                         <Button
                           size="sm"
-                          className="h-8 px-3 text-xs font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                          className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 text-xs font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                           onClick={() => handleOpenConfig(item)}
                         >
                           Conectar
@@ -794,7 +794,7 @@ function MarketplaceHubPage() {
                     setMappingPlatform("mercadolivre");
                     setMappingModalOpen(true);
                   }}
-                  className="rounded-lg text-xs font-bold gap-2 h-9 px-4 bg-primary hover:opacity-90 text-primary-foreground cursor-pointer shadow-xs"
+                  className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 sm:h-9 px-4 bg-primary hover:opacity-90 text-primary-foreground cursor-pointer shadow-xs"
                 >
                   <ShoppingBag className="size-3.5" />
                   <span>Vincular ao Mercado Livre</span>
@@ -877,7 +877,7 @@ function MarketplaceHubPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-8 px-3 text-xs font-medium cursor-pointer"
+                              className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 text-xs font-medium cursor-pointer"
                               onClick={() => syncStockMutation.mutate({ productId: item.id, newStockQty: item.stock_on_hand })}
                               disabled={syncStockMutation.isPending}
                               title="Sincronizar estoque nos canais"
@@ -887,7 +887,7 @@ function MarketplaceHubPage() {
                             </Button>
                             <Button
                               size="sm"
-                              className="h-8 px-3 text-xs font-semibold bg-foreground text-background cursor-pointer"
+                              className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 text-xs font-semibold bg-foreground text-background cursor-pointer"
                               onClick={() => handleOpenMapping(item)}
                             >
                               <Plus className="size-3 mr-1" /> Vincular Canal
@@ -923,7 +923,7 @@ function MarketplaceHubPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs cursor-pointer"
+                className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 text-xs cursor-pointer"
                 onClick={() => queryClient.invalidateQueries({ queryKey: ["marketplace-webhook-events"] })}
               >
                 <RefreshCw className="size-3 mr-1" /> Atualizar Feed
@@ -1240,12 +1240,12 @@ function MarketplaceHubPage() {
                       ? `${window.location.origin}/api/webhooks/marketplaces?platform=${selectedPlatform?.platform || "mercadolivre"}`
                       : `/api/webhooks/marketplaces?platform=${selectedPlatform?.platform || "mercadolivre"}`
                   }
-                  className="h-10 text-xs rounded-lg font-mono bg-muted/30"
+                  className="h-11 min-h-11 text-xs rounded-lg font-mono bg-muted/30"
                 />
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-10 px-3 cursor-pointer"
+                  className="h-11 min-h-11 px-3 cursor-pointer"
                   onClick={() => {
                     const url = `${window.location.origin}/api/webhooks/marketplaces?platform=${selectedPlatform?.platform || "mercadolivre"}`;
                     navigator.clipboard.writeText(url);
@@ -1267,7 +1267,7 @@ function MarketplaceHubPage() {
 
           <div className="flex justify-end pt-2">
             <Button
-              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
+              className="h-11 min-h-11 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
               onClick={() => setWebhookModalOpen(false)}
             >
               Fechar
@@ -1294,7 +1294,7 @@ function MarketplaceHubPage() {
               <select
                 value={mappingPlatform}
                 onChange={(e) => setMappingPlatform(e.target.value as any)}
-                className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs"
+                className="w-full h-11 min-h-11 px-3 rounded-lg border border-input bg-background text-xs"
               >
                 <option value="mercadolivre">Mercado Livre</option>
                 <option value="ifood">iFood</option>
@@ -1310,7 +1310,7 @@ function MarketplaceHubPage() {
                 placeholder="Ex: MLB9988223311 ou 492021"
                 value={externalListingId}
                 onChange={(e) => setExternalListingId(e.target.value)}
-                className="h-10 text-xs rounded-lg font-mono"
+                className="h-11 min-h-11 text-xs rounded-lg font-mono"
               />
             </div>
 
@@ -1320,7 +1320,7 @@ function MarketplaceHubPage() {
                 placeholder="Ex: CAM-BRANCA-G"
                 value={externalSku}
                 onChange={(e) => setExternalSku(e.target.value)}
-                className="h-10 text-xs rounded-lg font-mono"
+                className="h-11 min-h-11 text-xs rounded-lg font-mono"
               />
             </div>
 
@@ -1332,7 +1332,7 @@ function MarketplaceHubPage() {
                 max="100"
                 value={priceMarginPercent}
                 onChange={(e) => setPriceMarginPercent(Number(e.target.value))}
-                className="h-10 text-xs rounded-lg font-mono"
+                className="h-11 min-h-11 text-xs rounded-lg font-mono"
               />
               <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                 <span>Compensa taxas e comissões da plataforma.</span>
@@ -1348,13 +1348,13 @@ function MarketplaceHubPage() {
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
             <Button
               variant="outline"
-              className="h-10 rounded-lg text-xs cursor-pointer"
+              className="h-11 min-h-11 rounded-lg text-xs cursor-pointer"
               onClick={() => setMappingModalOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
+              className="h-11 min-h-11 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
               onClick={handleSaveMapping}
               disabled={mapProductMutation.isPending || !externalListingId.trim()}
             >

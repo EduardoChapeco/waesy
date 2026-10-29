@@ -1,13 +1,12 @@
 /**
  * ============================================================================
- * Waesy Platform — CommunitySpacesView.tsx (Wix Spaces & Threads Parity)
+ * Waesy Platform — CommunitySpacesView.tsx (Espaços de Comunidade Waesy)
  * ============================================================================
  * Visão completa do espaço de comunidade (/c/@slug):
  * - Header imersivo com capa, avatar squircle, título, slug canônico e botão de adesão.
  * - Biografia sem truncamento (AGENTS.md B.35: whitespace-pre-line break-words).
  * - Régua de abas horizontal contínua em linha única (AGENTS.md B.39).
- * - Abas especializadas: Discussões (Threads), Sessões/Encontros, Loja do Criador e Membros.
- * Ref: c5c10183-219b-40c5-8b6b-73e05775ced8.jpg, 771709069_18091591394562530_..._n.webp
+ * - Abas especializadas: Discussões, Sessões/Encontros, Loja do Criador e Membros.
  * ============================================================================
  */
 
@@ -157,6 +156,11 @@ export function CommunitySpacesView({
 }: CommunitySpacesViewProps) {
   const [activeTab, setActiveTab] = useState<"threads" | "sessions" | "shop" | "members">("threads");
   const [isMember, setIsMember] = useState(Boolean(community.isMember));
+  const [likedThreads, setLikedThreads] = useState<Record<string, boolean>>({});
+
+  const handleToggleLike = (threadId: string) => {
+    setLikedThreads((prev) => ({ ...prev, [threadId]: !prev[threadId] }));
+  };
 
   const handleToggleJoin = () => {
     const next = !isMember;
@@ -181,7 +185,7 @@ export function CommunitySpacesView({
       {/* ── 1. Capa e Avatar Squircle da Comunidade ── */}
       <div className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs">
         {/* Capa */}
-        <div className="relative w-full h-32 sm:h-48 bg-gradient-to-r from-primary/20 via-primary/5 to-muted/40">
+        <div className="relative w-full h-32 sm:h-48 bg-muted">
           {community.coverUrl && (
             <img
               src={community.coverUrl}
@@ -202,7 +206,7 @@ export function CommunitySpacesView({
         {/* Informações da Comunidade */}
         <div className="p-4 sm:p-6 space-y-4 -mt-10 sm:-mt-12 relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div className="flex items-end gap-3.5">
+            <div className="flex items-end gap-4">
               {/* Avatar Squircle Grande */}
               <div className="size-20 sm:size-24 rounded-2xl bg-card border-4 border-card shadow-md overflow-hidden flex items-center justify-center text-foreground font-black text-2xl shrink-0">
                 {community.avatarUrl ? (
@@ -236,7 +240,7 @@ export function CommunitySpacesView({
               type="button"
               onClick={handleToggleJoin}
               className={cn(
-                "rounded-xl h-11 min-h-11 px-6 text-xs font-bold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                "rounded-xl h-11 min-h-11 px-6 text-xs font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 isMember
                   ? "bg-muted text-foreground hover:bg-muted/80 border border-border/80"
                   : "bg-foreground text-background hover:bg-foreground/90 shadow-xs"
@@ -244,12 +248,12 @@ export function CommunitySpacesView({
             >
               {isMember ? (
                 <>
-                  <Check className="size-4 mr-1.5" />
+                  <Check className="size-4 mr-2" />
                   <span>Participando</span>
                 </>
               ) : (
                 <>
-                  <Plus className="size-4 mr-1.5" />
+                  <Plus className="size-4 mr-2" />
                   <span>Participar do Espaço</span>
                 </>
               )}
@@ -271,7 +275,7 @@ export function CommunitySpacesView({
           type="button"
           onClick={() => setActiveTab("threads")}
           className={cn(
-            "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
             activeTab === "threads"
               ? "bg-card text-foreground shadow-xs font-bold scale-101"
               : "text-muted-foreground hover:text-foreground"
@@ -285,7 +289,7 @@ export function CommunitySpacesView({
           type="button"
           onClick={() => setActiveTab("sessions")}
           className={cn(
-            "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
             activeTab === "sessions"
               ? "bg-card text-foreground shadow-xs font-bold scale-101"
               : "text-muted-foreground hover:text-foreground"
@@ -299,7 +303,7 @@ export function CommunitySpacesView({
           type="button"
           onClick={() => setActiveTab("shop")}
           className={cn(
-            "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
             activeTab === "shop"
               ? "bg-card text-foreground shadow-xs font-bold scale-101"
               : "text-muted-foreground hover:text-foreground"
@@ -313,7 +317,7 @@ export function CommunitySpacesView({
           type="button"
           onClick={() => setActiveTab("members")}
           className={cn(
-            "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
             activeTab === "members"
               ? "bg-card text-foreground shadow-xs font-bold scale-101"
               : "text-muted-foreground hover:text-foreground"
@@ -330,14 +334,14 @@ export function CommunitySpacesView({
       {activeTab === "threads" && (
         <div className="space-y-3">
           {/* Caixa de Criação Rápida de Post */}
-          <div className="p-3.5 rounded-2xl bg-card border border-border/80 flex items-center gap-3">
+          <div className="p-4 rounded-2xl bg-card border border-border/80 flex items-center gap-3">
             <div className="size-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center font-bold text-xs shrink-0">
               EU
             </div>
             <button
               type="button"
               onClick={onNewThreadClick}
-              className="flex-1 text-left text-xs text-muted-foreground h-11 min-h-11 px-3.5 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors flex items-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex-1 text-left text-xs text-muted-foreground h-11 min-h-11 px-4 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors flex items-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               Iniciar uma conversa ou compartilhar com o espaço...
             </button>
@@ -351,12 +355,12 @@ export function CommunitySpacesView({
                 className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 shadow-xs space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <div className="size-9 rounded-xl bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
                       {t.authorName.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <span className="text-xs sm:text-sm font-bold text-foreground">
                           {t.authorName}
                         </span>
@@ -375,21 +379,28 @@ export function CommunitySpacesView({
                 <div className="flex items-center gap-4 pt-1 text-muted-foreground text-xs border-t border-border/30">
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 hover:text-rose-600 transition-colors cursor-pointer py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={() => handleToggleLike(t.id)}
+                    className={cn(
+                      "h-11 min-h-11 px-2 flex items-center gap-2 hover:text-destructive transition-colors cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      likedThreads[t.id] && "text-destructive font-bold",
+                    )}
                   >
                     <Heart className="size-4" />
-                    <span>{t.likesCount}</span>
+                    <span>{t.likesCount + (likedThreads[t.id] ? 1 : 0)}</span>
                   </button>
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={() => onNewThreadClick?.()}
+                    className="h-11 min-h-11 px-2 flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <MessageSquare className="size-4" />
                     <span>{t.repliesCount}</span>
                   </button>
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    onClick={handleShare}
+                    aria-label="Compartilhar discussão"
+                    className="size-11 min-h-11 flex items-center justify-center hover:text-foreground transition-colors cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Repeat2 className="size-4" />
                   </button>
@@ -408,13 +419,13 @@ export function CommunitySpacesView({
               key={s.id}
               className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex items-center gap-2 text-2xs text-primary font-bold">
                   <Clock className="size-3.5" />
                   <span>{s.dateStr}</span>
                 </div>
                 <h3 className="text-sm sm:text-base font-bold text-foreground">{s.title}</h3>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <MapPin className="size-3.5" />
                   <span>{s.location}</span>
                 </div>
@@ -444,7 +455,7 @@ export function CommunitySpacesView({
             <div
               key={p.id}
               onClick={() => onProductClick?.(p.id)}
-              className="rounded-2xl bg-card border border-border/80 p-3 space-y-2 hover:border-foreground/30 transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="rounded-2xl bg-card border border-border/80 p-3 space-y-2 hover:border-foreground/30 transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <div className="w-full aspect-square rounded-xl bg-muted/40 flex items-center justify-center overflow-hidden">
                 {p.coverUrl ? (
@@ -462,8 +473,13 @@ export function CommunitySpacesView({
                   {formatMoney(p.priceCents)}
                 </span>
                 <Button
+                  type="button"
                   size="sm"
-                  className="rounded-xl h-9 px-3 text-2xs font-bold bg-foreground text-background"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onProductClick?.(p.id);
+                  }}
+                  className="rounded-xl h-11 min-h-11 px-4 text-2xs font-bold bg-foreground text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Ver
                 </Button>

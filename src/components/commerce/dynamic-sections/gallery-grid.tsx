@@ -162,7 +162,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  <img
  src={img.url || img.image_url}
  alt={img.alt || img.caption || ""}
- className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+ className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
  />
 
  <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 text-center text-foreground">

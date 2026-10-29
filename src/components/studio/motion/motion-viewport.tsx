@@ -135,7 +135,7 @@ export function MotionStudioViewport({
       </div>
 
       {/* Main Canvas Area */}
-      <div className="flex-1 flex items-center justify-center p-4 min-h-0 overflow-auto bg-gradient-to-b from-zinc-950 to-zinc-900/50">
+      <div className="flex-1 flex items-center justify-center p-4 min-h-0 overflow-auto bg-zinc-950">
         <div
           className="relative rounded-lg shadow-2xl border border-zinc-800 overflow-hidden flex flex-col transition-colors duration-200 duration-300"
           style={{

@@ -74,7 +74,7 @@ function DemandBar({ score }: { score: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 rounded-full bg-muted/40 overflow-hidden">
-        <div className={`h-full rounded-full transition-colors duration-200 duration-700 ${color}`} style={{ width: `${score}%` }} />
+        <div className={`h-full rounded-full transition-colors duration-200 duration-200 ${color}`} style={{ width: `${score}%` }} />
       </div>
       <span className="text-xs font-bold tabular-nums text-foreground">{score}</span>
     </div>
@@ -446,7 +446,7 @@ export default function TurismoRadarPage() {
                   <DemandBar score={dest.demand_score} />
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
                   <div className="text-center p-2 rounded-lg bg-muted/20 border border-border/40">
                     <p className="text-xs text-muted-foreground">Pacote Médio</p>
                     <p className="text-xs font-semibold tabular-nums text-foreground mt-1">

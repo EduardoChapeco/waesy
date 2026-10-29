@@ -111,7 +111,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
 
             {/* Grid 3 colunas de Inclusões */}
             {data.highlights && data.highlights.length > 0 && (
-              <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                 {data.highlights.slice(0, 3).map((item, idx) => (
                   <div
                     key={idx}

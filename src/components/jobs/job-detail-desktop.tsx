@@ -46,7 +46,7 @@ export function JobDetailDesktop({
       </div>
 
       {/* ── 2. Grid 2 Colunas Split-Screen (7 cols / 5 cols) ── */}
-      <div className="grid grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Coluna Esquerda (7 cols): Detalhes da Vaga, Descrição, Requisitos & Benchmark */}
         <div className="col-span-7 space-y-6">
           {/* Header da Vaga */}
@@ -171,7 +171,7 @@ export function JobDetailDesktop({
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-center">
                   <span className="text-2xs text-muted-foreground block font-medium">Júnior</span>
                   <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.junior_salary_cents)}</span>
@@ -200,7 +200,7 @@ export function JobDetailDesktop({
                   Perfil do Empregador
                 </span>
                 <span className="text-xs font-bold text-amber-500">
-                  ★ {employerInsights.average_rating} ({employerInsights.total_reviews} avaliações)
+                   {employerInsights.average_rating} ({employerInsights.total_reviews} avaliações)
                 </span>
               </div>
               <h4 className="text-xs font-bold text-foreground">Como é trabalhar na {job.company_name}?</h4>

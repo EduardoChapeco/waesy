@@ -104,10 +104,10 @@ export function DealReviewModal({
 
             <span className="text-xs font-bold text-foreground">
               {rating === 5 && "⭐ Excelente / Perfeito"}
-              {rating === 4 && "👍 Muito Bom"}
-              {rating === 3 && "👌 Razoável"}
-              {rating === 2 && "👎 Deixou a Desejar"}
-              {rating === 1 && "⚠️ Ruim"}
+              {rating === 4 && " Muito Bom"}
+              {rating === 3 && " Razoável"}
+              {rating === 2 && " Deixou a Desejar"}
+              {rating === 1 && "️ Ruim"}
             </span>
           </div>
 

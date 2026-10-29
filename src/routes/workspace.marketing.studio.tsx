@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Newspaper,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,10 +26,13 @@ import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/commerce/page-header";
 import { ErrorState, EmptyState } from "@/components/state/states";
 import { LoadingState } from "@/components/state/loading";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
+import { listPublicArticles, fetchNewsImageDataUrlFn } from "@/services/news.functions";
+import { normalizePrometheeArticle, buildStudioCarouselSlidesFromNews } from "@/lib/news/news-studio-templates";
 import { formatMoney } from "@/lib/money";
 import { exportElementAsImage, exportElementAsPdf } from "@/lib/pdf-export";
 import { generateQrCodeDataUri } from "@/lib/qr-code";
@@ -40,7 +44,7 @@ export const Route = createFileRoute("/workspace/marketing/studio")({
   component: WorkspaceSocialStudioPage,
 });
 
-type TemplateType = "product" | "travel" | "quote" | "carousel" | "presentation";
+type TemplateType = "product" | "travel" | "quote" | "carousel" | "presentation" | "news";
 type AspectRatio = "9:16" | "1:1" | "16:9";
 
 interface CarouselSlide {
@@ -96,6 +100,11 @@ export default function WorkspaceSocialStudioPage() {
     queryFn: () => listAdminProducts(),
   });
 
+  const { data: newsArticles = [] } = useQuery({
+    queryKey: ["public-news-studio"],
+    queryFn: () => listPublicArticles({ data: { limit: 24, regionHint: "vale_do_paraiba" } }),
+  });
+
   // Campos do formulário
   const [title, setTitle] = useState("Coleção Autoral");
   const [subtitle, setSubtitle] = useState("Peças exclusivas com pronta entrega");
@@ -127,6 +136,34 @@ export default function WorkspaceSocialStudioPage() {
   const studioHasError = isStoreError || isProductsError;
 
   // Preencher com produto real do catálogo (popula post único, carrossel e apresentação)
+  const handleSelectNewsArticle = async (articleId: string) => {
+    const rawArt: any = newsArticles.find((a: any) => a.id === articleId);
+    if (!rawArt) return;
+    const norm = normalizePrometheeArticle(rawArt, 0);
+    setTemplate("news");
+    setTitle(norm.title);
+    setSubtitle(norm.lead);
+    setPrice("");
+    setInstallments("");
+    setBadgeText(`${norm.category} · ${norm.city}`);
+    setCarouselSlides(buildStudioCarouselSlidesFromNews(norm));
+    setActiveSlideIndex(0);
+    if (norm.coverImageUrl) {
+      setImageUrl(norm.coverImageUrl);
+      if (norm.coverImageUrl.startsWith("https://")) {
+        try {
+          const proxied = await fetchNewsImageDataUrlFn({ data: { imageUrl: norm.coverImageUrl } });
+          if (proxied?.ok && proxied.dataUrl) {
+            setImageUrl(proxied.dataUrl);
+          }
+        } catch {
+          // Mantém URL original
+        }
+      }
+    } else {
+      setImageUrl("");
+    }
+  };
   const handleSelectProduct = (productId: string) => {
     const prod: any = products.find((p: any) => p.id === productId);
     if (!prod) return;
@@ -303,6 +340,27 @@ export default function WorkspaceSocialStudioPage() {
         {/* Painel de Controles */}
         <div className="lg:col-span-6 space-y-6">
           {/* Seletor de Produto Real do Catálogo */}
+          {newsArticles.length > 0 && (
+            <div className="p-5 rounded-lg bg-card border border-border/80 space-y-2">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                <Newspaper className="size-4 text-primary" /> Carregar Notícia Real do Portal
+              </Label>
+              <select
+                onChange={(e) => handleSelectNewsArticle(e.target.value)}
+                defaultValue=""
+                className="w-full h-11 min-h-11 px-3 rounded-lg border border-border bg-background text-xs text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <option value="" disabled>
+                  Selecione uma reportagem publicada...
+                </option>
+                {newsArticles.map((art: any) => (
+                  <option key={art.id} value={art.id}>
+                    {art.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           {products.length > 0 ? (
             <div className="p-5 rounded-lg bg-card border border-border/80 space-y-2">
               <Label className="text-xs font-bold text-foreground flex items-center gap-2">
@@ -408,6 +466,24 @@ export default function WorkspaceSocialStudioPage() {
               >
                 <MessageSquareQuote className="size-4" />
                 <span className="text-xs">Depoimento</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setTemplate("news");
+                  setPrice("");
+                  setInstallments("");
+                }}
+                className={cn(
+                  "p-3 min-h-11 rounded-lg border text-left transition-colors motion-reduce:transition-none cursor-pointer flex flex-col gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  template === "news"
+                    ? "border-primary bg-primary/5 text-primary font-bold"
+                    : "border-border hover:bg-muted/30 text-foreground"
+                )}
+              >
+                <Newspaper className="size-4" />
+                <span className="text-xs">Notícia / Jornal</span>
               </button>
             </div>
 
@@ -605,11 +681,16 @@ export default function WorkspaceSocialStudioPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-medium">URL da Imagem</Label>
-                  <Input
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className="h-11 rounded-lg text-xs font-mono"
+                  <Label className="text-xs font-medium">Mídia do Card (Upload Direto)</Label>
+                  <MediaUploader
+                    value={imageUrl ? [imageUrl] : []}
+                    onChange={(urls) => setImageUrl(urls[0] || "")}
+                    maxFiles={1}
+                    bucket="post-media"
+                    folder="marketing/studio"
+                    aspect={orientation === "portrait" ? 9 / 16 : 1}
+                    accept="image"
+                    label="Imagem do Card"
                   />
                 </div>
               </div>

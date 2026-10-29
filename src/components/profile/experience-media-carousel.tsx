@@ -122,7 +122,7 @@ export function ExperienceMediaCarousel({
                       className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                       <span className="text-2xs font-medium text-foreground truncate flex items-center gap-1">
                         <Maximize2 className="size-3" />
                         {item.title || "Ver em alta resolução"}

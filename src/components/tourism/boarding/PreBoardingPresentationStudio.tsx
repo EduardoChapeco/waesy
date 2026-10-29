@@ -186,7 +186,7 @@ const PRESET_TEMPLATES: Record<string, PreBoardingTripInput> = {
           },
           {
             name: "Orlando International Premium Outlets",
-            distanceText: "20 min de carro alugado ou Uber",
+            distanceText: "20 min de carro ou transporte por aplicativo",
             practicalNote: "Cadastre-se no site VIP Shopper Club antes para pegar o caderno de descontos digitais",
           },
         ],

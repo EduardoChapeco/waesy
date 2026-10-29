@@ -1,3 +1,4 @@
+// pb-24 clearance for fixed bottom
 /**
  * ai-sdr-chat.tsx — Chat do Agente Vendedor SDR
  *
@@ -209,7 +210,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground leading-tight">Vendedor IA</p>
-                <p className="text-2xs text-muted-foreground leading-tight truncate max-w-[180px]">
+                <p className="text-2xs text-muted-foreground leading-tight truncate max-w-45">
                   {displayName}
                 </p>
               </div>
@@ -254,7 +255,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
               <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
                 <Bot className="size-3.5 text-primary" />
               </div>
-              <div className="bg-muted text-foreground text-[13px] rounded-lg rounded-tl-sm px-4 py-3 max-w-[85%]">
+              <div className="bg-muted text-foreground text-xs rounded-lg rounded-tl-sm px-4 py-3 max-w-[85%]">
                 Olá! Posso te ajudar com dúvidas sobre este produto. Como posso te ajudar?
               </div>
             </div>
@@ -270,7 +271,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
                   </div>
                 )}
                 <div className={cn(
-                  "text-[13px] rounded-lg px-4 py-3 max-w-[85%] whitespace-pre-wrap leading-relaxed",
+                  "text-xs rounded-lg px-4 py-3 max-w-[85%] whitespace-pre-wrap leading-relaxed",
                   m.role === "user"
                     ? "bg-primary text-primary-foreground rounded-tr-sm"
                     : "bg-muted text-foreground rounded-tl-sm"
@@ -285,7 +286,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
                 <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
                   <Bot className="size-3.5 text-primary" />
                 </div>
-                <div className="bg-muted text-foreground text-[13px] rounded-lg rounded-tl-sm px-4 py-3 flex items-center gap-1 h-9">
+                <div className="bg-muted text-foreground text-xs rounded-lg rounded-tl-sm px-4 py-3 flex items-center gap-1 h-9">
                   <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce motion-reduce:animate-none [animation-delay:-0.3s]" />
                   <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce motion-reduce:animate-none [animation-delay:-0.15s]" />
                   <span className="size-1.5 bg-muted-foreground/60 rounded-full animate-bounce motion-reduce:animate-none" />

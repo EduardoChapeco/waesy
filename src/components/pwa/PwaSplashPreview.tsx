@@ -32,7 +32,7 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
           <img
             src={splashImageUrl}
             alt={appName}
-            className="max-h-48 max-w-48 object-contain rounded-lg shadow-sm transition-transform duration-500"
+            className="max-h-48 max-w-48 object-contain rounded-lg shadow-sm transition-transform duration-200"
           />
         ) : iconUrl ? (
           <div className="size-24 rounded-lg overflow-hidden shadow-lg border border-white/10 shrink-0">

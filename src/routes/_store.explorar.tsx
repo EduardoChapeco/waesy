@@ -572,7 +572,7 @@ function CommunityHomePage() {
                 <img
                   src={(card as any).coverUrl}
                   alt={card.title}
-                  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-200"
                   loading="eager"
                 />
               ) : (
@@ -584,7 +584,7 @@ function CommunityHomePage() {
               {/* Overlay configurável — Zero por padrão, somente se ativado no Admin com opacidade > 0 */}
               {(card as any).showOverlay && ((card as any).bgOverlayOpacity ?? 30) > 0 && (
                 <div
-                  className="absolute inset-0 bg-gradient-to-t to-transparent pointer-events-none"
+                  className="absolute inset-0 pointer-events-none"
                   style={{
                     background: `linear-gradient(to top, ${
                       (card as any).bgColor || "#000000"
@@ -684,7 +684,7 @@ function CommunityHomePage() {
                             <img
                               src={coverImage}
                               alt={item.business_name || undefined}
-                              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200"
                               loading="lazy"
                             />
                           ) : (
@@ -808,7 +808,7 @@ function CommunityHomePage() {
                           <img
                             src={coverImage}
                             alt={item.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200"
                             loading="lazy"
                           />
                         ) : (
@@ -885,7 +885,7 @@ function CommunityHomePage() {
                           <img
                             src={coverImage}
                             alt=""
-                            className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                             loading="lazy"
                           />
                         </div>
@@ -1010,7 +1010,7 @@ function CommunityHomePage() {
                           <img
                             src={coverImage}
                             alt={ev.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200"
                             loading="lazy"
                           />
                         ) : (
@@ -1070,7 +1070,7 @@ function CommunityHomePage() {
                           <img
                             src={coverImage}
                             alt={ev.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200"
                             loading="lazy"
                           />
                         ) : (
@@ -1125,16 +1125,16 @@ function CommunityHomePage() {
                         muted
                         loop
                         playsInline
-                        className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                        className="size-full object-cover group-hover:scale-102 transition-transform duration-200"
                       />
                     ) : (
                       <img
                         src={middleBanners[0].image_url}
                         alt={middleBanners[0].title || "Destaque"}
-                        className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                        className="size-full object-cover group-hover:scale-102 transition-transform duration-200"
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-black/60" />
                     <div className="absolute bottom-4 left-4 right-4 text-left">
                       {middleBanners[0].badge_text && (
                         <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-card/20 text-foreground border border-white/20 mb-2">
@@ -1213,7 +1213,7 @@ function CommunityHomePage() {
                         <img
                           src={item.image}
                           alt={item.title}
-                          className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                           loading="lazy"
                         />
                       ) : (
@@ -1305,7 +1305,7 @@ function CommunityHomePage() {
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                       loading="lazy"
                     />
                   ) : (
@@ -1398,16 +1398,16 @@ function CommunityHomePage() {
                   muted
                   loop
                   playsInline
-                  className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                  className="size-full object-cover group-hover:scale-102 transition-transform duration-200"
                 />
               ) : (
                 <img
                   src={footerBanners[0].image_url}
                   alt={footerBanners[0].title || "Divulgue sua empresa"}
-                  className="size-full object-cover group-hover:scale-102 transition-transform duration-500"
+                  className="size-full object-cover group-hover:scale-102 transition-transform duration-200"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+              <div className="absolute inset-0 bg-black/60" />
               <div className="absolute bottom-5 left-5 right-5 text-left">
                 {footerBanners[0].badge_text && (
                   <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-card/20 text-foreground border border-white/20 mb-2">

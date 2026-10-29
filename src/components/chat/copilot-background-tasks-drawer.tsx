@@ -49,46 +49,10 @@ export interface CopilotBackgroundTasksDrawerProps {
   className?: string;
 }
 
-const DEFAULT_MOCK_TASKS: BackgroundTaskItem[] = [
-  {
-    id: "task-01",
-    task_type: "lead_mining",
-    title: "Mineração de 50 Comércios Locais em São Miguel do Oeste",
-    status: "running",
-    progress_percent: 68,
-    current_step: "Varrendo CNPJs e coordenadas no mapa local...",
-    cost_wz: 28,
-    created_at: new Date(Date.now() - 180000).toISOString(),
-    heartbeat_at: new Date().toISOString(),
-  },
-  {
-    id: "task-02",
-    task_type: "spreadsheet_generator",
-    title: "Consolidação de DRE e Projeção Financeira Q3",
-    status: "completed",
-    progress_percent: 100,
-    current_step: "Planilha compilada e validada com sucesso.",
-    cost_wz: 14,
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    completed_at: new Date(Date.now() - 3540000).toISOString(),
-  },
-  {
-    id: "task-03",
-    task_type: "market_radar",
-    title: "Monitoramento de Concorrência e Preços de Cardápios",
-    status: "completed",
-    progress_percent: 100,
-    current_step: "Relatório comparativo gerado.",
-    cost_wz: 19,
-    created_at: new Date(Date.now() - 7200000).toISOString(),
-    completed_at: new Date(Date.now() - 7120000).toISOString(),
-  },
-];
-
 export function CopilotBackgroundTasksDrawer({
   open,
   onOpenChange,
-  tasks = DEFAULT_MOCK_TASKS,
+  tasks = [],
   onCancelTask,
   onRefresh,
   className,
@@ -249,7 +213,7 @@ export function CopilotBackgroundTasksDrawer({
                     {/* Barra de Progresso Fina */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-2xs text-muted-foreground">
-                        <span className="truncate max-w-[240px]">
+                        <span className="truncate max-w-60">
                           {task.current_step || "Executando etapas..."}
                         </span>
                         <span className="font-mono font-semibold">{task.progress_percent}%</span>

@@ -45,7 +45,7 @@ function PublicPassengerRegistrationPage() {
 
  if (!formData || formData.error) {
  return (
- <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
+ <div className="min-h-dvh bg-background flex items-center justify-center p-4">
  <div className="max-w-md w-full p-6 rounded-lg bg-card border border-border/80 text-center space-y-4">
  <div className="size-12 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
  <AlertCircle className="size-6" />
@@ -99,7 +99,7 @@ function PublicPassengerRegistrationPage() {
 
  if (submitted) {
  return (
- <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
+ <div className="min-h-dvh bg-background flex items-center justify-center p-4">
  <div className="max-w-md w-full p-8 rounded-lg bg-card border border-border/80 text-center space-y-4 shadow-sm">
  <div className="size-16 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
  <CheckCircle2 className="size-8" />
@@ -138,7 +138,7 @@ function PublicPassengerRegistrationPage() {
  }
 
  return (
- <div className="min-h-[100dvh] bg-muted/20 py-8 px-4 flex justify-center">
+ <div className="min-h-dvh bg-muted/20 py-8 px-4 flex justify-center">
  <div className="max-w-lg w-full space-y-6">
  {/* Header da Viagem */}
  <div className="p-6 rounded-lg bg-card border border-border/70 space-y-3 shadow-xs">
@@ -160,7 +160,7 @@ function PublicPassengerRegistrationPage() {
  </h1>
  <p className="text-xs text-muted-foreground flex items-center gap-2">
  <MapPin className="size-3.5 text-primary shrink-0" />
- {formData.tour.departure_city} ➔ {formData.tour.destination}
+ {formData.tour.departure_city} &rarr; {formData.tour.destination}
  </p>
  <p className="text-xs text-muted-foreground flex items-center gap-2 font-mono">
  <Calendar className="size-3.5 text-muted-foreground shrink-0" />

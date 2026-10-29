@@ -620,7 +620,7 @@ function PdvComandasPage() {
  </span>
  )}
  </div>
- <div className="grid grid-cols-5 sm:grid-cols-5 gap-2">
+ <div className="grid grid-cols-2 sm:grid-cols-5 sm:grid-cols-5 gap-2">
  {[1, 2, 3, 4, 5].map((count) => (
  <button
  key={count}
@@ -641,7 +641,7 @@ function PdvComandasPage() {
 
  <div className="space-y-2">
  <Label className="text-xs font-bold text-muted-foreground">Forma de Pagamento</Label>
- <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
+ <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-3 gap-2">
  <Button
  type="button"
  variant={paymentMethod === "cash" ? "default" : "outline"}

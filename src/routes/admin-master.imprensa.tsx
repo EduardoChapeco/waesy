@@ -219,11 +219,11 @@ function AdminMasterImprensaPage() {
                       }`}
                     >
                       {isApproved
-                        ? "✓ Credenciado Oficial"
+                        ? " Credenciado Oficial"
                         : isPending
                         ? "⏳ Em Análise"
                         : isRevoked
-                        ? "✕ Revogado"
+                        ? " Revogado"
                         : "Não Homologado"}
                     </span>
 

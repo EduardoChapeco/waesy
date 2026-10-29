@@ -255,7 +255,7 @@ function WorkspacePatrocinadoresPage() {
                   </div>
 
                   {/* Telemetria em Tempo Real */}
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t text-center font-mono">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t text-center font-mono">
                     <div className="p-2 rounded-lg bg-muted/40">
                       <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                         <Eye className="size-3" />
@@ -301,7 +301,7 @@ function WorkspacePatrocinadoresPage() {
                         variant="ghost"
                         size="icon"
                         title="Abrir Relatório do Patrocinador"
-                        className="size-11 rounded-lg min-h-11 min-w-[44px] shrink-0 cursor-pointer"
+                        className="size-11 rounded-lg min-h-11 min-w-11 shrink-0 cursor-pointer"
                       >
                         <Link
                           to="/patrocinador/$token"

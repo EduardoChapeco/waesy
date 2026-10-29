@@ -401,7 +401,7 @@ function SimulacaoPage() {
                     key={p.id}
                     className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-background text-xs hover:border-primary/40 transition-colors"
                   >
-                    <div className="min-w-0 pr-2 space-y-0.5">
+                    <div className="min-w-0 pr-2 space-y-1">
                       <p className="font-semibold text-foreground break-words">
                         {p.display_name}
                       </p>

@@ -300,7 +300,7 @@ function HotelPickerPanel({
                       {hotel.stars > 0 && (
                         <span className="inline-flex items-center text-2xs font-semibold text-amber-500">
                           <Star className="size-3 fill-amber-500 mr-1" />
-                          {hotel.stars}★
+                          {hotel.stars}
                         </span>
                       )}
                       {hotel.is_canonical && (
@@ -533,7 +533,7 @@ export function HotelCombobox({
                 </span>
                 {selectedHotel.stars > 0 && (
                   <span className="text-xs text-amber-500 font-semibold shrink-0">
-                    {selectedHotel.stars}★
+                    {selectedHotel.stars}
                   </span>
                 )}
               </div>

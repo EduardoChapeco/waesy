@@ -10,6 +10,7 @@ import { generateSocialStoryCard, type SocialCardResultDTO } from "@/services/st
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { SimLabQuickTestSheet } from "@/components/simlab/SimLabQuickTestSheet";
+import { MediaUploader } from "@/components/ui/media-uploader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -367,15 +368,18 @@ export default function WorkspaceMarketingStoriesPage() {
               </div>
 
               <div>
-                <Label htmlFor="imageUrl" className="text-xs font-bold text-muted-foreground">
-                  URL da Imagem de Destaque
+                <Label htmlFor="imageUrl" className="text-xs font-bold text-muted-foreground block mb-2">
+                  Mídia de Destaque do Story (Upload Direto)
                 </Label>
-                <Input
-                  id="imageUrl"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="mt-2 h-11 rounded-lg text-xs"
-                  placeholder="https://exemplo.com/foto.jpg"
+                <MediaUploader
+                  value={imageUrl ? [imageUrl] : []}
+                  onChange={(urls) => setImageUrl(urls[0] || "")}
+                  maxFiles={1}
+                  bucket="post-media"
+                  folder="marketing/stories"
+                  aspect={aspectRatio === "9:16" ? 9 / 16 : 1}
+                  accept="all"
+                  label="Mídia do Story"
                 />
               </div>
 
@@ -450,7 +454,7 @@ export default function WorkspaceMarketingStoriesPage() {
                 >
                   <ImageIcon className="size-10 text-muted-foreground/50 mb-3" />
                   <p className="text-xs font-bold text-foreground">Aguardando geração</p>
-                  <p className="text-xs text-muted-foreground mt-1 max-w-[180px]">
+                  <p className="text-xs text-muted-foreground mt-1 max-w-45">
                     Preencha os campos ao lado e clique em &quot;Gerar Card Social&quot;.
                   </p>
                 </div>

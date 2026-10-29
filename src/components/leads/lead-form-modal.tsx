@@ -140,7 +140,7 @@ export function LeadFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-6 sm:p-7 rounded-lg border border-border/60 bg-card overflow-y-auto max-h-[90vh]">
+      <DialogContent className="max-w-md p-6 sm:p-7 rounded-lg border border-border/60 bg-card overflow-y-auto max-h-(--spacing-screen-90,90vh)">
         <DialogHeader className="text-left space-y-2 pb-2 border-b border-border/40">
           <DialogTitle className="text-lg font-semibold tracking-tight text-foreground">
             {form?.headline || form?.title || "Falar com o Anunciante"}

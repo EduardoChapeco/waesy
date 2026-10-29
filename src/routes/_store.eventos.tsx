@@ -1,79 +1,25 @@
-import { resolveActiveCity } from "@/lib/city-helper";
-import { Tag as LucideTag, X as LucideX, Calendar as CalendarIcon, ChevronDown as LucideChevronDown, Ticket as LucideTicket, Music as LucideMusic, Flame as LucideFlame, PartyPopper as LucidePartyPopper, Utensils as LucideUtensils, Theater as LucideTheater, ShoppingBag as LucideShoppingBag, GraduationCap as LucideGraduationCap, Smile as LucideSmile } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { CalendarDots, CalendarBlank, MapPin, MagnifyingGlass, CaretRight, Clock, Ticket, ForkKnife, GraduationCap, CircleNotch, WarningCircle } from "@phosphor-icons/react";
+import { WarningCircle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { getPublicEvents } from "@/services/events.functions";
+import { resolveActiveCity } from "@/lib/city-helper";
+import { getPublicEvents, getPublicEventOrganizers, type EventOrganizerDTO } from "@/services/events.functions";
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
 import { listHotpages, type HotpageDTO } from "@/services/hotpage.functions";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
-import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
-import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
-import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
-import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
-import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
-import { formatDate } from "@/lib/datetime";
+import { EventsShowcaseMobileView } from "@/components/events/EventsShowcaseMobileView";
+import { EventsShowcaseDesktopView } from "@/components/events/EventsShowcaseDesktopView";
+import { EventSubvitrineView } from "@/components/events/EventSubvitrineView";
+import { useWindowSizeClass } from "@/hooks/use-mobile";
+import type { EventFeatureMiniBannerItem } from "@/components/events/EventFeatureMiniBannersRail";
 
 const SearchSchema = z.object({
   categoria: z.string().optional(),
   data: z.string().optional(),
+  q: z.string().optional(),
 });
-
-const BASE_EVENT_CATEGORIES: FilterChipOption[] = [
-  { id: "todos", label: "Todos os Eventos", icon: LucideTicket },
-  { id: "shows", label: "Shows de Rock e Pop", icon: LucideMusic },
-  { id: "sertanejo", label: "Sertanejo e Baladas", icon: LucideFlame },
-  { id: "pagode", label: "Samba e Pagode", icon: LucidePartyPopper },
-  { id: "gastronomico", label: "Gastronomia e Feiras", icon: LucideUtensils },
-  { id: "teatro", label: "Teatro e Stand-up", icon: LucideTheater },
-  { id: "feiras", label: "Feiras e Bazaares", icon: LucideShoppingBag },
-  { id: "workshops", label: "Cursos e Workshops", icon: LucideGraduationCap },
-  { id: "infantil", label: "Infantil e Família", icon: LucideSmile },
-  { id: "gratis", label: "Entrada Gratuita", icon: LucideTag },
-];
-
-const PRESET_DATE_FILTERS = [
-  { id: "all", label: "Todos" },
-  { id: "today", label: "Hoje" },
-  { id: "tomorrow", label: "Amanhã" },
-  { id: "weekend", label: "Fim de Semana" },
-  { id: "next7", label: "7 Dias" },
-  { id: "month", label: "Este Mês" },
-  { id: "next3months", label: "Próx. 3 Meses" },
-  { id: "next6months", label: "Próx. 6 Meses" },
-];
-
-const WEEKDAY_NAMES = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
-const MONTH_NAMES = [
-  "JAN",
-  "FEV",
-  "MAR",
-  "ABR",
-  "MAI",
-  "JUN",
-  "JUL",
-  "AGO",
-  "SET",
-  "OUT",
-  "NOV",
-  "DEZ",
-];
-
-const FALLBACK_EVENT_COVER =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='500' viewBox='0 0 800 500'%3E%3Crect width='800' height='500' fill='%2318181b'/%3E%3Ccircle cx='400' cy='250' r='90' fill='%2327272a'/%3E%3Cpath d='M360 210h80v80H360z' fill='none' stroke='%2352525b' stroke-width='4'/%3E%3Ctext x='400' y='340' font-family='sans-serif' font-size='18' font-weight='600' fill='%23a1a1aa' text-anchor='middle'%3EWaesy Eventos%3C/text%3E%3C/svg%3E";
-
-function getEventCover(event: any) {
-  return event.cover_image || event.cover_image_url || event.image_url || FALLBACK_EVENT_COVER;
-}
 
 export const Route = createFileRoute("/_store/eventos")({
   validateSearch: (search: Record<string, unknown>) => SearchSchema.parse(search),
@@ -90,20 +36,34 @@ export const Route = createFileRoute("/_store/eventos")({
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [banners, hotpages, surfaceFeed] = await Promise.all([
+      const [banners, hotpages, surfaceFeed, realOrganizers, miniBannersPool] = await Promise.all([
         listActiveBanners({ data: { placement: "eventos", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "eventos" } }).catch(() => []),
-        getModularSurfaceFeed({ data: { surfaceSlug: "eventos", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
+        getModularSurfaceFeed({ data: { surfaceSlug: "eventos", city: activeCity } }).catch(() => ({
+          sections: [],
+          allProducts: [],
+        })),
+        getPublicEventOrganizers({ data: { city: activeCity } }).catch(() => []),
+        listActiveBanners({ data: { placement: "events", city: activeCity } }).catch(() => []),
       ]);
       return {
         banners: banners || [],
         hotpages: hotpages || [],
         surfaceFeed: surfaceFeed || { sections: [], allProducts: [] },
+        realOrganizers: realOrganizers || [],
+        miniBannersPool: miniBannersPool || [],
         activeCity,
       };
     } catch (err) {
       console.warn("[loader:_store.eventos] Loader fallback acionado:", err);
-      return { banners: [], hotpages: [] };
+      return {
+        banners: [],
+        hotpages: [],
+        surfaceFeed: { sections: [], allProducts: [] },
+        realOrganizers: [],
+        miniBannersPool: [],
+        activeCity,
+      };
     }
   },
   errorComponent: EventosErrorComponent,
@@ -113,14 +73,14 @@ export const Route = createFileRoute("/_store/eventos")({
 function EventosErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-lg bg-destructive/10 text-destructive mb-2">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
         <WarningCircle size={32} />
       </div>
       <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar eventos</h2>
       <p className="text-sm text-muted-foreground max-w-md mx-auto">
         {error?.message || "Não foi possível carregar a programação de eventos e ingressos no momento."}
       </p>
-      <Button onClick={reset} className="rounded-lg font-bold">
+      <Button onClick={reset} className="rounded-xl font-bold h-11 min-h-11 px-6">
         Tentar Novamente
       </Button>
     </div>
@@ -133,11 +93,11 @@ function EventosPage() {
   const router = useRouter();
 
   const rawBanners = loaderData?.banners;
-  const rawHotpages = loaderData?.hotpages;
-  const activeCity = loaderData?.activeCity || "";
-
+  const activeCity = loaderData?.activeCity || "São Miguel do Oeste";
   const displayBanners: BannerDTO[] = Array.isArray(rawBanners) ? rawBanners : [];
-  const displayHotpages: HotpageDTO[] = Array.isArray(rawHotpages) ? rawHotpages : [];
+  const realOrganizers: EventOrganizerDTO[] = Array.isArray(loaderData?.realOrganizers)
+    ? loaderData.realOrganizers
+    : [];
 
   const [selectedCategory, setSelectedCategory] = useState<string>(
     searchParams?.categoria || "todos"
@@ -145,8 +105,7 @@ function EventosPage() {
   const [selectedDateFilter, setSelectedDateFilter] = useState<string>(
     searchParams?.data || "all"
   );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<ViewModeType>("feed");
+  const [searchQuery, setSearchQuery] = useState(searchParams?.q || "");
 
   // Sincroniza query string caso venha por navegação direta
   useEffect(() => {
@@ -155,6 +114,7 @@ function EventosPage() {
     }
   }, [searchParams?.categoria]);
 
+  // Consulta BFF de eventos futuros da cidade (Dados 100% reais do Supabase)
   const {
     data: events,
     isLoading,
@@ -176,57 +136,6 @@ function EventosPage() {
     },
     staleTime: 60_000,
   });
-
-  // Próximos 60 dias para o seletor horizontal
-  const nextDays = useMemo(() => {
-    const days = [];
-    const now = new Date();
-
-    for (let i = 0; i < 60; i++) {
-      const d = new Date(now);
-      d.setDate(now.getDate() + i);
-
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      const dateKey = `${year}-${month}-${day}`;
-
-      days.push({
-        dateKey,
-        dayNumber: d.getDate(),
-        weekday: WEEKDAY_NAMES[d.getDay()],
-        monthName: MONTH_NAMES[d.getMonth()],
-        year: d.getFullYear(),
-        monthIndex: d.getMonth(),
-        isToday: i === 0,
-        isTomorrow: i === 1,
-        isWeekend: d.getDay() === 0 || d.getDay() === 6,
-        isFirstOfMonth: d.getDate() === 1 || i === 0,
-      });
-    }
-    return days;
-  }, []);
-
-  // Meses distintos para navegação rápida
-  const availableMonths = useMemo(() => {
-    const seen = new Set<string>();
-    const months: Array<{ key: string; label: string; year: number; monthIndex: number }> = [];
-    const now = new Date();
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        months.push({
-          key,
-          label: i === 0 ? "Este Mês" : `${MONTH_NAMES[d.getMonth()]}/${d.getFullYear()}`,
-          year: d.getFullYear(),
-          monthIndex: d.getMonth(),
-        });
-      }
-    }
-    return months;
-  }, []);
 
   // Filtro Universal Avançado de Eventos (Categoria, Data, Busca)
   const filteredEvents = useMemo(() => {
@@ -250,12 +159,14 @@ function EventosPage() {
       const descLower = (e.description || "").toLowerCase();
       const locLower = (e.location || "").toLowerCase();
 
-      // 1. Filtro por Categoria / Subcategoria
+      // 1. Filtro por Categoria
       if (selectedCategory !== "todos") {
         if (selectedCategory === "gratis") {
           const isFree =
             !(e as any).price_cents ||
             (e as any).price_cents === 0 ||
+            !(e as any).price_min_cents ||
+            (e as any).price_min_cents === 0 ||
             titleLower.includes("gratis") ||
             titleLower.includes("gratuito") ||
             descLower.includes("entrada franca") ||
@@ -334,7 +245,6 @@ function EventosPage() {
             descLower.includes("kids");
           if (!isInfantil) return false;
         } else {
-          // Comparação genérica por categoria
           if (cat !== selectedCategory) return false;
         }
       }
@@ -356,22 +266,9 @@ function EventosPage() {
         if (eventDate.getMonth() !== now.getMonth() || eventDate.getFullYear() !== now.getFullYear()) {
           return false;
         }
-      } else if (selectedDateFilter === "next3months") {
-        const next3 = new Date(now);
-        next3.setMonth(now.getMonth() + 3);
-        if (eventDate < now || eventDate > next3) return false;
-      } else if (selectedDateFilter === "next6months") {
-        const next6 = new Date(now);
-        next6.setMonth(now.getMonth() + 6);
-        if (eventDate < now || eventDate > next6) return false;
-      } else if (selectedDateFilter !== "all") {
-        if (selectedDateFilter.length === 7) {
-          const [filterYear, filterMonth] = selectedDateFilter.split("-").map(Number);
-          if (eventDate.getFullYear() !== filterYear || eventDate.getMonth() + 1 !== filterMonth) {
-            return false;
-          }
-        } else {
-          if (eventIso !== selectedDateFilter) return false;
+      } else if (selectedDateFilter && selectedDateFilter !== "all") {
+        if (selectedDateFilter.includes("-") && eventIso !== selectedDateFilter) {
+          return false;
         }
       }
 
@@ -388,20 +285,7 @@ function EventosPage() {
     });
   }, [events, selectedCategory, selectedDateFilter, searchQuery]);
 
-  // Contagem de eventos por dia para os badges no calendário
-  const eventsCountByDateKey = useMemo(() => {
-    const counts: Record<string, number> = {};
-    if (!events) return counts;
-    events.forEach((e) => {
-      if (e.event_date) {
-        const key = e.event_date.split("T")[0];
-        counts[key] = (counts[key] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [events]);
-
-  // Contagem de eventos por subcategoria para os badges nos botões
+  // Contagem real de eventos por categoria
   const eventsCountBySubcategory = useMemo(() => {
     const counts: Record<string, number> = { todos: events?.length || 0 };
     if (!events) return counts;
@@ -409,18 +293,17 @@ function EventosPage() {
     events.forEach((e) => {
       const cat = ((e as any).category || (e as any).attributes?.categoria || "").toLowerCase();
       const t = (e.title || "").toLowerCase();
-      const d = (e.description || "").toLowerCase();
 
-      if (!(e as any).price_cents || (e as any).price_cents === 0 || t.includes("gratis")) {
+      if (!(e as any).price_cents || (e as any).price_cents === 0 || !(e as any).price_min_cents || (e as any).price_min_cents === 0 || t.includes("gratis")) {
         counts.gratis = (counts.gratis || 0) + 1;
       }
       if (cat === "shows" || t.includes("show") || t.includes("rock") || t.includes("festival")) {
         counts.shows = (counts.shows || 0) + 1;
       }
-      if (t.includes("sertanejo") || t.includes("boteco") || d.includes("sertanejo")) {
+      if (t.includes("sertanejo") || t.includes("boteco")) {
         counts.sertanejo = (counts.sertanejo || 0) + 1;
       }
-      if (t.includes("pagode") || t.includes("samba") || d.includes("pagode")) {
+      if (t.includes("pagode") || t.includes("samba")) {
         counts.pagode = (counts.pagode || 0) + 1;
       }
       if (cat === "gastronomico" || t.includes("cervej") || t.includes("gastronom")) {
@@ -429,13 +312,13 @@ function EventosPage() {
       if (cat === "teatro" || t.includes("teatro") || t.includes("stand-up")) {
         counts.teatro = (counts.teatro || 0) + 1;
       }
-      if (cat === "feiras" || t.includes("feira") || t.includes("bazar") || t.includes("pet")) {
+      if (cat === "feiras" || t.includes("feira") || t.includes("bazar")) {
         counts.feiras = (counts.feiras || 0) + 1;
       }
       if (cat === "workshops" || t.includes("workshop") || t.includes("curso")) {
         counts.workshops = (counts.workshops || 0) + 1;
       }
-      if (t.includes("infantil") || t.includes("criança") || d.includes("kids")) {
+      if (t.includes("infantil") || t.includes("criança")) {
         counts.infantil = (counts.infantil || 0) + 1;
       }
     });
@@ -443,50 +326,60 @@ function EventosPage() {
     return counts;
   }, [events]);
 
-  const eventCategories: FilterChipOption[] = useMemo(() => {
-    return BASE_EVENT_CATEGORIES.map((cat) => ({
-      id: cat.id,
-      label: cat.label,
-      icon: cat.icon,
-      count: eventsCountBySubcategory[cat.id] || 0,
-    }));
-  }, [eventsCountBySubcategory]);
+  // Separação de "Eventos pra você" e "Eventos em alta"
+  const eventsForYou = useMemo(() => {
+    return filteredEvents.slice(0, 10);
+  }, [filteredEvents]);
 
-  // Trilhos Temáticos Dinâmicos para o Modo Feed
-  const feedThematicRails = useMemo(() => {
+  const trendingEvents = useMemo(() => {
+    return [...filteredEvents].reverse().slice(0, 8);
+  }, [filteredEvents]);
+
+  // Trilhos Temáticos Dinâmicos Baseados Exclusivamente em Dados Reais
+  const thematicRails = useMemo(() => {
     if (!filteredEvents || filteredEvents.length === 0) return [];
+
+    const now = new Date();
+    const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+    const weekendEvents = filteredEvents.filter((e) => {
+      const d = new Date(e.event_date);
+      const day = d.getDay();
+      return day === 0 || day === 5 || day === 6;
+    });
+
+    const freeEvents = filteredEvents.filter((e) => {
+      const t = (e.title || "").toLowerCase();
+      return e.is_free || !(e as any).price_min_cents || !(e as any).price_cents || t.includes("gratis");
+    });
 
     const shows = filteredEvents.filter((e) => {
       const cat = ((e as any).category || "").toLowerCase();
       const t = (e.title || "").toLowerCase();
-      return cat === "shows" || t.includes("show") || t.includes("festival") || t.includes("música");
+      return cat === "shows" || t.includes("show") || t.includes("festival");
     });
 
     const gastro = filteredEvents.filter((e) => {
       const cat = ((e as any).category || "").toLowerCase();
       const t = (e.title || "").toLowerCase();
-      return cat === "gastronomico" || t.includes("gastronom") || t.includes("cervej") || t.includes("festa");
+      return cat === "gastronomico" || t.includes("gastronom") || t.includes("cervej");
     });
 
     const teatro = filteredEvents.filter((e) => {
       const cat = ((e as any).category || "").toLowerCase();
       const t = (e.title || "").toLowerCase();
-      return cat === "teatro" || t.includes("teatro") || t.includes("stand-up") || t.includes("comédia");
-    });
-
-    const workshops = filteredEvents.filter((e) => {
-      const cat = ((e as any).category || "").toLowerCase();
-      const t = (e.title || "").toLowerCase();
-      return cat === "workshops" || t.includes("workshop") || t.includes("curso") || t.includes("palestra");
-    });
-
-    const gratis = filteredEvents.filter((e) => {
-      const t = (e.title || "").toLowerCase();
-      return !(e as any).price_cents || (e as any).price_cents === 0 || t.includes("gratis");
+      return cat === "teatro" || t.includes("teatro") || t.includes("stand-up");
     });
 
     const rails = [];
-
+    if (weekendEvents.length > 0) {
+      rails.push({
+        id: "weekend-rail",
+        title: "Eventos no Fim de Semana",
+        categoryKey: "todos",
+        items: weekendEvents,
+      });
+    }
     if (shows.length > 0) {
       rails.push({
         id: "shows-rail",
@@ -495,472 +388,119 @@ function EventosPage() {
         items: shows,
       });
     }
-
     if (gastro.length > 0) {
       rails.push({
         id: "gastro-rail",
-        title: "Festivais Gastronômicos e Noite",
+        title: "Festivais Gastronômicos & Chopp",
         categoryKey: "gastronomico",
         items: gastro,
       });
     }
-
     if (teatro.length > 0) {
       rails.push({
         id: "teatro-rail",
-        title: "Teatro, Stand-up e Cultura",
+        title: "Teatro, Stand-up & Cultura",
         categoryKey: "teatro",
         items: teatro,
       });
     }
-
-    if (workshops.length > 0) {
+    if (freeEvents.length > 0) {
       rails.push({
-        id: "workshops-rail",
-        title: "Cursos, Workshops e Negócios",
-        categoryKey: "workshops",
-        items: workshops,
-      });
-    }
-
-    if (gratis.length > 0) {
-      rails.push({
-        id: "gratis-rail",
-        title: "Eventos com Entrada Gratuita",
+        id: "free-rail",
+        title: "Eventos com Entrada Franca",
         categoryKey: "gratis",
-        items: gratis,
-      });
-    }
-
-    // Se nenhum nicho específico matchou ou sobraram outros eventos
-    if (rails.length === 0 || filteredEvents.length > 0) {
-      rails.push({
-        id: "todos-rail",
-        title: "Programação Completa da Cidade",
-        categoryKey: "todos",
-        items: filteredEvents,
+        items: freeEvents,
       });
     }
 
     return rails;
   }, [filteredEvents]);
 
-  const activeDateLabel = useMemo(() => {
-    if (selectedDateFilter === "all") return "Todos os Dias";
-    if (selectedDateFilter === "today") return "Hoje";
-    if (selectedDateFilter === "tomorrow") return "Amanhã";
-    if (selectedDateFilter === "weekend") return "Este Fim de Semana";
-    if (selectedDateFilter === "next7") return "Próximos 7 Dias";
-    if (selectedDateFilter === "month") return "Este Mês";
-    if (selectedDateFilter === "next3months") return "Próximos 3 Meses";
-    if (selectedDateFilter === "next6months") return "Próximos 6 Meses";
-    if (selectedDateFilter.length === 7) {
-      const month = availableMonths.find((m) => m.key === selectedDateFilter);
-      return month ? month.label : selectedDateFilter;
+  // Extração de configurações da Capa do CMS (Invariante B.20)
+  const surfaceSections = loaderData?.surfaceFeed?.sections || [];
+  const heroCoverSection = surfaceSections.find((s: any) => s.type === "hero_card" || s.config?.hero_cover);
+  const heroCoverConfig = heroCoverSection?.config?.hero_cover || {};
+
+  // Mini-banners reais configurados via CMS ou banners com placement "eventos_mini"
+  const configuredMiniBanners: EventFeatureMiniBannerItem[] = useMemo(() => {
+    const rawMiniBanners = loaderData?.miniBannersPool || [];
+    if (rawMiniBanners.length > 0) {
+      return rawMiniBanners.map((b: any) => ({
+        id: b.id,
+        title: b.title || "Destaque Especial",
+        subtitle: b.subtitle || null,
+        targetUrl: b.link_url || b.target_url || "/eventos",
+        badgeText: b.badge_text || null,
+        actionText: b.button_label || "Conferir",
+        bgColor: b.bg_color || "#0284c7",
+        imageUrl: b.image_url || null,
+      }));
     }
-    const foundDay = nextDays.find((d) => d.dateKey === selectedDateFilter);
-    if (foundDay) {
-      return `${foundDay.weekday}, ${foundDay.dayNumber} de ${foundDay.monthName}`;
+
+    const miniSection = surfaceSections.find(
+      (s: any) => s.layout_variant === "feature_mini_banners" || s.type === "banner_trio_bento"
+    );
+    if (miniSection && Array.isArray((miniSection.config as any)?.banners)) {
+      return (miniSection.config as any).banners;
     }
-    return selectedDateFilter;
-  }, [selectedDateFilter, nextDays, availableMonths]);
+
+    return [];
+  }, [loaderData?.miniBannersPool, surfaceSections]);
+
+  const { isCompact } = useWindowSizeClass();
 
   return (
-    <div className="w-full max-w-5xl mx-auto pb-24">
-      <NativeMobileHeader
-        title="Eventos"
-        centerTitle
-        backTo="/"
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Buscar shows, festivais, eventos..."
-      />
-      {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border/40">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Eventos e Agenda Cultural</h1>
-          <p className="text-xs text-muted-foreground mt-1">Shows, festivais, palestras e atrações na sua cidade e região</p>
-        </div>
-        <Button asChild className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-          <Link to="/conta/classificados/novo" search={{ tipo: "evento" }}>
-            <CalendarDots size={16} weight="bold" className="mr-2" />
-            <span>Criar Evento</span>
-          </Link>
-        </Button>
-      </div>
-      <div className="space-y-4 pt-2 sm:pt-4">
-      {/* ── 1. Top Universal Banner Hero Carousel (Canônico & Editável no Admin) ── */}
-      {displayBanners.length > 0 && (
-        <section aria-label="Destaques & Banners de Eventos">
-          <BannerHeroCarousel banners={displayBanners} className="w-full" />
-        </section>
+    <div className="w-full min-h-screen bg-background">
+      {/* ── BIFURCAÇÃO 1: SUBVITRINE QUANDO UMA CATEGORIA ESPECÍFICA FOR SELECIONADA ── */}
+      {selectedCategory !== "todos" ? (
+        <EventSubvitrineView
+          categorySlug={selectedCategory}
+          activeCity={activeCity}
+          events={filteredEvents}
+          onBackToAll={() => setSelectedCategory("todos")}
+          producers={realOrganizers}
+        />
+      ) : isCompact ? (
+        /* ── BIFURCAÇÃO 2: EXPERIÊNCIA NATIVA MOBILE (iFood + Sympla) ── */
+        <EventsShowcaseMobileView
+          activeCity={activeCity}
+          coverImageUrl={heroCoverConfig.background_image_url}
+          themeColor={heroCoverConfig.theme_color || "#0284c7"}
+          calloutTitle={heroCoverConfig.callout_title || "Aqui tem desconto pra quem é Clube!"}
+          partnerLogoUrl={heroCoverConfig.partner_logo_url}
+          activeCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          categoryCounts={eventsCountBySubcategory}
+          eventsForYou={eventsForYou}
+          trendingEvents={trendingEvents}
+          producers={realOrganizers}
+          miniBanners={configuredMiniBanners}
+          thematicRails={thematicRails}
+          allFilteredEvents={filteredEvents}
+          selectedDateFilter={selectedDateFilter}
+          onSelectDateFilter={setSelectedDateFilter}
+          isLoading={isLoading}
+          isError={isError}
+        />
+      ) : (
+        /* ── BIFURCAÇÃO 3: EXPERIÊNCIA EXPANDIDA DESKTOP (Widescreen + Carrosséis Instagram) ── */
+        <EventsShowcaseDesktopView
+          activeCity={activeCity}
+          banners={displayBanners}
+          activeCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          categoryCounts={eventsCountBySubcategory}
+          eventsForYou={eventsForYou}
+          trendingEvents={trendingEvents}
+          producers={realOrganizers}
+          miniBanners={configuredMiniBanners}
+          thematicRails={thematicRails}
+          allFilteredEvents={filteredEvents}
+          selectedDateFilter={selectedDateFilter}
+          onSelectDateFilter={setSelectedDateFilter}
+          isLoading={isLoading}
+        />
       )}
-
-      {/* ── 2. Seção de Cards Panorâmicos de Hotpages de Eventos ── */}
-      {displayHotpages.length > 0 && (
-        <section aria-label="Hotpages e Destaques Temáticos">
-          <HotpagesRail
-            hotpages={displayHotpages}
-            activeSlug={selectedCategory}
-            onSelect={(slug) => setSelectedCategory(slug === selectedCategory ? "todos" : slug)}
-          />
-        </section>
-      )}
-
-      {/* ── Seções Dinâmicas do CMS Master (B.20 Bilateralidade) ── */}
-      {loaderData?.surfaceFeed?.sections && loaderData.surfaceFeed.sections.length > 0 && (
-        <section aria-label="Destaques de Eventos CMS" className="w-full">
-          <ModularSurfaceFeed sections={loaderData.surfaceFeed.sections} />
-        </section>
-      )}
-
-      {/* ── 3. Barra de Controle de Descoberta & Categorias Unificadas ── */}
-      <DiscoveryControlBar
-        search={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Buscar show, festival, teatro, local, artista..."
-        categories={eventCategories}
-        activeCategory={selectedCategory}
-        onSelectCategory={(cat) => setSelectedCategory(cat === selectedCategory && cat !== "todos" ? "todos" : cat)}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        allowedViewModes={["feed", "grid", "list"]}
-        hideMobileSearch={true}
-      />
-
-      {/* ── 4. Filtro de Data & Calendário Canônico ── */}
-      <section aria-label="Programação por Data" className="space-y-2">
-        <div role="tablist" aria-label="Filtro de Data" className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar pb-1 snap-x snap-mandatory">
-          {/* Popover com Calendário Interativo */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className={`h-11 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer select-none shrink-0 snap-start whitespace-nowrap ${
-                  selectedDateFilter !== "all" && selectedDateFilter.includes("-")
-                    ? "bg-foreground text-background border-foreground font-bold shadow-xs"
-                    : "bg-card border-border/80 text-foreground hover:bg-muted/60"
-                }`}
-              >
-                <CalendarIcon className="size-3.5 shrink-0" />
-                <span>
-                  {selectedDateFilter !== "all" && selectedDateFilter.includes("-")
-                    ? activeDateLabel
-                    : "Escolher Data"}
-                </span>
-                <LucideChevronDown className="size-3 opacity-60 ml-1" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-lg border border-border shadow-xs bg-card" align="start">
-              <Calendar
-                mode="single"
-                selected={selectedDateFilter.includes("-") && selectedDateFilter.length === 10 ? new Date(selectedDateFilter + "T12:00:00") : undefined}
-                onSelect={(d) => {
-                  if (d) {
-                    const y = d.getFullYear();
-                    const m = String(d.getMonth() + 1).padStart(2, "0");
-                    const day = String(d.getDate()).padStart(2, "0");
-                    setSelectedDateFilter(`${y}-${m}-${day}`);
-                  }
-                }}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
-          {/* Quick Filter Pills */}
-          {[
-            { id: "all", label: "Todos os Dias" },
-            { id: "today", label: "Hoje" },
-            { id: "tomorrow", label: "Amanhã" },
-            { id: "weekend", label: "Fim de Semana" },
-            { id: "month", label: "Este Mês" },
-          ].map((pill) => {
-            const isSelected = selectedDateFilter === pill.id;
-            return (
-              <button
-                key={pill.id}
-                type="button"
-                onClick={() => setSelectedDateFilter(pill.id)}
-                className={`h-11 px-4 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0 snap-start whitespace-nowrap ${
-                  isSelected
-                    ? "bg-foreground text-background font-bold shadow-xs"
-                    : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {pill.label}
-              </button>
-            );
-          })}
-
-          {/* Botão de Limpar Data quando selecionada */}
-          {selectedDateFilter !== "all" && (
-            <button
-              type="button"
-              onClick={() => setSelectedDateFilter("all")}
-              className="h-11 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-            >
-              <LucideX className="size-3.5" />
-              <span>Limpar</span>
-            </button>
-          )}
-
-          {/* Contador de eventos */}
-          <span className="text-xs font-mono text-muted-foreground ml-auto pr-1">
-            {filteredEvents.length} {filteredEvents.length === 1 ? "evento" : "eventos"}
-          </span>
-        </div>
-      </section>
-
-      {/* ── 5. Estados de Carregamento, Erro e Vazio ── */}
-      {isLoading && (
-        <div className="flex justify-center py-24">
-          <CircleNotch size={32} className="animate-spin motion-reduce:animate-none text-muted-foreground" />
-        </div>
-      )}
-
-      {isError && (
-        <div className="py-12 px-6 rounded-lg border border-destructive/20 bg-destructive/5 text-center space-y-2">
-          <WarningCircle size={32} className="text-destructive mx-auto" />
-          <p className="font-semibold text-foreground text-sm">Erro ao carregar o Marketplace de Eventos</p>
-        </div>
-      )}
-
-      {!isLoading && !isError && filteredEvents.length === 0 && (
-        <div className="py-20 text-center space-y-3 bg-card rounded-lg p-8 border border-border/50">
-          <CalendarBlank size={36} className="text-muted-foreground/40 mx-auto" />
-          <h2 className="text-sm font-semibold text-foreground">
-            Nenhum evento encontrado
-          </h2>
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-            {(selectedDateFilter !== "all" || selectedCategory !== "todos" || searchQuery.trim()) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedDateFilter("all");
-                  setSelectedCategory("todos");
-                  setSearchQuery("");
-                }}
-                className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                Limpar filtros
-              </Button>
-            )}
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="rounded-lg text-xs font-bold h-11 min-h-11 px-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <Link to="/conta/classificados/novo" search={{ tipo: "evento" }}>
-                <CalendarDots size={16} weight="bold" className="mr-2" />
-                <span>Criar Evento</span>
-              </Link>
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* ── 7. Renderização dos Modos de Visualização ── */}
-
-      {/* MODO 1: FEED DE TRILHOS TEMÁTICOS & MOTOR PROCEDURAL INFINITE FEED */}
-      {!isLoading && !isError && filteredEvents.length > 0 && viewMode === "feed" && (
-        <div className="space-y-12">
-          {feedThematicRails.map(({ id, title, categoryKey, items }) => (
-            <HorizontalRail
-              key={id}
-              title={title}
-              actionLabel="Ver todos no grid"
-              onAction={() => {
-                setSelectedCategory(categoryKey);
-                setViewMode("grid");
-              }}
-            >
-              {items.map((event) => (
-                <Link
-                  key={event.id}
-                  to="/evento/$id"
-                  params={{ id: event.id }}
-                  className="w-72 sm:w-80 rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between shrink-0 group select-none block shadow-xs"
-                >
-                  <div className="space-y-3 block">
-                    <div className="aspect-16/10 relative overflow-hidden bg-muted">
-                      <img
-                        src={getEventCover(event)}
-                        alt={event.title}
-                        className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-200"
-                        onError={(e) => {
-                          e.currentTarget.src = FALLBACK_EVENT_COVER;
-                        }}
-                      />
-                      <div className="absolute top-3 left-3 flex items-center gap-2">
-                        <span className="bg-foreground text-background text-xs font-mono font-bold px-3 py-1 rounded-lg border border-border/40">
-                          {formatDate(event.event_date)}
-                        </span>
-                      </div>
-
-                      <div className="absolute bottom-3 left-3 right-3">
-                        <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-2 bg-background/80 backdrop-blur-md px-3 py-1 rounded-md">
-                          {event.title}
-                        </h3>
-                      </div>
-                    </div>
-
-                    <div className="px-4 space-y-2 text-xs">
-                      {event.location && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <MapPin size={13} weight="bold" className="shrink-0" />
-                          <span className="truncate">{event.location}</span>
-                        </div>
-                      )}
-                      <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                        {event.description || "Evento oficial da comunidade."}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-3 pt-2.5 flex items-center justify-between border-t border-border/40 mt-3 gap-2">
-                    <div className="min-w-0">
-                      <span className="text-3xs text-muted-foreground block uppercase font-mono tracking-wider">A partir de</span>
-                      <span className="text-xs font-bold text-foreground">
-                        {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
-                      </span>
-                    </div>
-                    <span className="h-11 min-h-11 px-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs inline-flex items-center justify-center gap-1.5 shrink-0 group-hover:bg-primary/90 transition-colors">
-                      <Ticket size={14} weight="bold" />
-                      Garantir
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </HorizontalRail>
-          ))}
-
-          {/* Motor de Descoberta Infinita Procedural no Rodapé do Feed */}
-          <div className="pt-6 border-t border-border/40">
-            <ProceduralInfiniteFeed
-              city="São Miguel do Oeste"
-              pageSize={4}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* MODO 2: GRID COMPACTO MODERNO (16/10) */}
-      {!isLoading && !isError && filteredEvents.length > 0 && viewMode === "grid" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredEvents.map((event) => (
-            <Link
-              key={event.id}
-              to="/evento/$id"
-              params={{ id: event.id }}
-              className="rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between group shadow-xs"
-            >
-              <div className="space-y-3">
-                <div className="aspect-16/10 relative overflow-hidden bg-muted">
-                  <img
-                    src={getEventCover(event)}
-                    alt={event.title}
-                    className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    onError={(e) => {
-                      e.currentTarget.src = FALLBACK_EVENT_COVER;
-                    }}
-                  />
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-foreground text-background text-xs font-mono font-bold px-3 py-1 rounded-lg border border-border/40">
-                      {formatDate(event.event_date)}
-                    </span>
-                  </div>
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-2 bg-background/80 backdrop-blur-md px-3 py-1 rounded-md">
-                      {event.title}
-                    </h3>
-                  </div>
-                </div>
-
-                <div className="px-4 space-y-1 text-xs">
-                  {event.location && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin size={13} weight="bold" className="shrink-0" />
-                      <span className="truncate">{event.location}</span>
-                    </div>
-                  )}
-                  <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                    {event.description || "Evento oficial da comunidade."}
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 pt-2.5 flex items-center justify-between border-t border-border/40 mt-3 gap-2">
-                <div className="min-w-0">
-                  <span className="text-3xs text-muted-foreground block uppercase font-mono tracking-wider">A partir de</span>
-                  <span className="text-xs font-bold text-foreground">
-                    {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
-                  </span>
-                </div>
-                <span className="h-11 min-h-11 px-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs inline-flex items-center justify-center gap-1.5 shrink-0 group-hover:bg-primary/90 transition-colors">
-                  <Ticket size={14} weight="bold" />
-                  Garantir
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {/* MODO 3: LISTA EXPANDIDA (V118 Full-Height Left Edge-to-Edge Image) */}
-      {!isLoading && !isError && filteredEvents.length > 0 && viewMode === "list" && (
-        <div className="space-y-3">
-          {filteredEvents.map((event) => (
-            <Link
-              key={event.id}
-              to="/evento/$id"
-              params={{ id: event.id }}
-              className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors duration-200 min-h-36 pl-32 sm:pl-44 pr-4 py-4 flex items-center justify-between gap-3 cursor-pointer w-full"
-            >
-              <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-lg overflow-hidden bg-muted">
-                <img
-                  src={getEventCover(event)}
-                  alt={event.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                  onError={(e) => {
-                    e.currentTarget.src = FALLBACK_EVENT_COVER;
-                  }}
-                />
-              </div>
-
-              <div className="space-y-1 min-w-0 flex-1 pl-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono font-bold text-primary uppercase">
-                    {formatDate(event.event_date)}
-                  </span>
-                </div>
-                <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
-                  {event.title}
-                </h3>
-                {event.location && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
-                    <MapPin size={12} weight="bold" className="shrink-0 text-primary" />
-                    <span className="truncate">{event.location}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-4 shrink-0 pl-1">
-                <span className="text-xs sm:text-sm font-bold text-primary font-mono">
-                  {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Gratuito"}
-                </span>
-                <div className="h-11 px-4 rounded-lg text-xs font-semibold gap-1 inline-flex items-center justify-center border border-border bg-card text-foreground group-hover:bg-muted/80 transition-colors select-none">
-                  <span>Ingressos</span>
-                  <CaretRight size={12} weight="bold" />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-      </div>
     </div>
   );
 }

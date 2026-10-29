@@ -1,273 +1,201 @@
 import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { Heartbeat, FirstAid, Pill, Baby, Sun, ShieldCheck, Clock, MapPin, Storefront, ArrowRight, ShoppingBag, SlidersHorizontal } from "@phosphor-icons/react";
+import {
+  Heartbeat,
+  FirstAid,
+  Pill,
+  Baby,
+  Sun,
+  ShieldCheck,
+  Sparkle,
+} from "@phosphor-icons/react";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
-import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import { StoreCard } from "@/components/commerce/store-card";
-import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
-import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
-import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
-import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { listPublishedProducts } from "@/services/catalog.functions";
+
+import { CommercialShowcaseTemplate } from "@/components/commerce/ifood/CommercialShowcaseTemplate";
+import type { SubcategoryItem } from "@/components/commerce/ifood/IFoodSubcategoryPillRail";
+import type { FeatureMiniBannerItem } from "@/components/commerce/ifood/IFoodFeatureMiniBannersRail";
+import type { RecentStoreItem } from "@/components/commerce/ifood/IFoodRecentStoresRail";
+import type { IFoodStoreCardData } from "@/components/commerce/ifood/IFoodStoreFeedCard";
+
 import type { ProductCardDTO } from "@/types/catalog";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
 
 const SearchSchema = z.object({
- q: z.string().optional(),
- view: z.enum(["feed", "grid", "list"]).default("feed").optional(),
- sort: z.enum(["newest", "price_asc", "price_desc", "in_stock"]).default("newest").optional(),
- categoria: z.string().optional(),
+  q: z.string().optional(),
+  view: z.enum(["feed", "grid", "list"]).default("feed").optional(),
+  sort: z.enum(["newest", "price_asc", "price_desc", "in_stock"]).default("newest").optional(),
+  categoria: z.string().optional(),
 });
 
 type FarmaciaSearch = z.infer<typeof SearchSchema>;
 
-const FARMACIA_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo", icon: Tag },
- { id: "medicamentos", label: "Medicamentos Isentos", icon: Pill },
- { id: "suplementos", label: "Vitaminas e Suplementos", icon: Heartbeat },
- { id: "dermocosmeticos", label: "Dermocosméticos", icon: Tag },
- { id: "higiene", label: "Higiene e Cuidados", icon: ShieldCheck },
- { id: "bebe", label: "Mamãe e Bebê", icon: Baby },
- { id: "primeiros_socorros", label: "Primeiros Socorros", icon: FirstAid },
- { id: "solar", label: "Protetor Solar e Verão", icon: Sun },
+const FARMACIA_SUBCATEGORIES: SubcategoryItem[] = [
+  { id: "todos", label: "Tudo", icon: Pill },
+  { id: "medicamentos", label: "Medicamentos", icon: Pill, badge: "Urgente" },
+  { id: "suplementos", label: "Vitaminas", icon: Heartbeat },
+  { id: "dermocosmeticos", label: "Dermocosméticos", icon: Sparkle },
+  { id: "higiene", label: "Higiene", icon: ShieldCheck },
+  { id: "bebe", label: "Mamãe e Bebê", icon: Baby },
+  { id: "primeiros_socorros", label: "Primeiros Socorros", icon: FirstAid },
+  { id: "solar", label: "Protetor Solar", icon: Sun },
 ];
 
 export const Route = createFileRoute("/_store/farmacia")({
- head: () => ({
- meta: [
- { title: "Farmácias, Drogarias e Saúde | Waesy" },
- {
- name: "description",
- content:
- "Encontre remédios isentos, suplementos, dermocosméticos e produtos de cuidados de farmácias e drogarias da sua cidade com entrega rápida.",
- },
- ],
- }),
- validateSearch: (search: Record<string, unknown>): FarmaciaSearch =>
- SearchSchema.parse(search),
- loaderDeps: ({ search }) => search,
- loader: async ({ location }) => {
+  head: () => ({
+    meta: [
+      { title: "Farmácias, Drogarias e Saúde | Waesy" },
+      {
+        name: "description",
+        content:
+          "Peça medicamentos, vitaminas, dermocosméticos, higiene e cuidados infantis nas melhores drogarias da sua cidade.",
+      },
+    ],
+  }),
+  validateSearch: (search: Record<string, unknown>): FarmaciaSearch =>
+    SearchSchema.parse(search),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ location, deps: search }) => {
     const activeCity = resolveActiveCity(location?.search);
-   try {
- const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "farmacia", city: activeCity } }).catch(() => []),
- listHotpages({ data: { module: "farmacia" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "farmacia", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
- listPublishedProducts({ data: { niche: "farmacia", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
- ]);
- return {
- banners,
- hotpages,
- marketplaceFeed,
- catalogProducts: (productsRes as any).data ?? [],
- };
-   } catch (err) {
-     console.error("[loader:_store.farmacia] Unhandled error:", err);
-     return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
-   }
- },
- component: FarmaciaVerticalPage,
- pendingComponent: PageSkeleton,
+    try {
+      const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
+        listActiveBanners({ data: { placement: "farmacia", city: activeCity } }).catch(() => []),
+        listHotpages({ data: { module: "farmacia" } }).catch(() => []),
+        getModularSurfaceFeed({ data: { surfaceSlug: "farmacia", city: activeCity } }).catch(() => ({
+          sections: [],
+          allProducts: [],
+        })),
+        listPublishedProducts({
+          data: { niche: "farmacia", limit: 40, sort: search.sort ?? "newest" },
+        }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
+      ]);
+
+      return {
+        banners,
+        hotpages,
+        marketplaceFeed,
+        catalogProducts: productsRes.status === "ok" ? (productsRes as any).data ?? [] : [],
+      };
+    } catch (err) {
+      console.error("[loader:_store.farmacia] Unhandled error:", err);
+      return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
+    }
+  },
+  pendingComponent: PageSkeleton,
+  component: FarmaciaMasterPage,
 });
-function FarmaciaVerticalPage() {
- const { banners, hotpages, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
- const search = Route.useSearch();
- const navigate = useNavigate({ from: Route.fullPath });
 
- const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
- const [viewMode, setViewMode] = useState<ViewModeType>(search.view || "feed");
+function FarmaciaMasterPage() {
+  const { banners, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
 
- const handleDepartmentChange = (depId: string) => {
- setActiveDepartment(depId);
- navigate({
- search: (prev: any) => ({
- ...prev,
- categoria: depId === "todos" ? undefined : depId,
- }),
- });
- };
+  const [activeDepartment, setActiveDepartment] = useState(search.categoria || "todos");
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
- const handleViewModeChange = (mode: ViewModeType) => {
- setViewMode(mode);
- navigate({
- search: (prev: any) => ({
- ...prev,
- view: mode === "feed" ? undefined : mode,
- }),
- });
- };
+  const handleDepartmentChange = (depId: string) => {
+    setActiveDepartment(depId);
+    navigate({
+      search: (prev: any) => ({
+        ...prev,
+        categoria: depId === "todos" ? undefined : depId,
+      }),
+    });
+  };
 
- // Filtragem de produtos de farmácia
- const filteredProducts = useMemo(() => {
- const allProducts = marketplaceFeed?.allProducts || [];
- return allProducts.filter((p: any) => {
- const titleLower = p.title.toLowerCase();
- const descLower = (p.description || "").toLowerCase();
- const tags = (p.tags || []).map((t: string) => t.toLowerCase());
+  const handleToggleFilter = (filterId: string) => {
+    setActiveFilters((prev) =>
+      prev.includes(filterId) ? prev.filter((id) => id !== filterId) : [...prev, filterId],
+    );
+  };
 
- const isPharmacyItem =
- titleLower.includes("vitamina") ||
- titleLower.includes("creme") ||
- titleLower.includes("protetor") ||
- titleLower.includes("fralda") ||
- titleLower.includes("sabomete") ||
- titleLower.includes("remédio") ||
- titleLower.includes("dor") ||
- titleLower.includes("colírio") ||
- titleLower.includes("curativo") ||
- titleLower.includes("álcool") ||
- titleLower.includes("shampoo") ||
- titleLower.includes("escova") ||
- titleLower.includes("pasta") ||
- titleLower.includes("termômetro") ||
- tags.some((t: string) =>
- ["farmacia", "saude", "suplementos", "higiene", "medicamento"].includes(t),
- );
+  const rawStores = useMemo(() => {
+    const storeSection = marketplaceFeed?.sections?.find((s: any) => s.type === "store_rail");
+    return storeSection?.items || [];
+  }, [marketplaceFeed]);
 
- if (activeDepartment === "todos") return isPharmacyItem || allProducts.length <= 10;
- if (activeDepartment === "medicamentos")
- return titleLower.includes("dor") || titleLower.includes("remédio") || titleLower.includes("colírio");
- if (activeDepartment === "suplementos")
- return titleLower.includes("vitamina") || titleLower.includes("whey") || titleLower.includes("creatina");
- if (activeDepartment === "dermocosmeticos")
- return titleLower.includes("protetor") || titleLower.includes("sérum") || titleLower.includes("creme");
- if (activeDepartment === "higiene")
- return titleLower.includes("sabonete") || titleLower.includes("escova") || titleLower.includes("fio");
- if (activeDepartment === "bebe")
- return titleLower.includes("fralda") || titleLower.includes("bebê") || titleLower.includes("lenço");
- if (activeDepartment === "primeiros_socorros")
- return titleLower.includes("curativo") || titleLower.includes("álcool") || titleLower.includes("gaze");
- if (activeDepartment === "solar")
- return titleLower.includes("protetor") || titleLower.includes("solar") || titleLower.includes("bronzeador");
- return true;
- });
- }, [marketplaceFeed, activeDepartment]);
+  const featureMiniBanners: FeatureMiniBannerItem[] = useMemo(() => {
+    const bannerSection = marketplaceFeed?.sections?.find(
+      (s: any) => s.type === "mini_banners" || s.type === "feature_banners",
+    );
+    if (bannerSection?.items?.length) {
+      return bannerSection.items.map((b: any, idx: number) => ({
+        id: b.id || `mini-${idx}`,
+        title: b.title || "",
+        subtitle: b.subtitle || null,
+        targetUrl: b.targetUrl || b.link || "/farmacia",
+        badgeText: b.badgeText || b.tag || null,
+        actionText: b.actionText || null,
+        imageUrl: b.imageUrl || b.image_url || null,
+      }));
+    }
+    return [];
+  }, [marketplaceFeed]);
 
- // Farmácias parceiras
- const pharmacyStores = useMemo(() => {
- const storeSection = marketplaceFeed?.sections?.find((s: any) => s.type === "store_rail");
- const stores = storeSection?.items || [];
- return stores.filter((s: any) => {
- const type = (s.type || "").toLowerCase();
- const name = (s.name || "").toLowerCase();
- return (
- type.includes("farmacia") ||
- type.includes("drogaria") ||
- type.includes("saude") ||
- name.includes("farmácia") ||
- name.includes("drogaria") ||
- name.includes("droga") ||
- name.includes("pharma")
- );
- });
- }, [marketplaceFeed]);
+  const stores: IFoodStoreCardData[] = useMemo(() => {
+    if (rawStores.length > 0) {
+      return rawStores.map((st: any, idx: number) => ({
+        id: st.id || `farm-${idx}`,
+        name: st.name || st.title || "Drogaria Parceira",
+        slug: st.slug || st.id || "",
+        logoUrl: st.logo_url || st.imageUrl || null,
+        coverUrl: st.cover_url || st.banner_url || null,
+        isAd: Boolean(st.is_featured || st.is_ad),
+        rating: typeof st.rating === "number" && st.rating > 0 ? st.rating : undefined,
+        reviewCount: typeof st.review_count === "number" && st.review_count > 0 ? st.review_count : undefined,
+        deliveryTime: st.delivery_time || undefined,
+        deliveryFee:
+          typeof st.delivery_fee === "number"
+            ? st.delivery_fee === 0
+              ? "Grátis"
+              : `R$ ${st.delivery_fee.toFixed(2)}`
+            : typeof st.delivery_fee === "string"
+              ? st.delivery_fee
+              : undefined,
+        couponBadge: st.coupon_badge || undefined,
+        secondaryBadges: Array.isArray(st.badges) ? st.badges : undefined,
+        hasHighlightCrown: Boolean(st.has_highlight_crown),
+      }));
+    }
 
- return (
- <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
- {/* ── 1. Banners de Farmácia & Saúde ── */}
- {banners && banners.length > 0 && (
- <section aria-label="Banners de Farmácia">
- <BannerHeroCarousel banners={banners} />
- </section>
- )}
+    return [];
+  }, [rawStores]);
 
- {/* ── 2. Hotpages / Campanhas ── */}
- {hotpages && hotpages.length > 0 && (
- <section aria-label="Campanhas de Saúde">
- <HotpagesRail hotpages={hotpages} />
- </section>
- )}
+  const recentStores: RecentStoreItem[] = useMemo(() => {
+    return stores.slice(0, 5).map((s) => ({
+      id: s.id,
+      name: s.name,
+      slug: s.slug,
+      logoUrl: s.logoUrl,
+      badge: s.deliveryFee === "Grátis" ? "Grátis" : (s.couponBadge || undefined),
+    }));
+  }, [stores]);
 
- {/* ── 3. Discovery Control Bar & Departamentos ── */}
- <DiscoveryControlBar
- search={search.q || ""}
- onSearchChange={(q) => navigate({ search: (prev: any) => ({ ...prev, q }) })}
- searchPlaceholder="Buscar remédios, vitaminas, protetor solar, fraldas..."
- categories={FARMACIA_DEPARTMENTS}
- activeCategory={activeDepartment}
- onSelectCategory={handleDepartmentChange}
- viewMode={viewMode}
- onViewModeChange={handleViewModeChange}
- />
+  const spotlightStores = useMemo(() => {
+    return stores.filter((s) => Boolean(s.couponBadge));
+  }, [stores]);
 
- {/* ── 4. Renderização do Feed Modular ou Grade Filtrada ── */}
- {viewMode === "feed" ? (
- <div className="space-y-8">
- {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 && (
- <ModularSurfaceFeed sections={marketplaceFeed.sections} />
- )}
-
- {filteredProducts.length > 0 ? (
- <div className="space-y-8">
- {(() => {
- const grouped = filteredProducts.reduce((acc: Record<string, typeof filteredProducts>, prod: any) => {
- const key = prod.category_name || prod.category || prod.store_name || "Destaques da Farmácia";
- if (!acc[key]) acc[key] = [];
- acc[key].push(prod);
- return acc;
- }, {});
-
- return Object.entries(grouped).map(([groupName, prods]: [string, any]) => (
- <HorizontalRail
- key={groupName}
- title={groupName}
- hideHeader={false}
- actionLabel="Ver grade"
- onAction={() => handleViewModeChange("grid")}
- >
- {prods.map((prod: any) => (
- <div key={prod.id} className="w-56 sm:w-64 shrink-0">
- <GroceryProductCard product={prod} viewMode="grid" />
- </div>
- ))}
- </HorizontalRail>
- ));
- })()}
- </div>
- ) : (
- <div className="py-12 text-center bg-card rounded-lg p-6">
- <EmptyState
- title="Nenhum produto farmacêutico encontrado"
- description="Tente selecionar outro departamento ou busque por itens específicos."
- />
- </div>
- )}
- </div>
- ) : (
- <section aria-label="Produtos de Saúde & Cuidados">
- {filteredProducts.length === 0 ? (
- <div className="py-12 text-center bg-card rounded-lg p-6">
- <EmptyState
- title="Nenhum produto farmacêutico encontrado"
- description="Tente selecionar outro departamento ou busque por itens específicos."
- />
- </div>
- ) : viewMode === "list" ? (
- <div className="flex flex-col gap-3">
- {filteredProducts.map((product: any) => (
- <GroceryProductCard key={product.id} product={product} viewMode="list" />
- ))}
- </div>
- ) : (
- <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
- {filteredProducts.map((product: any) => (
- <GroceryProductCard key={product.id} product={product} viewMode="grid" />
- ))}
- </div>
- )}
- </section>
- )}
- </div>
- );
+  return (
+    <CommercialShowcaseTemplate
+      nicheId="farmacia"
+      nicheTitle="Farmácias"
+      subcategories={FARMACIA_SUBCATEGORIES}
+      activeSubcategoryId={activeDepartment}
+      onSelectSubcategory={handleDepartmentChange}
+      banners={banners || []}
+      featureMiniBanners={featureMiniBanners}
+      recentStores={recentStores}
+      stores={stores}
+      spotlightStores={spotlightStores}
+      products={catalogProducts || []}
+      activeFilters={activeFilters}
+      onToggleFilter={handleToggleFilter}
+    />
+  );
 }

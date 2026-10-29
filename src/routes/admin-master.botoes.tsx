@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { z } from "zod";
-import { Plus, Trash2, Pencil, Sliders, Image as ImageIcon, Eye, SlidersHorizontal, Tag, CheckCircle2, LayoutGrid, Layers, ArrowUpRight, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Pencil, Sliders, Image as ImageIcon, Eye, EyeOff, SlidersHorizontal, Tag, CheckCircle2, LayoutGrid, Layers, ArrowUpRight, ExternalLink } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { SheetPage } from "@/components/ui/sheet-page";
-import { listHotpages, createHotpage, updateHotpage, deleteHotpage, syncDefaultHotpages, type HotpageDTO, type HotpageModule, type HotpageTemplateType } from "@/services/hotpage.functions";
+import { listHotpages, createHotpage, updateHotpage, deleteHotpage, toggleHotpageActive, syncDefaultHotpages, type HotpageDTO, type HotpageModule, type HotpageTemplateType } from "@/services/hotpage.functions";
 import { DestinationPicker } from "@/components/ui/destination-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
@@ -115,6 +115,9 @@ function AdminMasterHotpagesPage() {
   const [endsAt, setEndsAt] = useState("");
   const [autoArchiveAt, setAutoArchiveAt] = useState("");
   const [cityFilter, setCityFilter] = useState("all");
+  const [sectionTitle, setSectionTitle] = useState("Categorias");
+  const [cardVariant, setCardVariant] = useState<"wide" | "squircle" | "full_width">("squircle");
+  const [badgeColor, setBadgeColor] = useState("#DC2626");
 
  // Filtra hotpages de acordo com a aba ativa
  const filteredItems = useMemo(() => {
@@ -172,6 +175,9 @@ function AdminMasterHotpagesPage() {
       setShowBadge(false);
       setShowOverlay(false);
       setBgColor("#EFF6FF");
+       setSectionTitle("Categorias");
+       setCardVariant("squircle");
+       setBadgeColor("#DC2626");
     } else if (forTab === "category_hub") {
  setShowTitle(true);
  setShowBadge(false);
@@ -218,6 +224,9 @@ function AdminMasterHotpagesPage() {
     setEndsAt(item.ends_at ? item.ends_at.slice(0, 16) : "");
     setAutoArchiveAt(item.auto_archive_at ? item.auto_archive_at.slice(0, 16) : "");
     setCityFilter((item as any).city_filter || "all");
+    setSectionTitle(item.filter_rules?.section_title || (item.filter_rules?.section_key === "categorias" ? "Categorias" : item.filter_rules?.section_key === "explorar" ? "Destaques para Explorar" : item.filter_rules?.section_key === "destaques_waesy" ? "Destaques do Waesy" : "Categorias"));
+    setCardVariant(item.filter_rules?.card_variant || (item.filter_rules?.is_full_width ? "full_width" : "squircle"));
+    setBadgeColor(item.filter_rules?.badge_color || "#DC2626");
  setIsSheetOpen(true);
  };
 
@@ -319,6 +328,13 @@ function AdminMasterHotpagesPage() {
  ends_at: endsAt ? new Date(endsAt).toISOString() : undefined,
  auto_archive_at: autoArchiveAt ? new Date(autoArchiveAt).toISOString() : undefined,
  city_filter: cityFilter === "all" ? null : cityFilter,
+          filter_rules: {
+            section_title: sectionTitle,
+            section_key: sectionTitle.toLowerCase().replace(/\s+/g, "_"),
+            card_variant: cardVariant,
+            badge_color: badgeColor,
+            is_full_width: cardVariant === "full_width",
+          },
  },
  });
 
@@ -335,6 +351,20 @@ function AdminMasterHotpagesPage() {
  setIsSubmitting(false);
  }
  };
+
+  const handleToggleActive = async (id: string, currentActive: boolean) => {
+    try {
+      const nextActive = !currentActive;
+      await toggleHotpageActive({ data: { id, is_active: nextActive } });
+      setHotpages((prev) =>
+        prev.map((h) => (h.id === id ? { ...h, is_active: nextActive } : h))
+      );
+      toast.success(nextActive ? "Módulo ativado no menu!" : "Módulo desativado no menu.");
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao alternar estado do módulo.");
+    }
+  };
 
  const handleDelete = async (id: string) => {
  try {
@@ -448,6 +478,19 @@ function AdminMasterHotpagesPage() {
  <Layers className="size-4 text-primary" />
  <span>3. Coleções e Hotpages Editoriais</span>
  </button>
+
+        <button
+          onClick={() => setActiveMainTab("drawer_module")}
+          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
+            activeMainTab === "drawer_module"
+              ? "bg-background text-foreground shadow-sm border border-border/60"
+              : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+          )}
+        >
+          <LayoutGrid className="size-4 text-primary" />
+          <span>4. Menu Lateral Mobile (iFood / Threads)</span>
+        </button>
  </div>
 
  {/* ── Informações Explicativas da Aba Ativa ── */}
@@ -473,6 +516,14 @@ function AdminMasterHotpagesPage() {
  posicionada abaixo dos Banners e Stories (ex: "Ofertas Relâmpago", "Almoço Rápido", "Mercado em 15 Min").
  </p>
  )}
+        {activeMainTab === "drawer_module" && (
+          <p>
+            <strong className="text-foreground">Menu Lateral Mobile (Paridade iFood / Threads):</strong> Módulos e atalhos exibidos na
+            barra lateral acionada pelo botão superior esquerdo. Suporta seções semânticas ("Categorias", "Destaques para Explorar",
+            "Destaques do Waesy", "Seleção"), cards amplos 2 colunas, squircles 4 colunas com badges e alternador Grade/Lista.
+            <strong> Itens não são excluídos</strong>, apenas desativados para preservação histórica.
+          </p>
+        )}
  </div>
  </div>
 
@@ -556,7 +607,7 @@ function AdminMasterHotpagesPage() {
  <img
  src={item.cover_image_url}
  alt={item.title}
- className="absolute inset-0 size-full object-cover group-hover:scale-102 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-102 transition-transform duration-200"
  loading="lazy"
  />
  ) : (
@@ -624,7 +675,7 @@ function AdminMasterHotpagesPage() {
  className="size-6 object-contain"
  />
  ) : (
- <span className="text-lg font-emoji">{(item as any).emoji || "🏷️"}</span>
+ <span className="text-lg font-emoji">{(item as any).emoji || "️"}</span>
  )}
  </div>
  <div className="min-w-0">
@@ -656,7 +707,91 @@ function AdminMasterHotpagesPage() {
  </div>
  ))}
  </div>
- ) : (
+        ) : activeMainTab === "drawer_module" ? (
+          /* ── GRID ABA 4: MENU LATERAL MOBILE (PARIDADE IFOOD / THREADS) ── */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {filteredItems.map((item) => {
+              const section = item.filter_rules?.section_title || "Categorias";
+              const variant = item.filter_rules?.card_variant || (item.filter_rules?.is_full_width ? "full_width" : "squircle");
+              const isItemActive = item.is_active !== false;
+
+              return (
+                <div
+                  key={item.id}
+                  className={cn(
+                    "group relative p-3 rounded-xl border bg-card transition-colors duration-200 flex flex-col justify-between gap-3 shadow-xs",
+                    isItemActive ? "border-border/80 hover:border-foreground/40" : "border-border/40 opacity-60 bg-muted/10"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="size-11 rounded-xl bg-muted/50 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden relative">
+                        {item.custom_icon_url ? (
+                          <img src={item.custom_icon_url} alt={item.title} className="size-7 object-contain" />
+                        ) : (
+                          <LayoutGrid className="size-5 text-foreground" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-xs font-bold text-foreground truncate">{item.title}</h4>
+                          {item.badge_label ? (
+                            <span className="px-2 py-1 rounded-full text-3xs font-black uppercase text-destructive-foreground bg-destructive leading-none">
+                              {item.badge_label}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="text-2xs font-mono text-muted-foreground truncate">{item.target_route || `/${item.slug}`}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge variant="outline" className="text-3xs font-mono">
+                        {section}
+                      </Badge>
+                      <span className="text-3xs text-muted-foreground capitalize">
+                        {variant === "wide" ? "Amplo 2 Col" : variant === "full_width" ? "Full Width" : "Squircle 4 Col"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <div className="flex items-center gap-2">
+                      <span className={cn("size-2 rounded-full", isItemActive ? "bg-emerald-500" : "bg-muted-foreground")} />
+                      <span className="text-2xs font-semibold text-muted-foreground">
+                        {isItemActive ? "Ativo no Menu" : "Desativado"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        onClick={() => handleOpenEdit(item)}
+                        title="Editar Módulo"
+                      >
+                        <Pencil className="size-3.5" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={cn(
+                          "size-11 min-h-11 min-w-11 p-0 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                          isItemActive ? "text-muted-foreground hover:text-destructive" : "text-emerald-600 hover:text-emerald-700"
+                        )}
+                        onClick={() => handleToggleActive(item.id, isItemActive)}
+                        title={isItemActive ? "Desativar (não exclui)" : "Ativar Módulo"}
+                      >
+                        {isItemActive ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
  /* ── GRID ABA 3: COLEÇÕES & HOTPAGES EDITORIAIS ── */
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
  {filteredItems.map((item) => {
@@ -676,7 +811,7 @@ function AdminMasterHotpagesPage() {
  <img
  src={item.cover_image_url}
  alt={item.title}
- className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-200"
  loading="lazy"
  />
  ) : (
@@ -782,7 +917,7 @@ function AdminMasterHotpagesPage() {
  {customIconUrl ? (
  <img src={customIconUrl} alt="Preview" className="size-7 object-contain" />
  ) : (
- <span className="text-xl font-emoji">{emoji || "🏷️"}</span>
+ <span className="text-xl font-emoji">{emoji || "️"}</span>
  )}
  </div>
  <div>
@@ -859,6 +994,9 @@ function AdminMasterHotpagesPage() {
  <SelectItem value="editorial_card" className="text-xs">
  Coleção e Hotpage Editorial
  </SelectItem>
+              <SelectItem value="drawer_module" className="text-xs">
+                Menu Lateral Mobile (iFood Sheet / SuperApp)
+              </SelectItem>
  </SelectContent>
  </Select>
  </div>
@@ -882,6 +1020,76 @@ function AdminMasterHotpagesPage() {
  Vincule o card ou botão a uma cidade específica para direcionamento local.
  </p>
  </div>
+
+        {templateType === "drawer_module" && (
+          <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
+            <span className="text-xs font-bold text-primary block">
+              Parâmetros do Menu Lateral iFood
+            </span>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-2xs font-bold text-foreground mb-1 block">
+                  Seção do Menu
+                </Label>
+                <select
+                  value={sectionTitle}
+                  onChange={(e) => setSectionTitle(e.target.value)}
+                  className="w-full h-10 px-3 rounded-lg border border-border/80 bg-card text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="Categorias">Categorias (Cards Amplos)</option>
+                  <option value="Destaques para Explorar">Destaques para Explorar</option>
+                  <option value="Destaques do Waesy">Destaques do Waesy</option>
+                  <option value="Seleção em Restaurantes">Seleção em Restaurantes</option>
+                  <option value="Classificados & Negócios">Classificados & Negócios</option>
+                  <option value="Serviços & Utilidades">Serviços & Utilidades</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-2xs font-bold text-foreground mb-1 block">
+                  Formato do Card
+                </Label>
+                <select
+                  value={cardVariant}
+                  onChange={(e) => setCardVariant(e.target.value as any)}
+                  className="w-full h-10 px-3 rounded-lg border border-border/80 bg-card text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="squircle">Squircle 4 Colunas (Ícone + Rótulo)</option>
+                  <option value="wide">Card Amplo 2 Colunas (Horizontal)</option>
+                  <option value="full_width">Banner Full Width</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-2xs font-bold text-foreground mb-1 block">
+                  Badge de Destaque (ex: Novo)
+                </Label>
+                <Input
+                  value={badgeLabel}
+                  onChange={(e) => setBadgeLabel(e.target.value)}
+                  placeholder="Ex: Novo, Clube, Promo"
+                  className="h-10 text-xs"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-5">
+                <input
+                  type="checkbox"
+                  id="drawerIsActiveSwitch"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="size-4 rounded-sm border-border cursor-pointer"
+                />
+                <Label htmlFor="drawerIsActiveSwitch" className="text-xs font-semibold text-foreground cursor-pointer">
+                  Módulo Ativo no Menu
+                </Label>
+              </div>
+            </div>
+          </div>
+        )}
 
  <div className="space-y-2">
  <Label className="text-xs font-bold">Título / Rótulo *</Label>
@@ -956,7 +1164,7 @@ function AdminMasterHotpagesPage() {
  <Input
  value={emoji}
  onChange={(e) => setEmoji(e.target.value)}
- placeholder="Ex: 💊, 🍕, 🥦, 📱"
+ placeholder="Ex: , , , "
  className="h-10 rounded-lg bg-card text-xs"
  />
  </div>

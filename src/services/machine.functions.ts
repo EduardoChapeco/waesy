@@ -60,7 +60,7 @@ export const generateViralCarouselContent = createServerFn({ method: "POST" })
  layers: [
  { id: 'bg-1', type: 'background', content: '#0F172A', zIndex: 1, style: { width: '100%', height: '100%' } },
  { id: 'txt-1', type: 'text', content: `O Maior Erro em ${data.topic}`, zIndex: 2, style: { fontSize: 36, fontWeight: 'bold', color: '#FFFFFF' } },
- { id: 'badge-1', type: 'badge', content: 'DESLIZE ➡️', zIndex: 3, style: { background: '#F59E0B', color: '#000000' } },
+ { id: 'badge-1', type: 'badge', content: 'DESLIZE ️', zIndex: 3, style: { background: '#F59E0B', color: '#000000' } },
  ],
  });
 
@@ -96,11 +96,11 @@ export const generateViralCarouselContent = createServerFn({ method: "POST" })
  ],
  });
 
- const caption = `🔥 Você já parou para analisar como está lidando com ${data.topic}?
+ const caption = ` Você já parou para analisar como está lidando com ${data.topic}?
 
 Muitas empresas perdem tempo e vendas por não terem clareza nos processos. No carrossel acima, separamos os passos fundamentais para transformar sua operação em ${data.niche}.
 
-👇 Qual dessas dicas chamou mais a sua atenção? Comente abaixo!
+ Qual dessas dicas chamou mais a sua atenção? Comente abaixo!
 
 #${data.niche} #gestao #crescimento #negocios #waesy`;
 

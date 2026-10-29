@@ -23,7 +23,7 @@ export interface FoodSpecsData {
   posCode?: string; // "XGAHTQ"
   spiceLevel?: "none" | "mild" | "medium" | "hot";
 
-  // ── Novos Campos Varejo / Supermercado / Conveniência / Hortifrúti (iFood / Osuper) ──
+  // ── Novos Campos Varejo / Supermercado / Conveniência / Hortifrúti (Padrão Varejo Digital) ──
   barcodeEan?: string;
   isFreshPricingActive?: boolean;
   freshPricingMode?: "unit" | "weight";
@@ -122,7 +122,7 @@ export function ProductFoodSpecsCard({
             <Layers className="size-4 text-primary" />
             <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">Especificações de Varejo e Alimentação</h3>
             <Badge variant="outline" className="text-2xs font-bold bg-primary/10 text-primary border-none">
-              Padrão iFood / Osuper
+              Padrão Varejo Digital
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground">

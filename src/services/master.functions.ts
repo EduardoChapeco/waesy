@@ -1196,6 +1196,9 @@ export interface PlatformApiIntegrationsDTO {
  openai_api_key?: string;
  abacatepay_api_key?: string;
  mercadopago_access_token?: string;
+ paypal_client_id?: string;
+ paypal_client_secret?: string;
+ paypal_mode?: string;
  webhook_secret?: string;
  // Master Marketplaces & Fiscal
  mercadolivre_app_id?: string;
@@ -1247,6 +1250,11 @@ export const getPlatformApiIntegrations = createServerFn({ method: "GET" }).hand
  melhor_envio_token: integrations.melhor_envio_token ? "••••••••••••••••" : "",
  google_maps_api_key: integrations.google_maps_api_key || "",
  openai_api_key: integrations.openai_api_key ? "••••••••••••••••" : "",
+ abacatepay_api_key: integrations.abacatepay_api_key ? "••••••••••••••••" : "",
+ mercadopago_access_token: integrations.mercadopago_access_token ? "••••••••••••••••" : "",
+ paypal_client_id: integrations.paypal_client_id || "",
+ paypal_client_secret: integrations.paypal_client_secret ? "••••••••••••••••" : "",
+ paypal_mode: integrations.paypal_mode || "production",
  webhook_secret: integrations.webhook_secret || "",
  mercadolivre_app_id: integrations.mercadolivre_app_id || "",
  mercadolivre_client_secret: integrations.mercadolivre_client_secret ? "••••••••••••••••" : "",
@@ -1302,6 +1310,11 @@ export const updatePlatformApiIntegrations = createServerFn({ method: "POST" })
  meta_app_secret: z.string().optional(),
  google_client_id: z.string().optional(),
  google_client_secret: z.string().optional(),
+ abacatepay_api_key: z.string().optional(),
+ mercadopago_access_token: z.string().optional(),
+ paypal_client_id: z.string().optional(),
+ paypal_client_secret: z.string().optional(),
+ paypal_mode: z.string().optional(),
  }),
  )
  .handler(async ({ data: input }) => {
@@ -1365,6 +1378,11 @@ export const updatePlatformApiIntegrations = createServerFn({ method: "POST" })
  meta_app_secret_encrypted: metaAppSecretEncrypted,
  google_client_id: cleanValue(input.google_client_id, existingIntegrations.google_client_id),
  google_client_secret: cleanValue(input.google_client_secret, existingIntegrations.google_client_secret),
+ abacatepay_api_key: cleanValue(input.abacatepay_api_key, existingIntegrations.abacatepay_api_key),
+ mercadopago_access_token: cleanValue(input.mercadopago_access_token, existingIntegrations.mercadopago_access_token),
+ paypal_client_id: cleanValue(input.paypal_client_id, existingIntegrations.paypal_client_id),
+ paypal_client_secret: cleanValue(input.paypal_client_secret, existingIntegrations.paypal_client_secret),
+ paypal_mode: cleanValue(input.paypal_mode, existingIntegrations.paypal_mode),
  active_services: {
  maps: input.mapbox_token || existingIntegrations.mapbox_token ? "active" : "unconfigured",
  payments: input.stripe_public_key || existingIntegrations.stripe_public_key ? "active" : "unconfigured",

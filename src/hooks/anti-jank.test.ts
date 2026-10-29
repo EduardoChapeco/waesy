@@ -46,7 +46,7 @@ describe("Anti-Jank & Runtime Performance Suite (Prompt 16)", () => {
       // Duração de abertura deve ser <= 300ms (não mais 500ms)
       expect(sheetContent).toContain("data-[state=open]:duration-300");
       expect(sheetContent).toContain("data-[state=closed]:duration-200");
-      expect(sheetContent).not.toContain("duration-500");
+      expect(sheetContent).not.toContain("duration-200");
     });
 
     it("garante que Sheet fecha e abre sem classes arbitrárias de colchetes no layout", () => {

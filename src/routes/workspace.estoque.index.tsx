@@ -191,7 +191,7 @@ function StockDesktopView({ filteredStock, onOpenMovementModal }: StockViewProps
                       Crítico
                     </Badge>
                   ) : (
-                    <Badge variant="default" className="text-xs">
+                    <Badge variant="outline" className="text-xs">
                       Regular
                     </Badge>
                   )}

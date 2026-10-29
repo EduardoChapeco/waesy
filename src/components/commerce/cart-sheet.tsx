@@ -134,9 +134,9 @@ export function CartSheet() {
           )}
         >
           {/* Cabeçalho do Carrinho */}
-          <SheetHeader className="px-5 py-3.5 bg-card/60 backdrop-blur-md shrink-0 border-b border-border/40">
+          <SheetHeader className="px-5 py-4 bg-card/60 backdrop-blur-md shrink-0 border-b border-border/40">
             <SheetTitle className="flex items-center justify-between font-bold text-foreground text-lg">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <div className="size-9 rounded-xl bg-foreground text-background flex items-center justify-center">
                   <ShoppingBag className="size-5" />
                 </div>
@@ -159,7 +159,7 @@ export function CartSheet() {
                 type="button"
                 onClick={() => setModalityFilter("all")}
                 className={cn(
-                  "h-11 min-h-11 px-3.5 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   modalityFilter === "all"
                     ? "bg-foreground text-background shadow-xs"
                     : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -171,7 +171,7 @@ export function CartSheet() {
                 type="button"
                 onClick={() => setModalityFilter("delivery")}
                 className={cn(
-                  "h-11 min-h-11 px-3.5 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   modalityFilter === "delivery"
                     ? "bg-foreground text-background shadow-xs"
                     : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -183,7 +183,7 @@ export function CartSheet() {
                 type="button"
                 onClick={() => setModalityFilter("services")}
                 className={cn(
-                  "h-11 min-h-11 px-3.5 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   modalityFilter === "services"
                     ? "bg-foreground text-background shadow-xs"
                     : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -195,7 +195,7 @@ export function CartSheet() {
                 type="button"
                 onClick={() => setModalityFilter("digital")}
                 className={cn(
-                  "h-11 min-h-11 px-3.5 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   modalityFilter === "digital"
                     ? "bg-foreground text-background shadow-xs"
                     : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -216,7 +216,7 @@ export function CartSheet() {
                 type="button"
                 onClick={() => setSelectedStoreId("all")}
                 className={cn(
-                  "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                  "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                   selectedStoreId === "all"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
@@ -230,14 +230,14 @@ export function CartSheet() {
                   type="button"
                   onClick={() => setSelectedStoreId(c.storeId || "all")}
                   className={cn(
-                    "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                    "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-colors shrink-0 flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     selectedStoreId === c.storeId
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <Store className="size-3.5" />
-                  <span className="truncate max-w-[120px]">{c.storeName}</span>
+                  <span className="truncate max-w-30">{c.storeName}</span>
                 </button>
               ))}
             </div>
@@ -296,9 +296,9 @@ export function CartSheet() {
                       className="overflow-hidden rounded-2xl border border-border/70 shadow-xs"
                     >
                       {/* Cabeçalho da Loja com Checkbox & Barra de Frete Grátis */}
-                      <div className="bg-muted/40 p-3.5 space-y-2.5 border-b border-border/40">
+                      <div className="bg-muted/40 p-4 space-y-2 border-b border-border/40">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
+                          <div className="flex items-center gap-2">
                             {/* Checkbox de Loja Inteira */}
                             <button
                               type="button"
@@ -345,9 +345,9 @@ export function CartSheet() {
                         </div>
 
                         {/* Barra de Frete Grátis Mercado Livre Parity */}
-                        <div className="p-2.5 rounded-xl bg-background border border-border/40 space-y-1.5">
+                        <div className="p-2 rounded-xl bg-background border border-border/40 space-y-2">
                           <div className="flex items-center justify-between text-2xs">
-                            <div className="flex items-center gap-1.5 text-foreground font-medium">
+                            <div className="flex items-center gap-2 text-foreground font-medium">
                               {hasFreeShipping ? (
                                 <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                               ) : (
@@ -371,7 +371,7 @@ export function CartSheet() {
                           <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
                             <div
                               className={cn(
-                                "h-full rounded-full transition-all duration-300",
+                                "h-full rounded-full transition-colors duration-300",
                                 hasFreeShipping ? "bg-emerald-500" : "bg-primary"
                               )}
                               style={{ width: `${freeShippingPercent}%` }}
@@ -389,7 +389,7 @@ export function CartSheet() {
                             <div
                               key={item.id}
                               className={cn(
-                                "pt-3 first:pt-0 flex gap-3.5 items-start transition-opacity",
+                                "pt-3 first:pt-0 flex gap-4 items-start transition-opacity",
                                 !isItemSelected && "opacity-50",
                                 isCartUpdating && "opacity-60 pointer-events-none"
                               )}
@@ -443,7 +443,7 @@ export function CartSheet() {
                                   </div>
 
                                   {Object.entries(item.variantAttributes || {}).length > 0 && (
-                                    <p className="text-2xs text-muted-foreground mt-0.5 font-medium">
+                                    <p className="text-2xs text-muted-foreground mt-1 font-medium">
                                       {Object.entries(item.variantAttributes || {})
                                         .map(([k, v]) => `${k}: ${v}`)
                                         .join(" • ")}
@@ -451,11 +451,11 @@ export function CartSheet() {
                                   )}
 
                                   {item.selectedOptionsLabels && item.selectedOptionsLabels.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-1.5">
+                                    <div className="flex flex-wrap gap-1 mt-2">
                                       {item.selectedOptionsLabels.map((lbl: string, lIdx: number) => (
                                         <span
                                           key={lIdx}
-                                          className="px-2 py-0.5 rounded-md text-3xs font-bold bg-primary/10 text-primary border border-primary/20"
+                                          className="px-2 py-1 rounded-md text-3xs font-bold bg-primary/10 text-primary border border-primary/20"
                                         >
                                           +{lbl}
                                         </span>
@@ -463,11 +463,11 @@ export function CartSheet() {
                                     </div>
                                   )}
 
-                                  <div className="pt-1.5">
+                                  <div className="pt-2">
                                     <button
                                       type="button"
                                       onClick={() => setEditingItem(item)}
-                                      className="inline-flex items-center gap-1.5 text-2xs font-semibold text-foreground/80 hover:text-foreground bg-muted/60 hover:bg-muted px-2.5 py-1 rounded-lg transition-colors cursor-pointer min-h-11 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                      className="inline-flex items-center gap-2 text-2xs font-semibold text-foreground/80 hover:text-foreground bg-muted/60 hover:bg-muted px-2 py-1 rounded-lg transition-colors cursor-pointer min-h-11 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     >
                                       <SlidersHorizontal className="size-3.5" />
                                       <span>Opções</span>
@@ -476,7 +476,7 @@ export function CartSheet() {
                                 </div>
 
                                 <div className="flex items-center justify-between pt-2 mt-auto">
-                                  <div className="flex items-center rounded-xl bg-card border border-border/50 p-0.5">
+                                  <div className="flex items-center rounded-xl bg-card border border-border/50 p-1">
                                     <button
                                       type="button"
                                       className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
@@ -624,7 +624,7 @@ function CartCrossSellSection({
   };
 
   return (
-    <div className="border-t border-border/40 p-3.5 bg-muted/20 space-y-2.5">
+    <div className="border-t border-border/40 p-4 bg-muted/20 space-y-2">
       <div className="flex items-center justify-between">
         <h5 className="text-xs font-bold text-foreground">Aproveite e leve também</h5>
         <span className="text-2xs text-muted-foreground font-mono">Mesma loja</span>

@@ -10,9 +10,12 @@ import { GeolocationPermissionSheet } from "@/components/location/geolocation-pe
 import { PWAInstallBanner } from "@/components/commerce/pwa-install-banner";
 import { OfflineIndicator } from "./offline-indicator";
 import { WaesyCopilotDrawer } from "@/components/chat/waesy-copilot-drawer";
+import { SuperAppModuleDrawer } from "./SuperAppModuleDrawer";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { ActiveContextBanner } from "./context-banner";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { useSuperAppDrawer } from "@/lib/drawer-store";
+import { cn } from "@/lib/utils";
 
 function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): string {
   const map: Record<string, string> = {
@@ -93,6 +96,13 @@ export function checkHasCustomPageMobileHeader(pathname: string): boolean {
   const clean = pathname.replace(/\/+$/, "") || "/";
 
   const exactCustomRoutes = new Set([
+    "/",
+    "/gastronomia",
+    "/mercado",
+    "/farmacia",
+    "/bebidas",
+    "/acougue",
+    "/pet",
     "/conta",
     "/agenda",
     "/afiliados",
@@ -106,23 +116,44 @@ export function checkHasCustomPageMobileHeader(pathname: string): boolean {
     "/agendar",
     "/turismo",
     "/faq",
+    "/moda",
+    "/eletronicos",
+    "/casa",
+    "/construcao",
+    "/beleza",
+    "/limpeza",
+    "/livros",
   ]);
 
   if (exactCustomRoutes.has(clean)) return true;
 
   const prefixCustomRoutes = [
+    "/eventos",
     "/doacoes",
     "/ofertas",
+    "/recuperar-senha",
     "/redefinir-senha",
     "/destaques",
     "/admin-master",
     "/conta/atividade",
     "/conta/avaliacoes",
+    "/conta/candidaturas",
+    "/conta/carnes",
+    "/conta/creditos",
     "/conta/enderecos",
     "/conta/entregador",
+    "/conta/eventos",
     "/conta/financas",
+    "/conta/gift-cards",
+    "/conta/lojas",
+    "/conta/pacotes",
+    "/conta/pagamentos",
     "/conta/salvos",
+    "/conta/seguranca",
+    "/conta/suporte",
+    "/conta/tokens",
     "/conta/trocas",
+    "/conta/viagens",
     "/conta/conversas",
     "/conta/agendamentos",
     "/conta/classificados",
@@ -134,6 +165,7 @@ export function checkHasCustomPageMobileHeader(pathname: string): boolean {
     "/conta/contratos",
     "/conta/notificacoes",
     "/conta/pedidos",
+    "/c",
   ];
 
   return prefixCustomRoutes.some((prefix) => clean === prefix || clean.startsWith(`${prefix}/`));
@@ -154,6 +186,7 @@ export interface AppShellProps {
 export function AppShell({ children, session, brandSettings }: AppShellProps) {
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
+  const { isOpen: isSuperAppOpen, setOpen: setIsSuperAppOpen } = useSuperAppDrawer();
 
  useEffect(() => {
    if (typeof window !== "undefined") {
@@ -181,7 +214,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
 
   if (isStandalonePage) {
     return (
-      <div className="min-h-[100dvh] w-full bg-background text-foreground flex flex-col overflow-x-hidden">
+      <div className="min-h-dvh w-full bg-background text-foreground flex flex-col overflow-x-hidden">
         {children}
       </div>
     );
@@ -209,7 +242,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
  // Em páginas imersivas de mapa, o mapa ocupa 100dvh sem header/footer interferindo
  if (isFullBleedPage) {
  return (
- <div className="h-[100dvh] w-full max-w-full bg-background text-foreground font-sans antialiased relative overflow-hidden flex flex-col">
+ <div className="h-dvh w-full max-w-full bg-background text-foreground font-sans antialiased relative overflow-hidden flex flex-col">
  <main ref={mainRef} className="flex-1 size-full relative overflow-hidden p-0 m-0">
  {children}
  </main>
@@ -231,6 +264,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     (location.pathname.startsWith("/empregos/") && location.pathname !== "/empregos");
 
   const isCleanMobileAppPage =
+    location.pathname === "/" ||
     location.pathname.includes("/buscar") ||
     location.pathname.includes("/conta") ||
     location.pathname.includes("/carrinho") ||
@@ -287,6 +321,8 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/veiculos") ||
     location.pathname.includes("/vagas") ||
     location.pathname.includes("/entrega") ||
+    location.pathname.startsWith("/c/") ||
+    location.pathname.includes("/c/") ||
     location.pathname.includes("/contato");
 
   const isFeedPage = location.pathname.startsWith("/feed");
@@ -306,7 +342,16 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
 
   return (
     <div className="h-dvh w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
-      {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário, Copilot e Afiliados) ── */}
+      {/* ── Canvas Principal com Efeito Push Lateral (Threads / iOS Parity) ── */}
+      <div
+        id="app-push-canvas"
+        className={cn(
+          "size-full flex flex-col relative canvas-push-transition",
+          isSuperAppOpen &&
+            "max-md:canvas-pushed max-md:rounded-l-2xl max-md:overflow-hidden max-md:pointer-events-none max-md:border-l max-md:border-border/40"
+        )}
+      >
+        {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário, Copilot e Afiliados) ── */}
       <div className={isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage || isCopilotPage ? "hidden md:block" : ""}>
         <TopBar
           session={session}
@@ -339,7 +384,9 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
           className={`main-container-query flex-1 flex flex-col min-w-0 h-full w-full max-w-full ${
             isCopilotPage
               ? "p-0 m-0 overflow-hidden min-h-0"
-              : isFeedPage || isCleanMobileAppPage
+              : isCleanMobileAppPage
+              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-0 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+              : isFeedPage
               ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
               : isFormPage
               ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
@@ -364,6 +411,16 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
 
       {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe e no copilot para manter o input de chat acessível) */}
       {!isDetailPage && !isCopilotPage && <MobileNav session={session} userRole={session?.role} />}
+      </div>
+
+      {/* ── Menu Lateral Mobile Push Sheet (Paridade iFood & Threads) ── */}
+      <SuperAppModuleDrawer
+        open={isSuperAppOpen}
+        onOpenChange={setIsSuperAppOpen}
+        session={session}
+        userRole={session?.role}
+        brandName={brandSettings?.platform_name}
+      />
 
       {/* Waesy Copilot Drawer Global Flutuante */}
       <WaesyCopilotDrawer session={session} />

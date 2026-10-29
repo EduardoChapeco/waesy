@@ -120,63 +120,35 @@ export function resolveHealthyCover(url: unknown, _indexFallback = 0): string | 
   return null;
 }
 
-// ── Canônicos Padrão em Memória (Zero Downtime Fallback) ──
+// ── Canônicos Padrão em Memória (Zero Downtime Fallback & Governança Unificada CMS) ──
 export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
+  // ── SEÇÕES ATIVAS POR PADRÃO (NOVO DESIGN CANÔNICO SUPERAPP / iFOOD) ──
   {
-    id: "canonical-hero-banners",
-    section_key: "hero_banners",
-    title: "Destaques Principais",
-    subtitle: "Ofertas e novidades da sua cidade",
-    show_title: false,
+    id: "canonical-promo-coupon-banner",
+    section_key: "promo_coupon_banner",
+    title: "Você ganhou 2 meses grátis em cupons!",
+    subtitle: "Faixa promocional de benefícios e cupons no topo",
+    show_title: true,
     show_subtitle: false,
-    layout_variant: "carousel",
-    aspect_ratio: "16:9",
+    layout_variant: "slim_slider",
+    aspect_ratio: "auto",
     is_active: true,
     sort_order: 1,
-    metadata: {},
-    items: [
-      {
-        id: "item-hero-1",
-        section_id: "canonical-hero-banners",
-        title: "Tudo para o seu dia a dia no Waesy",
-        subtitle: "Comércio, serviços e entregas locais",
-        image_url: null,
-        target_url: "/marketplace",
-        show_text: false,
-        grid_span_x: 2,
-        grid_span_y: 1,
-        badge_text: "Destaque",
-        is_active: true,
-        sort_order: 1,
-      },
-      {
-        id: "item-hero-2",
-        section_id: "canonical-hero-banners",
-        title: "Gastronomia & Restaurantes",
-        subtitle: "Peça dos melhores estabelecimentos da região",
-        image_url: null,
-        target_url: "/marketplace?category=gastronomia",
-        show_text: false,
-        grid_span_x: 2,
-        grid_span_y: 1,
-        badge_text: "Delivery",
-        is_active: true,
-        sort_order: 2,
-      },
-    ],
+    metadata: { category: "ifood_core" },
+    items: [],
   },
   {
     id: "canonical-quick-categories",
     section_key: "quick_categories_ifood",
-    title: "Categorias Rápidas",
-    subtitle: "Navegação por nichos e utilidades",
+    title: "Categorias Principais (Grade 5x2 iFood)",
+    subtitle: "Navegação rápida por nichos e serviços urbanos",
     show_title: false,
     show_subtitle: false,
-    layout_variant: "horizontal_scroll",
+    layout_variant: "grid_2d",
     aspect_ratio: "1:1",
     is_active: true,
     sort_order: 2,
-    metadata: {},
+    metadata: { category: "ifood_core" },
     items: [
       {
         id: "item-cat-1",
@@ -184,11 +156,12 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         title: "Restaurantes",
         subtitle: null,
         image_url: null,
-        target_url: "/marketplace?category=gastronomia",
+        target_url: "/gastronomia",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: null,
+        icon_name: "Hamburger",
         is_active: true,
         sort_order: 1,
       },
@@ -198,11 +171,12 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         title: "Mercados",
         subtitle: null,
         image_url: null,
-        target_url: "/marketplace?category=mercado",
+        target_url: "/mercado",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: null,
+        icon_name: "Storefront",
         is_active: true,
         sort_order: 2,
       },
@@ -212,98 +186,408 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         title: "Farmácias",
         subtitle: null,
         image_url: null,
-        target_url: "/diretorio?category=farmacia",
+        target_url: "/farmacia",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: null,
+        icon_name: "Pill",
         is_active: true,
         sort_order: 3,
       },
       {
         id: "item-cat-4",
         section_id: "canonical-quick-categories",
-        title: "Bebidas",
-        subtitle: null,
-        image_url: null,
-        target_url: "/marketplace?category=bebidas",
-        show_text: true,
-        grid_span_x: 1,
-        grid_span_y: 1,
-        badge_text: null,
-        is_active: true,
-        sort_order: 4,
-      },
-      {
-        id: "item-cat-5",
-        section_id: "canonical-quick-categories",
-        title: "Mobilidade",
+        title: "Corridas",
         subtitle: null,
         image_url: null,
         target_url: "/mobilidade",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
-        badge_text: null,
+        badge_text: "Novo",
+        icon_name: "Car",
+        is_active: true,
+        sort_order: 4,
+      },
+      {
+        id: "item-cat-5",
+        section_id: "canonical-quick-categories",
+        title: "Promoções",
+        subtitle: null,
+        image_url: null,
+        target_url: "/ofertas",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Novo",
+        icon_name: "Tag",
         is_active: true,
         sort_order: 5,
       },
       {
         id: "item-cat-6",
         section_id: "canonical-quick-categories",
-        title: "Pet Shop",
+        title: "Bolão",
         subtitle: null,
         image_url: null,
-        target_url: "/marketplace?category=pet",
+        target_url: "/concursos",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: null,
+        icon_name: "SoccerBall",
         is_active: true,
         sort_order: 6,
       },
       {
         id: "item-cat-7",
         section_id: "canonical-quick-categories",
-        title: "Classificados",
+        title: "Gourmet",
         subtitle: null,
         image_url: null,
-        target_url: "/classificados",
+        target_url: "/gastronomia",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: null,
+        icon_name: "CookingPot",
         is_active: true,
         sort_order: 7,
       },
       {
         id: "item-cat-8",
         section_id: "canonical-quick-categories",
-        title: "Lugares",
+        title: "Clube",
         subtitle: null,
         image_url: null,
-        target_url: "/diretorio",
+        target_url: "/conta/creditos",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: null,
+        icon_name: "Sparkle",
         is_active: true,
         sort_order: 8,
+      },
+      {
+        id: "item-cat-9",
+        section_id: "canonical-quick-categories",
+        title: "Turbo",
+        subtitle: null,
+        image_url: null,
+        target_url: "/gastronomia",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Novo",
+        icon_name: "Lightning",
+        is_active: true,
+        sort_order: 9,
+      },
+      {
+        id: "item-cat-10",
+        section_id: "canonical-quick-categories",
+        title: "Ver mais",
+        subtitle: null,
+        image_url: null,
+        target_url: "#categorias",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "SquaresFour",
+        is_active: true,
+        sort_order: 10,
       },
     ],
   },
   {
+    id: "canonical-hero-banners",
+    section_key: "hero_banners",
+    title: "Destaques Principais (Banner Carrossel iFood)",
+    subtitle: "Ofertas e novidades da sua cidade com indicadores em traço",
+    show_title: false,
+    show_subtitle: false,
+    layout_variant: "carousel",
+    aspect_ratio: "16:9",
+    is_active: true,
+    sort_order: 3,
+    metadata: { category: "ifood_core" },
+    items: [
+      {
+        id: "item-hero-1",
+        section_id: "canonical-hero-banners",
+        title: "Peça com cupons de até R$ 21,90",
+        subtitle: "Descontos exclusivos nos restaurantes parceiros da cidade",
+        image_url: null,
+        target_url: "/ofertas",
+        show_text: true,
+        grid_span_x: 2,
+        grid_span_y: 1,
+        badge_text: "Clube Waesy",
+        is_active: true,
+        sort_order: 1,
+      },
+      {
+        id: "item-hero-2",
+        section_id: "canonical-hero-banners",
+        title: "Gastronomia & Restaurantes",
+        subtitle: "Peça dos melhores estabelecimentos da região",
+        image_url: null,
+        target_url: "/gastronomia",
+        show_text: true,
+        grid_span_x: 2,
+        grid_span_y: 1,
+        badge_text: "Delivery",
+        is_active: true,
+        sort_order: 2,
+      },
+    ],
+  },
+  {
+    id: "canonical-recent-stores-rail",
+    section_key: "recent_stores_rail",
+    title: "Últimas lojas",
+    subtitle: "Estabelecimentos visitados e parceiros em destaque",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "1:1",
+    is_active: true,
+    sort_order: 4,
+    metadata: { category: "ifood_core", viewMoreTo: "/gastronomia" },
+    items: [],
+  },
+  {
+    id: "canonical-feature-mini-banners",
+    section_key: "feature_mini_banners",
+    title: "No Waesy também tem",
+    subtitle: "Mini-banners verticais de experiências e benefícios",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "4:5",
+    is_active: true,
+    sort_order: 5,
+    metadata: { category: "ifood_core" },
+    items: [
+      {
+        id: "fmb-clube",
+        section_id: "canonical-feature-mini-banners",
+        title: "Confira ofertas do clube para você",
+        subtitle: "Economize em cada pedido",
+        image_url: null,
+        target_url: "/conta/creditos",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Clube >",
+        bg_color: "#7c3aed",
+        is_active: true,
+        sort_order: 1,
+      },
+      {
+        id: "fmb-gourmet",
+        section_id: "canonical-feature-mini-banners",
+        title: "Experiência diferenciada",
+        subtitle: "Alta gastronomia e chefs",
+        image_url: null,
+        target_url: "/gastronomia",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Gourmet >",
+        bg_color: "#171717",
+        is_active: true,
+        sort_order: 2,
+      },
+      {
+        id: "fmb-corridas",
+        section_id: "canonical-feature-mini-banners",
+        title: "Peça corridas e entregas rápidas",
+        subtitle: "Mobilidade urbana taxa fixa",
+        image_url: null,
+        target_url: "/mobilidade",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Corridas >",
+        bg_color: "#dc2626",
+        is_active: true,
+        sort_order: 3,
+      },
+      {
+        id: "fmb-turbo",
+        section_id: "canonical-feature-mini-banners",
+        title: "Burguer com entrega grátis",
+        subtitle: "Hamburguerias da sua região",
+        image_url: null,
+        target_url: "/gastronomia",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Pedir agora",
+        bg_color: "#ea580c",
+        is_active: true,
+        sort_order: 4,
+      },
+    ],
+  },
+  {
+    id: "canonical-spotlight-restaurants",
+    section_key: "spotlight_restaurants",
+    title: "Restaurantes com Cupom",
+    subtitle: "Ad",
+    show_title: true,
+    show_subtitle: true,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "4:3",
+    is_active: true,
+    sort_order: 6,
+    metadata: { category: "ifood_core", viewMoreTo: "/gastronomia", isAd: true },
+    items: [],
+  },
+  {
+    id: "canonical-spotlight-pharmacies",
+    section_key: "spotlight_pharmacies",
+    title: "Farmácias & Mercados Famosos",
+    subtitle: "Entregas rápidas na sua porta",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "4:3",
+    is_active: true,
+    sort_order: 7,
+    metadata: { category: "ifood_core", viewMoreTo: "/farmacia" },
+    items: [],
+  },
+  {
+    id: "canonical-filter-chips-bar",
+    section_key: "filter_chips_bar",
+    title: "Filtros Rápidos de Lojas",
+    subtitle: "Ordenar, Turbo, Entrega grátis, Super Restaurantes, Promoção",
+    show_title: false,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "auto",
+    is_active: true,
+    sort_order: 8,
+    metadata: { category: "ifood_core" },
+    items: [],
+  },
+  {
+    id: "canonical-stores-feed-list",
+    section_key: "stores_feed_list",
+    title: "Lojas",
+    subtitle: "Lista vertical de lojas e restaurantes abertos",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "grid_2d",
+    aspect_ratio: "auto",
+    is_active: true,
+    sort_order: 9,
+    metadata: { category: "ifood_core" },
+    items: [],
+  },
+
+  // ── SEÇÕES SECUNDÁRIAS / LEGADAS (OCULTAS POR PADRÃO — ATIVÁVEIS NO ADMIN CMS) ──
+  {
+    id: "canonical-marketplace-products-rail",
+    section_key: "marketplace_products_rail",
+    title: "Mais Vendidos & Ofertas",
+    subtitle: "Produtos em destaque das lojas locais",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "4:3",
+    is_active: false,
+    sort_order: 10,
+    metadata: { category: "optional_module" },
+    items: [],
+  },
+  {
+    id: "canonical-classifieds-rail",
+    section_key: "classifieds_rail",
+    title: "Classificados da Região",
+    subtitle: "Imóveis, veículos, desapegos e oportunidades locais",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "4:3",
+    is_active: false,
+    sort_order: 11,
+    metadata: { category: "optional_module" },
+    items: [],
+  },
+  {
+    id: "canonical-jobs-rail",
+    section_key: "jobs_rail",
+    title: "Vagas & Oportunidades",
+    subtitle: "Carreiras e empregos nas empresas da região",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "4:3",
+    is_active: false,
+    sort_order: 12,
+    metadata: { category: "optional_module" },
+    items: [],
+  },
+  {
+    id: "canonical-vitrine-engine-selector",
+    section_key: "vitrine_engine_selector",
+    title: "Seletor de Ecossistema (Lugares | Marketplace | Classificados)",
+    subtitle: "Abas superiores de troca de motor da vitrine",
+    show_title: false,
+    show_subtitle: false,
+    layout_variant: "native_dock",
+    aspect_ratio: "auto",
+    is_active: false,
+    sort_order: 13,
+    metadata: { category: "legacy_control" },
+    items: [],
+  },
+  {
+    id: "canonical-discovery-control-bar",
+    section_key: "discovery_control_bar",
+    title: "Barra Clássica de Descoberta (13 Pilares + Feed/Grade/Lista)",
+    subtitle: "Filtro horizontal de pilares e alternador de visualização",
+    show_title: false,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "auto",
+    is_active: false,
+    sort_order: 14,
+    metadata: { category: "legacy_control" },
+    items: [],
+  },
+  {
+    id: "canonical-dual-line-filter-pills",
+    section_key: "dual_line_filter_pills",
+    title: "Pílulas de Filtro em Dupla Linha (Legado)",
+    subtitle: "Grade dupla de filtros secundários",
+    show_title: false,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "auto",
+    is_active: false,
+    sort_order: 15,
+    metadata: { category: "legacy_control" },
+    items: [],
+  },
+  {
     id: "canonical-hotpages-grid",
     section_key: "hotpages_grid",
-    title: "Hotpages em Destaque",
+    title: "Hotpages em Destaque (Bento Grid)",
     subtitle: "Páginas temáticas exclusivas",
     show_title: false,
     show_subtitle: false,
     layout_variant: "bento_grid",
     aspect_ratio: "16:9",
-    is_active: true,
-    sort_order: 3,
-    metadata: {},
+    is_active: false,
+    sort_order: 16,
+    metadata: { category: "optional_module" },
     items: [
       {
         id: "item-hot-1",
@@ -312,7 +596,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         subtitle: "Roteiro dos melhores sabores",
         image_url: null,
         target_url: "/gastronomia",
-        show_text: false,
+        show_text: true,
         grid_span_x: 2,
         grid_span_y: 2,
         badge_text: null,
@@ -325,8 +609,8 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         title: "Ofertas da Semana",
         subtitle: "Descontos imperdíveis",
         image_url: null,
-        target_url: "/marketplace?has_discount=true",
-        show_text: false,
+        target_url: "/ofertas",
+        show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: null,
@@ -340,7 +624,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         subtitle: "Profissionais avaliados",
         image_url: null,
         target_url: "/servicos",
-        show_text: false,
+        show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: null,
@@ -352,15 +636,15 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
   {
     id: "canonical-marketplace-categories",
     section_key: "marketplace_categories",
-    title: "Classificados e Negócios",
-    subtitle: "Categorias comerciais",
+    title: "Classificados e Negócios (Grade 2D)",
+    subtitle: "Categorias comerciais secundárias",
     show_title: false,
     show_subtitle: false,
     layout_variant: "grid_2d",
     aspect_ratio: "1:1",
-    is_active: true,
-    sort_order: 4,
-    metadata: {},
+    is_active: false,
+    sort_order: 17,
+    metadata: { category: "optional_module" },
     items: [
       {
         id: "item-mkt-1",
@@ -396,7 +680,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         title: "Eletrônicos & Celulares",
         subtitle: null,
         image_url: null,
-        target_url: "/classificados?category=eletronicos",
+        target_url: "/eletronicos",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
@@ -410,7 +694,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         title: "Moda & Acessórios",
         subtitle: null,
         image_url: null,
-        target_url: "/marketplace?category=moda",
+        target_url: "/moda",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
@@ -421,6 +705,20 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
     ],
   },
   {
+    id: "canonical-places-directory-rail",
+    section_key: "places_directory_rail",
+    title: "Lugares e Empresas (Guia Comercial)",
+    subtitle: "Empresas locais verificadas com WhatsApp direto",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "16:9",
+    is_active: false,
+    sort_order: 18,
+    metadata: { category: "optional_module" },
+    items: [],
+  },
+  {
     id: "canonical-social-posts",
     section_key: "social_posts_vitrine",
     title: "Feed da Cidade",
@@ -429,12 +727,111 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
     show_subtitle: false,
     layout_variant: "carousel",
     aspect_ratio: "4:3",
-    is_active: true,
-    sort_order: 5,
-    metadata: {},
+    is_active: false,
+    sort_order: 19,
+    metadata: { category: "optional_module" },
+    items: [],
+  },
+  {
+    id: "canonical-news-rail",
+    section_key: "news_rail",
+    title: "Notícias Locais",
+    subtitle: "Jornalismo e atualizações da região",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "16:9",
+    is_active: false,
+    sort_order: 20,
+    metadata: { category: "optional_module" },
+    items: [],
+  },
+  {
+    id: "canonical-events-rail",
+    section_key: "events_rail",
+    title: "Agenda e Eventos",
+    subtitle: "Ingressos, shows e programação cultural",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "horizontal_scroll",
+    aspect_ratio: "16:9",
+    is_active: false,
+    sort_order: 21,
+    metadata: { category: "optional_module" },
+    items: [],
+  },
+  {
+    id: "canonical-procedural-infinite-feed",
+    section_key: "procedural_infinite_feed",
+    title: "Feed Infinito de Descoberta",
+    subtitle: "Rolagem contínua de produtos e estabelecimentos",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "grid_2d",
+    aspect_ratio: "auto",
+    is_active: false,
+    sort_order: 22,
+    metadata: { category: "optional_module" },
     items: [],
   },
 ];
+
+// Chaves canônicas ativas por padrão no novo design SuperApp / iFood
+const CANONICAL_DEFAULT_ACTIVE_KEYS = new Set([
+  "promo_coupon_banner",
+  "quick_categories_ifood",
+  "hero_banners",
+  "recent_stores_rail",
+  "feature_mini_banners",
+  "spotlight_restaurants",
+  "spotlight_pharmacies",
+  "filter_chips_bar",
+  "stores_feed_list",
+]);
+
+function mergeCanonicalWithDbSections(
+  dbSections: any[],
+  itemsMap: Map<string, HomeSectionItemDTO[]>,
+): HomePageSectionDTO[] {
+  const byKey = new Map<string, HomePageSectionDTO>();
+
+  for (const canonical of CANONICAL_DEFAULT_HOME_SECTIONS) {
+    byKey.set(canonical.section_key, {
+      ...canonical,
+      items: [...canonical.items],
+    });
+  }
+
+  for (const sec of dbSections) {
+    const canonical = byKey.get(sec.section_key);
+    const dbItemsForSec = itemsMap.get(sec.id) || [];
+    const resolvedItems =
+      dbItemsForSec.length > 0 ? dbItemsForSec : canonical?.items || [];
+
+    byKey.set(sec.section_key, {
+      id: sec.id,
+      section_key: sec.section_key,
+      title: sec.title ?? canonical?.title ?? null,
+      subtitle: sec.subtitle ?? canonical?.subtitle ?? null,
+      show_title: sec.show_title ?? canonical?.show_title ?? false,
+      show_subtitle: sec.show_subtitle ?? canonical?.show_subtitle ?? false,
+      layout_variant: (sec.layout_variant || canonical?.layout_variant || "carousel") as HomeLayoutVariant,
+      aspect_ratio: (sec.aspect_ratio || canonical?.aspect_ratio || "auto") as HomeAspectRatio,
+      is_active: sec.is_active !== false,
+      sort_order: sec.sort_order ?? canonical?.sort_order ?? 99,
+      city_filter: sec.city_filter || null,
+      starts_at: sec.starts_at || null,
+      ends_at: sec.ends_at || null,
+      auto_archive_at: sec.auto_archive_at || null,
+      metadata: { ...(canonical?.metadata || {}), ...(sec.metadata || {}) },
+      created_at: sec.created_at,
+      updated_at: sec.updated_at,
+      items: resolvedItems,
+    });
+  }
+
+  return Array.from(byKey.values()).sort((a, b) => a.sort_order - b.sort_order);
+}
 
 // ── 1. LISTAGEM PÚBLICA DE SEÇÕES PARA A VITRINE HOME ──
 export const listPublicHomePageSections = createServerFn({ method: "GET" })
@@ -453,11 +850,10 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
       const { data: dbSections, error: secErr } = await supabase
         .from("home_page_sections")
         .select("*")
-        .eq("is_active", true)
         .order("sort_order", { ascending: true });
 
       if (secErr || !dbSections || dbSections.length === 0) {
-        return CANONICAL_DEFAULT_HOME_SECTIONS;
+        return CANONICAL_DEFAULT_HOME_SECTIONS.filter((s) => s.is_active);
       }
 
       const sectionIds = dbSections.map((s) => s.id);
@@ -472,12 +868,14 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
       const itemsMap = new Map<string, HomeSectionItemDTO[]>();
       (dbItems || []).forEach((item: any) => {
         if (item.ends_at && item.ends_at < now) return;
-        if (
-          !isHealthyImageUrl(item.image_url) &&
-          !isHealthyImageUrl(item.image_desktop_url) &&
-          !isHealthyImageUrl(item.image_mobile_url)
-        ) return;
         if (item.starts_at && item.starts_at > now) return;
+        const hasVisualOrText =
+          Boolean(item.title?.trim()) ||
+          Boolean(item.icon_name?.trim()) ||
+          isHealthyImageUrl(item.image_url) ||
+          isHealthyImageUrl(item.image_desktop_url) ||
+          isHealthyImageUrl(item.image_mobile_url);
+        if (!hasVisualOrText) return;
 
         const list = itemsMap.get(item.section_id) || [];
         list.push({
@@ -485,11 +883,11 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
           section_id: item.section_id,
           title: item.title,
           subtitle: item.subtitle,
-          image_url: isHealthyImageUrl(item.image_url) ? String(item.image_url).trim() : (item.image_url || ""),
-          image_mobile_url: item.image_mobile_url || null,
-          image_desktop_url: item.image_desktop_url || null,
+          image_url: isHealthyImageUrl(item.image_url) ? String(item.image_url).trim() : null,
+          image_mobile_url: isHealthyImageUrl(item.image_mobile_url) ? String(item.image_mobile_url).trim() : null,
+          image_desktop_url: isHealthyImageUrl(item.image_desktop_url) ? String(item.image_desktop_url).trim() : null,
           target_url: item.target_url || "/",
-          show_text: item.show_text === true,
+          show_text: item.show_text !== false,
           grid_span_x: item.grid_span_x || 1,
           grid_span_y: item.grid_span_y || 1,
           badge_text: item.badge_text,
@@ -507,36 +905,18 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
         itemsMap.set(item.section_id, list);
       });
 
-      return dbSections
-        .filter((sec) => {
-          if (sec.ends_at && sec.ends_at < now) return false;
-          if (sec.starts_at && sec.starts_at > now) return false;
-          if (sec.city_filter && city && sec.city_filter !== "all" && sec.city_filter !== city) return false;
-          return true;
-        })
-        .map((sec) => ({
-          id: sec.id,
-          section_key: sec.section_key,
-          title: sec.title,
-          subtitle: sec.subtitle,
-          show_title: sec.show_title === true,
-          show_subtitle: sec.show_subtitle === true,
-          layout_variant: sec.layout_variant as HomeLayoutVariant,
-          aspect_ratio: sec.aspect_ratio as HomeAspectRatio,
-          is_active: sec.is_active !== false,
-          sort_order: sec.sort_order ?? 0,
-          city_filter: sec.city_filter || null,
-          starts_at: sec.starts_at || null,
-          ends_at: sec.ends_at || null,
-          auto_archive_at: sec.auto_archive_at || null,
-          metadata: sec.metadata || {},
-          created_at: sec.created_at,
-          updated_at: sec.updated_at,
-          items: itemsMap.get(sec.id) || [],
-        })).filter((sec) => sec.items.length > 0);
+      const merged = mergeCanonicalWithDbSections(dbSections, itemsMap);
+
+      return merged.filter((sec) => {
+        if (!sec.is_active) return false;
+        if (sec.ends_at && sec.ends_at < now) return false;
+        if (sec.starts_at && sec.starts_at > now) return false;
+        if (sec.city_filter && city && sec.city_filter !== "all" && sec.city_filter !== city) return false;
+        return true;
+      });
     } catch (err) {
       console.warn("[listPublicHomePageSections] Fallback ativado:", err);
-      return CANONICAL_DEFAULT_HOME_SECTIONS;
+      return CANONICAL_DEFAULT_HOME_SECTIONS.filter((s) => s.is_active);
     }
   });
 
@@ -575,7 +955,7 @@ export const listAdminHomePageSections = createServerFn({ method: "GET" })
           image_mobile_url: item.image_mobile_url || null,
           image_desktop_url: item.image_desktop_url || null,
           target_url: item.target_url || "/",
-          show_text: item.show_text === true,
+          show_text: item.show_text !== false,
           grid_span_x: item.grid_span_x || 1,
           grid_span_y: item.grid_span_y || 1,
           badge_text: item.badge_text,
@@ -593,26 +973,7 @@ export const listAdminHomePageSections = createServerFn({ method: "GET" })
         itemsMap.set(item.section_id, list);
       });
 
-      return dbSections.map((sec) => ({
-        id: sec.id,
-        section_key: sec.section_key,
-        title: sec.title,
-        subtitle: sec.subtitle,
-        show_title: sec.show_title ?? false,
-        show_subtitle: sec.show_subtitle ?? false,
-        layout_variant: sec.layout_variant as HomeLayoutVariant,
-        aspect_ratio: sec.aspect_ratio as HomeAspectRatio,
-        is_active: sec.is_active !== false,
-        sort_order: sec.sort_order ?? 0,
-        city_filter: sec.city_filter || null,
-        starts_at: sec.starts_at || null,
-        ends_at: sec.ends_at || null,
-        auto_archive_at: sec.auto_archive_at || null,
-        metadata: sec.metadata || {},
-        created_at: sec.created_at,
-        updated_at: sec.updated_at,
-        items: itemsMap.get(sec.id) || [],
-      }));
+      return mergeCanonicalWithDbSections(dbSections, itemsMap);
     } catch (err) {
       console.warn("[listAdminHomePageSections] Erro:", err);
       return CANONICAL_DEFAULT_HOME_SECTIONS;
@@ -701,11 +1062,11 @@ export const upsertHomePageSection = createServerFn({ method: "POST" })
       starts_at: starts_at ? new Date(starts_at).toISOString() : null,
       ends_at: ends_at ? new Date(ends_at).toISOString() : null,
       auto_archive_at: auto_archive_at ? new Date(auto_archive_at).toISOString() : null,
-      metadata: metadata || {},
+      metadata: { ...(metadata || {}), admin_overridden: true },
       updated_at: new Date().toISOString(),
     };
 
-    if (id) {
+    if (id && !id.startsWith("canonical-")) {
       const { data, error } = await supabase
         .from("home_page_sections")
         .update(row)
@@ -715,6 +1076,23 @@ export const upsertHomePageSection = createServerFn({ method: "POST" })
       if (error) throw error;
       return data;
     } else {
+      const { data: existing } = await supabase
+        .from("home_page_sections")
+        .select("id")
+        .eq("section_key", section_key)
+        .maybeSingle();
+
+      if (existing?.id) {
+        const { data, error } = await supabase
+          .from("home_page_sections")
+          .update(row)
+          .eq("id", existing.id)
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      }
+
       const { data, error } = await supabase
         .from("home_page_sections")
         .insert(row)

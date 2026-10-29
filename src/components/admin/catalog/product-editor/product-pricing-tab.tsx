@@ -457,7 +457,7 @@ export function ProductPricingTab({
 
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
               <div className="space-y-1">
-                <span className="text-xs font-bold text-foreground">iFood / Aiqfome</span>
+                <span className="text-xs font-bold text-foreground">Delivery Externo Integrado</span>
                 <p className="text-xs text-muted-foreground">Cardápio digital integrado para gastronomia.</p>
               </div>
               <Controller

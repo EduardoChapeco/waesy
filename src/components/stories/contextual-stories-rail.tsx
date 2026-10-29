@@ -76,11 +76,11 @@ export function ContextualStoriesRail({
  // Anéis semânticos de alta fidelidade
  let ringClasses = "border-2 border-border/70";
  if (isAmbassador) {
- ringClasses = "p-1 bg-gradient-to-tr from-purple-500 via-indigo-500 to-cyan-400";
+ ringClasses = "p-1 bg-purple-600";
  } else if (isFollowing) {
- ringClasses = "p-1 bg-gradient-to-tr from-amber-400 via-primary to-emerald-500";
+ ringClasses = "p-1 bg-amber-500";
  } else if (group.hasUnseenStories) {
- ringClasses = "p-1 bg-gradient-to-tr from-primary to-sky-400";
+ ringClasses = "p-1 bg-primary";
  }
 
  return (

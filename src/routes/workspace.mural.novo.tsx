@@ -173,7 +173,7 @@ function WorkspaceNewMuralPostPage() {
           />
 
           {mediaUrls.length > 0 && (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-4 gap-2 pt-2">
               {mediaUrls.map((url, idx) => (
                 <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-muted group">
                   <img src={url} alt={`Mídia ${idx + 1}`} className="size-full object-cover" />

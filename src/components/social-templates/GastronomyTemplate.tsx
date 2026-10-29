@@ -39,7 +39,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
           className="w-full h-full object-cover object-center transform scale-103"
         />
         {/* Vinheta escura clássica de cardápio gourmet */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/70" />
+        <div className="absolute inset-0 bg-black/60" />
       </div>
 
       {/* 2. Conteúdo Visual */}
@@ -104,7 +104,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
 
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/10 backdrop-blur-md border border-white/15 text-foreground/90 text-xs sm:text-sm font-bold shrink-0">
             <Utensils className="size-4.5 text-amber-400 shrink-0" />
-            <span className="truncate max-w-[180px]">{storeName}</span>
+            <span className="truncate max-w-45">{storeName}</span>
           </div>
         </div>
       </div>

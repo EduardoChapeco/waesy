@@ -41,62 +41,11 @@ export interface DynamicProductCarouselProps {
   whatsappPhone?: string;
 }
 
-const DEFAULT_PACKAGES: TravelPackageItem[] = [
-  {
-    id: "pkg_maceio",
-    title: "Pacote para Maceió",
-    destination: "Maceió, Alagoas",
-    
-    durationText: "8 Dias / 7 Noites",
-    inclusionText: "Hotel + Aéreo",
-    travelDatesText: "sáb 28 nov - sáb 05 dez",
-    savedAmountText: "Economize R$ 167",
-    priceCents: 166100,
-    originalPriceCents: 182800,
-    installmentsCount: 12,
-  },
-  {
-    id: "pkg_rio",
-    title: "Pacote para Rio de Janeiro",
-    destination: "Rio de Janeiro, RJ",
-    
-    durationText: "5 Dias / 4 Noites",
-    inclusionText: "Hotel + Aéreo",
-    travelDatesText: "qua 11 nov - dom 15 nov",
-    priceCents: 74300,
-    installmentsCount: 10,
-  },
-  {
-    id: "pkg_natal",
-    title: "Pacote para Natal",
-    destination: "Natal, Rio Grande do Norte",
-    
-    durationText: "6 Dias / 5 Noites",
-    inclusionText: "Hotel + Aéreo",
-    travelDatesText: "sex 26 fev - qua 03 mar",
-    savedAmountText: "Economize R$ 212",
-    priceCents: 116900,
-    originalPriceCents: 138100,
-    installmentsCount: 12,
-  },
-  {
-    id: "pkg_sp",
-    title: "Pacote para São Paulo",
-    destination: "São Paulo, SP",
-    
-    durationText: "4 Dias / 3 Noites",
-    inclusionText: "Hotel + Aéreo",
-    travelDatesText: "qui 30 dez - sáb 02 jan",
-    priceCents: 63800,
-    installmentsCount: 6,
-  },
-];
-
 export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   headline = "Pacotes Imperdíveis",
   subheadline = "Aproveite combinações exclusivas de passagens aéreas e hotéis selecionados",
   tagline = "Viagens em Destaque",
-  packages = DEFAULT_PACKAGES,
+  packages,
   onSelectPackage,
   onRequestQuote,
   whatsappPhone = "",
@@ -112,7 +61,8 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
     });
   };
 
-  const items = packages && packages.length > 0 ? packages : DEFAULT_PACKAGES;
+  if (!packages || packages.length === 0) return null;
+  const items = packages;
 
   const handleAction = (pkg: TravelPackageItem) => {
     if (onSelectPackage) {
@@ -198,7 +148,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                     <img
                       src={pkg.coverImageUrl}
                       alt={pkg.title}
-                      className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                     />
                   ) : (
                     <div className="size-full bg-linear-to-br from-primary/10 to-muted flex items-center justify-center">

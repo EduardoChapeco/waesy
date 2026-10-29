@@ -327,7 +327,7 @@ export function CampaignDraftCard({
             /* RESUMO DE ORÇAMENTO & TELEMETRIA SIMLAB */
             <div className="space-y-3">
               {/* Card de Investimento */}
-              <div className="p-4 rounded-lg border border-border/80 bg-muted/30 grid grid-cols-3 gap-2 text-center">
+              <div className="p-4 rounded-lg border border-border/80 bg-muted/30 grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
                 <div>
                   <p className="text-2xs text-muted-foreground font-medium">Orçamento Diário</p>
                   <p className="text-sm font-black font-mono text-foreground">

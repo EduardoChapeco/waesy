@@ -33,7 +33,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
           <div className="absolute inset-0 w-full h-full bg-slate-900" />
         )}
         {/* Degradê Escuro do Topo para Transparente */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-black/60" />
 
         {/* TOPO: LOGO E REFERÊNCIA */}
         <div className="absolute top-0 left-0 w-full p-12 flex justify-between items-start">
@@ -220,7 +220,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                     </div>
 
                     {h.images?.[0] && (
-                      <div className="grid grid-cols-3 gap-4 h-48">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 h-48">
                         <div className="col-span-2 rounded-lg overflow-hidden">
                           <img
                             src={h.images[0]}
@@ -248,8 +248,8 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
 
         {/* FINANCEIRO */}
         <div className="mt-20 break-inside-avoid">
-          <div className="bg-[#1E293B] rounded-lg p-12 text-foreground text-center border border-slate-700 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+          <div className="bg-slate-800 rounded-lg p-12 text-foreground text-center border border-slate-700 relative overflow-hidden">
+            <div className="absolute inset-0 bg-card/5 pointer-events-none" />
 
             <h2
               className="text-3xl mb-8"

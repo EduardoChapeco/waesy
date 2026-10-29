@@ -1118,7 +1118,7 @@ function CustomerDetailPage() {
               {data.walletPasses.map((pass: any) => (
                 <div
                   key={pass.id}
-                  className="rounded-lg border border-border/60 bg-gradient-to-br from-card to-muted/30 p-5 space-y-3 relative overflow-hidden"
+                  className="rounded-lg border border-border/60 bg-card p-5 space-y-3 relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between">
                     <Badge variant="secondary" className="text-xs uppercase font-bold">
@@ -1134,7 +1134,7 @@ function CustomerDetailPage() {
                   </div>
                   <div className="p-3 bg-card/80 border border-border/40 rounded-lg flex items-center justify-between font-mono text-xs">
                     <span className="text-muted-foreground">Serial:</span>
-                    <span className="font-bold text-foreground truncate max-w-[120px]">{pass.serial_number || pass.id.slice(0, 8)}</span>
+                    <span className="font-bold text-foreground truncate max-w-30">{pass.serial_number || pass.id.slice(0, 8)}</span>
                   </div>
                   <div className="text-xs text-muted-foreground text-right">
                     Criado em {new Date(pass.created_at).toLocaleDateString("pt-BR")}

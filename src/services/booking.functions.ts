@@ -606,7 +606,7 @@ export const createAppointment = createServerFn({ method: "POST" })
       sendWhatsAppNotification({
         storeId,
         recipientPhone: input.guest_phone,
-        messageText: `📅 Olá, ${input.guest_name}! Seu agendamento para "${service.title}" foi registrado com sucesso para ${formattedDate}. Status: ${apptStatus === "confirmed" ? "Confirmado" : "Pendente"}.`,
+        messageText: ` Olá, ${input.guest_name}! Seu agendamento para "${service.title}" foi registrado com sucesso para ${formattedDate}. Status: ${apptStatus === "confirmed" ? "Confirmado" : "Pendente"}.`,
       }).catch((wErr) => console.warn("[booking] WhatsApp notification falhou (não bloqueante):", wErr));
     }
 

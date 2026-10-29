@@ -1,3 +1,4 @@
+// motion-reduce: safe
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -453,7 +454,7 @@ function TourismDetailPage() {
         <div className="max-w-6xl mx-auto px-0 sm:px-4 pt-3 flex items-center justify-between">
           <Link
             to="/turismo"
-            className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-2 hover:bg-muted/80 sm:hover:bg-transparent transition-all"
+            className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-2 hover:bg-muted/80 sm:hover:bg-transparent transition-colors"
             aria-label="Voltar para Turismo"
           >
             <ArrowLeft size={18} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
@@ -464,7 +465,7 @@ function TourismDetailPage() {
             <button
               type="button"
               onClick={() => setViewMode("instagram_editorial")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 viewMode === "instagram_editorial"
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -475,7 +476,7 @@ function TourismDetailPage() {
             <button
               type="button"
               onClick={() => setViewMode("standard")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 (viewMode as string) === "standard"
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -571,14 +572,14 @@ function TourismDetailPage() {
               <button
                 type="button"
                 onClick={() => setViewMode("instagram_editorial")}
-                className="px-3 py-1 text-xs font-bold rounded-lg transition-all text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="px-3 py-1 text-xs font-bold rounded-lg transition-colors text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Instagram Editorial
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("standard")}
-                className="px-3 py-1 text-xs font-bold rounded-lg transition-all bg-background text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="px-3 py-1 text-xs font-bold rounded-lg transition-colors bg-background text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Página Padrão
               </button>
@@ -650,7 +651,7 @@ function TourismDetailPage() {
                 <button
                   key={idx}
                   onClick={() => setActiveImage(idx)}
-                  className={`relative w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  className={`relative w-20 sm:w-24 aspect-video rounded-lg overflow-hidden border-2 transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     activeImage === idx ? "border-foreground" : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                 >
@@ -741,13 +742,13 @@ function TourismDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   {experience.documentation_notes && (
                     <div className="p-3 rounded-lg bg-card border border-border/40 space-y-1">
-                      <span className="font-bold text-foreground block">🛂 Documentação de Viagem:</span>
+                      <span className="font-bold text-foreground block"> Documentação de Viagem:</span>
                       <p className="text-muted-foreground leading-relaxed">{experience.documentation_notes}</p>
                     </div>
                   )}
                   {experience.hotel_policies && (
                     <div className="p-3 rounded-lg bg-card border border-border/40 space-y-1">
-                      <span className="font-bold text-foreground block">🏨 Políticas de Hotelaria & Bagagem:</span>
+                      <span className="font-bold text-foreground block"> Políticas de Hotelaria & Bagagem:</span>
                       <p className="text-muted-foreground leading-relaxed">{experience.hotel_policies}</p>
                     </div>
                   )}

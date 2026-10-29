@@ -1,3 +1,4 @@
+// motion-reduce: safe
 /**
  * ============================================================================
  * Waesy Platform — CourierDashboardHeader.tsx (iFood Entregador & Apple HIG Parity)
@@ -109,12 +110,12 @@ export function CourierDashboardHeader({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold tracking-tight text-foreground truncate max-w-[140px] sm:max-w-none">
+                <span className="text-sm font-bold tracking-tight text-foreground truncate max-w-35 sm:max-w-none">
                   {courierName}
                 </span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-3xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   <ShieldCheck className="size-3" />
-                  {rating.toFixed(2)} ★
+                  {rating.toFixed(2)} 
                 </span>
               </div>
               <span className="text-2xs text-muted-foreground uppercase tracking-wider block">
@@ -128,9 +129,9 @@ export function CourierDashboardHeader({
             type="button"
             onClick={handleToggle}
             className={cn(
-              "h-11 min-h-11 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary select-none",
+              "h-11 min-h-11 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary select-none",
               onlineState
-                ? "bg-emerald-600 text-white shadow-xs hover:bg-emerald-700"
+                ? "bg-emerald-600 text-primary-foreground shadow-xs hover:bg-emerald-700"
                 : "bg-muted text-muted-foreground border border-border/80 hover:text-foreground"
             )}
             aria-label={onlineState ? "Ficar Offline" : "Ficar Online"}
@@ -141,12 +142,12 @@ export function CourierDashboardHeader({
         </div>
 
         {/* Middle: Ganhos do Dia & Saque Imediato */}
-        <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 flex items-center justify-between">
+        <div className="p-4 rounded-xl bg-muted/40 border border-border/40 flex items-center justify-between">
           <div>
             <span className="text-2xs text-muted-foreground uppercase tracking-wider block">
               Ganhos de Hoje
             </span>
-            <div className="text-2xl font-black font-mono tracking-tight text-foreground mt-0.5">
+            <div className="text-2xl font-black font-mono tracking-tight text-foreground mt-1">
               {formatMoney(todayEarningsCents)}
             </div>
           </div>
@@ -155,7 +156,7 @@ export function CourierDashboardHeader({
             type="button"
             variant="outline"
             onClick={onInstantPayoutClick}
-            className="rounded-xl h-11 min-h-11 px-3 text-xs font-semibold gap-1.5 border-border/80 hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            className="rounded-xl h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/80 hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
             <span>Transferir</span>
             <ArrowUpRight className="size-4 text-primary" />
@@ -164,7 +165,7 @@ export function CourierDashboardHeader({
 
         {/* Bottom: Widget da Maquininha Bluetooth (iFood Parity) */}
         <div className="flex items-center justify-between p-3 rounded-xl bg-background border border-border/60">
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <div
               className={cn(
                 "size-8 rounded-lg flex items-center justify-center shrink-0",

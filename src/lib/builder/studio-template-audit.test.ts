@@ -134,11 +134,11 @@ describe("Studio template automated quality pipeline", () => {
 
   it("gera relatório determinístico por catálogo com resultado de cada template", () => {
     const report = auditAllStudioTemplates();
-    expect(report.summary.total).toBe(12);
-    expect(report.templates).toHaveLength(12);
+    expect(report.summary.total).toBe(18);
+    expect(report.templates).toHaveLength(18);
     expect(report.templates.every((template) => template.findings && template.metrics)).toBe(true);
     expect(report.summary.failed + report.summary.warnings + report.summary.passed).toBe(report.summary.total);
-    expect(report.summary.reviewRequired).toBe(12);
+    expect(report.summary.reviewRequired).toBe(18);
     expect(report.summary.publishableFailed).toBe(0);
     expect(report.templates.filter((template) => template.templateId.startsWith("pilot_")).every((template) => template.findings.some((finding) => finding.ruleId === "CONTENT_PLACEHOLDER_UNRESOLVED"))).toBe(true);
   });

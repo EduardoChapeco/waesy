@@ -120,7 +120,7 @@ export function PublishSheet() {
         {!hasBusiness && (
           <div className="p-3 mt-2 bg-primary/5 border border-primary/20 rounded-lg">
             <Button
-              variant="default"
+              variant="outline"
               size="sm"
               asChild
               className="w-full h-11 min-h-11 text-xs font-bold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"

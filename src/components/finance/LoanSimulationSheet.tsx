@@ -156,7 +156,7 @@ export function LoanSimulationSheet({
             </SheetTitle>
             <Badge
               variant="outline"
-              className="rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+              className="rounded-full px-2 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
             >
               Pix Imediato
             </Badge>
@@ -165,8 +165,8 @@ export function LoanSimulationSheet({
 
         <div className="space-y-4 pt-3">
           {/* ── Banner de Limite Pré-Aprovado ── */}
-          <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-500/10 via-primary/10 to-transparent border border-emerald-500/20 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+          <div className="p-4 rounded-xl bg-card border border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <Sparkles className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
                 <span className="text-2xs text-muted-foreground uppercase tracking-wider block">
@@ -177,7 +177,7 @@ export function LoanSimulationSheet({
                 </span>
               </div>
             </div>
-            <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+            <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
               Taxa especial 1,89% a.m.
             </span>
           </div>
@@ -193,14 +193,14 @@ export function LoanSimulationSheet({
             </div>
 
             {/* Pílulas de Seleção Rápida */}
-            <div className="flex items-center justify-center gap-1.5 pt-1 overflow-x-auto no-scrollbar">
+            <div className="flex items-center justify-center gap-2 pt-1 overflow-x-auto no-scrollbar">
               {QUICK_AMOUNTS.map((amt) => (
                 <button
                   key={amt}
                   type="button"
                   onClick={() => setAmountCents(amt)}
                   className={cn(
-                    "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                    "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     amountCents === amt
                       ? "bg-foreground text-background shadow-xs"
                       : "bg-muted/60 text-muted-foreground hover:bg-muted"
@@ -237,7 +237,7 @@ export function LoanSimulationSheet({
             <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground block px-1">
               Em quantas parcelas?
             </span>
-            <div className="grid grid-cols-5 gap-1.5">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {INSTALLMENT_OPTIONS.map((inst) => {
                 const isSelected = inst === selectedInstallments;
                 return (
@@ -246,7 +246,7 @@ export function LoanSimulationSheet({
                     type="button"
                     onClick={() => setSelectedInstallments(inst)}
                     className={cn(
-                      "h-11 min-h-11 rounded-xl text-xs font-semibold flex items-center justify-center transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                      "h-11 min-h-11 rounded-xl text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       isSelected
                         ? "bg-foreground text-background shadow-xs scale-102"
                         : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -264,12 +264,12 @@ export function LoanSimulationSheet({
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs text-muted-foreground">Valor da parcela</span>
-                <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground mt-0.5">
+                <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground mt-1">
                   {selectedInstallments}x de {formatCents(simulation.monthlyCents)}
                 </div>
               </div>
 
-              <div className="text-right text-xs text-muted-foreground space-y-0.5">
+              <div className="text-right text-xs text-muted-foreground space-y-1">
                 <div>1ª parcela em</div>
                 <strong className="text-foreground">{firstDueDateStr}</strong>
               </div>

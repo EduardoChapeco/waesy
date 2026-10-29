@@ -28,7 +28,7 @@ export function FeedBannerBlock({
  alt={title}
  className="absolute inset-0 size-full object-cover opacity-25"
  />
- <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent" />
+ <div className="absolute inset-0 bg-background/80" />
  </>
  )}
 

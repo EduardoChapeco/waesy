@@ -61,7 +61,7 @@ export function SocialGrid({ content }: SocialGridProps) {
  <img
  src={post.image_url}
  alt={`Galeria de fotos ${idx + 1}`}
- className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
+ className="size-full object-cover transition-transform duration-200 group-hover:scale-110"
  loading="lazy"
  />
 

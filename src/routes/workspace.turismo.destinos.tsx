@@ -650,7 +650,7 @@ export default function WorkspaceDestinationsPage() {
  <img
  src={dest.cover_image_url}
  alt={dest.name}
- className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  ) : (
  <div className="w-full h-full flex items-center justify-center bg-muted/60 text-muted-foreground">
@@ -1091,51 +1091,26 @@ export default function WorkspaceDestinationsPage() {
  />
 
  <div className="flex flex-col sm:flex-row gap-2">
- <Button
- type="button"
- variant="secondary"
- onClick={() => galleryInputRef.current?.click()}
- disabled={isUploadingGallery}
- className="rounded-lg text-xs font-bold h-10 gap-2 cursor-pointer shrink-0 shadow-2xs"
- >
- {isUploadingGallery ? (
- <>
- <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
- <span>Enviando fotos...</span>
- </>
- ) : (
- <>
- <UploadCloud className="size-4 text-primary" />
- <span>Upload em Lote de Fotos</span>
- </>
- )}
- </Button>
-
- <div className="flex gap-2 flex-1">
- <Input
- value={newGalleryUrlInput}
- onChange={(e) => setNewGalleryUrlInput(e.target.value)}
- placeholder="Ou cole a URL direta de uma foto (https://...)"
- className="h-10 text-xs rounded-lg flex-1"
- onKeyDown={(e) => {
- if (e.key === "Enter") {
- e.preventDefault();
- handleAddGalleryUrl();
- }
- }}
- />
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={handleAddGalleryUrl}
- className="rounded-lg text-xs font-bold h-10 px-4 gap-1 shrink-0"
- >
- <Plus className="size-3.5" />
- <span>Adicionar</span>
- </Button>
- </div>
- </div>
+  <Button
+  type="button"
+  variant="secondary"
+  onClick={() => galleryInputRef.current?.click()}
+  disabled={isUploadingGallery}
+  className="rounded-lg text-xs font-bold h-11 min-h-11 px-4 gap-2 cursor-pointer w-full justify-center border border-border/60 hover:bg-muted"
+  >
+  {isUploadingGallery ? (
+  <>
+  <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
+  <span>Enviando fotos para o bucket de mídia...</span>
+  </>
+  ) : (
+  <>
+  <UploadCloud className="size-4 text-primary" />
+  <span>Upload Direto de Fotos para a Galeria (Bucket cms-media)</span>
+  </>
+  )}
+  </Button>
+  </div>
 
  {galleryUrls.length > 0 ? (
  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-1">
@@ -1653,7 +1628,7 @@ export default function WorkspaceDestinationsPage() {
  <Camera className="size-12" />
  </div>
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+ <div className="absolute inset-0 bg-black/60" />
 
  <div className="absolute bottom-6 left-6 right-6 space-y-2 text-foreground">
  <div className="flex flex-wrap items-center gap-2">
@@ -1833,7 +1808,7 @@ export default function WorkspaceDestinationsPage() {
  className="w-full h-full object-cover"
  />
  )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-5 text-foreground">
+ <div className="absolute inset-0 bg-black/60 flex items-end p-5 text-foreground">
  <div>
  <Badge className="bg-primary text-primary-foreground text-xs mb-1">
  {previewModalDest.state} • {previewModalDest.country}

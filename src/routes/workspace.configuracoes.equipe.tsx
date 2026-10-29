@@ -267,7 +267,7 @@ export default function WorkspaceTeamPage() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg font-semibold text-xs gap-2"
+ className="h-11 min-h-11 sm:h-9 rounded-lg font-semibold text-xs gap-2"
  >
  <Link to="/workspace/financeiro/funcionarios">
  <Wallet className="size-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -278,7 +278,7 @@ export default function WorkspaceTeamPage() {
  asChild
  variant="outline"
  size="sm"
- className="h-9 rounded-lg font-semibold text-xs gap-2"
+ className="h-11 min-h-11 sm:h-9 rounded-lg font-semibold text-xs gap-2"
  >
  <Link to="/workspace/empregos/candidatos">
  <Briefcase className="size-3.5 text-primary" />
@@ -289,7 +289,7 @@ export default function WorkspaceTeamPage() {
  <Button
  onClick={() => setIsInviteOpen(true)}
  size="sm"
- className="h-9 rounded-lg font-bold text-xs gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground"
+ className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground"
  >
  <UserPlus className="size-3.5" />
  <span>Convidar</span>
@@ -313,7 +313,7 @@ export default function WorkspaceTeamPage() {
  setIsContractorOpen(true);
  }}
  size="sm"
- className="h-9 rounded-lg font-bold text-xs gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground"
+ className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground"
  >
  <Plus className="size-3.5" />
  <span>Novo Prestador</span>
@@ -322,7 +322,7 @@ export default function WorkspaceTeamPage() {
  <Button
  onClick={() => setIsJobOpen(true)}
  size="sm"
- className="h-9 rounded-lg font-bold text-xs gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground"
+ className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground"
  >
  <Plus className="size-3.5" />
  <span>Publicar Vaga</span>
@@ -334,7 +334,7 @@ export default function WorkspaceTeamPage() {
 
  {/* ── Tabs de Navegação ── */}
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full">
- <TabsList className="grid grid-cols-3 max-w-lg h-11 p-1 bg-muted/60 rounded-lg">
+ <TabsList className="grid grid-cols-1 sm:grid-cols-3 max-w-lg h-11 p-1 bg-muted/60 rounded-lg">
  <TabsTrigger value="members" className="rounded-lg font-bold text-xs gap-2">
  <Users className="size-3.5" />
  <span>Colaboradores ({members.length})</span>
@@ -382,7 +382,7 @@ export default function WorkspaceTeamPage() {
  variant="ghost"
  size="sm"
  onClick={() => router.invalidate()}
- className="h-8 text-xs gap-1 text-muted-foreground hover:text-foreground"
+ className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 text-xs gap-1 text-muted-foreground hover:text-foreground"
  >
  <RefreshCw className="size-3.5" />
  <span>Atualizar</span>
@@ -447,7 +447,7 @@ export default function WorkspaceTeamPage() {
  defaultValue={m.role}
  onValueChange={(newVal) => handleRoleChange(m.id, newVal)}
  >
- <SelectTrigger className="h-8 text-xs font-semibold rounded-lg w-36 bg-background">
+ <SelectTrigger className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 text-xs font-semibold rounded-lg w-36 bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
@@ -514,7 +514,7 @@ export default function WorkspaceTeamPage() {
             });
             setIsContractorOpen(true);
           }}
-          className="h-8 text-xs font-bold gap-2 rounded-lg cursor-pointer"
+          className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 text-xs font-bold gap-2 rounded-lg cursor-pointer"
         >
           <Plus className="size-3.5" />
           <span>Cadastrar Parceiro</span>
@@ -547,7 +547,7 @@ export default function WorkspaceTeamPage() {
               });
               setIsContractorOpen(true);
             }}
-            className="rounded-lg text-xs font-bold h-9 bg-primary text-primary-foreground gap-2"
+            className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 bg-primary text-primary-foreground gap-2"
           >
             <Plus className="size-3.5" />
             <span>Cadastrar Primeiro Terceirizado</span>
@@ -588,7 +588,7 @@ export default function WorkspaceTeamPage() {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="h-8 px-3 rounded-lg text-xs font-semibold gap-1"
+                    className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold gap-1"
                   >
                     <a
                       href={`https://wa.me/55${c.contact_phone.replace(/\D/g, "")}`}
@@ -662,7 +662,7 @@ export default function WorkspaceTeamPage() {
  variant="ghost"
  size="sm"
  onClick={() => router.invalidate()}
- className="h-8 text-xs gap-1 text-muted-foreground hover:text-foreground"
+ className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 text-xs gap-1 text-muted-foreground hover:text-foreground"
  >
  <RefreshCw className="size-3.5" />
  <span>Atualizar</span>
@@ -680,7 +680,7 @@ export default function WorkspaceTeamPage() {
  </p>
  <Button
  onClick={() => setIsJobOpen(true)}
- className="rounded-lg text-xs font-bold h-9 bg-primary text-primary-foreground gap-2"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 bg-primary text-primary-foreground gap-2"
  >
  <Plus className="size-3.5" />
  <span>Publicar Primeira Vaga</span>
@@ -718,7 +718,7 @@ export default function WorkspaceTeamPage() {
  asChild
  variant="outline"
  size="sm"
- className="rounded-lg text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-11 min-h-11 sm:h-9"
  >
  <Link to="/workspace/empregos/candidatos">
  <span>Ver Currículos</span>
@@ -768,7 +768,7 @@ export default function WorkspaceTeamPage() {
  value={jobForm.title}
  onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
  placeholder="Ex: Atendente de Balcão & Caixa"
- className="h-10 rounded-lg text-xs font-bold"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold"
  />
  </div>
 
@@ -778,7 +778,7 @@ export default function WorkspaceTeamPage() {
  value={jobForm.company_name}
  onChange={(e) => setJobForm({ ...jobForm, company_name: e.target.value })}
  placeholder="Ex: Café & Bistrô Central"
- className="h-10 rounded-lg text-xs font-bold"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold"
  />
  </div>
  </div>
@@ -790,7 +790,7 @@ export default function WorkspaceTeamPage() {
  value={jobForm.contract_type}
  onValueChange={(v: any) => setJobForm({ ...jobForm, contract_type: v })}
  >
- <SelectTrigger className="h-10 rounded-lg text-xs font-semibold">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs font-semibold">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
@@ -809,7 +809,7 @@ export default function WorkspaceTeamPage() {
  value={jobForm.workplace_type}
  onValueChange={(v: any) => setJobForm({ ...jobForm, workplace_type: v })}
  >
- <SelectTrigger className="h-10 rounded-lg text-xs font-semibold">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs font-semibold">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
@@ -826,7 +826,7 @@ export default function WorkspaceTeamPage() {
  value={jobForm.salary_display}
  onChange={(e) => setJobForm({ ...jobForm, salary_display: e.target.value })}
  placeholder="Ex: R$ 2.500 - R$ 3.200"
- className="h-10 rounded-lg text-xs font-mono font-bold"
+ className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold"
  />
  </div>
  </div>
@@ -837,7 +837,7 @@ export default function WorkspaceTeamPage() {
  value={jobForm.location}
  onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })}
  placeholder="Ex: Centro - Chapecó / SC"
- className="h-10 rounded-lg text-xs"
+ className="h-11 min-h-11 rounded-lg text-xs"
  />
  </div>
 
@@ -896,7 +896,7 @@ export default function WorkspaceTeamPage() {
  placeholder="Ex: João da Silva"
  value={inviteName}
  onChange={(e) => setInviteName(e.target.value)}
- className="pl-9 h-10 rounded-lg text-xs bg-muted/30"
+ className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/30"
  />
  </div>
  </div>
@@ -911,7 +911,7 @@ export default function WorkspaceTeamPage() {
  placeholder="colaborador@empresa.com"
  value={inviteEmail}
  onChange={(e) => setInviteEmail(e.target.value)}
- className="pl-9 h-10 rounded-lg text-xs bg-muted/30"
+ className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/30"
  />
  </div>
  </div>
@@ -922,7 +922,7 @@ export default function WorkspaceTeamPage() {
  value={inviteRole}
  onValueChange={(v: any) => setInviteRole(v)}
  >
- <SelectTrigger className="h-10 rounded-lg text-xs bg-muted/30 font-semibold">
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-muted/30 font-semibold">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg max-h-64">
@@ -950,14 +950,14 @@ export default function WorkspaceTeamPage() {
  type="button"
  variant="outline"
  onClick={() => setIsInviteOpen(false)}
- className="h-10 rounded-lg text-xs font-semibold"
+ className="h-11 min-h-11 rounded-lg text-xs font-semibold"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={isInviting}
- className="h-10 rounded-lg text-xs font-bold bg-foreground text-background hover:opacity-90"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold bg-foreground text-background hover:opacity-90"
  >
  {isInviting ? "Vinculando..." : "Convidar para a Equipe"}
  </Button>
@@ -984,13 +984,13 @@ export default function WorkspaceTeamPage() {
  </AlertDialogDescription>
  </AlertDialogHeader>
  <AlertDialogFooter className="pt-4 gap-2">
- <AlertDialogCancel className="h-10 rounded-lg text-xs font-semibold">
+ <AlertDialogCancel className="h-11 min-h-11 rounded-lg text-xs font-semibold">
  Cancelar
  </AlertDialogCancel>
  <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
  onClick={handleConfirmRemove}
  disabled={isRemoving}
- className="h-10 rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
  >
  {isRemoving ? "Revogando..." : "Revogar Acesso"}
  </AlertDialogAction>
@@ -1042,7 +1042,7 @@ export default function WorkspaceTeamPage() {
                 value={contractorForm.name}
                 onChange={(e) => setContractorForm({ ...contractorForm, name: e.target.value })}
                 placeholder="Ex: João Silva Segurança Eireli"
-                className="h-9 rounded-lg text-xs"
+                className="h-11 min-h-11 sm:h-9 rounded-lg text-xs"
                 required
               />
             </div>
@@ -1054,7 +1054,7 @@ export default function WorkspaceTeamPage() {
                   value={contractorForm.serviceCategory}
                   onValueChange={(val: any) => setContractorForm({ ...contractorForm, serviceCategory: val })}
                 >
-                  <SelectTrigger className="h-9 rounded-lg text-xs">
+                  <SelectTrigger className="h-11 min-h-11 sm:h-9 rounded-lg text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg">
@@ -1077,7 +1077,7 @@ export default function WorkspaceTeamPage() {
                   value={contractorForm.documentNumber}
                   onChange={(e) => setContractorForm({ ...contractorForm, documentNumber: e.target.value })}
                   placeholder="000.000.000-00"
-                  className="h-9 rounded-lg text-xs font-mono"
+                  className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-mono"
                 />
               </div>
             </div>
@@ -1089,7 +1089,7 @@ export default function WorkspaceTeamPage() {
                   value={contractorForm.contactPhone}
                   onChange={(e) => setContractorForm({ ...contractorForm, contactPhone: e.target.value })}
                   placeholder="(00) 00000-0000"
-                  className="h-9 rounded-lg text-xs"
+                  className="h-11 min-h-11 sm:h-9 rounded-lg text-xs"
                 />
               </div>
 
@@ -1099,7 +1099,7 @@ export default function WorkspaceTeamPage() {
                   value={contractorForm.pixKey}
                   onChange={(e) => setContractorForm({ ...contractorForm, pixKey: e.target.value })}
                   placeholder="CPF, CNPJ, E-mail..."
-                  className="h-9 rounded-lg text-xs font-mono"
+                  className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-mono"
                 />
               </div>
             </div>
@@ -1113,7 +1113,7 @@ export default function WorkspaceTeamPage() {
                   value={contractorForm.hourlyRateCents ? contractorForm.hourlyRateCents / 100 : ""}
                   onChange={(e) => setContractorForm({ ...contractorForm, hourlyRateCents: Math.round(parseFloat(e.target.value || "0") * 100) })}
                   placeholder="Ex: 50.00"
-                  className="h-9 rounded-lg text-xs"
+                  className="h-11 min-h-11 sm:h-9 rounded-lg text-xs"
                 />
               </div>
 
@@ -1125,7 +1125,7 @@ export default function WorkspaceTeamPage() {
                   value={contractorForm.fixedFeeCents ? contractorForm.fixedFeeCents / 100 : ""}
                   onChange={(e) => setContractorForm({ ...contractorForm, fixedFeeCents: Math.round(parseFloat(e.target.value || "0") * 100) })}
                   placeholder="Ex: 350.00"
-                  className="h-9 rounded-lg text-xs"
+                  className="h-11 min-h-11 sm:h-9 rounded-lg text-xs"
                 />
               </div>
             </div>

@@ -89,7 +89,7 @@ function DealTimeline({ status }: { status: string }) {
       aria-valuenow={activeIndex + 1}
       aria-valuemax={4}
     >
-      <div className="grid grid-cols-4 gap-2 w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
         {DEAL_STEPS.map((step, i) => {
           const isReached = i <= activeIndex;
           const isCurrent = i === activeIndex;
@@ -98,7 +98,7 @@ function DealTimeline({ status }: { status: string }) {
               <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                 <div
                   className={cn(
-                    "h-full rounded-full transition-colors duration-200 duration-500",
+                    "h-full rounded-full transition-colors duration-200 duration-200",
                     isReached ? "w-full bg-primary" : "w-0 bg-transparent",
                     isCurrent && "animate-pulse motion-reduce:animate-none"
                   )}
@@ -648,7 +648,7 @@ function NegociacoesPage() {
           if (!open) setSelectedCompanionDeal(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-2xl">
+        <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-2xl">
           <DialogHeader className="sr-only">
             <DialogTitle>Guia Digital de Acompanhamento</DialogTitle>
           </DialogHeader>

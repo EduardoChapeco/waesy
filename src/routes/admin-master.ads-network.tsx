@@ -509,7 +509,7 @@ function AdminAdsNetworkPage() {
             {/* Desktop View: Tabela Limpa */}
             <div className="hidden sm:block rounded-lg border border-border/60 overflow-hidden bg-card">
               <div className="divide-y divide-border/30">
-                <div className="grid grid-cols-12 px-4 py-3 bg-muted/20 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="grid grid-cols-1 md:grid-cols-12 px-4 py-3 bg-muted/20 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <span className="col-span-4">Campanha / Loja</span>
                   <span className="col-span-2">Roteamento</span>
                   <span className="col-span-2 text-right">Budget Total</span>
@@ -521,7 +521,7 @@ function AdminAdsNetworkPage() {
                   filteredCampaigns.map((c: any) => (
                     <div
                       key={c.id}
-                      className="grid grid-cols-12 px-4 py-4 items-center text-xs hover:bg-muted/20 transition-colors"
+                      className="grid grid-cols-1 md:grid-cols-12 px-4 py-4 items-center text-xs hover:bg-muted/20 transition-colors"
                     >
                       <div className="col-span-4 min-w-0 pr-3">
                         <p className="font-bold text-foreground truncate">{c.title}</p>
@@ -638,7 +638,7 @@ function AdminAdsNetworkPage() {
             {/* Desktop Table do Ad-Ledger */}
             <div className="rounded-lg border border-border/60 overflow-hidden bg-card">
               <div className="divide-y divide-border/30">
-                <div className="grid grid-cols-12 px-4 py-3 bg-muted/20 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="grid grid-cols-1 md:grid-cols-12 px-4 py-3 bg-muted/20 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <span className="col-span-3">Data / Hora</span>
                   <span className="col-span-3">Tipo de Partida Dobrada</span>
                   <span className="col-span-4">Descrição do Lançamento</span>
@@ -654,7 +654,7 @@ function AdminAdsNetworkPage() {
                     return (
                       <div
                         key={entry.id}
-                        className="grid grid-cols-12 px-4 py-3 items-center text-xs hover:bg-muted/20 transition-colors"
+                        className="grid grid-cols-1 md:grid-cols-12 px-4 py-3 items-center text-xs hover:bg-muted/20 transition-colors"
                       >
                         <div className="col-span-3 font-mono text-2xs text-muted-foreground">
                           {formatDate(entry.created_at)}

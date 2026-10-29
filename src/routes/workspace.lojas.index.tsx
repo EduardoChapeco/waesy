@@ -224,7 +224,7 @@ export default function WorkspaceLojasPage() {
  <img
  src={st.banner_url}
  alt={`Capa ${st.name}`}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+ className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  ) : (
  <div className="size-full flex items-center justify-center bg-linear-to-br from-primary/20 via-primary/5 to-muted opacity-80" />

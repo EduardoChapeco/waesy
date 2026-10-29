@@ -226,7 +226,7 @@ export function NewClientWizard({
  </SheetDescription>
 
  {/* Stepper Visual */}
- <div className="grid grid-cols-4 gap-2 pt-3">
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3">
  {STEPS.map((s, idx) => (
  <div
  key={s}
@@ -415,7 +415,7 @@ export function NewClientWizard({
  <div className="space-y-5 animate-in fade-in duration-200">
  {/* Endereço */}
  <div className="space-y-3">
- <div className="grid grid-cols-3 gap-3">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
  <MapPin className="size-3 text-primary" />

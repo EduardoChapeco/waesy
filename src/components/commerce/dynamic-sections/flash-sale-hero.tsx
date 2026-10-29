@@ -130,7 +130,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  alt={title}
  className="h-full w-full object-cover opacity-25"
  />
- <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/85 to-zinc-950/60" />
+ <div className="absolute inset-0 bg-zinc-950/80" />
  </div>
  )}
 
@@ -255,7 +255,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  </div>
 
  {/* Blocos de Contagem */}
- <div className="grid grid-cols-4 gap-2">
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
  {[
  { value: timeLeft.days, label: "Dias" },
  { value: timeLeft.hours, label: "Horas" },

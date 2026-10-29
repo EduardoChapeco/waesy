@@ -19,44 +19,14 @@ export interface CuratedVerticalRailsProps {
   className?: string;
 }
 
-const DEFAULT_CURATED_ITEMS: CuratedVerticalItem[] = [
-  {
-    id: "gourmet",
-    title: "Gourmet & Alta Gastronomia",
-    badge: "SELEÇÃO",
-    targetUrl: "/gastronomia",
-    colorClass: "bg-red-500/5 border-red-500/20",
-  },
-  {
-    id: "clubes",
-    title: "Clubes de Vantagens",
-    badge: "EXCLUSIVO",
-    targetUrl: "/ofertas",
-    colorClass: "bg-purple-500/5 border-purple-500/20",
-  },
-  {
-    id: "mercados",
-    title: "Supermercados Express",
-    badge: "15 MIN",
-    targetUrl: "/mercado",
-    colorClass: "bg-emerald-500/5 border-emerald-500/20",
-  },
-  {
-    id: "viagens",
-    title: "Turismo & Roteiros da Região",
-    badge: "PASSEIOS",
-    targetUrl: "/turismo",
-    colorClass: "bg-blue-500/5 border-blue-500/20",
-  },
-];
-
 export function CuratedVerticalRails({
   title = "Destaques Curados da Cidade",
   subtitle = "Experiências e serviços recomendados para você",
-  items = DEFAULT_CURATED_ITEMS,
+  items,
   className,
 }: CuratedVerticalRailsProps) {
-  const displayItems = items && items.length > 0 ? items : DEFAULT_CURATED_ITEMS;
+  if (!items || items.length === 0) return null;
+  const displayItems = items;
 
   return (
     <div className={cn("w-full space-y-2 my-2", className)}>
@@ -79,7 +49,7 @@ export function CuratedVerticalRails({
             key={it.id}
             to={it.targetUrl as any}
             className={cn(
-              "p-3 rounded-2xl border bg-card hover:bg-muted/30 active:scale-[0.98] transition-transform duration-200 flex flex-col justify-between gap-3 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-24",
+              "p-3 rounded-2xl border bg-card hover:bg-muted/30 active:scale-95 transition-transform duration-200 flex flex-col justify-between gap-3 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-24",
               it.colorClass || "border-border/70"
             )}
           >

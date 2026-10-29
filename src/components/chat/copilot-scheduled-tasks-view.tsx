@@ -371,7 +371,7 @@ export function CopilotScheduledTasksView({
               </Button>
               <Button
                 type="submit"
-                variant="default"
+                variant="outline"
                 className="h-11 min-h-11 px-5 text-xs font-semibold rounded-xl"
               >
                 Criar Automação

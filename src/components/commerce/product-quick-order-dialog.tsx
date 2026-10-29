@@ -257,7 +257,7 @@ export function ProductQuickOrderDialog({
           {/* Forma de Pagamento */}
           <div className="space-y-2">
             <label className="text-2xs font-semibold text-foreground">Forma de Pagamento</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setPaymentMethod("pix")}

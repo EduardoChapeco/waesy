@@ -152,7 +152,7 @@ export function NewTravelContractSheet({
 
  // Resumo dos serviços a partir dos itens da proposta
  const flights = Array.isArray(prop.flights) && prop.flights.length > 0
- ? `Aéreo: ${prop.flights.map((f: any) => `${f.airline_name || "Cia"} (${f.origin_iata || ""} ➔ ${f.destination_iata || ""})`).join(", ")}.`
+ ? `Aéreo: ${prop.flights.map((f: any) => `${f.airline_name || "Cia"} (${f.origin_iata || ""}  ${f.destination_iata || ""})`).join(", ")}.`
  : "";
  const hotels = Array.isArray(prop.hotels) && prop.hotels.length > 0
  ? `Hospedagem: ${prop.hotels.map((h: any) => `${h.hotel_name} (${h.room_type || ""})`).join(", ")}.`
@@ -335,7 +335,7 @@ export function NewTravelContractSheet({
  onValueChange={(v) => setActiveTab(v as any)}
  className="w-full"
  >
- <TabsList className="grid grid-cols-3 h-9 rounded-lg bg-muted/70 p-1 text-xs">
+ <TabsList className="grid grid-cols-1 sm:grid-cols-3 h-9 rounded-lg bg-muted/70 p-1 text-xs">
  <TabsTrigger
  value="proposal"
  className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
@@ -422,7 +422,7 @@ export function NewTravelContractSheet({
  : ""
  }`}
  >
- {prop.status === "approved" ? "✓ Aprovada" : prop.status}
+ {prop.status === "approved" ? " Aprovada" : prop.status}
  </Badge>
  </div>
  <p className="text-xs text-muted-foreground truncate">
@@ -468,7 +468,7 @@ export function NewTravelContractSheet({
  setCustomerSearch(e.target.value);
  setIsCustomerDropdownOpen(true);
  }}
- placeholder="🔍 Buscar cliente no CRM (Nome, CPF/CNPJ, WhatsApp)..."
+ placeholder=" Buscar cliente no CRM (Nome, CPF/CNPJ, WhatsApp)..."
  className="h-10 rounded-lg text-xs bg-muted/20 pl-3 pr-8 border-border/70"
  />
  {isLoadingCustomers && (
@@ -537,7 +537,7 @@ export function NewTravelContractSheet({
  variant="secondary"
  className="bg-primary/10 text-primary border-primary/20 text-xs font-bold"
  >
- ✓ Vinculado ao CRM
+  Vinculado ao CRM
  </Badge>
  ) : (
  <Button
@@ -779,7 +779,7 @@ export function NewTravelContractSheet({
  </div>
  {nightsCount !== null && (
  <Badge variant="secondary" className="text-xs font-bold bg-muted">
- 🌙 {nightsCount} {nightsCount === 1 ? "Noite" : "Noites"}
+  {nightsCount} {nightsCount === 1 ? "Noite" : "Noites"}
  </Badge>
  )}
  </div>
@@ -871,10 +871,10 @@ export function NewTravelContractSheet({
  </Label>
  <div className="flex flex-wrap gap-2">
  {[
- "⚡ Pix à Vista (5% de desconto)",
- "💳 Entrada de 20% + Saldo em até 10x sem juros no Cartão",
- "🤝 50% na Assinatura + 50% até 15 dias antes do Embarque",
- "📄 Boleto Bancário Faturado (Entrada + Saldo em até 6x)",
+ " Pix à Vista (5% de desconto)",
+ " Entrada de 20% + Saldo em até 10x sem juros no Cartão",
+ " 50% na Assinatura + 50% até 15 dias antes do Embarque",
+ " Boleto Bancário Faturado (Entrada + Saldo em até 6x)",
  ].map((preset) => (
  <button
  key={preset}

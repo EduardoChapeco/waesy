@@ -101,7 +101,7 @@ export function DispatchDeliveryModal({
 
   const handleShareWhatsApp = () => {
     if (!generatedLink) return;
-    const text = `🛵 *NOVA ENTREGA DISPONÍVEL*\nCliente: ${customerName}\nEndereço: ${deliveryAddress}\nTaxa do Motoboy: R$ ${deliveryFeeReais}\nPIN de Confirmação: ${confirmationPin}\n\n👉 *Acesse a rota e confirme no link:*\n${generatedLink}`;
+    const text = ` *NOVA ENTREGA DISPONÍVEL*\nCliente: ${customerName}\nEndereço: ${deliveryAddress}\nTaxa do Motoboy: R$ ${deliveryFeeReais}\nPIN de Confirmação: ${confirmationPin}\n\n *Acesse a rota e confirme no link:*\n${generatedLink}`;
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   };

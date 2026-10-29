@@ -148,7 +148,7 @@ export function OrderTimeline({ status, events = [], shippingMethod = "delivery"
               </div>
 
               {/* Step Info */}
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <p
                     className={`text-xs font-bold ${

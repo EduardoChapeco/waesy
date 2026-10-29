@@ -79,13 +79,13 @@ export function DynamicMediaChip({
  const getTextureStyle = () => {
  switch (bg_texture) {
  case "noise":
- return "bg-[radial-gradient(#00000015_1px,transparent_1px)] [background-size:8px_8px]";
+ return "bg-muted/50";
  case "dots":
- return "bg-[radial-gradient(#ffffff25_1px,transparent_1px)] [background-size:6px_6px]";
+ return "bg-muted/30";
  case "grid":
- return "bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:10px_10px]";
+ return "bg-muted/40";
  case "mesh":
- return "bg-gradient-to-tr from-primary/20 via-purple-500/10 to-amber-500/20";
+ return "bg-primary/10";
  case "glass":
  return "backdrop-blur-md bg-background/60";
  default:
@@ -128,13 +128,13 @@ export function DynamicMediaChip({
  loop
  muted
  playsInline
- className="size-full object-cover group-hover:scale-105 transition-transform duration-700"
+ className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  ) : (
  <img
  src={bg_media_url!}
  alt=""
- className="size-full object-cover group-hover:scale-105 transition-transform duration-700"
+ className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
  loading="lazy"
  />
  )}

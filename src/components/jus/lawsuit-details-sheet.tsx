@@ -68,7 +68,7 @@ export function LawsuitDetailsSheet({
  <Sheet open={open} onOpenChange={onOpenChange}>
  <SheetContent
  side="right"
- className="w-full max-w-full sm:max-w-3xl lg:max-w-4xl p-0 flex flex-col h-[100dvh] bg-background border-l border-border"
+ className="w-full max-w-full sm:max-w-3xl lg:max-w-4xl p-0 flex flex-col h-dvh bg-background border-l border-border"
  >
  {/* ── 1. CABEÇALHO DA FICHA (PADRÃO JUDIT LAPTOP VIEW) ── */}
  <div className="p-6 border-b border-border bg-card/40 space-y-4">
@@ -226,7 +226,7 @@ export function LawsuitDetailsSheet({
  {/* ── 2. CORPO COM ABAS DETALHADAS ── */}
  <div className="flex-1 overflow-y-auto no-scrollbar p-6">
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
- <TabsList className="grid w-full grid-cols-3 h-11 bg-muted/40 p-1 rounded-lg">
+ <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-11 bg-muted/40 p-1 rounded-lg">
  <TabsTrigger value="movimentacoes" className="text-xs font-bold rounded-lg gap-2">
  <Clock className="size-3.5" />
  <span>Movimentações ({movements.length})</span>

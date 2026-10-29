@@ -661,7 +661,7 @@ function StockAlertsPage() {
               Cancelar
             </Button>
             <Button
-              variant="default"
+              variant="outline"
               size="sm"
               onClick={handleConfirmCustomRefill}
               disabled={isSubmittingCustom}

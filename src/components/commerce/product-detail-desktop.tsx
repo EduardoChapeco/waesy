@@ -81,7 +81,7 @@ export function ProductDetailDesktop({
       </nav>
 
       {/* ── GRID PRINCIPAL SPLIT 12 COLUNAS ── */}
-      <div className="grid grid-cols-12 gap-10 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
         {/* ══ COLUNA ESQUERDA (7 Colunas): Mídia & Descrição ══ */}
         <div className="col-span-7 space-y-6">
           {/* Mídia & Galeria */}

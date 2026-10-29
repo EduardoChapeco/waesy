@@ -544,7 +544,7 @@ function FiscalNFePage() {
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label className="text-xs font-medium">Tipo de Documento Fiscal</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setInvoiceType("nfe")}

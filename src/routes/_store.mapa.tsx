@@ -167,7 +167,7 @@ function FullscreenMapaPage() {
  }, []);
 
  return (
- <div className="relative w-full h-[100dvh] overflow-hidden bg-background">
+ <div className="relative w-full h-dvh overflow-hidden bg-background">
  {/* ── 1. MAPA MAPLIBRE FULL-SCREEN (BACKGROUND LAYER 100% INSET-0) ── */}
  <div className="absolute inset-0 size-full z-0">
  <MapLibreCanvas

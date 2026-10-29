@@ -446,7 +446,7 @@ function AdminUsuariosPage() {
       {/* Ferramenta de Auditoria Global de Identificadores (@) & Propriedade Intelectual */}
       <div className="bg-card rounded-lg border p-4 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <AtSign className="size-4 text-primary" />
               <span>Auditoria Global de Identificadores (@) & Propriedade Intelectual</span>

@@ -49,9 +49,9 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
           className="w-full h-full object-cover object-center transform scale-102"
         />
         {/* Gradiente escuro a partir dos 50% centrais até a base */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070b12] via-[#070b12]/60 to-transparent" />
+        <div className="absolute inset-0 bg-slate-950/80" />
         {/* Vinheta superior suave para proteção da safe zone */}
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-black/50" />
       </div>
 
       {/* ── 2. Conteúdo em Camadas (Safe Zones Instagram) ── */}

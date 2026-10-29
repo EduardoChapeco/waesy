@@ -71,11 +71,24 @@ describe("AccountSwitcherDrawer & Global Drawer Store", () => {
     expect(html).toContain("Waesy Go");
     expect(html).toContain("Criadores");
 
-    // Quick services
-    expect(html).toContain("Carteira e Finanças");
-    expect(html).toContain("Minhas Compras");
-    expect(html).toContain("Endereços Salvos");
-    expect(html).toContain("Segurança e Senha");
+    // TetrisGrid / Grade Modular Services & shortcuts
+    expect(html).toContain("Carteira &amp; Saldo");
+    expect(html).toContain("Pedidos &amp; Compras");
+    expect(html).toContain("Clube &amp; Cupons");
+    expect(html).toContain("Mensagens");
+    expect(html).toContain("Favoritos");
+    expect(html).toContain("Endereços");
+    expect(html).toContain("Anúncios");
+    expect(html).toContain("Ingressos");
+    expect(html).toContain("Viagens");
+    expect(html).toContain("Agendas");
+    expect(html).toContain("Currículo");
+    expect(html).toContain("Tokens WZ");
+    expect(html).toContain("Carnês");
+    expect(html).toContain("Gift Cards");
+    expect(html).toContain("Trocas");
+    expect(html).toContain("Segurança &amp; Senha");
+    expect(html).toContain("Verificação Civil");
     expect(html).toContain("Central de Ajuda");
     expect(html).toContain("Sair da Conta");
   });

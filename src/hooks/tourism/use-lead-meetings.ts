@@ -109,7 +109,7 @@ export function useLeadMeetings(
       dateStyle: "full",
       timeStyle: "short",
     });
-    const text = `📅 *Convite de Reunião: ${meeting.title}*\nOlá ${leadName}!\nConfirmamos nossa reunião para:\n🗓 *${dateFormatted}* (${meeting.duration_minutes || 30} min)\n${meeting.description ? `\n📝 Detalhes: ${meeting.description}` : ""}\n\nAguardamos você!`;
+    const text = ` *Convite de Reunião: ${meeting.title}*\nOlá ${leadName}!\nConfirmamos nossa reunião para:\n *${dateFormatted}* (${meeting.duration_minutes || 30} min)\n${meeting.description ? `\n Detalhes: ${meeting.description}` : ""}\n\nAguardamos você!`;
     navigator.clipboard.writeText(text);
     toast.success("Convite copiado para a área de transferência!");
   }

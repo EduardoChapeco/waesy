@@ -192,6 +192,13 @@ function ClassifiedDetailPage() {
           classified={classified}
           isOwner={detail.effectiveIsOwner}
           onEdit={detail.handleEdit}
+          onOpenBookingModal={() => detail.setBookingOpen(true)}
+          onOpenProposalModal={() => {
+            requireAuth({
+              actionContext: "Enviar proposta para este produto",
+              onSuccess: () => detail.setProposalOpen(true),
+            });
+          }}
         />
         {dialogs}
         {classified?.ai_agent_enabled && (
