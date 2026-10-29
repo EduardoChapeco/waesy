@@ -1,10 +1,19 @@
 import { useState, useEffect } from "react";
-import { ShieldCheck, Check, AlertCircle, Save, Loader2 } from "lucide-react";
+import { ShieldCheck, Check, AlertCircle, Save, Loader2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getRolePermissionsMatrix, saveRolePermissionsMatrix } from "@/services/services-erp.functions";
+
+export const AVAILABLE_ROLES = [
+  { key: "manager", name: "Gerente / Administrador" },
+  { key: "seller", name: "Vendedor / Comercial" },
+  { key: "operator", name: "Profissional / Atendente" },
+  { key: "support", name: "Suporte / SAC" },
+  { key: "stockkeeper", name: "Estoquista" },
+];
 
 export interface PermissionModuleItem {
   key: string;
@@ -116,11 +125,16 @@ export const MODULE_PERMISSIONS_CATALOG: PermissionModuleItem[] = [
 ];
 
 export interface RolePermissionsMatrixProps {
-  roleKey: string;
-  roleName: string;
+  roleKey?: string;
+  roleName?: string;
+  storeId?: string;
 }
 
-export function RolePermissionsMatrix({ roleKey, roleName }: RolePermissionsMatrixProps) {
+export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initialRoleName }: RolePermissionsMatrixProps) {
+  const [selectedRoleKey, setSelectedRoleKey] = useState<string>(initialRoleKey || "manager");
+  const currentRole = AVAILABLE_ROLES.find((r) => r.key === selectedRoleKey) || { key: selectedRoleKey, name: initialRoleName || selectedRoleKey };
+  const roleKey = currentRole.key;
+  const roleName = currentRole.name;
   const [permissions, setPermissions] = useState<Record<string, Record<string, boolean>>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -188,16 +202,33 @@ export function RolePermissionsMatrix({ roleKey, roleName }: RolePermissionsMatr
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <div>
           <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            Matriz de Permissões: {roleName}
+            <ShieldCheck className="size-5 text-primary" />
+            <span>Matriz de Permissões por Cargo</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
             Defina o acesso visual e funcional por setor com comandos táteis em linha de 44px.
           </p>
         </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Cargo:</span>
+            <Select value={selectedRoleKey} onValueChange={(val) => setSelectedRoleKey(val)}>
+              <SelectTrigger className="h-11 min-h-11 w-52 rounded-lg text-xs font-bold">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AVAILABLE_ROLES.map((r) => (
+                  <SelectItem key={r.key} value={r.key} className="text-xs">
+                    {r.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         <Button
           type="button"
           onClick={handleSave}

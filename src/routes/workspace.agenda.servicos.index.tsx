@@ -2,9 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench, Star } from "lucide-react";
+import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench, Star, HelpCircle, Percent, DollarSign, Calendar, Sparkles, MessageSquare } from "lucide-react";
 import { ServiceSearchDialog } from "@/components/admin/services/service-search-dialog";
 import type { OnDemandMarketplaceService } from "@/lib/data/services-catalog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -27,26 +29,40 @@ export const Route = createFileRoute("/workspace/agenda/servicos/")({
 });
 
 interface ServiceFormState {
- id?: string;
- title: string;
- description: string;
- duration_minutes: number;
- price_reais: string;
- category: string;
- gender_target: string;
- image_url: string | null;
- status: "active" | "archived";
+  id?: string;
+  title: string;
+  description: string;
+  duration_minutes: number;
+  price_reais: string;
+  category: string;
+  gender_target: string;
+  image_url: string | null;
+  status: "active" | "archived";
+  price_type: "fixed" | "starting_at" | "on_request";
+  additional_cost_reais: string;
+  default_commission_type: "percentage" | "fixed";
+  default_commission_value: string;
+  return_days: number;
+  pre_care_notes: string;
+  post_care_notes: string;
 }
 
 const INITIAL_FORM: ServiceFormState = {
- title: "",
- description: "",
- duration_minutes: 30,
- price_reais: "50,00",
- category: "geral",
- gender_target: "todos",
- image_url: null,
- status: "active",
+  title: "",
+  description: "",
+  duration_minutes: 30,
+  price_reais: "50,00",
+  category: "geral",
+  gender_target: "todos",
+  image_url: null,
+  status: "active",
+  price_type: "fixed",
+  additional_cost_reais: "0,00",
+  default_commission_type: "percentage",
+  default_commission_value: "30",
+  return_days: 30,
+  pre_care_notes: "",
+  post_care_notes: "",
 };
 
 function ServicesIndexPage() {
@@ -110,35 +126,49 @@ function ServicesIndexPage() {
  setIsSheetOpen(true);
  };
 
- const handleOpenEdit = (service: any) => {
- setForm({
- id: service.id,
- title: service.title || "",
- description: service.description || "",
- duration_minutes: service.duration_minutes || 30,
- price_reais: (Number(service.price_cents || 0) / 100).toFixed(2).replace(".", ","),
- category: service.category || "geral",
- gender_target: service.gender_target || "todos",
- image_url: service.image_url || null,
- status: service.status || "active",
- });
- setIsSheetOpen(true);
- };
+  const handleOpenEdit = (service: any) => {
+    setForm({
+      id: service.id,
+      title: service.title || "",
+      description: service.description || "",
+      duration_minutes: service.duration_minutes || 30,
+      price_reais: (Number(service.price_cents || 0) / 100).toFixed(2).replace(".", ","),
+      category: service.category || "geral",
+      gender_target: service.gender_target || "todos",
+      image_url: service.image_url || null,
+      status: service.status || "active",
+      price_type: service.price_type || "fixed",
+      additional_cost_reais: (Number(service.additional_cost_cents || 0) / 100).toFixed(2).replace(".", ","),
+      default_commission_type: service.default_commission_type || "percentage",
+      default_commission_value: String(service.default_commission_value || "30"),
+      return_days: service.return_days || 30,
+      pre_care_notes: service.guidelines || service.pre_care_notes || "",
+      post_care_notes: service.cancellation_policy || service.post_care_notes || "",
+    });
+    setIsSheetOpen(true);
+  };
 
- const handleSelectOnDemandService = (srv: OnDemandMarketplaceService) => {
-   setForm({
-     title: srv.name,
-     description: srv.description,
-     duration_minutes: srv.estimated_delivery_days === 1 ? 60 : 120,
-     price_reais: (srv.estimated_avg_price_cents / 100).toFixed(2).replace(".", ","),
-     category: srv.category.toLowerCase().includes("ti") || srv.category.toLowerCase().includes("tec") ? "tecnologia" : "geral",
-     gender_target: "todos",
-     image_url: null,
-     status: "active",
-   });
-   setIsSheetOpen(true);
-   toast.success(`Serviço "${srv.name}" importado. Todos os campos estão disponíveis para edição.`);
- };
+  const handleSelectOnDemandService = (srv: OnDemandMarketplaceService) => {
+    setForm({
+      title: srv.name,
+      description: srv.description,
+      duration_minutes: srv.estimated_delivery_days === 1 ? 60 : 120,
+      price_reais: (srv.estimated_avg_price_cents / 100).toFixed(2).replace(".", ","),
+      category: srv.category.toLowerCase().includes("ti") || srv.category.toLowerCase().includes("tec") ? "tecnologia" : "geral",
+      gender_target: "todos",
+      image_url: null,
+      status: "active",
+      price_type: "fixed",
+      additional_cost_reais: "0,00",
+      default_commission_type: "percentage",
+      default_commission_value: "30",
+      return_days: 30,
+      pre_care_notes: "",
+      post_care_notes: "",
+    });
+    setIsSheetOpen(true);
+    toast.success(`Serviço "${srv.name}" importado. Todos os campos estão disponíveis para edição.`);
+  };
 
  return (
  <div className="space-y-6 max-w-6xl animate-in fade-in duration-200">

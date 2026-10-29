@@ -31,22 +31,46 @@ import { formatMoney } from "@/lib/money";
 import { DigitalSignatureCanvas } from "./DigitalSignatureCanvas";
 
 export interface CustomerDrawer360Props {
-  isOpen: boolean;
-  onClose: () => void;
-  customer: any;
+  // Shape A (workspace.clientes.index.tsx)
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  customerId?: string;
+  storeId?: string;
+  customerName?: string;
+  customerDoc?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+
+  // Shape B (direct object)
+  isOpen?: boolean;
+  onClose?: () => void;
+  customer?: any;
   canViewPhones?: boolean;
 }
 
-export function CustomerDrawer360({
-  isOpen,
-  onClose,
-  customer,
-  canViewPhones = true,
-}: CustomerDrawer360Props) {
+export function CustomerDrawer360(props: CustomerDrawer360Props) {
+  const { canViewPhones = true } = props;
+  const isSheetOpen = props.open ?? props.isOpen ?? false;
+  const handleClose = () => {
+    props.onOpenChange?.(false);
+    props.onClose?.();
+  };
+
+  const customer = props.customer || (props.customerId || props.customerName ? {
+    id: props.customerId,
+    name: props.customerName,
+    fullName: props.customerName,
+    document: props.customerDoc,
+    phone: props.customerPhone,
+    email: props.customerEmail,
+  } : null);
+
   const [activeTab, setActiveTab] = useState<string>("painel");
   const [anamnesisSignature, setAnamnesisSignature] = useState<string | null>(null);
 
-  if (!customer) return null;
+  if (!isSheetOpen || !customer) return null;
+
+  const displayName = customer.fullName || customer.name || "Cliente";
 
   const maskPhone = (phone: string) => {
     if (!phone) return "Não informado";
@@ -72,7 +96,7 @@ export function CustomerDrawer360({
   ];
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Sheet open={isSheetOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent
         side="right"
         className="w-full sm:max-w-3xl p-0 flex flex-col bg-background border-l border-border"
@@ -81,11 +105,11 @@ export function CustomerDrawer360({
         <div className="border-b border-border p-6 flex items-start justify-between bg-card">
           <div className="flex items-center gap-4">
             <div className="h-14 w-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg select-none">
-              {customer.name?.slice(0, 2).toUpperCase() || "CL"}
+              {displayName.slice(0, 2).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-foreground">{customer.name}</h2>
+                <h2 className="text-lg font-bold text-foreground">{displayName}</h2>
                 {customer.nickname && (
                   <Badge variant="secondary" className="text-xs">
                     ({customer.nickname})
@@ -236,7 +260,7 @@ export function CustomerDrawer360({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Nome Completo</Label>
-                  <Input defaultValue={customer.name} className="h-11" />
+                  <Input defaultValue={displayName} className="h-11" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Apelido</Label>

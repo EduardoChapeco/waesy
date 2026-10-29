@@ -20,6 +20,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Textarea } from "@/components/ui/textarea";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { AgendaHeatmap } from "@/components/workspace/AgendaHeatmap";
 
 export const Route = createFileRoute("/workspace/agenda/")({
   head: () => ({ meta: [{ title: "Agenda | Workspace Waesy" }] }),
@@ -112,6 +113,7 @@ function ClinicalRecordDrawer({
 function AdminAppointmentsPage() {
  const queryClient = useQueryClient();
  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+ const [viewMode, setViewMode] = useState<"daily" | "heatmap">("daily");
  const [selectedAppt, setSelectedAppt] = useState<{ id: string; name: string } | null>(null);
  const [companionCardOpen, setCompanionCardOpen] = useState(false);
  const [companionData, setCompanionData] = useState<any>(null);
@@ -319,7 +321,27 @@ function AdminAppointmentsPage() {
  eyebrow="Atendimentos"
  title="Agenda"
  actions={
- <div className="flex items-center gap-2">
+ <div className="flex items-center gap-2 flex-wrap">
+ <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg">
+ <Button
+ size="sm"
+ variant={viewMode === "daily" ? "default" : "ghost"}
+ onClick={() => setViewMode("daily")}
+ className="h-9 px-3 rounded-md text-xs font-bold gap-1.5 cursor-pointer"
+ >
+ <CalendarIcon className="size-3.5" />
+ <span>Diário</span>
+ </Button>
+ <Button
+ size="sm"
+ variant={viewMode === "heatmap" ? "default" : "ghost"}
+ onClick={() => setViewMode("heatmap")}
+ className="h-9 px-3 rounded-md text-xs font-bold gap-1.5 cursor-pointer"
+ >
+ <Clock className="size-3.5" />
+ <span>Heatmap</span>
+ </Button>
+ </div>
  <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 min-h-11">
  <Link to="/workspace/pacotes">
  <Ticket className="size-3.5 text-primary" />
@@ -336,6 +358,18 @@ function AdminAppointmentsPage() {
  }
  />
 
+      {viewMode === "heatmap" ? (
+        <div className="space-y-4">
+          <AgendaHeatmap
+            appointments={appointments}
+            onSlotClick={(dateStr) => {
+              setSelectedDate(new Date(dateStr));
+              setViewMode("daily");
+            }}
+          />
+        </div>
+      ) : (
+        <>
  <div className="flex items-center justify-between gap-2 p-3 bg-card rounded-lg ">
  <Button
  variant="ghost"
@@ -588,6 +622,7 @@ function AdminAppointmentsPage() {
  </div>
  </div>
  )}
+ </>
 
  {/* ── Dossiê Completo do Agendamento (DEC-275) ── */}
       <BookingDossierModal
