@@ -1024,7 +1024,7 @@ function AdminMasterHomeEditorPage() {
               {editingItem ? "Editar Card de Mídia" : "Novo Card de Mídia"}
             </DialogTitle>
             <DialogDescription>
-              Faça upload direto de mídia para o bucket Supabase ou informe a URL da imagem.
+              Faça upload direto de mídia para o bucket Supabase Storage com enquadramento adaptativo.
             </DialogDescription>
           </DialogHeader>
 
