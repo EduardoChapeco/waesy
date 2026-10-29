@@ -2290,6 +2290,107 @@ function WorkspaceComercialPage() {
         isOpen={isTourOpen}
         onOpenChange={setIsTourOpen}
       />
+
+      {/* ── Modal Canônico de Agendamento de Reunião com o Lead (lead_meetings) ── */}
+      <Dialog open={meetingModalOpen} onOpenChange={setMeetingModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 rounded-lg bg-card border border-border/70 space-y-4">
+          <DialogHeader className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Calendar className="size-4 text-primary" />
+              <DialogTitle className="text-base font-bold text-foreground">
+                Agendar Reunião com Lead
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              A reunião será registrada no histórico de atividades e na agenda do vendedor responsável.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleConfirmScheduleMeeting} className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold">Título do Compromisso</Label>
+              <Input
+                value={meetingTitle}
+                onChange={(e) => setMeetingTitle(e.target.value)}
+                placeholder="Ex: Alinhamento de Proposta de Pacote"
+                required
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">Data e Hora</Label>
+                <Input
+                  type="datetime-local"
+                  value={meetingDate}
+                  onChange={(e) => setMeetingDate(e.target.value)}
+                  required
+                  className="h-11 min-h-11 rounded-lg text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">Formato</Label>
+                <Select value={meetingType} onValueChange={(val: any) => setMeetingType(val)}>
+                  <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="call">Ligação Telefônica</SelectItem>
+                    <SelectItem value="video">Vídeoconferência (Meet / Zoom)</SelectItem>
+                    <SelectItem value="in_person">Presencial na Agência</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold">Duração Estimada</Label>
+              <Select value={String(meetingDuration)} onValueChange={(val) => setMeetingDuration(Number(val))}>
+                <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">15 minutos (Alinhamento rápido)</SelectItem>
+                  <SelectItem value="30">30 minutos (Padrão)</SelectItem>
+                  <SelectItem value="45">45 minutos (Apresentação completa)</SelectItem>
+                  <SelectItem value="60">60 minutos (Consultoria / Fechamento)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold">Pauta / Observações (Opcional)</Label>
+              <Textarea
+                value={meetingNotes}
+                onChange={(e) => setMeetingNotes(e.target.value)}
+                placeholder="Ex: Apresentar opções de hotel em Gramado e condições parceladas."
+                className="min-h-20 text-xs rounded-lg resize-none"
+              />
+            </div>
+
+            <DialogFooter className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setMeetingModalOpen(false)}
+                className="h-11 min-h-11 rounded-lg text-xs font-semibold"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSchedulingMeeting || !meetingDate}
+                className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 px-5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Calendar className="size-4" />
+                <span>{isSchedulingMeeting ? "Agendando..." : "Confirmar Agendamento"}</span>
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
