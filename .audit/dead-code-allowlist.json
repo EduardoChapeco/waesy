@@ -75,8 +75,10 @@
     "src/components/commerce/quick-create-modal.tsx": "modal reutilizável de criação rápida de catálogo comercial",
     "src/components/commerce/slim-action-banner.tsx": "banner compacto reutilizável de call-to-action comercial",
     "src/components/home/CuratedVerticalRails.tsx": "trilhos verticais curados preservados para composição de vitrines",
-    "src/components/home/IFoodHomeView.tsx": "visão alternativa standalone SuperApp preservada como preset de vitrine",
     "src/components/home/TopGreetingSearchBar.tsx": "barra de saudação e busca reutilizável para cabeçalhos móveis",
-    "src/components/news/article-ad-config-modal.tsx": "modal reutilizável de configuração publicitária de artigos"
+    "src/components/news/article-ad-config-modal.tsx": "modal reutilizável de configuração publicitária de artigos",
+    "src/components/admin/builder/PhotoStudioModal.tsx": "modal de estúdio fotográfico e recorte proporcional para o Omni Builder",
+    "src/components/news/economic-indicators-bar.tsx": "barra de indicadores econômicos e cotações para o portal de notícias",
+    "src/components/tourism/checkout/TravelerVerificationFlow.tsx": "fluxo de verificação de identidade e documentação de viajantes"
   }
 }
