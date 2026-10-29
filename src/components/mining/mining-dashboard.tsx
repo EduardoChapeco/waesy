@@ -7,6 +7,7 @@ import { Database, RefreshCw, Play, Clock, Building2, Rss, TrendingUp, Search, P
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -2160,12 +2161,14 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">URL da Imagem</label>
-              <Input
+              <label className="text-xs font-medium text-foreground">Foto do Produto (Upload / Storage)</label>
+              <ImageUpload
                 value={editProductImage}
-                onChange={(e) => setEditProductImage(e.target.value)}
-                placeholder="https://..."
-                className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-mono"
+                onChange={(url) => setEditProductImage(url)}
+                onRemove={() => setEditProductImage("")}
+                bucket="classifieds"
+                aspectPreset="square"
+                helperText="Upload ou visualização da imagem do produto minerado"
               />
             </div>
 
