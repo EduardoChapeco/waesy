@@ -141,7 +141,7 @@ export const reconcileExternalIFoodOrder = createServerFn({ method: "POST" })
 
     // 1. Obter candidatos de clientes da loja a partir de conversas recentes de chat
     const { data: conversations } = await supabase
-      .from("chat_conversations")
+      .from("chat_threads")
       .select("id, customer_id, updated_at")
       .eq("store_id", storeId)
       .order("updated_at", { ascending: false })

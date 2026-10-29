@@ -22,7 +22,7 @@ import {
 
 const mockDb: Record<string, any[]> = {
   integration_credentials: [],
-  chat_conversations: [],
+  chat_threads: [],
   profiles: [],
   chat_messages: [],
   audit_logs: [],
@@ -196,7 +196,7 @@ describe("BFF Server Functions: iFood Reconciliation & Central de Integrações"
 
   it("reconcilia pedido externo e gera mensagem de sistema no chat para casamento de alta confiança", async () => {
     // Configura conversa e perfil do cliente
-    mockDb.chat_conversations.push({
+    mockDb.chat_threads.push({
       id: MOCK_CONV_ID,
       store_id: MOCK_STORE_ID,
       customer_id: MOCK_CUST_ID,
