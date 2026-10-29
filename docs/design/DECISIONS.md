@@ -6831,3 +6831,16 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   6. **Hardening RLS em Estúdio e Custos de Turismo:** Migração `20261029170000_zero_trust_rls_hardening.sql` blindando `studio_projects`, `studio_templates`, `group_tour_costs` e `tourism_vouchers` contra queries públicas anônimas.
 - **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.25, B.26, B.31 e B.33.
 - **Consequências:** Resiliência em tempo real na operação corporativa, emissão fiscal à prova de falhas em pedidos promocionais, proteção estrita de dados de estúdio e fidelidade de preços no checkout de supermercado.
+
+## DEC-376: Saneamento Global de RLS (Estúdio & Eventos), Anti-Fake de Mídias e Telemetria em Vitrines
+
+- **Data:** 2026-10-29
+- **ID da Decisão:** DEC-376
+- **Contexto:** Auditoria profunda do estado real do ecossistema Waesy confrontando banco de dados, BFF, storage e rotas de vitrine/workspace contra regras de segurança Zero-Trust, erradicação de fallbacks sintéticos e garantia de não-regressão visual de CI.
+- **Decisão Adotada:**
+  1. **Blindagem RLS de Estúdio e Eventos (MF-01):** Migração `20261029170000_zero_trust_rls_hardening.sql` revogando políticas permissivas `USING (true)` em `studio_projects`, `studio_templates`, `eventos_quadros`, `eventos_quadros_colunas`, `eventos_tarefas`, `eventos_orcamentos`, `eventos_setores`, `eventos_parceiros`, `eventos_lineup` e `eventos_documentos`, impondo isolamento estrito por `store_id` e perfil autenticado.
+  2. **Erradicação de Fallbacks Sintéticos em Eventos (MF-04):** Remoção de `FALLBACK_EVENT_COVER` com SVGs falsos em `EventHorizontalCard.tsx` e `EventSpotlightCard.tsx`, substituídos por renderização honesta com ícone e fundo semântico neutro quando não há imagem cadastrada.
+  3. **Telemetria de Erros em Vitrines Públicas (MF-04):** Substituição de 15 blocos `.catch(() => [])` silenciosos no loader de `_store.index.tsx` pelo wrapper defensivo `queryWithTelemetry`, registrando tabela, contrato e mensagem de erro estruturada.
+  4. **Conformidade Estrita no Design Lint (MF-05):** Correção de classes de acessibilidade a movimento reduzido (`motion-reduce:animate-none`) em `RolePermissionsMatrix.tsx` e `FiscalActionCluster.tsx`, responsividade de abas em `workspace.agenda.servicos.index.tsx` e aprovação com Exit Code 0 na catraca de CI (`node scripts/design-lint.mjs --ratchet`).
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.25, B.31 e B.33.
+- **Consequências:** Zero tabelas de estúdio ou eventos expostas sem tenant boundary, vitrine pública com telemetria rastreável, cartões de eventos limpos sem artefatos gráficos falsos e débito visual aprovado sem regressão.

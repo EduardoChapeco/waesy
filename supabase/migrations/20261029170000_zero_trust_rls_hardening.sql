@@ -70,25 +70,19 @@ DROP POLICY IF EXISTS "studio_templates_delete_admin" ON public.studio_templates
 
 CREATE POLICY "studio_templates_public_select" ON public.studio_templates
   FOR SELECT TO authenticated
-  USING (is_active = true OR is_system = true);
+  USING (true);
 
 CREATE POLICY "studio_templates_admin_insert" ON public.studio_templates
   FOR INSERT TO authenticated
-  WITH CHECK (
-    store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid() AND role IN ('owner', 'admin'))
-  );
+  WITH CHECK (public.is_platform_admin());
 
 CREATE POLICY "studio_templates_admin_update" ON public.studio_templates
   FOR UPDATE TO authenticated
-  USING (
-    store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid() AND role IN ('owner', 'admin'))
-  );
+  USING (public.is_platform_admin());
 
 CREATE POLICY "studio_templates_admin_delete" ON public.studio_templates
   FOR DELETE TO authenticated
-  USING (
-    store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid() AND role IN ('owner', 'admin'))
-  );
+  USING (public.is_platform_admin());
 
 -- 2. EVENTOS ENTERPRISE (Isolamento por Evento e Tenant)
 -- Remove políticas genéricas USING (true) para authenticated
@@ -110,7 +104,6 @@ CREATE POLICY "eventos_quadros_tenant" ON public.eventos_quadros
       WHERE e.id = eventos_quadros.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   )
@@ -120,7 +113,6 @@ CREATE POLICY "eventos_quadros_tenant" ON public.eventos_quadros
       WHERE e.id = eventos_quadros.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   );
@@ -134,7 +126,6 @@ CREATE POLICY "eventos_quadros_colunas_tenant" ON public.eventos_quadros_colunas
       WHERE q.id = eventos_quadros_colunas.quadro_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   )
@@ -145,7 +136,6 @@ CREATE POLICY "eventos_quadros_colunas_tenant" ON public.eventos_quadros_colunas
       WHERE q.id = eventos_quadros_colunas.quadro_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   );
@@ -160,7 +150,6 @@ CREATE POLICY "eventos_tarefas_tenant" ON public.eventos_tarefas
       WHERE c.id = eventos_tarefas.coluna_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
         OR eventos_tarefas.responsavel_id = auth.uid()
       )
     )
@@ -173,7 +162,6 @@ CREATE POLICY "eventos_tarefas_tenant" ON public.eventos_tarefas
       WHERE c.id = eventos_tarefas.coluna_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   );
@@ -186,7 +174,6 @@ CREATE POLICY "eventos_orcamentos_tenant" ON public.eventos_orcamentos
       WHERE e.id = eventos_orcamentos.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   )
@@ -196,7 +183,6 @@ CREATE POLICY "eventos_orcamentos_tenant" ON public.eventos_orcamentos
       WHERE e.id = eventos_orcamentos.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   );
@@ -209,7 +195,6 @@ CREATE POLICY "eventos_setores_tenant" ON public.eventos_setores
       WHERE e.id = eventos_setores.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   )
@@ -219,7 +204,6 @@ CREATE POLICY "eventos_setores_tenant" ON public.eventos_setores
       WHERE e.id = eventos_setores.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   );
@@ -232,7 +216,6 @@ CREATE POLICY "eventos_parceiros_tenant" ON public.eventos_parceiros
       WHERE e.id = eventos_parceiros.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   )
@@ -242,7 +225,6 @@ CREATE POLICY "eventos_parceiros_tenant" ON public.eventos_parceiros
       WHERE e.id = eventos_parceiros.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   );
@@ -255,7 +237,6 @@ CREATE POLICY "eventos_lineup_tenant" ON public.eventos_lineup
       WHERE e.id = eventos_lineup.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   )
@@ -265,7 +246,6 @@ CREATE POLICY "eventos_lineup_tenant" ON public.eventos_lineup
       WHERE e.id = eventos_lineup.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   );
@@ -278,7 +258,6 @@ CREATE POLICY "eventos_documentos_tenant" ON public.eventos_documentos
       WHERE e.id = eventos_documentos.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   )
@@ -288,7 +267,6 @@ CREATE POLICY "eventos_documentos_tenant" ON public.eventos_documentos
       WHERE e.id = eventos_documentos.evento_id
       AND (
         e.store_id IN (SELECT store_id FROM public.workspace_members WHERE profile_id = auth.uid())
-        OR (e.organizer_profile_id = auth.uid())
       )
     )
   );

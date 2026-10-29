@@ -389,6 +389,7 @@ import { Route as StoreContaPedidosIndexRouteImport } from './routes/_store.cont
 import { Route as StoreContaPedidosIdRouteImport } from './routes/_store.conta.pedidos.$id'
 import { Route as StoreLojaSlugSenhaRouteImport } from './routes/_store.loja.$slug.senha'
 import { Route as StorePedidoPublicTokenConfirmacaoRouteImport } from './routes/_store.pedido.$publicToken.confirmacao'
+import { Route as StoreTurismoAluguelCarrosIdRouteImport } from './routes/_store.turismo.aluguel-carros.$id'
 import { Route as StoreTurismoDestinosSlugRouteImport } from './routes/_store.turismo.destinos.$slug'
 import { Route as StoreTurismoHoteisSlugRouteImport } from './routes/_store.turismo.hoteis.$slug'
 import { Route as AdminMasterSegurancaCertificadosIdRouteImport } from './routes/admin-master.seguranca.certificados.$id'
@@ -2431,6 +2432,12 @@ const StorePedidoPublicTokenConfirmacaoRoute =
     path: '/pedido/$publicToken/confirmacao',
     getParentRoute: () => StoreRoute,
   } as any)
+const StoreTurismoAluguelCarrosIdRoute =
+  StoreTurismoAluguelCarrosIdRouteImport.update({
+    id: '/aluguel-carros/$id',
+    path: '/aluguel-carros/$id',
+    getParentRoute: () => StoreTurismoRoute,
+  } as any)
 const StoreTurismoDestinosSlugRoute =
   StoreTurismoDestinosSlugRouteImport.update({
     id: '/destinos/$slug',
@@ -3085,6 +3092,7 @@ export interface FileRoutesByFullPath {
   '/conta/pedidos/$id': typeof StoreContaPedidosIdRoute
   '/loja/$slug/senha': typeof StoreLojaSlugSenhaRoute
   '/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
+  '/turismo/aluguel-carros/$id': typeof StoreTurismoAluguelCarrosIdRoute
   '/turismo/destinos/$slug': typeof StoreTurismoDestinosSlugRoute
   '/turismo/hoteis/$slug': typeof StoreTurismoHoteisSlugRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
@@ -3504,6 +3512,7 @@ export interface FileRoutesByTo {
   '/conta/pedidos/$id': typeof StoreContaPedidosIdRoute
   '/loja/$slug/senha': typeof StoreLojaSlugSenhaRoute
   '/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
+  '/turismo/aluguel-carros/$id': typeof StoreTurismoAluguelCarrosIdRoute
   '/turismo/destinos/$slug': typeof StoreTurismoDestinosSlugRoute
   '/turismo/hoteis/$slug': typeof StoreTurismoHoteisSlugRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
@@ -3934,6 +3943,7 @@ export interface FileRoutesById {
   '/_store/conta/pedidos/$id': typeof StoreContaPedidosIdRoute
   '/_store/loja/$slug/senha': typeof StoreLojaSlugSenhaRoute
   '/_store/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
+  '/_store/turismo/aluguel-carros/$id': typeof StoreTurismoAluguelCarrosIdRoute
   '/_store/turismo/destinos/$slug': typeof StoreTurismoDestinosSlugRoute
   '/_store/turismo/hoteis/$slug': typeof StoreTurismoHoteisSlugRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
@@ -4364,6 +4374,7 @@ export interface FileRouteTypes {
     | '/conta/pedidos/$id'
     | '/loja/$slug/senha'
     | '/pedido/$publicToken/confirmacao'
+    | '/turismo/aluguel-carros/$id'
     | '/turismo/destinos/$slug'
     | '/turismo/hoteis/$slug'
     | '/admin-master/seguranca/certificados/$id'
@@ -4783,6 +4794,7 @@ export interface FileRouteTypes {
     | '/conta/pedidos/$id'
     | '/loja/$slug/senha'
     | '/pedido/$publicToken/confirmacao'
+    | '/turismo/aluguel-carros/$id'
     | '/turismo/destinos/$slug'
     | '/turismo/hoteis/$slug'
     | '/admin-master/seguranca/certificados/$id'
@@ -5212,6 +5224,7 @@ export interface FileRouteTypes {
     | '/_store/conta/pedidos/$id'
     | '/_store/loja/$slug/senha'
     | '/_store/pedido/$publicToken/confirmacao'
+    | '/_store/turismo/aluguel-carros/$id'
     | '/_store/turismo/destinos/$slug'
     | '/_store/turismo/hoteis/$slug'
     | '/admin-master/seguranca/certificados/$id'
@@ -7977,6 +7990,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StorePedidoPublicTokenConfirmacaoRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/turismo/aluguel-carros/$id': {
+      id: '/_store/turismo/aluguel-carros/$id'
+      path: '/aluguel-carros/$id'
+      fullPath: '/turismo/aluguel-carros/$id'
+      preLoaderRoute: typeof StoreTurismoAluguelCarrosIdRouteImport
+      parentRoute: typeof StoreTurismoRoute
+    }
     '/_store/turismo/destinos/$slug': {
       id: '/_store/turismo/destinos/$slug'
       path: '/destinos/$slug'
@@ -8474,6 +8494,7 @@ const StoreEmpregosRouteWithChildren = StoreEmpregosRoute._addFileChildren(
 interface StoreTurismoRouteChildren {
   StoreTurismoIdRoute: typeof StoreTurismoIdRoute
   StoreTurismoIndexRoute: typeof StoreTurismoIndexRoute
+  StoreTurismoAluguelCarrosIdRoute: typeof StoreTurismoAluguelCarrosIdRoute
   StoreTurismoDestinosSlugRoute: typeof StoreTurismoDestinosSlugRoute
   StoreTurismoHoteisSlugRoute: typeof StoreTurismoHoteisSlugRoute
 }
@@ -8481,6 +8502,7 @@ interface StoreTurismoRouteChildren {
 const StoreTurismoRouteChildren: StoreTurismoRouteChildren = {
   StoreTurismoIdRoute: StoreTurismoIdRoute,
   StoreTurismoIndexRoute: StoreTurismoIndexRoute,
+  StoreTurismoAluguelCarrosIdRoute: StoreTurismoAluguelCarrosIdRoute,
   StoreTurismoDestinosSlugRoute: StoreTurismoDestinosSlugRoute,
   StoreTurismoHoteisSlugRoute: StoreTurismoHoteisSlugRoute,
 }

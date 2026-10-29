@@ -295,7 +295,7 @@ function ServicesIndexPage() {
  <TooltipProvider delayDuration={200}>
  <div className="space-y-4 p-1 pb-16">
  <Tabs defaultValue="cadastro" className="w-full">
- <TabsList className="grid grid-cols-3 max-w-md h-11 p-1 bg-muted/60 rounded-lg mb-4">
+ <TabsList className="grid grid-cols-1 sm:grid-cols-3 max-w-md h-auto sm:h-11 p-1 bg-muted/60 rounded-lg mb-4">
  <TabsTrigger value="cadastro" className="rounded-lg font-bold text-xs">
  Cadastro
  </TabsTrigger>

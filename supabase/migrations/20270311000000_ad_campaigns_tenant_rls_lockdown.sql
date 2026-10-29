@@ -27,8 +27,8 @@ BEGIN
         )
         OR
         EXISTS (
-          SELECT 1 FROM public.profiles p
-          WHERE p.id = auth.uid() AND p.store_id = ad_campaigns.store_id
+          SELECT 1 FROM public.workspace_members wm
+          WHERE wm.store_id = ad_campaigns.store_id AND wm.profile_id = auth.uid()
         )
       )
       WITH CHECK (
@@ -38,8 +38,8 @@ BEGIN
         )
         OR
         EXISTS (
-          SELECT 1 FROM public.profiles p
-          WHERE p.id = auth.uid() AND p.store_id = ad_campaigns.store_id
+          SELECT 1 FROM public.workspace_members wm
+          WHERE wm.store_id = ad_campaigns.store_id AND wm.profile_id = auth.uid()
         )
       );
 
@@ -76,8 +76,8 @@ BEGIN
         OR
         EXISTS (
           SELECT 1 FROM public.ad_campaigns ac
-          JOIN public.profiles p ON p.store_id = ac.store_id
-          WHERE ac.id = ad_events.campaign_id AND p.id = auth.uid()
+          JOIN public.workspace_members wm ON wm.store_id = ac.store_id
+          WHERE ac.id = ad_events.campaign_id AND wm.profile_id = auth.uid()
         )
       );
 

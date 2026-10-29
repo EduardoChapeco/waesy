@@ -60,12 +60,12 @@ CREATE POLICY "intranet_channels_member_select" ON public.intranet_channels
     EXISTS (
       SELECT 1 FROM public.store_members sm
       WHERE sm.store_id = intranet_channels.store_id
-        AND sm.user_id = (SELECT auth.uid())
+        AND sm.profile_id = auth.uid()
     )
     OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = intranet_channels.store_id
-        AND s.owner_profile_id = (SELECT auth.uid())
+      SELECT 1 FROM public.workspace_members wm
+      WHERE wm.store_id = intranet_channels.store_id
+        AND wm.profile_id = auth.uid()
     )
   );
 
@@ -76,12 +76,12 @@ CREATE POLICY "intranet_channels_member_insert" ON public.intranet_channels
     EXISTS (
       SELECT 1 FROM public.store_members sm
       WHERE sm.store_id = intranet_channels.store_id
-        AND sm.user_id = (SELECT auth.uid())
+        AND sm.profile_id = auth.uid()
     )
     OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = intranet_channels.store_id
-        AND s.owner_profile_id = (SELECT auth.uid())
+      SELECT 1 FROM public.workspace_members wm
+      WHERE wm.store_id = intranet_channels.store_id
+        AND wm.profile_id = auth.uid()
     )
   );
 
@@ -93,12 +93,12 @@ CREATE POLICY "intranet_messages_member_select" ON public.intranet_messages
     EXISTS (
       SELECT 1 FROM public.store_members sm
       WHERE sm.store_id = intranet_messages.store_id
-        AND sm.user_id = (SELECT auth.uid())
+        AND sm.profile_id = auth.uid()
     )
     OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = intranet_messages.store_id
-        AND s.owner_profile_id = (SELECT auth.uid())
+      SELECT 1 FROM public.workspace_members wm
+      WHERE wm.store_id = intranet_messages.store_id
+        AND wm.profile_id = auth.uid()
     )
   );
 
@@ -109,12 +109,12 @@ CREATE POLICY "intranet_messages_member_insert" ON public.intranet_messages
     EXISTS (
       SELECT 1 FROM public.store_members sm
       WHERE sm.store_id = intranet_messages.store_id
-        AND sm.user_id = (SELECT auth.uid())
+        AND sm.profile_id = auth.uid()
     )
     OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = intranet_messages.store_id
-        AND s.owner_profile_id = (SELECT auth.uid())
+      SELECT 1 FROM public.workspace_members wm
+      WHERE wm.store_id = intranet_messages.store_id
+        AND wm.profile_id = auth.uid()
     )
   );
 
@@ -126,11 +126,11 @@ CREATE POLICY "intranet_milestones_member_all" ON public.intranet_milestones
     EXISTS (
       SELECT 1 FROM public.store_members sm
       WHERE sm.store_id = intranet_milestones.store_id
-        AND sm.user_id = (SELECT auth.uid())
+        AND sm.profile_id = auth.uid()
     )
     OR EXISTS (
-      SELECT 1 FROM public.stores s
-      WHERE s.id = intranet_milestones.store_id
-        AND s.owner_profile_id = (SELECT auth.uid())
+      SELECT 1 FROM public.workspace_members wm
+      WHERE wm.store_id = intranet_milestones.store_id
+        AND wm.profile_id = auth.uid()
     )
   );

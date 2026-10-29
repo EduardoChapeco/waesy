@@ -24,8 +24,8 @@ BEGIN
         )
         OR
         EXISTS (
-          SELECT 1 FROM public.profiles p
-          WHERE p.id = auth.uid() AND p.store_id = store_orders.store_id
+          SELECT 1 FROM public.workspace_members wm
+          WHERE wm.store_id = store_orders.store_id AND wm.profile_id = auth.uid()
         )
       )
       WITH CHECK (
@@ -35,8 +35,8 @@ BEGIN
         )
         OR
         EXISTS (
-          SELECT 1 FROM public.profiles p
-          WHERE p.id = auth.uid() AND p.store_id = store_orders.store_id
+          SELECT 1 FROM public.workspace_members wm
+          WHERE wm.store_id = store_orders.store_id AND wm.profile_id = auth.uid()
         )
       );
   END IF;
@@ -58,8 +58,8 @@ BEGIN
         )
         OR
         EXISTS (
-          SELECT 1 FROM public.profiles p
-          WHERE p.id = auth.uid() AND p.store_id = travel_bookings.store_id
+          SELECT 1 FROM public.workspace_members wm
+          WHERE wm.store_id = travel_bookings.store_id AND wm.profile_id = auth.uid()
         )
       )
       WITH CHECK (
@@ -69,8 +69,8 @@ BEGIN
         )
         OR
         EXISTS (
-          SELECT 1 FROM public.profiles p
-          WHERE p.id = auth.uid() AND p.store_id = travel_bookings.store_id
+          SELECT 1 FROM public.workspace_members wm
+          WHERE wm.store_id = travel_bookings.store_id AND wm.profile_id = auth.uid()
         )
       );
 

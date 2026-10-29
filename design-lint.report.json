@@ -1,14 +1,14 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-29T18:30:27.593Z",
+  "timestamp": "2026-10-29T19:16:11.515Z",
   "inspectedFiles": 2535,
-  "totalViolations": 4045,
+  "totalViolations": 4036,
   "summary": {
-    "totalViolations": 4045,
+    "totalViolations": 4036,
     "bySeverity": {
       "P0": 11,
-      "P1": 3239,
-      "P2": 494,
+      "P1": 3235,
+      "P2": 489,
       "P3": 301
     },
     "byRule": {
@@ -16,10 +16,10 @@
       "DL-07": 473,
       "DL-14": 1457,
       "DL-02": 786,
-      "DL-03": 146,
+      "DL-03": 144,
       "DL-18": 54,
       "DL-15": 11,
-      "DL-29": 9,
+      "DL-29": 6,
       "DL-27": 14,
       "DL-12": 29,
       "DL-01": 633,
@@ -28,15 +28,14 @@
       "DL-11": 19,
       "DL-24": 1,
       "DL-08": 7,
-      "DL-23": 4,
-      "DL-28": 2
+      "DL-23": 2
     },
     "byModule": {
       "components/app": {
-        "total": 1680,
+        "total": 1676,
         "P0": 10,
-        "P1": 1237,
-        "P2": 329,
+        "P1": 1235,
+        "P2": 327,
         "P3": 104
       },
       "components/builder": {
@@ -103,10 +102,10 @@
         "P3": 1
       },
       "routes/workspace": {
-        "total": 886,
+        "total": 881,
         "P0": 1,
-        "P1": 774,
-        "P2": 40,
+        "P1": 772,
+        "P2": 37,
         "P3": 71
       },
       "routes/store": {

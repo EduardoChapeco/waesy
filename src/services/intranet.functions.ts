@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getServerClient, getServerIdentity, assertStoreAccess } from "@/lib/supabase";
+import { getServerClient } from "@/lib/supabase";
+import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
 
 export interface IntranetChannelDTO {
