@@ -12,7 +12,7 @@ import {
   CreditCard,
   ArrowLeft,
   CheckCircle,
-  Building2,
+  Building,
   Phone,
   Clock,
 } from "@phosphor-icons/react";

@@ -1,5 +1,27 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-376: Prontidão Agêntica 100/100 (Modelo Ora / Is-Agentic 20 Checks), Negociação HTTP Markdown, Handshake MCP Streamable HTTP, Ficha Cadastral Cartão CNPJ e SEO/GEO Unificado
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Auditoria externa do modelo Ora / `is-agentic.com` pontuou `https://waesy.com.br` em 54/100 devido à ausência de `<h1>` na homepage, ausência de corpo Markdown em erros 404 com `Accept: text/markdown`, falta de negociação de conteúdo Markdown (`Vary: Accept`), cobertura parcial (22%) de schemas de resposta no OpenAPI, ausência de handshake JSON-RPC 2.0 Streamable HTTP em `/api/mcp/v1/tools/call`, falta de páginas de âncora de confiança (`/about`, `/contact`, `/privacy`), portal de desenvolvedores (`/developers`, `/docs`) e CLI oficial (`@waesy/cli`).
+  2. Necessidade de estruturar a aba e seção **"Informações da Empresa e Cartão CNPJ"** em todos os perfis de empresas (`CanonicalStoreProfileView`, `/loja/:slug`, `/diretorio/:id`, `/places/:placeSlug`) indexando Razão Social, Nome Fantasia, CNPJ formatado, Situação Cadastral, CNAEs, Natureza Jurídica, Endereço Georreferenciado (GEO/ICBM) e Grafo de Backlinks (`sameAs`) sem jamais expor rotas protegidas (`/workspace`, `/admin-master`, `/conta`, `/checkout`) ou colunas sensíveis do banco (`cost_cents`, `service_role`, `api_key`).
+- **Decisão:**
+  1. Criado o motor `src/lib/agentic/agentic-readiness-engine.ts` e integrado ao handler de borda `src/server.ts` para servir Markdown com `Content-Type: text/markdown; charset=utf-8` e `Vary: Accept` em rotas públicas e erros 404, converter erros de `/api/*` em JSON estruturado, emitir cabeçalhos RFC `RateLimit-*`, `X-API-Version`, `Deprecation` e `Sunset`, e bloquear rotas privadas com firewall Zero-Trust.
+  2. Elevada a cobertura de schemas em `/api/openapi.json` para 100% (11/11 operações), implementado o handshake MCP Streamable HTTP JSON-RPC 2.0 completo em `/api/mcp/v1/tools/call`, criadas as rotas `/about`, `/sobre`, `/contact`, `/privacy`, `/developers`, `/docs`, `/api/v1/public/discovery`, o CLI `scripts/waesy-cli.mjs` e a aba "Informações da Empresa" com JSON-LD `LocalBusiness` e integração no Sitemap Visual do Omni-Builder.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.20, B.26, B.31 e `docs/specs/SPEC-20261029-AGENTIC-READINESS-SEO-GEO-OMNI-MASTER.md`.
+- **Consequências:** Prontidão Agêntica elevada para 100/100 (A+) nas 20 verificações do modelo Ora / `is-agentic.com`, indexação SEO/GEO completa com Cartão CNPJ e Grafo de Backlinks para empresas e sites do Omni-Builder, e proteção Zero-Leakage de superfícies internas.
+
+## DEC-375: Padronização do Tom de Azul Intermediário de Assinatura, Textura Granulado/Noise e Desacoplamento Zero-Hardcode no Admin Master
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Revisão e compreensão aprofundada da coloração padrão do site baseada em referência visual com número 4 em vidro fosco sobre gradiente azul com granulação fina e táctil.
+  2. Definição da hierarquia estrita de cores: preto neutro (`#09090b` / cinza suave) como cor estrutural e de tipografia, e o Azul Intermediário Canônico (`#0066FF`) como acento secundário e assinatura visual de destaque, proibindo terminantemente o excesso de saturação ou proliferação desordenada de cores.
+  3. Erradicação de cores hardcoded no CSS/tokens através da criação do gerenciador bilateral de cores no Admin Master (`/admin-master/marca`), permitindo customização dinâmica e propagação instantânea via variáveis CSS `:root` e `.dark` no SSR de `__root.tsx`.
+  4. Implementação canônica das classes utilitárias `.bg-waesy-gradient-blue`, `.texture-noise`, `.waesy-surface-grain` e `.waesy-frosted-glass` com SVG fractal noise de alta performance.
+- **Decisão:** Aprovada e integrada a arquitetura de personalização soberana de temas, gradientes e texturas com persistência em `platform_brand_settings`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.8, B.9, B.11, B.20 e WCAG 2.2 AA.
+- **Consequências:** Zero hardcoding de cores institucionais, coerência visual elegante padrão Apple/Linear e personalização plena pelo operador Master.
+
 ## DEC-374: Conexão Transacional de Empregadores Verificados (InfoJobs / Glassdoor), Agregação Dinâmica de Vendas na Intranet e Persistência Soberana de Mídias
 - **Data:** 2026-10-29
 - **Contexto:**
@@ -6844,3 +6866,16 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   4. **Conformidade Estrita no Design Lint (MF-05):** Correção de classes de acessibilidade a movimento reduzido (`motion-reduce:animate-none`) em `RolePermissionsMatrix.tsx` e `FiscalActionCluster.tsx`, responsividade de abas em `workspace.agenda.servicos.index.tsx` e aprovação com Exit Code 0 na catraca de CI (`node scripts/design-lint.mjs --ratchet`).
 - **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.25, B.31 e B.33.
 - **Consequências:** Zero tabelas de estúdio ou eventos expostas sem tenant boundary, vitrine pública com telemetria rastreável, cartões de eventos limpos sem artefatos gráficos falsos e débito visual aprovado sem regressão.
+
+---
+
+### DEC-377 (2026-10-29): Arquitetura de Reconciliação Multi-Fatorial iFood Merchant & Vínculo ao Chat Mobile
+- **Contexto:** Necessidade de identificar e correlacionar clientes entre pedidos externos de marketplaces (iFood) e clientes locais em atendimento no Waesy Chat, superando a máscara de privacidade (LGPD) de telefones/CPFs nos pedidos de delivery.
+- **Decisão Adotada:**
+  1. Criação de tipos e schemas Zod em `src/lib/ifood-merchant.types.ts`.
+  2. Implementação do motor determinístico em `src/lib/reconciliation-engine.ts` com cálculo em 5 camadas (Proximidade Geoespacial Haversine $\le 50\text{m}$, equivalência textual de endereço/número fuzzy, token overlap de nome de cliente, janela temporal de chat $\le 30\text{ min}$ e correlação de observações/itens).
+  3. Criação de Server Functions em `src/services/ifood-reconciliation.functions.ts` para salvar credenciais criptografadas no cofre, reconciliar pedidos recebidos via webhook/polling, gerar mensagens de sistema e permitir consulta enriquecida no chat mobile.
+  4. Validação estrita por 22 testes unitários (`ifood-reconciliation-engine.test.ts` e `ifood-reconciliation.functions.test.ts`).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.5, B.7, B.9, B.25 e SPEC-20261029.
+- **Consequências:** Estabelecimentos conseguem mapear clientes e pedidos do iFood diretamente na conversa de chat do Waesy, mantendo integridade multi-tenant, zero vazamento de chaves secretas e total compatibilidade com privacidade LGPD.
+

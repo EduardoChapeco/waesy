@@ -18,18 +18,10 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Users, ArrowLeft, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { buildCommunitySeoHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/c/$slug")({
-  head: ({ loaderData }: any) => {
-    const title = loaderData?.initialData?.community?.title || "Comunidade";
-    const desc = loaderData?.initialData?.community?.description || "Participe da comunidade no Waesy!";
-    return {
-      meta: [
-        { title: `${title} | Comunidade Waesy` },
-        { name: "description", content: desc },
-      ],
-    };
-  },
+  head: ({ loaderData }: any) => buildCommunitySeoHead(loaderData?.initialData?.community),
   loader: async ({ params }) => {
     const slug = params.slug;
     try {

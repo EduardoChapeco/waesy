@@ -37,7 +37,7 @@ export const Route = createFileRoute("/workspace/configuracoes/equipe")({
         listContractors().catch(() => []),
         getStoreSettings().catch(() => null),
       ]);
-      const storeId = storeRes?.store?.id || storeRes?.id || "";
+      const storeId = (storeRes as any)?.store?.id || (storeRes as any)?.id || "";
       return { members: members || [], jobs: jobs || [], contractors: contractors || [], storeId };
     } catch {
       return { members: [], jobs: [], contractors: [], storeId: "" };

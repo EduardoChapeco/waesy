@@ -1,0 +1,42 @@
+# Waesy Platform — Full LLM & Autonomous Agent Context (`llms-full.txt`)
+
+> Canonical machine-readable reference for `https://waesy.com.br` — Waesy Local Marketplace, Verified Business Directory (CNPJ), Regional News Portal, Events, Tourism, Omni-Builder & WebMCP Server.
+
+## 1. Platform Overview & Identity
+- **Name**: Waesy (Waesy Local Marketplace & AI Ecosystem)
+- **Canonical URL**: `https://waesy.com.br`
+- **Primary Language**: `pt-BR` (supports English developer documentation and international agent protocols)
+- **Headquarters**: Av. Getúlio Vargas, Centro, Chapecó - SC, CEP 89801-000, Brazil
+- **Contact**: `contato@waesy.com.br` | `suporte@usewaesy.com` | DPO: `dpo@usewaesy.com`
+
+## 2. When to Use Waesy
+Reach for Waesy when an AI agent or developer needs to:
+- Search local products, offers, supermarkets, pharmacies, restaurants, and classifieds in Brazilian cities.
+- Verify local businesses with complete Cartão CNPJ data (Corporate Name, Trade Name, CNPJ, CNAE, PostalAddress, GeoCoordinates, working hours, verified reviews).
+- Read regional news articles (`/noticias`), cultural events (`/eventos`), culinary recipes (`/receitas`), and job openings (`/empregos`).
+- Integrate with merchants via Model Context Protocol (MCP Streamable HTTP) or OpenAPI 3.1 REST endpoints.
+
+## 3. Machine-Readable Endpoints & Documentation
+- **Developer Portal**: `https://waesy.com.br/developers`
+- **Documentation & Quickstart**: `https://waesy.com.br/docs`
+- **Public REST Discovery API**: `https://waesy.com.br/api/v1/public/discovery`
+- **OpenAPI 3.1 Specification**: `https://waesy.com.br/api/openapi.json`
+- **WebMCP Manifest**: `https://waesy.com.br/api/webmcp.json`
+- **MCP Discovery**: `https://waesy.com.br/.well-known/mcp.json`
+- **MCP Streamable HTTP Endpoint**: `POST https://waesy.com.br/api/mcp/v1/tools/call`
+- **Agent Instructions**: `https://waesy.com.br/.well-known/agent-instructions.md`
+- **Sitemaps**:
+  - `https://waesy.com.br/sitemap.xml`
+  - `https://waesy.com.br/sitemap-news.xml`
+  - `https://waesy.com.br/sitemap-products.xml`
+
+## 4. Trust Anchor Pages
+- **About Us**: `https://waesy.com.br/about` (`/sobre`)
+- **Contact Us**: `https://waesy.com.br/contact` (`/contato`)
+- **Privacy Policy (LGPD)**: `https://waesy.com.br/privacy` (`/privacidade`)
+- **Terms of Service**: `https://waesy.com.br/termos`
+
+## 5. Rate Limiting, Versioning & Deprecation Policy
+- **Rate Limiting**: All API endpoints return standard RFC headers: `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`, `RateLimit-Policy`, and `Retry-After` on HTTP 429.
+- **Versioning**: Versioned via URL path (`/api/v1/*`, `/api/mcp/v1/*`) and `X-API-Version: 2.2.0`.
+- **Deprecation Policy**: Endpoints emit `Deprecation: false` (or `true` when scheduled for retirement) and `Sunset: Wed, 31 Dec 2028 23:59:59 GMT` with `Link: <https://waesy.com.br/developers#deprecation-policy>; rel="deprecation"`.

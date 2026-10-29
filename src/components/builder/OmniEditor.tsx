@@ -3057,7 +3057,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             isOpen={isAddPanel3ColOpen}
             onClose={() => setIsAddPanel3ColOpen(false)}
             onSelectTemplate={(tpl) => {
-              handleAddBlock((tpl as any).type || tpl.blocks?.[0]?.type || "bento_asymmetric_grid");
+              handleAddBlock((tpl as any).type || (tpl as any).blocks?.[0]?.type || "bento_asymmetric_grid");
               setIsAddPanel3ColOpen(false);
             }}
             onInsertSingleBlock={(blockType) => {

@@ -45,6 +45,7 @@ import { ProductAiSdrChat } from "@/components/commerce/product-ai-sdr-chat";
 import { TetrisActionGrid } from "@/components/layout/tetris-action-grid";
 import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { formatCanonicalAddress } from "@/lib/format-address";
+import { buildCompanyPublicLegalFicha, buildCompanySeoGeoJsonLd } from "@/lib/agentic/agentic-readiness-engine";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -590,11 +591,17 @@ function cleanAddressSegment(text: string): string {
     return formatCanonicalAddress(raw, city, state);
   }, [store]);
 
-    const hasSponsors = sponsors && sponsors.length > 0;
+  const hasSponsors = sponsors && sponsors.length > 0;
+  const companyLegalFicha = useMemo(() => buildCompanyPublicLegalFicha(store), [store]);
+  const companySeoGeoJsonLd = useMemo(() => buildCompanySeoGeoJsonLd(store), [store]);
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-20 md:pb-12 animate-in fade-in duration-200">
-            {/* ── 1. NATIVE MOBILE HEADER CANÔNICO (Apple HIG / Safe Area) ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(companySeoGeoJsonLd) }}
+      />
+      {/* ── 1. NATIVE MOBILE HEADER CANÔNICO (Apple HIG / Safe Area) ── */}
       <NativeMobileHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         fallbackHref={backUrl}
         title={
@@ -1122,6 +1129,22 @@ function cleanAddressSegment(text: string): string {
               <Building2 className="size-4 sm:size-4" />
               <span>Sobre</span>
             </button>}
+
+            {/* Aba 3B: Informações da Empresa (Ficha Cadastral, Cartão CNPJ, Endereço, CNAE, SEO/GEO e Backlinks) */}
+            <button
+              type="button"
+              onClick={() => setActiveTab("informacoes")}
+              className={cn(
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                activeTab === "informacoes"
+                  ? "bg-background text-foreground font-bold shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <FileCheck className="size-4 sm:size-4" />
+              <span>Informações da Empresa</span>
+            </button>
 
             {/* Aba 4: Posts & Novidades — só existe com publicações persistidas */}
             {posts.length > 0 && <button
@@ -2550,6 +2573,147 @@ function cleanAddressSegment(text: string): string {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* ── CONTEÚDO DA ABA INFORMAÇÕES DA EMPRESA (FICHA CADASTRAL, CARTÃO CNPJ, DADOS PÚBLICOS, GEO & BACKLINKS) ── */}
+          {(activeTab === "informacoes" || activeTab === "sobre") && (
+            <section
+              aria-labelledby="company-legal-ficha-heading"
+              className="space-y-6 rounded-lg border border-border/60 bg-card p-5 sm:p-6 animate-in fade-in duration-150"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <FileCheck className="size-4 text-primary" />
+                    <h2 id="company-legal-ficha-heading" className="text-base font-bold text-foreground">
+                      Informações da Empresa e Cartão CNPJ
+                    </h2>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Dados públicos validados, ficha cadastral, localização GEO e autoridade digital indexada.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary bg-primary/5">
+                    Situação: {companyLegalFicha.registrationStatus}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs font-mono">
+                    Score de Dados: {companyLegalFicha.dataCompletenessScore}%
+                  </Badge>
+                </div>
+              </div>
+
+              <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                <div className="space-y-1 rounded-lg border border-border/40 bg-muted/20 p-4">
+                  <dt className="text-muted-foreground font-medium">Razão Social / Nome Empresarial</dt>
+                  <dd className="text-sm font-bold text-foreground break-words">
+                    {companyLegalFicha.corporateName}
+                  </dd>
+                </div>
+
+                <div className="space-y-1 rounded-lg border border-border/40 bg-muted/20 p-4">
+                  <dt className="text-muted-foreground font-medium">Nome Fantasia</dt>
+                  <dd className="text-sm font-bold text-foreground break-words">
+                    {companyLegalFicha.tradeName}
+                  </dd>
+                </div>
+
+                <div className="space-y-1 rounded-lg border border-border/40 bg-muted/20 p-4">
+                  <dt className="text-muted-foreground font-medium">CNPJ Oficial</dt>
+                  <dd className="text-sm font-mono font-bold text-foreground">
+                    {companyLegalFicha.cnpjFormatted || "Cadastro Regional Ativo (Em Validação CNPJ)"}
+                  </dd>
+                </div>
+
+                <div className="space-y-1 rounded-lg border border-border/40 bg-muted/20 p-4">
+                  <dt className="text-muted-foreground font-medium">Atividade Econômica Principal (CNAE)</dt>
+                  <dd className="text-foreground font-medium">
+                    {companyLegalFicha.mainCnae
+                      ? `${companyLegalFicha.mainCnae.code} — ${companyLegalFicha.mainCnae.description}`
+                      : "Comércio e Serviços Regionais"}
+                  </dd>
+                </div>
+
+                <div className="space-y-1 rounded-lg border border-border/40 bg-muted/20 p-4">
+                  <dt className="text-muted-foreground font-medium">Natureza Jurídica e Porte</dt>
+                  <dd className="text-foreground font-medium">
+                    {[companyLegalFicha.legalNature, companyLegalFicha.companySize].filter(Boolean).join(" • ")}
+                  </dd>
+                </div>
+
+                <div className="space-y-1 rounded-lg border border-border/40 bg-muted/20 p-4">
+                  <dt className="text-muted-foreground font-medium">Início de Atividade / Status</dt>
+                  <dd className="text-foreground font-mono font-medium">
+                    {companyLegalFicha.openingDate
+                      ? `${companyLegalFicha.openingDate} (${companyLegalFicha.registrationStatus})`
+                      : `Cadastro Ativo (${companyLegalFicha.registrationStatus})`}
+                  </dd>
+                </div>
+
+                <div className="space-y-1 rounded-lg border border-border/40 bg-muted/20 p-4 sm:col-span-2">
+                  <dt className="text-muted-foreground font-medium">Endereço Cadastral Completo e Região GEO</dt>
+                  <dd className="text-foreground font-medium leading-relaxed">
+                    {companyLegalFicha.address.fullDisplay}
+                    {companyLegalFicha.address.cep ? ` • CEP: ${companyLegalFicha.address.cep}` : ""}
+                  </dd>
+                </div>
+
+                <div className="space-y-1 rounded-lg border border-border/40 bg-muted/20 p-4">
+                  <dt className="text-muted-foreground font-medium">Coordenadas Geográficas (GEO / ICBM)</dt>
+                  <dd className="text-foreground font-mono">
+                    {companyLegalFicha.seoGeo.geoPosition || `${companyLegalFicha.address.city} - ${companyLegalFicha.address.state}`}
+                  </dd>
+                </div>
+              </dl>
+
+              {companyLegalFicha.secondaryCnaes.length > 0 && (
+                <div className="space-y-2 border-t border-border/40 pt-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Atividades Secundárias (CNAEs Complementares)
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {companyLegalFicha.secondaryCnaes.slice(0, 8).map((cnae, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs font-mono">
+                        {cnae.code} — {cnae.description}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2 border-t border-border/40 pt-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Resumo Estruturado para Buscadores e Agentes IA (SEO / GEO / WebMCP)
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {companyLegalFicha.seoGeo.geoEntitySummary}
+                </p>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <a
+                    href={companyLegalFicha.backlinks.canonicalStoreUrl}
+                    className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg border border-border bg-background px-4 text-xs font-semibold text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    URL Canônica da Vitrine
+                  </a>
+                  <a
+                    href={companyLegalFicha.backlinks.canonicalDirectoryUrl}
+                    className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg border border-border bg-background px-4 text-xs font-semibold text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Registro no Diretório Oficial
+                  </a>
+                  {companyLegalFicha.backlinks.externalWebsiteUrl && (
+                    <a
+                      href={companyLegalFicha.backlinks.externalWebsiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg border border-border bg-background px-4 text-xs font-semibold text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Website Oficial Verificado
+                    </a>
+                  )}
+                </div>
+              </div>
+            </section>
           )}
 
           {/* ── CONTEÚDO DA ABA 7: SORTEIOS DA LOJA ── */}

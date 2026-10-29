@@ -9,6 +9,7 @@ import { LeadFormRenderer } from "@/components/leads/lead-form-renderer";
 import { ShieldCheck, Star, Building2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { buildLeadFormSeoHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/f/$slug")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -17,22 +18,8 @@ export const Route = createFileRoute("/_store/f/$slug")({
     tel: (search.tel as string) || (search.phone as string) || undefined,
     email: (search.email as string) || undefined,
   }),
-  head: ({ loaderData }: { loaderData?: { form: LeadFormDTO | null } }) => ({
-    meta: [
-      {
-        title: loaderData?.form
-          ? `${loaderData.form.headline || loaderData.form.title} — ${loaderData.form.store?.name || "Waesy"}`
-          : "Formulário de Atendimento — Waesy",
-      },
-      {
-        name: "description",
-        content:
-          loaderData?.form?.subheadline ||
-          loaderData?.form?.description ||
-          "Preencha seus dados para receber atendimento rápido e personalizado da nossa equipe.",
-      },
-    ],
-  }),
+  head: ({ loaderData }: { loaderData?: { form: LeadFormDTO | null } }) =>
+    buildLeadFormSeoHead(loaderData?.form),
   loader: async ({ params }) => {
     try {
       const form = await getPublicLeadFormBySlug({ data: { slug: params.slug } });

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Tag, RefreshCw } from "lucide-react";
+import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 import { Button } from "@/components/ui/button";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
@@ -30,16 +31,22 @@ export const Route = createFileRoute("/_store/classificados/")({
     subniche: typeof search.subniche === "string" ? search.subniche : undefined,
     ponto: typeof search.ponto === "string" ? search.ponto : undefined,
   }),
-  head: () => ({
-    meta: [
-      { title: "Classificados, Imóveis e Desapegos | Waesy" },
-      {
-        name: "description",
-        content:
-          "Compre, alugue imóveis, reserve hospedagens por temporada, veículos e serviços na sua região.",
+  head: () =>
+    buildUniversalHead({
+      title: "Classificados, Imóveis e Desapegos | Waesy",
+      description:
+        "Compre, alugue imóveis, reserve hospedagens por temporada, veículos e serviços na sua região com garantia e segurança.",
+      path: "/classificados",
+      ogType: "website",
+      webmcpType: "classifieds_index",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Classificados Waesy",
+        description: "Catálogo comunitário de imóveis, veículos, empregos e desapegos locais.",
+        url: "https://waesy.com.br/classificados",
       },
-    ],
-  }),
+    }),
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {

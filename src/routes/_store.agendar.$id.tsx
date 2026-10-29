@@ -17,23 +17,10 @@ import { toast } from "sonner";
 import { getBookingServiceById, getAvailableSlots, createAppointment, listMyPassesForService, listPublicStoreResources } from "@/services/booking.functions";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 import { cn } from "@/lib/utils";
+import { buildBookingServiceSeoHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/agendar/$id")({
-  head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: loaderData?.title
-          ? `${loaderData.title} | Agendamentos Waesy`
-          : "Serviço | Waesy",
-      },
-      {
-        name: "description",
-        content:
-          loaderData?.description?.slice(0, 160) ||
-          "Agende horários online com profissionais qualificados.",
-      },
-    ],
-  }),
+  head: ({ loaderData }) => buildBookingServiceSeoHead(loaderData),
   loader: async ({ params }: { params: { id: string } }) => {
     try {
       return await getBookingServiceById({ data: { id: params.id } });

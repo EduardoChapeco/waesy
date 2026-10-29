@@ -14,6 +14,7 @@ import { EventsShowcaseDesktopView } from "@/components/events/EventsShowcaseDes
 import { EventSubvitrineView } from "@/components/events/EventSubvitrineView";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import type { EventFeatureMiniBannerItem } from "@/components/events/EventFeatureMiniBannersRail";
+import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
 const SearchSchema = z.object({
   categoria: z.string().optional(),
@@ -23,16 +24,22 @@ const SearchSchema = z.object({
 
 export const Route = createFileRoute("/_store/eventos")({
   validateSearch: (search: Record<string, unknown>) => SearchSchema.parse(search),
-  head: () => ({
-    meta: [
-      { title: "Marketplace de Eventos, Shows e Ingressos | Waesy" },
-      {
-        name: "description",
-        content:
-          "Descubra os principais shows, festivais gastronômicos, feiras, teatros e garanta seus ingressos na cidade.",
+  head: () =>
+    buildUniversalHead({
+      title: "Marketplace de Eventos, Shows e Ingressos | Waesy",
+      description:
+        "Descubra os principais shows, festivais gastronômicos, feiras, teatros e garanta seus ingressos na cidade.",
+      path: "/eventos",
+      ogType: "website",
+      webmcpType: "events_index",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Eventos, Shows e Ingressos",
+        description: "Programação cultural e ingressos para eventos locais no Waesy.",
+        url: "https://waesy.com.br/eventos",
       },
-    ],
-  }),
+    }),
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {

@@ -12,10 +12,10 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_store/noticias/$slug")({
   head: ({ loaderData }: any) => {
     const art = loaderData?.article;
-    const title = art ? `${decodeHtmlEntities(art.title)} | Waesy Notícias` : "Notícia | Waesy";
-    const description = decodeHtmlEntities(art?.subtitle) || decodeHtmlEntities(art?.ai_summary) || "Notícia apurada e verificada no ecossistema Waesy.";
-    const canonicalUrl = art?.slug ? `https://usewaesy.com/noticias/${art.slug}` : "https://usewaesy.com/noticias";
-    const coverUrl = art?.cover_media_url || "https://usewaesy.com/icons/icon-512.png";
+    const title = art ? `${decodeHtmlEntities(art.title)} | Waesy Notícias` : "Notícia | Waesy Local Marketplace";
+    const description = decodeHtmlEntities(art?.subtitle) || decodeHtmlEntities(art?.ai_summary) || "Notícia apurada e verificada no ecossistema Waesy Local Marketplace.";
+    const canonicalUrl = art?.slug ? `https://waesy.com.br/noticias/${art.slug}` : "https://waesy.com.br/noticias";
+    const coverUrl = art?.cover_media_url || "https://waesy.com.br/pwa-512x512.png";
     const publishedAt = art?.published_at || new Date().toISOString();
 
     const jsonLd = art ? {
@@ -29,14 +29,14 @@ export const Route = createFileRoute("/_store/noticias/$slug")({
       author: [{
         "@type": "Organization",
         name: art.author_name || "Redação Waesy",
-        url: "https://usewaesy.com"
+        url: "https://waesy.com.br"
       }],
       publisher: {
         "@type": "Organization",
-        name: "Waesy",
+        name: "Waesy Local Marketplace",
         logo: {
           "@type": "ImageObject",
-          url: "https://usewaesy.com/icons/icon-512.png"
+          url: "https://waesy.com.br/pwa-512x512.png"
         }
       },
       mainEntityOfPage: {
@@ -62,9 +62,12 @@ export const Route = createFileRoute("/_store/noticias/$slug")({
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: description },
         { name: "twitter:image", content: coverUrl },
+        { name: "geo.region", content: "BR-SC" },
+        { name: "geo.placename", content: art?.city || "Chapecó e Região" },
         { name: "webmcp-endpoint", content: "/api/webmcp.json" },
         { name: "webmcp-type", content: "news_article" }
       ],
+      links: [{ rel: "canonical", href: canonicalUrl }],
       scripts: jsonLd ? [
         {
           type: "application/ld+json",

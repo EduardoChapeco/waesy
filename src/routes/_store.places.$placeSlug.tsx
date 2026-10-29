@@ -44,16 +44,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getPlaceDetailBySlugFn, type PlaceDetailDTO } from "@/services/places-detail.functions";
+import { buildCompanySeoGeoJsonLd } from "@/lib/agentic/agentic-readiness-engine";
 
 export const Route = createFileRoute("/_store/places/$placeSlug")({
   head: ({ loaderData }: { loaderData?: { place: PlaceDetailDTO | null } }) => {
     const place = loaderData?.place;
+    const canonicalUrl = `https://waesy.com.br/places/${place?.slug || place?.id || "local"}`;
     const title = place
-      ? `${place.name} — Guia de Lugares e Empresas | Waesy Places`
-      : "Estabelecimento — Waesy Places";
+      ? `${place.name} — Guia de Lugares, CNPJ e Endereço | Waesy Local Marketplace`
+      : "Estabelecimento — Waesy Local Marketplace";
     const description = place
-      ? `${place.name} em ${place.city} - ${place.state}. Endereço: ${place.address}. Telefone, horários e rotas no Guia Oficial.`
-      : "Guia oficial de estabelecimentos e pontos comerciais da cidade.";
+      ? `${place.name} em ${place.city} - ${place.state}. Endereço: ${place.address}. CNPJ, telefone, horários e rotas no Guia Oficial Waesy.`
+      : "Guia oficial de estabelecimentos e pontos comerciais da cidade no Waesy Local Marketplace.";
 
     return {
       meta: [
@@ -61,7 +63,17 @@ export const Route = createFileRoute("/_store/places/$placeSlug")({
         { name: "description", content: description },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
+        { property: "og:type", content: "business.business" },
+        { property: "og:url", content: canonicalUrl },
+        { property: "og:image", content: place?.avatarUrl || "https://waesy.com.br/pwa-512x512.png" },
+        ...(place?.city && place?.state
+          ? [
+              { name: "geo.region", content: `BR-${place.state}` },
+              { name: "geo.placename", content: `${place.city}, ${place.state}` },
+            ]
+          : []),
       ],
+      links: [{ rel: "canonical", href: canonicalUrl }],
     };
   },
   loader: async ({ params }) => {
@@ -135,6 +147,7 @@ function PlaceDetailPage() {
   }
 
   // Montagem da URL de rotas no mapa (OpenStreetMap com fallback de busca)
+  const placeJsonLd = buildCompanySeoGeoJsonLd(place);
   const mapDirectionsUrl =
     place.latitude && place.longitude
       ? `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=%3B${place.latitude}%2C${place.longitude}`
@@ -167,6 +180,10 @@ function PlaceDetailPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 py-3 sm:py-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd) }}
+      />
       {/* ── Navegação de Retorno ── */}
       <nav aria-label="Navegação estrutural">
         <Link

@@ -232,7 +232,7 @@ export const reconcileExternalIFoodOrder = createServerFn({ method: "POST" })
         await supabase.from("chat_messages").insert({
           conversation_id: linkedChatId,
           sender_type: "system",
-          content: `Pedido iFood #${order.displayId || order.id.slice(0, 5)} vinculado automaticamente ao seu atendimento. Status atual: ${order.orderType} · R$ ${(order.total.orderAmount).toFixed(2)}.`,
+          content: `Pedido iFood N. ${order.displayId || order.id.slice(0, 5)} vinculado automaticamente ao seu atendimento. Status atual: ${order.orderType} · R$ ${(order.total.orderAmount).toFixed(2)}.`,
           metadata: {
             is_external_order: true,
             provider: "ifood",

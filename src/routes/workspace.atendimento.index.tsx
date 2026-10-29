@@ -22,6 +22,7 @@ import {
   createIntranetChannel,
   sendIntranetMessage,
   toggleIntranetMilestone,
+  getStoreIntranetSalesSpreadsheet,
 } from "@/services/intranet.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getRealtimeChannel } from "@/services/realtime-channel";
@@ -2079,7 +2080,7 @@ function WorkspaceAtendimentoPage() {
                           </Badge>
                         </div>
                         <div className="flex items-center gap-2">
-                          {activeIntranetChannel.spreadsheet.headers.map((h, idx) => (
+                          {activeIntranetChannel.spreadsheet.headers.map((h: string, idx: number) => (
                             <Badge key={h} variant="outline" className="text-2xs font-mono">
                               {activeIntranetChannel.spreadsheet?.colTypes[idx] || "abc"} • {h}
                             </Badge>
@@ -2960,7 +2961,7 @@ function WorkspaceAtendimentoPage() {
                 channelId: activeIntranetChannel.id,
                 content: data.message,
                 authorRole: "Gestão",
-                artifactType: data.type,
+                artifactType: (data as any).type || data.message_type,
                 artifactPayload: data.payload,
               },
             }).catch((err) => console.warn("[intranet] Erro ao persistir mensagem estruturada:", err));

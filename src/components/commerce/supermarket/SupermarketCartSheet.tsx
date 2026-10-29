@@ -186,8 +186,8 @@ export function SupermarketCartSheet({
                       <div className="flex items-center gap-3">
                         {/* Imagem do Item */}
                         <div className="size-16 rounded-xl bg-muted/40 overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
-                          {item.imageUrl ?? (item as any).image_url ? (
-                            <img src={item.imageUrl ?? (item as any).image_url} alt="" className="w-full h-full object-contain p-1" />
+                          {(item as any).imageUrl ?? (item as any).productImage ?? (item as any).image_url ? (
+                            <img src={(item as any).imageUrl ?? (item as any).productImage ?? (item as any).image_url} alt="" className="w-full h-full object-contain p-1" />
                           ) : (
                             <ShoppingBag size={24} weight="duotone" className="text-muted-foreground" />
                           )}

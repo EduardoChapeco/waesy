@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useRouter, redirect } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { getProfile, updateProfile, getUserSession } from "@/services/auth.functions";
+import { searchStoresForCompanyAutocomplete } from "@/services/social.functions";
 import {
   listUserResumes,
   saveUserResume,

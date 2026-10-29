@@ -6,8 +6,18 @@
 # Regras Gerais para Crawlers e Mecanismos de Busca (Googlebot, Bingbot, DuckDuckBot, etc.)
 User-agent: *
 Allow: /
+Allow: /developers
+Allow: /docs
+Allow: /about
+Allow: /contact
+Allow: /privacy
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /.well-known/
 Allow: /api/webmcp.json
 Allow: /api/openapi.json
+Allow: /api/mcp/
+Allow: /api/v1/public/
 Allow: /api/feed/
 Allow: /api/feed/xml
 Allow: /api/feed/meta.csv
@@ -24,7 +34,10 @@ Disallow: /conta/
 Disallow: /checkout/
 Disallow: /carrinho
 Disallow: /auth/
-Disallow: /api/
+Disallow: /api/internal/
+Disallow: /api/cron/
+Disallow: /api/mining/
+Disallow: /api/auth/
 
 # Prevenção de Conteúdo Duplicado e Tokens Efêmeros
 Disallow: /*?*preview=
@@ -39,49 +52,66 @@ User-agent: GPTBot
 Allow: /
 Allow: /api/webmcp.json
 Allow: /api/openapi.json
+Allow: /api/mcp/
+Allow: /api/v1/public/
 Disallow: /workspace/
 Disallow: /admin-master/
 Disallow: /conta/
 Disallow: /checkout/
-Disallow: /api/
+Disallow: /api/internal/
+Disallow: /api/cron/
 
 User-agent: ClaudeBot
 Allow: /
 Allow: /api/webmcp.json
 Allow: /api/openapi.json
+Allow: /api/mcp/
+Allow: /api/v1/public/
 Disallow: /workspace/
 Disallow: /admin-master/
 Disallow: /conta/
 Disallow: /checkout/
-Disallow: /api/
+Disallow: /api/internal/
+Disallow: /api/cron/
 
 User-agent: PerplexityBot
 Allow: /
 Allow: /api/webmcp.json
 Allow: /api/openapi.json
+Allow: /api/mcp/
+Allow: /api/v1/public/
 Disallow: /workspace/
 Disallow: /admin-master/
 Disallow: /conta/
 Disallow: /checkout/
-Disallow: /api/
+Disallow: /api/internal/
+Disallow: /api/cron/
 
 User-agent: Google-Extended
 Allow: /
 Allow: /api/webmcp.json
+Allow: /api/openapi.json
+Allow: /api/mcp/
+Allow: /api/v1/public/
 Disallow: /workspace/
 Disallow: /admin-master/
 Disallow: /conta/
 Disallow: /checkout/
-Disallow: /api/
+Disallow: /api/internal/
+Disallow: /api/cron/
 
 User-agent: Applebot-Extended
 Allow: /
 Allow: /api/webmcp.json
+Allow: /api/openapi.json
+Allow: /api/mcp/
+Allow: /api/v1/public/
 Disallow: /workspace/
 Disallow: /admin-master/
 Disallow: /conta/
 Disallow: /checkout/
-Disallow: /api/
+Disallow: /api/internal/
+Disallow: /api/cron/
 
 # -----------------------------------------------------------------------------
 # Sitemaps Canônicos da Rede Waesy

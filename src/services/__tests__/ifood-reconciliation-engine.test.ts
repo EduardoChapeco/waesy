@@ -84,7 +84,7 @@ describe("iFood & Omnichannel Reconciliation Engine", () => {
 
       const result = scoreAddressText(orderAddr, candidateAddr);
       expect(result.score).toBe(25); // 15 (número) + 7 (logradouro) + 3 (CEP)
-      expect(result.reasons).toContain("Número residencial idêntico (#450)");
+      expect(result.reasons).toContain("Número residencial idêntico (Nº 450)");
       expect(result.reasons).toContain("CEP convergente");
     });
   });

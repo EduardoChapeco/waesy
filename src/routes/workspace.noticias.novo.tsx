@@ -38,6 +38,8 @@ function WorkspaceNovaMateriaPage() {
  const [coverMediaUrl, setCoverMediaUrl] = useState("");
  const [coverMediaType, setCoverMediaType] = useState<"image" | "video" | "gif">("image");
  const [readingTime, setReadingTime] = useState(3);
+ const [tags, setTags] = useState<string[]>([]);
+ const [tagsInput, setTagsInput] = useState("");
 
  // Seções do artigo
  const [sections, setSections] = useState<NewsSectionDTO[]>([
@@ -138,6 +140,7 @@ function WorkspaceNovaMateriaPage() {
  cover_media_url: coverMediaUrl.trim() || undefined,
  cover_media_type: coverMediaType,
  category,
+ tags: tags.length > 0 ? tags : [category, "noticias", "regiao", "brasil"],
  reading_time_minutes: readingTime,
  status,
  editorial_stage: editorialStage,
@@ -353,6 +356,21 @@ function WorkspaceNovaMateriaPage() {
  className="rounded-lg h-10 text-xs border-border/60"
  />
  </div>
+ </div>
+
+ <div className="space-y-2">
+ <Label className="text-xs font-bold">Palavras-chave SEO e Indexação (separadas por vírgula)</Label>
+ <Input
+ placeholder="Ex: politica, economia, chapeco, agricultura, saude"
+ value={tagsInput}
+ onChange={(e) => {
+   setTagsInput(e.target.value);
+   const parsed = e.target.value.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean);
+   setTags(parsed);
+ }}
+ className="rounded-lg h-10 text-xs border-border/60"
+ />
+ <p className="text-2xs text-muted-foreground">Essas tags alimentam metatags do Googlebot, sitemap de notícias e indexação para IAs.</p>
  </div>
  </div>
 

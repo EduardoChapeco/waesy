@@ -124,7 +124,7 @@ export const createIntranetChannel = createServerFn({ method: "POST" })
         department: input.department,
         scope: input.scope,
         creator_id: identity?.id,
-        creator_name: identity?.full_name || "Membro da Equipe",
+        creator_name: (identity as any)?.full_name || (identity as any)?.fullName || "Membro da Equipe",
       })
       .select()
       .single();
@@ -203,7 +203,7 @@ export const sendIntranetMessage = createServerFn({ method: "POST" })
         channel_id: input.channelId,
         store_id: channel.store_id,
         author_id: identity?.id,
-        author_name: identity?.full_name || "Colaborador",
+        author_name: (identity as any)?.full_name || (identity as any)?.fullName || "Colaborador",
         author_role: input.authorRole || identity?.role || "Equipe",
         content: input.content,
         artifact_type: input.artifactType || null,
@@ -390,7 +390,7 @@ export const getStoreIntranetSalesSpreadsheet = createServerFn({ method: "GET" }
         colsCount: 5,
         headers: ["Categoria", "Pedidos", "Receita (R$)", "Ticket Médio", "Participação (%)"],
         colTypes: ["abc", "123", "123", "123", "123"],
-        rows,
+        rows: [],
       };
     }
   });

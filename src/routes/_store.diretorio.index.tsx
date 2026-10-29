@@ -19,6 +19,7 @@ import { NativeMobileHeader } from "@/components/navigation/native-mobile-header
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { EmptyState } from "@/components/state/states";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
 const DIRECTORY_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Tudo", icon: Tag },
@@ -33,16 +34,22 @@ const DIRECTORY_CATEGORIES: FilterChipOption[] = [
 ];
 
 export const Route = createFileRoute("/_store/diretorio/")({
- head: () => ({
- meta: [
- { title: "Guia e Diretório de Empresas e Serviços" },
- {
- name: "description",
- content:
- "Encontre empresas, clínicas, oficinas, prestadores de serviços e comércios locais na região com fotos, avaliações, horários e contato direto via WhatsApp.",
- },
- ],
- }),
+  head: () =>
+    buildUniversalHead({
+      title: "Guia Oficial e Diretório de Empresas | Waesy",
+      description:
+        "Encontre empresas verificadas com Cartão CNPJ, clínicas, oficinas e comércios locais na região com fotos, avaliações e contato direto.",
+      path: "/diretorio",
+      ogType: "website",
+      webmcpType: "business_directory_index",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Diretório de Empresas",
+        description: "Catálogo oficial de empresas e comércios locais verificados no Waesy.",
+        url: "https://waesy.com.br/diretorio",
+      },
+    }),
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {

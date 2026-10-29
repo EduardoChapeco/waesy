@@ -1242,7 +1242,7 @@ export const createCarRentalBooking = createServerFn({ method: "POST" })
       profile_id: identity?.customer_id || null,
       customer_name: input.driverName.trim(),
       customer_phone: input.driverPhone.trim(),
-      customer_email: identity?.email || "cliente@waesy.com",
+      customer_email: (identity as any)?.email || "cliente@waesy.com",
       desired_date: new Date().toISOString().split("T")[0],
       guests_count: 1,
       total_price_cents: input.totalPriceCents,

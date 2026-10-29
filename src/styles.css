@@ -184,6 +184,48 @@
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
 }
 
+/* ── Canonical Intermediate Blue Gradient & Tactile Noise Texture ── */
+.bg-waesy-gradient-blue {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--magic-accent-primary) 75%, #001845) 0%, var(--magic-accent-primary) 50%, color-mix(in srgb, var(--magic-accent-primary) 70%, #7dd3fc) 100%);
+}
+
+.texture-noise,
+.waesy-surface-grain {
+  position: relative;
+  isolation: isolate;
+}
+
+.texture-noise::after,
+.waesy-surface-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 140px 140px;
+  mix-blend-mode: overlay;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 140px 140px;
+}
+
+.waesy-hero-glow {
+  background: radial-gradient(ellipse 80% 60% at 50% -20%, color-mix(in srgb, var(--magic-accent-primary) 22%, transparent), transparent);
+}
+
+.waesy-frosted-glass {
+  background: color-mix(in srgb, var(--card) 65%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, #ffffff 25%, transparent);
+}
+
 @theme inline {
   /* ── Master Niche Chameleon Tokens (MASTER PROMPT V138) ── */
   --radius-master: var(--radius-master, 0.75rem);
@@ -328,8 +370,8 @@
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 350ms;
-  --magic-accent-primary: #7c3aed;
-  --magic-accent-hover: #6d28d9;
+  --magic-accent-primary: #0066FF;
+  --magic-accent-hover: #0052CC;
   --magic-grid-min: 280px;
   --magic-transition: 150ms ease;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -430,7 +472,7 @@
   --border-control: var(--input);
   --border-focus: var(--ring);
 
-  --accent-soft: rgba(124, 58, 237, 0.10);
+  --accent-soft: rgba(0, 102, 255, 0.10);
 
   --radius-xs: 2px;
   --radius-sm: 4px;
@@ -524,9 +566,9 @@
     --border-default: oklch(0.25 0 0);
     --border-strong: oklch(0.38 0 0);
     --border-control: oklch(0.22 0 0);
-    --border-focus: #a78bfa;
+    --border-focus: var(--magic-accent-primary);
 
-    --accent-soft: rgba(167, 139, 250, 0.15);
+    --accent-soft: rgba(10, 132, 255, 0.18);
   }
 }
 
@@ -557,7 +599,7 @@
 
   --border: oklch(0.25 0 0);
   --input: oklch(0.25 0 0);
-  --ring: #a78bfa;
+  --ring: var(--magic-accent-primary);
 
   /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
   --canvas: oklch(0.10 0 0);
@@ -577,9 +619,9 @@
   --border-default: oklch(0.25 0 0);
   --border-strong: oklch(0.38 0 0);
   --border-control: oklch(0.25 0 0);
-  --border-focus: #a78bfa;
+  --border-focus: var(--magic-accent-primary);
 
-  --accent-soft: rgba(167, 139, 250, 0.15);
+  --accent-soft: rgba(10, 132, 255, 0.18);
 }
 
 /* Theme selector bridge: existing .dark remains supported. */
@@ -596,7 +638,7 @@
   --muted-foreground: oklch(0.7 0 0);
   --border: oklch(0.25 0 0);
   --input: oklch(0.25 0 0);
-  --ring: #a78bfa;
+  --ring: var(--magic-accent-primary);
 
   /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
   --canvas: oklch(0.10 0 0);
@@ -616,9 +658,9 @@
   --border-default: oklch(0.25 0 0);
   --border-strong: oklch(0.38 0 0);
   --border-control: oklch(0.25 0 0);
-  --border-focus: #a78bfa;
+  --border-focus: var(--magic-accent-primary);
 
-  --accent-soft: rgba(167, 139, 250, 0.15);
+  --accent-soft: rgba(10, 132, 255, 0.18);
 }
 
 /* ===========================================================================

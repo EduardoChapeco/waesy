@@ -597,7 +597,7 @@ export function CarRentalDetailModal({
 
           <DialogFooter className="pt-2 gap-2">
             <Link
-              to="/_store/turismo/aluguel-carros/$id"
+              to="/turismo/aluguel-carros/$id"
               params={{ id: offer.id }}
               className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold border border-border inline-flex items-center justify-center hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >

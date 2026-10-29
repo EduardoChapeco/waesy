@@ -951,6 +951,10 @@ export const getPublicBrandSettings = createServerFn({ method: "GET" }).handler(
       state: brandRow.state || null,
       seo_title: brandRow.seo_title || "Waesy",
       seo_description: brandRow.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
+      primary_color: brandRow.primary_color || "#09090b",
+      accent_color: brandRow.accent_color || "#0066FF",
+      secondary_color: brandRow.secondary_color || "#0052CC",
+      theme_style: brandRow.theme_style || "azure_minimal",
     };
   }
 
@@ -981,6 +985,10 @@ export const getPublicBrandSettings = createServerFn({ method: "GET" }).handler(
     state: store?.state || null,
     seo_title: store?.seo_title || "Waesy",
     seo_description: store?.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
+    primary_color: settings.primary_color || settings.primaryColor || "#09090b",
+    accent_color: settings.accent_color || settings.accentColor || "#0066FF",
+    secondary_color: settings.secondary_color || settings.secondaryColor || "#0052CC",
+    theme_style: settings.theme_style || "azure_minimal",
   };
 });
 
@@ -1025,6 +1033,10 @@ export const getPlatformBrandSettings = createServerFn({ method: "GET" }).handle
       state: brandRow.state || store?.state || null,
       seo_title: brandRow.seo_title || "Waesy",
       seo_description: brandRow.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
+      primary_color: brandRow.primary_color || "#09090b",
+      accent_color: brandRow.accent_color || "#0066FF",
+      secondary_color: brandRow.secondary_color || "#0052CC",
+      theme_style: brandRow.theme_style || "azure_minimal",
     };
   }
 
@@ -1054,6 +1066,10 @@ export const getPlatformBrandSettings = createServerFn({ method: "GET" }).handle
     state: store?.state || null,
     seo_title: store?.seo_title || "Waesy",
     seo_description: store?.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
+    primary_color: settings.primary_color || settings.primaryColor || "#09090b",
+    accent_color: settings.accent_color || settings.accentColor || "#0066FF",
+    secondary_color: settings.secondary_color || settings.secondaryColor || "#0052CC",
+    theme_style: settings.theme_style || "azure_minimal",
   };
 });
 
@@ -1079,6 +1095,10 @@ export const updatePlatformBrandSettings = createServerFn({ method: "POST" })
       social_instagram: z.string().nullable().optional(),
       social_facebook: z.string().nullable().optional(),
       social_linkedin: z.string().nullable().optional(),
+      primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      accent_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      secondary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      theme_style: z.string().optional(),
     }),
   )
   .handler(async ({ data: input }) => {
@@ -1109,6 +1129,10 @@ export const updatePlatformBrandSettings = createServerFn({ method: "POST" })
       ...(input.social_instagram !== undefined && { social_instagram: input.social_instagram }),
       ...(input.social_facebook !== undefined && { social_facebook: input.social_facebook }),
       ...(input.social_linkedin !== undefined && { social_linkedin: input.social_linkedin }),
+      ...(input.primary_color !== undefined && { primary_color: input.primary_color }),
+      ...(input.accent_color !== undefined && { accent_color: input.accent_color }),
+      ...(input.secondary_color !== undefined && { secondary_color: input.secondary_color }),
+      ...(input.theme_style !== undefined && { theme_style: input.theme_style }),
     };
 
     if (existingBrand?.id) {
@@ -1165,6 +1189,10 @@ export const updatePlatformBrandSettings = createServerFn({ method: "POST" })
       ...(input.social_instagram !== undefined && { social_instagram: input.social_instagram }),
       ...(input.social_facebook !== undefined && { social_facebook: input.social_facebook }),
       ...(input.social_linkedin !== undefined && { social_linkedin: input.social_linkedin }),
+      ...(input.primary_color !== undefined && { primary_color: input.primary_color }),
+      ...(input.accent_color !== undefined && { accent_color: input.accent_color }),
+      ...(input.secondary_color !== undefined && { secondary_color: input.secondary_color }),
+      ...(input.theme_style !== undefined && { theme_style: input.theme_style }),
     };
 
     const updatePayload: Record<string, any> = { settings: updatedSettings, is_platform_root: true };

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { sendWhatsAppNotification } from "./integrations.functions";
+import { dispatchClosedLoopLeadQualification } from "./pixels.functions";
 
 // ─── CARTEIRA DE CLIENTES (BFF CANÔNICO) ──────────────────────────────────────
 
@@ -1390,8 +1391,7 @@ export const updateLeadStatus = createServerFn({ method: "POST" })
            },
          }).catch(() => {});
        }
-     })
-     .catch(() => {});
+     }, () => {});
  }
 
  return { status: "success" as const };

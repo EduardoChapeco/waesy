@@ -33,25 +33,51 @@ export const Route = createFileRoute("/_store/loja/$slug")({
     const primaryColor =
       profile?.settings?.primaryColor || profile?.settings?.primary_color || undefined;
 
+    const canonicalUrl = `https://waesy.com.br/loja/${profile?.slug || profile?.id || "loja"}`;
+    const city = profile?.city || profile?.settings?.city || "Chapecó";
+    const state = profile?.state || profile?.settings?.state || "SC";
+    const lat = profile?.latitude || profile?.settings?.latitude;
+    const lng = profile?.longitude || profile?.settings?.longitude;
+
     return {
       title: profile?.name
-        ? `${profile.name} — Vitrine & Cardápio Oficial | Waesy`
-        : "Página Oficial da Loja | Waesy",
+        ? `${profile.name} — Vitrine Oficial, Catálogo & Cartão CNPJ | Waesy Local Marketplace`
+        : "Página Oficial da Loja | Waesy Local Marketplace",
       meta: [
         {
           name: "description",
           content:
             profile?.description ||
-            "Catálogo de produtos, cardápio, horários de funcionamento e canais oficiais de atendimento.",
+            `${storeName} em ${city} - ${state}. Catálogo de produtos, cardápio, ficha cadastral CNPJ, endereço, horários de funcionamento e atendimento no Waesy Local Marketplace.`,
         },
         { name: "theme-color", content: primaryColor },
         { name: "apple-mobile-web-app-title", content: storeName },
         { name: "apple-mobile-web-app-capable", content: "yes" },
         { name: "mobile-web-app-capable", content: "yes" },
-        { property: "og:title", content: `${storeName} — Loja Oficial` },
+        { property: "og:title", content: `${storeName} — Vitrine Oficial | Waesy Local Marketplace` },
+        {
+          property: "og:description",
+          content:
+            profile?.description ||
+            `Catálogo oficial, endereço, CNPJ e canais de atendimento de ${storeName} em ${city} - ${state}.`,
+        },
+        { property: "og:type", content: "business.business" },
+        { property: "og:url", content: canonicalUrl },
         { property: "og:image", content: storeLogo },
+        { name: "geo.region", content: `BR-${state}` },
+        { name: "geo.placename", content: `${city}, ${state}` },
+        ...(lat && lng
+          ? [
+              { name: "geo.position", content: `${lat};${lng}` },
+              { name: "ICBM", content: `${lat}, ${lng}` },
+            ]
+          : []),
       ],
       links: [
+        {
+          rel: "canonical",
+          href: canonicalUrl,
+        },
         {
           rel: "manifest",
           href: profile?.id

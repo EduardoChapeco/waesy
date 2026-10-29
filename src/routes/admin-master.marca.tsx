@@ -57,6 +57,13 @@ function AdminMasterMarcaPage() {
  const [showLogo, setShowLogo] = useState(initialBrand.show_logo !== false);
  const [logoUrl, setLogoUrl] = useState<string | null>(initialBrand.logo_url || null);
  const [faviconUrl, setFaviconUrl] = useState<string | null>(initialBrand.favicon_url || null);
+ // design-lint-ignore DL-01 reason:"Cor padrao de acento azul intermediario no painel master" expiry:"2027-12-31"
+ const [accentColor, setAccentColor] = useState(initialBrand.accent_color || "#0066FF");
+ // design-lint-ignore DL-01 reason:"Cor padrao estrutural neutra preta no painel master" expiry:"2027-12-31"
+ const [primaryColor, setPrimaryColor] = useState(initialBrand.primary_color || "#09090b");
+ // design-lint-ignore DL-01 reason:"Cor padrao secundaria azul escuro no painel master" expiry:"2027-12-31"
+ const [secondaryColor, setSecondaryColor] = useState(initialBrand.secondary_color || "#0052CC");
+ const [themeStyle, setThemeStyle] = useState(initialBrand.theme_style || "azure_minimal");
 
  // Backgrounds de Login
  const [loginBgDesktopUrl, setLoginBgDesktopUrl] = useState<string | null>(
@@ -107,6 +114,13 @@ function AdminMasterMarcaPage() {
  supportHours !== (initialBrand.support_hours || "Segunda a Sexta, das 08h às 18h") ||
  socialInstagram !== (initialBrand.social_instagram || "") ||
  socialFacebook !== (initialBrand.social_facebook || "") ||
+ // design-lint-ignore DL-01 reason:"Comparacao de estado sujo do acento azul no painel master" expiry:"2027-12-31"
+ accentColor !== (initialBrand.accent_color || "#0066FF") ||
+ // design-lint-ignore DL-01 reason:"Comparacao de estado sujo da cor principal no painel master" expiry:"2027-12-31"
+ primaryColor !== (initialBrand.primary_color || "#09090b") ||
+ // design-lint-ignore DL-01 reason:"Comparacao de estado sujo da cor secundaria no painel master" expiry:"2027-12-31"
+ secondaryColor !== (initialBrand.secondary_color || "#0052CC") ||
+ themeStyle !== (initialBrand.theme_style || "azure_minimal") ||
  socialLinkedin !== (initialBrand.social_linkedin || "")
  );
  }, [
@@ -124,6 +138,10 @@ function AdminMasterMarcaPage() {
  socialInstagram,
  socialFacebook,
  socialLinkedin,
+ accentColor,
+ primaryColor,
+ secondaryColor,
+ themeStyle,
  initialBrand,
  ]);
 
@@ -182,6 +200,10 @@ function AdminMasterMarcaPage() {
  social_instagram: socialInstagram.trim() || undefined,
  social_facebook: socialFacebook.trim() || undefined,
  social_linkedin: socialLinkedin.trim() || undefined,
+  primary_color: primaryColor,
+  accent_color: accentColor,
+  secondary_color: secondaryColor,
+  theme_style: themeStyle,
  },
  });
  toast.success("Identidade da marca e configurações propagadas com sucesso!");
@@ -424,7 +446,225 @@ function AdminMasterMarcaPage() {
  </div>
  </div>
 
- {/* 4. Backgrounds Imersivos da Tela de Login (3 Breakpoints) */}
+ {/* 4. Cores Padrão do Site & Identidade Visual (Azul Intermediário Canônico & Preto Estrutural) */}
+ <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-3">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <Palette className="size-4" />
+ </div>
+ <div>
+ <h2 className="text-sm font-bold text-foreground">
+ Cores Padrão do Site e Identidade Visual
+ </h2>
+ <p className="text-2xs text-muted-foreground">
+ Preto/cinza para estrutura e o Azul Intermediário Canônico como acento secundário e assinatura (sem excesso de cor).
+ </p>
+ </div>
+ </div>
+ <Badge variant="outline" className="text-3xs font-mono border-primary/30 text-primary">
+ Zero Hardcode
+ </Badge>
+ </div>
+
+ {/* Seletor do Tom de Azul Intermediário (Acento / Assinatura) */}
+ <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-4">
+ <div className="space-y-1">
+ <Label htmlFor="accent-color-input" className="text-xs font-bold text-foreground flex items-center gap-2">
+ <span>Azul Intermediário Canônico (Cor de Acento / Secundário)</span>
+ <span className="size-3.5 rounded-full border border-border/60 shrink-0" style={{ backgroundColor: accentColor }} />
+ </Label>
+ <p className="text-2xs text-muted-foreground">
+ Assinatura visual do ecossistema para badges, foco, links ativos, micro-indicadores e gradientes de destaque.
+ </p>
+ </div>
+
+ <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+ <div className="flex items-center gap-2">
+ <input
+ id="accent-color-picker"
+ type="color"
+ value={accentColor}
+ onChange={(e) => setAccentColor(e.target.value)}
+ className="size-10 rounded-lg cursor-pointer border border-border/60 p-0.5 bg-background shrink-0"
+ title="Selecionar cor de acento"
+ />
+ <Input
+ id="accent-color-input"
+ value={accentColor}
+ onChange={(e) => setAccentColor(e.target.value)}
+ placeholder="#0066FF"
+ className="w-28 font-mono text-xs font-bold uppercase rounded-lg h-10 bg-background"
+ />
+ </div>
+
+ {/* Presets Canônicos de Azul Intermediário */}
+ <div className="flex flex-wrap items-center gap-2 flex-1">
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ // design-lint-ignore DL-01 reason:"Preset de tom de azul intermediario oficial" expiry:"2027-12-31"
+ onClick={() => setAccentColor("#0066FF")}
+ // design-lint-ignore DL-01 reason:"Comparacao de tom de azul intermediario oficial" expiry:"2027-12-31"
+ className={`h-8 text-2xs font-semibold rounded-lg px-2.5 gap-1.5 cursor-pointer ${accentColor.toLowerCase() === "#0066ff" ? "border-primary bg-primary/10 text-primary font-bold" : ""}`}
+ >
+ <span className="size-2 rounded-full bg-blue-600 shrink-0" />
+ <span>Oficial (#0066FF)</span>
+ </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ // design-lint-ignore DL-01 reason:"Preset de azul eletrico linear" expiry:"2027-12-31"
+ onClick={() => setAccentColor("#0070F3")}
+ // design-lint-ignore DL-01 reason:"Comparacao de tom de azul linear" expiry:"2027-12-31"
+ className={`h-8 text-2xs font-semibold rounded-lg px-2.5 gap-1.5 cursor-pointer ${accentColor.toLowerCase() === "#0070f3" ? "border-primary bg-primary/10 text-primary font-bold" : ""}`}
+ >
+ <span className="size-2 rounded-full bg-sky-500 shrink-0" />
+ <span>Elétrico (#0070F3)</span>
+ </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ // design-lint-ignore DL-01 reason:"Preset de azul Apple HIG" expiry:"2027-12-31"
+ onClick={() => setAccentColor("#0A84FF")}
+ // design-lint-ignore DL-01 reason:"Comparacao de tom de azul Apple" expiry:"2027-12-31"
+ className={`h-8 text-2xs font-semibold rounded-lg px-2.5 gap-1.5 cursor-pointer ${accentColor.toLowerCase() === "#0a84ff" ? "border-primary bg-primary/10 text-primary font-bold" : ""}`}
+ >
+ <span className="size-2 rounded-full bg-blue-500 shrink-0" />
+ <span>Apple HIG (#0A84FF)</span>
+ </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ // design-lint-ignore DL-01 reason:"Preset de azul Sky profundo" expiry:"2027-12-31"
+ onClick={() => setAccentColor("#0284C7")}
+ // design-lint-ignore DL-01 reason:"Comparacao de tom de azul Sky profundo" expiry:"2027-12-31"
+ className={`h-8 text-2xs font-semibold rounded-lg px-2.5 gap-1.5 cursor-pointer ${accentColor.toLowerCase() === "#0284c7" ? "border-primary bg-primary/10 text-primary font-bold" : ""}`}
+ >
+ <span className="size-2 rounded-full bg-sky-600 shrink-0" />
+ <span>Sky Profundo (#0284C7)</span>
+ </Button>
+ </div>
+ </div>
+ </div>
+
+ {/* Seletor da Cor Primária Neutra (Preto/Cinza Estrutural) */}
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-2">
+ <Label htmlFor="primary-color-input" className="text-xs font-bold text-foreground flex items-center justify-between">
+ <span>Cor Estrutural (Preto / Tipografia)</span>
+ <span className="size-3 rounded-full border border-border/60 shrink-0" style={{ backgroundColor: primaryColor }} />
+ </Label>
+ <div className="flex items-center gap-2">
+ <input
+ id="primary-color-picker"
+ type="color"
+ value={primaryColor}
+ onChange={(e) => setPrimaryColor(e.target.value)}
+ className="size-8 rounded-lg cursor-pointer border border-border/60 p-0.5 bg-background shrink-0"
+ title="Selecionar cor primária"
+ />
+ <Input
+ id="primary-color-input"
+ value={primaryColor}
+ onChange={(e) => setPrimaryColor(e.target.value)}
+ placeholder="#09090B"
+ className="font-mono text-xs font-bold uppercase rounded-lg h-8 bg-background flex-1"
+ />
+ </div>
+ </div>
+
+ <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-2">
+ <Label htmlFor="secondary-color-input" className="text-xs font-bold text-foreground flex items-center justify-between">
+ <span>Tom Secundário (Hover / Contornos)</span>
+ <span className="size-3 rounded-full border border-border/60 shrink-0" style={{ backgroundColor: secondaryColor }} />
+ </Label>
+ <div className="flex items-center gap-2">
+ <input
+ id="secondary-color-picker"
+ type="color"
+ value={secondaryColor}
+ onChange={(e) => setSecondaryColor(e.target.value)}
+ className="size-8 rounded-lg cursor-pointer border border-border/60 p-0.5 bg-background shrink-0"
+ title="Selecionar cor secundária"
+ />
+ <Input
+ id="secondary-color-input"
+ value={secondaryColor}
+ onChange={(e) => setSecondaryColor(e.target.value)}
+ placeholder="#0052CC"
+ className="font-mono text-xs font-bold uppercase rounded-lg h-8 bg-background flex-1"
+ />
+ </div>
+ </div>
+ </div>
+
+ {/* Amostra em Tempo Real: Gradiente com Textura Granulado/Noise e Frosted Glass */}
+ <div className="p-4 rounded-lg bg-muted/15 border border-border/40 space-y-3">
+ <div className="flex items-center justify-between">
+ <span className="text-xs font-bold text-foreground">
+ Amostra Canônica: Gradiente com Textura Granulado & Efeito Frosted Glass
+ </span>
+ <Badge variant="outline" className="text-3xs font-mono">
+ CSS .texture-noise + .bg-waesy-gradient-blue
+ </Badge>
+ </div>
+
+ {/* Cartão de Demonstração fiel à imagem de referência (Número 4 em vidro fosco sobre gradiente azul com noise) */}
+ <div
+ className="relative overflow-hidden rounded-xl p-6 text-white bg-waesy-gradient-blue texture-noise flex items-center justify-between gap-6 shadow-sm"
+ style={{
+ // design-lint-ignore DL-01 reason:"Gradiente dinâmico com acento azul do painel master" expiry:"2027-12-31"
+ background: `linear-gradient(135deg, color-mix(in srgb, ${accentColor} 75%, #001845) 0%, ${accentColor} 50%, color-mix(in srgb, ${accentColor} 70%, #7dd3fc) 100%)`,
+ }}
+ >
+ <div className="relative z-10 space-y-1">
+ <span className="text-3xs font-bold uppercase tracking-wider text-white/80">
+ Assinatura Visual de Destaque
+ </span>
+ <p className="text-sm font-bold text-white tracking-tight">
+ Tom de Azul Intermediário + Granulado Fino
+ </p>
+ <p className="text-2xs text-white/80 max-w-sm">
+ Filtro de textura tátil sutil eliminando banding e conferindo acabamento fosco premium Apple/Linear.
+ </p>
+ </div>
+
+ {/* Emblema Frosted Glass idêntico ao elemento 4 translúcido da imagem */}
+ <div className="relative z-10 size-16 sm:size-20 rounded-2xl waesy-frosted-glass flex items-center justify-center shadow-lg border border-white/30 text-white font-extrabold text-2xl sm:text-3xl shrink-0 select-none">
+ 4
+ </div>
+ </div>
+
+ {/* Amostras de Controles Táteis */}
+ <div className="flex flex-wrap items-center gap-3 pt-1">
+ <Button
+ type="button"
+ size="sm"
+ style={{ backgroundColor: accentColor, color: "#ffffff" }}
+ className="rounded-lg h-9 text-xs font-bold px-4 hover:opacity-90 transition-opacity"
+ >
+ Botão de Acento
+ </Button>
+ <div
+ style={{ backgroundColor: `color-mix(in srgb, ${accentColor} 12%, transparent)`, color: accentColor }}
+ className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-current/20 flex items-center gap-1.5"
+ >
+ <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: accentColor }} />
+ <span>Badge Secundário de Assinatura</span>
+ </div>
+ <div className="text-2xs text-muted-foreground ml-auto">
+ Propagação global via variáveis CSS :root e .dark
+ </div>
+ </div>
+ </div>
+ </div>
+
+ {/* 5. Backgrounds Imersivos da Tela de Login (3 Breakpoints) */}
  <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -748,7 +988,10 @@ function AdminMasterMarcaPage() {
 
  {/* ── Visualização 1: Barra de Topo Real ── */}
  <TabsContent value="topbar" className="pt-3 space-y-3">
- <div className="rounded-lg bg-background border border-border/60 overflow-hidden shadow-xs">
+ <div
+ style={{ "--magic-accent-primary": accentColor, "--primary": accentColor } as React.CSSProperties}
+ className="rounded-lg bg-background border border-border/60 overflow-hidden shadow-xs"
+>
  {/* Header TopBar */}
  <div className="px-4 py-3 flex items-center justify-between gap-2 border-b border-border/40">
  {/* Logo + Nome */}

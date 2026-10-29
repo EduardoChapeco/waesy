@@ -164,7 +164,7 @@ export function scoreAddressText(
   // Equivalência do número residencial
   if (orderNum && candidateNum && (orderNum === candidateNum || orderNum.includes(candidateNum))) {
     score += 15;
-    reasons.push(`Número residencial idêntico (#${orderNum})`);
+    reasons.push(`Número residencial idêntico (Nº ${orderNum})`);
   }
 
   // Similaridade de Logradouro

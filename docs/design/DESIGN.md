@@ -129,9 +129,11 @@ O sistema de componentes é estritamente particionado em doze camadas desacoplad
 ### 4. Acentos e Feedback
 | Variável CSS | Função | Descrição |
 | --- | --- | --- |
-| `--accent` | Acento institucional do ecossistema | Roxo canônico Waesy (`#7C3AED`) |
-| `--accent-hover` | Hover de botões de destaque | Roxo enriquecido (`#6D28D9`) |
-| `--accent-soft` | Fundo sutil de tags e ícones do Copilot | Fundo translúcido com 10% de opacidade |
+| `--accent` | Acento institucional do ecossistema | Azul intermediário canônico Waesy (`#0066FF`), dinamicamente configurável no Admin Master |
+| `--accent-hover` | Hover de botões de destaque | Azul intermediário enriquecido (`#0052CC`) |
+| `--accent-soft` | Fundo sutil de tags, badges e seleção | Fundo translúcido com 10% de opacidade (`rgba(0, 102, 255, 0.10)`) |
+| `.bg-waesy-gradient-blue` | Gradiente institucional de destaque | Transição suave de base azul profunda para azul intermediário com realce celeste |
+| `.texture-noise` | Textura tátil de micro-granulado | SVG fractal noise a 5% que elimina banding e confere acabamento analógico refinado |
 | `--success` | Sucesso, pago, finalizado, disponível | Verde neutro operacional (`#16A34A`) |
 | `--warning` | Alerta, pendente, atenção requerida | Âmbar neutro operacional (`#D97706`) |
 | `--danger` | Crítico, recusado, erro, exclusão | Vermelho neutro operacional (`#DC2626`) |

@@ -266,7 +266,7 @@ describe("BFF Server Functions: iFood Reconciliation & Central de Integrações"
     // Confirma que a mensagem de sistema foi gerada no chat
     const sysMsg = mockDb.chat_messages.find((m) => m.sender_type === "system");
     expect(sysMsg).toBeDefined();
-    expect(sysMsg?.content).toContain("Pedido iFood #888");
+    expect(sysMsg?.content).toContain("Pedido iFood N. 888");
   });
 
   it("recupera pedidos externos vinculados para a conversa de chat", async () => {
@@ -274,7 +274,7 @@ describe("BFF Server Functions: iFood Reconciliation & Central de Integrações"
       id: "msg-ext-1",
       conversation_id: MOCK_CONV_ID,
       sender_type: "system",
-      content: "Pedido iFood #888 vinculado automaticamente",
+      content: "Pedido iFood N. 888 vinculado automaticamente",
       metadata: {
         is_external_order: true,
         provider: "ifood",

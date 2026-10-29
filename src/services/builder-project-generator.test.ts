@@ -5,10 +5,17 @@ import { OmniPageDocument } from "@/types/omni-builder";
 describe("TanStack Project Generator (Lovable Parity)", () => {
   const sampleDoc: OmniPageDocument = {
     id: "doc_test_123",
+    page_id: "doc_test_123",
     slug: "supermercado",
     title: "Supermercado Modelo",
-    document_type: "storefront",
-    is_active: true,
+    schemaVersion: 1,
+    theme: {
+      primaryColor: "#09090b",
+      backgroundColor: "#ffffff",
+      textColor: "#09090b",
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "xl",
+    },
     blocks: [
       {
         id: "blk_1",
@@ -29,11 +36,6 @@ describe("TanStack Project Generator (Lovable Parity)", () => {
         styling: { paddingTop: "sm", paddingBottom: "sm" },
       },
     ],
-    global_styles: {
-      max_width_px: 1400,
-      primary_color: "var(--primary)",
-      theme_mode: "system",
-    },
   };
 
   it("gera a árvore completa de arquivos do projeto TanStack Start", () => {

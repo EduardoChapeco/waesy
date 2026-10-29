@@ -2,13 +2,34 @@
   "$schema": "https://modelcontextprotocol.io/schema/mcp-discovery.json",
   "name": "Waesy MCP Server",
   "version": "2.2.0",
-  "description": "Model Context Protocol endpoint for Waesy commerce, logistics, tourism, and services.",
+  "protocolVersion": "2024-11-05",
+  "description": "Model Context Protocol (Streamable HTTP) server for Waesy local marketplace, verified CNPJ business directory, regional news, logistics, tourism, and services.",
+  "homepage": "https://waesy.com.br",
+  "documentation": "https://waesy.com.br/developers",
+  "transport": {
+    "type": "streamable-http",
+    "url": "https://waesy.com.br/api/mcp/v1/tools/call",
+    "endpoint": "/api/mcp/v1/tools/call"
+  },
   "endpoint": "/api/mcp/v1/tools/call",
   "manifest": "/api/webmcp.json",
   "openapi": "/api/openapi.json",
+  "llmsTxt": "/llms.txt",
+  "agentInstructions": "/.well-known/agent-instructions.md",
+  "cli": {
+    "package": "@waesy/cli",
+    "command": "npx @waesy/cli"
+  },
   "capabilities": {
-    "tools": true,
-    "resources": true,
-    "prompts": true
+    "tools": {
+      "listChanged": false
+    },
+    "resources": {
+      "subscribe": false,
+      "listChanged": false
+    },
+    "prompts": {
+      "listChanged": false
+    }
   }
 }
