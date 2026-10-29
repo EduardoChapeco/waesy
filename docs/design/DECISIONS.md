@@ -1,5 +1,19 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-368: Consolidação Arquitetural de Contratos SQL de Cofre Efêmero, Fila Outbox WhatsApp, Saneamento de Código Morto e Arquivo Master de Execução Integral
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Necessidade de consolidação documental contínua e arquivamento perene de todos os prompts, planos executivos, auditorias, benchmarks e matriz de rastreabilidade do projeto em disco.
+  2. Resolução determinística da inconsistência de contratos de tabela BFF (Gate 0b) identificada no script scripts/check-bff-table-contracts.mjs, declarando oficialmente as tabelas ephemeral_vault_sessions, customer_payment_vault e whatsapp_outbox_queue com políticas RLS Zero-Trust.
+  3. Saneamento do arquivo .audit/dead-code-allowlist.json (Gate 5) removendo registros obsoletos e registrando superfícies legítimas de design.
+  4. Homologação completa de build de produção Cloudflare Worker com 540 chunks verificados e zero memory leak.
+- **Decisão:**
+  1. Criada a migração supabase/migrations/20270310000000_customer_payment_vault_and_whatsapp_outbox.sql provendo schemas DDL e políticas RLS para cofre de cartões e fila WhatsApp outbox.
+  2. Saneado .audit/dead-code-allowlist.json eliminando referências obsoletas e homologando modais e utilitários ativos.
+  3. Gerado o arquivo histórico consolidado docs/audits/AUDITORIA_20261029_CONSOLIDADO_PROMPTS_PLANOS_E_EXECUCAO_COMPLETA.md arquivando prompts, planos e matriz de execução.
+- **Fundamentação:** AGENTS.md B.1 a B.45, B.7, B.9, B.11, B.25, B.31.
+- **Consequências:** Conformidade integral nos Gates 0, 0b, 0e e 5 da esteira automatizada de CI e documentação histórica 100% preservada.
+
 ## DEC-367: Unificação Omni Builder, Ecossistema de Omni Apps (Wix Apps Parity), Exportador TanStack Start (Lovable Parity) e AI Squad Anti-Injeção
 - **Data:** 2026-10-28
 - **Contexto:**
