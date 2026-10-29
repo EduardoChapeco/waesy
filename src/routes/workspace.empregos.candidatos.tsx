@@ -724,6 +724,51 @@ function WorkspaceCandidatesPage() {
                     </a>
                   )}
 
+                  {/* Inteligência Salarial & Histórico de Empregador (DEC-375) */}
+                  {(app.salary_expectation_cents || app.last_salary_cents || app.previous_company_name) && (
+                    <div className="p-3 rounded-lg bg-card border border-border/70 space-y-2 text-xs">
+                      <div className="flex items-center justify-between font-medium">
+                        <span className="text-muted-foreground">Pretensão Salarial:</span>
+                        <span className="font-bold text-foreground font-mono">
+                          {app.salary_expectation_cents ? formatMoney(app.salary_expectation_cents) : "A combinar"}
+                        </span>
+                      </div>
+                      {app.last_salary_cents && (
+                        <div className="flex items-center justify-between font-medium">
+                          <span className="text-muted-foreground">Último Salário:</span>
+                          <span className="font-semibold text-muted-foreground font-mono">
+                            {formatMoney(app.last_salary_cents)}
+                          </span>
+                        </div>
+                      )}
+                      {app.previous_company_name && (
+                        <div className="pt-1.5 border-t border-border/50 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">Última Empresa:</span>
+                            <span className="font-semibold text-foreground">{app.previous_company_name}</span>
+                          </div>
+                          {app.reason_for_leaving && (
+                            <p className="text-xs text-muted-foreground italic">
+                              Motivo da saída: "{app.reason_for_leaving}"
+                            </p>
+                          )}
+                          {app.previous_company_rating && (
+                            <div className="flex items-center gap-1 text-xs text-amber-600 font-medium pt-0.5">
+                              <span>Avaliação:</span>
+                              <span className="font-bold">{app.previous_company_rating}/5</span>
+                              <Star className="size-3.5 fill-amber-500 text-amber-500" />
+                            </div>
+                          )}
+                          {app.previous_company_feedback && (
+                            <p className="text-xs text-muted-foreground bg-muted/40 p-2 rounded border border-border/40">
+                              Feedback: "{app.previous_company_feedback}"
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Detalhe da Entrevista */}
                   {app.status === "interview_scheduled" && app.interview_at && (
                     <div className="p-3 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1">
@@ -892,6 +937,58 @@ function WorkspaceCandidatesPage() {
                     <ExternalLink className="size-3 ml-auto opacity-70" />
                   </a>
                 </Button>
+              )}
+
+              {/* Inteligência Salarial & Histórico de Empregador (DEC-375) */}
+              {(dossierCandidate.salary_expectation_cents || dossierCandidate.last_salary_cents || dossierCandidate.previous_company_name) && (
+                <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3 text-xs">
+                  <h4 className="font-bold text-foreground text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Briefcase className="size-3.5 text-primary" />
+                    <span>Inteligência Salarial & Experiência Prévia</span>
+                  </h4>
+
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/50">
+                      <span className="text-muted-foreground block text-xs">Pretensão Salarial</span>
+                      <span className="font-bold text-foreground font-mono text-sm block mt-0.5">
+                        {dossierCandidate.salary_expectation_cents ? formatMoney(dossierCandidate.salary_expectation_cents) : "A combinar"}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/50">
+                      <span className="text-muted-foreground block text-xs">Último Salário</span>
+                      <span className="font-semibold text-foreground font-mono text-sm block mt-0.5">
+                        {dossierCandidate.last_salary_cents ? formatMoney(dossierCandidate.last_salary_cents) : "Não informado"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {dossierCandidate.previous_company_name && (
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Última Empresa</span>
+                        <span className="font-bold text-foreground">{dossierCandidate.previous_company_name}</span>
+                      </div>
+                      {dossierCandidate.reason_for_leaving && (
+                        <p className="text-xs text-muted-foreground italic">
+                          Motivo da saída: "{dossierCandidate.reason_for_leaving}"
+                        </p>
+                      )}
+                      {dossierCandidate.previous_company_rating && (
+                        <div className="flex items-center gap-1 text-xs text-amber-600 font-bold">
+                          <span>Avaliação:</span>
+                          <span>{dossierCandidate.previous_company_rating}/5</span>
+                          <Star className="size-3.5 fill-amber-500 text-amber-500" />
+                        </div>
+                      )}
+                      {dossierCandidate.previous_company_feedback && (
+                        <p className="text-xs text-muted-foreground bg-background p-2 rounded border border-border/40 mt-1">
+                          Feedback: "{dossierCandidate.previous_company_feedback}"
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Avaliação Estrelas */}

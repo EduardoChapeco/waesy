@@ -417,11 +417,11 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
     if (cleaningFeeCents && cleaningFeeCents > 0) {
       list.push({ label: "Taxa de Limpeza", value: formatMoney(cleaningFeeCents), category: "commercial" });
     }
-    if (condoCents && condoCents > 0) {
-      list.push({ label: "Condomínio", value: formatMoney(condoCents), category: "commercial" });
+    if (condoCents !== undefined && condoCents !== null) {
+      list.push({ label: "Condomínio", value: Number(condoCents) > 0 ? formatMoney(Number(condoCents)) : "Isento", category: "commercial", highlight: Number(condoCents) === 0 });
     }
-    if (iptuCents && iptuCents > 0) {
-      list.push({ label: "IPTU", value: formatMoney(iptuCents), category: "commercial" });
+    if (iptuCents !== undefined && iptuCents !== null) {
+      list.push({ label: "IPTU", value: Number(iptuCents) > 0 ? formatMoney(Number(iptuCents)) : "Isento", category: "commercial", highlight: Number(iptuCents) === 0 });
     }
     if (attrs.furnished !== undefined) {
       list.push({ label: "Mobiliado", value: attrs.furnished ? "Sim, completo" : "Não", category: "technical" });
@@ -661,6 +661,26 @@ export function resolveClassifiedDetailedSpecs(classified: any): ClassifiedSpecI
       list.push({ label: "Temperatura", value: tempLabel, category: "technical" });
     }
     if (prepTime) list.push({ label: "Tempo de Preparo", value: `~${prepTime} min`, category: "logistics" });
+
+    const ingredients = attrs.ingredients || classified.ingredients;
+    if (ingredients) {
+      list.push({ label: "Ingredientes", value: String(ingredients), category: "technical" });
+    }
+
+    const allergens = attrs.allergens || classified.allergens;
+    if (allergens) {
+      list.push({ label: "Alérgenos", value: String(allergens), category: "technical", highlight: true });
+    }
+
+    const portionSize = attrs.portion_size || attrs.servings || attrs.serves_count;
+    if (portionSize) {
+      list.push({ label: "Rendimento / Porção", value: String(portionSize), category: "dimensions" });
+    }
+
+    const nutritionalInfo = attrs.nutritional_info || attrs.calories;
+    if (nutritionalInfo) {
+      list.push({ label: "Tabela Nutricional", value: String(nutritionalInfo), category: "technical" });
+    }
   }
 
   // ── 7. NEGÓCIOS & M&A ──

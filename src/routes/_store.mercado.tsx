@@ -242,13 +242,26 @@ function MercadoVerticalPage() {
   const cartItemCount = allCartItems.reduce((acc: number, it: any) => acc + (it.qty || 1), 0);
   const cartSubtotalCents = allCartItems.reduce((acc: number, it: any) => acc + (it.priceCents * it.qty), 0);
 
+  const isClubMember = Boolean(clubMemberData?.isMember);
+
+  const getEffectivePriceCents = (product: SupermarketProductCardDTO) => {
+    if (isClubMember && product.clubPriceCents && product.clubPriceCents > 0) {
+      return product.clubPriceCents;
+    }
+    if (product.onlineExclusivePriceCents && product.onlineExclusivePriceCents > 0) {
+      return product.onlineExclusivePriceCents;
+    }
+    return product.priceCents;
+  };
+
   const handleAddToCart = (product: SupermarketProductCardDTO) => {
+    const effectivePrice = getEffectivePriceCents(product);
     addToCart({
       id: product.id,
       storeId: product.storeId,
       storeName: product.storeName,
       title: product.title,
-      priceCents: product.priceCents,
+      priceCents: effectivePrice,
       qty: 1,
       imageUrl: product.imageUrl || undefined,
     });
@@ -263,12 +276,13 @@ function MercadoVerticalPage() {
     prepOption?: string;
     instructions?: string;
   }) => {
+    const effectivePrice = getEffectivePriceCents(params.product);
     addToCart({
       id: params.product.id,
       storeId: params.product.storeId,
       storeName: params.product.storeName,
       title: `${params.product.title}${params.prepOption ? ` (${params.prepOption})` : ""}`,
-      priceCents: params.product.priceCents,
+      priceCents: effectivePrice,
       qty: params.quantity,
       imageUrl: params.product.imageUrl || undefined,
     });

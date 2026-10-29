@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileAttachmentUpload } from "@/components/ui/file-attachment-upload";
 import { applyToClassifiedJob } from "@/services/classifieds.functions";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
@@ -217,12 +218,16 @@ export function ClassifiedJobApplicationDialog({
 
               {activeTab === "upload_cv" && (
                 <div className="space-y-2">
-                  <Label>Link do Currículo (PDF / LinkedIn / Drive)</Label>
-                  <Input
+                  <FileAttachmentUpload
+                    label="Currículo / Documento (PDF, DOCX)"
+                    helperText="Envie seu arquivo de currículo (PDF/DOCX até 20MB) ou link externo"
+                    accept="application/pdf,.doc,.docx,image/*"
                     value={cvFileUrl}
-                    onChange={(e) => setCvFileUrl(e.target.value)}
-                    placeholder="https://drive.google.com/... ou https://linkedin.com/in/..."
-                    className="h-11 rounded-lg text-xs"
+                    onChange={(url) => setCvFileUrl(url)}
+                    onRemove={() => setCvFileUrl("")}
+                    bucket="cms-media"
+                    showExternalUrlOption={true}
+                    compact={true}
                   />
                 </div>
               )}

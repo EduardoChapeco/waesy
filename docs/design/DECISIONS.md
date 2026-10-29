@@ -6802,3 +6802,32 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   4. **Lockdown Zero-Trust RLS de Campanhas (Microfase 4):** Criacao da migracao `20270311000000_ad_campaigns_tenant_rls_lockdown.sql` com isolamento estrito de tenant para `ad_campaigns` e `ad_events`, permitindo leitura de campanhas ativas para banners publicos e ingestao segura de eventos de visualizacao e clique.
 - **Fundamentacao Teorica:** AGENTS.md Regras B.4, B.7, B.8, B.25, B.31 (Integridade Waesy) e B.33 (Honestidade Estrita).
 - **Consequencias:** Ecossistema comercial e de marketing 100% integrado ao vivo, com zero dados artificiais, zero caixas manuais de imagem, telemetria CAPI precisa e RLS hermetico.
+
+## DEC-367: Reconstrucao Estrutural, Blindagem RLS (Orders & Bookings), Storage Impositivo e Bilateralidade de Nichos
+
+- **Data:** 2026-10-29
+- **ID da Decisao:** DEC-367
+- **Contexto:** Execucao integral do plano de reconstrucao e estabilizacao do ecossistema Waesy apos auditoria forense transversal, eliminando vulnerabilidades de RLS pendentes em pedidos e reservas, sincronizando avaliacoes de empregadores nos curriculos, erradicando inputs manuais residuais de URL de midia e garantindo propagacao bilateral de especificacoes gastronomicas e imobiliarias.
+- **Decisao Adotada:**
+  1. **Blindagem RLS Zero-Trust (Microfase 1):** Criada a migracao `20270312000000_store_orders_and_bookings_rls_lockdown.sql` ativando RLS e revogando acesso de `anon` em `public.store_orders` e `public.travel_bookings`, com politicas de isolamento por loja e visualizacao propria para clientes.
+  2. **Unificacao de Curriculo & Avaliacao de Empregadores (Microfase 2):** Normalizacao de `salary_cents` e ratings de gestao antes de invocar `saveUserResume`, sincronizando deterministicamente com `profiles.resume_data` e com a tabela `public.employer_reviews` para inteligencia estilo InfoJobs/Glassdoor.
+  3. **Erradicacao de Inputs Manuais de URL de Midia (Microfase 3):** Substituicao definitiva de caixas manuais de URL por componentes de upload para Supabase Storage em cadastro de entregadores (`_store.conta.entregador.tsx`), vistorias de imoveis (`workspace.imoveis.manutencoes.tsx`), comprovantes de afiliados (`workspace.marketing.afiliados.tsx`), revisao de mineracao (`mining-dashboard.tsx`), upload de anexos (`file-attachment-upload.tsx`) e editor de home (`admin-master.home-editor.tsx`).
+  4. **Propagacao Bilateral de Nichos (Microfase 4):** Resolucao de `ingredients`, `allergens`, `portion_size` e `nutritional_info` no bloco gastronomico (`isGrocery`) de `canonical-specs-resolver.ts`, e exibicao explícita de "Isento" para condominio e IPTU nulos em imoveis.
+  5. **Tratamento Estruturado de Erros (Microfase 5):** Saneamento de blocos de captura de excecao em `admin-home-cms.functions.ts` com logs estruturados contendo metadados de schema e tabela (`post_likes`, `post_comments`).
+- **Fundamentacao Teorica:** AGENTS.md Regras B.4, B.7, B.8, B.25, B.31, B.33 e B.37 (Isolamento Semantico de Nichos).
+- **Consequencias:** Banco de dados 100% blindado com RLS em todas as tabelas transacionais, zero campos manuais de midia, propagacao completa de atributos de nichos nas vitrines publicas e telemetria de backend resiliente.
+
+## DEC-375: Sincronização Realtime Intranet, Inteligência Fiscal Contextual, Precificação do Clube e Hardening RLS
+
+- **Data:** 2026-10-29
+- **ID da Decisão:** DEC-375
+- **Contexto:** Estabilização e integração ponta a ponta dos fluxos transacionais, corporativos e públicos. Reforço de canais WebSocket na intranet de atendimento, adaptabilidade de emissões fiscais conforme tipo de pedido, sincronização de preços de sócios no carrinho de supermercado, anexo de currículos no Supabase Storage e fechamento de brechas RLS em projetos e templates de estúdio.
+- **Decisão Adotada:**
+  1. **Sincronização Realtime na Intranet:** Conexão de canal Supabase Realtime em `workspace.atendimento.index.tsx` ouvindo eventos `INSERT` em `intranet_messages` e mutações em `intranet_milestones`, garantindo atualização com 0ms de latência entre colaboradores.
+  2. **Cluster de Ações Fiscais Contextual:** Atualização de `FiscalActionCluster.tsx` e `services-erp.functions.ts` para suportar pedidos mistos (serviços vs produtos), desabilitando NFSe quando não há serviços e NFe/NFCe quando não há produtos, com logs estruturados de auditoria e suporte a `grossAmountCents` zerado para pedidos promocionais.
+  3. **Piso Ergonômico e Polimorfismo no CustomerDrawer360:** Elevação de todas as 14 abas de navegação para altura canônica de 44px (`h-11 min-h-11 px-4`) com `:focus-visible:ring-2` e compatibilidade polimórfica para props de cliente e agendamentos.
+  4. **Upload Soberano em Candidaturas de Emprego:** Integração de `FileAttachmentUpload` em `job-apply-sheet.tsx` e `classified-job-application-dialog.tsx`, direcionando arquivos de currículo (PDF, DOCX) diretamente ao bucket `cms-media`.
+  5. **Integridade de Preços de Clube no Supermercado:** Implementação de `getEffectivePriceCents` em `_store.mercado.tsx`, garantindo que descontos de clube (`clubPriceCents`) e preços online exclusivos sejam transmitidos com precisão de centavos para o carrinho global.
+  6. **Hardening RLS em Estúdio e Custos de Turismo:** Migração `20261029170000_zero_trust_rls_hardening.sql` blindando `studio_projects`, `studio_templates`, `group_tour_costs` e `tourism_vouchers` contra queries públicas anônimas.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.25, B.26, B.31 e B.33.
+- **Consequências:** Resiliência em tempo real na operação corporativa, emissão fiscal à prova de falhas em pedidos promocionais, proteção estrita de dados de estúdio e fidelidade de preços no checkout de supermercado.

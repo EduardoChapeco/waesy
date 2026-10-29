@@ -1,42 +1,43 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-29T17:31:10.911Z",
-  "inspectedFiles": 2528,
-  "totalViolations": 3963,
+  "timestamp": "2026-10-29T18:30:27.593Z",
+  "inspectedFiles": 2535,
+  "totalViolations": 4045,
   "summary": {
-    "totalViolations": 3963,
+    "totalViolations": 4045,
     "bySeverity": {
-      "P0": 8,
-      "P1": 3172,
-      "P2": 485,
-      "P3": 298
+      "P0": 11,
+      "P1": 3239,
+      "P2": 494,
+      "P3": 301
     },
     "byRule": {
-      "DL-30": 285,
-      "DL-07": 470,
+      "DL-30": 287,
+      "DL-07": 473,
       "DL-14": 1457,
-      "DL-02": 785,
-      "DL-03": 83,
+      "DL-02": 786,
+      "DL-03": 146,
       "DL-18": 54,
-      "DL-15": 8,
-      "DL-29": 6,
-      "DL-27": 13,
-      "DL-12": 28,
+      "DL-15": 11,
+      "DL-29": 9,
+      "DL-27": 14,
+      "DL-12": 29,
       "DL-01": 633,
       "DL-05": 104,
       "DL-13": 9,
       "DL-11": 19,
       "DL-24": 1,
       "DL-08": 7,
-      "DL-23": 1
+      "DL-23": 4,
+      "DL-28": 2
     },
     "byModule": {
       "components/app": {
-        "total": 1622,
-        "P0": 8,
-        "P1": 1190,
-        "P2": 323,
-        "P3": 101
+        "total": 1680,
+        "P0": 10,
+        "P1": 1237,
+        "P2": 329,
+        "P3": 104
       },
       "components/builder": {
         "total": 12,
@@ -60,9 +61,9 @@
         "P3": 6
       },
       "components/ui": {
-        "total": 194,
+        "total": 193,
         "P0": 0,
-        "P1": 172,
+        "P1": 171,
         "P2": 6,
         "P3": 16
       },
@@ -102,10 +103,10 @@
         "P3": 1
       },
       "routes/workspace": {
-        "total": 861,
-        "P0": 0,
-        "P1": 753,
-        "P2": 37,
+        "total": 886,
+        "P0": 1,
+        "P1": 774,
+        "P2": 40,
         "P3": 71
       },
       "routes/store": {
@@ -137,8 +138,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 736,
-    "filesCount": 2528
+    "filesWithViolations": 742,
+    "filesCount": 2535
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
