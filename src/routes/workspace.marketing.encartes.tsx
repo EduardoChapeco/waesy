@@ -676,15 +676,6 @@ export default function WorkspaceMarketingEncartesPage() {
                         if (urls && urls[0]) setFormImageUrl(urls[0]);
                       }}
                     />
-                    <div className="text-xs text-muted-foreground">
-                      Ou insira a URL direta da imagem:
-                    </div>
-                    <Input
-                      value={formImageUrl}
-                      onChange={(e) => setFormImageUrl(e.target.value)}
-                      placeholder="https://exemplo.com/encarte.jpg"
-                      className="h-9 rounded-lg text-xs"
-                    />
                   </div>
 
                   {/* Prévia da Imagem */}

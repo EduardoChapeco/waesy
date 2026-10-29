@@ -46,6 +46,7 @@ import {
   ShieldCheck,
   Star,
   Building2,
+  Loader2,
 } from "lucide-react";
 import type { ResumeDataDTO } from "@/types/resume";
 
@@ -56,6 +57,145 @@ const ACCENT_OPTIONS = [
   { id: "burgundy", label: "Borgonha", bgClass: "bg-rose-900" },
   { id: "violet", label: "Violeta Tech", bgClass: "bg-purple-900" },
 ];
+
+
+function CompanyStoreSelector({
+  company,
+  storeId,
+  storeLogo,
+  onChangeCompany,
+  onSelectStore,
+  onClearStore,
+}: {
+  company: string;
+  storeId?: string;
+  storeLogo?: string;
+  onChangeCompany: (name: string) => void;
+  onSelectStore: (store: { id: string; name: string; logo_url: string | null }) => void;
+  onClearStore: () => void;
+}) {
+  const [query, setQuery] = useState(company || "");
+  const [results, setResults] = useState<any[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    setQuery(company || "");
+  }, [company]);
+
+  useEffect(() => {
+    if (!isOpen || !query || query.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await searchStoresForCompanyAutocomplete({ data: { query: query.trim() } });
+        setResults(res || []);
+      } catch (e) {
+        setResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [query, isOpen]);
+
+  if (storeId) {
+    return (
+      <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-primary/30 bg-primary/5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {storeLogo ? (
+            <img src={storeLogo} alt={company} className="size-8 rounded object-cover border border-border/40 shrink-0" />
+          ) : (
+            <div className="size-8 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Building2 className="size-4" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-foreground truncate">{company}</span>
+              <Badge variant="outline" className="text-3xs text-primary border-primary/40 bg-primary/10 gap-1 px-1.5 py-0 h-4">
+                <Check className="size-2.5" />
+                <span>Empresa Verificada</span>
+              </Badge>
+            </div>
+            <p className="text-3xs text-muted-foreground">Vinculada à plataforma Waesy</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClearStore}
+          className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          title="Desvincular loja"
+        >
+          <X className="size-4" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <Input
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          onChangeCompany(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        placeholder="Nome da Empresa (digite para buscar no Waesy...)"
+        className="h-11 min-h-11 rounded-lg text-xs font-semibold pr-9"
+      />
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+        {isSearching ? <Loader2 className="size-4 animate-spin text-primary" /> : <Building2 className="size-4" />}
+      </div>
+
+      {isOpen && results.length > 0 && (
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg overflow-hidden py-1 max-h-56 overflow-y-auto">
+          <div className="px-3 py-1 text-3xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/40">
+            Lojas & Empresas Verificadas no Waesy
+          </div>
+          {results.map((st) => (
+            <button
+              key={st.id}
+              type="button"
+              onClick={() => {
+                onSelectStore(st);
+                setIsOpen(false);
+              }}
+              className="w-full min-h-11 flex items-center gap-2.5 px-3 py-2 text-left hover:bg-muted/60 transition-colors cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {st.logo_url ? (
+                <img src={st.logo_url} alt={st.name} className="size-7 rounded object-cover border border-border/40 shrink-0" />
+              ) : (
+                <div className="size-7 rounded bg-muted text-muted-foreground flex items-center justify-center shrink-0">
+                  <Building2 className="size-3.5" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-foreground truncate">{st.name}</span>
+                  <Badge variant="outline" className="text-3xs text-emerald-600 border-emerald-500/30 bg-emerald-500/10 px-1 py-0 h-3.5">
+                    Verificada
+                  </Badge>
+                </div>
+                {(st.city || st.state) && (
+                  <p className="text-3xs text-muted-foreground truncate">{[st.city, st.state].filter(Boolean).join(" - ")}</p>
+                )}
+              </div>
+            </button>
+          ))}
+          <div className="px-3 py-1.5 text-3xs text-muted-foreground bg-muted/20 border-t border-border/40">
+            Ou mantenha o nome digitado para empresas fora da plataforma.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/_store/conta/curriculo")({
   head: () => ({
@@ -961,11 +1101,25 @@ export default function MeuCurriculoPage() {
                             </button>
                           </div>
 
-                          <Input
-                            value={exp.company || ""}
-                            onChange={(e) => updateExperience(idx, "company", e.target.value)}
-                            placeholder="Nome da Empresa"
-                            className="h-11 min-h-11 rounded-lg text-xs font-semibold"
+                          <CompanyStoreSelector
+                            company={exp.company || ""}
+                            storeId={exp.store_id}
+                            storeLogo={exp.store_logo}
+                            onChangeCompany={(val) => {
+                              const updated = [...experiences];
+                              updated[idx] = { ...updated[idx], company: val, store_id: undefined, store_logo: undefined };
+                              setExperiences(updated);
+                            }}
+                            onSelectStore={(st) => {
+                              const updated = [...experiences];
+                              updated[idx] = { ...updated[idx], company: st.name, store_id: st.id, store_logo: st.logo_url || undefined };
+                              setExperiences(updated);
+                            }}
+                            onClearStore={() => {
+                              const updated = [...experiences];
+                              updated[idx] = { ...updated[idx], store_id: undefined, store_logo: undefined };
+                              setExperiences(updated);
+                            }}
                           />
 
                           <div className="grid grid-cols-2 gap-2">

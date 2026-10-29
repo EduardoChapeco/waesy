@@ -1,5 +1,25 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-374: Conexão Transacional de Empregadores Verificados (InfoJobs / Glassdoor), Agregação Dinâmica de Vendas na Intranet e Persistência Soberana de Mídias
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Conexão direta entre o histórico profissional do candidato (`_store.conta.curriculo.tsx`) e as lojas verificadas na plataforma através de `searchStoresForCompanyAutocomplete`, persistindo `store_id` e `store_logo` em `employer_reviews` e alimentando o card de reputação em `CanonicalStoreProfileView`.
+  2. Substituição da planilha estática da intranet corporativa em `workspace.atendimento.index.tsx` pela função de agregação de vendas `getStoreIntranetSalesSpreadsheet` em `src/services/intranet.functions.ts`, calculando pedidos reais, receita em reais, ticket médio e participação percentual por categoria nos pedidos da loja.
+  3. Erradicação de fallbacks simulados no banner de carrinho do chat (`InChatStoreCartBanner`) e purga de URLs manuais no upload de mídia, garantindo autenticação soberana no Supabase Storage.
+- **Decisão:** Aprovada e integrada a sincronização bidirecional de dados entre perfis civis, intranet de atendimento e banco relacional multi-tenant.
+- **Fundamentação:** AGENTS.md Regras B.1, B.7, B.8, B.22, B.26, B.31 e B.33.
+- **Consequências:** Fim de dados estáticos na intranet e rastreabilidade total de histórico empregatício com empresas cadastradas no ecossistema Waesy.
+
+## DEC-373: Auditoria Holística de Serviços & ERP Vertical, Motor de Comissões e Acordos da Lei do Salão Parceiro, Anamnese Digital e Permissões Táteis
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Extração minuciosa e auditoria forense de 116 telas de referência para gestão operacional de prestação de serviços (beleza, estética, saúde e serviços especializados).
+  2. Mapeamento de 10 grandes pilares: Criador de Serviços (Cuidados pré/pós, Retorno autônomo, Ficha técnica/CMV, Comissões e Auxiliares com rateio Proporcional/Estabelecimento/Profissional/Dividido), Criador de Produtos (edição inline de estoque, lotes/validades e requisições ao estoquista), Pacotes e Combos com gestão de saldo de sessões, Vendas por Assinatura (checkout transparente recorrente e manual de balcão), Perfil 360° do Cliente em 14 abas com score e mascaramento LGPD de telefones, Anamneses com canvas vetorial de assinatura digital e carimbo de validade jurídica, Parametrização da Lei do Salão Parceiro com recibo discriminado e taxa administrativa, Emissão fiscal individualizada em linha de tabela ([S] NFSe, [P] NFe, [C] NFCe) com adaptação para Reforma Tributária (IBS/CBS), Matriz tátil e visual de permissões granulares por cargo/módulo, e Dashboards densos com Heatmap semanal de agendamentos (8h-19h x 7 dias).
+  3. Preservação irrestrita da modularidade multi-nicho do Waesy, sem hardcoding setorial e sem violações de containeritis (DL-31) ou grids aninhadas (DL-32).
+- **Decisão:** Aprovada e documentada a especificação canônica em `SPEC-SERVICOS-ERP-MODULAR-MULTI-NICHO.md` e o relatório de auditoria forense no cérebro do agente (`auditoria-holistica-regras-servicos-erp.md`), delimitando o plano de engenharia em 6 fases de implementação atômica.
+- **Fundamentação:** AGENTS.md Regras B.1 a B.9, B.11, B.20, B.22, B.25, B.26, B.31, B.33, Lei nº 13.352/2016 e WCAG 2.2 AA.
+- **Consequências:** Base conceitual e de contratos 100% pronta para guiar a evolução do Workspace e do Omni Builder para prestadores de serviços urbanos com integridade transacional máxima.
+
 ## DEC-372: Segregação Rigorosa de Credenciais Globais (Admin Master) vs. Tenants (Workspace) e Desacoplamento de Variáveis .env
 - **Data:** 2026-10-29
 - **Contexto:**

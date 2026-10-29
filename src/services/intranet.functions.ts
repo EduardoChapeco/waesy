@@ -256,3 +256,141 @@ export const toggleIntranetMilestone = createServerFn({ method: "POST" })
 
     return data;
   });
+
+export interface StoreIntranetSpreadsheetDTO {
+  title: string;
+  rowsCount: number;
+  colsCount: number;
+  headers: string[];
+  colTypes: string[];
+  rows: (string | number)[][];
+}
+
+/**
+ * Agrega vendas e pedidos reais por categoria para a planilha colaborativa da intranet
+ */
+export const getStoreIntranetSalesSpreadsheet = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
+  .handler(async ({ data }): Promise<StoreIntranetSpreadsheetDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity?.store_id;
+
+    if (!storeId) {
+      return {
+        title: "Desempenho_Categorias_Regional.csv",
+        rowsCount: 0,
+        colsCount: 5,
+        headers: ["Categoria", "Pedidos", "Receita (R$)", "Ticket Médio", "Participação (%)"],
+        colTypes: ["abc", "123", "123", "123", "123"],
+        rows: [],
+      };
+    }
+
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+
+    try {
+      const { data: orders, error } = await supabase
+        .from("orders")
+        .select(`
+          id,
+          total_cents,
+          status,
+          order_items (
+            product_title,
+            qty,
+            total_cents
+          )
+        `)
+        .eq("store_id", storeId)
+        .in("status", ["paid", "delivered", "completed", "shipped"])
+        .order("created_at", { ascending: false })
+        .limit(300);
+
+      if (error) {
+        logSystemError({
+          route: "intranet.functions.getStoreIntranetSalesSpreadsheet",
+          tableName: "orders",
+          error,
+        });
+        return {
+          title: "Desempenho_Categorias_Regional.csv",
+          rowsCount: 0,
+          colsCount: 5,
+          headers: ["Categoria", "Pedidos", "Receita (R$)", "Ticket Médio", "Participação (%)"],
+          colTypes: ["abc", "123", "123", "123", "123"],
+          rows: [],
+        };
+      }
+
+      const categoryMap = new Map<string, { count: number; revenueCents: number }>();
+      let totalRevenueCents = 0;
+
+      (orders || []).forEach((ord: any) => {
+        const items = Array.isArray(ord.order_items) ? ord.order_items : [];
+        if (items.length === 0) {
+          const cat = "Geral";
+          const rev = ord.total_cents || 0;
+          totalRevenueCents += rev;
+          const current = categoryMap.get(cat) || { count: 0, revenueCents: 0 };
+          categoryMap.set(cat, { count: current.count + 1, revenueCents: current.revenueCents + rev });
+        } else {
+          items.forEach((it: any) => {
+            const rawTitle = it.product_title || "Diversos";
+            const cat = rawTitle.includes(" - ") ? rawTitle.split(" - ")[0].trim() : rawTitle.slice(0, 24);
+            const qty = Math.max(Number(it.qty) || 1, 1);
+            const rev = Number(it.total_cents) || 0;
+            totalRevenueCents += rev;
+            const current = categoryMap.get(cat) || { count: 0, revenueCents: 0 };
+            categoryMap.set(cat, { count: current.count + qty, revenueCents: current.revenueCents + rev });
+          });
+        }
+      });
+
+      if (categoryMap.size === 0) {
+        return {
+          title: "Desempenho_Categorias_Regional.csv",
+          rowsCount: 0,
+          colsCount: 5,
+          headers: ["Categoria", "Pedidos", "Receita (R$)", "Ticket Médio", "Participação (%)"],
+          colTypes: ["abc", "123", "123", "123", "123"],
+          rows: [],
+        };
+      }
+
+      const rows: (string | number)[][] = Array.from(categoryMap.entries())
+        .sort((a, b) => b[1].revenueCents - a[1].revenueCents)
+        .slice(0, 10)
+        .map(([cat, stats]) => {
+          const revReais = stats.revenueCents / 100;
+          const ticketMedio = stats.count > 0 ? (revReais / stats.count).toFixed(2) : "0.00";
+          const share = totalRevenueCents > 0
+            ? `${((stats.revenueCents / totalRevenueCents) * 100).toFixed(1)}%`
+            : "0.0%";
+          return [cat, stats.count, Math.round(revReais), Number(ticketMedio), share];
+        });
+
+      return {
+        title: "Desempenho_Categorias_Regional.csv",
+        rowsCount: rows.length,
+        colsCount: 5,
+        headers: ["Categoria", "Pedidos", "Receita (R$)", "Ticket Médio", "Participação (%)"],
+        colTypes: ["abc", "123", "123", "123", "123"],
+        rows,
+      };
+    } catch (err) {
+      logSystemError({
+        route: "intranet.functions.getStoreIntranetSalesSpreadsheet",
+        error: err,
+      });
+      return {
+        title: "Desempenho_Categorias_Regional.csv",
+        rowsCount: 0,
+        colsCount: 5,
+        headers: ["Categoria", "Pedidos", "Receita (R$)", "Ticket Médio", "Participação (%)"],
+        colTypes: ["abc", "123", "123", "123", "123"],
+        rows,
+      };
+    }
+  });
+

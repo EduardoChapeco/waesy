@@ -126,44 +126,49 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
     e.preventDefault();
     if (!selectedConnector) return;
 
+    const account = emailIdentifier.trim();
+    if (!account) {
+      toast.error("Informe a conta ou chave de identificação do conector.");
+      return;
+    }
+
     try {
       await saveConnectorCredentials({
         data: {
           provider: selectedConnector.provider,
-          accountIdentifier: emailIdentifier.trim() || `conta-${selectedConnector.provider}@waesy.com`,
+          accountIdentifier: account,
           scopes: selectedConnector.defaultScopes,
-          credentials: { token: "encrypted_dummy_token_2026" },
+          credentials: { account, connected_at: new Date().toISOString() },
         },
       });
-    } catch {
-      // Estado na interface
+
+      setConnectorsState((prev) => ({
+        ...prev,
+        [selectedConnector.provider]: {
+          status: "connected",
+          account,
+        },
+      }));
+
+      toast.success(`Conector ${selectedConnector.name} vinculado com sucesso!`);
+      setConnectModalOpen(false);
+      setEmailIdentifier("");
+    } catch (err: any) {
+      toast.error(err?.message || `Falha ao vincular conector ${selectedConnector.name}.`);
     }
-
-    setConnectorsState((prev) => ({
-      ...prev,
-      [selectedConnector.provider]: {
-        status: "connected",
-        account: emailIdentifier.trim() || `usuario@${selectedConnector.provider}.com`,
-      },
-    }));
-
-    toast.success(`Conector ${selectedConnector.name} vinculado com sucesso!`);
-    setConnectModalOpen(false);
-    setEmailIdentifier("");
   };
 
   const handleDisconnect = async (provider: ConnectorProvider, name: string) => {
     try {
       await disconnectConnector({ data: { provider } });
-    } catch {
-      // Estado na interface
+      setConnectorsState((prev) => ({
+        ...prev,
+        [provider]: { status: "disconnected" },
+      }));
+      toast.success(`Conector ${name} desconectado.`);
+    } catch (err: any) {
+      toast.error(err?.message || `Erro ao desconectar ${name}.`);
     }
-
-    setConnectorsState((prev) => ({
-      ...prev,
-      [provider]: { status: "disconnected" },
-    }));
-    toast.success(`Conector ${name} desconectado.`);
   };
 
   return (

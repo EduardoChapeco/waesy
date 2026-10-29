@@ -441,51 +441,11 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  tabIndex={0}
  className={cn("media-uploader-root space-y-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg", className)}
  >
- {/* Cabeçalho com label e toggle de URL */}
+ {/* Cabeçalho com label */}
+ {label && (
  <div className="flex items-center justify-between">
- {label && <label className="text-xs font-semibold text-foreground">{label}</label>}
- {showExternalUrlOption && mediaList.length < maxFiles && (
- <Button type="button" variant="ghost" onClick={() => setShowUrlInput(!showUrlInput)}
- className="min-h-11 px-2 text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 cursor-pointer rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
- >
- <ExternalLink className="size-4" />
- <span>{showUrlInput ? "Cancelar URL" : "Inserir URL Externa"}</span>
- </Button>
- )}
- </div>
-
- {/* Gaveta de Entrada de URL Externa */}
- {showUrlInput && (
- <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/20 p-3">
- <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
- <span>Informe o link público da mídia (HTTPS)</span>
- <Button type="button" variant="ghost" size="icon" onClick={() => setShowUrlInput(false)}
- className="size-11 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
- aria-label="Fechar entrada de URL"
- >
- <X className="size-4" />
- </Button>
- </div>
- <div className="flex flex-col sm:flex-row gap-2">
- <Input
- type="url"
- value={externalUrl}
- onChange={(e) => setExternalUrl(e.target.value)}
- placeholder="https://exemplo.com/imagem.jpg ou video.mp4"
- className="h-11 text-xs rounded-lg flex-1 bg-background"
- onKeyDown={(e) => {
- if (e.key === "Enter") {
- e.preventDefault();
- handleAddExternalUrl();
- }
- }}
- />
- <Button type="button" onClick={() => handleAddExternalUrl()}
- className="h-11 px-4 text-xs font-bold rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
- >
- Adicionar Mídia
- </Button>
- </div>
+ <label className="text-xs font-semibold text-foreground">{label}</label>
+ <span className="text-2xs text-muted-foreground font-mono">Upload Direto Seguro</span>
  </div>
  )}
 

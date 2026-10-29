@@ -2763,9 +2763,13 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     setIsSaving(true);
     try {
       if (onSave) {
-        await onSave(document);
+        await onSave({
+          ...document,
+          pages: sitePages,
+          updated_at: new Date().toISOString(),
+        } as any);
       }
-      toast.success("Página salva com sucesso no banco!");
+      toast.success("Página e sitemap visual salvos com sucesso no banco!");
     } catch (err: any) {
       toast.error(err?.message || "Falha ao salvar página.");
     } finally {
@@ -2777,9 +2781,14 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     setIsPublishing(true);
     try {
       if (onPublish) {
-        await onPublish(document);
+        await onPublish({
+          ...document,
+          pages: sitePages,
+          published_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any);
       }
-      toast.success("Página publicada com sucesso! Já está ativa para os visitantes.");
+      toast.success("Página e sitemap publicados com sucesso! Já está ativa para os visitantes.");
     } catch (err: any) {
       toast.error(err?.message || "Falha ao publicar página.");
     } finally {

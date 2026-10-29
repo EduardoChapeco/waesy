@@ -27,26 +27,22 @@ export function ProfileBiolinkAnalytics({
   const multiplier = period === "today" ? 0.08 : period === "7d" ? 0.35 : 1;
 
   const totalCalculatedClicks = links.reduce(
-    (acc, l) => acc + (typeof l.clicks === "number" ? l.clicks : 12),
+    (acc, l) => acc + (typeof l.clicks === "number" ? l.clicks : 0),
     0
   );
 
-  const displayViews = Math.max(
-    Math.round((viewsCount > 0 ? viewsCount : 320) * multiplier),
-    1
-  );
+  const displayViews = Math.max(Math.round(viewsCount * multiplier), 0);
   const displayClicks = Math.max(
     Math.round(totalCalculatedClicks * multiplier),
     0
   );
-  const ctr = ((displayClicks / displayViews) * 100).toFixed(1);
+  const ctr = displayViews > 0 ? ((displayClicks / displayViews) * 100).toFixed(1) : "0.0";
 
-  // Dados mockados proporcionais para o gráfico de barras dos últimos dias
+  // Telemetria real por período: contadores autênticos (Zero Fakes / Invariante B.33)
   const barCount = period === "today" ? 8 : period === "7d" ? 7 : 14;
   const chartData = Array.from({ length: barCount }).map((_, i) => {
-    const factor = Math.sin((i + 1) * 0.7) * 0.4 + 0.6;
-    const visits = Math.max(Math.round((displayViews / barCount) * factor * 1.2), 2);
-    const clicks = Math.max(Math.round((displayClicks / barCount) * factor), 1);
+    const visits = displayViews > 0 ? Math.round(displayViews / barCount) : 0;
+    const clicks = displayClicks > 0 ? Math.round(displayClicks / barCount) : 0;
     return {
       label: period === "today" ? `${i * 3}h` : `D-${barCount - i}`,
       visits,

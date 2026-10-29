@@ -900,6 +900,8 @@ export const OmniPageDocumentSchema = z.object({
     borderRadius: z.string().default("xl"),
   }),
   blocks: z.array(OmniBlockInstanceSchema).default([]),
+  pages: z.array(z.any()).optional(),
+  cms_collections: z.array(z.any()).optional(),
   source_template_id: z.string().optional(),
   source_template_version: z.string().optional(),
   published_at: z.string().nullable().optional(),

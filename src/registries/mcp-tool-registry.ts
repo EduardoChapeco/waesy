@@ -2510,7 +2510,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     handler: async (ctx, args) => {
       const { data: lead, error } = await ctx.supabase
         .from("leads_crm")
-        .select("id, full_name, email, phone, notes, estimated_value_cents")
+        .select("id, full_name, email, phone, notes, estimated_value_cents, custom_fields")
         .eq("id", args.leadId)
         .eq("store_id", args.storeId)
         .single();
@@ -2519,6 +2519,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
 
       const { dispatchClosedLoopLeadQualification } = await import("@/services/pixels.functions");
       const conversionValue = args.estimatedValueBrl || ((lead.estimated_value_cents || 0) / 100);
+      const cf = (lead.custom_fields as Record<string, any>) || {};
 
       const result = await dispatchClosedLoopLeadQualification({
         data: {
@@ -2528,6 +2529,10 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
           email: lead.email,
           phone: lead.phone,
           conversionValue,
+          fbp: cf.fbp || cf.attribution?.fbp || null,
+          fbc: cf.fbc || cf.attribution?.fbc || null,
+          clientUserAgent: cf.userAgent || cf.attribution?.userAgent || null,
+          sourceUrl: cf.sourceUrl || cf.attribution?.sourceUrl || null,
         },
       });
 

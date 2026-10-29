@@ -413,12 +413,25 @@ function WorkspaceAtendimentoPage() {
   ]);
 
   const [activeIntranetChannelId, setActiveIntranetChannelId] = useState<string>("ch-exec-q3");
-  const activeIntranetChannel = useMemo(
-    () =>
-      intranetChannels.find((c) => c.id === activeIntranetChannelId) ||
-      intranetChannels[0],
-    [intranetChannels, activeIntranetChannelId],
-  );
+
+  const { data: storeSalesSpreadsheet } = useQuery({
+    queryKey: ["store-intranet-sales-spreadsheet", store?.id],
+    queryFn: () => getStoreIntranetSalesSpreadsheet({ data: { storeId: store?.id } }),
+    enabled: Boolean(store?.id),
+    staleTime: 60000,
+  });
+
+  const activeIntranetChannel = useMemo(() => {
+    const raw = intranetChannels.find((c) => c.id === activeIntranetChannelId) || intranetChannels[0];
+    if (!raw) return raw;
+    if (raw.spreadsheet && storeSalesSpreadsheet && Array.isArray(storeSalesSpreadsheet.rows) && storeSalesSpreadsheet.rows.length > 0) {
+      return {
+        ...raw,
+        spreadsheet: storeSalesSpreadsheet,
+      };
+    }
+    return raw;
+  }, [intranetChannels, activeIntranetChannelId, storeSalesSpreadsheet]);
 
   // Status de presença do atendente
   const [agentPresence, setAgentPresence] = useState<"online" | "busy" | "away">("online");

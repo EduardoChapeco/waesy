@@ -92,66 +92,46 @@ export function StudioAssetPicker({
 
   return (
     <div className="flex flex-col gap-3 p-1 outline-hidden" onPaste={handlePaste} tabIndex={0}>
-      <div className="flex gap-1 border-b border-border/60 pb-2">
-        <Button type="button" size="sm" variant={activeTab === "upload" ? "default" : "ghost"} onClick={() => setActiveTab("upload")}
-          className="text-xs h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          <Upload className="size-4" /> Enviar Arquivo
-        </Button>
-        <Button type="button" size="sm" variant={activeTab === "url" ? "default" : "ghost"} onClick={() => setActiveTab("url")}
-          className="text-xs h-11 min-h-11 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          <Globe className="size-4" /> URL Direta
-        </Button>
+      <div className="flex items-center justify-between border-b border-border/60 pb-2">
+        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+          <Upload className="size-4 text-primary" />
+          <span>Upload Real para Storage Seguro</span>
+        </div>
+        <span className="text-2xs text-muted-foreground font-mono">PNG, JPG, WEBP</span>
       </div>
 
-      {activeTab === "upload" ? (
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => fileInputRef.current?.click()} // focus-visible:ring-2
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              fileInputRef.current?.click();
-            }
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
+        className="h-32 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/40 cursor-pointer transition-colors p-4 text-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        {uploading ? (
+          <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
+        ) : (
+          <>
+            <ImageIcon className="size-6 text-muted-foreground" />
+            <p className="text-xs font-medium text-foreground">Clique para enviar ou cole (Ctrl+V)</p>
+            <p className="text-xs text-muted-foreground">PNG, JPG ou WEBP até 10MB</p>
+          </>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) processFile(file);
           }}
-          className="h-32 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-2 bg-muted/20 hover:bg-muted/40 cursor-pointer transition-colors p-4 text-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          {uploading ? (
-            <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
-          ) : (
-            <>
-              <ImageIcon className="size-6 text-muted-foreground" />
-              <p className="text-xs font-medium text-foreground">Clique para enviar ou cole (Ctrl+V)</p>
-              <p className="text-xs text-muted-foreground">PNG, JPG ou WEBP até 10MB</p>
-            </>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) processFile(file);
-            }}
-          />
-        </div>
-      ) : (
-        <div className="flex gap-2 pt-2">
-          <Input
-            placeholder="https://exemplo.com/imagem.jpg"
-            value={externalUrl}
-            onChange={(e) => setExternalUrl(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleApplyUrl()}
-            className="text-xs h-11 bg-background flex-1"
-          />
-          <Button type="button" onClick={() => handleApplyUrl()} className="h-11 px-4 text-xs font-bold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-            Aplicar
-          </Button>
-        </div>
-      )}
+        />
+      </div>
     </div>
   );
 }

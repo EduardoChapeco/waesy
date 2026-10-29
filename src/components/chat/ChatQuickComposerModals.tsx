@@ -879,24 +879,6 @@ export function InChatStoreCartBanner({
   const [expanded, setExpanded] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [payMethod, setPayMethod] = useState<"pix" | "card">("pix");
-  const [localFallbackItems, setLocalFallbackItems] = useState<
-    Array<{ id: string; variantId: string; productTitle: string; qty: number; priceCents: number }>
-  >([
-    {
-      id: "chat-item-1",
-      variantId: "v-1",
-      productTitle: "Combo Especial da Casa",
-      qty: 1,
-      priceCents: 4490,
-    },
-    {
-      id: "chat-item-2",
-      variantId: "v-2",
-      productTitle: "Bebida Artesanal 500ml",
-      qty: 2,
-      priceCents: 1200,
-    },
-  ]);
 
   const activeStoreCart = useMemo(() => {
     if (storeId && globalCarts.length > 0) {
@@ -917,8 +899,8 @@ export function InChatStoreCartBanner({
         priceCents: i.priceCents,
       }));
     }
-    return localFallbackItems;
-  }, [activeStoreCart, localFallbackItems]);
+    return [];
+  }, [activeStoreCart]);
 
   const subtotalCents = useMemo(
     () => effectiveItems.reduce((acc, item) => acc + item.priceCents * item.qty, 0),
@@ -932,14 +914,12 @@ export function InChatStoreCartBanner({
   const handleAdjustQty = (item: (typeof effectiveItems)[number], delta: number) => {
     if (activeStoreCart) {
       updateQty(item.variantId, delta, item.id);
-      return;
     }
-    setLocalFallbackItems((prev) =>
-      prev
-        .map((p) => (p.id === item.id ? { ...p, qty: Math.max(0, p.qty + delta) } : p))
-        .filter((p) => p.qty > 0),
-    );
   };
+
+  if (effectiveItems.length === 0) {
+    return null;
+  }
 
   const handleSendCartToChat = async () => {
     await onDispatchMessage({

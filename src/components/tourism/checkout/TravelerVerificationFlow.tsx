@@ -233,18 +233,44 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
           </div>
 
           <div className="space-y-2">
-            <Label className="font-semibold text-foreground">
-              Foto Nítida do Documento (Frente / Aberto) *
+            <Label className="font-semibold text-foreground flex items-center justify-between">
+              <span>Foto Nítida do Documento (Frente / Aberto) *</span>
+              <span className="text-2xs text-muted-foreground font-mono">Câmera / Upload Real</span>
             </Label>
-            <Input
-              type="url"
-              placeholder="https://exemplo.com/documento.jpg"
-              value={documentUrl}
-              onChange={(e) => setDocumentUrl(e.target.value)}
-              className="h-11 min-h-11 text-xs font-mono"
-            />
+            <div className="flex flex-col sm:flex-row gap-2 items-center">
+              <input
+                id="doc_file_input"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => setDocumentUrl(reader.result as string);
+                    reader.readAsDataURL(file);
+                    toast.success("Foto do documento carregada com sucesso.");
+                  }
+                }}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("doc_file_input")?.click()}
+                className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer border-dashed border-primary/40 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Upload className="size-4" />
+                <span>{documentUrl ? "Substituir Foto do Documento" : "Tirar Foto ou Carregar Documento"}</span>
+              </Button>
+            </div>
+            {documentUrl && (
+              <div className="relative rounded-lg overflow-hidden border border-border/70 max-h-40 bg-muted/20 flex items-center justify-center p-2">
+                <img src={documentUrl} alt="Documento Carregado" className="max-h-36 object-contain rounded" />
+              </div>
+            )}
             <p className="text-muted-foreground text-xs">
-              Insira a URL pública da imagem ou faça o upload no cofre da agência.
+              Capture a página aberta do passaporte ou a frente do RG/CNH sem reflexos.
             </p>
           </div>
 
@@ -297,17 +323,45 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
           )}
 
           <div className="space-y-2">
-            <Label className="font-semibold text-foreground flex items-center gap-2">
-              <Camera className="size-4 text-primary" />
-              Biometria Facial / Selfie ao Vivo *
+            <Label className="font-semibold text-foreground flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Camera className="size-4 text-primary" />
+                Biometria Facial / Selfie ao Vivo *
+              </span>
+              <span className="text-2xs text-muted-foreground font-mono">Câmera Frontal</span>
             </Label>
-            <Input
-              type="url"
-              placeholder="https://exemplo.com/selfie.jpg"
-              value={selfieUrl}
-              onChange={(e) => setSelfieUrl(e.target.value)}
-              className="h-11 min-h-11 text-xs font-mono"
-            />
+            <div className="flex flex-col sm:flex-row gap-2 items-center">
+              <input
+                id="selfie_file_input"
+                type="file"
+                accept="image/*"
+                capture="user"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => setSelfieUrl(reader.result as string);
+                    reader.readAsDataURL(file);
+                    toast.success("Selfie facial capturada com sucesso.");
+                  }
+                }}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("selfie_file_input")?.click()}
+                className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer border-dashed border-primary/40 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Camera className="size-4" />
+                <span>{selfieUrl ? "Tirar Nova Selfie" : "Abrir Câmera Frontal para Selfie"}</span>
+              </Button>
+            </div>
+            {selfieUrl && (
+              <div className="relative rounded-lg overflow-hidden border border-border/70 max-h-40 bg-muted/20 flex items-center justify-center p-2">
+                <img src={selfieUrl} alt="Selfie Carregada" className="max-h-36 object-contain rounded-full border-2 border-primary/30" />
+              </div>
+            )}
             <p className="text-muted-foreground text-xs">
               Foto de rosto nítida, sem óculos escuros ou chapéu, comparada com o documento.
             </p>

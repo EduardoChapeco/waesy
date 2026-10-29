@@ -47,39 +47,6 @@ export interface CopilotScheduledTasksViewProps {
   className?: string;
 }
 
-const DEFAULT_SCHEDULED_ITEMS: ScheduledTaskItem[] = [
-  {
-    id: "sched-01",
-    title: "Relatório Matinal de Oportunidades & Concorrência",
-    prompt: "Pesquisar novidades comerciais, vagas e novos comércios cadastrados na região e compilar resumo executivo.",
-    cron_expression: "0 8 * * 1-5", // Dias úteis às 08:00
-    is_active: true,
-    next_run_at: new Date(Date.now() + 43200000).toISOString(),
-    last_run_at: new Date(Date.now() - 43200000).toISOString(),
-    run_count: 14,
-  },
-  {
-    id: "sched-02",
-    title: "Auditoria Semanal de Fórmulas e Balanço DRE",
-    prompt: "Verificar inconsistências contábeis e atualizar planilha de despesas com extrato bancário.",
-    cron_expression: "0 9 * * 1", // Toda segunda às 09:00
-    is_active: true,
-    next_run_at: new Date(Date.now() + 259200000).toISOString(),
-    last_run_at: new Date(Date.now() - 345600000).toISOString(),
-    run_count: 6,
-  },
-  {
-    id: "sched-03",
-    title: "Monitoramento de Editais e Licitações Municipais",
-    prompt: "Acompanhar novas publicações oficiais de diários do município e alertar sobre editais compatíveis.",
-    cron_expression: "0 18 * * 5", // Toda sexta às 18:00
-    is_active: false,
-    next_run_at: undefined,
-    last_run_at: new Date(Date.now() - 604800000).toISOString(),
-    run_count: 3,
-  },
-];
-
 function humanizeCron(cron: string): string {
   if (cron === "0 8 * * 1-5") return "Dias úteis às 08:00";
   if (cron === "0 9 * * 1") return "Toda segunda-feira às 09:00";
@@ -89,7 +56,7 @@ function humanizeCron(cron: string): string {
 }
 
 export function CopilotScheduledTasksView({
-  tasks = DEFAULT_SCHEDULED_ITEMS,
+  tasks = [],
   onRefresh,
   className,
 }: CopilotScheduledTasksViewProps) {
@@ -102,18 +69,19 @@ export function CopilotScheduledTasksView({
   const [runningTaskId, setRunningTaskId] = useState<string | null>(null);
 
   const handleToggle = async (taskId: string, currentState: boolean) => {
+    // Atualização otimista
+    setTaskList((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, is_active: !currentState } : t))
+    );
     try {
       await toggleAiScheduledTask({ data: { taskId, isActive: !currentState } });
-      setTaskList((prev) =>
-        prev.map((t) => (t.id === taskId ? { ...t, is_active: !currentState } : t))
-      );
       toast.success(currentState ? "Automação pausada." : "Automação ativada.");
-    } catch {
-      // Fallback otimista na interface
+    } catch (err: any) {
+      // Rollback defensivo
       setTaskList((prev) =>
-        prev.map((t) => (t.id === taskId ? { ...t, is_active: !currentState } : t))
+        prev.map((t) => (t.id === taskId ? { ...t, is_active: currentState } : t))
       );
-      toast.success(currentState ? "Automação pausada." : "Automação ativada.");
+      toast.error(err?.message || "Erro ao alternar status da automação.");
     }
   };
 
@@ -143,25 +111,14 @@ export function CopilotScheduledTasksView({
       });
       if (created?.id) {
         setTaskList((prev) => [created as any, ...prev]);
+        toast.success("Nova tarefa agendada criada com sucesso!");
+        setIsCreatingModal(false);
+        setNewTitle("");
+        setNewPrompt("");
       }
-    } catch {
-      // Criação na UI
-      const mockNew: ScheduledTaskItem = {
-        id: `sched-${Date.now()}`,
-        title: newTitle.trim(),
-        prompt: newPrompt.trim(),
-        cron_expression: newSchedule,
-        is_active: true,
-        next_run_at: new Date(Date.now() + 86400000).toISOString(),
-        run_count: 0,
-      };
-      setTaskList((prev) => [mockNew, ...prev]);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao agendar tarefa de IA.");
     }
-
-    toast.success("Nova tarefa agendada criada com sucesso!");
-    setIsCreatingModal(false);
-    setNewTitle("");
-    setNewPrompt("");
   };
 
   return (
