@@ -195,16 +195,6 @@ export function FileAttachmentUpload({
  <Paperclip className="size-3.5 text-muted-foreground" />
  <span>{label}</span>
  </label>
- {showExternalUrlOption && !hasFile && (
- <button
- type="button"
- onClick={() => setShowManualInput(!showManualInput)}
- className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
- >
- <LinkIcon className="size-3" />
- <span>{showManualInput ? "Cancelar URL" : "Colar Link Externo"}</span>
- </button>
- )}
  </div>
  )}
 
@@ -285,45 +275,8 @@ export function FileAttachmentUpload({
  </div>
  </div>
  </div>
- ) : showManualInput ? (
- /* State 2: Manual URL fallback input */
- <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/20 p-3">
- <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
- <span>Informe o link público do arquivo (HTTPS)</span>
- <button
- type="button"
- onClick={() => setShowManualInput(false)}
- className="text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
- >
- <X className="size-3.5" />
- </button>
- </div>
- <div className="flex gap-2">
- <Input
- type="url"
- value={manualUrl}
- onChange={(e) => setManualUrl(e.target.value)}
- placeholder="https://storage... ou link externo"
- className="h-9 text-xs rounded-lg flex-1 bg-background"
- onKeyDown={(e) => {
- if (e.key === "Enter") {
- e.preventDefault();
- handleApplyManualUrl();
- }
- }}
- />
- <Button
- type="button"
- size="sm"
- onClick={handleApplyManualUrl}
- className="rounded-lg text-xs font-bold h-9 px-3"
- >
- Aplicar
- </Button>
- </div>
- </div>
  ) : (
- /* State 3: Dropzone & Upload Button */
+ /* State 2: Dropzone & Upload Button */
  <div
         tabIndex={0}
         role="button"
