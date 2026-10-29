@@ -22,20 +22,59 @@ import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
 import { TicketPurchaseModal } from "@/components/eventos/ticket-purchase-modal";
 
 export const Route = createFileRoute("/_store/evento/$id")({
-  head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: loaderData?.event?.title
-          ? `${loaderData.event.title} - Ingressos | Waesy`
-          : "Evento | Waesy",
-      },
-      {
-        name: "description",
-        content:
-          loaderData?.event?.description?.slice(0, 160) || "Evento cultural na Comunidade Waesy.",
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const ev = loaderData?.event;
+    const title = ev?.title
+      ? `${ev.title} — Ingressos e Programação | Waesy Local Marketplace`
+      : "Evento Cultural | Waesy Local Marketplace";
+    const description =
+      ev?.description?.slice(0, 160) || "Evento cultural, programação e ingressos no Waesy Local Marketplace.";
+    const canonicalUrl = `https://waesy.com.br/evento/${ev?.id || "evento"}`;
+    const imageUrl = ev?.cover_image || ev?.image_url || "https://waesy.com.br/pwa-512x512.png";
+    const jsonLd = ev
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Event",
+          name: ev.title,
+          description,
+          startDate: ev.starts_at || ev.event_date || new Date().toISOString(),
+          eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+          eventStatus: "https://schema.org/EventScheduled",
+          image: [imageUrl],
+          location: {
+            "@type": "Place",
+            name: ev.location || ev.venue_name || "Região Waesy",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: ev.city || "Chapecó",
+              addressRegion: ev.state || "SC",
+              addressCountry: "BR",
+            },
+          },
+          organizer: {
+            "@type": "Organization",
+            name: "Waesy Local Marketplace",
+            url: "https://waesy.com.br",
+          },
+        }
+      : null;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: canonicalUrl },
+        { property: "og:image", content: imageUrl },
+        { name: "geo.region", content: "BR-SC" },
+        { name: "geo.placename", content: ev?.city || "Chapecó e Região" },
+      ],
+      links: [{ rel: "canonical", href: canonicalUrl }],
+      scripts: jsonLd ? [{ type: "application/ld+json", children: JSON.stringify(jsonLd) }] : [],
+    };
+  },
   loader: async ({ params }: { params: { id: string } }) => {
     try {
       const [eventData, rsvpRes, identityRes] = await Promise.all([

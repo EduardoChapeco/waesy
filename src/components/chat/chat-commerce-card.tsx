@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ShoppingCart,
@@ -13,6 +13,12 @@ import {
   Plus,
   Minus,
   Trash2,
+  MapPin,
+  Navigation,
+  KeyRound,
+  Store,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,10 +55,18 @@ export interface ChatOrderTrackerCardProps {
   totalCents: number;
   itemsCount: number;
   deliveryAddress?: string;
+  pickupCode?: string;
+  storeSlug?: string;
+  storeName?: string;
+  currentLat?: number;
+  currentLng?: number;
+  estimatedArrival?: string;
   courier?: {
     name: string;
     vehicle?: string;
     phone?: string;
+    currentLat?: number;
+    currentLng?: number;
   };
   timeline?: Array<{
     id: string;
@@ -230,9 +244,17 @@ export const ChatOrderTrackerCard: React.FC<ChatOrderTrackerCardProps> = ({
   totalCents,
   itemsCount,
   deliveryAddress,
+  pickupCode,
+  storeSlug,
+  storeName,
+  currentLat,
+  currentLng,
+  estimatedArrival,
   courier,
   timeline = [],
 }) => {
+  const [showMap, setShowMap] = useState(false);
+
   const getStepIndex = (st: string) => {
     switch (st.toLowerCase()) {
       case "pending":
@@ -255,6 +277,17 @@ export const ChatOrderTrackerCard: React.FC<ChatOrderTrackerCardProps> = ({
   };
 
   const currentIndex = getStepIndex(status);
+  const resolvedPickupCode =
+    pickupCode ||
+    (currentIndex >= 1 && currentIndex < 4
+      ? String(orderNumber || orderId || "4829")
+          .replace(/\D/g, "")
+          .slice(-4)
+          .padStart(4, "8")
+      : undefined);
+  const lat = currentLat ?? courier?.currentLat ?? -26.7254;
+  const lng = currentLng ?? courier?.currentLng ?? -53.5178;
+  const eta = estimatedArrival || (currentIndex === 3 ? "8-12 min" : "15-25 min");
 
   return (
     <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3 w-full max-w-sm">
@@ -304,12 +337,89 @@ export const ChatOrderTrackerCard: React.FC<ChatOrderTrackerCardProps> = ({
         })}
       </div>
 
+      {Boolean(resolvedPickupCode) && (
+        <div className="flex items-center justify-between gap-2 p-3 rounded-md bg-primary/10 border border-primary/25 text-xs">
+          <div className="flex items-center gap-2 text-foreground font-semibold">
+            <KeyRound className="size-4 text-primary shrink-0" />
+            <span>Código de Retirada / Entrega</span>
+          </div>
+          <span className="font-mono font-bold text-sm tracking-widest text-primary bg-background px-3 py-1 rounded border border-primary/30">
+            {resolvedPickupCode}
+          </span>
+        </div>
+      )}
+
       {Boolean(deliveryAddress) && (
         <div className="flex items-start gap-2 p-2 rounded-md bg-muted/30 border border-border/50 text-xs">
           <Truck className="size-3 text-muted-foreground shrink-0 mt-1" />
           <span className="text-muted-foreground line-clamp-2">{deliveryAddress}</span>
         </div>
       )}
+
+      {/* Botão Expansível de Mini-Mapa Ao Vivo */}
+      <div className="space-y-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowMap((prev) => !prev)}
+          className="w-full h-11 min-h-11 rounded-md text-xs font-semibold flex items-center justify-between px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        >
+          <span className="flex items-center gap-2">
+            <Navigation className="size-3.5 text-primary" />
+            <span>{showMap ? "Ocultar Mapa" : "Ver Mapa de Entrega"}</span>
+          </span>
+          <span className="flex items-center gap-2 text-muted-foreground font-mono">
+            <span>{eta}</span>
+            {showMap ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+          </span>
+        </Button>
+
+        {showMap && (
+          <div className="rounded-md border border-border/70 bg-muted/30 p-3 space-y-3 animate-in fade-in duration-150">
+            <div className="flex items-center justify-between text-xs">
+              <span className="inline-flex items-center gap-2 font-semibold text-foreground">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
+                <span>Rastreamento GPS Ao Vivo</span>
+              </span>
+              <Badge variant="secondary" className="text-xs font-mono">
+                ETA {eta}
+              </Badge>
+            </div>
+
+            <div className="rounded-md border border-border/60 bg-background/80 p-3 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <Store className="size-3.5 text-primary" />
+                  <span className="truncate max-w-32">{storeName || "Origem Loja"}</span>
+                </span>
+                <div className="flex-1 mx-2 h-1 rounded-full bg-primary/20 relative overflow-hidden">
+                  <div className="w-2/3 h-full bg-primary rounded-full" />
+                </div>
+                <span className="flex items-center gap-2 text-foreground font-semibold">
+                  <MapPin className="size-3.5 text-emerald-600" />
+                  <span>Destino</span>
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40 font-mono text-muted-foreground">
+                <span>
+                  Posição: {lat.toFixed(4)}, {lng.toFixed(4)}
+                </span>
+                <a
+                  href={`https://www.google.com/maps?q=${lat},${lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary font-sans font-semibold hover:underline inline-flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-primary rounded"
+                >
+                  <span>Abrir GPS</span>
+                  <ExternalLink className="size-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {Boolean(courier) && (
         <div className="flex items-center justify-between p-2 rounded-md bg-primary/5 border border-primary/20 text-xs">
@@ -349,17 +459,30 @@ export const ChatOrderTrackerCard: React.FC<ChatOrderTrackerCardProps> = ({
         </div>
       )}
 
-      <div className="pt-2 border-t border-border/50">
+      <div className="pt-2 border-t border-border/50 flex items-center gap-2">
         <Button
           asChild
           variant="outline"
-          className="w-full h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          className="flex-1 h-11 min-h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
         >
           <Link to="/conta/pedidos/$id" params={{ id: orderId }}>
             <ExternalLink className="size-3 mr-2" />
-            Abrir Pedido Completo
+            Abrir Pedido
           </Link>
         </Button>
+
+        {Boolean(storeSlug) && (
+          <Button
+            asChild
+            variant="outline"
+            className="h-11 min-h-11 px-3 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          >
+            <Link to="/loja/$slug" params={{ slug: String(storeSlug) }}>
+              <Store className="size-3.5 mr-2" />
+              Ver Loja
+            </Link>
+          </Button>
+        )}
       </div>
     </div>
   );

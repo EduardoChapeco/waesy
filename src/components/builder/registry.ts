@@ -78,6 +78,7 @@ import { CategoryIconGrid } from "@/components/commerce/dynamic-sections/categor
 import { DynamicProductCarousel } from "@/components/commerce/dynamic-sections/dynamic-product-carousel";
 import { TravelProductDetail } from "@/components/commerce/dynamic-sections/travel-product-detail";
 import { CustomerTravelPortal } from "@/components/commerce/dynamic-sections/customer-travel-portal";
+import { CarRentalShowcaseRail } from "@/components/tourism/CarRentalOfferCard";
 
 import {
   BiolinkProfileSection,
@@ -829,6 +830,20 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     defaultProps: {
       title: "Nossas Especialidades em Viagens",
       subtitle: "Assessoria completa para você viajar com tranquilidade e conforto.",
+    },
+  }),
+
+  createClassicOmniBlock({
+    id: "tourism_car_rental_rail",
+    name: "Aluguel de Carros 3 Dias (InfoTravel / Wooba)",
+    category: "tourism",
+    description: "Trilho de locação de veículos padrão Decolar com cálculo dinâmico de 3 dias, KM livre, proteção inclusa e pagamento na retirada.",
+    component: CarRentalShowcaseRail as any,
+    defaultProps: {
+      title: "Precisa de um carro?",
+      subtitle: "Tarifas especiais para 3 dias com quilometragem livre e cancelamento flexível",
+      rentalDays: 3,
+      audience: "b2c",
     },
   }),
 
@@ -2167,6 +2182,7 @@ export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   tourism_quote_hero: "tourism",
   tourism_destinations_carousel: "tourism",
   tourism_services_grid: "tourism",
+  tourism_car_rental_rail: "tourism",
   travel_package_hero: "tourism",
   travel_itinerary_timeline: "tourism",
   travel_hotel_slider: "tourism",

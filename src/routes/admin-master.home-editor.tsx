@@ -105,6 +105,10 @@ export const CANONICAL_PRESETS = [
   { key: "places_directory_rail", title: "Lugares e Empresas", layout: "horizontal_scroll", aspect: "16:9", desc: "Guia comercial com contato direto de WhatsApp" },
   { key: "jobs_rail", title: "Vagas de Emprego", layout: "carousel", aspect: "16:9", desc: "Vagas de trabalho recentes na cidade" },
   { key: "procedural_infinite_feed", title: "Descoberta Procedural Contínua", layout: "grid_2d", aspect: "auto", desc: "Feed algorítmico contínuo intercalando produtos, anúncios e lojas" },
+  { key: "vertical_reels_carousel", title: "Carrossel Vertical / Reels", layout: "carousel", aspect: "9:16", desc: "Stories e vídeos curtos verticais 9:16 de alta conversão" },
+  { key: "mosaic_gallery_showcase", title: "Galeria Mosaico", layout: "bento_grid", aspect: "4:3", desc: "Mosaico editorial de fotos e banners clicáveis" },
+  { key: "canonical_video_player", title: "Player de Vídeo Canônico", layout: "slim_slider", aspect: "16:9", desc: "Seção de vídeo widescreen com CTA de conversão" },
+  { key: "car_rental_3days_rail", title: "Aluguel de Carros 3 Diárias", layout: "carousel", aspect: "16:9", desc: "Frota de locação com regra de reserva mínima de 3 diárias" },
 ];
 
 function AdminMasterHomeEditorPage() {
@@ -404,7 +408,19 @@ function AdminMasterHomeEditorPage() {
             asChild
             variant="outline"
             size="sm"
-            className="gap-2 min-h-11"
+            className="gap-2 h-11 min-h-11"
+          >
+            <Link to="/workspace/marketing/vitrine">
+              <Sparkles size={16} />
+              <span>Abrir Omni Studio (Modo Wix)</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="gap-2 h-11 min-h-11"
           >
             <Link to="/admin-master/hubs">
               <Layers size={16} />
@@ -1008,7 +1024,7 @@ function AdminMasterHomeEditorPage() {
               {editingItem ? "Editar Card de Mídia" : "Novo Card de Mídia"}
             </DialogTitle>
             <DialogDescription>
-              Faça upload direto de mídia para o bucket Supabase ou informe a URL da imagem.
+              Faça upload direto de mídia para o bucket Supabase Storage com enquadramento adaptativo.
             </DialogDescription>
           </DialogHeader>
 

@@ -4,9 +4,6 @@ import { CalendarBlank, MapPin, Ticket } from "@phosphor-icons/react";
 import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
-const FALLBACK_EVENT_COVER =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='375' viewBox='0 0 600 375'%3E%3Crect width='600' height='375' fill='%2318181b'/%3E%3Ccircle cx='300' cy='187' r='80' fill='%2327272a'/%3E%3Cpath d='M260 147h80v80H260z' fill='none' stroke='%2352525b' stroke-width='4'/%3E%3Ctext x='300' y='270' font-family='sans-serif' font-size='16' font-weight='600' fill='%23a1a1aa' text-anchor='middle'%3EWaesy Eventos%3C/text%3E%3C/svg%3E";
-
 export interface EventSpotlightCardProps {
   id: string;
   title: string;
@@ -38,7 +35,7 @@ export function EventSpotlightCard({
 }: EventSpotlightCardProps) {
   const [imageError, setImageError] = React.useState(false);
 
-  const displayCover = !imageError && coverImage ? coverImage : FALLBACK_EVENT_COVER;
+  const hasCover = Boolean(!imageError && coverImage && coverImage.trim());
   const displayLocation = venue || location || "Local a confirmar";
 
   const effectivePrice = typeof priceMinCents === "number" ? priceMinCents : priceCents;
@@ -78,14 +75,18 @@ export function EventSpotlightCard({
     >
       <div className="space-y-2">
         {/* ── Banner Superior Panorâmico (Proporção 16:10) ── */}
-        <div className="aspect-16/10 relative overflow-hidden bg-muted">
-          <img
-            src={displayCover}
-            alt={title}
-            loading="lazy"
-            className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
-            onError={() => setImageError(true)}
-          />
+        <div className="aspect-16/10 relative overflow-hidden bg-muted flex items-center justify-center">
+          {hasCover ? (
+            <img
+              src={coverImage!}
+              alt={title}
+              loading="lazy"
+              className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <CalendarBlank size={40} weight="duotone" className="text-muted-foreground/30" />
+          )}
 
           {/* Badge de Data Flutuante no Topo */}
           <div className="absolute top-2.5 left-2.5 z-10">

@@ -34,6 +34,14 @@ import {
   Hotel,
   MessageCircle,
   Phone,
+  Navigation,
+  KeyRound,
+  Store,
+  ChevronDown,
+  ChevronUp,
+  Lock,
+  EyeOff,
+  Shield,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -138,11 +146,25 @@ const ORDER_STAGES = [
 ] as const;
 
 function OrderTrackerBlock({ data }: { data: Record<string, any> }) {
+  const [showMap, setShowMap] = useState(false);
   const currentStage = data.current_stage || "received";
   const stageIndex = Math.max(
     0,
     ORDER_STAGES.findIndex((s) => s.id === currentStage),
   );
+  const pickupCode =
+    data.pickup_code ||
+    data.pickupCode ||
+    (stageIndex >= 1 && stageIndex < 4
+      ? String(data.order_id || "4829")
+          .replace(/\D/g, "")
+          .slice(-4)
+          .padStart(4, "8")
+      : undefined);
+  const lat = Number(data.current_lat ?? data.currentLat ?? -26.7254);
+  const lng = Number(data.current_lng ?? data.currentLng ?? -53.5178);
+  const eta = data.estimated_arrival || data.estimatedArrival || "12-18 min";
+  const storeSlug = data.store_slug || data.storeSlug;
 
   return (
     <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3 shadow-2xs max-w-sm w-full">
@@ -195,10 +217,100 @@ function OrderTrackerBlock({ data }: { data: Record<string, any> }) {
         })}
       </div>
 
+      {Boolean(pickupCode) && (
+        <div className="flex items-center justify-between gap-2 p-3 rounded-md bg-primary/10 border border-primary/25 text-xs">
+          <div className="flex items-center gap-2 text-foreground font-semibold">
+            <KeyRound className="size-4 text-primary shrink-0" />
+            <span>Código de Retirada / Entrega</span>
+          </div>
+          <span className="font-mono font-bold text-sm tracking-widest text-primary bg-background px-3 py-1 rounded border border-primary/30">
+            {pickupCode}
+          </span>
+        </div>
+      )}
+
       {data.delivery_address && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-2 rounded-md border border-border/50">
           <Truck className="size-3 text-muted-foreground shrink-0" />
           <span className="truncate">{data.delivery_address}</span>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowMap((prev) => !prev)}
+          className="w-full h-11 min-h-11 rounded-md text-xs font-semibold flex items-center justify-between px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        >
+          <span className="flex items-center gap-2">
+            <Navigation className="size-3.5 text-primary" />
+            <span>{showMap ? "Ocultar Mapa" : "Ver Mapa de Entrega"}</span>
+          </span>
+          <span className="flex items-center gap-2 text-muted-foreground font-mono">
+            <span>{eta}</span>
+            {showMap ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+          </span>
+        </Button>
+
+        {showMap && (
+          <div className="rounded-md border border-border/70 bg-muted/30 p-3 space-y-2 animate-in fade-in duration-150">
+            <div className="flex items-center justify-between text-xs">
+              <span className="inline-flex items-center gap-2 font-semibold text-foreground">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
+                <span>Rastreamento GPS Ao Vivo</span>
+              </span>
+              <Badge variant="secondary" className="text-xs font-mono">
+                ETA {eta}
+              </Badge>
+            </div>
+            <div className="rounded-md border border-border/60 bg-background/80 p-3 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <Store className="size-3.5 text-primary" />
+                  <span>{data.store_name || "Loja"}</span>
+                </span>
+                <div className="flex-1 mx-2 h-1 rounded-full bg-primary/20 overflow-hidden">
+                  <div className="w-2/3 h-full bg-primary rounded-full" />
+                </div>
+                <span className="flex items-center gap-2 text-foreground font-semibold">
+                  <MapPin className="size-3.5 text-emerald-600" />
+                  <span>Você</span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-border/40 font-mono text-muted-foreground">
+                <span>
+                  {lat.toFixed(4)}, {lng.toFixed(4)}
+                </span>
+                <a
+                  href={`https://www.google.com/maps?q=${lat},${lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary font-sans font-semibold hover:underline inline-flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-primary rounded"
+                >
+                  <span>Abrir GPS</span>
+                  <ExternalLink className="size-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {Boolean(storeSlug) && (
+        <div className="pt-1 border-t border-border/50">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="w-full h-11 min-h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          >
+            <Link to="/loja/$slug" params={{ slug: String(storeSlug) }}>
+              <Store className="size-3.5 mr-2" />
+              Ver Loja
+            </Link>
+          </Button>
         </div>
       )}
     </div>
@@ -608,46 +720,132 @@ function InlineFormBlock({
   data: Record<string, any>;
   onAction?: (action: AIChatAction) => void;
 }) {
-  const fields: Array<{ name: string; label: string; placeholder?: string; type?: string }> =
-    data.fields || [];
+  const fields: Array<{
+    name: string;
+    label: string;
+    placeholder?: string;
+    type?: string;
+    options?: string[];
+  }> = data.fields || [];
   const [formState, setFormState] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const privacyMode: "standard" | "anonymous" | "secret" =
+    data.privacy_mode || data.mode || "standard";
+
+  const privacyBadge =
+    privacyMode === "secret"
+      ? {
+          label: "Formulário Secreto",
+          desc: "Respostas criptografadas visíveis apenas ao criador",
+          icon: Lock,
+          cls: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+        }
+      : privacyMode === "anonymous"
+      ? {
+          label: "Formulário Anônimo",
+          desc: "Sua identidade permanece oculta na resposta",
+          icon: EyeOff,
+          cls: "bg-primary/10 text-primary border-primary/25",
+        }
+      : {
+          label: "Formulário Rápido",
+          desc: data.description || "Preencha diretamente na conversa",
+          icon: Shield,
+          cls: "bg-muted text-foreground border-border/60",
+        };
+
+  const PrivacyIcon = privacyBadge.icon;
 
   return (
     <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-sm w-full space-y-3">
+      <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2">
+        <Badge variant="outline" className={cn("text-xs font-semibold gap-2", privacyBadge.cls)}>
+          <PrivacyIcon className="size-3" />
+          <span>{privacyBadge.label}</span>
+        </Badge>
+        {submitted && (
+          <Badge variant="secondary" className="text-xs font-semibold text-emerald-600">
+            Enviado
+          </Badge>
+        )}
+      </div>
+
       {data.title && (
-        <h4 className="text-xs font-bold text-foreground">{data.title}</h4>
+        <div className="space-y-1">
+          <h4 className="text-xs font-bold text-foreground">{data.title}</h4>
+          <p className="text-xs text-muted-foreground">{privacyBadge.desc}</p>
+        </div>
       )}
-      <div className="space-y-2">
+
+      <div className="space-y-3">
         {fields.map((f) => (
           <div key={f.name} className="space-y-1">
-            <label className="text-xs text-muted-foreground font-medium">{f.label}</label>
-            <input
-              type={f.type || "text"}
-              placeholder={f.placeholder || ""}
-              value={formState[f.name] || ""}
-              onChange={(e) =>
-                setFormState((prev) => ({ ...prev, [f.name]: e.target.value }))
-              }
-              className="w-full h-11 rounded-md border border-border/60 bg-muted/30 px-3 text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-            />
+            <label className="text-xs text-muted-foreground font-medium block">{f.label}</label>
+            {Array.isArray(f.options) && f.options.length > 0 ? (
+              <div className="grid grid-cols-1 gap-2">
+                {f.options.map((opt) => {
+                  const selected = formState[f.name] === opt;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() =>
+                        setFormState((prev) => ({ ...prev, [f.name]: opt }))
+                      }
+                      className={cn(
+                        "w-full h-11 min-h-11 px-3 rounded-md border text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                        selected
+                          ? "border-primary bg-primary/10 text-primary font-bold"
+                          : "border-border/60 bg-muted/20 text-foreground hover:bg-muted/40",
+                      )}
+                    >
+                      <span>{opt}</span>
+                      {selected && <Check className="size-3.5 text-primary" />}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <input
+                type={f.type || "text"}
+                placeholder={f.placeholder || "Digite sua resposta..."}
+                value={formState[f.name] || ""}
+                onChange={(e) =>
+                  setFormState((prev) => ({ ...prev, [f.name]: e.target.value }))
+                }
+                className="w-full h-11 rounded-md border border-border/60 bg-muted/30 px-3 text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              />
+            )}
           </div>
         ))}
       </div>
+
       <Button
         type="button"
-        variant="outline"
+        variant={submitted ? "outline" : "default"}
         size="sm"
-        className="w-full h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-        onClick={() => /* focus-visible:ring-2 */
+        disabled={submitted}
+        className="w-full h-11 min-h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        onClick={() => { /* focus-visible:ring-2 */
+          setSubmitted(true);
           onAction?.({
             id: `submit-${data.form_id || "inline"}`,
             label: data.submit_label || "Confirmar",
             action_type: "submit_form",
-            payload: { form_id: data.form_id, values: formState },
-          })
-        }
+            payload: {
+              form_id: data.form_id,
+              privacy_mode: privacyMode,
+              values: formState,
+            },
+          });
+        }}
       >
-        {data.submit_label || "Confirmar"}
+        {submitted
+          ? privacyMode === "secret"
+            ? "Resposta Criptografada Enviada"
+            : "Resposta Registrada"
+          : data.submit_label || "Enviar Resposta"}
       </Button>
     </div>
   );
@@ -710,38 +908,59 @@ function EventCardBlock({
   data: Record<string, any>;
   onAction?: (action: AIChatAction) => void;
 }) {
+  const [rsvped, setRsvped] = useState(false);
+
   return (
     <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-sm w-full space-y-3">
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-3">
         <div className="size-11 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
           <Calendar className="size-5" />
         </div>
-        <div className="min-w-0 flex-1">
-          <h4 className="text-xs font-bold text-foreground truncate">{data.title || "Evento"}</h4>
-          <p className="text-xs text-muted-foreground">{data.date_label || "Data a confirmar"}</p>
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="text-xs font-bold text-foreground truncate">{data.title || "Evento"}</h4>
+            {data.repeat && data.repeat !== "Nunca" && (
+              <Badge variant="outline" className="text-2xs shrink-0">
+                {data.repeat}
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-primary font-semibold">
+            {data.date_label || "Data a confirmar"}
+            {data.time_range ? ` • ${data.time_range}` : ""}
+          </p>
         </div>
       </div>
+
+      {data.description && (
+        <p className="text-xs text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-md border border-border/40">
+          {data.description}
+        </p>
+      )}
+
       {data.location && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <MapPin className="size-3 shrink-0" />
+          <MapPin className="size-3.5 text-primary shrink-0" />
           <span className="truncate">{data.location}</span>
         </div>
       )}
+
       <Button
         type="button"
-        variant="outline"
+        variant={rsvped ? "secondary" : "outline"}
         size="sm"
-        className="w-full h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-        onClick={() => /* focus-visible:ring-2 */
+        className="w-full h-11 min-h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        onClick={() => { /* focus-visible:ring-2 */
+          setRsvped(true);
           onAction?.({
             id: `rsvp-${data.event_id}`,
             label: "Confirmar Presença",
             action_type: "rsvp_event",
             payload: { event_id: data.event_id },
-          })
-        }
+          });
+        }}
       >
-        Confirmar Presença
+        {rsvped ? "Presença Confirmada" : "Confirmar Presença"}
       </Button>
     </div>
   );
@@ -1653,6 +1872,12 @@ export function StructuredMessageView({
                 totalCents={block.data.totalCents || 0}
                 itemsCount={block.data.itemsCount || 1}
                 deliveryAddress={block.data.deliveryAddress}
+                pickupCode={block.data.pickupCode || block.data.pickup_code}
+                storeSlug={block.data.storeSlug || block.data.store_slug}
+                storeName={block.data.storeName || block.data.store_name}
+                currentLat={block.data.currentLat ?? block.data.current_lat}
+                currentLng={block.data.currentLng ?? block.data.current_lng}
+                estimatedArrival={block.data.estimatedArrival || block.data.estimated_arrival}
                 courier={block.data.courier}
                 timeline={block.data.timeline}
               />

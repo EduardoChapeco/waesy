@@ -17,6 +17,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Label } from "@/components/ui/label";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { FiscalActionCluster } from "@/components/workspace/FiscalActionCluster";
 
 export const Route = createFileRoute("/workspace/pdv/comandas")({
  head: () => ({ meta: [{ title: "Comandas | PDV | Workspace Waesy" }] }),
@@ -414,7 +415,19 @@ function PdvComandasPage() {
  </div>
  </div>
 
-                    <div className="p-3 bg-muted/10 border-t border-border/60 flex gap-2">
+                    <div className="p-3 bg-muted/10 border-t border-border/60 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-muted-foreground">Emissão Fiscal</span>
+                        <FiscalActionCluster
+                          orderId={comanda.id}
+                          storeId={store?.id || ""}
+                          customerName={comanda.customer_name || "Consumidor Final"}
+                          customerDoc={comanda.customer_document || ""}
+                          totalCents={comanda.total_cents || 0}
+                          hasServices={Boolean(comanda.order_items?.some((it: any) => it.type === 'service'))}
+                          hasProducts={Boolean(comanda.order_items?.some((it: any) => it.type !== 'service'))}
+                        />
+                      </div>
                       <Button
                         size="sm"
                         className="w-full font-bold text-xs h-11 sm:h-9 rounded-lg cursor-pointer"
@@ -527,6 +540,23 @@ function PdvComandasPage() {
                       Solicitar Fechamento / Conta
                     </Button>
                   )}
+
+                  {/* Documentos Fiscais da Mesa */}
+                  <div className="p-3 rounded-lg border border-border/70 bg-card/50 flex items-center justify-between gap-2">
+                    <div>
+                      <span className="text-xs font-bold text-foreground block">Emissão Fiscal</span>
+                      <span className="text-xs text-muted-foreground block">NFS-e de Serviços / NFC-e / NF-e</span>
+                    </div>
+                    <FiscalActionCluster
+                      orderId={selectedTable.order.id}
+                      storeId={store?.id || ""}
+                      customerName={selectedTable.order.customer_name || "Consumidor Final"}
+                      customerDoc={selectedTable.order.customer_document || ""}
+                      totalCents={selectedTable.total_cents || 0}
+                      hasServices={Boolean(selectedTable.order.order_items?.some((it: any) => it.type === 'service'))}
+                      hasProducts={Boolean(selectedTable.order.order_items?.some((it: any) => it.type !== 'service'))}
+                    />
+                  </div>
 
                   <Button
                     className="w-full font-bold text-xs h-11 rounded-lg cursor-pointer"

@@ -31,16 +31,42 @@ export const Route = createFileRoute("/_store/publicacao/$id")({
   head: ({ loaderData }) => {
     const post = (loaderData as any)?.post;
     const authorName = post?.author?.name || "Membro";
-    const snippet = post?.content ? post.content.slice(0, 100) + "..." : "Confira esta publicação no Waesy.";
+    const snippet = post?.content
+      ? post.content.slice(0, 140)
+      : "Publicação da comunidade no Waesy Local Marketplace.";
+    const canonicalUrl = `https://waesy.com.br/publicacao/${post?.id || "post"}`;
+    const imageUrl = post?.media_urls?.[0] || "https://waesy.com.br/pwa-512x512.png";
+    const jsonLd = post
+      ? {
+          "@context": "https://schema.org",
+          "@type": "SocialMediaPosting",
+          headline: `${authorName} no Mural Waesy`,
+          articleBody: post.content || snippet,
+          datePublished: post.created_at || new Date().toISOString(),
+          author: {
+            "@type": "Person",
+            name: authorName,
+          },
+          publisher: {
+            "@type": "Organization",
+            name: "Waesy Local Marketplace",
+            url: "https://waesy.com.br",
+          },
+        }
+      : null;
+
     return {
       meta: [
-        { title: `${authorName} no Mural | Waesy Community` },
+        { title: `${authorName} no Mural | Waesy Local Marketplace` },
         { name: "description", content: snippet },
-        { property: "og:title", content: `${authorName} no Mural` },
+        { property: "og:title", content: `${authorName} no Mural | Waesy Local Marketplace` },
         { property: "og:description", content: snippet },
         { property: "og:type", content: "article" },
-        ...(post?.media_urls?.[0] ? [{ property: "og:image", content: post.media_urls[0] }] : []),
+        { property: "og:url", content: canonicalUrl },
+        { property: "og:image", content: imageUrl },
       ],
+      links: [{ rel: "canonical", href: canonicalUrl }],
+      scripts: jsonLd ? [{ type: "application/ld+json", children: JSON.stringify(jsonLd) }] : [],
     };
   },
   loader: async ({ params }) => {

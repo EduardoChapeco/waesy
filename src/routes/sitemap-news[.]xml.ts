@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import type {} from "@tanstack/react-start";
-const BASE_URL = "https://waesy.pages.dev";
+const BASE_URL = "https://waesy.com.br";
 
 function escapeXml(unsafe: string): string {
   if (!unsafe) return "";
@@ -25,13 +25,27 @@ export const Route = createFileRoute("/sitemap-news.xml")({
           const { getServerClient } = await import("@/lib/supabase");
           const db = getServerClient();
 
-          // Google Notícias exige artigos dos últimos 2 dias com título e idioma
+          // Google Notícias exige artigos recentes dos últimos dias com título, publicação e idioma
+          const twoDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
           const { data: articles } = await db
             .from("news_articles")
             .select("slug, title, published_at, created_at, category")
             .eq("status", "published")
+            .gte("published_at", twoDaysAgo)
             .order("published_at", { ascending: false })
-            .limit(100);
+            .limit(1000);
+
+          // Fallback caso não haja matérias nas últimas 72h (pega as mais recentes)
+          let finalArticles = articles;
+          if (!finalArticles || finalArticles.length === 0) {
+            const fallback = await db
+              .from("news_articles")
+              .select("slug, title, published_at, created_at, category")
+              .eq("status", "published")
+              .order("published_at", { ascending: false })
+              .limit(100);
+            finalArticles = fallback.data;
+          }
 
           const itemsXml = (articles || [])
             .map((art) => {

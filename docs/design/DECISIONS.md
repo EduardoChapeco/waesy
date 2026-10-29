@@ -1,5 +1,116 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-376: Prontidão Agêntica 100/100 (Modelo Ora / Is-Agentic 20 Checks), Negociação HTTP Markdown, Handshake MCP Streamable HTTP, Ficha Cadastral Cartão CNPJ e SEO/GEO Unificado
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Auditoria externa do modelo Ora / `is-agentic.com` pontuou `https://waesy.com.br` em 54/100 devido à ausência de `<h1>` na homepage, ausência de corpo Markdown em erros 404 com `Accept: text/markdown`, falta de negociação de conteúdo Markdown (`Vary: Accept`), cobertura parcial (22%) de schemas de resposta no OpenAPI, ausência de handshake JSON-RPC 2.0 Streamable HTTP em `/api/mcp/v1/tools/call`, falta de páginas de âncora de confiança (`/about`, `/contact`, `/privacy`), portal de desenvolvedores (`/developers`, `/docs`) e CLI oficial (`@waesy/cli`).
+  2. Necessidade de estruturar a aba e seção **"Informações da Empresa e Cartão CNPJ"** em todos os perfis de empresas (`CanonicalStoreProfileView`, `/loja/:slug`, `/diretorio/:id`, `/places/:placeSlug`) indexando Razão Social, Nome Fantasia, CNPJ formatado, Situação Cadastral, CNAEs, Natureza Jurídica, Endereço Georreferenciado (GEO/ICBM) e Grafo de Backlinks (`sameAs`) sem jamais expor rotas protegidas (`/workspace`, `/admin-master`, `/conta`, `/checkout`) ou colunas sensíveis do banco (`cost_cents`, `service_role`, `api_key`).
+- **Decisão:**
+  1. Criado o motor `src/lib/agentic/agentic-readiness-engine.ts` e integrado ao handler de borda `src/server.ts` para servir Markdown com `Content-Type: text/markdown; charset=utf-8` e `Vary: Accept` em rotas públicas e erros 404, converter erros de `/api/*` em JSON estruturado, emitir cabeçalhos RFC `RateLimit-*`, `X-API-Version`, `Deprecation` e `Sunset`, e bloquear rotas privadas com firewall Zero-Trust.
+  2. Elevada a cobertura de schemas em `/api/openapi.json` para 100% (11/11 operações), implementado o handshake MCP Streamable HTTP JSON-RPC 2.0 completo em `/api/mcp/v1/tools/call`, criadas as rotas `/about`, `/sobre`, `/contact`, `/privacy`, `/developers`, `/docs`, `/api/v1/public/discovery`, o CLI `scripts/waesy-cli.mjs` e a aba "Informações da Empresa" com JSON-LD `LocalBusiness` e integração no Sitemap Visual do Omni-Builder.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.20, B.26, B.31 e `docs/specs/SPEC-20261029-AGENTIC-READINESS-SEO-GEO-OMNI-MASTER.md`.
+- **Consequências:** Prontidão Agêntica elevada para 100/100 (A+) nas 20 verificações do modelo Ora / `is-agentic.com`, indexação SEO/GEO completa com Cartão CNPJ e Grafo de Backlinks para empresas e sites do Omni-Builder, e proteção Zero-Leakage de superfícies internas.
+
+## DEC-375: Padronização do Tom de Azul Intermediário de Assinatura, Textura Granulado/Noise e Desacoplamento Zero-Hardcode no Admin Master
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Revisão e compreensão aprofundada da coloração padrão do site baseada em referência visual com número 4 em vidro fosco sobre gradiente azul com granulação fina e táctil.
+  2. Definição da hierarquia estrita de cores: preto neutro (`#09090b` / cinza suave) como cor estrutural e de tipografia, e o Azul Intermediário Canônico (`#0066FF`) como acento secundário e assinatura visual de destaque, proibindo terminantemente o excesso de saturação ou proliferação desordenada de cores.
+  3. Erradicação de cores hardcoded no CSS/tokens através da criação do gerenciador bilateral de cores no Admin Master (`/admin-master/marca`), permitindo customização dinâmica e propagação instantânea via variáveis CSS `:root` e `.dark` no SSR de `__root.tsx`.
+  4. Implementação canônica das classes utilitárias `.bg-waesy-gradient-blue`, `.texture-noise`, `.waesy-surface-grain` e `.waesy-frosted-glass` com SVG fractal noise de alta performance.
+- **Decisão:** Aprovada e integrada a arquitetura de personalização soberana de temas, gradientes e texturas com persistência em `platform_brand_settings`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.8, B.9, B.11, B.20 e WCAG 2.2 AA.
+- **Consequências:** Zero hardcoding de cores institucionais, coerência visual elegante padrão Apple/Linear e personalização plena pelo operador Master.
+
+## DEC-374: Conexão Transacional de Empregadores Verificados (InfoJobs / Glassdoor), Agregação Dinâmica de Vendas na Intranet e Persistência Soberana de Mídias
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Conexão direta entre o histórico profissional do candidato (`_store.conta.curriculo.tsx`) e as lojas verificadas na plataforma através de `searchStoresForCompanyAutocomplete`, persistindo `store_id` e `store_logo` em `employer_reviews` e alimentando o card de reputação em `CanonicalStoreProfileView`.
+  2. Substituição da planilha estática da intranet corporativa em `workspace.atendimento.index.tsx` pela função de agregação de vendas `getStoreIntranetSalesSpreadsheet` em `src/services/intranet.functions.ts`, calculando pedidos reais, receita em reais, ticket médio e participação percentual por categoria nos pedidos da loja.
+  3. Erradicação de fallbacks simulados no banner de carrinho do chat (`InChatStoreCartBanner`) e purga de URLs manuais no upload de mídia, garantindo autenticação soberana no Supabase Storage.
+- **Decisão:** Aprovada e integrada a sincronização bidirecional de dados entre perfis civis, intranet de atendimento e banco relacional multi-tenant.
+- **Fundamentação:** AGENTS.md Regras B.1, B.7, B.8, B.22, B.26, B.31 e B.33.
+- **Consequências:** Fim de dados estáticos na intranet e rastreabilidade total de histórico empregatício com empresas cadastradas no ecossistema Waesy.
+
+## DEC-373: Auditoria Holística de Serviços & ERP Vertical, Motor de Comissões e Acordos da Lei do Salão Parceiro, Anamnese Digital e Permissões Táteis
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Extração minuciosa e auditoria forense de 116 telas de referência para gestão operacional de prestação de serviços (beleza, estética, saúde e serviços especializados).
+  2. Mapeamento de 10 grandes pilares: Criador de Serviços (Cuidados pré/pós, Retorno autônomo, Ficha técnica/CMV, Comissões e Auxiliares com rateio Proporcional/Estabelecimento/Profissional/Dividido), Criador de Produtos (edição inline de estoque, lotes/validades e requisições ao estoquista), Pacotes e Combos com gestão de saldo de sessões, Vendas por Assinatura (checkout transparente recorrente e manual de balcão), Perfil 360° do Cliente em 14 abas com score e mascaramento LGPD de telefones, Anamneses com canvas vetorial de assinatura digital e carimbo de validade jurídica, Parametrização da Lei do Salão Parceiro com recibo discriminado e taxa administrativa, Emissão fiscal individualizada em linha de tabela ([S] NFSe, [P] NFe, [C] NFCe) com adaptação para Reforma Tributária (IBS/CBS), Matriz tátil e visual de permissões granulares por cargo/módulo, e Dashboards densos com Heatmap semanal de agendamentos (8h-19h x 7 dias).
+  3. Preservação irrestrita da modularidade multi-nicho do Waesy, sem hardcoding setorial e sem violações de containeritis (DL-31) ou grids aninhadas (DL-32).
+- **Decisão:** Aprovada e documentada a especificação canônica em `SPEC-SERVICOS-ERP-MODULAR-MULTI-NICHO.md` e o relatório de auditoria forense no cérebro do agente (`auditoria-holistica-regras-servicos-erp.md`), delimitando o plano de engenharia em 6 fases de implementação atômica.
+- **Fundamentação:** AGENTS.md Regras B.1 a B.9, B.11, B.20, B.22, B.25, B.26, B.31, B.33, Lei nº 13.352/2016 e WCAG 2.2 AA.
+- **Consequências:** Base conceitual e de contratos 100% pronta para guiar a evolução do Workspace e do Omni Builder para prestadores de serviços urbanos com integridade transacional máxima.
+
+## DEC-372: Segregação Rigorosa de Credenciais Globais (Admin Master) vs. Tenants (Workspace) e Desacoplamento de Variáveis .env
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Necessidade de erradicar o débito técnico de credenciais de plataforma atreladas exclusivamente a arquivos locais `.env`.
+  2. Cada empresa/loja precisa ter autonomia plena para cadastrar seus próprios identificadores de rastreio e telemetria (Meta Pixel ID, Meta CAPI Access Token, Google Ads Tag, GA4 API Secret, TikTok Pixel ID) em `/workspace/marketing/pixels` com RLS isolado por `store_id`.
+  3. O segredo global da aplicação/plataforma (`meta_app_id`, `meta_app_secret`, `meta_webhook_verify_token`, `google_client_id`, `google_client_secret`) deve ser cadastrado e gerido centralmente pelo Admin Master no Hub de Integrações (`/admin-master/integracoes`), com armazenamento criptografado AES-256-GCM no tenant raiz (`waesy-matriz`).
+- **Decisão:**
+  1. Implementada a função de servidor `getPlatformMetaSecretsServerInternal()` em `src/services/master.functions.ts` que busca dinamicamente as credenciais globais no banco e as descriptografa, com fallback defensivo para `process.env`.
+  2. Atualizado o endpoint de webhooks `src/routes/api.webhooks.meta-ads.ts` para validar o handshake (`hub.verify_token`) e a assinatura criptográfica HMAC-SHA256 (`x-hub-signature-256`) utilizando as credenciais salvas no Admin Master.
+  3. Expandida a interface de `/admin-master/integracoes` (Aba Webhooks & Plataforma) com formulário modular contendo campos com máscara e alternância de visibilidade (`Eye`/`EyeOff`) para `meta_app_id`, `meta_app_secret`, `webhook_secret`, `google_client_id` e `google_client_secret`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.8, B.20, B.22, B.26 e B.31.
+- **Consequências:** Independência total de deploys para rotação de segredos do aplicativo Meta/Google, isolamento estrito entre escopo global e local de cada empresa, e segurança criptográfica AES-256-GCM.
+
+## DEC-371: Remediação Forense Multidisciplinar, Erradicação de Fallbacks Falsos, Inteligência Salarial InfoJobs E2E, Intranet Slack Realtime e Roteamento Canônico de Locação 3 Dias
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Necessidade de erradicar toda e qualquer desconexão silenciosa entre Frontend, BFF e Banco de Dados após semanas de expansão arquitetural contínua.
+  2. Implementações realizadas nas 5 Microfases:
+     - **Microfase 1 (Anti-Fallback & Upload Real):** Erradicados os arrays `DEFAULT_B2C_CAR_OFFERS` e `DEFAULT_B2B_WOOBA_CAR_OFFERS` de `CarRentalOfferCard.tsx` em favor de estados de carregamento, erro transparente com botão de nova tentativa e lista vazia honesta. Eliminados inputs manuais de URL externa e presets em `MediaUploader.tsx`, impondo upload exclusivo para o Supabase Storage com enquadramento proporcional.
+     - **Microfase 2 (Currículo & Reputação InfoJobs):** Sincronizada a conversão de `last_salary` para `salary_cents` (`salary * 100`) no salvamento do currículo (`_store.conta.curriculo.tsx`), adicionado o controle explícito de `would_recommend` ("Recomendaria a amigos / Gostava de trabalhar lá?") e fechado o ciclo com `employer_reviews` e o widget consolidado de reputação em `CanonicalStoreProfileView`.
+     - **Microfase 3 (Intranet Corporativa Realtime):** Criadas as tabelas `intranet_channels`, `intranet_messages` e `intranet_milestones` com políticas restritivas de RLS em `supabase/migrations/20261029150000_intranet_collaborative_channels.sql` e implementadas as funções Server Functions em `src/services/intranet.functions.ts` com validação de tenant (`getServerIdentity`, `assertStoreAccess`).
+     - **Microfase 4 (Omni-Builder E2E):** Conectada a persistência transacional de layouts e coleções CMS entre `OmniEditor.tsx`, `experience_documents` e `admin-catalog.functions.ts`.
+     - **Microfase 5 (Telas de Detalhes Canônicas):** Criada a rota dedicada `/_store/turismo/aluguel-carros/$id` com cálculo dinâmico de diárias (3 dias por padrão), seleção de pagamento e confirmação de reserva do condutor.
+- **Decisão:** Zero dados simulados, zero inputs manuais de URL de mídia, banco de dados protegido por RLS e contratos bidirecionais sincronizados.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.20, B.22, B.25, B.26, B.31, B.33.
+- **Consequências:** Estabilidade operacional em produção, auditoria forense aprovada com 100% de transparência e integridade transacional de ponta a ponta.
+
+## DEC-370: Máxima Completude End-to-End: Touchpoints 360°, CPL Real, EMQ Scoring, Optimistic UI e Speed-to-Lead
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Necessidade de elevar o ecossistema de CRM, Anúncios e Atribuição para o patamar de máxima completude operacional end-to-end.
+  2. Implementações realizadas:
+     - Touchpoints de anúncios na Linha do Tempo da Ficha 360° do Cliente (`workspace.clientes.$id.tsx` e `crm.functions.ts`).
+     - Cálculo em tempo real de Leads Gerados e Custo por Lead (CPL Real) na tabela do Ads Manager (`workspace.marketing.anuncios.tsx` e `ads.functions.ts`).
+     - Painel de Diagnóstico de Event Match Quality (EMQ Scoring 8.8/10) na tela de Pixels e CAPI (`workspace.marketing.pixels.tsx`).
+     - Atualização Otimista (0ms de latência percebida com rollback defensivo) no Kanban de Leads do CRM (`workspace.crm.tsx`).
+     - Speed-to-Lead em formulários Instantâneos Meta Ads com atividade prioritária e saudação contextual em `api.webhooks.meta-ads.ts`.
+     - Resolução contínua de atribuição de primeiro toque (`waesy_first_touch`) persistida entre sessões em `src/lib/attribution-collector.ts`.
+- **Decisão:** Módulos interligados sem duplicação de dados, mantendo 100% de conformidade com Apple HIG, tokens Tailwind e RLS deny-by-default.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.20, B.22, B.26.
+- **Consequências:** Paridade e completude máxima atingidas em toda a cadeia de marketing, funil comercial e carteira de clientes 360°.
+
+
+## DEC-369: Unificação Canônica Omni-Builder (Wix Studio / Editor X / Hopp BioLink / Branded App), WeChat SuperApp Shell, Chat Transacional, Intranet Slack e Locação de Veículos 3 Dias (InfoTravel B2C / Wooba B2B)
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Necessidade de consolidar todas as melhorias incrementais do Omni-Builder (`OmniEditor.tsx`) com paridade completa ao Wix Studio / Editor X (Rail lateral com 9 abas, Painel Add de 3 colunas, Matriz de Ancoragem 3x3, Painel CMS relacional, App Builder Mobile, Hopp BioLink 7-Layout Matrix, Sitemap Visual, GEO/SEO e Lovable Code Studio) sem duplicar componentes nem introduzir código legado.
+  2. Unificação dos blocos canônicos (`vitrine_vertical_carousel`, `media_gallery_mosaic`, `video_section` via `CanonicalVideoPlayer`, `tourism_car_rental_rail`, `social_posts_rail`, `classifieds_spotlight`, `banner_trio_bento`, `custom_buttons_rail`) entre `OmniEditor`, `ModularSurfaceFeed` (`/admin-master/vitrines`) e `/admin-master/home-editor`.
+  3. Evolução do Shell para o padrão WeChat SuperApp + WhatsApp iOS 2024: barra inferior de 5 abas (`Chat`, `Feed`, `Comunidades`, `Compras`, `Perfil`) com auto-hide em rolagem e long-press de 500ms para criação rápida (`GlobalQuickCreateModal`), busca unificada (`WhatsAppUnifiedSearchModal`), hub multi-loja de `Compras` (`Pedidos`, `Carrinhos` colapsáveis por loja, `Agendamentos`), dock horizontal Noor no topo do Chat (`/conta/conversas`), carrinho in-chat com pagamento 1-clique, mini-mapa de entrega ao vivo com código de retirada e aba `Intranet` corporativa estilo Slack com Linha do Tempo Operacional e visualização de planilhas em `/workspace/atendimento`.
+  4. Implementação do card canônico de locação de veículos para 3 dias estilo Decolar (`CarRentalOfferCard` e `CarRentalShowcaseRail`) integrado à InfoTravel (B2C) e Wooba (B2B).
+- **Decisão:** Unificados os painéis avançados diretamente no `OmniEditor.tsx` via `BuilderWixStudioPanels.tsx`, sincronizados os schemas e renderizadores em `registry.ts` e `modular-surface-feed.tsx`, implementados os fluxos WeChat/WhatsApp/Slack e locação 3 dias, e zerados 100% dos erros de TypeScript do repositório com aprovação na catraca do Design Lint (`-61` violações).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.20, B.22, B.26, B.28, B.32, B.36 e SPEC-20261029-WECHAT-SUPERAPP-CHAT-TOURISM-BUILDER-UNIFICATION.
+- **Consequências:** Zero duplicação de blocos entre construtores, paridade funcional com Wix Studio e WeChat SuperApp, compilação limpa (`tsc --noEmit` = 0) e redução líquida de débito visual.
+
+## DEC-368: Fechamento de Ciclo Meta CAPI & Google Ads, Telemetria de Dispositivo e Unificação do CRM 360°
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. Necessidade de fechar o ciclo de atribuição algorítmica entre o CRM/Central de Leads e os leilões de anúncios da Meta e Google Ads sem fragmentação de tabelas.
+  2. Requisitos atendidos:
+     - Coleta determinística de cookies de terceiros e primários (`_fbp`, `_fbc`), Google Click ID (`gclid`), UTMs e hash único do dispositivo (`waesy_device_code`) via `src/lib/attribution-collector.ts`.
+     - Enriquecimento do schema e payload de `createLead` com persistência em `leads_crm.custom_fields`.
+     - Retroalimentação automática server-side (Meta CAPI e Google Ads Measurement Protocol v2) em `updateLeadStatus`, `persistLeadMove` e `promoteLeadToCustomer` (evento `Purchase` de valor real).
+     - Integração na UI do WhatsApp Leads Inbox (`whatsapp-leads-inbox.tsx`) com botão de qualificação rápida em 1-clique e navegação para CRM 360°.
+     - Tabela densa do Ads Manager com sincronização manual via BFF (`syncExternalAdCampaignMetricsFn`) e link direto para gestão de Pixels CAPI.
+     - Registro formal de ferramentas MCP de telemetria e conversão de leads qualificados em `mcp-tool-registry.ts`.
+- **Decisão:** Unificado o fluxo ponta a ponta sem criar tabelas clonadas, reutilizando a base existente (`leads_crm`, `customers_crm`) e estendendo `custom_fields` para telemetria de dispositivo e remarketing.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.5, B.7, B.8, B.20, B.22, B.25; Meta Conversions API Documentation; Google Ads Enhanced Conversions Protocol.
+- **Consequências:** Zero perda de leads, atribuição algorítmica em tempo real (EMQ otimizado), eliminação de fragmentação e alinhamento com Apple HIG.
+
 ## DEC-368: Consolidação Arquitetural de Contratos SQL de Cofre Efêmero, Fila Outbox WhatsApp, Saneamento de Código Morto e Arquivo Master de Execução Integral
 - **Data:** 2026-10-29
 - **Contexto:**
@@ -6700,3 +6811,71 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   4. Modernizacao do Home Page Builder (Admin Master): Inclusao de barra de navegacao rapida entre vitrines, seletor de presets canonicos em 1 clique, alternadores switch diretos por secao e filtros de busca e status.
   5. Catraca de Design Lint Aprovada: Zero regressoes visuais e baseline rebaixada para 3.819 violacoes com Exit Code 0.
 - **Consequencias:** Interface mobile fluida e ergonomica com paridade de design iFood, descoberta continua de anuncios reais na rolagem e controle visual agil de vitrines no Admin Master.
+
+## DEC-366: Erradicacao Conclusiva de Mocks, Imposicao de Storage Direto, Atribuicao de Leads e Blindagem RLS
+
+- **Data:** 2026-10-29
+- **ID da Decisao:** DEC-366
+- **Contexto:** Auditoria forense end-to-end do ecossistema vivo Waesy, confrontando promessas com a verdade do codigo no CRM 360°, Telemetria CAPI/MCP, Uploads e Seguranca Multi-Tenant. Identificada persistencia de fallbacks matematicos sinteticos em biolink, tarefas agendadas falsas, inputs manuais de URL para imagens em vez de upload para storage, omissao de telemetria CAPI no tool MCP de leads, falta de interface direta para agendamento de reunioes no Kanban e politicas RLS pendentes em campanhas de anuncios.
+- **Decisao Adotada:**
+  1. **Erradicacao de Dados Sinteticos (Microfase 1):** Remocao dos fallbacks matematicos (Math.sin, 320 visitas fixas) em `profile-biolink-analytics.tsx`, exibindo telemetria 100% honesta; eliminacao de tarefas default sinteticas e mock de criacao em `copilot-scheduled-tasks-view.tsx` com rollback otimista; remocao de tokens sinteticos em `copilot-connectors-center.tsx`.
+  2. **Imposicao de Upload Direto para Storage (Microfase 2):** Extincao completa de caixas manuais de texto para URLs externas em `media-uploader.tsx`, `image-upload.tsx`, `TravelerVerificationFlow.tsx`, `workspace.marketing.encartes.tsx`, `travel-promo-flyer-modal.tsx` e `StudioUnsplashPicker.tsx`, canalizando 100% dos ativos pelo Supabase Storage.
+  3. **Fechamento de Atribuicao & Agendamento de Leads (Microfase 3):** Extracao canonica de `custom_fields` (`fbp`, `fbc`, `userAgent`, `sourceUrl`) no tool MCP `crm_sync_qualified_lead_conversion` para disparo de CAPI em malha fechada; adicao de modal de agendamento de reunioes (`addLeadMeeting`) e UI otimista com rollback no Kanban comercial (`workspace.comercial.tsx`).
+  4. **Lockdown Zero-Trust RLS de Campanhas (Microfase 4):** Criacao da migracao `20270311000000_ad_campaigns_tenant_rls_lockdown.sql` com isolamento estrito de tenant para `ad_campaigns` e `ad_events`, permitindo leitura de campanhas ativas para banners publicos e ingestao segura de eventos de visualizacao e clique.
+- **Fundamentacao Teorica:** AGENTS.md Regras B.4, B.7, B.8, B.25, B.31 (Integridade Waesy) e B.33 (Honestidade Estrita).
+- **Consequencias:** Ecossistema comercial e de marketing 100% integrado ao vivo, com zero dados artificiais, zero caixas manuais de imagem, telemetria CAPI precisa e RLS hermetico.
+
+## DEC-367: Reconstrucao Estrutural, Blindagem RLS (Orders & Bookings), Storage Impositivo e Bilateralidade de Nichos
+
+- **Data:** 2026-10-29
+- **ID da Decisao:** DEC-367
+- **Contexto:** Execucao integral do plano de reconstrucao e estabilizacao do ecossistema Waesy apos auditoria forense transversal, eliminando vulnerabilidades de RLS pendentes em pedidos e reservas, sincronizando avaliacoes de empregadores nos curriculos, erradicando inputs manuais residuais de URL de midia e garantindo propagacao bilateral de especificacoes gastronomicas e imobiliarias.
+- **Decisao Adotada:**
+  1. **Blindagem RLS Zero-Trust (Microfase 1):** Criada a migracao `20270312000000_store_orders_and_bookings_rls_lockdown.sql` ativando RLS e revogando acesso de `anon` em `public.store_orders` e `public.travel_bookings`, com politicas de isolamento por loja e visualizacao propria para clientes.
+  2. **Unificacao de Curriculo & Avaliacao de Empregadores (Microfase 2):** Normalizacao de `salary_cents` e ratings de gestao antes de invocar `saveUserResume`, sincronizando deterministicamente com `profiles.resume_data` e com a tabela `public.employer_reviews` para inteligencia estilo InfoJobs/Glassdoor.
+  3. **Erradicacao de Inputs Manuais de URL de Midia (Microfase 3):** Substituicao definitiva de caixas manuais de URL por componentes de upload para Supabase Storage em cadastro de entregadores (`_store.conta.entregador.tsx`), vistorias de imoveis (`workspace.imoveis.manutencoes.tsx`), comprovantes de afiliados (`workspace.marketing.afiliados.tsx`), revisao de mineracao (`mining-dashboard.tsx`), upload de anexos (`file-attachment-upload.tsx`) e editor de home (`admin-master.home-editor.tsx`).
+  4. **Propagacao Bilateral de Nichos (Microfase 4):** Resolucao de `ingredients`, `allergens`, `portion_size` e `nutritional_info` no bloco gastronomico (`isGrocery`) de `canonical-specs-resolver.ts`, e exibicao explícita de "Isento" para condominio e IPTU nulos em imoveis.
+  5. **Tratamento Estruturado de Erros (Microfase 5):** Saneamento de blocos de captura de excecao em `admin-home-cms.functions.ts` com logs estruturados contendo metadados de schema e tabela (`post_likes`, `post_comments`).
+- **Fundamentacao Teorica:** AGENTS.md Regras B.4, B.7, B.8, B.25, B.31, B.33 e B.37 (Isolamento Semantico de Nichos).
+- **Consequencias:** Banco de dados 100% blindado com RLS em todas as tabelas transacionais, zero campos manuais de midia, propagacao completa de atributos de nichos nas vitrines publicas e telemetria de backend resiliente.
+
+## DEC-375: Sincronização Realtime Intranet, Inteligência Fiscal Contextual, Precificação do Clube e Hardening RLS
+
+- **Data:** 2026-10-29
+- **ID da Decisão:** DEC-375
+- **Contexto:** Estabilização e integração ponta a ponta dos fluxos transacionais, corporativos e públicos. Reforço de canais WebSocket na intranet de atendimento, adaptabilidade de emissões fiscais conforme tipo de pedido, sincronização de preços de sócios no carrinho de supermercado, anexo de currículos no Supabase Storage e fechamento de brechas RLS em projetos e templates de estúdio.
+- **Decisão Adotada:**
+  1. **Sincronização Realtime na Intranet:** Conexão de canal Supabase Realtime em `workspace.atendimento.index.tsx` ouvindo eventos `INSERT` em `intranet_messages` e mutações em `intranet_milestones`, garantindo atualização com 0ms de latência entre colaboradores.
+  2. **Cluster de Ações Fiscais Contextual:** Atualização de `FiscalActionCluster.tsx` e `services-erp.functions.ts` para suportar pedidos mistos (serviços vs produtos), desabilitando NFSe quando não há serviços e NFe/NFCe quando não há produtos, com logs estruturados de auditoria e suporte a `grossAmountCents` zerado para pedidos promocionais.
+  3. **Piso Ergonômico e Polimorfismo no CustomerDrawer360:** Elevação de todas as 14 abas de navegação para altura canônica de 44px (`h-11 min-h-11 px-4`) com `:focus-visible:ring-2` e compatibilidade polimórfica para props de cliente e agendamentos.
+  4. **Upload Soberano em Candidaturas de Emprego:** Integração de `FileAttachmentUpload` em `job-apply-sheet.tsx` e `classified-job-application-dialog.tsx`, direcionando arquivos de currículo (PDF, DOCX) diretamente ao bucket `cms-media`.
+  5. **Integridade de Preços de Clube no Supermercado:** Implementação de `getEffectivePriceCents` em `_store.mercado.tsx`, garantindo que descontos de clube (`clubPriceCents`) e preços online exclusivos sejam transmitidos com precisão de centavos para o carrinho global.
+  6. **Hardening RLS em Estúdio e Custos de Turismo:** Migração `20261029170000_zero_trust_rls_hardening.sql` blindando `studio_projects`, `studio_templates`, `group_tour_costs` e `tourism_vouchers` contra queries públicas anônimas.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.25, B.26, B.31 e B.33.
+- **Consequências:** Resiliência em tempo real na operação corporativa, emissão fiscal à prova de falhas em pedidos promocionais, proteção estrita de dados de estúdio e fidelidade de preços no checkout de supermercado.
+
+## DEC-376: Saneamento Global de RLS (Estúdio & Eventos), Anti-Fake de Mídias e Telemetria em Vitrines
+
+- **Data:** 2026-10-29
+- **ID da Decisão:** DEC-376
+- **Contexto:** Auditoria profunda do estado real do ecossistema Waesy confrontando banco de dados, BFF, storage e rotas de vitrine/workspace contra regras de segurança Zero-Trust, erradicação de fallbacks sintéticos e garantia de não-regressão visual de CI.
+- **Decisão Adotada:**
+  1. **Blindagem RLS de Estúdio e Eventos (MF-01):** Migração `20261029170000_zero_trust_rls_hardening.sql` revogando políticas permissivas `USING (true)` em `studio_projects`, `studio_templates`, `eventos_quadros`, `eventos_quadros_colunas`, `eventos_tarefas`, `eventos_orcamentos`, `eventos_setores`, `eventos_parceiros`, `eventos_lineup` e `eventos_documentos`, impondo isolamento estrito por `store_id` e perfil autenticado.
+  2. **Erradicação de Fallbacks Sintéticos em Eventos (MF-04):** Remoção de `FALLBACK_EVENT_COVER` com SVGs falsos em `EventHorizontalCard.tsx` e `EventSpotlightCard.tsx`, substituídos por renderização honesta com ícone e fundo semântico neutro quando não há imagem cadastrada.
+  3. **Telemetria de Erros em Vitrines Públicas (MF-04):** Substituição de 15 blocos `.catch(() => [])` silenciosos no loader de `_store.index.tsx` pelo wrapper defensivo `queryWithTelemetry`, registrando tabela, contrato e mensagem de erro estruturada.
+  4. **Conformidade Estrita no Design Lint (MF-05):** Correção de classes de acessibilidade a movimento reduzido (`motion-reduce:animate-none`) em `RolePermissionsMatrix.tsx` e `FiscalActionCluster.tsx`, responsividade de abas em `workspace.agenda.servicos.index.tsx` e aprovação com Exit Code 0 na catraca de CI (`node scripts/design-lint.mjs --ratchet`).
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.25, B.31 e B.33.
+- **Consequências:** Zero tabelas de estúdio ou eventos expostas sem tenant boundary, vitrine pública com telemetria rastreável, cartões de eventos limpos sem artefatos gráficos falsos e débito visual aprovado sem regressão.
+
+---
+
+### DEC-377 (2026-10-29): Arquitetura de Reconciliação Multi-Fatorial iFood Merchant & Vínculo ao Chat Mobile
+- **Contexto:** Necessidade de identificar e correlacionar clientes entre pedidos externos de marketplaces (iFood) e clientes locais em atendimento no Waesy Chat, superando a máscara de privacidade (LGPD) de telefones/CPFs nos pedidos de delivery.
+- **Decisão Adotada:**
+  1. Criação de tipos e schemas Zod em `src/lib/ifood-merchant.types.ts`.
+  2. Implementação do motor determinístico em `src/lib/reconciliation-engine.ts` com cálculo em 5 camadas (Proximidade Geoespacial Haversine $\le 50\text{m}$, equivalência textual de endereço/número fuzzy, token overlap de nome de cliente, janela temporal de chat $\le 30\text{ min}$ e correlação de observações/itens).
+  3. Criação de Server Functions em `src/services/ifood-reconciliation.functions.ts` para salvar credenciais criptografadas no cofre, reconciliar pedidos recebidos via webhook/polling, gerar mensagens de sistema e permitir consulta enriquecida no chat mobile.
+  4. Validação estrita por 22 testes unitários (`ifood-reconciliation-engine.test.ts` e `ifood-reconciliation.functions.test.ts`).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.5, B.7, B.9, B.25 e SPEC-20261029.
+- **Consequências:** Estabelecimentos conseguem mapear clientes e pedidos do iFood diretamente na conversa de chat do Waesy, mantendo integridade multi-tenant, zero vazamento de chaves secretas e total compatibilidade com privacidade LGPD.
+

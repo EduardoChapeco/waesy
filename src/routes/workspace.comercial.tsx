@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Kanban, Bus, MessageSquare, Pencil, Users, Plus, Search, DollarSign, Phone, Mail, UserCheck, CheckCircle2, Clock, MoreVertical, Plane, Edit3, Calendar, MapPin, Tag, CheckSquare, Square, AlertTriangle, ChevronRight, ChevronLeft, X, Trash2, Layers, Upload, Calculator, FileText, ExternalLink, BarChart3, Settings2, Brain, FileSignature, History, Copy, Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { listLeads, updateLeadStatus, updateLeadDetails, promoteLeadToCustomer, createLead, toggleLeadChecklist, deleteLead, persistLeadMove, getCustomer360Profile, calculateStoreLtvAndAdSpend, type StoreLtvAndAdSpendDTO, issueLeadContract } from "@/services/crm.functions";
+import { listLeads, updateLeadStatus, updateLeadDetails, promoteLeadToCustomer, createLead, toggleLeadChecklist, deleteLead, persistLeadMove, getCustomer360Profile, calculateStoreLtvAndAdSpend, type StoreLtvAndAdSpendDTO, issueLeadContract, addLeadMeeting } from "@/services/crm.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getStoreOnboardingForms } from "@/services/lead-forms.functions";
@@ -225,9 +226,23 @@ const COMERCIAL_TOUR_SLIDES: TourSlide[] = [
 ];
 
 function WorkspaceComercialPage() {
-  const { leads = [], team = [], store = null } = ((Route.useLoaderData?.() as any) || {});
+  const { leads: initialLeads = [], team = [], store = null } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
   const storeId = store?.id || "";
+
+  const [leads, setLeads] = useState<any[]>(initialLeads);
+  useEffect(() => {
+    setLeads(initialLeads);
+  }, [initialLeads]);
+
+  // Modal de Agendamento Direto de Reuniões (lead_meetings)
+  const [meetingModalOpen, setMeetingModalOpen] = useState(false);
+  const [meetingTitle, setMeetingTitle] = useState("");
+  const [meetingDate, setMeetingDate] = useState("");
+  const [meetingDuration, setMeetingDuration] = useState(30);
+  const [meetingType, setMeetingType] = useState<"call" | "video" | "in_person">("call");
+  const [meetingNotes, setMeetingNotes] = useState("");
+  const [isSchedulingMeeting, setIsSchedulingMeeting] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
@@ -461,6 +476,13 @@ function WorkspaceComercialPage() {
   }, [filteredLeads]);
 
   const handleMoveStage = async (leadId: string, newStage: LeadStage) => {
+    const prevLeads = [...leads];
+    // Atualização otimista imediata na interface (0ms)
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status: newStage } : l)));
+    if (selectedLead?.id === leadId) {
+      setSelectedLead((prev: any) => (prev ? { ...prev, status: newStage } : null));
+    }
+
     try {
       await persistLeadMove({
         data: {
@@ -470,12 +492,53 @@ function WorkspaceComercialPage() {
         },
       });
       toast.success("Oportunidade movida no funil com sucesso!");
-      if (selectedLead?.id === leadId) {
-        setSelectedLead((prev: any) => (prev ? { ...prev, status: newStage } : null));
-      }
       router.invalidate();
     } catch (err: any) {
+      // Rollback defensivo
+      setLeads(prevLeads);
+      if (selectedLead?.id === leadId) {
+        const original = prevLeads.find((l) => l.id === leadId);
+        if (original) setSelectedLead(original);
+      }
       toast.error(err.message || "Erro ao mover lead.");
+    }
+  };
+
+  const handleOpenScheduleMeeting = () => {
+    if (!selectedLead) return;
+    setMeetingTitle(`Reunião Comercial - ${selectedLead.full_name || selectedLead.title || "Oportunidade"}`);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+    setMeetingDate(tomorrow.toISOString().slice(0, 16));
+    setMeetingDuration(30);
+    setMeetingType("call");
+    setMeetingNotes("");
+    setMeetingModalOpen(true);
+  };
+
+  const handleConfirmScheduleMeeting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLead || !meetingDate) return;
+    setIsSchedulingMeeting(true);
+    try {
+      await addLeadMeeting({
+        data: {
+          leadId: selectedLead.id,
+          title: meetingTitle.trim() || `Reunião com ${selectedLead.full_name}`,
+          description: meetingNotes.trim() || null,
+          scheduledAt: new Date(meetingDate).toISOString(),
+          durationMinutes: meetingDuration,
+          meetingType,
+        },
+      });
+      toast.success("Reunião agendada e registrada nas atividades do lead!");
+      setMeetingModalOpen(false);
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao agendar reunião.");
+    } finally {
+      setIsSchedulingMeeting(false);
     }
   };
 
@@ -1615,11 +1678,14 @@ function WorkspaceComercialPage() {
                               Ciclo de Vida: <strong className="text-foreground font-mono">{customer360Data.customer.lifetime_lead_count || 1} oportunidade(s)</strong>
                             </span>
                             <div className="flex items-center gap-2">
-                              <Button asChild variant="outline" className="h-11 min-h-11 text-xs font-bold gap-1 focus-visible:ring-2 focus-visible:ring-ring">
-                                <Link to="/workspace/agenda">
-                                  <Calendar className="size-3.5 text-primary" />
-                                  <span>Agendar Reunião</span>
-                                </Link>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleOpenScheduleMeeting}
+                                className="h-11 min-h-11 text-xs font-bold gap-1 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                              >
+                                <Calendar className="size-3.5 text-primary" />
+                                <span>Agendar Reunião</span>
                               </Button>
                               <Button asChild variant="outline" className="h-11 min-h-11 text-xs font-bold gap-1 border-primary/40 text-primary focus-visible:ring-2 focus-visible:ring-ring">
                                 <Link to="/workspace/clientes/$id" params={{ id: customer360Data.customer.id }}>
@@ -2224,6 +2290,107 @@ function WorkspaceComercialPage() {
         isOpen={isTourOpen}
         onOpenChange={setIsTourOpen}
       />
+
+      {/* ── Modal Canônico de Agendamento de Reunião com o Lead (lead_meetings) ── */}
+      <Dialog open={meetingModalOpen} onOpenChange={setMeetingModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 rounded-lg bg-card border border-border/70 space-y-4">
+          <DialogHeader className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Calendar className="size-4 text-primary" />
+              <DialogTitle className="text-base font-bold text-foreground">
+                Agendar Reunião com Lead
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              A reunião será registrada no histórico de atividades e na agenda do vendedor responsável.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleConfirmScheduleMeeting} className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold">Título do Compromisso</Label>
+              <Input
+                value={meetingTitle}
+                onChange={(e) => setMeetingTitle(e.target.value)}
+                placeholder="Ex: Alinhamento de Proposta de Pacote"
+                required
+                className="h-11 min-h-11 rounded-lg text-xs"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">Data e Hora</Label>
+                <Input
+                  type="datetime-local"
+                  value={meetingDate}
+                  onChange={(e) => setMeetingDate(e.target.value)}
+                  required
+                  className="h-11 min-h-11 rounded-lg text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">Formato</Label>
+                <Select value={meetingType} onValueChange={(val: any) => setMeetingType(val)}>
+                  <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="call">Ligação Telefônica</SelectItem>
+                    <SelectItem value="video">Vídeoconferência (Meet / Zoom)</SelectItem>
+                    <SelectItem value="in_person">Presencial na Agência</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold">Duração Estimada</Label>
+              <Select value={String(meetingDuration)} onValueChange={(val) => setMeetingDuration(Number(val))}>
+                <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">15 minutos (Alinhamento rápido)</SelectItem>
+                  <SelectItem value="30">30 minutos (Padrão)</SelectItem>
+                  <SelectItem value="45">45 minutos (Apresentação completa)</SelectItem>
+                  <SelectItem value="60">60 minutos (Consultoria / Fechamento)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold">Pauta / Observações (Opcional)</Label>
+              <Textarea
+                value={meetingNotes}
+                onChange={(e) => setMeetingNotes(e.target.value)}
+                placeholder="Ex: Apresentar opções de hotel em Gramado e condições parceladas."
+                className="min-h-20 text-xs rounded-lg resize-none"
+              />
+            </div>
+
+            <DialogFooter className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setMeetingModalOpen(false)}
+                className="h-11 min-h-11 rounded-lg text-xs font-semibold"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSchedulingMeeting || !meetingDate}
+                className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 px-5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Calendar className="size-4" />
+                <span>{isSchedulingMeeting ? "Agendando..." : "Confirmar Agendamento"}</span>
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

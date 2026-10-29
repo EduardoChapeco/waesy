@@ -127,7 +127,19 @@ export function CommunityPostComposer({
       for (const file of Array.from(files)) {
         const formData = new FormData();
         formData.append("file", file);
-        const res = await uploadPostMedia({ data: formData });
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(new Error("Falha ao ler arquivo."));
+          reader.readAsDataURL(file);
+        });
+        const res = await uploadPostMedia({
+          data: {
+            fileName: file.name,
+            fileType: file.type || "image/jpeg",
+            base64Data,
+          },
+        });
         if (res?.url) {
           uploaded.push(res.url);
         }

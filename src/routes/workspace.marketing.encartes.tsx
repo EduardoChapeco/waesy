@@ -186,7 +186,7 @@ export default function WorkspaceMarketingEncartesPage() {
     if (!pendingPinCoords) return;
 
     const newHotspot: FlyerHotspotDTO = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       x_percent: pendingPinCoords.x,
       y_percent: pendingPinCoords.y,
       product_id: product.id,
@@ -675,15 +675,6 @@ export default function WorkspaceMarketingEncartesPage() {
                       onChange={(urls) => {
                         if (urls && urls[0]) setFormImageUrl(urls[0]);
                       }}
-                    />
-                    <div className="text-xs text-muted-foreground">
-                      Ou insira a URL direta da imagem:
-                    </div>
-                    <Input
-                      value={formImageUrl}
-                      onChange={(e) => setFormImageUrl(e.target.value)}
-                      placeholder="https://exemplo.com/encarte.jpg"
-                      className="h-9 rounded-lg text-xs"
                     />
                   </div>
 

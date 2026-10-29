@@ -33,20 +33,29 @@ import { CvcNavigationDock, type CvcMenuItem } from "@/components/tourism/cvc-na
 import { TourismDynamicSearchPanel } from "@/components/tourism/tourism-dynamic-search-panel";
 import { CorporateVollConciergeView } from "@/components/tourism/corporate-voll-concierge-view";
 import { WeekendIdeasRail } from "@/components/tourism/weekend-ideas-rail";
+import { CarRentalShowcaseRail } from "@/components/tourism/CarRentalOfferCard";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/turismo/")({
-  head: () => ({
-    meta: [
-      { title: "Turismo & Viagens | Waesy & Excelência Tour" },
-      {
-        name: "description",
-        content: "Pacotes de viagens, passagens aéreas, hotéis, ônibus e hub corporativo integrado ao GDS InfoTravel e Wooba.",
+  head: () =>
+    buildUniversalHead({
+      title: "Turismo & Viagens | Waesy & Excelência Tour",
+      description:
+        "Pacotes de viagens, passagens aéreas, hotéis, ônibus e hub corporativo integrado com reservas seguras.",
+      path: "/turismo",
+      ogType: "website",
+      webmcpType: "tourism_index",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Turismo e Viagens",
+        description: "Catálogo de experiências, pacotes e destinos turísticos no Waesy.",
+        url: "https://waesy.com.br/turismo",
       },
-    ],
-  }),
+    }),
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
@@ -340,6 +349,20 @@ function TourismMasterPage() {
         <section aria-label="Destaques Personalizados de Turismo" className="w-full">
           <ModularSurfaceFeed sections={surfaceFeed.sections} />
         </section>
+      )}
+
+      {/* ── Locação de Carros Decolar / InfoTravel B2C (3 Diárias) ── */}
+      {(selectedCategory === "aluguel" || selectedCategory === "todos") && (
+        <CarRentalShowcaseRail
+          mode="b2c"
+          title="Precisa de um carro?"
+          initialDays={3}
+          initialPickupLocation={
+            selectedAirport !== "todos"
+              ? REGIONAL_AIRPORTS.find((a) => a.id === selectedAirport)?.label
+              : undefined
+          }
+        />
       )}
 
       {/* ── Passagens de Ônibus Intermunicipais ── */}

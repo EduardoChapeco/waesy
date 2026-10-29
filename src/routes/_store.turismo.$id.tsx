@@ -24,27 +24,14 @@ import { ActionAuthGuardModal } from "@/components/common/action-auth-guard-moda
 import { useActionAuthGuard } from "@/hooks/use-action-auth-guard";
 import { TravelItineraryTimeline } from "@/components/commerce/dynamic-sections/travel-itinerary-timeline";
 import { SmartTravelBookingModal } from "@/components/tourism/booking/SmartTravelBookingModal";
+import { buildTourismSeoHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/turismo/$id")({
   head: ({
     loaderData,
   }: {
     loaderData?: { experience: TourismItemDTO | null; session: any };
-  }) => ({
-    meta: [
-      {
-        title: loaderData?.experience
-          ? `${loaderData.experience.title} — Turismo Waesy`
-          : "Experiência Turística — Waesy",
-      },
-      {
-        name: "description",
-        content: loaderData?.experience?.description
-          ? `${loaderData.experience.description.slice(0, 160)}...`
-          : "Descubra passeios, hospedagens e roteiros turísticos autênticos no Waesy.",
-      },
-    ],
-  }),
+  }) => buildTourismSeoHead(loaderData?.experience),
   loader: async ({ params }): Promise<{ experience: TourismItemDTO | null; session: any }> => {
     const [experience, session] = await Promise.all([
       getPublicTourismById({ data: { experienceId: params.id } }).catch(() => null),

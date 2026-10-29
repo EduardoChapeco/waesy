@@ -4,6 +4,7 @@ import {
   MCP_RESOURCES_MANIFEST,
   MCP_PROMPTS_MANIFEST,
 } from "@/services/mcp-server.functions";
+import { buildAgentApiHeaders } from "@/lib/agentic/agentic-readiness-engine";
 import type {} from "@tanstack/react-start";
 
 export const Route = createFileRoute("/api/webmcp.json")({
@@ -15,10 +16,16 @@ export const Route = createFileRoute("/api/webmcp.json")({
         const manifest = {
           name: "Waesy Universal Commerce MCP Protocol",
           version: "2.2.0",
+          protocolVersion: "2024-11-05",
           description:
-            "Especificação WebMCP oficial para descoberta, catálogo, simulação econométrica, propostas, turismo, contratos, logística e automação operacional com AI-Guards e isolamento multi-tenant estrito.",
+            "Especificação WebMCP oficial para descoberta, catálogo, empresas verificadas (CNPJ), notícias, simulação econométrica, propostas, turismo, contratos, logística e automação operacional com AI-Guards e isolamento multi-tenant estrito.",
           protocol: "model-context-protocol/v1",
+          transport: "streamable-http",
           executionEndpoint: `${url.origin}/api/mcp/v1/tools/call`,
+          discoveryUrl: `${url.origin}/.well-known/mcp.json`,
+          openApiUrl: `${url.origin}/api/openapi.json`,
+          developerPortalUrl: `${url.origin}/developers`,
+          cliPackage: "@waesy/cli",
           securityModel: {
             standard: "Meta Ads & Stripe Restricted Scopes",
             tiers: {
@@ -60,22 +67,17 @@ export const Route = createFileRoute("/api/webmcp.json")({
 
         return new Response(JSON.stringify(manifest, null, 2), {
           status: 200,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, OPTIONS",
-            "Cache-Control": "public, max-age=3600",
-          },
+          headers: buildAgentApiHeaders({
+            extraHeaders: {
+              "Cache-Control": "public, max-age=3600",
+            },
+          }),
         });
       },
       OPTIONS: async () => {
         return new Response(null, {
           status: 204,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
-          },
+          headers: buildAgentApiHeaders(),
         });
       },
     },

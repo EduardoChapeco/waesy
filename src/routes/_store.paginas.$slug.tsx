@@ -121,7 +121,7 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
   },
   notFoundComponent: () => (
     <div className="flex flex-col items-center justify-center min-h-dvh p-4 bg-background">
-      <Surface variant="outline" padding="lg" className="max-w-md w-full text-center">
+      <Surface padding="lg" className="max-w-md w-full text-center">
         <FileQuestion className="size-12 text-foreground mx-auto mb-4 opacity-50" />
         <h2 className="font-semibold text-2xl mb-2">Página Vazia</h2>
         <p className="font-sans text-muted-foreground mb-6">
@@ -158,7 +158,7 @@ function PublicPage() {
   if (!document) {
     return (
       <div className="flex flex-col items-center justify-center min-h-dvh p-4 bg-background">
-        <Surface variant="outline" padding="lg" className="max-w-md w-full text-center">
+        <Surface padding="lg" className="max-w-md w-full text-center">
           <FileQuestion className="size-12 text-foreground mx-auto mb-4 opacity-50" />
           <h2 className="font-semibold text-2xl mb-2">Página Indisponível</h2>
           <p className="font-sans text-muted-foreground mb-6">

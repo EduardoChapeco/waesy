@@ -71,7 +71,8 @@ export const Route = createFileRoute("/painel")({
       aba: search.aba === "cadastro" ? "cadastro" : "login",
     };
   },
-  loader: async ({ search }) => {
+  loader: async (ctx: any) => {
+    const search = ctx?.search || ctx?.deps;
     try {
       const session = await getUserSession();
       if (session?.id) {

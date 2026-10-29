@@ -257,6 +257,10 @@ function AdminMasterIntegracoesPage() {
  google_maps_api_key: formData.google_maps_api_key,
  openai_api_key: formData.openai_api_key,
  webhook_secret: formData.webhook_secret,
+ meta_app_id: formData.meta_app_id,
+ meta_app_secret: formData.meta_app_secret,
+ google_client_id: formData.google_client_id,
+ google_client_secret: formData.google_client_secret,
  abacatepay_api_key: formData.abacatepay_api_key,
  mercadopago_access_token: formData.mercadopago_access_token,
  paypal_client_id: formData.paypal_client_id,
@@ -1493,35 +1497,149 @@ function AdminMasterIntegracoesPage() {
  </div>
  )}
 
- {/* ── ABA 6: WEBHOOKS ── */}
+ {/* ── ABA 6: WEBHOOKS & CREDENCIAIS DE PLATAFORMA (META / GOOGLE) ── */}
  {activeTab === "webhooks" && (
  <form onSubmit={handleSave} className="space-y-6">
+ {/* Bloco 1: Meta Developers & Lead Ads Webhook */}
  <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
+ <div className="flex items-start justify-between gap-4">
  <div>
- <h3 className="text-sm font-bold text-foreground">Segurança de Webhooks (HMAC SHA-256)</h3>
- <p className="text-xs text-muted-foreground mt-1">
- Segredo criptográfico compartilhado para validação de webhooks de pagamento e entregas.
+ <div className="flex items-center gap-2">
+ <ShieldCheck className="size-4 text-primary" />
+ <h3 className="text-sm font-bold text-foreground">Meta Developers & Webhooks de Plataforma</h3>
+ </div>
+ <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
+ Credenciais globais do aplicativo Meta da Waesy. Utilizadas para validar a assinatura criptográfica HMAC-SHA256 (<code>x-hub-signature-256</code>) dos webhooks de Lead Ads em <code>/api/webhooks/meta-ads</code> e autenticar chamadas a nível de app na Graph API v19.0+. Armazenadas com criptografia AES-256-GCM.
+ </p>
+ </div>
+ <Badge variant="outline" className="font-mono text-2xs uppercase tracking-wider shrink-0 border-primary/30 text-primary bg-primary/5">
+ Cofre Seguro AES-256
+ </Badge>
+ </div>
+
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div className="space-y-2">
+ <Label htmlFor="meta_app_id" className="text-xs font-bold">Meta App ID (Global)</Label>
+ <Input
+ id="meta_app_id"
+ type="text"
+ value={formData.meta_app_id || ""}
+ onChange={(e) => handleInputChange("meta_app_id", e.target.value)}
+ placeholder="Ex: 1049284729104829"
+ className="h-10 text-xs font-mono rounded-lg"
+ />
+ <p className="text-3xs text-muted-foreground">
+ Identificador numérico do aplicativo cadastrado no painel Meta for Developers.
  </p>
  </div>
 
  <div className="space-y-2">
- <Label htmlFor="webhook_secret" className="text-xs font-bold">Webhook Secret</Label>
+ <Label htmlFor="meta_app_secret" className="text-xs font-bold">Meta App Secret (Chave Secreta Global)</Label>
+ <div className="relative">
+ <Input
+ id="meta_app_secret"
+ type={visibleKeys["meta_secret"] ? "text" : "password"}
+ value={formData.meta_app_secret || ""}
+ onChange={(e) => handleInputChange("meta_app_secret", e.target.value)}
+ placeholder="Ex: 8f9a2b7c6d1e4..."
+ className="h-10 text-xs font-mono rounded-lg pr-10"
+ />
+ <button
+ type="button"
+ onClick={() => toggleVisibility("meta_secret")}
+ className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
+ >
+ {visibleKeys["meta_secret"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+ </button>
+ </div>
+ <p className="text-3xs text-muted-foreground">
+ Chave privada do app Meta para cálculo de HMAC e autenticação segura server-side.
+ </p>
+ </div>
+ </div>
+
+ <div className="space-y-2 pt-2 border-t border-border/40">
+ <Label htmlFor="webhook_secret" className="text-xs font-bold">Webhook Verify Token (hub.verify_token)</Label>
+ <div className="relative">
  <Input
  id="webhook_secret"
  type={visibleKeys["webhook"] ? "text" : "password"}
  value={formData.webhook_secret || ""}
  onChange={(e) => handleInputChange("webhook_secret", e.target.value)}
- placeholder="whsec_..."
+ placeholder="Ex: waesy_live_verify_secret_..."
+ className="h-10 text-xs font-mono rounded-lg pr-10"
+ />
+ <button
+ type="button"
+ onClick={() => toggleVisibility("webhook")}
+ className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
+ >
+ {visibleKeys["webhook"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+ </button>
+ </div>
+ <p className="text-3xs text-muted-foreground">
+ Token de verificação exigido pela Meta no handshake inicial (GET <code>/api/webhooks/meta-ads?hub.verify_token=...</code>) e por gateways parceiros.
+ </p>
+ </div>
+ </div>
+
+ {/* Bloco 2: Google Cloud Platform & OAuth Global */}
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
+ <div>
+ <div className="flex items-center gap-2">
+ <Globe2 className="size-4 text-foreground" />
+ <h3 className="text-sm font-bold text-foreground">Google Cloud Platform & OAuth Global</h3>
+ </div>
+ <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
+ Credenciais mestre do projeto Google Cloud para login unificado, Google Ads Enhanced Conversions e integração com serviços da plataforma.
+ </p>
+ </div>
+
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div className="space-y-2">
+ <Label htmlFor="google_client_id" className="text-xs font-bold">Google Client ID</Label>
+ <Input
+ id="google_client_id"
+ type="text"
+ value={formData.google_client_id || ""}
+ onChange={(e) => handleInputChange("google_client_id", e.target.value)}
+ placeholder="Ex: 123456789-abc.apps.googleusercontent.com"
  className="h-10 text-xs font-mono rounded-lg"
  />
  </div>
 
- <div className="flex justify-end pt-4">
- <Button type="submit" disabled={isSubmitting} className="rounded-lg font-bold text-xs h-9 gap-2">
- <Save className="size-3.5" />
- <span>Salvar Segredo de Webhook</span>
- </Button>
+ <div className="space-y-2">
+ <Label htmlFor="google_client_secret" className="text-xs font-bold">Google Client Secret</Label>
+ <div className="relative">
+ <Input
+ id="google_client_secret"
+ type={visibleKeys["google_secret"] ? "text" : "password"}
+ value={formData.google_client_secret || ""}
+ onChange={(e) => handleInputChange("google_client_secret", e.target.value)}
+ placeholder="GOCSPX-..."
+ className="h-10 text-xs font-mono rounded-lg pr-10"
+ />
+ <button
+ type="button"
+ onClick={() => toggleVisibility("google_secret")}
+ className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
+ >
+ {visibleKeys["google_secret"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+ </button>
  </div>
+ </div>
+ </div>
+ </div>
+
+ <div className="flex justify-end pt-2">
+ <Button
+ type="submit"
+ disabled={isSubmitting}
+ className="rounded-lg font-bold text-xs h-10 px-6 gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+ >
+ <Save className="size-4" />
+ <span>Salvar Credenciais Globais de Plataforma</span>
+ </Button>
  </div>
  </form>
   )}

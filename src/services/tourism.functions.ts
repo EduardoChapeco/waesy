@@ -1215,3 +1215,55 @@ export const markFlightReaccommodationNotified = createServerFn({ method: "POST"
     }
     return { success: true };
   });
+
+/**
+ * Registra reserva de locação de veículo (Decolar / InfoTravel / Wooba)
+ */
+export const createCarRentalBooking = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      carId: z.string(),
+      carTitle: z.string(),
+      days: z.number().int().min(1).default(3),
+      totalPriceCents: z.number().int().min(0),
+      driverName: z.string().min(2),
+      driverCpf: z.string().min(11),
+      driverPhone: z.string().min(8),
+      paymentPreference: z.enum(["pay_at_pickup", "pay_now"]).default("pay_at_pickup"),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getCurrentIdentity().catch(() => null);
+
+    const voucherCode = `LOC-CAR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    const { data, error } = await supabase.from("tourism_inquiries").insert({
+      profile_id: identity?.customer_id || null,
+      customer_name: input.driverName.trim(),
+      customer_phone: input.driverPhone.trim(),
+      customer_email: (identity as any)?.email || "cliente@waesy.com",
+      desired_date: new Date().toISOString().split("T")[0],
+      guests_count: 1,
+      total_price_cents: input.totalPriceCents,
+      payment_status: input.paymentPreference === "pay_now" ? "paid" : "pending",
+      payment_method: input.paymentPreference === "pay_now" ? "pix" : "local_card",
+      voucher_code: voucherCode,
+      meeting_point: "Balcão da Locadora - Aeroporto / Centro",
+      notes: `Locação de veículo: ${input.carTitle} | ${input.days} diárias | CPF Condutor: ${input.driverCpf}`,
+      status: "confirmed",
+    }).select().single();
+
+    if (error) {
+      console.error("[tourism.functions] Erro ao criar reserva de veículo:", error);
+      throw new Error("Erro ao confirmar reserva: " + error.message);
+    }
+
+    return {
+      success: true,
+      voucherCode,
+      bookingId: data?.id,
+      message: `Reserva do veículo ${input.carTitle} confirmada com sucesso! Voucher: ${voucherCode}`,
+    };
+  });
+

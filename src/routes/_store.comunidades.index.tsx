@@ -14,17 +14,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Users, Search, Plus, Sparkles, ArrowRight } from "lucide-react";
+import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/comunidades/")({
-  head: () => ({
-    meta: [
-      { title: "Comunidades & Grupos | Waesy" },
-      {
-        name: "description",
-        content: "Descubra comunidades de discussões, vendas locais, notícias e eventos com design estilo Threads.",
+  head: () =>
+    buildUniversalHead({
+      title: "Comunidades & Grupos Locais | Waesy",
+      description:
+        "Descubra comunidades de discussões, vendas locais, notícias e eventos com design estilo Threads.",
+      path: "/comunidades",
+      ogType: "website",
+      webmcpType: "communities_index",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Comunidades e Fóruns",
+        description: "Comunidades de bairro, temas e grupos locais no Waesy.",
+        url: "https://waesy.com.br/comunidades",
       },
-    ],
-  }),
+    }),
   loader: async () => {
     try {
       const initialList = await listCommunities({ data: { limit: 20 } }).catch(() => ({

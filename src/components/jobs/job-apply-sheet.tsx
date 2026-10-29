@@ -3,6 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { FileAttachmentUpload } from "@/components/ui/file-attachment-upload";
 import { CheckCircle, CircleNotch, User, EnvelopeSimple, Phone, LinkSimple, ChatText, Briefcase, Lightning, LinkedinLogo, ArrowSquareOut } from "@phosphor-icons/react";
 
 export interface JobApplySheetProps {
@@ -188,16 +189,16 @@ export function JobApplySheet({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                  <LinkSimple size={14} className="text-muted-foreground" />
-                  Link do Currículo / LinkedIn / Portfólio
-                </label>
-                <Input
-                  type="url"
-                  placeholder="https://linkedin.com/in/seu-perfil ou link do Google Drive"
+                <FileAttachmentUpload
+                  label="Currículo / Portfólio (PDF, DOCX ou Imagem)"
+                  helperText="Envie seu arquivo de currículo (PDF/DOCX até 20MB) ou cole o link do seu portfólio"
+                  accept="application/pdf,.doc,.docx,image/*"
                   value={resumeUrl}
-                  onChange={(e) => setResumeUrl(e.target.value)}
-                  className="rounded-lg h-10 text-xs bg-background"
+                  onChange={(url) => setResumeUrl(url)}
+                  onRemove={() => setResumeUrl("")}
+                  bucket="cms-media"
+                  showExternalUrlOption={true}
+                  compact={true}
                 />
               </div>
 

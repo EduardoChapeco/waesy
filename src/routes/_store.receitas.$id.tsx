@@ -13,9 +13,30 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_store/receitas/$id")({
   head: ({ loaderData }: any) => {
     const recipe = loaderData?.recipe as MinedRecipeDTO | null | undefined;
-    const title = recipe ? `${recipe.title} | Receitas Waesy` : "Receita | Waesy Gastronomia";
-    const description = recipe?.description || "Veja ingredientes, tempo de preparo e modo de fazer completo.";
-    const imageUrl = recipe?.cover_image_url || "/assets/brand/hero-og.png";
+    const title = recipe
+      ? `${recipe.title} — Receita Completa | Waesy Local Marketplace`
+      : "Receita | Waesy Local Marketplace";
+    const description =
+      recipe?.description || "Veja ingredientes, tempo de preparo e modo de fazer completo no Waesy Local Marketplace.";
+    const imageUrl = recipe?.cover_image_url || "https://waesy.com.br/pwa-512x512.png";
+    const canonicalUrl = `https://waesy.com.br/receitas/${recipe?.id || "receita"}`;
+    const jsonLd = recipe
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Recipe",
+          name: recipe.title,
+          description,
+          image: [imageUrl],
+          author: {
+            "@type": "Organization",
+            name: "Waesy Gastronomia",
+          },
+          recipeCategory: recipe.category || "Gastronomia",
+          recipeIngredient: Array.isArray((recipe as any).ingredients)
+            ? (recipe as any).ingredients.map((i: any) => (typeof i === "string" ? i : i.item || i.name || ""))
+            : [],
+        }
+      : null;
 
     return {
       meta: [
@@ -25,7 +46,10 @@ export const Route = createFileRoute("/_store/receitas/$id")({
         { property: "og:description", content: description },
         { property: "og:image", content: imageUrl },
         { property: "og:type", content: "article" },
+        { property: "og:url", content: canonicalUrl },
       ],
+      links: [{ rel: "canonical", href: canonicalUrl }],
+      scripts: jsonLd ? [{ type: "application/ld+json", children: JSON.stringify(jsonLd) }] : [],
     };
   },
   loader: async ({ params }) => {

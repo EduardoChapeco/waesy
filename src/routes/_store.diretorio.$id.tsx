@@ -24,21 +24,38 @@ import { getMinedProductsFn } from "@/services/mining.functions";
 import { CanonicalStoreProfileView } from "@/components/commerce/canonical-store-profile-view";
 
 export const Route = createFileRoute("/_store/diretorio/$id")({
-  head: ({ loaderData }: any) => ({
-    meta: [
-      {
-        title: loaderData?.listing
-          ? `${loaderData.listing.business_name || loaderData.listing.name} — Perfil Institucional | Waesy`
-          : "Perfil Institucional | Waesy",
-      },
-      {
-        name: "description",
-        content: loaderData?.listing
-          ? `${(loaderData.listing.description || "").slice(0, 160)}...`
-          : "Conheça horários, especialidades, endereço e solicite atendimento.",
-      },
-    ],
-  }),
+  head: ({ loaderData }: any) => {
+    const listing = loaderData?.listing;
+    const name = listing?.business_name || listing?.name || "Perfil Institucional";
+    const city = listing?.city || "Chapecó";
+    const state = listing?.state || "SC";
+    const cnpj = listing?.cnpj ? ` (CNPJ ${listing.cnpj})` : "";
+    const canonicalUrl = `https://waesy.com.br/diretorio/${listing?.slug || listing?.id || "empresa"}`;
+    const desc = listing
+      ? `${name}${cnpj} em ${city} - ${state}. ${(listing.description || "Ficha cadastral, endereço, horários, CNAE e atendimento oficial.").slice(0, 150)}`
+      : "Conheça horários, ficha cadastral CNPJ, especialidades, endereço e solicite atendimento no Waesy Local Marketplace.";
+    return {
+      meta: [
+        {
+          title: listing
+            ? `${name} — Ficha Cadastral, CNPJ e Perfil Oficial | Waesy Local Marketplace`
+            : "Perfil Institucional | Waesy Local Marketplace",
+        },
+        { name: "description", content: desc },
+        { property: "og:title", content: `${name} | Waesy Local Marketplace` },
+        { property: "og:description", content: desc },
+        { property: "og:type", content: "business.business" },
+        { property: "og:url", content: canonicalUrl },
+        {
+          property: "og:image",
+          content: listing?.avatar_url || listing?.logo_url || "https://waesy.com.br/pwa-512x512.png",
+        },
+        { name: "geo.region", content: `BR-${state}` },
+        { name: "geo.placename", content: `${city}, ${state}` },
+      ],
+      links: [{ rel: "canonical", href: canonicalUrl }],
+    };
+  },
   loader: async ({ params }) => {
     try {
       const listing = await getPublicDirectoryById({ data: { listingId: params.id } }).catch(

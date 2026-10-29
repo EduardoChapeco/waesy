@@ -349,7 +349,13 @@ export function ThreadsCommunityFeed({
         <QuickProfilePeekModal
           isOpen={Boolean(profilePeekUser)}
           onClose={() => setProfilePeekUser(null)}
-          profile={profilePeekUser}
+          profileId={profilePeekUser.id}
+          initialData={{
+            name: profilePeekUser.name,
+            username: profilePeekUser.username || undefined,
+            avatarUrl: profilePeekUser.avatar_url,
+            isVerified: profilePeekUser.is_verified,
+          }}
         />
       )}
     </div>

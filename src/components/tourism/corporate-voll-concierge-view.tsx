@@ -28,6 +28,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { requestCompanyAgencyLink } from "@/services/corporate-travel.functions";
+import { CarRentalShowcaseRail } from "@/components/tourism/CarRentalOfferCard";
 
 interface CorporateVollConciergeViewProps {
   companyAccount?: any;
@@ -52,6 +54,7 @@ export function CorporateVollConciergeView({
 
   // Concierge input
   const [conciergeMsg, setConciergeMsg] = useState("");
+  const [selectedQuickModule, setSelectedQuickModule] = useState<string>("aluguel");
 
   const handleSendConcierge = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,8 +78,13 @@ export function CorporateVollConciergeView({
 
     setIsSubmittingLink(true);
     try {
-      // Simulação de solicitação de homologação corporativa
-      await new Promise((r) => setTimeout(r, 800));
+      // Disparo real para a Server Function de homologação corporativa B2B
+      await requestCompanyAgencyLink({
+        data: {
+          companyId: companyAccount?.company_id || companyAccount?.id || "00000000-0000-0000-0000-000000000001",
+          agencyId: companyAccount?.agency_id || "00000000-0000-0000-0000-000000000002",
+        },
+      });
       toast.success("Solicitação de vínculo corporativo enviada à Excelência Tour! Entraremos em contato para homologar a linha de crédito.");
       setLinkDialogOpen(false);
       setCnpj("");
@@ -226,7 +234,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-orange-500/15 text-orange-600 flex items-center justify-center">
               <CreditCard size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">VOLL Pay</span>
+            <button type="button" onClick={() => setSelectedQuickModule("voll_pay")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">VOLL Pay</button>
           </div>
 
           {/* 2. Voos */}
@@ -234,7 +242,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-sky-500/15 text-sky-600 flex items-center justify-center">
               <AirplaneTilt size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Voos</span>
+            <button type="button" onClick={() => setSelectedQuickModule("voos")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Voos</button>
           </div>
 
           {/* 3. Hotéis */}
@@ -242,7 +250,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-rose-500/15 text-rose-600 flex items-center justify-center">
               <Bed size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Hotéis</span>
+            <button type="button" onClick={() => setSelectedQuickModule("hoteis")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Hotéis</button>
           </div>
 
           {/* 4. Carros */}
@@ -250,7 +258,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-violet-500/15 text-violet-600 flex items-center justify-center">
               <Car size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Aluguel</span>
+            <button type="button" onClick={() => setSelectedQuickModule("aluguel")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Aluguel</button>
           </div>
 
           {/* 5. Ônibus */}
@@ -258,7 +266,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
               <Bus size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Ônibus</span>
+            <button type="button" onClick={() => setSelectedQuickModule("onibus")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Ônibus</button>
           </div>
 
           {/* 6. Reservas */}
@@ -266,7 +274,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center">
               <Ticket size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Bilhetes</span>
+            <button type="button" onClick={() => setSelectedQuickModule("bilhetes")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Bilhetes</button>
           </div>
 
           {/* 7. Embarque Rápido */}
@@ -274,7 +282,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-indigo-500/15 text-indigo-600 flex items-center justify-center">
               <Clock size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Embarque</span>
+            <button type="button" onClick={() => setSelectedQuickModule("embarque")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Embarque</button>
           </div>
 
           {/* 8. Reembolso KM */}
@@ -282,7 +290,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-teal-500/15 text-teal-600 flex items-center justify-center">
               <Receipt size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">KM Refund</span>
+            <button type="button" onClick={() => setSelectedQuickModule("km_refund")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">KM Refund</button>
           </div>
 
           {/* 9. Despesas */}
@@ -290,7 +298,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-red-500/15 text-red-600 flex items-center justify-center">
               <CreditCard size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Reembolso</span>
+            <button type="button" onClick={() => setSelectedQuickModule("reembolso")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Reembolso</button>
           </div>
 
           {/* 10. Agendar Corrida */}
@@ -298,7 +306,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-cyan-500/15 text-cyan-600 flex items-center justify-center">
               <Taxi size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Agendar Corrida</span>
+            <button type="button" onClick={() => setSelectedQuickModule("corrida")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Agendar Corrida</button>
           </div>
 
           {/* 11. Eventos */}
@@ -306,7 +314,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center">
               <CalendarCheck size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Eventos</span>
+            <button type="button" onClick={() => setSelectedQuickModule("eventos")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Eventos</button>
           </div>
 
           {/* 12. Grupos */}
@@ -314,7 +322,7 @@ export function CorporateVollConciergeView({
             <div className="size-8 rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center">
               <UsersThree size={18} weight="bold" />
             </div>
-            <span className="text-xs font-bold text-foreground leading-tight">Grupos</span>
+            <button type="button" onClick={() => setSelectedQuickModule("grupos")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Grupos</button>
           </div>
         </div>
 
@@ -348,6 +356,17 @@ export function CorporateVollConciergeView({
           </Button>
         </div>
       </div>
+
+      {/* ── Vitrine Corporativa B2B Wooba: Locação de Carros (3 diárias / Faturado) ── */}
+      {(selectedQuickModule === "aluguel" || Boolean(selectedQuickModule)) && (
+        <div className="pt-2 border-t border-border/40">
+          <CarRentalShowcaseRail
+            mode="b2b"
+            title="Precisa de um carro?"
+            initialDays={3}
+          />
+        </div>
+      )}
 
       {/* ── Seção: "Meus Compromissos & Viagens" (VOLL Image 4 e Image 5) ── */}
       <div className="space-y-3">

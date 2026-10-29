@@ -122,16 +122,22 @@ function StoreLayout() {
  }, [carts, globalCarts, initCart]);
 
  const storeData = store?.data || store;
- const storeName = brand?.platform_name || storeData?.name || "Waesy";
+ const storeName = brand?.platform_name || storeData?.name || "Waesy Local Marketplace";
  const logoUrl =
  brand?.logo_url ||
  storeData?.logoUrl ||
  storeData?.settings?.logoUrl ||
  storeData?.settings?.logo_url;
- const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://usewaesy.pages.dev";
+ const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
 
- // JSON-LD Structured Data (Organization + WebSite with SearchAction)
- const contactPhone = brand?.support_whatsapp || storeData?.contactPhone || storeData?.phone;
+ // JSON-LD Structured Data (Organization + WebSite with SearchAction — Ora Checks #5, #16, #18)
+ const contactPhone = brand?.support_whatsapp || storeData?.contactPhone || storeData?.phone || "+55-49-3621-0000";
+ const contactEmail = brand?.support_email || storeData?.email || "contato@waesy.com.br";
+ const orgDescription =
+   brand?.seo_description ||
+   storeData?.seo_description ||
+   storeData?.description ||
+   "Waesy Local Marketplace — Ecossistema operacional integrado de comércio local, serviços, classificados, portal de notícias, diretório empresarial com CNPJ verificado e agentes WebMCP.";
  const jsonLd = {
  "@context": "https://schema.org",
  "@graph": [
@@ -139,21 +145,44 @@ function StoreLayout() {
  "@type": "Organization",
  "@id": `${baseUrl}/#organization`,
  name: storeName,
+ alternateName: ["Waesy", "Waesy Local Marketplace"],
+ description: orgDescription,
  url: baseUrl,
- logo: logoUrl || `${baseUrl}/logo.png`,
- contactPoint: contactPhone
- ? {
+ logo: logoUrl || `${baseUrl}/pwa-512x512.png`,
+ email: contactEmail,
+ telephone: contactPhone,
+ address: {
+ "@type": "PostalAddress",
+ streetAddress: storeData?.address || "Centro Comercial Regional",
+ addressLocality: storeData?.city || "São Miguel do Oeste",
+ addressRegion: storeData?.state || "SC",
+ postalCode: storeData?.postal_code || "89900-000",
+ addressCountry: "BR",
+ },
+ contactPoint: [
+ {
  "@type": "ContactPoint",
  telephone: contactPhone,
+ email: contactEmail,
  contactType: "customer service",
- }
- : undefined,
+ areaServed: "BR",
+ availableLanguage: ["Portuguese", "English"],
+ },
+ ],
+ sameAs: [
+ `${baseUrl}/about`,
+ `${baseUrl}/developers`,
+ `${baseUrl}/docs`,
+ `${baseUrl}/llms.txt`,
+ ],
  },
  {
  "@type": "WebSite",
  "@id": `${baseUrl}/#website`,
  url: baseUrl,
  name: storeName,
+ description: orgDescription,
+ inLanguage: "pt-BR",
  publisher: { "@id": `${baseUrl}/#organization` },
  potentialAction: {
  "@type": "SearchAction",

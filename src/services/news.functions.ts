@@ -2085,7 +2085,7 @@ export const scheduleEditorialSocialPostFn = createServerFn({ method: "POST" })
     if (!storeId) {
       throw new Error("Loja editorial não identificada para agendamento.");
     }
-    await assertStoreAccess(storeId);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "editor"]);
 
     const supabase = getServerClient();
     const scheduledTimestamp = scheduledFor ? new Date(scheduledFor).toISOString() : new Date().toISOString();
@@ -2129,7 +2129,7 @@ export const listEditorialSocialSchedulesFn = createServerFn({ method: "GET" })
     const storeId = explicitStoreId || identity.storeId;
     if (!storeId) return [];
 
-    await assertStoreAccess(storeId);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "editor"]);
     const supabase = getServerClient();
 
     const { data: rows, error } = await supabase
@@ -2176,7 +2176,7 @@ export const getEditorialSocialSettingsFn = createServerFn({ method: "GET" })
       };
     }
 
-    await assertStoreAccess(storeId);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "editor"]);
     const supabase = getServerClient();
 
     const { data: row } = await supabase
@@ -2236,7 +2236,7 @@ export const updateEditorialSocialSettingsFn = createServerFn({ method: "POST" }
     if (!storeId) {
       throw new Error("Loja editorial não identificada.");
     }
-    await assertStoreAccess(storeId);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "editor"]);
 
     const supabase = getServerClient();
     const updates: Record<string, any> = {

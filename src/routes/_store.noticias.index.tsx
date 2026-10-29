@@ -7,17 +7,28 @@ import { WaesyNewsPortal } from "@/components/news/waesy-news-portal";
 export const Route = createFileRoute("/_store/noticias/")({
   head: () => ({
     meta: [
-      { title: "Notícias e Jornalismo Regional | Waesy" },
+      { title: "Portal de Notícias e Jornalismo Regional | Waesy Local Marketplace" },
       {
         name: "description",
-        content: "Portal editorial com jornalismo regional apurado, cobertura de cidades, telemetria e estúdio de posts.",
+        content:
+          "Portal editorial do Waesy Local Marketplace com jornalismo regional apurado, cobertura de cidades, economia local, eventos e utilidade pública.",
       },
-      { property: "og:title", content: "Notícias e Jornalismo Regional | Waesy" },
+      { property: "og:title", content: "Portal de Notícias e Jornalismo Regional | Waesy Local Marketplace" },
       {
         property: "og:description",
-        content: "Portal editorial com jornalismo regional apurado, cobertura de cidades, telemetria e estúdio de posts.",
+        content:
+          "Jornalismo regional verificado, cobertura de cidades e notícias da comunidade no Waesy Local Marketplace.",
       },
-      { property: "og:image", content: "/brand-logo.png" },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://waesy.com.br/noticias" },
+      { property: "og:image", content: "https://waesy.com.br/pwa-512x512.png" },
+      { name: "geo.region", content: "BR-SC" },
+      { name: "geo.placename", content: "São Miguel do Oeste, Chapecó e Região" },
+      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://waesy.com.br/noticias" },
+      { rel: "alternate", type: "application/xml", href: "https://waesy.com.br/sitemap-news.xml" },
     ],
   }),
   loader: async ({ location }) => {

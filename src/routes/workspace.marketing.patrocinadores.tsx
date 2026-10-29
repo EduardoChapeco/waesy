@@ -34,7 +34,7 @@ function WorkspacePatrocinadoresPage() {
 
   // Form states
   const [name, setName] = useState("");
-  const [tier, setTier] = useState<"gold" | "silver" | "standard" | "supporter">("standard");
+  const [tier, setTier] = useState<"diamond" | "gold" | "silver" | "standard" | "supporter">("standard");
   const [logoUrl, setLogoUrl] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -90,7 +90,7 @@ function WorkspacePatrocinadoresPage() {
           data: {
             id: editingId,
             name: name.trim(),
-            tier,
+            tier: tier as any,
             logo_url: logoUrl.trim() || null,
             banner_url: bannerUrl.trim() || null,
             video_url: videoUrl.trim() || null,
@@ -105,7 +105,7 @@ function WorkspacePatrocinadoresPage() {
         await createSponsor({
           data: {
             name: name.trim(),
-            tier,
+            tier: tier as any,
             logo_url: logoUrl.trim() || undefined,
             banner_url: bannerUrl.trim() || undefined,
             video_url: videoUrl.trim() || undefined,

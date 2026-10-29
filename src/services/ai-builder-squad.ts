@@ -166,8 +166,8 @@ export function generateSectionBlockWithAi(req: SectionGenerationRequest): {
         interval_ms: 5000,
       },
       styling: {
-        paddingTop: 0,
-        paddingBottom: 0,
+        paddingTop: "none",
+        paddingBottom: "none",
       },
     };
   } else if (prompt.includes("produto") || prompt.includes("vitrine") || prompt.includes("catalogo")) {
@@ -181,8 +181,8 @@ export function generateSectionBlockWithAi(req: SectionGenerationRequest): {
         show_club_badges: true,
       },
       styling: {
-        paddingTop: 24,
-        paddingBottom: 24,
+        paddingTop: "md",
+        paddingBottom: "md",
       },
     };
   } else if (prompt.includes("depoimento") || prompt.includes("review") || prompt.includes("avaliacao")) {
@@ -194,8 +194,8 @@ export function generateSectionBlockWithAi(req: SectionGenerationRequest): {
         show_verified_badge: true,
       },
       styling: {
-        paddingTop: 32,
-        paddingBottom: 32,
+        paddingTop: "lg",
+        paddingBottom: "lg",
       },
     };
   } else {
@@ -210,8 +210,8 @@ export function generateSectionBlockWithAi(req: SectionGenerationRequest): {
         badge_text: "Destaque",
       },
       styling: {
-        paddingTop: 24,
-        paddingBottom: 24,
+        paddingTop: "md",
+        paddingBottom: "md",
       },
     };
   }

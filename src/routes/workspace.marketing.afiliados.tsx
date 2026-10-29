@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Coins, CheckCircle2, XCircle, Clock, Wallet, ArrowUpRight, TrendingUp, Users, Search, Check, ShieldCheck, FileText } from "lucide-react";
 import { toast } from "sonner";
 
@@ -287,13 +288,14 @@ function WorkspaceAffiliatesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-semibold">URL do Comprovante Bancário (opcional)</Label>
-                <Input
-                  type="url"
+                <Label className="text-xs font-semibold">Comprovante Bancário (Upload PIX)</Label>
+                <ImageUpload
                   value={receiptUrl}
-                  onChange={(e) => setReceiptUrl(e.target.value)}
-                  placeholder="https://storage.exemplo.com/comprovante.pdf"
-                  className="h-10 rounded-lg text-xs"
+                  onChange={(url) => setReceiptUrl(url)}
+                  onRemove={() => setReceiptUrl("")}
+                  bucket="classifieds"
+                  aspectPreset="banner"
+                  helperText="Enviar comprovante de transferência bancária"
                 />
               </div>
 

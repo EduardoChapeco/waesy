@@ -62,12 +62,35 @@ export const Route = createFileRoute("/_store/")({
   staleTime: 15_000,
   head: () => ({
     meta: [
-      { title: "Waesy — Vitrine da Cidade | Classificados, Empregos, Eventos e Mais" },
+      {
+        title:
+          "Waesy Local Marketplace — Vitrine da Cidade, Comércio, Serviços, Notícias e Agentes IA",
+      },
       {
         name: "description",
         content:
-          "Encontre classificados, vagas de emprego, eventos, notícias, receitas e empresas locais em Chapecó e região. Tudo numa vitrine só.",
+          "Waesy Local Marketplace: ecossistema integrado de comércio local, empresas verificadas com CNPJ, portal de notícias, classificados, vagas de emprego, eventos, receitas e protocolo WebMCP.",
       },
+      {
+        property: "og:title",
+        content:
+          "Waesy Local Marketplace — Vitrine da Cidade, Comércio, Serviços, Notícias e Agentes IA",
+      },
+      {
+        property: "og:description",
+        content:
+          "Encontre empresas verificadas, ofertas locais, notícias da região, classificados, receitas, eventos e APIs abertas WebMCP no Waesy Local Marketplace.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://waesy.com.br/" },
+      { property: "og:image", content: "https://waesy.com.br/pwa-512x512.png" },
+      { name: "geo.region", content: "BR-SC" },
+      { name: "geo.placename", content: "São Miguel do Oeste, Chapecó e Região" },
+      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://waesy.com.br/" },
+      { rel: "alternate", type: "text/markdown", href: "https://waesy.com.br/llms.txt" },
     ],
   }),
   loader: async ({ location }) => {
@@ -575,9 +598,77 @@ function CommunityMarketplaceView({ data }: { data: any }) {
 
   const { isCompact } = useWindowSizeClass();
 
-  if (isCompact) {
-    return <HomeMobileNativeApp {...sharedViewProps} />;
-  }
+  return (
+    <div className="space-y-6">
+      <section
+        aria-label="Apresentação Institucional Waesy Local Marketplace"
+        className="sr-only"
+      >
+        <h1>
+          Waesy Local Marketplace — Comércio, Serviços, Notícias e Ecossistema de Agentes IA
+        </h1>
+        <p>
+          O Waesy Local Marketplace é a plataforma operacional integrada de comércio local, guia de
+          empresas verificadas com Cartão CNPJ, classificados regionais, portal de notícias
+          jornalísticas, receitas da comunidade, agenda cultural de eventos, vagas de emprego e
+          mobilidade urbana. Todas as páginas públicas oferecem suporte nativo a SEO, Generative
+          Engine Optimization (GEO), negociação de conteúdo em Markdown (Accept: text/markdown),
+          OpenAPI 3.1 e Model Context Protocol (MCP Streamable HTTP JSON-RPC 2.0).
+        </p>
+      </section>
 
-  return <HomeDesktopWebApp {...sharedViewProps} />;
+      {isCompact ? (
+        <HomeMobileNativeApp {...sharedViewProps} />
+      ) : (
+        <HomeDesktopWebApp {...sharedViewProps} />
+      )}
+
+      <footer
+        aria-label="Diretório Institucional, SEO, GEO e Portal de Desenvolvedores Waesy"
+        className="mx-auto max-w-7xl border-t border-border px-4 py-8 text-xs text-muted-foreground"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="space-y-2">
+            <h2 className="text-sm font-semibold text-foreground">Waesy Local Marketplace</h2>
+            <p className="leading-relaxed">
+              Ecossistema integrado de comércio, serviços, diretório empresarial com CNPJ validado,
+              portal de notícias e descoberta local para consumidores e agentes de IA.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-sm font-semibold text-foreground">Canais Públicos Indexados</h2>
+            <ul className="space-y-2">
+              <li><a href="/diretorio" className="hover:text-foreground underline-offset-4 hover:underline">Diretório de Empresas e CNPJ</a></li>
+              <li><a href="/noticias" className="hover:text-foreground underline-offset-4 hover:underline">Portal de Notícias Regionais</a></li>
+              <li><a href="/classificados" className="hover:text-foreground underline-offset-4 hover:underline">Classificados e Ofertas</a></li>
+              <li><a href="/eventos" className="hover:text-foreground underline-offset-4 hover:underline">Agenda de Eventos</a></li>
+              <li><a href="/receitas" className="hover:text-foreground underline-offset-4 hover:underline">Receitas da Comunidade</a></li>
+              <li><a href="/vagas" className="hover:text-foreground underline-offset-4 hover:underline">Vagas de Emprego</a></li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-sm font-semibold text-foreground">Desenvolvedores e Agentes IA</h2>
+            <ul className="space-y-2">
+              <li><a href="/developers" className="hover:text-foreground underline-offset-4 hover:underline">Portal de Desenvolvedores (/developers)</a></li>
+              <li><a href="/docs" className="hover:text-foreground underline-offset-4 hover:underline">Documentação da API (/docs)</a></li>
+              <li><a href="/api/openapi.json" className="hover:text-foreground underline-offset-4 hover:underline">Especificação OpenAPI 3.1</a></li>
+              <li><a href="/.well-known/mcp.json" className="hover:text-foreground underline-offset-4 hover:underline">Manifesto MCP (.well-known/mcp.json)</a></li>
+              <li><a href="/api/webmcp.json" className="hover:text-foreground underline-offset-4 hover:underline">Catálogo WebMCP (/api/webmcp.json)</a></li>
+              <li><a href="/llms.txt" className="hover:text-foreground underline-offset-4 hover:underline">Instruções LLMs (/llms.txt)</a></li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-sm font-semibold text-foreground">Institucional e Confiança</h2>
+            <ul className="space-y-2">
+              <li><a href="/about" className="hover:text-foreground underline-offset-4 hover:underline">Sobre a Waesy (/about)</a></li>
+              <li><a href="/contact" className="hover:text-foreground underline-offset-4 hover:underline">Contato e Suporte (/contact)</a></li>
+              <li><a href="/privacy" className="hover:text-foreground underline-offset-4 hover:underline">Política de Privacidade e LGPD (/privacy)</a></li>
+              <li><a href="/sitemap.xml" className="hover:text-foreground underline-offset-4 hover:underline">Mapa do Site (/sitemap.xml)</a></li>
+              <li><a href="/sitemap-news.xml" className="hover:text-foreground underline-offset-4 hover:underline">Sitemap de Notícias (/sitemap-news.xml)</a></li>
+            </ul>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }

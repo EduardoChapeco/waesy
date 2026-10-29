@@ -20,28 +20,35 @@ import { resolveNicheDepartments } from "@/lib/niche-helpers";
 import { findProfessionByTitle } from "@/lib/data/professions-catalog";
 import { formatMoney } from "@/lib/money";
 import { ProfessionSearchDialog } from "@/components/admin/professions/profession-search-dialog";
+import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
 const JOB_CATEGORY_CHIPS: FilterChipOption[] = [
- { id: "todos", label: "Todas", icon: Tag },
- { id: "linkedin", label: "LinkedIn", icon: LinkedinLogo },
- { id: "clt", label: "Comércio", icon: Storefront },
- { id: "estagio", label: "Estágio", icon: GraduationCap },
- { id: "tech", label: "Tecnologia", icon: Laptop },
- { id: "saude", label: "Saúde", icon: Heartbeat },
- { id: "operacional", label: "Logística", icon: Truck },
+  { id: "todos", label: "Todas", icon: Tag },
+  { id: "linkedin", label: "LinkedIn", icon: LinkedinLogo },
+  { id: "clt", label: "Comércio", icon: Storefront },
+  { id: "estagio", label: "Estágio", icon: GraduationCap },
+  { id: "tech", label: "Tecnologia", icon: Laptop },
+  { id: "saude", label: "Saúde", icon: Heartbeat },
+  { id: "operacional", label: "Logística", icon: Truck },
 ];
 
 export const Route = createFileRoute("/_store/empregos/")({
- head: () => ({
- meta: [
- { title: "Vagas de Emprego" },
- {
- name: "description",
- content:
- "Encontre oportunidades de trabalho, vagas CLT, estágios, home office e vagas no comércio e indústria da região com contato direto com as empresas.",
- },
- ],
- }),
+  head: () =>
+    buildUniversalHead({
+      title: "Vagas de Emprego e Oportunidades Locais | Waesy",
+      description:
+        "Encontre oportunidades de trabalho, vagas CLT, estágios e vagas no comércio e indústria da região com contato direto com as empresas.",
+      path: "/empregos",
+      ogType: "website",
+      webmcpType: "jobs_index",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Vagas de Emprego",
+        description: "Catálogo de oportunidades profissionais locais no Waesy.",
+        url: "https://waesy.com.br/empregos",
+      },
+    }),
  loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
    try {

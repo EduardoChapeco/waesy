@@ -75,6 +75,8 @@ export const OmniBlockStylingSchema = z.object({
   textColor: z.string().optional(),
   accentColor: z.string().optional(),
   paddingY: z.enum(["none", "sm", "md", "lg", "xl"]).optional(),
+  paddingTop: z.enum(["none", "sm", "md", "lg", "xl"]).optional(),
+  paddingBottom: z.enum(["none", "sm", "md", "lg", "xl"]).optional(),
   borderRadius: z.enum(["none", "sm", "md", "lg", "xl", "2xl", "full"]).optional(),
   maxWidth: z.enum(["sm", "md", "lg", "xl", "7xl", "full"]).optional(),
   border: z.boolean().optional(),
@@ -433,15 +435,22 @@ export const PrometheeNewsPortalBlockDataSchema = z.object({
 export type PrometheeNewsPortalBlockData = z.infer<typeof PrometheeNewsPortalBlockDataSchema>;
 
 export const PrometheeNewsHeaderBlockDataSchema = z.object({
-  brandName: z.string().default("Waesynews"),
-  brandTagline: z.string().default("Jornalismo Regional"),
+  mastheadTitle: z.string().optional(),
+  brandName: z.string().default("Waesynews").optional(),
+  brandTagline: z.string().default("Jornalismo Regional").optional(),
   logoUrl: z.string().optional(),
   logoStyle: z.enum(["promethee_dome", "editorial_serif", "custom_image"]).default("promethee_dome"),
-  showGpsSelector: z.boolean().default(true),
-  showLiveBadge: z.boolean().default(true),
+  showGpsSelector: z.boolean().default(true).optional(),
+  showLiveBadge: z.boolean().default(true).optional(),
   showSearch: z.boolean().default(true),
-  showCitizenPublishButton: z.boolean().default(true),
-  defaultCity: z.string().default("Todas as Cidades"),
+  showCitizenPublishButton: z.boolean().default(true).optional(),
+  defaultCity: z.string().default("Todas as Cidades").optional(),
+  showCityFilter: z.boolean().optional(),
+  allCitiesLabel: z.string().optional(),
+  cities: z.array(z.string()).optional(),
+  showUrgentBell: z.boolean().optional(),
+  actionLabel: z.string().optional(),
+  actionHref: z.string().optional(),
 });
 export type PrometheeNewsHeaderBlockData = z.infer<typeof PrometheeNewsHeaderBlockDataSchema>;
 
@@ -457,32 +466,57 @@ export const PrometheeNewsNavBlockDataSchema = z.object({
       "Tecnologia",
       "Cultura",
     ]),
-  defaultSelected: z.string().default("Para você"),
-  stickyNav: z.boolean().default(true),
-  showTrendingPills: z.boolean().default(true),
+  defaultSelected: z.string().default("Para você").optional(),
+  stickyNav: z.boolean().default(true).optional(),
+  showTrendingPills: z.boolean().default(true).optional(),
+  allowCitizenPosts: z.boolean().optional(),
+  showSavedTab: z.boolean().optional(),
 });
 export type PrometheeNewsNavBlockData = z.infer<typeof PrometheeNewsNavBlockDataSchema>;
 
 export const PrometheeNewsBreakingBlockDataSchema = z.object({
-  headline: z.string().default("Plantão Regional em Tempo Real"),
-  limit: z.number().int().min(1).max(20).default(6),
-  autoScroll: z.boolean().default(true),
-  filterCityOnly: z.boolean().default(false),
+  headline: z.string().default("Plantão Regional em Tempo Real").optional(),
+  limit: z.number().int().min(1).max(20).default(6).optional(),
+  autoScroll: z.boolean().default(true).optional(),
+  filterCityOnly: z.boolean().default(false).optional(),
+  sectionTitle: z.string().optional(),
+  badgeLabel: z.string().optional(),
+  maxItems: z.number().int().optional(),
+  articlePageHref: z.string().optional(),
+  articles: z.array(z.any()).optional(),
 });
 export type PrometheeNewsBreakingBlockData = z.infer<typeof PrometheeNewsBreakingBlockDataSchema>;
 
 export const PrometheeNewsFeedBlockDataSchema = z.object({
-  layoutMode: z.enum(["editorial_stream", "masonry_clean", "dense_cards"]).default("editorial_stream"),
-  pageSize: z.number().int().min(4).max(50).default(16),
-  injectAdEveryNArticles: z.number().int().min(2).max(10).default(4),
-  showShareActions: z.boolean().default(true),
-  showStudioPngButton: z.boolean().default(true),
-  showEngagementMetrics: z.boolean().default(true),
+  layoutMode: z
+    .enum([
+      "editorial_stream",
+      "masonry_clean",
+      "dense_cards",
+      "feed_stream",
+      "bento_2col",
+      "vitrine_shelf",
+    ])
+    .default("editorial_stream")
+    .optional(),
+  pageSize: z.number().int().min(4).max(50).default(16).optional(),
+  injectAdEveryNArticles: z.number().int().min(2).max(10).default(4).optional(),
+  showShareActions: z.boolean().default(true).optional(),
+  showStudioPngButton: z.boolean().default(true).optional(),
+  showEngagementMetrics: z.boolean().default(true).optional(),
+  sectionTitle: z.string().optional(),
+  dataSource: z.string().optional(),
+  maxItems: z.number().int().optional(),
+  readMoreLabel: z.string().optional(),
+  articlePageHref: z.string().optional(),
+  showInFeedAd: z.boolean().optional(),
+  articles: z.array(z.any()).optional(),
 });
 export type PrometheeNewsFeedBlockData = z.infer<typeof PrometheeNewsFeedBlockDataSchema>;
 
 export const PrometheeNewsAdSlotBlockDataSchema = z.object({
-  placementZone: z.string().default("feed_in_stream"),
+  placementZone: z.string().default("feed_in_stream").optional(),
+  format: z.string().optional(),
   sponsorName: z.string().default("Publicidade Regional"),
   headline: z.string().default("Destaque sua marca para leitores qualificados"),
   description: z.string().default("Formatos nativos com filtro geográfico por município."),
@@ -494,21 +528,36 @@ export const PrometheeNewsAdSlotBlockDataSchema = z.object({
 export type PrometheeNewsAdSlotBlockData = z.infer<typeof PrometheeNewsAdSlotBlockDataSchema>;
 
 export const PrometheeNewsArticleReaderBlockDataSchema = z.object({
-  showBackAction: z.boolean().default(true),
-  showShareBar: z.boolean().default(true),
-  showAiSummaryToggle: z.boolean().default(true),
+  showBackAction: z.boolean().default(true).optional(),
+  showShareBar: z.boolean().default(true).optional(),
+  showAiSummaryToggle: z.boolean().default(true).optional(),
   showInArticleAd: z.boolean().default(true),
   showComments: z.boolean().default(true),
-  showRelatedArticles: z.boolean().default(true),
+  showRelatedArticles: z.boolean().default(true).optional(),
+  backLabel: z.string().optional(),
+  backHref: z.string().optional(),
+  showExecutiveSummary: z.boolean().optional(),
 });
 export type PrometheeNewsArticleReaderBlockData = z.infer<typeof PrometheeNewsArticleReaderBlockDataSchema>;
 
 export const PrometheeNewsFooterBlockDataSchema = z.object({
-  brandName: z.string().default("Waesynews"),
-  coverageDescription: z.string().default("Jornalismo regional em tempo real"),
-  showProposalAction: z.boolean().default(true),
-  showFeitoComWaesy: z.boolean().default(true),
-  copyrightYear: z.number().int().default(2026),
+  mastheadTitle: z.string().optional(),
+  brandName: z.string().default("Waesynews").optional(),
+  coverageDescription: z.string().default("Jornalismo regional em tempo real").optional(),
+  showProposalAction: z.boolean().default(true).optional(),
+  showFeitoComWaesy: z.boolean().default(true).optional(),
+  copyrightYear: z.number().int().default(2026).optional(),
+  tagline: z.string().optional(),
+  links: z
+    .array(
+      z.object({
+        id: z.string(),
+        label: z.string(),
+        href: z.string(),
+      }),
+    )
+    .optional(),
+  showWaesySignature: z.boolean().optional(),
 });
 export type PrometheeNewsFooterBlockData = z.infer<typeof PrometheeNewsFooterBlockDataSchema>;
 
@@ -822,6 +871,9 @@ export const OmniBlockInstanceSchema = z.object({
   id: z.string(),
   type: z.string(),
   config: z.record(z.any()),
+  title: z.string().optional(),
+  is_visible: z.boolean().optional(),
+  props: z.record(z.any()).optional(),
   styling: OmniBlockStylingSchema.optional(),
   assetRefs: z.array(BuilderAssetRefSchema).optional(),
   sectionAnchorId: z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/).optional(),
@@ -848,6 +900,8 @@ export const OmniPageDocumentSchema = z.object({
     borderRadius: z.string().default("xl"),
   }),
   blocks: z.array(OmniBlockInstanceSchema).default([]),
+  pages: z.array(z.any()).optional(),
+  cms_collections: z.array(z.any()).optional(),
   source_template_id: z.string().optional(),
   source_template_version: z.string().optional(),
   published_at: z.string().nullable().optional(),

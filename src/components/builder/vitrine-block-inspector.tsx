@@ -2733,7 +2733,7 @@ export const BidirectionalDeviceStylingFields: React.FC<BidirectionalDeviceStyli
             Moldura / Divisor
           </label>
           <select
-            value={styling?.border || "none"}
+            value={styling?.border ? String(styling.border) : "none"}
             onChange={(e) => onUpdateStyling("border", e.target.value)}
             className={SELECT_CLASS}
           >

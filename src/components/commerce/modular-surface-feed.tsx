@@ -6,6 +6,9 @@ import { StoreCard } from "@/components/commerce/store-card";
 import { OfferCard } from "@/components/commerce/offer-card";
 import { HitsLeadCard } from "@/components/commerce/hits-lead-card";
 import { HomePostsShowcase } from "@/components/home/HomePostsShowcase";
+import { CanonicalVideoPlayer } from "@/components/ui/canonical/canonical-video-player";
+import { VitrineVerticalCarousel } from "@/design-system";
+import { MediaGalleryMosaic } from "@/components/builder/blocks/MediaGalleryMosaic";
 import { ArrowRight, Storefront, Flame, Lightning, Image as ImageIcon, SquaresFour } from "@phosphor-icons/react";
 import type { SurfaceSectionDTO } from "@/services/surface-cms.functions";
 
@@ -55,6 +58,114 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
         if (!section.items || section.items.length === 0) return null;
 
         // ── 0.0 Seção de Publicações & Notícias (Minimalist Social Stream) ──
+        if (section.type === "vitrine_vertical_carousel") {
+          return (
+            <VitrineVerticalCarousel
+              key={section.id}
+              sectionTitle={section.title}
+              sectionSubtitle={section.subtitle || undefined}
+              desktopFormat={(section.config?.desktopFormat as any) || (section.config?.cardRatio as any) || "stories_9_16"}
+              mobileFormat={(section.config?.mobileFormat as any) || (section.config?.cardRatio as any) || "stories_9_16"}
+              items={section.items.map((item: any, idx: number) => ({
+                id: item.id || `vc-${idx}`,
+                title: item.title || section.title,
+                subtitle: item.subtitle || item.store_name || undefined,
+                badge: item.badge || item.mechanic_label || section.badge_tag || undefined,
+                href: item.href || item.link_url || (item.slug ? `/produto/${item.slug}` : "/"),
+                imageUrl: item.imageUrl || item.image_url || item.cover_image || undefined,
+                videoUrl: item.videoUrl || item.video_url || undefined,
+              }))}
+            />
+          );
+        }
+
+        if (section.type === "media_gallery_mosaic") {
+          return (
+            <MediaGalleryMosaic
+              key={section.id}
+              id={section.id}
+              data={{
+                title: section.title,
+                subtitle: section.subtitle || undefined,
+                layout: (section.config?.layout as any) || "mosaic",
+                items: section.items.map((item: any, idx: number) => ({
+                  id: item.id || `mg-${idx}`,
+                  imageUrl: item.imageUrl || item.image_url || item.cover_image || "",
+                  title: item.title || section.title,
+                  caption: item.subtitle || item.description || undefined,
+                  category: item.category || section.badge_tag || undefined,
+                })),
+              }}
+            />
+          );
+        }
+
+        if (section.type === "video_section" || section.data_source === "videos") {
+          const primaryVideo = section.items[0];
+          const videoSrc =
+            primaryVideo?.video_url ||
+            primaryVideo?.videoUrl ||
+            primaryVideo?.media_url ||
+            section.config?.video_url ||
+            "";
+          if (!videoSrc) return null;
+
+          return (
+            <section key={section.id} aria-label={section.title} className="space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <div>
+                  <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">
+                    {section.title}
+                  </h2>
+                  {section.subtitle && (
+                    <p className="text-xs text-muted-foreground font-medium">
+                      {section.subtitle}
+                    </p>
+                  )}
+                </div>
+                {section.badge_tag && (
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                    {section.badge_tag}
+                  </span>
+                )}
+              </div>
+              <CanonicalVideoPlayer
+                src={videoSrc}
+                poster={primaryVideo?.image_url || primaryVideo?.cover_image || null}
+                title={primaryVideo?.title || section.title}
+                trigger={(section.config?.trigger as any) || "in_viewport"}
+                aspectRatio={(section.config?.aspectRatio as any) || "16:9"}
+              />
+            </section>
+          );
+        }
+
+        if (section.type === "tourism_car_rental_rail" || section.data_source === "car_rentals") {
+          return (
+            <section key={section.id} aria-label={section.title} className="space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <div>
+                  <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">
+                    {section.title || "Aluguel de Carros (Pacote 3 Diárias)"}
+                  </h2>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {section.subtitle || "Tarifas calculadas para pacote mínimo de 3 diárias com proteção básica"}
+                  </p>
+                </div>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  {section.badge_tag || "3 DIÁRIAS"}
+                </span>
+              </div>
+              <HorizontalRail hideHeader={true} title={section.title}>
+                {section.items.map((item: any) => (
+                  <div key={item.id} className="w-80 sm:w-88 shrink-0 snap-start">
+                    <OfferCard {...item} selling_unit={item.selling_unit || "3 diárias"} />
+                  </div>
+                ))}
+              </HorizontalRail>
+            </section>
+          );
+        }
         if (section.type === "social_posts_rail" || section.data_source === "social_posts") {
           return (
             <HomePostsShowcase

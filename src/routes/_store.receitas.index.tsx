@@ -8,17 +8,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { listPublicRecipesFn, type MinedRecipeDTO } from "@/services/mining.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/receitas/")({
-  head: () => ({
-    meta: [
-      { title: "Receitas e Gastronomia Local | Waesy" },
-      {
-        name: "description",
-        content: "Explore receitas culinárias tradicionais e contemporâneas, com lista de ingredientes do comércio local.",
+  head: () =>
+    buildUniversalHead({
+      title: "Receitas e Gastronomia Local | Waesy",
+      description:
+        "Explore receitas culinárias tradicionais e contemporâneas, com lista de ingredientes do comércio local.",
+      path: "/receitas",
+      ogType: "website",
+      webmcpType: "recipes_index",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Receitas e Gastronomia",
+        description: "Catálogo de receitas culinárias e ingredientes locais no Waesy.",
+        url: "https://waesy.com.br/receitas",
       },
-    ],
-  }),
+    }),
   loader: async () => {
     try {
       const res = await listPublicRecipesFn({ data: { limit: 30 } }).catch(() => ({

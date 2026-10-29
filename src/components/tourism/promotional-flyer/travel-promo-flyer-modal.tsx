@@ -1916,23 +1916,19 @@ export function TravelPromoFlyerModal({
                     </div>
 
                     <div className="space-y-2 pt-1">
-                      <Label className="text-xs text-muted-foreground">URL da Imagem</Label>
+                      <Label className="text-xs text-muted-foreground flex items-center justify-between">
+                        <span>Imagem de Fundo</span>
+                        <span className="text-2xs font-mono text-primary">Upload Real</span>
+                      </Label>
                       <div className="flex items-center gap-2">
-                        <Input
-                          value={bgImageUrl}
-                          onChange={(e) => setBgImageUrl(e.target.value)}
-                          placeholder="https://exemplo.com/foto.jpg"
-                          className="h-11 min-h-11 text-xs font-mono flex-1"
-                        />
                         <Button
                           type="button"
                           variant="outline"
-                          size="sm"
                           onClick={() => fileUploadInputRef.current?.click()}
-                          className="h-11 min-h-11 text-xs gap-1 rounded-lg shrink-0 cursor-pointer focus-visible:ring-2"
+                          className="w-full h-11 min-h-11 text-xs font-bold gap-2 rounded-lg cursor-pointer border-dashed border-primary/40 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <ImagePlus className="size-4" />
-                          <span>Upload</span>
+                          <span>{bgImageUrl ? "Substituir Imagem de Fundo" : "Carregar Foto de Fundo"}</span>
                         </Button>
                         <input
                           ref={fileUploadInputRef}

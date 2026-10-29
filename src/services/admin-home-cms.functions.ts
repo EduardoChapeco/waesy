@@ -1320,8 +1320,8 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
           (likeRows || []).forEach((row: any) => {
             likeCountMap.set(row.post_id, (likeCountMap.get(row.post_id) ?? 0) + 1);
           });
-        } catch {
-          // safe fallback
+        } catch (likeErr) {
+          console.warn("[admin-home-cms] Falha ao contar likes de posts:", { error: likeErr, schema: "public", table: "post_likes" });
         }
 
         try {
@@ -1333,8 +1333,8 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
           (commentRows || []).forEach((row: any) => {
             commentCountMap.set(row.post_id, (commentCountMap.get(row.post_id) ?? 0) + 1);
           });
-        } catch {
-          // safe fallback
+        } catch (commentErr) {
+          console.warn("[admin-home-cms] Falha ao contar comentários de posts:", { error: commentErr, schema: "public", table: "post_comments" });
         }
       }
 

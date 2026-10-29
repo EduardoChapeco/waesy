@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { sendWhatsAppNotification } from "./integrations.functions";
+import { dispatchClosedLoopLeadQualification } from "./pixels.functions";
 
 // ─── CARTEIRA DE CLIENTES (BFF CANÔNICO) ──────────────────────────────────────
 
@@ -272,7 +273,7 @@ export const getCustomer360 = createServerFn({ method: "GET" })
  // 4. Busca Oportunidades Comerciais (Leads) vinculadas a este cliente
  const { data: commercialLeads } = await supabase
  .from("leads_crm")
- .select("id, title, full_name, status, estimated_value_cents, source, probability, expected_close_date, created_at, updated_at")
+ .select("id, title, full_name, status, estimated_value_cents, source, lead_source_detail, custom_fields, probability, expected_close_date, created_at, updated_at")
  .eq("customer_id", customerId)
  .order("created_at", { ascending: false });
 
@@ -482,6 +483,9 @@ export const getCustomer360 = createServerFn({ method: "GET" })
   });
 
  (commercialLeads || []).forEach((l: any) => {
+ const cf = (l.custom_fields as Record<string, any>) || {};
+ const hasAdData = Boolean(cf.utm_campaign || cf.utm_source || cf.meta_ad_id || cf.meta_form_id || cf.gclid || l.source?.includes("meta") || l.source?.includes("ad"));
+
  timeline.push({
  id: `lead_${l.id}`,
  type: "commercial_lead",
@@ -489,8 +493,29 @@ export const getCustomer360 = createServerFn({ method: "GET" })
  description: `Status: ${l.status} • Estimativa: R$ ${((l.estimated_value_cents || 0) / 100).toFixed(2)}`,
  status: l.status,
  timestamp: l.created_at,
- metadata: { lead_id: l.id },
+ metadata: { lead_id: l.id, source: l.source, custom_fields: cf },
  });
+
+ if (hasAdData) {
+   const campaignName = cf.utm_campaign || (cf.meta_ad_id ? `Anúncio #${cf.meta_ad_id}` : (cf.gclid ? "Google Ads Click" : l.source || "Campanha"));
+   const platformName = cf.meta_ad_id || l.source?.includes("meta") ? "Meta Ads (Instagram / Facebook)" : (cf.gclid || l.source?.includes("google") ? "Google Ads" : "Campanha Digital");
+   timeline.push({
+     id: `ad_touch_${l.id}`,
+     type: "ad_touchpoint",
+     title: `Origem de Anúncio: ${platformName}`,
+     description: `Campanha: ${campaignName} ${cf.utm_medium ? `• Mídia: ${cf.utm_medium}` : ""} ${cf.meta_form_id ? `• Formulário Instantâneo #${cf.meta_form_id}` : ""}`,
+     status: "tracked",
+     timestamp: l.created_at,
+     metadata: {
+       platform: platformName,
+       campaign: campaignName,
+       lead_id: l.id,
+       fbp: cf.fbp,
+       fbc: cf.fbc,
+       device_id: cf.device_id,
+     },
+   });
+ }
  });
 
  (quotations || []).forEach((q: any) => {
@@ -1142,6 +1167,15 @@ export const createLeadSchema = z.object({
  done: z.boolean(),
  })).default([]),
  notes: z.string().optional().nullable(),
+ fbp: z.string().optional().nullable(),
+ fbc: z.string().optional().nullable(),
+ gclid: z.string().optional().nullable(),
+ deviceId: z.string().optional().nullable(),
+ utmSource: z.string().optional().nullable(),
+ utmCampaign: z.string().optional().nullable(),
+ utmMedium: z.string().optional().nullable(),
+ utmTerm: z.string().optional().nullable(),
+ utmContent: z.string().optional().nullable(),
 });
 
 export const createLead = createServerFn({ method: "POST" })
@@ -1178,6 +1212,17 @@ export const createLead = createServerFn({ method: "POST" })
  tags: input.tags || [],
  checklist: input.checklist || [],
  notes: input.notes?.trim() || null,
+ custom_fields: {
+   fbp: input.fbp || null,
+   fbc: input.fbc || null,
+   gclid: input.gclid || null,
+   device_id: input.deviceId || null,
+   utm_source: input.utmSource || null,
+   utm_campaign: input.utmCampaign || null,
+   utm_medium: input.utmMedium || null,
+   utm_term: input.utmTerm || null,
+   utm_content: input.utmContent || null,
+ },
  last_contacted_at: new Date().toISOString(),
  };
 
@@ -1322,6 +1367,33 @@ export const updateLeadStatus = createServerFn({ method: "POST" })
  .eq("store_id", identity.store_id);
 
  if (error) throw error;
+
+ // Closed-Loop Meta CAPI e Google Ads: retroalimenta o Dataset quando o lead muda de status no CRM
+ if (["contacted", "qualified", "proposal", "negotiation", "won", "converted"].includes(status.toLowerCase()) && identity.store_id) {
+   supabase
+     .from("leads_crm")
+     .select("id, email, phone, estimated_value_cents, custom_fields")
+     .eq("id", leadId)
+     .maybeSingle()
+     .then(({ data: leadRow }) => {
+       if (leadRow && identity.store_id) {
+         const cf = (leadRow.custom_fields as any) || {};
+         dispatchClosedLoopLeadQualification({
+           data: {
+             storeId: identity.store_id,
+             leadId: leadRow.id,
+             stage: status,
+             email: leadRow.email,
+             phone: leadRow.phone,
+             fbp: cf.fbp || null,
+             fbc: cf.fbc || null,
+             conversionValue: (leadRow.estimated_value_cents || 0) / 100,
+           },
+         }).catch(() => {});
+       }
+     }, () => {});
+ }
+
  return { status: "success" as const };
  } catch (e: unknown) {
  console.error("[crm] updateLeadStatus error:", e);
@@ -1595,6 +1667,23 @@ export const promoteLeadToCustomer = createServerFn({ method: "POST" })
     content: `Lead convertido para Cliente Oficial. ID: ${customerId}`,
     metadata: { customer_id: customerId },
   }).then(() => null, () => null);
+
+  // Closed-Loop Meta CAPI & Google Ads: dispara evento Purchase na conversão final do lead
+  if (identity.store_id) {
+    const cf = (lead.custom_fields as any) || {};
+    dispatchClosedLoopLeadQualification({
+      data: {
+        storeId: identity.store_id,
+        leadId: lead.id,
+        stage: "converted",
+        email: lead.email,
+        phone: lead.phone,
+        fbp: cf.fbp || null,
+        fbc: cf.fbc || null,
+        conversionValue: (lead.estimated_value_cents || 0) / 100,
+      },
+    }).catch(() => {});
+  }
 
   return { status: "success" as const, customerId };
  } catch (e: unknown) {
@@ -2036,6 +2125,32 @@ export const persistLeadMove = createServerFn({ method: "POST" })
         })
         .eq("id", leadId)
         .eq("store_id", identity.store_id);
+    }
+
+    // Closed-Loop Meta CAPI e Google Ads: retroalimenta o Dataset quando o lead avança no funil
+    if (["contacted", "qualified", "proposal", "negotiation", "won", "converted"].includes(toStatus.toLowerCase()) && identity.store_id) {
+      supabase
+        .from("leads_crm")
+        .select("id, email, phone, estimated_value_cents, custom_fields")
+        .eq("id", leadId)
+        .maybeSingle()
+        .then(({ data: leadRow }) => {
+          if (leadRow && identity.store_id) {
+            const cf = (leadRow.custom_fields as any) || {};
+            dispatchClosedLoopLeadQualification({
+              data: {
+                storeId: identity.store_id,
+                leadId: leadRow.id,
+                stage: toStatus,
+                email: leadRow.email,
+                phone: leadRow.phone,
+                fbp: cf.fbp || null,
+                fbc: cf.fbc || null,
+                conversionValue: (leadRow.estimated_value_cents || 0) / 100,
+              },
+            }).catch(() => {});
+          }
+        }, () => {});
     }
 
     return { success: true };

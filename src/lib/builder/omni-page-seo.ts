@@ -130,27 +130,59 @@ export function generateOmniPageSeo({
   }
   jsonLdGraph.push(webPageSchema);
 
-  // Entidade LocalBusiness se houver loja vinculada
+  // Entidade LocalBusiness se houver loja vinculada (Com Cartão CNPJ, GEO e Grafo de Backlinks)
   if (storeData && storeName) {
+    const storeSlugOrId = storeData.slug || storeId || slug;
+    const rawCnpj =
+      storeData.cnpj ||
+      storeData.document_cnpj ||
+      storeData.settings?.cnpj ||
+      storeData.metadata?.cnpj_fiscal_data?.cnpj ||
+      undefined;
+    const sameAsBacklinks = [
+      `https://waesy.com.br/loja/${storeSlugOrId}`,
+      `https://waesy.com.br/diretorio/${storeData.id || storeSlugOrId}`,
+      `https://waesy.com.br/places/${storeSlugOrId}`,
+      storeData.website || storeData.website_url || storeData.settings?.website,
+      storeData.instagram
+        ? storeData.instagram.startsWith("http")
+          ? storeData.instagram
+          : `https://instagram.com/${String(storeData.instagram).replace(/^@/, "")}`
+        : undefined,
+    ].filter(Boolean);
+
     const localBusinessSchema: any = {
       "@type": "LocalBusiness",
-      "@id": `https://waesy.com.br/empresa/${storeData.slug || storeId}#store`,
+      "@id": `https://waesy.com.br/loja/${storeSlugOrId}#localbusiness`,
       name: storeName,
+      legalName:
+        storeData.corporate_name ||
+        storeData.legal_name ||
+        storeData.settings?.corporate_name ||
+        storeData.metadata?.cnpj_fiscal_data?.razao_social ||
+        storeName,
+      taxID: rawCnpj,
       description: storeData.description || pageDescription,
       url: `https://waesy.com.br${canonicalPath}`,
-      telephone: storeData.phone || storeData.whatsapp || undefined,
+      telephone: storeData.phone || storeData.whatsapp || storeData.contact_whatsapp || undefined,
+      sameAs: sameAsBacklinks,
+      isPartOf: {
+        "@id": "https://waesy.com.br/#organization",
+      },
     };
 
-    if (storeData.logo_url) {
-      localBusinessSchema.logo = storeData.logo_url;
-      localBusinessSchema.image = storeData.logo_url;
+    if (storeData.logo_url || storeData.avatar_url) {
+      localBusinessSchema.logo = storeData.logo_url || storeData.avatar_url;
+      localBusinessSchema.image = storeData.logo_url || storeData.avatar_url;
     }
 
     if (storeCity) {
       localBusinessSchema.address = {
         "@type": "PostalAddress",
+        streetAddress: storeData.address || storeData.street || undefined,
         addressLocality: storeCity,
-        addressRegion: storeState,
+        addressRegion: storeState || "SC",
+        postalCode: storeData.postal_code || storeData.cep || undefined,
         addressCountry: "BR",
       };
     }
@@ -205,6 +237,11 @@ export function generateOmniPageSeo({
     },
     {
       rel: "canonical",
+      href: `https://waesy.com.br${canonicalPath}`,
+    },
+    {
+      rel: "alternate",
+      type: "text/markdown",
       href: `https://waesy.com.br${canonicalPath}`,
     },
   ];

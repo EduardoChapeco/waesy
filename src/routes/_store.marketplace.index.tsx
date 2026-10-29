@@ -24,6 +24,7 @@ import {
   SlidersHorizontal,
 } from "@phosphor-icons/react";
 import { RefreshCw } from "lucide-react";
+import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
@@ -82,16 +83,22 @@ type MarketplaceSearch = z.infer<typeof SearchSchema>;
 
 export const Route = createFileRoute("/_store/marketplace/")({
   validateSearch: (search: Record<string, unknown>): MarketplaceSearch => SearchSchema.parse(search),
-  head: () => ({
-    meta: [
-      { title: "Marketplace da Cidade | Vitrines e Lojas Verificadas | Waesy" },
-      {
-        name: "description",
-        content:
-          "Vitrines e produtos de comércios locais credenciados. Compre online de empresas verificadas com garantia, nota fiscal e entrega rápida na sua cidade.",
+  head: () =>
+    buildUniversalHead({
+      title: "Marketplace da Cidade | Vitrines e Lojas Verificadas | Waesy",
+      description:
+        "Vitrines e produtos de comércios locais credenciados. Compre online de empresas verificadas com garantia, nota fiscal e entrega rápida na sua cidade.",
+      path: "/marketplace",
+      ogType: "website",
+      webmcpType: "marketplace_index",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Marketplace Local Waesy",
+        description: "Catálogo de vitrines, lojas e produtos de empresas credenciadas na cidade.",
+        url: "https://waesy.com.br/marketplace",
       },
-    ],
-  }),
+    }),
   loaderDeps: ({ search }) => search,
   loader: async ({ location }) => {
     const search = location.search as MarketplaceSearch;

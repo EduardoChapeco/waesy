@@ -19,6 +19,7 @@ import { getStoreSettings } from "@/services/store.functions";
 import { formatMoney } from "@/lib/money";
 import { NewClientWizard } from "@/components/crm/NewClientWizard";
 import { UniversalCrmSpreadsheetImporterModal } from "@/components/crm/UniversalCrmSpreadsheetImporterModal";
+import { CustomerDrawer360 } from "@/components/workspace/CustomerDrawer360";
 import { useNicheTranslation } from "@/hooks/use-niche-translation";
 
 export const Route = createFileRoute("/workspace/clientes/")({
@@ -59,6 +60,7 @@ function CarteiraClientesPage() {
 
  const [isWizardOpen, setIsWizardOpen] = useState(false);
  const [isImporterOpen, setIsImporterOpen] = useState(false);
+ const [selectedDrawerCustomer, setSelectedDrawerCustomer] = useState<any | null>(null);
  const [searchTerm, setSearchTerm] = useState("");
  const [statusFilter, setStatusFilter] = useState("all");
  const [kindFilter, setKindFilter] = useState("all");
@@ -448,6 +450,11 @@ function CarteiraClientesPage() {
  archiveTitle={`Arquivar cliente "${c.fullName}"?`}
  archiveDescription="O cliente será arquivado e não aparecerá nas listagens ativas, podendo ser restaurado futuramente."
  customActions={[
+ {
+ label: "Gaveta 360° (Anamnese/Histórico)",
+ icon: ShieldCheck,
+ onClick: () => setSelectedDrawerCustomer(c),
+ },
  ...(c.phone
  ? [
  {
@@ -658,6 +665,11 @@ function CarteiraClientesPage() {
  archiveTitle={`Arquivar cliente "${c.fullName}"?`}
  archiveDescription="O cliente será arquivado e poderá ser restaurado futuramente."
  customActions={[
+ {
+ label: "Gaveta 360° (Anamnese/Histórico)",
+ icon: ShieldCheck,
+ onClick: () => setSelectedDrawerCustomer(c),
+ },
  ...(c.phone
  ? [
  {
@@ -716,6 +728,19 @@ function CarteiraClientesPage() {
  fullName: m.profiles?.full_name || m.full_name || "Membro da Equipe",
  role: m.role,
  }))}
+ />
+
+ {/* ── 7. Gaveta 360° com 14 Abas & Anamnese com Assinatura Digital ── */}
+ <CustomerDrawer360
+ open={Boolean(selectedDrawerCustomer)}
+ onOpenChange={(open) => !open && setSelectedDrawerCustomer(null)}
+ customerId={selectedDrawerCustomer?.id || ""}
+ storeId={store?.id || ""}
+ customerName={selectedDrawerCustomer?.fullName || ""}
+ customerDoc={selectedDrawerCustomer?.document || ""}
+ customerPhone={selectedDrawerCustomer?.phone || ""}
+ customerEmail={selectedDrawerCustomer?.email || ""}
+ canViewPhones={true}
  />
  </div>
  );

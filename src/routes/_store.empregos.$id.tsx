@@ -22,23 +22,10 @@ import { findProfessionByTitle } from "@/lib/data/professions-catalog";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
+import { buildJobSeoHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/empregos/$id")({
-  head: ({ loaderData }: any) => ({
-    meta: [
-      {
-        title: loaderData?.job
-          ? `${loaderData.job.title} na ${loaderData.job.company_name} — Vagas Waesy`
-          : "Vaga de Emprego | Waesy",
-      },
-      {
-        name: "description",
-        content: loaderData?.job
-          ? `${loaderData.job.description.slice(0, 160)}...`
-          : "Confira todos os detalhes desta vaga de emprego e envie seu currículo.",
-      },
-    ],
-  }),
+  head: ({ loaderData }: any) => buildJobSeoHead(loaderData?.job),
   loader: async ({ params }) => {
     try {
       const [job, session, profile] = await Promise.all([

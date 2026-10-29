@@ -70,7 +70,7 @@ describe("Auditoria Estrutural Bidirecional & Cabeçalho Canônico Mobile", () =
   });
 
   it("renderiza HomeDesktopWebApp com descompressão de grade (2 colunas) e sem casca redundante de card (Single Surface Rule)", async () => {
-    const { HomeDesktopWebApp } = await import("../HomeDesktopWebApp");
+    const { HomeDesktopWebApp } = (await import("../HomeDesktopWebApp")) as { HomeDesktopWebApp: React.ComponentType<any> };
     const mockStores = [
       {
         id: "st-1",

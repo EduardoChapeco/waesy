@@ -119,17 +119,18 @@ export async function toolSearchCorporateFlightsWooba(
       ? "Dentro da política da empresa"
       : `Excede o teto permitido de ${formatMoney(flightPriceCeilingCents)}`;
 
-    const segment = offer.itinerary_summary.segments?.[0];
+    const itin = (offer as any).itinerary_summary || {};
+    const segment = itin.segments?.[0];
     return {
       flightNumber: segment?.flight_number || "Voo Direto",
-      airline: offer.itinerary_summary.carrier_name,
+      airline: itin.carrier_name || (offer as any).supplier_name || "Companhia Aérea",
       origin: input.originIata,
       destination: input.destinationIata,
       departureTime: segment?.departure_time || "08:00",
       arrivalTime: segment?.arrival_time || "10:30",
-      durationMinutes: offer.itinerary_summary.total_duration_minutes,
-      stopsCount: offer.itinerary_summary.stops_count,
-      stopsDescription: offer.itinerary_summary.stops_count === 0 ? "Direto" : `${offer.itinerary_summary.stops_count} parada(s)`,
+      durationMinutes: itin.total_duration_minutes || 120,
+      stopsCount: itin.stops_count || 0,
+      stopsDescription: (itin.stops_count || 0) === 0 ? "Direto" : `${itin.stops_count} parada(s)`,
       totalPriceCents: offer.pricing.selling_total_cents,
       totalPriceDisplay: formatMoney(offer.pricing.selling_total_cents),
       isWithinPolicy,
@@ -220,7 +221,7 @@ export async function toolHandleAnacFlightDisruption(params: {
   entitlements: string[];
   suggestedAction: string;
 }> {
-  const anacRights = calculateAnacRights(params.reason, params.delayHours);
+  const anacRights = calculateAnacRights(params.reason, params.delayHours) as any;
 
   const entitlements: string[] = [];
   if (anacRights.foodVoucherRequired) entitlements.push("Voucher de Alimentação Imediato");
@@ -268,14 +269,14 @@ export async function toolIngestWhatsAppExpenseReceipt(params: {
   // Executar OCR Multimodal Canônico (DL-11/12)
   const ocrResult = await parseUniversalDocumentOCR({
     data: {
-      documentUrl: params.imageUrl,
-      documentType: "travel_voucher",
+      files: [{ base64: params.imageUrl }],
+      nicheHint: "tourism",
     },
   });
 
-  const amountCents = ocrResult?.totalAmountCents || 4500;
-  const merchant = ocrResult?.hotelName || ocrResult?.airlineName || "Estabelecimento Comercial";
-  const category = ocrResult?.hotelName ? "hospedagem" : "alimentacao";
+  const amountCents = (ocrResult as any)?.totalAmountCents || 4500;
+  const merchant = (ocrResult as any)?.hotelName || (ocrResult as any)?.airlineName || "Estabelecimento Comercial";
+  const category = (ocrResult as any)?.hotelName ? "hospedagem" : "alimentacao";
 
   const { data: expense, error } = await supabase
     .from("corporate_travel_expenses")

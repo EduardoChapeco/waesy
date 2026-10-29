@@ -7,18 +7,25 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getAllPublicConcursos, participateInRaffle, type RaffleDTO } from "@/services/invite.functions";
+import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/concursos")({
-  head: () => ({
-    meta: [
-      { title: "Sorteios e Prêmios | Comunidade Waesy" },
-      {
-        name: "description",
-        content:
-          "Participe dos sorteios e campanhas de prêmios promovidos pelas melhores lojas e empresas da região.",
+  head: () =>
+    buildUniversalHead({
+      title: "Sorteios e Prêmios | Comunidade Waesy",
+      description:
+        "Participe dos sorteios e campanhas de prêmios promovidos pelas melhores lojas e empresas da região.",
+      path: "/concursos",
+      ogType: "website",
+      webmcpType: "raffles_index",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Sorteios e Campanhas",
+        description: "Lista de sorteios oficiais e cupons de lojas locais no Waesy.",
+        url: "https://waesy.com.br/concursos",
       },
-    ],
-  }),
+    }),
   loader: async () => {
     try {
       const concursos = await getAllPublicConcursos({ data: { filter: "all" } });

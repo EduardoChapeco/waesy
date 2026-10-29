@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getLinkInBio } from "@/services/cms.functions";
 import { recordWhatsAppLead } from "@/services/whatsapp-leads.functions";
+import { buildBiolinkSeoHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/bio/$slug")({
   loader: async ({ params }) => {
@@ -19,16 +20,8 @@ export const Route = createFileRoute("/_store/bio/$slug")({
       return null as any;
     }
   },
- head: ({ loaderData }) => {
- if (!loaderData || !loaderData.title) return { meta: [{ title: "Biolink não encontrado" }] };
- return {
- meta: [
- { title: `${loaderData.title} | Link da Bio Oficial` },
- { name: "description", content: loaderData.description || "" },
- ],
- };
- },
- component: BiolinkPage,
+  head: ({ loaderData }) => buildBiolinkSeoHead(loaderData),
+  component: BiolinkPage,
 });
 
 const THEME_STYLES: Record<string, { bg: string; card: string; text: string; buttonClass: string }> = {

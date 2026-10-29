@@ -7,23 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { getPublicConcursoById, participateInRaffle, type RaffleDTO } from "@/services/invite.functions";
+import { buildRaffleSeoHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/concurso/$id")({
-  head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: loaderData?.raffle?.title
-          ? `${loaderData.raffle.title} | Sorteios Waesy`
-          : "Sorteio | Waesy",
-      },
-      {
-        name: "description",
-        content:
-          loaderData?.raffle?.description?.slice(0, 160) ||
-          "Participe do sorteio de prêmios promovido pelas melhores empresas da região.",
-      },
-    ],
-  }),
+  head: ({ loaderData }) => buildRaffleSeoHead(loaderData?.raffle),
   loader: async ({ params }: { params: { id: string } }) => {
     try {
       const raffle = await getPublicConcursoById({ data: { raffleId: params.id } });

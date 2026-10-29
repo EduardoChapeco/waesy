@@ -377,7 +377,7 @@ export default function WorkspaceMarketingStoriesPage() {
                   maxFiles={1}
                   bucket="post-media"
                   folder="marketing/stories"
-                  aspect={aspectRatio === "9:16" ? 9 / 16 : 1}
+                  aspect={format === "story_9_16" ? 9 / 16 : 1}
                   accept="all"
                   label="Mídia do Story"
                 />

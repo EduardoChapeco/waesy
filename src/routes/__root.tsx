@@ -8,25 +8,42 @@ import { getThemeSettings, getPublicStoreSettings } from "@/services/cms.functio
 import { themeInitScript } from "@/lib/theme";
 
 function NotFoundComponent() {
- return (
- <div className="flex min-h-dvh items-center justify-center bg-background px-4">
- <div className="max-w-md text-center">
- <h1 className="text-7xl font-bold text-foreground">404</h1>
- <h2 className="mt-4 text-xl font-semibold text-foreground">Página não encontrada</h2>
- <p className="mt-2 text-sm text-muted-foreground">
- A página que você está procurando não existe ou foi movida.
- </p>
- <div className="mt-6">
- <Link
- to="/"
- className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
- >
- Voltar ao início
- </Link>
- </div>
- </div>
- </div>
- );
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
+      <div className="max-w-lg text-center space-y-4">
+        <h1 className="text-5xl font-bold text-foreground">404 — Página não encontrada</h1>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          O endereço solicitado não existe ou foi movido no Waesy Local Marketplace. Consulte nosso mapa do site, documentação técnica para desenvolvedores ou guia para agentes de IA.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/"
+            className="inline-flex h-11 min-h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Voltar ao início
+          </Link>
+          <a
+            href="/developers"
+            className="inline-flex h-11 min-h-11 items-center justify-center rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Portal de Desenvolvedores
+          </a>
+          <a
+            href="/sitemap.xml"
+            className="inline-flex h-11 min-h-11 items-center justify-center rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Sitemap XML
+          </a>
+          <a
+            href="/llms.txt"
+            className="inline-flex h-11 min-h-11 items-center justify-center rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Guia LLMs (/llms.txt)
+          </a>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
@@ -139,6 +156,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  content: seoDesc,
  },
  { property: "og:type", content: "website" },
+ { property: "og:image", content: brand?.logo_url || store?.logoUrl || "https://waesy.com.br/pwa-512x512.png" },
  { name: "twitter:card", content: "summary_large_image" },
  ];
 
@@ -194,7 +212,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
- const { theme, pixels } = ((Route.useLoaderData?.() as any) || {});
+  const { theme, brand, pixels } = ((Route.useLoaderData?.() as any) || {});
+  const dynamicAccent = brand?.accent_color;
 
   const metaPixel = pixels?.find((p: any) => p.provider === "meta_pixel")?.pixelId;
   const gaPixel = pixels?.find((p: any) => p.provider === "google_analytics")?.measurementId;
@@ -207,6 +226,33 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
         {/* Script anti-FOUC: aplica classe .dark/.light antes do primeiro paint */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+
+        {/* Dynamic Master Brand Theme Colors (Zero Hardcoding) */}
+        {dynamicAccent && (
+          <style
+            id="waesy-brand-theme-vars"
+            dangerouslySetInnerHTML={{
+              __html: `
+                :root {
+                  --magic-accent-primary: ${dynamicAccent};
+                  --primary: ${dynamicAccent};
+                  --ring: ${dynamicAccent};
+                  --color-accent: ${dynamicAccent};
+                  --border-focus: ${dynamicAccent};
+                  --accent-soft: color-mix(in srgb, ${dynamicAccent} 10%, transparent);
+                }
+                .dark, [data-theme="dark"] {
+                  --magic-accent-primary: ${dynamicAccent};
+                  --primary: ${dynamicAccent};
+                  --ring: ${dynamicAccent};
+                  --color-accent: ${dynamicAccent};
+                  --border-focus: ${dynamicAccent};
+                  --accent-soft: color-mix(in srgb, ${dynamicAccent} 18%, transparent);
+                }
+              `.trim(),
+            }}
+          />
+        )}
 
         {/* Speculation Rules API para navegações instantâneas (Skill web-performance) */}
         <script

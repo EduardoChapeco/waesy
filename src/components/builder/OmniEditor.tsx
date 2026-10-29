@@ -31,6 +31,22 @@ import { BlockErrorBoundary } from "./BlockErrorBoundary";
 import { HostingDomainConnectModal } from "./HostingDomainConnectModal";
 import { BuilderCodeExplorerModal } from "@/components/admin/builder/BuilderCodeExplorerModal";
 import { OmniAppMarketModal } from "@/components/admin/builder/OmniAppMarketModal";
+import { BuilderDockedRail, type DockedRailActivePanel } from "@/components/admin/builder/builder-docked-rail";
+import { BuilderAddPanel3Col } from "@/components/admin/builder/builder-add-panel-3col";
+import { BuilderPagesPanel, type BuilderPageItem } from "@/components/admin/builder/builder-pages-panel";
+import { BuilderGlobalThemePanel, type GlobalThemeConfig } from "@/components/admin/builder/builder-global-theme-panel";
+import { BuilderCmsPanel } from "@/components/admin/builder/builder-cms-panel";
+import { PhotoStudioModal } from "@/components/admin/builder/PhotoStudioModal";
+import {
+  WixVisualSitemapModal,
+  WixMenuManagerDrawer,
+  WixCmsCollectionManagerModal,
+  WixBrandedAppAndHoppPanel,
+  LovableAiSquadSplitPanel,
+  WixScrollAnimationsAndDockingInspector,
+  type WixAppNavConfig,
+  type WixButtonStylerConfig,
+} from "@/components/admin/builder/BuilderWixStudioPanels";
 import { listStudioTemplateDrafts } from "@/services/studio-template-library.functions";
 import { listPublicArticles } from "@/services/news.functions";
 
@@ -40,6 +56,7 @@ import {
   Copy,
   ChevronUp,
   ChevronDown,
+  ChevronRight,
   Settings2,
   Sliders,
   Smartphone,
@@ -74,6 +91,11 @@ import {
   Globe,
   Code2,
   Tablet,
+  Undo2,
+  Redo2,
+  Database,
+  Wand2,
+  Menu as MenuIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -2102,7 +2124,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
                   ];
                   onUpdateConfig("articles", next);
                 }}
-                className="h-8 px-2 text-xs rounded-lg"
+                className="h-11 min-h-11 px-3 text-xs rounded-lg"
               >
                 <Plus className="size-3.5 mr-1" />
                 Nova Matéria
@@ -2474,7 +2496,62 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(
     document.blocks[0]?.id || null
   );
-  const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile" | "native_app">("desktop");
+  const [editorMode, setEditorMode] = useState<"visual" | "split" | "code">("visual");
+  const [dockedPanel, setDockedPanel] = useState<DockedRailActivePanel>("add");
+  const [isAddPanel3ColOpen, setIsAddPanel3ColOpen] = useState(false);
+  const [isVisualSitemapOpen, setIsVisualSitemapOpen] = useState(false);
+  const [isMenuManagerOpen, setIsMenuManagerOpen] = useState(false);
+  const [isCmsTableModalOpen, setIsCmsTableModalOpen] = useState(false);
+  const [isPhotoStudioOpen, setIsPhotoStudioOpen] = useState(false);
+  const [historyPast, setHistoryPast] = useState<OmniPageDocument[]>([]);
+  const [historyFuture, setHistoryFuture] = useState<OmniPageDocument[]>([]);
+  const [sitePages, setSitePages] = useState<BuilderPageItem[]>(() => [
+    {
+      id: initialDocument.id || "home",
+      title: initialDocument.title || "Início",
+      slug: `/${initialDocument.slug || ""}`.replace("//", "/"),
+      is_home: true,
+      seo_title: `${initialDocument.title || "Início"} | Vitrine Oficial`,
+      seo_description: "Confira catálogo atualizado, pacotes de viagem e atendimento direto.",
+    },
+    {
+      id: "page_catalog",
+      title: "Catálogo & Ofertas",
+      slug: "/catalogo",
+      is_home: false,
+    },
+    {
+      id: "page_cars",
+      title: "Aluguel de Carros (3 Diárias)",
+      slug: "/mobilidade",
+      is_home: false,
+    },
+  ]);
+  const [activePageId, setActivePageId] = useState<string>(initialDocument.id || "home");
+  const [globalTheme, setGlobalTheme] = useState<GlobalThemeConfig>(() => ({
+    // design-lint-ignore DL-01 reason:"Valores iniciais do contrato de estado de tema global" expiry:"2027-12-31"
+    primaryColor: "#09090b",
+    // design-lint-ignore DL-01 reason:"Valores iniciais do contrato de estado de tema global" expiry:"2027-12-31"
+    backgroundColor: "#ffffff",
+    // design-lint-ignore DL-01 reason:"Valores iniciais do contrato de estado de tema global" expiry:"2027-12-31"
+    textColor: "#09090b",
+    headingFont: "Inter, sans-serif",
+    bodyFont: "Inter, sans-serif",
+    borderRadius: "xl",
+    surfaceStyle: "clean",
+  }));
+  const [appNavConfig, setAppNavConfig] = useState<WixAppNavConfig>({
+    barPosition: "bottom",
+    showLabelsUnderIcons: true,
+    tabs: ["Início", "Catálogo", "Reservas", "Ofertas", "Perfil"],
+  });
+  const [buttonStyler, setButtonStyler] = useState<WixButtonStylerConfig>({
+    activeRole: "primary",
+    shape: "squircle",
+    uppercase: false,
+    borderWidthPx: 1,
+  });
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -2482,6 +2559,30 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const [isCodeExplorerOpen, setIsCodeExplorerOpen] = useState(false);
   const [isAppMarketOpen, setIsAppMarketOpen] = useState(false);
   const [liveNewsArticles, setLiveNewsArticles] = useState<any[]>([]);
+
+  const commitDocumentChange = (nextDoc: OmniPageDocument) => {
+    setHistoryPast((prev) => [...prev.slice(-29), document]);
+    setHistoryFuture([]);
+    setDocument(nextDoc);
+  };
+
+  const handleUndo = () => {
+    if (historyPast.length === 0) return;
+    const previous = historyPast[historyPast.length - 1];
+    setHistoryPast((prev) => prev.slice(0, -1));
+    setHistoryFuture((prev) => [document, ...prev]);
+    setDocument(previous);
+    toast.info("Ação desfeita (Undo).");
+  };
+
+  const handleRedo = () => {
+    if (historyFuture.length === 0) return;
+    const next = historyFuture[0];
+    setHistoryFuture((prev) => prev.slice(1));
+    setHistoryPast((prev) => [...prev, document]);
+    setDocument(next);
+    toast.info("Ação refeita (Redo).");
+  };
 
   useEffect(() => {
     let active = true;
@@ -2511,7 +2612,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const [leftTab, setLeftTab] = useState<"blocks" | "templates">("blocks");
   const [activeBlockCategory, setActiveBlockCategory] = useState<WixBlockCategory>("all");
   const [previewTemplate, setPreviewTemplate] = useState<NicheTemplateDefinition | null>(null);
-  const [inspectorTab, setInspectorTab] = useState<"content" | "styling">("content");
+  const [inspectorTab, setInspectorTab] = useState<"content" | "styling" | "animation_cms">("content");
 
   // Mobile Bottom Sheets
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
@@ -2547,7 +2648,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const handleAddBlock = (blockType: string) => {
     const def = getSiteBlockById(blockType);
     const updated = addBlockToPage(document, blockType, def.defaultProps, def.defaultStyling);
-    setDocument(updated);
+    commitDocumentChange(updated);
     const newlyAdded = updated.blocks[updated.blocks.length - 1];
     setSelectedBlockId(newlyAdded.id);
     setIsMobileAddOpen(false);
@@ -2557,7 +2658,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const handleApplyTemplate = (templateId: string) => {
     const updated = materializeStudioTemplate(document, templateId);
     setActiveStudioManifest(getStudioTemplate(templateId) ?? null);
-    setDocument(updated);
+    commitDocumentChange(updated);
     if (updated.blocks.length > 0) {
       setSelectedBlockId(updated.blocks[0].id);
     }
@@ -2567,7 +2668,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const handleApplyStudioManifest = (template: StudioTemplateManifest) => {
     const updated = materializeStudioManifest(document, template);
     setActiveStudioManifest(template);
-    setDocument(updated);
+    commitDocumentChange(updated);
     if (updated.blocks.length > 0) setSelectedBlockId(updated.blocks[0].id);
     toast.success("Template aplicado como rascunho editável. Revise os findings antes de publicar.");
   };
@@ -2575,7 +2676,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const handleUpdateConfig = (key: string, value: any) => {
     if (!selectedBlockId) return;
     const updated = updateBlockInPage(document, selectedBlockId, { [key]: value });
-    setDocument(updated);
+    commitDocumentChange(updated);
   };
 
   const handleUpdateAssetRef = (asset: BuilderAssetRef) => {
@@ -2634,24 +2735,24 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const handleUpdateStyling = (stylingKey: keyof OmniBlockStyling, value: any) => {
     if (!selectedBlockId) return;
     const updated = updateBlockInPage(document, selectedBlockId, {}, { [stylingKey]: value });
-    setDocument(updated);
+    commitDocumentChange(updated);
   };
 
   const handleMove = (index: number, direction: "up" | "down") => {
     const target = direction === "up" ? index - 1 : index + 1;
     const updated = moveBlockInPage(document, index, target);
-    setDocument(updated);
+    commitDocumentChange(updated);
   };
 
   const handleDuplicate = (blockId: string) => {
     const updated = duplicateBlockInPage(document, blockId);
-    setDocument(updated);
+    commitDocumentChange(updated);
     toast.success("Bloco duplicado!");
   };
 
   const handleRemove = (blockId: string) => {
     const updated = removeBlockFromPage(document, blockId);
-    setDocument(updated);
+    commitDocumentChange(updated);
     if (selectedBlockId === blockId) {
       setSelectedBlockId(updated.blocks[0]?.id || null);
     }
@@ -2662,9 +2763,13 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     setIsSaving(true);
     try {
       if (onSave) {
-        await onSave(document);
+        await onSave({
+          ...document,
+          pages: sitePages,
+          updated_at: new Date().toISOString(),
+        } as any);
       }
-      toast.success("Página salva com sucesso no banco!");
+      toast.success("Página e sitemap visual salvos com sucesso no banco!");
     } catch (err: any) {
       toast.error(err?.message || "Falha ao salvar página.");
     } finally {
@@ -2676,9 +2781,14 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     setIsPublishing(true);
     try {
       if (onPublish) {
-        await onPublish(document);
+        await onPublish({
+          ...document,
+          pages: sitePages,
+          published_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any);
       }
-      toast.success("Página publicada com sucesso! Já está ativa para os visitantes.");
+      toast.success("Página e sitemap publicados com sucesso! Já está ativa para os visitantes.");
     } catch (err: any) {
       toast.error(err?.message || "Falha ao publicar página.");
     } finally {
@@ -2689,14 +2799,14 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   return (
     <div className="relative w-full h-screen bg-background text-foreground flex flex-col overflow-hidden select-none font-sans">
       {/* ── TOPBAR DO EDITOR (UNIVERSAL - SOFTWARE PRO SILENCE) ── */}
-      <header className="h-13 border-b border-border/80 bg-background/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between z-30 shrink-0">
+      <header className="h-14 border-b border-border/80 bg-background/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between z-30 shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {onBack && (
             <Button
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="size-8 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
+              className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
               title="Voltar ao painel"
             >
               <ArrowLeft className="size-4" />
@@ -2705,7 +2815,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
           <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-tight shrink-0">
             <Layers className="size-3.5" />
-            <span>Waesy Builder</span>
+            <span>Waesy Studio</span>
           </div>
 
           {/* Nome do Projeto com Renomeação Inline */}
@@ -2723,7 +2833,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 }
               }}
               autoFocus
-              className="text-xs sm:text-sm font-bold bg-muted/60 text-foreground px-2 py-1 rounded-lg border border-foreground/30 outline-hidden max-w-40 sm:max-w-xs"
+              className="h-11 min-h-11 text-xs sm:text-sm font-bold bg-muted/60 text-foreground px-2 py-1 rounded-lg border border-foreground/30 outline-hidden max-w-40 sm:max-w-xs"
             />
           ) : (
             <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
@@ -2731,48 +2841,135 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 setTitleDraft(document.title);
                 setIsEditingTitle(true);
               }}
-              className="flex items-center gap-2 cursor-pointer group px-2 py-1 rounded-lg hover:bg-muted/50 transition-colors min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-11 min-h-11 flex items-center gap-2 cursor-pointer group px-2 py-1 rounded-lg hover:bg-muted/50 transition-colors min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Clique para renomear"
             >
-              <span className="text-xs sm:text-sm font-bold tracking-tight text-foreground truncate max-w-36 sm:max-w-56">
+              <span className="text-xs sm:text-sm font-bold tracking-tight text-foreground truncate max-w-36 sm:max-w-48">
                 {document.title}
               </span>
-              <span className="text-xs text-muted-foreground/75 text-muted-foreground font-mono hidden sm:inline">
+              <span className="text-xs text-muted-foreground font-mono hidden lg:inline">
                 /{document.slug}
               </span>
             </div>
           )}
+
+          {/* Controles Transacionais Undo / Redo + Autosave Badge */}
+          <div className="hidden xl:flex items-center gap-1 pl-2 border-l border-border/60">
+            <button
+              type="button"
+              disabled={historyPast.length === 0}
+              onClick={handleUndo}
+              title="Desfazer (Ctrl+Z)"
+              className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Undo2 className="size-4" />
+            </button>
+            <button
+              type="button"
+              disabled={historyFuture.length === 0}
+              onClick={handleRedo}
+              title="Refazer (Ctrl+Y)"
+              className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Redo2 className="size-4" />
+            </button>
+            <span className="px-2 py-1 rounded bg-muted/60 text-xs font-semibold text-muted-foreground">
+              Autosave ativo
+            </span>
+          </div>
         </div>
 
-        {/* Alternador de Viewport (Desktop Only) */}
-        <div className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border/60">
-          <button
-            onClick={() => setViewport("desktop")}
-            className={`p-2 rounded-lg text-xs font-medium transition-colors ${
-              viewport === "desktop" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-            title="Desktop (1440px)"
-          >
-            <Monitor className="size-4" />
-          </button>
-          <button
-            onClick={() => setViewport("mobile")}
-            className={`p-2 rounded-lg text-xs font-medium transition-colors ${
-              viewport === "mobile" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-            title="Mobile (390px)"
-          >
-            <Smartphone className="size-4" />
-          </button>
+        {/* Alternador de Viewport + Modo de Estúdio (Desktop Only) */}
+        <div className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border/60">
+            <button
+              type="button"
+              onClick={() => setViewport("desktop")}
+              className={`h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+                viewport === "desktop" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              title="Desktop (1440px)"
+            >
+              <Monitor className="size-3.5" />
+              <span className="hidden lg:inline">Desktop</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewport("tablet")}
+              className={`h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+                viewport === "tablet" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              title="Tablet (768px)"
+            >
+              <Tablet className="size-3.5" />
+              <span className="hidden lg:inline">Tablet</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewport("mobile")}
+              className={`h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+                viewport === "mobile" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              title="Mobile Web (390px)"
+            >
+              <Smartphone className="size-3.5" />
+              <span className="hidden lg:inline">Mobile</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewport("native_app")}
+              className={`h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+                viewport === "native_app" ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              title="Branded Native App Frame (Top/Bottom Tab Bar)"
+            >
+              <Sparkles className="size-3.5" />
+              <span className="hidden lg:inline">App Nativo</span>
+            </button>
+          </div>
+
+          {/* Alternador Visual | Split IA (Lovable) */}
+          <div className="hidden lg:flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border/60">
+            <button
+              type="button"
+              onClick={() => setEditorMode("visual")}
+              className={`h-11 min-h-11 px-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                editorMode === "visual" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+            >
+              Visual
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditorMode(editorMode === "split" ? "visual" : "split")}
+              className={`h-11 min-h-11 px-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer ${
+                editorMode === "split" ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              title="Lovable AI Squad Split View"
+            >
+              <Wand2 className="size-3.5" />
+              <span>Split IA</span>
+            </button>
+          </div>
         </div>
 
-        {/* Cluster de Ações: Preview + Salvar + Publicar */}
-        <div className="flex items-center gap-2 sm:gap-2">
+        {/* Cluster de Ações: Sitemap + Menu + Apps + Código + Domínio + Preview + Salvar + Publicar */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsVisualSitemapOpen(true)}
+            className="hidden xl:inline-flex h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            title="Mapa Visual de Páginas & SEO/GEO"
+          >
+            <Layers className="size-4 mr-1" />
+            <span>Sitemap & GEO</span>
+          </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsAppMarketOpen(true)}
-            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-primary/40 text-primary hover:bg-primary/10 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-3 rounded-lg border-primary/40 text-primary hover:bg-primary/10 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
             title="Omni Apps Market"
           >
             <LayoutTemplate className="size-4 sm:mr-2" />
@@ -2782,7 +2979,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             variant="outline"
             size="sm"
             onClick={() => setIsCodeExplorerOpen(true)}
-            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
             title="Explorador de Código TanStack"
           >
             <Code2 className="size-4 sm:mr-2" />
@@ -2792,7 +2989,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             variant="outline"
             size="sm"
             onClick={() => setIsDomainModalOpen(true)}
-            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
             title="Domínios e Hospedagem"
           >
             <Globe className="size-4 sm:mr-2" />
@@ -2802,7 +2999,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             variant="outline"
             size="sm"
             onClick={() => setIsPreviewMode(!isPreviewMode)}
-            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Eye className="size-4 sm:mr-2" />
             <span className="hidden sm:inline">{isPreviewMode ? "Editar" : "Preview"}</span>
@@ -2833,29 +3030,78 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         </div>
       </header>
 
-      {/* ── 1. EXPERIÊNCIA DESKTOP (SOFTWARE UI 3-PANE) ── */}
-      <div className="hidden md:flex flex-1 overflow-hidden">
-        {/* Painel Esquerdo: Biblioteca de Blocos & Templates */}
+      {/* ── 1. EXPERIÊNCIA DESKTOP (WIX STUDIO DOCKED RAIL + PAINÉIS + SPLIT IA + CANVAS + 3-TAB INSPECTOR) ── */}
+      <div className="hidden md:flex flex-1 overflow-hidden relative">
+        {/* 1A. Barra de Ícones Acoplada à Esquerda (Wix Studio Docked Rail) */}
         {!isPreviewMode && (
+          <BuilderDockedRail
+            activePanel={dockedPanel}
+            nodesCount={document.blocks.length}
+            onTogglePanel={(panel) => {
+              if (panel === "apps") {
+                setIsAppMarketOpen(true);
+                return;
+              }
+              if (panel === "code") {
+                setEditorMode((prev) => (prev === "split" ? "visual" : "split"));
+                return;
+              }
+              setDockedPanel(panel);
+            }}
+          />
+        )}
+
+        {/* 1B. Painel Flutuante de 3 Colunas estilo Wix Studio (+ Adicionar Elementos) */}
+        {!isPreviewMode && (
+          <BuilderAddPanel3Col
+            isOpen={isAddPanel3ColOpen}
+            onClose={() => setIsAddPanel3ColOpen(false)}
+            onSelectTemplate={(tpl) => {
+              handleAddBlock((tpl as any).type || (tpl as any).blocks?.[0]?.type || "bento_asymmetric_grid");
+              setIsAddPanel3ColOpen(false);
+            }}
+            onInsertSingleBlock={(blockType) => {
+              handleAddBlock(blockType);
+              setIsAddPanel3ColOpen(false);
+            }}
+          />
+        )}
+
+        {/* 1C. Gaveta Esquerda Dinâmica conforme Ícone Ativo na BuilderDockedRail */}
+        {!isPreviewMode && dockedPanel === "add" && (
           <aside className="w-80 border-r border-border/80 bg-card/60 backdrop-blur-md flex flex-col shrink-0">
-            {/* Abas Superiores */}
-            <div className="grid grid-cols-2 p-2 border-b border-border/60 gap-1 bg-muted/20">
-              <button
-                onClick={() => setLeftTab("blocks")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors ${
-                  leftTab === "blocks" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+            {/* Abas Superiores: Blocos | Modelos + Gatilho 3 Colunas Wix */}
+            <div className="p-2 border-b border-border/60 space-y-2 bg-muted/20">
+              <div className="grid grid-cols-2 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setLeftTab("blocks")}
+                  className={`py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                    leftTab === "blocks" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                >
+                  Blocos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLeftTab("templates")}
+                  className={`py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                    leftTab === "templates" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                >
+                  Modelos
+                </button>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setIsAddPanel3ColOpen(!isAddPanel3ColOpen)}
+                className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 border-primary/40 text-primary hover:bg-primary/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                Blocos
-              </button>
-              <button
-                onClick={() => setLeftTab("templates")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors ${
-                  leftTab === "templates" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-              >
-                Modelos
-              </button>
+                <Plus className="size-3.5" />
+                <span>Catálogo 3 Colunas (Modo Wix +)</span>
+              </Button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -2940,7 +3186,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           size="sm"
                           variant="outline"
                           onClick={() => setPreviewTemplate(tpl)}
-                          className="h-7 px-2 text-xs text-muted-foreground/75 font-semibold gap-1 rounded-lg flex-1 cursor-pointer"
+                          className="h-11 min-h-11 px-2 text-xs text-muted-foreground/75 font-semibold gap-1 rounded-lg flex-1 cursor-pointer"
                         >
                           <Eye className="size-3" />
                           <span>Ver ao Vivo</span>
@@ -2949,7 +3195,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           type="button"
                           size="sm"
                           onClick={() => handleApplyTemplate(tpl.id)}
-                          className="h-7 px-2 text-xs text-muted-foreground/75 font-bold rounded-lg flex-1 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                          className="h-11 min-h-11 px-2 text-xs text-muted-foreground/75 font-bold rounded-lg flex-1 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                         >
                           <span>Usar Modelo</span>
                         </Button>
@@ -2962,152 +3208,442 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           </aside>
         )}
 
-        {/* Canvas Central (Área de Visualização WYSIWYG) */}
-        <main className="flex-1 bg-muted/15 overflow-y-auto p-4 sm:p-8 flex justify-center">
-          <BuilderViewportProvider viewport={viewport === "mobile" ? "mobile" : "desktop"} isEditorCanvas={true}>
-          <div
-            className={`transition-colors duration-200 duration-300 ${
-              viewport === "mobile"
-                ? "w-full max-w-sm min-h-dvh shadow-2xl rounded-lg border border-border/80 overflow-hidden bg-background my-auto"
-                : "w-full max-w-6xl shadow-sm bg-background rounded-lg border border-border/60"
-            }`}
-          >
-            {document.blocks.length === 0 ? (
-              <div className="py-24 text-center p-8 flex flex-col items-center">
-                <LayoutTemplate className="size-8 text-muted-foreground/30 mb-3" />
-                <p className="text-xs font-semibold text-foreground mb-4">Página vazia</p>
-                <Button onClick={() => handleApplyTemplate("template_gastronomy")} size="sm" variant="outline" className="h-8 rounded-lg text-xs">
-                  Carregar Modelo Base
-                </Button>
+        {/* 1D. Painel de Camadas & Árvore DOM (Page > Section > Block) */}
+        {!isPreviewMode && dockedPanel === "layers" && (
+          <aside className="w-80 border-r border-border/80 bg-card flex flex-col shrink-0">
+            <div className="p-4 border-b border-border/80 bg-muted/20 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <Layers className="size-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-foreground">Camadas e Hierarquia</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Página &gt; {document.blocks.length} Seção(ões)
+                  </p>
+                </div>
               </div>
-            ) : (
-              document.blocks.map((block, index) => {
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {document.blocks.map((block, idx) => {
                 const def = getSiteBlockById(block.type);
-                const Component = def.component;
-                const isSelected = selectedBlockId === block.id && !isPreviewMode;
-
+                const isSelected = selectedBlockId === block.id;
                 return (
                   <div
-                    key={block.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!isPreviewMode) setSelectedBlockId(block.id); } }} onClick={() => !isPreviewMode && setSelectedBlockId(block.id)} className={`relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                      isSelected ? "ring-2 ring-foreground ring-offset-2 ring-offset-background z-20" : ""
+                    key={block.id}
+                    className={`p-3 rounded-lg border transition-colors flex items-center justify-between gap-2 ${
+                      isSelected ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-muted/40"
                     }`}
                   >
-                    {/* Barra Flutuante de Ações no Bloco (Desktop Hover) */}
-                    {!isPreviewMode && (
-                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 backdrop-blur-md border border-border/80 rounded-lg p-1 shadow-xs flex items-center gap-1 z-30">
-                        <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground px-2">
-                          {def.name}
-                        </span>
-                        <button
-                          disabled={index === 0}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMove(index, "up");
-                          }}
-                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          title="Subir"
-                        >
-                          <ChevronUp className="size-3.5" />
-                        </button>
-                        <button
-                          disabled={index === document.blocks.length - 1}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMove(index, "down");
-                          }}
-                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          title="Descer"
-                        >
-                          <ChevronDown className="size-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDuplicate(block.id);
-                          }}
-                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          title="Duplicar"
-                        >
-                          <Copy className="size-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemove(block.id);
-                          }}
-                          className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          title="Excluir"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
-                    )}
-
-                    <BlockErrorBoundary
-                      blockId={block.id}
-                      blockType={block.type}
-                      onRemoveBlock={handleRemove}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBlockId(block.id)}
+                      className="flex-1 text-left min-w-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                     >
-                      <Component
-                        id={block.id}
-                        data={block.config}
-                        styling={block.styling}
-                        isEditing={true}
-                        products={products}
-                        categories={categories}
-                        collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
-                        storeData={storeData}
-                      newsArticles={liveNewsArticles}
-                      />
-                    </BlockErrorBoundary>
+                      <span className="text-xs font-mono text-muted-foreground block">
+                        #{idx + 1} • {block.sectionAnchorId ? `#${block.sectionAnchorId}` : def.category}
+                      </span>
+                      <span className="text-xs font-bold text-foreground truncate block">
+                        {(block.config as any)?.title || def.name}
+                      </span>
+                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => handleMove(idx, "up")}
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title="Subir seção"
+                      >
+                        <ChevronUp className="size-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === document.blocks.length - 1}
+                        onClick={() => handleMove(idx, "down")}
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title="Descer seção"
+                      >
+                        <ChevronDown className="size-3.5" />
+                      </button>
+                    </div>
                   </div>
                 );
-              })
+              })}
+            </div>
+          </aside>
+        )}
+
+        {/* 1E. Painel de Páginas + Botão para Visual Sitemap & GEO/SEO */}
+        {!isPreviewMode && dockedPanel === "pages" && (
+          <div className="flex flex-col border-r border-border/80 bg-card shrink-0">
+            <div className="flex-1 overflow-hidden flex">
+              <BuilderPagesPanel
+                pages={sitePages}
+                activePageId={activePageId}
+                onSelectPage={(id) => setActivePageId(id)}
+                onAddPage={(newPage) => {
+                  const created: BuilderPageItem = {
+                    id: `page_${Date.now()}`,
+                    ...newPage,
+                  };
+                  setSitePages((prev) => [...prev, created]);
+                  setActivePageId(created.id);
+                }}
+                onDeletePage={(id) => {
+                  setSitePages((prev) => prev.filter((p) => p.id !== id));
+                }}
+                onDuplicatePage={(id) => {
+                  const orig = sitePages.find((p) => p.id === id);
+                  if (!orig) return;
+                  setSitePages((prev) => [
+                    ...prev,
+                    {
+                      ...orig,
+                      id: `page_${Date.now()}`,
+                      title: `${orig.title} (Cópia)`,
+                      slug: `${orig.slug}-copia`,
+                      is_home: false,
+                    },
+                  ]);
+                }}
+                onUpdatePageSeo={(id, seo) => {
+                  setSitePages((prev) =>
+                    prev.map((p) => (p.id === id ? { ...p, ...seo } : p)),
+                  );
+                }}
+                onClose={() => setDockedPanel(null)}
+              />
+            </div>
+            <div className="p-3 border-t border-border bg-muted/20">
+              <Button
+                type="button"
+                onClick={() => setIsVisualSitemapOpen(true)}
+                className="w-full h-11 min-h-11 rounded-lg bg-primary text-primary-foreground text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Globe className="size-4" />
+                <span>Abrir Sitemap Visual & GEO/SEO</span>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* 1F. Painel de Tema Global + Branded App Navigation + Button Styler + Hopp 7-Layout Matrix */}
+        {!isPreviewMode && dockedPanel === "design" && (
+          <div className="w-80 border-r border-border/80 bg-card flex flex-col shrink-0 overflow-y-auto">
+            <BuilderGlobalThemePanel
+              theme={globalTheme}
+              onChangeTheme={(patch) => setGlobalTheme((prev) => ({ ...prev, ...patch }))}
+              onClose={() => setDockedPanel(null)}
+            />
+            <div className="p-4 border-t border-border bg-muted/10">
+              <WixBrandedAppAndHoppPanel
+                selectedBlock={selectedBlock}
+                onUpdateBlockConfig={handleUpdateConfig}
+                appNavConfig={appNavConfig}
+                onChangeAppNavConfig={(patch) =>
+                  setAppNavConfig((prev) => ({ ...prev, ...patch }))
+                }
+                buttonStyler={buttonStyler}
+                onChangeButtonStyler={(patch) =>
+                  setButtonStyler((prev) => ({ ...prev, ...patch }))
+                }
+              />
+            </div>
+          </div>
+        )}
+
+        {/* 1G. Painel de Dados CMS + Botão para Planilha Relacional Wix CMS */}
+        {!isPreviewMode && dockedPanel === "cms" && (
+          <div className="flex flex-col border-r border-border/80 bg-card shrink-0">
+            <div className="flex-1 overflow-hidden flex">
+              <BuilderCmsPanel
+                productsCount={products.length}
+                collectionsCount={collections.length}
+                onInsertDynamicBlock={(blockType) => handleAddBlock(blockType)}
+                onClose={() => setDockedPanel(null)}
+              />
+            </div>
+            <div className="p-3 border-t border-border bg-muted/20">
+              <Button
+                type="button"
+                onClick={() => setIsCmsTableModalOpen(true)}
+                className="w-full h-11 min-h-11 rounded-lg bg-primary text-primary-foreground text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Database className="size-4" />
+                <span>Gerenciar Tabelas & Campos CMS</span>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* 1H. Painel Lovable AI Squad Split Studio (quando editorMode === "split") */}
+        {!isPreviewMode && editorMode === "split" && (
+          <LovableAiSquadSplitPanel
+            document={document}
+            onAppendBlock={(newBlock) => {
+              const updated: OmniPageDocument = {
+                ...document,
+                blocks: [...document.blocks, newBlock],
+                updated_at: new Date().toISOString(),
+              };
+              commitDocumentChange(updated);
+              setSelectedBlockId(newBlock.id);
+            }}
+            onOpenCodeModal={() => setIsCodeExplorerOpen(true)}
+          />
+        )}
+
+        {/* Canvas Central (Área de Visualização WYSIWYG — Desktop, Tablet, Mobile & Branded Native App) */}
+        <main className="flex-1 bg-muted/15 overflow-y-auto p-4 sm:p-8 flex justify-center">
+          <BuilderViewportProvider
+            viewport={viewport === "mobile" || viewport === "native_app" ? "mobile" : "desktop"}
+            isEditorCanvas={true}
+          >
+          <div
+            className={`transition-colors duration-200 ${
+              viewport === "native_app"
+                ? "w-full max-w-sm min-h-dvh rounded-3xl border-4 border-foreground/20 overflow-hidden bg-background my-auto flex flex-col"
+                : viewport === "mobile"
+                  ? "w-full max-w-sm min-h-dvh rounded-lg border border-border/80 overflow-hidden bg-background my-auto"
+                  : viewport === "tablet"
+                    ? "w-full max-w-3xl bg-background rounded-xl border border-border/70"
+                    : "w-full max-w-6xl bg-background rounded-lg border border-border/60"
+            }`}
+          >
+            {/* Moldura Superior de App Nativo (Dynamic Island + Top Tab Bar opcional) */}
+            {viewport === "native_app" && (
+              <div className="bg-card border-b border-border px-4 py-2 space-y-2 shrink-0">
+                <div className="w-24 h-2 rounded-full bg-foreground/20 mx-auto" />
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground truncate">
+                    {document.title}
+                  </span>
+                  <span className="text-xs font-mono text-primary">PWA Nativo</span>
+                </div>
+                {appNavConfig.barPosition === "top" && (
+                  <div className="flex items-center justify-around gap-1 pt-1 border-t border-border/60">
+                    {appNavConfig.tabs.map((tab, idx) => (
+                      <div
+                        key={tab}
+                        className={`py-1 px-2 rounded text-center text-xs font-semibold ${
+                          idx === 0 ? "bg-primary/15 text-primary font-bold" : "text-muted-foreground"
+                        }`}
+                      >
+                        {appNavConfig.showLabelsUnderIcons ? tab : "•"}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex-1">
+              {document.blocks.length === 0 ? (
+                <div className="py-24 text-center p-8 flex flex-col items-center">
+                  <LayoutTemplate className="size-8 text-muted-foreground/30 mb-3" />
+                  <p className="text-xs font-semibold text-foreground mb-4">Página vazia</p>
+                  <Button onClick={() => handleApplyTemplate("template_gastronomy")} size="sm" variant="outline" className="h-11 min-h-11 rounded-lg text-xs">
+                    Carregar Modelo Base
+                  </Button>
+                </div>
+              ) : (
+                document.blocks.map((block, index) => {
+                  const def = getSiteBlockById(block.type);
+                  const Component = def.component;
+                  const isSelected = selectedBlockId === block.id && !isPreviewMode;
+
+                  return (
+                    <div
+                      key={block.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!isPreviewMode) setSelectedBlockId(block.id); } }} onClick={() => !isPreviewMode && setSelectedBlockId(block.id)} className={`relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                        isSelected ? "ring-2 ring-foreground ring-offset-2 ring-offset-background z-20" : ""
+                      }`}
+                    >
+                      {/* Barra Flutuante de Ações no Bloco (Desktop Hover) */}
+                      {!isPreviewMode && (
+                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 backdrop-blur-md border border-border/80 rounded-lg p-1 shadow-xs flex items-center gap-1 z-30">
+                          <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground px-2">
+                            {def.name}
+                          </span>
+                          <button
+                            disabled={index === 0}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMove(index, "up");
+                            }}
+                            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            title="Subir"
+                          >
+                            <ChevronUp className="size-3.5" />
+                          </button>
+                          <button
+                            disabled={index === document.blocks.length - 1}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMove(index, "down");
+                            }}
+                            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            title="Descer"
+                          >
+                            <ChevronDown className="size-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDuplicate(block.id);
+                            }}
+                            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            title="Duplicar"
+                          >
+                            <Copy className="size-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemove(block.id);
+                            }}
+                            className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            title="Excluir"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
+                      )}
+
+                      <BlockErrorBoundary
+                        blockId={block.id}
+                        blockType={block.type}
+                        onRemoveBlock={handleRemove}
+                      >
+                        <Component
+                          id={block.id}
+                          data={block.config}
+                          styling={block.styling}
+                          isEditing={true}
+                          products={products}
+                          categories={categories}
+                          collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
+                          storeData={storeData}
+                          newsArticles={liveNewsArticles}
+                        />
+                      </BlockErrorBoundary>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Bottom Tab Bar do App Nativo (quando viewport === "native_app" e barPosition === "bottom") */}
+            {viewport === "native_app" && appNavConfig.barPosition === "bottom" && (
+              <div className="bg-card border-t border-border px-3 py-2 flex items-center justify-around gap-1 shrink-0">
+                {appNavConfig.tabs.map((tab, idx) => (
+                  <div
+                    key={tab}
+                    className={`py-1 px-2 rounded text-center text-xs font-semibold ${
+                      idx === 0 ? "bg-primary/15 text-primary font-bold" : "text-muted-foreground"
+                    }`}
+                  >
+                    {appNavConfig.showLabelsUnderIcons ? tab : "•"}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
           </BuilderViewportProvider>
         </main>
 
-        {/* Painel Direito: Inspector Profundo (Conteúdo + Estilo) */}
+        {/* Painel Direito: Inspector Profundo de 3 Abas (Conteúdo | Design & Posição | Animações & CMS) */}
         {!isPreviewMode && selectedBlock && (
-          <aside className="w-80 border-l border-border/80 bg-card/60 backdrop-blur-md flex flex-col shrink-0">
-            <div className="grid grid-cols-2 p-2 border-b border-border/60 gap-1 bg-muted/20">
+          <aside className="w-80 lg:w-96 border-l border-border/80 bg-card/60 backdrop-blur-md flex flex-col shrink-0">
+            {/* Breadcrumb de Hierarquia de Camadas (Página > Seção > Bloco) */}
+            <div className="px-4 py-2 border-b border-border/60 bg-muted/30 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1 text-muted-foreground truncate">
+                <span>Página</span>
+                <ChevronRight className="size-3 shrink-0" />
+                <span>Seção</span>
+                <ChevronRight className="size-3 shrink-0" />
+                <span className="font-bold text-foreground truncate">
+                  {getSiteBlockById(selectedBlock.type).name}
+                </span>
+              </div>
+            </div>
+
+            {/* 3 Abas do Inspector */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 p-2 border-b border-border/60 gap-1 bg-muted/20">
               <button
+                type="button"
                 onClick={() => setInspectorTab("content")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
                   inspectorTab === "content" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <Settings2 className="size-3.5" />
-                Conteúdo
+                <span>Conteúdo</span>
               </button>
               <button
+                type="button"
                 onClick={() => setInspectorTab("styling")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
                   inspectorTab === "styling" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <Palette className="size-3.5" />
-                Estilo
+                <span>Design & Pos</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInspectorTab("animation_cms")}
+                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
+                  inspectorTab === "animation_cms" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              >
+                <Sparkles className="size-3.5" />
+                <span>Animação/CMS</span>
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {inspectorTab === "content" ? (
-                <BlockContentFields
-                  selectedBlock={selectedBlock}
-                  onUpdateConfig={handleUpdateConfig}
-                  onUpdateAssetRef={handleUpdateAssetRef}
-                  onClearAssetRef={handleClearAssetRef}
-                  onUpdateAssetAltText={handleUpdateAssetAltText}
-                  unsplashUsageSlot={unsplashDecorativeSlot?.id}
-                  unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
-                  products={products}
-                  categories={categories}
-                  collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
-                />
-              ) : (
-                /* Aba de Estilo Isolado */
+                <div className="space-y-4">
+                  {/* Ações Rápidas Wix Studio: Photo Studio Pro + Gerenciar Menu + Matriz Hopp */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsPhotoStudioOpen(true)}
+                      className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Sparkles className="size-3.5 text-primary" />
+                      <span>Photo Studio</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsMenuManagerOpen(true)}
+                      className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <MenuIcon className="size-3.5 text-primary" />
+                      <span>Gerenciar Menu</span>
+                    </Button>
+                  </div>
+
+                  <BlockContentFields
+                    selectedBlock={selectedBlock}
+                    onUpdateConfig={handleUpdateConfig}
+                    onUpdateAssetRef={handleUpdateAssetRef}
+                    onClearAssetRef={handleClearAssetRef}
+                    onUpdateAssetAltText={handleUpdateAssetAltText}
+                    unsplashUsageSlot={unsplashDecorativeSlot?.id}
+                    unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
+                    products={products}
+                    categories={categories}
+                    collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
+                  />
+                </div>
+              ) : inspectorTab === "styling" ? (
+                /* Aba 2: Design, Posição, Dimensionamento Fluido, Ancoragem 3x3 & Header Scroll */
                 <div className="space-y-4">
                   <BidirectionalDeviceStylingFields
                     styling={selectedBlock.styling}
@@ -3122,7 +3658,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     <select
                       value={selectedBlock.styling?.paddingY || "md"}
                       onChange={(e) => handleUpdateStyling("paddingY", e.target.value)}
-                      className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs"
+                      className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs"
                     >
                       <option value="none">Sem Espaçamento</option>
                       <option value="sm">Pequeno (32px)</option>
@@ -3139,7 +3675,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     <select
                       value={selectedBlock.styling?.borderRadius || "xl"}
                       onChange={(e) => handleUpdateStyling("borderRadius", e.target.value)}
-                      className="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs"
+                      className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs"
                     >
                       <option value="none">Reto (0px)</option>
                       <option value="sm">Pequeno (6px)</option>
@@ -3159,17 +3695,33 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                         type="color"
                         value={selectedBlock.styling?.backgroundColor || `${String.fromCharCode(35)}ffffff`}
                         onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
-                        className="size-8 rounded-lg cursor-pointer border border-border"
+                        className="size-11 min-h-11 min-w-11 rounded-lg cursor-pointer border border-border"
                       />
                       <Input
                         value={selectedBlock.styling?.backgroundColor || ""}
                         onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
                         placeholder="Padrão do tema"
-                        className="h-9 rounded-lg text-xs font-mono"
+                        className="h-11 min-h-11 rounded-lg text-xs font-mono"
                       />
                     </div>
                   </div>
+
+                  <WixScrollAnimationsAndDockingInspector
+                    section="layout"
+                    selectedBlock={selectedBlock}
+                    onUpdateConfig={handleUpdateConfig}
+                    onUpdateStyling={handleUpdateStyling}
+                  />
                 </div>
+              ) : (
+                /* Aba 3: 12 Animações de Rolagem Wix Studio & Conexão de Dataset CMS */
+                <WixScrollAnimationsAndDockingInspector
+                  section="animation_cms"
+                  selectedBlock={selectedBlock}
+                  onUpdateConfig={handleUpdateConfig}
+                  onUpdateStyling={handleUpdateStyling}
+                  onOpenCmsTable={() => setIsCmsTableModalOpen(true)}
+                />
               )}
             </div>
           </aside>
@@ -3187,7 +3739,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               onClick={() => handleApplyTemplate("template_gastronomy")}
               size="sm"
               variant="outline"
-              className="h-9 px-4 rounded-lg text-xs font-semibold"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
             >
               Carregar Modelo Base
             </Button>
@@ -3652,6 +4204,86 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           onAppInstalled={(appId) => {
             toast.success("App instalado. Atualizando árvore de páginas...");
           }}
+        />
+      )}
+
+      {/* MODAL DO PHOTO STUDIO PRO (WIX PHOTO STUDIO PARITY) */}
+      {isPhotoStudioOpen && (
+        <PhotoStudioModal
+          isOpen={isPhotoStudioOpen}
+          onClose={() => setIsPhotoStudioOpen(false)}
+          imageUrl={
+            (selectedBlock?.config as any)?.imageUrl ||
+            (selectedBlock?.config as any)?.coverImageUrl ||
+            ""
+          }
+          onSaveImage={(newUrl, adjustments) => {
+            if (selectedBlock) {
+              handleUpdateConfig("photoAdjustments", adjustments);
+              if (newUrl) handleUpdateConfig("imageUrl", newUrl);
+            }
+          }}
+        />
+      )}
+
+      {/* MODAL DO VISUAL SITEMAP & GEO/SEO INSPECTOR */}
+      {isVisualSitemapOpen && (
+        <WixVisualSitemapModal
+          isOpen={isVisualSitemapOpen}
+          onClose={() => setIsVisualSitemapOpen(false)}
+          pages={sitePages}
+          activePageId={activePageId}
+          onSelectPage={(id) => setActivePageId(id)}
+          onAddPage={(newPage) => {
+            const created: BuilderPageItem = {
+              id: `page_${Date.now()}`,
+              ...newPage,
+            };
+            setSitePages((prev) => [...prev, created]);
+            setActivePageId(created.id);
+          }}
+          onDuplicatePage={(id) => {
+            const orig = sitePages.find((p) => p.id === id);
+            if (!orig) return;
+            setSitePages((prev) => [
+              ...prev,
+              {
+                ...orig,
+                id: `page_${Date.now()}`,
+                title: `${orig.title} (Cópia)`,
+                slug: `${orig.slug}-copia`,
+                is_home: false,
+              },
+            ]);
+          }}
+          onUpdatePageSeo={(id, seo) => {
+            setSitePages((prev) =>
+              prev.map((p) => (p.id === id ? { ...p, ...seo } : p)),
+            );
+          }}
+          currentDocumentBlocks={document.blocks}
+        />
+      )}
+
+      {/* DRAWER DO GERENCIADOR DE MENU (MANAGE MENU) */}
+      <WixMenuManagerDrawer
+        isOpen={isMenuManagerOpen}
+        onClose={() => setIsMenuManagerOpen(false)}
+        onApplyMenuToBlock={(items, menuType) => {
+          if (selectedBlock) {
+            handleUpdateConfig("menuItems", items);
+            handleUpdateConfig("menuType", menuType);
+          }
+        }}
+      />
+
+      {/* MODAL DE PLANILHA RELACIONAL DO CMS & MANAGE FIELDS */}
+      {isCmsTableModalOpen && (
+        <WixCmsCollectionManagerModal
+          isOpen={isCmsTableModalOpen}
+          onClose={() => setIsCmsTableModalOpen(false)}
+          productsCount={products.length}
+          onInsertCollectionBlock={(blockType) => handleAddBlock(blockType)}
         />
       )}
     </div>

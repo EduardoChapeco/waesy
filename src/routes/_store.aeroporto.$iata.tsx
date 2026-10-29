@@ -43,17 +43,53 @@ export const Route = createFileRoute("/_store/aeroporto/$iata")({
       ? `Aeroporto ${p.name} (${p.iata_code}) — Terminais, Polícia Federal, Táxis e Serviços | Waesy`
       : `Aeroporto ${data?.iata || "Mundial"} | Waesy`;
     const description = p?.seo_description || "Guia oficial e completo de aeroportos, terminais, taxas e direitos do passageiro no Waesy.";
+    const canonical = `https://waesy.com.br/aeroporto/${data?.iata || ""}`;
+
+    const jsonLd = p
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Airport",
+          name: p.name,
+          iataCode: p.iata_code,
+          description,
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: p.city,
+            addressRegion: p.state_province || undefined,
+            addressCountry: p.country_code || "BR",
+          },
+        }
+      : null;
 
     return {
       meta: [
         { title },
         { name: "description", content: description },
+        { property: "og:site_name", content: "Waesy Local Marketplace" },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
+        { property: "og:url", content: canonical },
+        { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: description },
+        { name: "geo.placename", content: p?.city || "Brasil" },
+        { name: "geo.region", content: p?.state_province ? `BR-${p.state_province}` : "BR" },
+        { name: "webmcp-endpoint", content: "https://waesy.com.br/api/webmcp.json" },
+        { name: "webmcp-type", content: "airport_profile" },
       ],
+      links: [
+        { rel: "canonical", href: canonical },
+        { rel: "alternate", type: "text/markdown", href: canonical },
+      ],
+      scripts: jsonLd
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify(jsonLd),
+            },
+          ]
+        : [],
     };
   },
   component: AirportDetailPage,

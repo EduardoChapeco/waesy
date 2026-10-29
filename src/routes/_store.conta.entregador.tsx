@@ -1462,20 +1462,6 @@ function CourierDriverHubPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground">Ou cole a URL da Foto do Veículo</Label>
-                  <Input
-                    type="url"
-                    placeholder="https://... foto do carro ou moto"
-                    value={vehiclePhotoUrl}
-                    onChange={(e) => setVehiclePhotoUrl(e.target.value)}
-                    className="h-11 min-h-11 text-xs"
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    Exibida no perfil público e para o passageiro conferir o veículo ao embarcar.
-                  </span>
-                </div>
-
                 <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-1 text-xs font-mono">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Modelo:</span>

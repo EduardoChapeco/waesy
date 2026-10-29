@@ -18,6 +18,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { getStoreSettings } from "@/services/store.functions";
+import { RolePermissionsMatrix } from "@/components/workspace/RolePermissionsMatrix";
+import { PartnerAgreementEditor } from "@/components/workspace/PartnerAgreementEditor";
 
 export const Route = createFileRoute("/workspace/configuracoes/equipe")({
  head: () => ({
@@ -28,14 +31,16 @@ export const Route = createFileRoute("/workspace/configuracoes/equipe")({
  }),
   loader: async () => {
     try {
-      const [members, jobs, contractors] = await Promise.all([
+      const [members, jobs, contractors, storeRes] = await Promise.all([
         listTeamMembers().catch(() => []),
         listMyStoreJobs().catch(() => []),
         listContractors().catch(() => []),
+        getStoreSettings().catch(() => null),
       ]);
-      return { members: members || [], jobs: jobs || [], contractors: contractors || [] };
+      const storeId = (storeRes as any)?.store?.id || (storeRes as any)?.id || "";
+      return { members: members || [], jobs: jobs || [], contractors: contractors || [], storeId };
     } catch {
-      return { members: [], jobs: [], contractors: [] };
+      return { members: [], jobs: [], contractors: [], storeId: "" };
     }
   },
  component: WorkspaceTeamPage,
@@ -88,10 +93,10 @@ const ROLE_DEFINITIONS: Record<
 };
 
 export default function WorkspaceTeamPage() {
-  const { members, jobs, contractors } = ((Route.useLoaderData?.() as any) || {});
+  const { members, jobs, contractors, storeId } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<"members" | "contractors" | "jobs">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "contractors" | "jobs" | "permissions" | "partner_agreement">("members");
 
   // Estados dos Prestadores Terceirizados (Persona Nexus Port)
   const [contractorsList, setContractorsList] = useState<any[]>(contractors || []);
@@ -334,16 +339,24 @@ export default function WorkspaceTeamPage() {
 
  {/* ── Tabs de Navegação ── */}
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full">
- <TabsList className="grid grid-cols-1 sm:grid-cols-3 max-w-lg h-11 p-1 bg-muted/60 rounded-lg">
- <TabsTrigger value="members" className="rounded-lg font-bold text-xs gap-2">
+ <TabsList className="grid grid-cols-2 sm:grid-cols-5 max-w-3xl h-auto p-1 bg-muted/60 rounded-lg gap-1">
+ <TabsTrigger value="members" className="rounded-lg font-bold text-xs gap-1.5 py-2">
  <Users className="size-3.5" />
  <span>Colaboradores ({members.length})</span>
  </TabsTrigger>
- <TabsTrigger value="contractors" className="rounded-lg font-bold text-xs gap-2">
+ <TabsTrigger value="contractors" className="rounded-lg font-bold text-xs gap-1.5 py-2">
  <Briefcase className="size-3.5" />
  <span>Terceirizados ({contractorsList.length})</span>
  </TabsTrigger>
- <TabsTrigger value="jobs" className="rounded-lg font-bold text-xs gap-2">
+ <TabsTrigger value="partner_agreement" className="rounded-lg font-bold text-xs gap-1.5 py-2">
+ <Building2 className="size-3.5 text-primary" />
+ <span>Salão Parceiro</span>
+ </TabsTrigger>
+ <TabsTrigger value="permissions" className="rounded-lg font-bold text-xs gap-1.5 py-2">
+ <ShieldCheck className="size-3.5" />
+ <span>Permissões</span>
+ </TabsTrigger>
+ <TabsTrigger value="jobs" className="rounded-lg font-bold text-xs gap-1.5 py-2">
  <Layers className="size-3.5" />
  <span>Vagas ({jobs.length})</span>
  </TabsTrigger>
@@ -730,6 +743,14 @@ export default function WorkspaceTeamPage() {
  </div>
  )}
  </div>
+ </TabsContent>
+
+ <TabsContent value="partner_agreement" className="space-y-6 pt-4">
+ <PartnerAgreementEditor members={members} storeId={storeId} />
+ </TabsContent>
+
+ <TabsContent value="permissions" className="space-y-6 pt-4">
+ <RolePermissionsMatrix storeId={storeId} />
  </TabsContent>
  </Tabs>
 

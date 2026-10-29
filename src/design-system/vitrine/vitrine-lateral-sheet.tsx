@@ -46,6 +46,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { openQuickCreateModal } from "@/components/shell/GlobalQuickCreateModal";
 
 export interface VitrineLateralMenuItem {
   id?: string;
@@ -277,6 +278,20 @@ export function VitrineLateralMenuSheet({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            {/* Botão Criar (Ação Rápida SuperApp) */}
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                openQuickCreateModal();
+              }}
+              aria-label="Criar"
+              className="h-11 min-h-11 px-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <PlusCircle className="size-4" />
+              <span>Criar</span>
+            </button>
+
             {/* Alternador de Visualização Grade / Lista (iFood Parity) */}
             {showViewModeToggle && (
               <div

@@ -356,7 +356,7 @@ export const listPublishedProducts = createServerFn({ method: "GET" })
 		applyServerFnEdgeCache(
 			setResponseHeader,
 			"PUBLIC_DYNAMIC",
-			[CACHE_TAGS.store(storeId), CACHE_TAGS.catalog(storeId)],
+			[CACHE_TAGS.store(storeId || ""), CACHE_TAGS.catalog(storeId || "")],
 		);
 
 		return { status: "ok", data: products };

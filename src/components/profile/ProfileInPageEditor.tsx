@@ -27,7 +27,7 @@ import {
 } from "@/services/affiliates.functions";
 import { uploadProfileMediaDirect } from "@/services/storage.functions";
 import { toast } from "sonner";
-import { useRouter } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
   User,

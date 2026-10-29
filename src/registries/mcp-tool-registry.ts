@@ -2431,6 +2431,121 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       return { total: data?.length || 0, articles: data || [] };
     },
   },
+
+  // ── 9. META ADS & TELEMETRIA CLOSED-LOOP ─────────────────────────────────────
+  meta_ads_diagnose_tracking: {
+    name: "meta_ads_diagnose_tracking",
+    module: "marketing",
+    description: "Audita a integridade do Meta Pixel, token CAPI server-side e eventos de conversão da loja.",
+    tier: "store_staff",
+    requiredScope: "marketing:read",
+    permission: { action: "read", resource: "marketing" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid("Store ID válido é obrigatório"),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja a auditar" },
+      },
+      required: ["storeId"],
+    },
+    handler: async (ctx, args) => {
+      const { data: config, error } = await ctx.supabase
+        .from("store_pixel_configs")
+        .select("meta_pixel_id, meta_capi_token, google_ads_id, google_analytics_id, track_lead, track_whatsapp_click, track_add_to_cart, track_initiate_checkout, updated_at")
+        .eq("store_id", args.storeId)
+        .maybeSingle();
+
+      if (error) throw new Error(`Falha ao obter telemetria: ${error.message}`);
+
+      const hasPixel = Boolean(config?.meta_pixel_id);
+      const hasCapi = Boolean(config?.meta_capi_token);
+
+      return {
+        storeId: args.storeId,
+        pixelConfigured: hasPixel,
+        capiConfigured: hasCapi,
+        trackingHealth: hasPixel && hasCapi ? "optimal" : (hasPixel ? "browser_only" : "disabled"),
+        enabledEvents: {
+          lead: Boolean(config?.track_lead),
+          whatsappClick: Boolean(config?.track_whatsapp_click),
+          addToCart: Boolean(config?.track_add_to_cart),
+          checkout: Boolean(config?.track_initiate_checkout),
+        },
+        recommendations: !hasCapi
+          ? ["Configure o token da Conversions API (CAPI) para garantir 100% de precisão server-side contra bloqueadores de anúncios e iOS 14+."]
+          : ["Telemetria CAPI ativa. Estágios de CRM disparam eventos de qualificação diretamente no Dataset."],
+      };
+    },
+  },
+
+  crm_sync_qualified_lead_conversion: {
+    name: "crm_sync_qualified_lead_conversion",
+    module: "crm",
+    description: "Sincroniza um lead qualificado do CRM retroalimentando a IA da Meta e Google Ads via CAPI.",
+    tier: "store_staff",
+    requiredScope: "crm:write",
+    permission: { action: "update", resource: "customers" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      leadId: z.string().uuid(),
+      stage: z.string(),
+      estimatedValueBrl: z.number().optional().default(0),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja" },
+        leadId: { type: "string", description: "UUID da oportunidade no CRM" },
+        stage: { type: "string", description: "Novo estágio do lead (ex: qualified, won)" },
+        estimatedValueBrl: { type: "number", description: "Valor comercial estimado em Reais (BRL)" },
+      },
+      required: ["storeId", "leadId", "stage"],
+    },
+    handler: async (ctx, args) => {
+      const { data: lead, error } = await ctx.supabase
+        .from("leads_crm")
+        .select("id, full_name, email, phone, notes, estimated_value_cents, custom_fields")
+        .eq("id", args.leadId)
+        .eq("store_id", args.storeId)
+        .single();
+
+      if (error || !lead) throw new Error("Lead não localizado no CRM da loja.");
+
+      const { dispatchClosedLoopLeadQualification } = await import("@/services/pixels.functions");
+      const conversionValue = args.estimatedValueBrl || ((lead.estimated_value_cents || 0) / 100);
+      const cf = (lead.custom_fields as Record<string, any>) || {};
+
+      const result = await dispatchClosedLoopLeadQualification({
+        data: {
+          storeId: args.storeId,
+          leadId: lead.id,
+          stage: args.stage,
+          email: lead.email,
+          phone: lead.phone,
+          conversionValue,
+          fbp: cf.fbp || cf.attribution?.fbp || null,
+          fbc: cf.fbc || cf.attribution?.fbc || null,
+          clientUserAgent: cf.userAgent || cf.attribution?.userAgent || null,
+          sourceUrl: cf.sourceUrl || cf.attribution?.sourceUrl || null,
+        },
+      });
+
+      return {
+        status: "synced",
+        leadId: lead.id,
+        leadName: lead.full_name,
+        targetStage: args.stage,
+        conversionValue,
+        telemetry: result,
+      };
+    },
+  },
 };
 
 /**

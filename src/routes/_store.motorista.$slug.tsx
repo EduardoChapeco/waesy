@@ -6,13 +6,54 @@ import { getCourierBySlug, listCourierReviews } from "@/services/mobility.functi
 import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/_store/motorista/$slug")({
-  head: ({ loaderData }: any) => ({
-    meta: [
-      {
-        title: `${loaderData?.courier?.full_name || "Condutor Parceiro"} | Waesy Go`,
-      },
-    ],
-  }),
+  head: ({ loaderData }: any) => {
+    const courier = loaderData?.courier;
+    const name = courier?.full_name || "Condutor Parceiro";
+    const title = `${name} — Motorista & Entregador Waesy Go`;
+    const description = `Perfil verificado de ${name} no Waesy Go. Carro/Moto ${courier?.vehicle_model || ""} com avaliação ${courier?.rating?.toFixed?.(1) || "5.0"}. Solicite viagens diretas e entregas expressas.`;
+    const canonical = `https://waesy.com.br/motorista/${loaderData?.slug || ""}`;
+    const avatar = courier?.avatar_url || "https://waesy.com.br/pwa-512x512.png";
+
+    const jsonLd = courier
+      ? {
+          "@context": "https://schema.org",
+          "@type": "TaxiService",
+          name: `Waesy Go — ${name}`,
+          description,
+          provider: {
+            "@type": "Person",
+            name,
+            image: avatar,
+          },
+          areaServed: "São Miguel do Oeste e Região",
+        }
+      : null;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:site_name", content: "Waesy Go" },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "profile" },
+        { property: "og:image", content: avatar },
+        { property: "og:url", content: canonical },
+        { name: "twitter:card", content: "summary" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "geo.region", content: "BR-SC" },
+        { name: "geo.placename", content: "São Miguel do Oeste" },
+        { name: "webmcp-endpoint", content: "https://waesy.com.br/api/webmcp.json" },
+        { name: "webmcp-type", content: "courier_driver_profile" },
+      ],
+      links: [
+        { rel: "canonical", href: canonical },
+        { rel: "alternate", type: "text/markdown", href: canonical },
+      ],
+      scripts: jsonLd ? [{ type: "application/ld+json", children: JSON.stringify(jsonLd) }] : [],
+    };
+  },
   loader: async ({ params }) => {
     try {
       const courier = await getCourierBySlug({ data: { slug: params.slug } }).catch(() => null);
