@@ -1,22 +1,22 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-29T16:07:47.826Z",
-  "inspectedFiles": 2526,
-  "totalViolations": 3946,
+  "timestamp": "2026-10-29T17:31:10.911Z",
+  "inspectedFiles": 2528,
+  "totalViolations": 3963,
   "summary": {
-    "totalViolations": 3946,
+    "totalViolations": 3963,
     "bySeverity": {
       "P0": 8,
-      "P1": 3156,
-      "P2": 484,
+      "P1": 3172,
+      "P2": 485,
       "P3": 298
     },
     "byRule": {
       "DL-30": 285,
-      "DL-07": 469,
+      "DL-07": 470,
       "DL-14": 1457,
       "DL-02": 785,
-      "DL-03": 67,
+      "DL-03": 83,
       "DL-18": 54,
       "DL-15": 8,
       "DL-29": 6,
@@ -32,9 +32,9 @@
     },
     "byModule": {
       "components/app": {
-        "total": 1621,
+        "total": 1622,
         "P0": 8,
-        "P1": 1189,
+        "P1": 1190,
         "P2": 323,
         "P3": 101
       },
@@ -102,17 +102,17 @@
         "P3": 1
       },
       "routes/workspace": {
-        "total": 857,
+        "total": 861,
         "P0": 0,
-        "P1": 749,
+        "P1": 753,
         "P2": 37,
         "P3": 71
       },
       "routes/store": {
-        "total": 375,
+        "total": 387,
         "P0": 0,
-        "P1": 284,
-        "P2": 48,
+        "P1": 295,
+        "P2": 49,
         "P3": 43
       },
       "services": {
@@ -137,8 +137,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 733,
-    "filesCount": 2526
+    "filesWithViolations": 736,
+    "filesCount": 2528
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -758,6 +758,17 @@
       "severity": "P1",
       "match": "size-10",
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"size-10\"). Exige min-h-11 (44px)."
+    },
+    {
+      "id": "DL-03",
+      "rule": "DL-03",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/MediaUploader.tsx",
+      "module": "components/app",
+      "line": 318,
+      "column": 74,
+      "severity": "P1",
+      "match": "gap-1.5",
+      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
     },
     {
       "id": "DL-02",
@@ -1952,7 +1963,7 @@
       "rule": "DL-07",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
       "module": "components/builder",
-      "line": 3015,
+      "line": 3024,
       "column": 178,
       "severity": "P2",
       "match": "shadow-sm",
@@ -1963,7 +1974,7 @@
       "rule": "DL-30",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
       "module": "components/builder",
-      "line": 3102,
+      "line": 3111,
       "column": 59,
       "severity": "P3",
       "match": "overflow-x-auto",
@@ -1974,7 +1985,7 @@
       "rule": "DL-07",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
       "module": "components/builder",
-      "line": 3790,
+      "line": 3799,
       "column": 125,
       "severity": "P2",
       "match": "shadow-xl",
@@ -1985,7 +1996,7 @@
       "rule": "DL-30",
       "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/builder/OmniEditor.tsx",
       "module": "components/builder",
-      "line": 3842,
+      "line": 3851,
       "column": 51,
       "severity": "P3",
       "match": "overflow-x-auto",
@@ -2023,17 +2034,6 @@
       "severity": "P3",
       "match": "overflow-x-auto",
       "message": "Overflow horizontal \"overflow-x-auto\" em superfície de aplicação fora de tabela/carrossel."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/chat/chat-list-item.tsx",
-      "module": "components/chat",
-      "line": 241,
-      "column": 64,
-      "severity": "P1",
-      "match": "stroke-[2.2]",
-      "message": "Classe arbitrária com colchetes \"stroke-[2.2]\". Use tokens canônicos."
     }
   ]
 }

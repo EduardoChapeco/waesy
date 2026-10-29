@@ -6789,3 +6789,16 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   4. Modernizacao do Home Page Builder (Admin Master): Inclusao de barra de navegacao rapida entre vitrines, seletor de presets canonicos em 1 clique, alternadores switch diretos por secao e filtros de busca e status.
   5. Catraca de Design Lint Aprovada: Zero regressoes visuais e baseline rebaixada para 3.819 violacoes com Exit Code 0.
 - **Consequencias:** Interface mobile fluida e ergonomica com paridade de design iFood, descoberta continua de anuncios reais na rolagem e controle visual agil de vitrines no Admin Master.
+
+## DEC-366: Erradicacao Conclusiva de Mocks, Imposicao de Storage Direto, Atribuicao de Leads e Blindagem RLS
+
+- **Data:** 2026-10-29
+- **ID da Decisao:** DEC-366
+- **Contexto:** Auditoria forense end-to-end do ecossistema vivo Waesy, confrontando promessas com a verdade do codigo no CRM 360°, Telemetria CAPI/MCP, Uploads e Seguranca Multi-Tenant. Identificada persistencia de fallbacks matematicos sinteticos em biolink, tarefas agendadas falsas, inputs manuais de URL para imagens em vez de upload para storage, omissao de telemetria CAPI no tool MCP de leads, falta de interface direta para agendamento de reunioes no Kanban e politicas RLS pendentes em campanhas de anuncios.
+- **Decisao Adotada:**
+  1. **Erradicacao de Dados Sinteticos (Microfase 1):** Remocao dos fallbacks matematicos (Math.sin, 320 visitas fixas) em `profile-biolink-analytics.tsx`, exibindo telemetria 100% honesta; eliminacao de tarefas default sinteticas e mock de criacao em `copilot-scheduled-tasks-view.tsx` com rollback otimista; remocao de tokens sinteticos em `copilot-connectors-center.tsx`.
+  2. **Imposicao de Upload Direto para Storage (Microfase 2):** Extincao completa de caixas manuais de texto para URLs externas em `media-uploader.tsx`, `image-upload.tsx`, `TravelerVerificationFlow.tsx`, `workspace.marketing.encartes.tsx`, `travel-promo-flyer-modal.tsx` e `StudioUnsplashPicker.tsx`, canalizando 100% dos ativos pelo Supabase Storage.
+  3. **Fechamento de Atribuicao & Agendamento de Leads (Microfase 3):** Extracao canonica de `custom_fields` (`fbp`, `fbc`, `userAgent`, `sourceUrl`) no tool MCP `crm_sync_qualified_lead_conversion` para disparo de CAPI em malha fechada; adicao de modal de agendamento de reunioes (`addLeadMeeting`) e UI otimista com rollback no Kanban comercial (`workspace.comercial.tsx`).
+  4. **Lockdown Zero-Trust RLS de Campanhas (Microfase 4):** Criacao da migracao `20270311000000_ad_campaigns_tenant_rls_lockdown.sql` com isolamento estrito de tenant para `ad_campaigns` e `ad_events`, permitindo leitura de campanhas ativas para banners publicos e ingestao segura de eventos de visualizacao e clique.
+- **Fundamentacao Teorica:** AGENTS.md Regras B.4, B.7, B.8, B.25, B.31 (Integridade Waesy) e B.33 (Honestidade Estrita).
+- **Consequencias:** Ecossistema comercial e de marketing 100% integrado ao vivo, com zero dados artificiais, zero caixas manuais de imagem, telemetria CAPI precisa e RLS hermetico.

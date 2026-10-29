@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
 import { publicTourismAutoServiceSearchFn } from "@/services/infotravel";
+import { createCarRentalBooking } from "@/services/tourism.functions";
 import { type CarRentalOfferItem } from "@/components/tourism/CarRentalOfferCard";
 
 export const Route = createFileRoute("/_store/turismo/aluguel-carros/$id")({
@@ -63,18 +64,33 @@ function CarRentalDetailPage() {
   const dailyRateBrl = car ? Math.round((car.priceCents || 13900) / 100 / 3) : 139;
   const totalBrl = dailyRateBrl * days;
 
-  const handleBooking = (e: React.FormEvent) => {
+  const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!driverName.trim() || !driverCpf.trim()) {
       toast.error("Informe o nome do condutor e CPF.");
       return;
     }
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      toast.success(`Reserva de ${days} diárias confirmada com sucesso para ${driverName}!`);
+    try {
+      const res = await createCarRentalBooking({
+        data: {
+          carId,
+          carTitle: car?.title || "Veículo de Locadora com Proteção",
+          days,
+          totalPriceCents: totalBrl * 100,
+          driverName: driverName.trim(),
+          driverCpf: driverCpf.trim(),
+          driverPhone: driverPhone.trim(),
+          paymentPreference,
+        },
+      });
+      toast.success(res.message || `Reserva de ${days} diárias confirmada com sucesso!`);
       navigate({ to: "/conta/pedidos" });
-    }, 800);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao processar a reserva de veículo.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

@@ -1,26 +1,26 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-10-29T16:07:47.826Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-10-29T17:31:10.911Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 2526 | 2520 | Estável |
-| **Arquivos com Débito** | 733 | 735 | Monitorado |
-| **Total de Violações** | **3946** | **4007** | PASS (<= Baseline) |
+| **Total de Arquivos** | 2528 | 2520 | Estável |
+| **Arquivos com Débito** | 736 | 735 | Monitorado |
+| **Total de Violações** | **3963** | **4007** | PASS (<= Baseline) |
 | **P0 (Bloqueia Entrega)** | **8** | 15 | PASS |
-| **P1 (Bloqueia Merge)** | **3156** | 3202 | PASS |
-| **P2 (Fila de Correção)** | 484 | 488 | Acompanhamento |
+| **P1 (Bloqueia Merge)** | **3172** | 3202 | PASS |
+| **P2 (Fila de Correção)** | 485 | 488 | Acompanhamento |
 | **P3 (Polimento)** | 298 | 302 | Acompanhamento |
 
 ## 2. Débito Visual por Módulo
 
 | Módulo | Total | P0 | P1 | P2 | P3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `components/app` | 1621 | 8 | 1189 | 323 | 101 |
-| `routes/workspace` | 857 | 0 | 749 | 37 | 71 |
-| `routes/store` | 375 | 0 | 284 | 48 | 43 |
+| `components/app` | 1622 | 8 | 1190 | 323 | 101 |
+| `routes/workspace` | 861 | 0 | 753 | 37 | 71 |
+| `routes/store` | 387 | 0 | 295 | 49 | 43 |
 | `components/tourism` | 299 | 0 | 265 | 28 | 6 |
 | `routes/admin` | 278 | 0 | 209 | 20 | 49 |
 | `components/ui` | 194 | 0 | 172 | 6 | 16 |
@@ -41,10 +41,10 @@
 | **DL-14** | Diretriz do Catálogo | `P1` | 1457 |
 | **DL-02** | Diretriz do Catálogo | `P1` | 785 |
 | **DL-01** | Diretriz do Catálogo | `P1` | 633 |
-| **DL-07** | Diretriz do Catálogo | `P2` | 469 |
+| **DL-07** | Diretriz do Catálogo | `P2` | 470 |
 | **DL-30** | Diretriz do Catálogo | `P3` | 285 |
 | **DL-05** | Diretriz do Catálogo | `P1` | 104 |
-| **DL-03** | Diretriz do Catálogo | `P1` | 67 |
+| **DL-03** | Diretriz do Catálogo | `P1` | 83 |
 | **DL-18** | Diretriz do Catálogo | `P1` | 54 |
 | **DL-12** | Diretriz do Catálogo | `P1` | 28 |
 | **DL-11** | Diretriz do Catálogo | `P1` | 19 |

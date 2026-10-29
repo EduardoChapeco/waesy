@@ -186,7 +186,7 @@ export default function WorkspaceMarketingEncartesPage() {
     if (!pendingPinCoords) return;
 
     const newHotspot: FlyerHotspotDTO = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       x_percent: pendingPinCoords.x,
       y_percent: pendingPinCoords.y,
       product_id: product.id,
