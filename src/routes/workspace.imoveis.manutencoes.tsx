@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { 
   listPropertyMaintenanceRequests, 
   updateMaintenanceRequestStatus, 
@@ -661,15 +662,16 @@ Hash de Verificação: SHA256-${Math.random().toString(36).substring(2, 15)}
                 />
               </div>
 
-              {/* Foto URL */}
+              {/* Foto da Avaria / Vistoria (Upload Seguro para Storage) */}
               <div className="space-y-2">
-                <Label className="text-xs font-bold">Foto da Avaria (URL opcional)</Label>
-                <Input
-                  type="url"
-                  placeholder="https://..."
+                <Label className="text-xs font-bold">Foto da Avaria (Upload)</Label>
+                <ImageUpload
                   value={newPhotoUrl}
-                  onChange={(e) => setNewPhotoUrl(e.target.value)}
-                  className="h-11 rounded-lg text-xs bg-background"
+                  onChange={(url) => setNewPhotoUrl(url)}
+                  onRemove={() => setNewPhotoUrl("")}
+                  bucket="classifieds"
+                  aspectPreset="banner"
+                  helperText="Enviar foto nítida do local da avaria"
                 />
               </div>
             </div>

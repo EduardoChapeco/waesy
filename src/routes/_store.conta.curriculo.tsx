@@ -336,10 +336,18 @@ export default function MeuCurriculoPage() {
     }
   }, [activeResumeIndex]);
 
+  const normalizedExperiences = useMemo(() => {
+    return experiences.map((exp) => ({
+      ...exp,
+      salary_cents: exp.last_salary ? Math.round(Number(exp.last_salary) * 100) : (exp.salary_cents || null),
+      would_recommend: exp.would_recommend !== false,
+    }));
+  }, [experiences]);
+
   const currentResumeData: ResumeDataDTO = {
     headline: occupation,
     summary,
-    experiences,
+    experiences: normalizedExperiences,
     educations,
     certifications,
     licenses,
@@ -370,12 +378,6 @@ export default function MeuCurriculoPage() {
       });
 
       // Sincroniza identidade civil em profiles e avaliações de empregadores (InfoJobs / Glassdoor)
-      const mappedExperiences = experiences.map((exp) => ({
-        ...exp,
-        salary_cents: exp.last_salary ? Math.round(Number(exp.last_salary) * 100) : (exp.salary_cents || null),
-        would_recommend: exp.would_recommend !== false,
-      }));
-
       await updateProfile({
         data: {
           fullName: fullName.trim() || profile?.fullName || profile?.full_name || "Usuário",
@@ -387,10 +389,12 @@ export default function MeuCurriculoPage() {
           bio: summary.trim(),
           resumeData: {
             ...currentResumeData,
-            experiences: mappedExperiences,
+            experiences: normalizedExperiences,
           },
         },
-      }).catch(() => null);
+      }).catch((profileErr) => {
+        console.error("[curriculo] Falha ao sincronizar profile/employer_reviews:", profileErr);
+      });
 
       setSaveStatus("saved");
       if (!silent) {
