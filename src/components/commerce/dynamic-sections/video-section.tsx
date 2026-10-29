@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Play, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CanonicalVideoPlayer, type VideoTriggerMode } from "@/components/ui/canonical/canonical-video-player";
 
 interface VideoSectionProps {
   content?: {
@@ -14,6 +15,8 @@ interface VideoSectionProps {
     videoUrl?: string;
     media_url?: string;
     auto_play?: boolean;
+    trigger?: VideoTriggerMode;
+    delay_seconds?: number;
     loop?: boolean;
     aspect_ratio?: "16:9" | "9:16" | "4:3" | "1:1" | "video";
     button_text?: string;
@@ -27,6 +30,8 @@ interface VideoSectionProps {
   videoUrl?: string;
   media_url?: string;
   auto_play?: boolean;
+  trigger?: VideoTriggerMode;
+  delay_seconds?: number;
   loop?: boolean;
   aspect_ratio?: "16:9" | "9:16" | "4:3" | "1:1" | "video";
   button_text?: string;
@@ -44,6 +49,8 @@ export function VideoSection({
   videoUrl: topVideoUrlCamel,
   media_url: topMediaUrl,
   auto_play: topAutoPlay,
+  trigger: topTrigger,
+  delay_seconds: topDelaySeconds,
   loop: topLoop,
   aspect_ratio: topAspectRatio,
   button_text: topButtonText,
@@ -63,30 +70,12 @@ export function VideoSection({
   const subtitle = topSubtitle ?? content?.subtitle ?? "";
   const description = topDescription ?? content?.description ?? "";
   const autoPlay = Boolean(topAutoPlay ?? content?.auto_play);
+  const triggerMode = (topTrigger || content?.trigger || (autoPlay ? "immediate" : "in_viewport")) as VideoTriggerMode;
+  const delaySec = topDelaySeconds ?? content?.delay_seconds ?? 0;
   const loop = (topLoop ?? content?.loop) !== false;
   const aspectRatio = topAspectRatio || content?.aspect_ratio || "16:9";
   const buttonText = topButtonText ?? content?.button_text ?? "";
   const buttonLink = topButtonLink ?? content?.button_link ?? "";
-
-  // Helper to extract YouTube ID
-  const getYouTubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-  };
-
-  // Helper to extract Vimeo ID
-  const getVimeoId = (url: string) => {
-    const regExp = /vimeo\.com\/(?:video\/)?([0-9]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  };
-
-  const ytId = videoUrl ? getYouTubeId(videoUrl) : null;
-  const vimeoId = videoUrl ? getVimeoId(videoUrl) : null;
-  const isMp4 = videoUrl
-    ? !!videoUrl.split("?")[0].match(/\.(mp4|webm|mov|ogg)$/i)
-    : false;
 
   const aspectClass =
     aspectRatio === "9:16"
@@ -98,57 +87,32 @@ export function VideoSection({
       : "aspect-video w-full";
 
   const renderVideoPlayer = () => {
-    if (ytId) {
-      const embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=${autoPlay ? 1 : 0}&loop=${loop ? 1 : 0}&playlist=${ytId}&mute=${autoPlay ? 1 : 0}`;
+    if (!videoUrl) {
       return (
-        <iframe
-          src={embedUrl}
-          className="absolute inset-0 w-full h-full border-0 rounded-lg"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title={title || "YouTube Video"}
-        />
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/30 border border-border/40 text-muted-foreground p-6 text-center rounded-lg">
+          <Play className="size-10 mb-2 text-primary/70" />
+          <p className="text-xs font-semibold text-foreground">
+            Nenhum vídeo configurado
+          </p>
+          <span className="text-xs text-muted-foreground mt-1 max-w-xs break-all">
+            Adicione um arquivo de vídeo (MP4, WebM) ou link do YouTube/Vimeo nas configurações
+          </span>
+        </div>
       );
     }
 
-    if (vimeoId) {
-      const embedUrl = `https://player.vimeo.com/video/${vimeoId}?autoplay=${autoPlay ? 1 : 0}&loop=${loop ? 1 : 0}&muted=${autoPlay ? 1 : 0}`;
-      return (
-        <iframe
-          src={embedUrl}
-          className="absolute inset-0 w-full h-full border-0 rounded-lg"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-          title={title || "Vimeo Video"}
-        />
-      );
-    }
-
-    if (isMp4) {
-      return (
-        <video
-          src={videoUrl}
-          autoPlay={autoPlay}
-          loop={loop}
-          muted={autoPlay}
-          playsInline
-          controls
-          className="absolute inset-0 w-full h-full object-cover rounded-lg"
-        />
-      );
-    }
-
-    // Fallback if URL is empty or invalid
     return (
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/30 border border-border/40 text-muted-foreground p-6 text-center rounded-lg">
-        <Play className="size-10 mb-2 text-primary/70" />
-        <p className="text-xs font-semibold text-foreground">
-          Nenhum vídeo configurado
-        </p>
-        <span className="text-xs text-muted-foreground mt-1 max-w-xs break-all">
-          {videoUrl || "Adicione um arquivo de vídeo (MP4, WebM) ou link do YouTube/Vimeo nas configurações"}
-        </span>
-      </div>
+      <CanonicalVideoPlayer
+        src={videoUrl}
+        title={title || "Vídeo da Seção"}
+        trigger={triggerMode}
+        delaySeconds={delaySec}
+        aspectRatio={aspectRatio === "video" ? "16:9" : (aspectRatio as any)}
+        loop={loop}
+        muted={autoPlay}
+        showControls={true}
+        className="size-full border-0 rounded-lg"
+      />
     );
   };
 

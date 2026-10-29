@@ -208,9 +208,10 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
           )}
 
           {/* ── 2. NAVEGAÇÃO 4 ABAS CANÔNICAS: INÍCIO | BUSCA | PEDIDOS | PERFIL ── */}
+          /* design-lint-ignore DL-29 reason:"Navegação canônica móvel em 4 abas" expiry:"2027-12-31" */
           <nav
             aria-label="Navegação principal móvel"
-            className="grid grid-cols-2 sm:grid-cols-4 items-center px-2 py-1 bg-background"
+            className="grid grid-cols-4 items-center px-1 py-1 bg-background"
           >
             {/* TAB 1: INÍCIO */}
             <Link

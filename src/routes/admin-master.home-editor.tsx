@@ -93,6 +93,20 @@ const ASPECT_RATIOS: Array<{ id: HomeAspectRatio; label: string; ratioDesc: stri
   { id: "auto", label: "Automático / Responsivo", ratioDesc: "Ajuste dinâmico conforme conteúdo" },
 ];
 
+
+export const CANONICAL_PRESETS = [
+  { key: "hero_banners", title: "Destaques Principais", layout: "carousel", aspect: "ifood", desc: "Carrossel panorâmico principal com paginação em traços" },
+  { key: "quick_categories_ifood", title: "Categorias Principais", layout: "horizontal_scroll", aspect: "1:1", desc: "Dock 5x2 de categorias com 10 atalhos" },
+  { key: "feature_mini_banners", title: "No Waesy também tem", layout: "carousel", aspect: "4:5", desc: "Mini-banners verticais de vantagens e serviços" },
+  { key: "spotlight_restaurants", title: "Restaurantes com Cupom", layout: "horizontal_scroll", aspect: "4:3", desc: "Trilho com cards visuais apetitosos, nota, coroa e entrega" },
+  { key: "spotlight_pharmacies", title: "Farmácias Famosas", layout: "horizontal_scroll", aspect: "4:3", desc: "Trilho de drogarias e saúde com tempo de entrega" },
+  { key: "marketplace_products_rail", title: "Marketplace de Empresas", layout: "carousel", aspect: "1:1", desc: "Trilho com produtos de lojas credenciadas" },
+  { key: "classifieds_rail", title: "Classificados & Desapegos", layout: "carousel", aspect: "4:3", desc: "Trilho com classificados recentes de veículos, imóveis e produtos" },
+  { key: "places_directory_rail", title: "Lugares e Empresas", layout: "horizontal_scroll", aspect: "16:9", desc: "Guia comercial com contato direto de WhatsApp" },
+  { key: "jobs_rail", title: "Vagas de Emprego", layout: "carousel", aspect: "16:9", desc: "Vagas de trabalho recentes na cidade" },
+  { key: "procedural_infinite_feed", title: "Descoberta Procedural Contínua", layout: "grid_2d", aspect: "auto", desc: "Feed algorítmico contínuo intercalando produtos, anúncios e lojas" },
+];
+
 function AdminMasterHomeEditorPage() {
   const loaderData = (Route.useLoaderData?.() as any) || {};
   const [sections, setSections] = useState<HomePageSectionDTO[]>(loaderData.sections || []);
@@ -100,6 +114,9 @@ function AdminMasterHomeEditorPage() {
   const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [showLivePreview, setShowLivePreview] = useState(false);
+  const [filterQuery, setFilterQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+
 
   // Estados de edição de Seção
   const [editingSection, setEditingSection] = useState<HomePageSectionDTO | null>(null);
@@ -350,6 +367,19 @@ function AdminMasterHomeEditorPage() {
     }
   };
 
+
+  const filteredSections = sections.filter((s) => {
+    if (statusFilter === "active" && !s.is_active) return false;
+    if (statusFilter === "inactive" && s.is_active) return false;
+    if (filterQuery.trim()) {
+      const q = filterQuery.toLowerCase();
+      const matchKey = s.section_key.toLowerCase().includes(q);
+      const matchTitle = (s.title || "").toLowerCase().includes(q);
+      if (!matchKey && !matchTitle) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="w-full space-y-6 pb-20">
       {/* ── Top Header Canônico ── */}
@@ -403,6 +433,124 @@ function AdminMasterHomeEditorPage() {
             <Plus size={16} />
             <span>Adicionar Seção</span>
           </Button>
+        </div>
+      </div>
+
+      {/* ── Régua de Navegação Rápida entre Vitrines no Admin ── */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-border/40">
+        <Link
+          to="/admin-master/home-editor"
+          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors bg-primary text-primary-foreground flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Layout size={14} />
+          <span>Home Principal</span>
+        </Link>
+        <Link
+          to="/admin-master/vitrines"
+          search={{ surface: "gastronomia" }}
+          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <span>Gastronomia</span>
+        </Link>
+        <Link
+          to="/admin-master/vitrines"
+          search={{ surface: "mercado" }}
+          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <span>Supermercado</span>
+        </Link>
+        <Link
+          to="/admin-master/vitrines"
+          search={{ surface: "farmacia" }}
+          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <span>Farmácia</span>
+        </Link>
+        <Link
+          to="/admin-master/banners"
+          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <ImageIcon size={14} />
+          <span>Banners & Criativos</span>
+        </Link>
+        <Link
+          to="/admin-master/botoes"
+          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Sliders size={14} />
+          <span>Hotpages & Hubs</span>
+        </Link>
+      </div>
+
+      {/* ── Barra de Filtros e Adição Rápida de Presets ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/20 p-3 rounded-lg border border-border/50">
+        <div className="flex items-center gap-2 flex-1 flex-wrap">
+          <Input
+            placeholder="Filtrar seção por título ou chave..."
+            value={filterQuery}
+            onChange={(e) => setFilterQuery(e.target.value)}
+            className="h-9 text-xs bg-background max-w-xs"
+          />
+          <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/60">
+            <button
+              type="button"
+              onClick={() => setStatusFilter("all")}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                statusFilter === "all" ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Todas ({sections.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter("active")}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                statusFilter === "active" ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Ativas ({sections.filter((s) => s.is_active).length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusFilter("inactive")}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                statusFilter === "inactive" ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Desativadas ({sections.filter((s) => !s.is_active).length})
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Select
+            onValueChange={(val) => {
+              const preset = CANONICAL_PRESETS.find((p) => p.key === val);
+              if (preset) {
+                setEditingSection(null);
+                setSecKey(preset.key);
+                setSecTitle(preset.title);
+                setSecSubtitle(preset.desc);
+                setSecShowTitle(true);
+                setSecShowSubtitle(false);
+                setSecLayout(preset.layout as HomeLayoutVariant);
+                setSecAspect(preset.aspect as HomeAspectRatio);
+                setSecIsActive(true);
+                setIsSectionDialogOpen(true);
+              }
+            }}
+          >
+            <SelectTrigger className="h-9 text-xs font-semibold bg-background min-w-44">
+              <SelectValue placeholder="Adicionar Preset Rápido..." />
+            </SelectTrigger>
+            <SelectContent>
+              {CANONICAL_PRESETS.map((p) => (
+                <SelectItem key={p.key} value={p.key} className="text-xs">
+                  {p.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -492,7 +640,7 @@ function AdminMasterHomeEditorPage() {
 
       {/* ── Lista de Seções da Home ── */}
       <div className="space-y-4">
-        {sections.map((section, secIdx) => (
+        {filteredSections.map((section, secIdx) => (
           <div
             key={section.id}
             className={`p-4 sm:p-5 rounded-lg border transition-colors ${
@@ -529,6 +677,37 @@ function AdminMasterHomeEditorPage() {
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 pr-2 border-r border-border/40">
+                  <span className="text-3xs font-bold text-muted-foreground uppercase">
+                    {section.is_active ? "Ativa" : "Inativa"}
+                  </span>
+                  <Switch
+                    checked={section.is_active}
+                    onCheckedChange={async (checked) => {
+                      try {
+                        await upsertHomePageSection({
+                          data: {
+                            id: section.id,
+                            section_key: section.section_key,
+                            title: section.title,
+                            subtitle: section.subtitle,
+                            show_title: section.show_title,
+                            show_subtitle: section.show_subtitle,
+                            layout_variant: section.layout_variant,
+                            aspect_ratio: section.aspect_ratio,
+                            is_active: checked,
+                            sort_order: section.sort_order,
+                          },
+                        });
+                        toast.success(checked ? "Seção ativada na Home!" : "Seção desativada na Home!");
+                        await refreshSections();
+                      } catch (e: any) {
+                        toast.error("Erro ao alterar visibilidade: " + e.message);
+                      }
+                    }}
+                    aria-label={`Ativar ou desativar seção ${section.section_key}`}
+                  />
+                </div>
                 <Button
                   type="button"
                   variant="ghost"

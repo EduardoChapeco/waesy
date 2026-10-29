@@ -211,7 +211,7 @@ export function HomeMobileNativeApp({
     if (!homeSections || homeSections.length === 0) return defaultActive;
     const found = homeSections.find((s) => s.section_key === sectionKey);
     if (found) return found.is_active !== false;
-    return false;
+    return defaultActive;
   };
 
   // Resolve metadados e itens de uma seção a partir do CMS
@@ -355,7 +355,8 @@ export function HomeMobileNativeApp({
   // ── Restaurantes com Cupom REAL (Estritamente com cupom cadastrado) ──
   const spotlightRestaurants = useMemo(() => {
     if (liveStores.length === 0) return [];
-    return liveStores.filter((s) => Boolean(s.couponBadge)).slice(0, 8);
+    const withCoupons = liveStores.filter((s) => Boolean(s.couponBadge));
+    return (withCoupons.length > 0 ? withCoupons : liveStores).slice(0, 8);
   }, [liveStores]);
 
   // ── Farmácias & Saúde Reais ──
@@ -476,7 +477,8 @@ export function HomeMobileNativeApp({
               )}
             </div>
           )}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-y-3 gap-x-2">
+          /* design-lint-ignore DL-29 reason:"Dock canônico 5x2 de categorias iFood" expiry:"2027-12-31" */
+          <div className="grid grid-cols-5 gap-y-2 gap-x-2">
             {resolvedQuickCategories.map((cat: any) => {
               const Icon = cat.icon;
               if (cat.isAction) {
@@ -487,7 +489,7 @@ export function HomeMobileNativeApp({
                     onClick={openSuperApp}
                     className="flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none"
                   >
-                    <div className="size-14 rounded-2xl bg-muted/60 hover:bg-muted border border-border/60 flex items-center justify-center transition-transform group-hover:scale-105">
+                    <div className="size-12 sm:size-14 rounded-2xl bg-card hover:bg-muted/60 border border-border/50 flex items-center justify-center transition-transform group-hover:scale-105">
                       <Icon size={24} weight="bold" className="text-foreground" />
                     </div>
                     <span className="text-2xs font-semibold text-foreground text-center leading-tight break-words text-wrap">
@@ -503,7 +505,7 @@ export function HomeMobileNativeApp({
                   className="flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none relative"
                 >
                   <div className="relative">
-                    <div className="size-14 rounded-2xl bg-muted/40 hover:bg-muted border border-border/60 flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden">
+                    <div className="size-12 sm:size-14 rounded-2xl bg-card hover:bg-muted/60 border border-border/50 flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden">
                       {cat.imageUrl ? (
                         <img src={cat.imageUrl} alt={cat.label} className="size-10 object-contain" loading="lazy" />
                       ) : (
@@ -766,7 +768,7 @@ export function HomeMobileNativeApp({
       {viewMode === "feed" && (
         <div className="space-y-4 pt-1">
           {/* PLACES / GUIA COMERCIAL */}
-          {isSectionActive("places_directory_rail", false) &&
+          {isSectionActive("places_directory_rail", true) &&
             (activeCategory === "todos" || activeCategory === "places") &&
             filteredPlaces.length > 0 && (
             <HorizontalRail
@@ -868,7 +870,7 @@ export function HomeMobileNativeApp({
           )}
 
           {/* MARKETPLACE DE EMPRESAS */}
-          {isSectionActive("marketplace_products_rail", false) &&
+          {isSectionActive("marketplace_products_rail", true) &&
             (activeCategory === "todos" || activeCategory === "marketplace") && (
             filteredMarketplaceProducts.length > 0 ? (
               activeCategory === "marketplace" ? (
@@ -911,7 +913,7 @@ export function HomeMobileNativeApp({
           )}
 
           {/* CLASSIFICADOS */}
-          {isSectionActive("classifieds_rail", false) &&
+          {isSectionActive("classifieds_rail", true) &&
             (activeCategory === "todos" || activeCategory === "classificados") &&
             filteredClassifieds.length > 0 && (
             <HorizontalRail
@@ -1012,7 +1014,7 @@ export function HomeMobileNativeApp({
           )}
 
           {/* EMPREGOS */}
-          {isSectionActive("jobs_rail", false) &&
+          {isSectionActive("jobs_rail", true) &&
             (activeCategory === "todos" || activeCategory === "empregos") &&
             filteredJobs.length > 0 && (
             <HorizontalRail
@@ -1196,7 +1198,7 @@ export function HomeMobileNativeApp({
           )}
 
           {/* FEED CONTÍNUO DE DESCOBERTA */}
-          {isSectionActive("procedural_infinite_feed", false) && activeCategory === "todos" && (
+          {isSectionActive("procedural_infinite_feed", true) && activeCategory === "todos" && (
             <ProceduralInfiniteFeed
               initialExcludedStoreIds={filteredPlaces.map((p: any) => p.store_id || p.id).filter(Boolean)}
               initialExcludedProductIds={[]}

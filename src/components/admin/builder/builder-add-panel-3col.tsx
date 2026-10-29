@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { X, Search, Plus, ImageIcon, ShoppingBag, AlignLeft, Star, Zap, Store, LayoutTemplate, SlidersHorizontal, ArrowRight, Sliders, Grid, Film, CheckCircle2, Plane, Flame, Calendar, UtensilsCrossed, Shirt, Home, Link2, HelpCircle, Clock, Layers, MapPin, Mail, UserCheck, Route, Landmark, Map, Tags, Timer, FileText, ChevronDown, CheckSquare, MousePointer2, CreditCard, DollarSign, MessageCircle, Briefcase, Table as TableIcon, ClipboardList, Images } from 'lucide-react';
+import { X, Search, Plus, ImageIcon, ShoppingCart, ShoppingBag, AlignLeft, Star, Zap, Store, LayoutTemplate, SlidersHorizontal, ArrowRight, Sliders, Grid, Film, CheckCircle2, Plane, Flame, Calendar, UtensilsCrossed, Shirt, Home, Link2, HelpCircle, Clock, Layers, MapPin, Mail, UserCheck, Route, Landmark, Map, Tags, Timer, FileText, ChevronDown, CheckSquare, MousePointer2, CreditCard, DollarSign, MessageCircle, Briefcase, Table as TableIcon, ClipboardList, Images } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,32 @@ const CATEGORY_TREE: CategoryDefinition[] = [
  icon: ShoppingBag,
  subcategories: [
  { id: "prod_hits", label: "Top Mais Vendidos (Hits)", templateIds: ["curated_hits_rail", "dynamic_product_carousel", "product_carousel"] },
- { id: "prod_grid", label: "Grade de Produtos", templateIds: ["product_grid", "product_carousel"] },
+   {
+  id: "supermarket",
+  label: "Supermercado & Varejo",
+  icon: ShoppingCart,
+  subcategories: [
+  { id: "super_hero", label: "Capa & Carrossel Contínuo", templateIds: ["supermarket_hero_carousel"] },
+  { id: "super_dock", label: "Departamentos Circulares", templateIds: ["supermarket_category_dock"] },
+  { id: "super_shelf", label: "Ofertas & Clube K", templateIds: ["supermarket_product_shelf"] },
+  { id: "super_fulfillment", label: "Entrega e Retirada", templateIds: ["supermarket_fulfillment_pill"] },
+  ],
+  },
+  {
+  id: "omni_apps",
+  label: "Omni Apps (Pacotes)",
+  icon: LayoutTemplate,
+  subcategories: [
+  { id: "apps_supermarket", label: "Supermercado & Atacarejo", templateIds: [] },
+  { id: "apps_delivery", label: "Gastronomia & Delivery", templateIds: [] },
+  { id: "apps_events", label: "Eventos & Ingressos", templateIds: [] },
+  { id: "apps_appointments", label: "Agendamentos & Clínicas", templateIds: [] },
+  { id: "apps_ecommerce", label: "E-Commerce B2B/B2C", templateIds: [] },
+  { id: "apps_biolink", label: "BioLink Pro (Hopp)", templateIds: [] },
+  { id: "apps_news", label: "Portal de Notícias & Blog", templateIds: [] },
+  ],
+  },
+  { id: "prod_grid", label: "Grade de Produtos", templateIds: ["product_grid", "product_carousel"] },
  { id: "prod_carousel", label: "Carrosséis", templateIds: ["dynamic_product_carousel", "product_carousel"] },
  { id: "prod_categories", label: "Categorias e Coleções", templateIds: ["category_icon_grid", "category_cards_grid", "featured_collection_banner"] },
  ],

@@ -273,7 +273,7 @@ function AdminMasterVitrinesPage() {
               onClick={() => handleSelectSurface(s.slug)}
               className={`h-11 sm:h-8 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 isSelected
-                  ? "bg-primary text-primary-foreground shadow-2xs font-bold"
+                  ? "bg-primary text-primary-foreground font-bold"
                   : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/50"
               }`}
             >

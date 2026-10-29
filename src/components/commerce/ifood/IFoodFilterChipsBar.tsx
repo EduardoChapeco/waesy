@@ -54,7 +54,7 @@ export function IFoodFilterChipsBar({
             type="button"
             onClick={() => onToggleFilter?.(chip.id)}
             className={cn(
-              "h-9 min-h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-2 shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs",
+              "h-11 min-h-11 px-3 rounded-full border text-xs font-semibold flex items-center gap-2 shrink-0 snap-start transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               isActive
                 ? "bg-foreground text-background border-foreground font-bold"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/80 hover:bg-muted/50",

@@ -1,5 +1,47 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-367: Unificação Omni Builder, Ecossistema de Omni Apps (Wix Apps Parity), Exportador TanStack Start (Lovable Parity) e AI Squad Anti-Injeção
+- **Data:** 2026-10-28
+- **Contexto:**
+  1. Necessidade de transformar o Omni Builder em um gerador declarativo de ecossistemas operacionais completos (paridade com Wix Studio, Wix App Market e Lovable AI Code Studio).
+  2. Auditoria minuciosa de 64 ativos visuais de benchmark nos pilares de: Canvas fluido vs nativo, Árvore de Camadas, Painel Add de 3 colunas, Animações de Scroll, Conexões CMS Dataset, Construtor de Apps Nativos, BioLink Pro (7 layouts) e Visual Code Explorer.
+  3. Requisitos técnicos:
+     - Ativação atômica de Omni Apps (Supermercado, Delivery, Eventos, Agendamentos, E-Commerce, BioLink, Notícias) gerando árvores completas em `experience_documents`.
+     - Centralização de pedidos de múltiplos canais no mesmo Workspace soberano (`/workspace/pedidos`).
+     - Geração estruturada de código-fonte TanStack Start (`package.json`, `tsconfig.json`, `src/routes/`) e exportador de projeto.
+     - AI Squad multiagente (Planner, Designer, Coder, Guard) com barreira Zero-Trust anti-prompt injection e validação AST.
+     - Photo Studio modal com recorte proporcional e ajustes finos de imagem no canvas.
+- **Decisão:**
+  1. Criados os contratos e schemas em [`src/types/omni-apps.ts`](file:///c:/Users/Eduardo%20Antônio%20Ramo/Documents/waesy/src/types/omni-apps.ts) e motor BFF [`src/services/omni-apps-blueprint.functions.ts`](file:///c:/Users/Eduardo%20Antônio%20Ramo/Documents/waesy/src/services/omni-apps-blueprint.functions.ts).
+  2. Criado o gerador de projeto TanStack [`src/services/builder-project-generator.ts`](file:///c:/Users/Eduardo%20Antônio%20Ramo/Documents/waesy/src/services/builder-project-generator.ts) e o visualizador [`BuilderCodeExplorerModal.tsx`](file:///c:/Users/Eduardo%20Antônio%20Ramo/Documents/waesy/src/components/admin/builder/BuilderCodeExplorerModal.tsx).
+  3. Criado o catálogo de ativação [`OmniAppMarketModal.tsx`](file:///c:/Users/Eduardo%20Antônio%20Ramo/Documents/waesy/src/components/admin/builder/OmniAppMarketModal.tsx) e o editor [`PhotoStudioModal.tsx`](file:///c:/Users/Eduardo%20Antônio%20Ramo/Documents/waesy/src/components/admin/builder/PhotoStudioModal.tsx).
+  4. Implementado o motor multiagente com sanitização anti-injeção em [`src/services/ai-builder-squad.ts`](file:///c:/Users/Eduardo%20Antônio%20Ramo/Documents/waesy/src/services/ai-builder-squad.ts).
+  5. Expandida a `BuilderTopBar`, o `BuilderDockedRail`, o `builder-add-panel-3col.tsx` e o `OmniEditor.tsx` com suporte aos novos módulos e breakpoints.
+  6. Validação automatizada: 17 testes unitários vitest PASS e catraca determinística Design Lint com zero regressões.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.20, B.22, B.33; Wix Studio / Lovable AI Architecture.
+- **Consequências:** O Omni Builder torna-se um ecossistema unificado soberano para criação de sites, PWAs e aplicativos móveis nativos com suporte a código e IA.
+
+## DEC-366: Arquitetura Especializada de Supermercados, Açougues, Padarias e Varejo Alimentar (Paridade OSuper, Clube K, Koch e Komprão)
+- **Data:** 2026-10-28
+- **Contexto:**
+  1. Necessidade de transcender o layout genérico de restaurantes do iFood e entregar uma experiência de varejo alimentar de alto volume para supermercados, açougues, padarias, hortifrútis e conveniências.
+  2. Auditoria visual pixel-a-pixel de 14 telas de referência líderes (App OSuper, Supermercado Koch, Komprão Atacadista e Supermercado Modelo).
+  3. Requisitos de negócio críticos do nicho:
+     - Capa Hero imersiva com carrossel contínuo estilo Instagram (sem quebras laterais) e cantos inferiores arredondados (`rounded-b-3xl`).
+     - Seletor de filial/unidade com modalidade Entrega/Retirada e agendamento de janelas de horário com controle de capacidade.
+     - Suporte nativo a itens fracionados e pesáveis (Kg/gramas) com escolha de maturidade (Menos maduro, Maduro, Mais maduro) e corte de carnes (Bife, Moído, Pedaço).
+     - Motor promocional inteligente: `Leve X, Pague Y` (ex: Leve 3 Pague 2), Desconto Progressivo, Limite por CPF, Cashback com fita recortada e tags de urgência com countdown.
+     - Aviso legal obrigatório de pesagem na separação e conferência visual de itens no checkout.
+     - Dashboard do Clube do Supermercado com Economizômetro mensal, saldo real de cashback e cupons ativos.
+     - Gestão no Workspace em modo Sheet com 3 colunas de preços (Online, Clube e Balcão) e dados fiscais (SKU, NCM, CEST).
+- **Decisão:**
+  1. Criação do Masterplan de Arquitetura de Varejo Alimentar (`docs/specs/SPEC-SUPERMARKET-FOOD-RETAIL.md` e artefato persistido em brain).
+  2. Padronização de componentes canônicos reutilizáveis no Omni Builder e no CMS Master: `SupermarketHeroContinuousCarousel`, `SupermarketHeaderCluster`, `SupermarketFulfillmentPill`, `SupermarketCategoryCircleDock`, `SupermarketProductCard`, `SupermarketProductDetailView`, `SupermarketCartSheet` e `SupermarketBottomNav`.
+  3. Preservação do piso Anti-Fake (B.33) e conformidade estrita com o Design Lint (B.4).
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.20, B.22, B.26, B.32, B.33; docs/design/DESIGN.md; WCAG 2.2 AA.
+- **Consequências:** Paridade visual e transacional estrita com os maiores players de supermercados do Brasil, mantendo arquitetura modular e zero débito técnico.
+
+
 ## DEC-365: Motor de Emissão Antifraude, Validação Facial, Verificação Cruzada de Grafia ANAC e Regras de Liberação de Pagamentos (À Vista 1h vs Cartão Fast-Track)
 - **Data:** 2026-10-28
 - **Contexto:**
@@ -6631,3 +6673,16 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   3. Erradicacao Total de DL-27 (transition-all): 85 classes genericas substituidas por propriedades deliberadas transition-colors (DL-27 = 0).
   4. Ratchet Baseline Congelada: Teto de CI reduzido para 3.973 violacoes em design-lint.baseline.json (rompendo o piso historico de 4.000).
 - **Consequencias:** Zero regressoes em CI; build Cloudflare Pages aprovado com 540 chunks sem vazamento de servidor.
+
+
+## DEC-365: Correcao Forense Mobile iFood Parity, Reativacao de Trilhos de Anuncios e Modernizacao do Editor CMS
+
+- **Data:** 2026-10-28
+- **Contexto:** Correcao de quebras de layout na tela mobile (dock de categorias em 2 colunas ocupando a tela inteira e menu inferior quebrado em 2 linhas), omissao de anuncios comerciais na rolagem e fragmentacao da experiencia de edicao de vitrines no Admin Master.
+- **Decisao:**
+  1. Paridade iFood 5x2 no Mobile: Grade do dock de categorias unificada em grid-cols-5 com squircles compactos de 48px (size-12 rounded-2xl bg-card border-border/50), eliminando a cascata vertical de 5 linhas.
+  2. Unificacao do Menu Inferior (MobileNav): Grade corrigida de grid-cols-2 para grid-cols-4, mantendo as 4 abas canonicas (Inicio, Busca, Pedidos, Perfil) em uma unica linha horizontal com alvos de toque >= 44px.
+  3. Reativacao dos Trilhos Comerciais Reais: Correcao da logica de fallback em isSectionActive e ativacao padrao dos trilhos de produtos do marketplace, classificados e guia comercial (WhatsApp), alem do feed procedural infinito de descoberta sem dados sinteticos/fake.
+  4. Modernizacao do Home Page Builder (Admin Master): Inclusao de barra de navegacao rapida entre vitrines, seletor de presets canonicos em 1 clique, alternadores switch diretos por secao e filtros de busca e status.
+  5. Catraca de Design Lint Aprovada: Zero regressoes visuais e baseline rebaixada para 3.819 violacoes com Exit Code 0.
+- **Consequencias:** Interface mobile fluida e ergonomica com paridade de design iFood, descoberta continua de anuncios reais na rolagem e controle visual agil de vitrines no Admin Master.

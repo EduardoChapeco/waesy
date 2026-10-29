@@ -29,6 +29,8 @@ import { LiveTemplatePreviewModal } from "./LiveTemplatePreviewModal";
 import { StudioTemplateFactory } from "./StudioTemplateFactory";
 import { BlockErrorBoundary } from "./BlockErrorBoundary";
 import { HostingDomainConnectModal } from "./HostingDomainConnectModal";
+import { BuilderCodeExplorerModal } from "@/components/admin/builder/BuilderCodeExplorerModal";
+import { OmniAppMarketModal } from "@/components/admin/builder/OmniAppMarketModal";
 import { listStudioTemplateDrafts } from "@/services/studio-template-library.functions";
 import { listPublicArticles } from "@/services/news.functions";
 
@@ -70,6 +72,8 @@ import {
   Sparkles,
   SlidersHorizontal,
   Globe,
+  Code2,
+  Tablet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -2475,6 +2479,8 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
+  const [isCodeExplorerOpen, setIsCodeExplorerOpen] = useState(false);
+  const [isAppMarketOpen, setIsAppMarketOpen] = useState(false);
   const [liveNewsArticles, setLiveNewsArticles] = useState<any[]>([]);
 
   useEffect(() => {
@@ -2762,6 +2768,26 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
         {/* Cluster de Ações: Preview + Salvar + Publicar */}
         <div className="flex items-center gap-2 sm:gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAppMarketOpen(true)}
+            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-primary/40 text-primary hover:bg-primary/10 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            title="Omni Apps Market"
+          >
+            <LayoutTemplate className="size-4 sm:mr-2" />
+            <span className="hidden sm:inline">Apps</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCodeExplorerOpen(true)}
+            className="h-11 min-h-11 px-3 sm:px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            title="Explorador de Código TanStack"
+          >
+            <Code2 className="size-4 sm:mr-2" />
+            <span className="hidden sm:inline">Código</span>
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -3607,6 +3633,27 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         storeSlug={document.slug}
         storeName={document.title || "Minha Loja"}
       />
+
+      {/* MODAL DO EXPLORADOR DE CÓDIGO TANSTACK START (LOVABLE PARITY) */}
+      {isCodeExplorerOpen && (
+        <BuilderCodeExplorerModal
+          isOpen={isCodeExplorerOpen}
+          onClose={() => setIsCodeExplorerOpen(false)}
+          document={document}
+        />
+      )}
+
+      {/* MODAL DO OMNI APPS MARKET (WIX APPS PARITY) */}
+      {isAppMarketOpen && (
+        <OmniAppMarketModal
+          isOpen={isAppMarketOpen}
+          onClose={() => setIsAppMarketOpen(false)}
+          storeId={document.store_id}
+          onAppInstalled={(appId) => {
+            toast.success("App instalado. Atualizando árvore de páginas...");
+          }}
+        />
+      )}
     </div>
   );
 };
