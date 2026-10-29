@@ -1635,3 +1635,59 @@ export const getPlatformSystemHealth = createServerFn({ method: "GET" }).handler
  },
  };
 });
+
+/**
+ * Obtém os segredos globais da Meta (App ID, App Secret e Webhook Verify Token)
+ * configurados pelo Admin Master no banco de dados com fallback para variáveis de ambiente.
+ */
+export async function getPlatformMetaSecretsServerInternal(): Promise<{
+  appId: string;
+  appSecret: string;
+  verifyToken: string;
+}> {
+  let appSecret = process.env.META_APP_SECRET || "";
+  let appId = process.env.META_APP_ID || "";
+  let verifyToken = process.env.META_WEBHOOK_VERIFY_TOKEN || "";
+
+  try {
+    const db = getServerClient();
+    const { data: store } = await db
+      .from("stores")
+      .select("settings")
+      .or("slug.eq.waesy-matriz,is_platform_root.eq.true")
+      .limit(1)
+      .maybeSingle();
+
+    const settings = (store?.settings as Record<string, any>) || {};
+    const integrations = (settings.integrations as Record<string, any>) || {};
+
+    if (!appId && integrations.meta_app_id) {
+      appId = integrations.meta_app_id;
+    }
+
+    if (!appSecret) {
+      const encrypted = integrations.meta_app_secret_encrypted;
+      if (encrypted) {
+        try {
+          appSecret = decryptSecret(encrypted);
+        } catch {
+          // fallback seguro se falhar descriptografia
+        }
+      } else if (integrations.meta_app_secret) {
+        appSecret = integrations.meta_app_secret;
+      }
+    }
+
+    if (!verifyToken && (integrations.webhook_secret || integrations.meta_webhook_verify_token)) {
+      verifyToken = integrations.webhook_secret || integrations.meta_webhook_verify_token;
+    }
+  } catch (err) {
+    console.warn("[master] Falha ao consultar segredos globais da Meta na loja raiz:", err);
+  }
+
+  return {
+    appId,
+    appSecret,
+    verifyToken: verifyToken || "waesy_meta_ads_verify",
+  };
+}

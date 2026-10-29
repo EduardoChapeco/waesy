@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
+import { getPlatformMetaSecretsServerInternal } from "@/services/master.functions";
 
 import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/webhooks/meta-ads")({
@@ -11,7 +12,8 @@ export const Route = createFileRoute("/api/webhooks/meta-ads")({
         const token = url.searchParams.get("hub.verify_token");
         const challenge = url.searchParams.get("hub.challenge");
 
-        const verifySecret = process.env.META_WEBHOOK_VERIFY_TOKEN || "waesy_meta_ads_verify";
+        const metaSecrets = await getPlatformMetaSecretsServerInternal();
+        const verifySecret = metaSecrets.verifyToken;
 
         if (mode === "subscribe" && token === verifySecret) {
           return new Response(challenge || "ok", {
@@ -26,7 +28,8 @@ export const Route = createFileRoute("/api/webhooks/meta-ads")({
       POST: async ({ request }: { request: Request }) => {
         try {
           const rawText = await request.text().catch(() => "");
-          const appSecret = process.env.META_APP_SECRET;
+          const metaSecrets = await getPlatformMetaSecretsServerInternal();
+          const appSecret = metaSecrets.appSecret;
           const signature = request.headers.get("x-hub-signature-256");
 
           // Validação HMAC-SHA256 Zero-Trust se APP_SECRET estiver configurado
