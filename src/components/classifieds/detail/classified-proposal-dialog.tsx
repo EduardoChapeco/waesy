@@ -1,3 +1,5 @@
+import * as React from "react";
+import { useMemo, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { Handshake, Loader2, BookOpenCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,26 @@ export function ClassifiedProposalDialog({
   handleSendProposal,
   isSendingProposal,
 }: ClassifiedProposalDialogProps) {
+  const acceptedMethods: string[] = useMemo(() => {
+    const raw =
+      classified?.attributes?.accepted_payment_methods ??
+      classified?.accepted_payment_methods;
+    if (Array.isArray(raw) && raw.length > 0) {
+      return raw;
+    }
+    return ["pix", "cartao_credito", "dinheiro"];
+  }, [classified]);
+
+  useEffect(() => {
+    if (
+      open &&
+      acceptedMethods.length > 0 &&
+      (!proposalPaymentMethod || !acceptedMethods.includes(proposalPaymentMethod))
+    ) {
+      setProposalPaymentMethod(acceptedMethods[0]);
+    }
+  }, [open, acceptedMethods, proposalPaymentMethod, setProposalPaymentMethod]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-lg max-h-screen overflow-y-auto">
@@ -113,30 +135,46 @@ export function ClassifiedProposalDialog({
                       <SelectValue placeholder="Selecione o meio de pagamento" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pix">
-                        PIX à Vista {classified?.attributes?.pix_discount_percent ? `(${classified.attributes.pix_discount_percent}% de desconto)` : ""}
-                      </SelectItem>
-                      <SelectItem value="cartao_credito">
-                        Cartão de Crédito {Number(classified?.attributes?.max_installments) > 1 ? `(até ${classified.attributes.max_installments}x)` : ""}
-                      </SelectItem>
-                      <SelectItem value="boleto">
-                        Boleto Bancário à Vista
-                      </SelectItem>
-                      <SelectItem value="boleto_parcelado">
-                        Boleto Parcelado Direto {Number(classified?.attributes?.max_boleto_installments) > 1 ? `(até ${classified.attributes.max_boleto_installments}x)` : ""}
-                      </SelectItem>
-                      <SelectItem value="carne_digital">
-                        Carnê Digital da Loja / Crediário {Number(classified?.attributes?.max_carne_installments) > 1 ? `(até ${classified.attributes.max_carne_installments}x)` : ""}
-                      </SelectItem>
-                      <SelectItem value="dinheiro">
-                        Dinheiro em Espécie (na entrega / retirada)
-                      </SelectItem>
-                      <SelectItem value="permuta">
-                        Permuta / Troca por outro item
-                      </SelectItem>
-                      <SelectItem value="financiamento">
-                        Financiamento Bancário / Consórcio
-                      </SelectItem>
+                      {acceptedMethods.includes("pix") && (
+                        <SelectItem value="pix">
+                          PIX à Vista {classified?.attributes?.pix_discount_percent ? `(${classified.attributes.pix_discount_percent}% de desconto)` : ""}
+                        </SelectItem>
+                      )}
+                      {acceptedMethods.includes("cartao_credito") && (
+                        <SelectItem value="cartao_credito">
+                          Cartão de Crédito {Number(classified?.attributes?.max_installments) > 1 ? `(até ${classified.attributes.max_installments}x)` : ""}
+                        </SelectItem>
+                      )}
+                      {acceptedMethods.includes("boleto") && (
+                        <SelectItem value="boleto">
+                          Boleto Bancário à Vista
+                        </SelectItem>
+                      )}
+                      {acceptedMethods.includes("boleto_parcelado") && (
+                        <SelectItem value="boleto_parcelado">
+                          Boleto Parcelado Direto {Number(classified?.attributes?.max_boleto_installments) > 1 ? `(até ${classified.attributes.max_boleto_installments}x)` : ""}
+                        </SelectItem>
+                      )}
+                      {acceptedMethods.includes("carne_digital") && (
+                        <SelectItem value="carne_digital">
+                          Carnê Digital da Loja / Crediário {Number(classified?.attributes?.max_carne_installments) > 1 ? `(até ${classified.attributes.max_carne_installments}x)` : ""}
+                        </SelectItem>
+                      )}
+                      {acceptedMethods.includes("dinheiro") && (
+                        <SelectItem value="dinheiro">
+                          Dinheiro em Espécie (na entrega / retirada)
+                        </SelectItem>
+                      )}
+                      {acceptedMethods.includes("permuta") && (
+                        <SelectItem value="permuta">
+                          Permuta / Troca por outro item
+                        </SelectItem>
+                      )}
+                      {acceptedMethods.includes("financiamento") && (
+                        <SelectItem value="financiamento">
+                          Financiamento Bancário / Consórcio
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

@@ -1,6 +1,5 @@
 import * as React from 'react'
 import {
-  Sparkles,
   Check,
   RotateCcw,
   Undo2,
@@ -694,7 +693,7 @@ export function AiWritingCopilotSheet({
           <div className="flex items-center justify-between gap-3 pr-8">
             <div className="flex items-center gap-3">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Sparkles className="size-5" />
+                <FileText className="size-5" />
               </div>
               <div>
                 <SheetTitle className="text-base font-bold tracking-tight text-foreground">

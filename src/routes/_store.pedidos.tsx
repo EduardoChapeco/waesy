@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_store/pedidos")({
     try {
       const identity = await getIdentity().catch(() => null);
       if (identity?.user?.id && !search.token) {
-        throw redirect({ to: "/_store/conta/pedidos" });
+        throw redirect({ to: "/conta/pedidos" });
       }
       return { isAuthenticated: Boolean(identity?.user?.id) };
     } catch (err) {
@@ -139,7 +139,7 @@ export function PublicPedidosTrackingPage() {
             variant="outline"
             className="w-full h-11 min-h-11 rounded-xl font-bold text-xs border-border/70 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <Link to="/entrar" search={{ redirect: "/_store/conta/pedidos" }}>
+            <Link to="/entrar" search={{ returnUrl: "/conta/pedidos" }}>
               <span>Entrar na Minha Conta</span>
             </Link>
           </Button>

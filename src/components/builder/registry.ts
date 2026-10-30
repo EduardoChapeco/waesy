@@ -776,9 +776,6 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     defaultProps: {
       title: "Resort All Inclusive & Praia Privativa",
       location: "Porto de Galinhas, PE",
-      stars: 5,
-      ratingScore: 9.4,
-      reviewsCount: 382,
     },
   }),
 

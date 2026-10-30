@@ -62,7 +62,7 @@ export function TravelPackageHero({
  {/* Conteúdo Sobreposto */}
  <div className="relative z-10 space-y-4 max-w-3xl text-foreground">
  <div className="flex flex-wrap items-center gap-2">
- <span className="px-3 py-1 rounded-full text-2xs font-bold bg-card/20 backdrop-blur-md uppercase tracking-wider">
+ <span className="px-3 py-1 rounded-full text-2xs font-bold bg-background text-foreground border border-border/60 uppercase tracking-wider">
  {country}
  </span>
  <span className="px-3 py-1 rounded-full text-2xs font-semibold bg-primary text-primary-foreground">
@@ -88,7 +88,7 @@ export function TravelPackageHero({
  {inclusions.slice(0, 4).map((inc, i) => (
  <span
  key={i}
- className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs bg-foreground/40 backdrop-blur-md border border-white/15 text-foreground/90"
+ className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs bg-background/80 border border-border/60 text-foreground"
  >
  <ShieldCheck className="size-3 text-emerald-400" />
  <span>{inc}</span>

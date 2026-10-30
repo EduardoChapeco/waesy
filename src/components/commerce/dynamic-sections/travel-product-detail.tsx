@@ -66,9 +66,9 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
   amenities = [],
   description = "",
   neighborhoodPoints = [],
-  pricePerPersonCents = 165900,
-  totalPriceCents = 331800,
-  savedAmountCents = 37800,
+  pricePerPersonCents = 0,
+  totalPriceCents = 0,
+  savedAmountCents = 0,
   roomType = "Quarto Standard Casal (Café Incluso)",
   whatsappPhone = "",
   onBookClick,
@@ -95,7 +95,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
     <div className="w-full bg-background space-y-6 py-4 sm:py-8">
       {/* ── 1. BARRA DE RESUMO SUPERIOR DA RESERVA (ESTILO DECOLAR DETALHES) ── */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-lg border border-border/80 bg-card p-3 sm:p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <div className="rounded-lg border-0 bg-card p-3 sm:p-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
           {/* Box Hospedagem */}
           <div className="md:col-span-4 flex items-center gap-3 min-w-0 border-b md:border-b-0 md:border-r border-border/60 pb-3 md:pb-0 md:pr-4">
             <div className="size-14 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
@@ -189,7 +189,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
               variant="secondary"
               size="sm"
               onClick={() => setSelectedImage(mainPhotoUrl || galleryPhotos[0] || null)}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-background/90 hover:bg-background text-foreground backdrop-blur-md border border-border/60 gap-2 cursor-pointer transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-background hover:bg-muted text-foreground border border-border/60 gap-2 cursor-pointer transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Maximize2 className="size-3.5" />
               <span>Ver todas as fotos</span>
@@ -292,7 +292,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
 
           {/* Coluna Sticky Sidebar (4 colunas ~ 30%) */}
           <div className="lg:col-span-4 sticky top-24 space-y-4">
-            <div className="rounded-lg border border-border/80 bg-card p-5 space-y-4">
+            <div className="rounded-lg border-0 bg-card p-5 space-y-4">
               {savedAmountCents > 0 && (
                 <div className="inline-block">
                   <Badge

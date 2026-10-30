@@ -6945,3 +6945,28 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.5, B.7, B.9, B.25 e SPEC-20261029.
 - **Consequências:** Estabelecimentos conseguem mapear clientes e pedidos do iFood diretamente na conversa de chat do Waesy, mantendo integridade multi-tenant, zero vazamento de chaves secretas e total compatibilidade com privacidade LGPD.
 
+---
+
+### DEC-381 (2026-10-30): Saneamento Transversal de Mocks Relacionais, Isolamento de Nichos e Erradicação de AI-Smell
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-381
+- **Contexto:** Auditoria profunda do ecossistema Waesy identificou resíduos de mocks sintéticos em caronas e catálogo de turismo, ausência de isolamento hermético em parcelamento de cartão para vendas e aluguéis de imóveis, proliferação de classes de backdrop-blur em botões/cards e ícones decorativos de IA (Sparkles).
+- **Decisão Adotada:**
+  1. **Purga de Mocks e Fallbacks Sintéticos (Invariante B.33):**
+     - Remoção da constante `DEFAULT_CARONA_CORRIDORS` e fallbacks em `src/services/carona.functions.ts`, retornando lista vazia ou erro relacional honesto.
+     - Saneamento de props padrão sintéticas e fake bluetooth em `src/components/courier/CourierDashboardHeader.tsx`.
+     - Persistência honesta de `internal_rating: null` em `src/services/travel-catalog.functions.ts`.
+     - Eliminação de `floatingStat` com 4.9/5 estrelas em `src/lib/builder/omni-templates.ts`.
+     - Remoção de notas e reviews fake em `src/components/builder/registry.ts`, `src/lib/builder/section-templates.ts` e `src/components/admin/builder/builder-add-panel-3col.tsx`.
+     - Saneamento de preços fixos e bordas em `src/components/commerce/dynamic-sections/travel-product-detail.tsx` e omissão dinâmica de estrelas em `src/components/commerce/dynamic-sections/travel-hotel-slider.tsx`.
+  2. **Isolamento Hermético de Nichos e Pagamentos (Invariantes B.25 e B.33):**
+     - Expansão de `nonPaymentNiches` em `src/lib/classifieds/semantics.ts` bloqueando parcelamento em cartão para venda e locação de imóveis.
+     - Bifurcação semântica do título de especificações em `classified-detail-desktop.tsx` e `classified-detail-mobile.tsx`, isolando "Destaques do Pacote" (viagens) de "Especificações da Acomodação" (hospitality).
+     - Filtragem estrita dos métodos de pagamento em `src/components/classifieds/detail/classified-proposal-dialog.tsx` pelas formas autorizadas pelo vendedor em `accepted_payment_methods`.
+  3. **Padronização Visual e Erradicação de AI-Smell (Invariantes B.4, B.26 e Anti-AI-Design):**
+     - Padronização de abas da loja em `src/components/commerce/canonical-store-profile-view.tsx` com piso 44px (`h-11 min-h-11`) e Segmented Control `flex-1` no mobile.
+     - Purga de `backdrop-blur-md` em botões de carrossel em `banner-hero-carousel.tsx`, `HeroInteractiveCarousel.tsx`, `travel-product-detail.tsx` e `travel-package-hero.tsx`.
+     - Substituição de `<Sparkles>` por semântica honesta em `InfiniteMarqueeRibbon.tsx`, `InteractiveLeadQuizFlow.tsx`, `PrometheeNewsArticleReaderBlock.tsx` e `ai-writing-copilot-sheet.tsx`.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.22, B.26 e B.33.
+- **Consequências:** Integridade de dados estrita sem dados falsos na interface, segurança transacional em negócios imobiliários, conformidade plena com o piso WCAG 2.2 AA (44px) e eliminação completa de ruído estético decorativo de inteligência artificial.
+

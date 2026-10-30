@@ -795,7 +795,13 @@ export function ClassifiedDetailDesktop({
                 <div className="space-y-4">
                   <NicheSpecificationsDisplay
                     items={featureList}
-                    title={isTravelOrHospitality ? "Destaques & Especificações do Pacote" : "Ficha Técnica & Especificações"}
+                    title={
+                      niche.id === "travel"
+                        ? "Destaques do Pacote"
+                        : isTravelOrHospitality
+                        ? "Especificações da Acomodação"
+                        : "Ficha Técnica"
+                    }
                   />
                 </div>
               )}

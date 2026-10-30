@@ -1,6 +1,6 @@
 import React from "react";
 import { InfiniteMarqueeBlockData, OmniBlockStyling } from "../types";
-import { Sparkles, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { isSafeBuilderHref } from "@/lib/builder/safe-href";
 
 export interface InfiniteMarqueeRibbonProps {
@@ -105,10 +105,8 @@ export const InfiniteMarqueeRibbon: React.FC<InfiniteMarqueeRibbonProps> = ({
                   </span>
                 )}
                 <span>{item.text}</span>
-                {hasLink ? (
+                {hasLink && (
                   <ArrowUpRight className="size-3 text-muted-foreground" />
-                ) : (
-                  <Sparkles className="size-3 text-muted-foreground/60" />
                 )}
               </div>
             );

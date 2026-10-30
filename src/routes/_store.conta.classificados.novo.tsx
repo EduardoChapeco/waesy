@@ -4477,7 +4477,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   onClick={() => handleOpenCopilot("title")}
                   className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  <Sparkles className="size-4" />
+                  <FileText className="size-4" />
                   <span>Sugerir título</span>
                 </Button>
               </div>
@@ -11668,7 +11668,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                         supports_fresh_pricing: true,
                         default_pricing_mode: groceryDefaultPricingMode,
                         avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-                        price_per_kg_cents: groceryPricePerKgCents || null,
+                        price_per_kg_cents: groceryPricePerKgCents || undefined,
                         price_per_unit_cents: priceCents || 0,
                       } : undefined,
                       groceryRipenessConfig: groceryRipenessEnabled ? {

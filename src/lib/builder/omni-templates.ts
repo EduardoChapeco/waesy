@@ -2372,7 +2372,6 @@ export const COMMERCE_WIX_APP_PAGES: TourismWixAppPageTemplate[] = [
               subtitle: "Produtos selecionados com garantia de procedência e frete rápido.",
               primaryCta: { label: "Ver Produtos", href: "#produtos" },
               highlightTag: "Destaque",
-              floatingStat: { label: "SATISFAÇÃO", value: "4.9/5 Estrelas", statusDot: true },
             },
           ],
         },

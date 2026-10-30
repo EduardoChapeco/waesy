@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { LeadQuizBlockData, OmniBlockStyling } from "../types";
-import { Check, ChevronRight, ChevronLeft, Send, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Send, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -201,8 +201,7 @@ export const InteractiveLeadQuizFlow: React.FC<InteractiveLeadQuizFlowProps> = (
           {/* Header */}
           <div className="text-center max-w-xl mx-auto mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-2xs font-bold uppercase tracking-wider mb-3">
-              <Sparkles className="size-3" />
-              <span>Diagnóstico Inteligente</span>
+              <span>Diagnóstico Especializado</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mb-2">
               {data.title || "Descubra a Solução Sob Medida"}

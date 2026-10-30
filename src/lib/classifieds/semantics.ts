@@ -1477,6 +1477,11 @@ export function isNichePaymentApplicable(nicheIdOrClassified: string | any): boo
     "hospedagem",
     "temporada",
     "aluguel_temporada",
+    "real_estate_sale",
+    "real_estate_rent",
+    "imovel",
+    "imoveis",
+    "aluguel_imovel",
   ]);
   return !nonPaymentNiches.has(resolvedId);
 }
