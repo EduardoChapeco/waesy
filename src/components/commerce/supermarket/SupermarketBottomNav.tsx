@@ -3,7 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   House,
   Percent,
-  Sparkle,
+  IdentificationCard,
   Receipt,
   List,
   CreditCard,
@@ -42,7 +42,7 @@ export function SupermarketBottomNav({
     {
       id: "clube" as const,
       label: clubBrandName,
-      icon: Sparkle,
+      icon: IdentificationCard,
       isSpecial: true,
     },
     {
@@ -62,7 +62,7 @@ export function SupermarketBottomNav({
     <nav
       aria-label="Navegação do Supermercado"
       className={cn(
-        "fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-md border-t border-border/60 pb-safe select-none md:hidden",
+        "fixed bottom-0 inset-x-0 z-30 bg-background border-t border-border/60 pb-safe select-none md:hidden",
         className,
       )}
     >

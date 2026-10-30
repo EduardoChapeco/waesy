@@ -49,7 +49,13 @@ export function SupermarketProductCard({
     >
       {/* ── Topo: Badges de Clube / Fitas Angulares ── */}
       <div className="absolute top-2 left-2 right-2 z-10 flex items-start justify-between gap-1 pointer-events-none">
-        <SupermarketClubRibbonBadge rule={product.promotionalRule} />
+        <SupermarketClubRibbonBadge
+          rule={product.promotionalRule}
+          freshFoodSpecs={product.freshFoodSpecs}
+          badges={product.badges}
+          clubPriceCents={product.clubPriceCents}
+          isMember={isMember}
+        />
 
         {/* Botão de Adição Rápida (+) com piso de 44x44px */}
         <button
@@ -68,7 +74,7 @@ export function SupermarketProductCard({
       {/* ── Mídia do Produto ── */}
       <div
         onClick={() => onProductClick?.(product)}
-        className="w-full aspect-square rounded-xl overflow-hidden bg-muted/40 flex items-center justify-center cursor-pointer pt-6 pb-2"
+        className="w-full aspect-square rounded-xl overflow-hidden bg-muted/40 flex items-center justify-center cursor-pointer pt-6 pb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -129,11 +135,14 @@ export function SupermarketProductCard({
         </div>
 
         {/* Nome do Produto */}
-        <h4
-          onClick={() => onProductClick?.(product)}
-          className="text-xs font-semibold text-foreground line-clamp-2 hover:text-primary transition-colors cursor-pointer"
-        >
-          {product.title}
+        <h4 className="text-xs font-semibold text-foreground line-clamp-2">
+          <button
+            type="button"
+            onClick={() => onProductClick?.(product)}
+            className="text-left hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+          >
+            {product.title}
+          </button>
         </h4>
 
         {/* Validade / Estoque Real */}

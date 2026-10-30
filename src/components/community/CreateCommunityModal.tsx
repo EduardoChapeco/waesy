@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import {
-  Sparkles,
+  Users,
   ImagePlus,
   Loader2,
   Check,
@@ -136,7 +136,7 @@ export function CreateCommunityModal({
       <DialogContent className="sm:max-w-xl rounded-3xl p-5 sm:p-6 bg-card text-foreground border border-border/60 max-h-(--spacing-screen-90,90vh) overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <Sparkles className="size-5 text-primary" />
+            <Users className="size-5 text-primary" />
             <span>Nova Comunidade</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">

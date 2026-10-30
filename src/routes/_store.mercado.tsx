@@ -454,7 +454,7 @@ function MercadoVerticalPage() {
           }
         }}
         offersCount={supermarketProducts.filter((p) => Boolean(p.compareAtCents && p.compareAtCents > p.priceCents)).length}
-        clubBrandName={clubMemberData?.storeCardName ? "Clube" : "Clube K"}
+        clubBrandName={clubMemberData?.storeCardName || "Clube"}
       />
     </div>
   );

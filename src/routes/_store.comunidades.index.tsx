@@ -13,7 +13,7 @@ import { CreateCommunityModal } from "@/components/community/CreateCommunityModa
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Search, Plus, Sparkles, ArrowRight } from "lucide-react";
+import { Users, Search, Plus, ArrowRight } from "lucide-react";
 import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
 export const Route = createFileRoute("/_store/comunidades/")({

@@ -1,5 +1,24 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-378: Fechamento End-to-End do Varejo Alimentar, Badges Contextuais Dinâmicas, Desambiguação de Hospedagem e Runtime Público de Apps Verticais (/cardapio, /departamento, /pedidos)
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. No nicho de supermercado, padaria, açougue e conveniência, os produtos necessitavam de badges automáticas e contextuais ("Gelado", "Exclusivo Clube", "Oferta Relâmpago", "Leve X Pague Y", "Destaque") estritamente vinculadas aos dados reais do banco relacional, sem mocks ou fallbacks sintéticos (`990` centavos).
+  2. Identificada anomalia de "Containeritis" (DL-31) e redundância conceitual em anúncios de acomodação direta (hospedagem, aluguel por temporada, chalés), que renderizavam artificialmente um "Card 2: Hospedagem & Hotel" interno com fallbacks fixos de check-in/check-out ("A partir das 14:00" e "Até as 12:00").
+  3. No Omni Builder, os módulos verticais ativados em cascata geravam referências a rotas dinâmicas (`/cardapio`, `/departamento`, `/pedidos`) que precisavam de renderizadores públicos funcionais conectados ao BFF, interoperáveis com o carrinho global e single sign-on civil da plataforma.
+  4. Presença de resíduos de AI-smell (`Sparkle` no bottom nav, no modal de produto e na tabela de preços do catálogo) e botões de paginação contínua com touch target abaixo do piso normativo de 44px (DL-14).
+- **Decisão:**
+  1. Atualizado `SupermarketClubRibbonBadge` para calcular dinamicamente e semânticamente as badges de produto a partir de `freshFoodSpecs`, `promotionalRule`, `badges` e `clubPriceCents`, propagando para `SupermarketProductCard`, `SupermarketProductDetailModal` e `ConvenienceShowcaseView`. Purgados fallbacks sintéticos em `convenience-showcase-view.tsx`.
+  2. Desacoplada a renderização de pacotes de turismo de acomodações diretas em `classified-detail-desktop.tsx` e `classified-detail-mobile.tsx`: anúncios de `hospitality_stay`, temporada ou diária não aninham cards redundantes de hotel. Horários de check-in e check-out renderizam estritamente se cadastrados no banco relacional (Invariante B.33).
+  3. Criadas as rotas públicas canônicas:
+     - `_store.cardapio.tsx`: cardápio digital para delivery e gastronomia com seleção rápida de categorias, busca, adição ao carrinho e checkout transparente.
+     - `_store.departamento.tsx`: visualização modular por departamento de supermercado/conveniência com grade canônica de produtos e janelas de entrega.
+     - `_store.pedidos.tsx`: portal público de rastreamento de pedidos por código/token com redirecionamento SSO para contas autenticadas.
+  4. Erradicados todos os ícones de `Sparkle` em `SupermarketBottomNav`, `SupermarketProductDetailModal` e `ProductCatalogPricingSheet`, substituídos por primitivos semânticos (`IdentificationCard`). Purgado `backdrop-blur-md` desnecessário em barras superiores e inferiores.
+  5. Ajustado o carrossel contínuo `SupermarketHeroContinuousCarousel` para touch targets >= 44px na paginação por pontos.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.14, B.22, B.26, B.31, B.33; apple-design/SKILL.md; anti-ai-design/SKILL.md.
+- **Consequências:** Zero mocks ou dados sintéticos no ecossistema de varejo alimentar e classificados, conformidade estrita com o piso WCAG 2.2 AA (DL-14 e DL-15), aprovação da catraca de lint visual e disponibilidade completa do runtime de apps verticais do Omni Builder.
+
 ## DEC-377: Ativação em Cascata de Módulos Verticais no Omni Builder (Wix Studio Parity), Erradicação de AI-Smell e Purga de Mock Fallbacks em Sitemaps
 - **Data:** 2026-10-29
 - **Contexto:**

@@ -149,13 +149,24 @@ export function ClassifiedDetailMobile({
     );
   }, [niche, templateStyle, attrs]);
 
+  const isDirectLodging = useMemo(() => {
+    return (
+      niche.id === "hospitality_stay" ||
+      attrs.vertical === "hospitality" ||
+      Boolean(attrs.hospitality_type) ||
+      attrs.rental_period === "daily" ||
+      Boolean(attrs.accommodation_type)
+    );
+  }, [niche.id, attrs]);
+
   const isTravelPackage = useMemo(() => {
+    if (isDirectLodging) return false;
     return (
       niche.id === "travel" ||
       templateStyle === "turismo" ||
       attrs.vertical === "tourism"
     );
-  }, [niche.id, templateStyle, attrs.vertical]);
+  }, [isDirectLodging, niche.id, templateStyle, attrs.vertical]);
 
   const nicheTabLabels = useMemo(() => getNicheTabLabels(niche.id), [niche.id]);
 
@@ -381,11 +392,11 @@ export function ClassifiedDetailMobile({
       (Array.isArray(attrs.amenities) && attrs.amenities.length > 0
         ? attrs.amenities
         : null) ||
-      ["Wi-Fi Grátis", "Ar-Condicionado", "Café da Manhã", "Piscina", "Estacionamento"]
+      []
     );
 
-    const hotelCheckin = attrs.checkin_time || firstLodging.checkin_time || "A partir das 14:00";
-    const hotelCheckout = attrs.checkout_time || firstLodging.checkout_time || "Até as 12:00";
+    const hotelCheckin = attrs.checkin_time || firstLodging.checkin_time || null;
+    const hotelCheckout = attrs.checkout_time || firstLodging.checkout_time || null;
     const hotelAddress = firstLodging.address || attrs.hotel_address || locationText;
 
     const packageMealPlan =
@@ -863,23 +874,29 @@ export function ClassifiedDetailMobile({
                       </div>
                     )}
 
-                    {/* Endereço & Check-in */}
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40 text-xs">
-                      <div>
-                        <span className="text-muted-foreground block">Check-in</span>
-                        <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckin}</span>
+                    {/* Endereço & Check-in (apenas se preenchidos) */}
+                    {(travelDetails.hotelCheckin || travelDetails.hotelCheckout || travelDetails.hotelAddress) && (
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40 text-xs">
+                        {travelDetails.hotelCheckin && (
+                          <div>
+                            <span className="text-muted-foreground block">Check-in</span>
+                            <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckin}</span>
+                          </div>
+                        )}
+                        {travelDetails.hotelCheckout && (
+                          <div>
+                            <span className="text-muted-foreground block">Check-out</span>
+                            <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckout}</span>
+                          </div>
+                        )}
+                        {travelDetails.hotelAddress && (
+                          <div className="col-span-2 pt-1 text-muted-foreground flex items-center gap-2">
+                            <MapPin className="size-3 text-primary shrink-0" />
+                            <span className="break-words text-wrap">{travelDetails.hotelAddress}</span>
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <span className="text-muted-foreground block">Check-out</span>
-                        <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckout}</span>
-                      </div>
-                      {travelDetails.hotelAddress && (
-                        <div className="col-span-2 pt-1 text-muted-foreground flex items-center gap-2">
-                          <MapPin className="size-3 text-primary shrink-0" />
-                          <span className="break-words text-wrap">{travelDetails.hotelAddress}</span>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
                 )}
 

@@ -31,6 +31,7 @@ import { Route as StoreBuscaRouteImport } from './routes/_store.busca'
 import { Route as StoreBuscarRouteImport } from './routes/_store.buscar'
 import { Route as StoreCadastroRouteImport } from './routes/_store.cadastro'
 import { Route as StoreCadastroantecipadoRouteImport } from './routes/_store.cadastroantecipado'
+import { Route as StoreCardapioRouteImport } from './routes/_store.cardapio'
 import { Route as StoreCarrinhoRouteImport } from './routes/_store.carrinho'
 import { Route as StoreCasaRouteImport } from './routes/_store.casa'
 import { Route as StoreCheckoutRouteImport } from './routes/_store.checkout'
@@ -42,6 +43,7 @@ import { Route as StoreContatoRouteImport } from './routes/_store.contato'
 import { Route as StoreConviteRouteImport } from './routes/_store.convite'
 import { Route as StoreCopilotRouteImport } from './routes/_store.copilot'
 import { Route as StoreCriarNegocioRouteImport } from './routes/_store.criar-negocio'
+import { Route as StoreDepartamentoRouteImport } from './routes/_store.departamento'
 import { Route as StoreDevelopersRouteImport } from './routes/_store.developers'
 import { Route as StoreDiretorioRouteImport } from './routes/_store.diretorio'
 import { Route as StoreDoacoesRouteImport } from './routes/_store.doacoes'
@@ -67,6 +69,7 @@ import { Route as StoreMobilidadeRouteImport } from './routes/_store.mobilidade'
 import { Route as StoreModaRouteImport } from './routes/_store.moda'
 import { Route as StoreMuralRouteImport } from './routes/_store.mural'
 import { Route as StoreOfertasRouteImport } from './routes/_store.ofertas'
+import { Route as StorePedidosRouteImport } from './routes/_store.pedidos'
 import { Route as StorePerfilDaLojaRouteImport } from './routes/_store.perfil-da-loja'
 import { Route as StorePersonasRouteImport } from './routes/_store.personas'
 import { Route as StorePetRouteImport } from './routes/_store.pet'
@@ -554,6 +557,11 @@ const StoreCadastroantecipadoRoute = StoreCadastroantecipadoRouteImport.update({
   path: '/cadastroantecipado',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreCardapioRoute = StoreCardapioRouteImport.update({
+  id: '/cardapio',
+  path: '/cardapio',
+  getParentRoute: () => StoreRoute,
+} as any)
 const StoreCarrinhoRoute = StoreCarrinhoRouteImport.update({
   id: '/carrinho',
   path: '/carrinho',
@@ -607,6 +615,11 @@ const StoreCopilotRoute = StoreCopilotRouteImport.update({
 const StoreCriarNegocioRoute = StoreCriarNegocioRouteImport.update({
   id: '/criar-negocio',
   path: '/criar-negocio',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreDepartamentoRoute = StoreDepartamentoRouteImport.update({
+  id: '/departamento',
+  path: '/departamento',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreDevelopersRoute = StoreDevelopersRouteImport.update({
@@ -732,6 +745,11 @@ const StoreMuralRoute = StoreMuralRouteImport.update({
 const StoreOfertasRoute = StoreOfertasRouteImport.update({
   id: '/ofertas',
   path: '/ofertas',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StorePedidosRoute = StorePedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
   getParentRoute: () => StoreRoute,
 } as any)
 const StorePerfilDaLojaRoute = StorePerfilDaLojaRouteImport.update({
@@ -2779,6 +2797,7 @@ export interface FileRoutesByFullPath {
   '/buscar': typeof StoreBuscarRoute
   '/cadastro': typeof StoreCadastroRoute
   '/cadastroantecipado': typeof StoreCadastroantecipadoRoute
+  '/cardapio': typeof StoreCardapioRoute
   '/carrinho': typeof StoreCarrinhoRoute
   '/casa': typeof StoreCasaRoute
   '/checkout': typeof StoreCheckoutRoute
@@ -2790,6 +2809,7 @@ export interface FileRoutesByFullPath {
   '/convite': typeof StoreConviteRoute
   '/copilot': typeof StoreCopilotRoute
   '/criar-negocio': typeof StoreCriarNegocioRouteWithChildren
+  '/departamento': typeof StoreDepartamentoRoute
   '/developers': typeof StoreDevelopersRoute
   '/diretorio': typeof StoreDiretorioRouteWithChildren
   '/doacoes': typeof StoreDoacoesRoute
@@ -2815,6 +2835,7 @@ export interface FileRoutesByFullPath {
   '/moda': typeof StoreModaRoute
   '/mural': typeof StoreMuralRoute
   '/ofertas': typeof StoreOfertasRoute
+  '/pedidos': typeof StorePedidosRoute
   '/perfil-da-loja': typeof StorePerfilDaLojaRoute
   '/personas': typeof StorePersonasRoute
   '/pet': typeof StorePetRoute
@@ -3211,6 +3232,7 @@ export interface FileRoutesByTo {
   '/buscar': typeof StoreBuscarRoute
   '/cadastro': typeof StoreCadastroRoute
   '/cadastroantecipado': typeof StoreCadastroantecipadoRoute
+  '/cardapio': typeof StoreCardapioRoute
   '/carrinho': typeof StoreCarrinhoRoute
   '/casa': typeof StoreCasaRoute
   '/checkout': typeof StoreCheckoutRoute
@@ -3221,6 +3243,7 @@ export interface FileRoutesByTo {
   '/convite': typeof StoreConviteRoute
   '/copilot': typeof StoreCopilotRoute
   '/criar-negocio': typeof StoreCriarNegocioRouteWithChildren
+  '/departamento': typeof StoreDepartamentoRoute
   '/developers': typeof StoreDevelopersRoute
   '/doacoes': typeof StoreDoacoesRoute
   '/docs': typeof StoreDocsRoute
@@ -3244,6 +3267,7 @@ export interface FileRoutesByTo {
   '/moda': typeof StoreModaRoute
   '/mural': typeof StoreMuralRoute
   '/ofertas': typeof StoreOfertasRoute
+  '/pedidos': typeof StorePedidosRoute
   '/perfil-da-loja': typeof StorePerfilDaLojaRoute
   '/personas': typeof StorePersonasRoute
   '/pet': typeof StorePetRoute
@@ -3643,6 +3667,7 @@ export interface FileRoutesById {
   '/_store/buscar': typeof StoreBuscarRoute
   '/_store/cadastro': typeof StoreCadastroRoute
   '/_store/cadastroantecipado': typeof StoreCadastroantecipadoRoute
+  '/_store/cardapio': typeof StoreCardapioRoute
   '/_store/carrinho': typeof StoreCarrinhoRoute
   '/_store/casa': typeof StoreCasaRoute
   '/_store/checkout': typeof StoreCheckoutRoute
@@ -3654,6 +3679,7 @@ export interface FileRoutesById {
   '/_store/convite': typeof StoreConviteRoute
   '/_store/copilot': typeof StoreCopilotRoute
   '/_store/criar-negocio': typeof StoreCriarNegocioRouteWithChildren
+  '/_store/departamento': typeof StoreDepartamentoRoute
   '/_store/developers': typeof StoreDevelopersRoute
   '/_store/diretorio': typeof StoreDiretorioRouteWithChildren
   '/_store/doacoes': typeof StoreDoacoesRoute
@@ -3679,6 +3705,7 @@ export interface FileRoutesById {
   '/_store/moda': typeof StoreModaRoute
   '/_store/mural': typeof StoreMuralRoute
   '/_store/ofertas': typeof StoreOfertasRoute
+  '/_store/pedidos': typeof StorePedidosRoute
   '/_store/perfil-da-loja': typeof StorePerfilDaLojaRoute
   '/_store/personas': typeof StorePersonasRoute
   '/_store/pet': typeof StorePetRoute
@@ -4082,6 +4109,7 @@ export interface FileRouteTypes {
     | '/buscar'
     | '/cadastro'
     | '/cadastroantecipado'
+    | '/cardapio'
     | '/carrinho'
     | '/casa'
     | '/checkout'
@@ -4093,6 +4121,7 @@ export interface FileRouteTypes {
     | '/convite'
     | '/copilot'
     | '/criar-negocio'
+    | '/departamento'
     | '/developers'
     | '/diretorio'
     | '/doacoes'
@@ -4118,6 +4147,7 @@ export interface FileRouteTypes {
     | '/moda'
     | '/mural'
     | '/ofertas'
+    | '/pedidos'
     | '/perfil-da-loja'
     | '/personas'
     | '/pet'
@@ -4514,6 +4544,7 @@ export interface FileRouteTypes {
     | '/buscar'
     | '/cadastro'
     | '/cadastroantecipado'
+    | '/cardapio'
     | '/carrinho'
     | '/casa'
     | '/checkout'
@@ -4524,6 +4555,7 @@ export interface FileRouteTypes {
     | '/convite'
     | '/copilot'
     | '/criar-negocio'
+    | '/departamento'
     | '/developers'
     | '/doacoes'
     | '/docs'
@@ -4547,6 +4579,7 @@ export interface FileRouteTypes {
     | '/moda'
     | '/mural'
     | '/ofertas'
+    | '/pedidos'
     | '/perfil-da-loja'
     | '/personas'
     | '/pet'
@@ -4945,6 +4978,7 @@ export interface FileRouteTypes {
     | '/_store/buscar'
     | '/_store/cadastro'
     | '/_store/cadastroantecipado'
+    | '/_store/cardapio'
     | '/_store/carrinho'
     | '/_store/casa'
     | '/_store/checkout'
@@ -4956,6 +4990,7 @@ export interface FileRouteTypes {
     | '/_store/convite'
     | '/_store/copilot'
     | '/_store/criar-negocio'
+    | '/_store/departamento'
     | '/_store/developers'
     | '/_store/diretorio'
     | '/_store/doacoes'
@@ -4981,6 +5016,7 @@ export interface FileRouteTypes {
     | '/_store/moda'
     | '/_store/mural'
     | '/_store/ofertas'
+    | '/_store/pedidos'
     | '/_store/perfil-da-loja'
     | '/_store/personas'
     | '/_store/pet'
@@ -5569,6 +5605,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreCadastroantecipadoRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/cardapio': {
+      id: '/_store/cardapio'
+      path: '/cardapio'
+      fullPath: '/cardapio'
+      preLoaderRoute: typeof StoreCardapioRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/carrinho': {
       id: '/_store/carrinho'
       path: '/carrinho'
@@ -5644,6 +5687,13 @@ declare module '@tanstack/react-router' {
       path: '/criar-negocio'
       fullPath: '/criar-negocio'
       preLoaderRoute: typeof StoreCriarNegocioRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/departamento': {
+      id: '/_store/departamento'
+      path: '/departamento'
+      fullPath: '/departamento'
+      preLoaderRoute: typeof StoreDepartamentoRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/developers': {
@@ -5819,6 +5869,13 @@ declare module '@tanstack/react-router' {
       path: '/ofertas'
       fullPath: '/ofertas'
       preLoaderRoute: typeof StoreOfertasRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/pedidos': {
+      id: '/_store/pedidos'
+      path: '/pedidos'
+      fullPath: '/pedidos'
+      preLoaderRoute: typeof StorePedidosRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/perfil-da-loja': {
@@ -8669,6 +8726,7 @@ interface StoreRouteChildren {
   StoreBuscarRoute: typeof StoreBuscarRoute
   StoreCadastroRoute: typeof StoreCadastroRoute
   StoreCadastroantecipadoRoute: typeof StoreCadastroantecipadoRoute
+  StoreCardapioRoute: typeof StoreCardapioRoute
   StoreCarrinhoRoute: typeof StoreCarrinhoRoute
   StoreCasaRoute: typeof StoreCasaRoute
   StoreCheckoutRoute: typeof StoreCheckoutRoute
@@ -8680,6 +8738,7 @@ interface StoreRouteChildren {
   StoreConviteRoute: typeof StoreConviteRoute
   StoreCopilotRoute: typeof StoreCopilotRoute
   StoreCriarNegocioRoute: typeof StoreCriarNegocioRouteWithChildren
+  StoreDepartamentoRoute: typeof StoreDepartamentoRoute
   StoreDevelopersRoute: typeof StoreDevelopersRoute
   StoreDiretorioRoute: typeof StoreDiretorioRouteWithChildren
   StoreDoacoesRoute: typeof StoreDoacoesRoute
@@ -8705,6 +8764,7 @@ interface StoreRouteChildren {
   StoreModaRoute: typeof StoreModaRoute
   StoreMuralRoute: typeof StoreMuralRoute
   StoreOfertasRoute: typeof StoreOfertasRoute
+  StorePedidosRoute: typeof StorePedidosRoute
   StorePerfilDaLojaRoute: typeof StorePerfilDaLojaRoute
   StorePersonasRoute: typeof StorePersonasRoute
   StorePetRoute: typeof StorePetRoute
@@ -8775,6 +8835,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreBuscarRoute: StoreBuscarRoute,
   StoreCadastroRoute: StoreCadastroRoute,
   StoreCadastroantecipadoRoute: StoreCadastroantecipadoRoute,
+  StoreCardapioRoute: StoreCardapioRoute,
   StoreCarrinhoRoute: StoreCarrinhoRoute,
   StoreCasaRoute: StoreCasaRoute,
   StoreCheckoutRoute: StoreCheckoutRoute,
@@ -8786,6 +8847,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreConviteRoute: StoreConviteRoute,
   StoreCopilotRoute: StoreCopilotRoute,
   StoreCriarNegocioRoute: StoreCriarNegocioRouteWithChildren,
+  StoreDepartamentoRoute: StoreDepartamentoRoute,
   StoreDevelopersRoute: StoreDevelopersRoute,
   StoreDiretorioRoute: StoreDiretorioRouteWithChildren,
   StoreDoacoesRoute: StoreDoacoesRoute,
@@ -8811,6 +8873,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreModaRoute: StoreModaRoute,
   StoreMuralRoute: StoreMuralRoute,
   StoreOfertasRoute: StoreOfertasRoute,
+  StorePedidosRoute: StorePedidosRoute,
   StorePerfilDaLojaRoute: StorePerfilDaLojaRoute,
   StorePersonasRoute: StorePersonasRoute,
   StorePetRoute: StorePetRoute,
