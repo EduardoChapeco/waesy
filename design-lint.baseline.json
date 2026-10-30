@@ -1,18 +1,18 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-30T01:22:49.811Z",
-  "totalViolations": 4089,
+  "timestamp": "2026-10-30T02:59:49.301Z",
+  "totalViolations": 4084,
   "filesInspected": 2553,
   "filesWithViolations": 744,
   "bySeverity": {
     "P0": 9,
     "P1": 3288,
-    "P2": 491,
+    "P2": 486,
     "P3": 301
   },
   "byRule": {
     "DL-30": 287,
-    "DL-07": 475,
+    "DL-07": 470,
     "DL-14": 1460,
     "DL-02": 786,
     "DL-03": 156,
@@ -31,10 +31,10 @@
   },
   "byModule": {
     "components/app": {
-      "total": 1676,
+      "total": 1672,
       "P0": 8,
       "P1": 1237,
-      "P2": 327,
+      "P2": 323,
       "P3": 104
     },
     "components/builder": {
@@ -108,10 +108,10 @@
       "P3": 71
     },
     "routes/store": {
-      "total": 387,
+      "total": 386,
       "P0": 0,
       "P1": 295,
-      "P2": 49,
+      "P2": 48,
       "P3": 43
     },
     "services": {

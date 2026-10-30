@@ -87,7 +87,7 @@ function CommunitiesDirectoryPage() {
           <Button
             type="button"
             onClick={() => setIsCreateOpen(true)}
-            className="h-11 min-h-11 px-4 rounded-xl font-semibold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
+            className="h-11 min-h-11 px-4 rounded-xl font-semibold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Plus className="size-4 mr-2" />
             <span>Criar Comunidade</span>
@@ -159,7 +159,7 @@ function CommunitiesDirectoryPage() {
               onClick={() => setIsCreateOpen(true)}
               className="h-11 min-h-11 px-6 rounded-full font-bold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
-              Criar Nova Comunidade
+              Criar Comunidade
             </Button>
           </div>
         ) : (
@@ -173,7 +173,7 @@ function CommunitiesDirectoryPage() {
                 <Link
                   key={comm.id}
                   to={`/_store/c/${comm.slug}` as any}
-                  className="group relative rounded-2xl overflow-hidden bg-card transition-colors duration-200 block shadow-xs hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="group relative rounded-2xl overflow-hidden bg-card hover:bg-muted/30 transition-colors duration-200 block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {/* Fundo Gradiente ou Imagem */}
                   <div

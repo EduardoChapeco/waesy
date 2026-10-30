@@ -1,5 +1,19 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-380: Saneamento Visual e Erradicação de AI-Smell no Módulo de Comunidades e Docks Sociais
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. A auditoria sistêmica em comunidades (`_store.comunidades.index.tsx`, `CreateCommunityModal.tsx`, `ThreadsCommunityHeader.tsx` e `floating-community-dock.tsx`) identificou quebras visuais e de conformidade: presença de `Sparkles` no modal de criação e import não utilizado no cabeçalho; botões semitransparentes com `backdrop-blur-md` e bordas semitransparentes brancas (`border-white/40`) no botão de adesão à comunidade.
+  2. Superfícies de cards e botões acumulavam sombras decorativas (`shadow-xs`, `shadow-sm`, `shadow-lg`) violando a regra pétrea DL-07 e a diretriz anti-sombra do design system Apple HIG.
+  3. No modal de criação de comunidade e na listagem, textos e títulos continham prolixidade e botões com textos redundantes ("Criar Nova Comunidade").
+- **Decisão:**
+  1. No `CreateCommunityModal.tsx`: substituído o ícone de `Sparkles` pelo primitivo semântico `Plus`; títulos e rótulos enxugados e telegráficos; removidas sombras arbitrárias em presets de gradientes.
+  2. No `ThreadsCommunityHeader.tsx`: purgado `backdrop-blur-md` e borda semitransparente no botão de adesão à comunidade, adotando botões sólidos canônicos (`bg-secondary text-secondary-foreground` para participante e `bg-primary text-primary-foreground` para novo membro); removidas sombras (`shadow-sm`, `shadow-xs`) do squircle de capa e do controle rápido de publicação.
+  3. No diretório de comunidades (`_store.comunidades.index.tsx`): removidas sombras de cards (`shadow-xs hover:shadow-sm`) e botões; simplificado rótulo da ação primária ("Criar Comunidade"); cartões adotam `border-0 bg-card hover:bg-muted/30 transition-colors`.
+  4. Na dock flutuante de comunidade (`floating-community-dock.tsx`): removidas sombras decorativas (`shadow-xs`, `shadow-lg`) dos botões de chat e nova publicação, preservando a física tátil sem sobreposição visual.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.14, B.22; apple-design/SKILL.md; anti-ai-design/SKILL.md.
+- **Consequências:** Queda de 5 violações na catraca mecânica de CI (`design-lint --ratchet` reduzindo o débito de 4089 para 4084); 100% de botões operando em sólidos semânticos sem blur ou bordas residuais; aprovação em todos os testes unitários da suíte de comunidades.
+
 ## DEC-379: Saneamento Sistêmico de Nichos, Erradicação de Fakes B.33, Geometria Canônica de Cards e Perfil Unificado
 - **Data:** 2026-10-29
 - **Contexto:**

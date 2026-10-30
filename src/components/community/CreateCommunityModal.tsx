@@ -11,6 +11,7 @@ import {
   Shield,
   Layers,
   Palette,
+  Plus,
 } from "lucide-react";
 import {
   Dialog,
@@ -253,7 +254,7 @@ export function CreateCommunityModal({
                       key={preset.id}
                       type="button"
                       onClick={() => setGradientPreset(preset.id)}
-                      className={`h-12 rounded-xl p-2 bg-muted relative flex items-center justify-center shadow-xs transition-transform hover:scale-102 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      className={`h-12 rounded-xl p-2 bg-muted relative flex items-center justify-center transition-transform hover:scale-102 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                         isSelected ? "ring-2 ring-foreground scale-102" : "opacity-85"
                       }`}
                     >
@@ -315,7 +316,7 @@ export function CreateCommunityModal({
               {createMutation.isPending ? (
                 <Loader2 className="size-4 animate-spin mr-2" />
               ) : (
-                <Sparkles className="size-4 mr-2" />
+                <Plus className="size-4 mr-2" />
               )}
               <span>Criar Comunidade</span>
             </Button>
