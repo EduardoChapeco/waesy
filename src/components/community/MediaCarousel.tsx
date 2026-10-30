@@ -140,7 +140,7 @@ export function MediaCarousel({
           {activeIndex > 0 && (
             <button
               type="button"
-              className="focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary absolute left-2 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-background/80 backdrop-blur-md text-foreground flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-md cursor-pointer z-10"
+              className="focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary absolute left-2 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-background hover:bg-muted text-foreground flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-md cursor-pointer z-10"
               onClick={() => scrollToSlide(activeIndex - 1)}
               aria-label="Foto anterior"
             >
@@ -151,7 +151,7 @@ export function MediaCarousel({
           {activeIndex < mediaUrls.length - 1 && (
             <button
               type="button"
-              className="focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary absolute right-2 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-background/80 backdrop-blur-md text-foreground flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-md cursor-pointer z-10"
+              className="focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary absolute right-2 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-background hover:bg-muted text-foreground flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-md cursor-pointer z-10"
               onClick={() => scrollToSlide(activeIndex + 1)}
               aria-label="Próxima foto"
             >
@@ -161,7 +161,7 @@ export function MediaCarousel({
 
           {/* ─── Indicador de Pontos Canônico ────────────── */}
           <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-2 pointer-events-none z-10">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background/70 backdrop-blur-md border border-border/40 shadow-2xs">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background text-foreground shadow-xs">
               {mediaUrls.map((_, dotIdx) => {
                 const isActive = dotIdx === activeIndex;
                 return (

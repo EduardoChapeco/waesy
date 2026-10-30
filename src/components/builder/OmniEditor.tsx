@@ -49,6 +49,7 @@ import {
 } from "@/components/admin/builder/BuilderWixStudioPanels";
 import { listStudioTemplateDrafts } from "@/services/studio-template-library.functions";
 import { listPublicArticles } from "@/services/news.functions";
+import { listExperienceDocuments } from "@/services/builder.functions";
 
 import {
   Plus,
@@ -86,7 +87,6 @@ import {
   Award,
   Clock,
   MapPin,
-  Sparkles,
   SlidersHorizontal,
   Globe,
   Code2,
@@ -94,7 +94,6 @@ import {
   Undo2,
   Redo2,
   Database,
-  Wand2,
   Menu as MenuIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -120,7 +119,7 @@ const BLOCK_ICONS: Record<string, any> = {
   news_promethee_portal: LayoutTemplate,
   news_promethee_header: LayoutTemplate,
   news_promethee_nav: Layers,
-  news_promethee_breaking: Sparkles,
+  news_promethee_breaking: Award,
   news_promethee_feed: LayoutTemplate,
   news_promethee_ad_slot: Tag,
   news_promethee_article_reader: MessageSquare,
@@ -132,14 +131,14 @@ const BLOCK_ICONS: Record<string, any> = {
   // Gastronomia
   food_menu_streamlined: UtensilsCrossed,
   food_menu_tabs: UtensilsCrossed,
-  chef_special_banner: Sparkles,
+  chef_special_banner: UtensilsCrossed,
   table_order_comanda: Tag,
   table_booking_card: Calendar,
   restaurant_hours_delivery: Clock,
 
   // Catálogo
   product_grid: ShoppingBag,
-  curated_hits_rail: Sparkles,
+  curated_hits_rail: Award,
   product_rail: ShoppingBag,
   flash_sale_hero: Tag,
 
@@ -181,7 +180,7 @@ const BLOCK_ICONS: Record<string, any> = {
   vitrine_metamorphic_banner: Image,
   vitrine_bento_tetris: Layers,
   vitrine_coupon_strip: Tag,
-  vitrine_buttons_dock: Sparkles,
+  vitrine_buttons_dock: LayoutTemplate,
   vitrine_vertical_carousel: Video,
   vitrine_product_shelf: ShoppingBag,
   vitrine_classifieds_rail: Tag,
@@ -2515,18 +2514,6 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
       seo_title: `${initialDocument.title || "Início"} | Vitrine Oficial`,
       seo_description: "Confira catálogo atualizado, pacotes de viagem e atendimento direto.",
     },
-    {
-      id: "page_catalog",
-      title: "Catálogo & Ofertas",
-      slug: "/catalogo",
-      is_home: false,
-    },
-    {
-      id: "page_cars",
-      title: "Aluguel de Carros (3 Diárias)",
-      slug: "/mobilidade",
-      is_home: false,
-    },
   ]);
   const [activePageId, setActivePageId] = useState<string>(initialDocument.id || "home");
   const [globalTheme, setGlobalTheme] = useState<GlobalThemeConfig>(() => ({
@@ -2595,6 +2582,30 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (document.store_id) {
+      listExperienceDocuments({ data: { store_id: document.store_id } })
+        .then((docs) => {
+          if (!active || !Array.isArray(docs) || docs.length === 0) return;
+          setSitePages(
+            docs.map((d: any) => ({
+              id: d.id,
+              title: d.title || "Página",
+              slug: d.slug?.startsWith("/") ? d.slug : `/${d.slug || ""}`,
+              is_home: d.slug === "/" || d.slug === "home" || d.id === document.id,
+              seo_title: d.settings?.seo?.title || `${d.title} | ${document.title || "Loja"}`,
+              seo_description: d.settings?.seo?.description || "Página oficial da loja.",
+            }))
+          );
+        })
+        .catch(() => undefined);
+    }
+    return () => {
+      active = false;
+    };
+  }, [document.store_id, document.id, document.title]);
 
   const handleFinishRename = () => {
     setIsEditingTitle(false);
@@ -2923,7 +2934,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               title="Branded Native App Frame (Top/Bottom Tab Bar)"
             >
-              <Sparkles className="size-3.5" />
+              <Smartphone className="size-3.5" />
               <span className="hidden lg:inline">App Nativo</span>
             </button>
           </div>
@@ -2947,7 +2958,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               title="Lovable AI Squad Split View"
             >
-              <Wand2 className="size-3.5" />
+              <Code2 className="size-3.5" />
               <span>Split IA</span>
             </button>
           </div>
@@ -3597,7 +3608,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   inspectorTab === "animation_cms" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
-                <Sparkles className="size-3.5" />
+                <Sliders className="size-3.5" />
                 <span>Animação/CMS</span>
               </button>
             </div>
@@ -3614,7 +3625,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       onClick={() => setIsPhotoStudioOpen(true)}
                       className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <Sparkles className="size-3.5 text-primary" />
+                      <Image className="size-3.5 text-primary" />
                       <span>Photo Studio</span>
                     </Button>
                     <Button
@@ -4201,8 +4212,24 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           isOpen={isAppMarketOpen}
           onClose={() => setIsAppMarketOpen(false)}
           storeId={document.store_id}
-          onAppInstalled={(appId) => {
-            toast.success("App instalado. Atualizando árvore de páginas...");
+          onAppInstalled={(appId, pages) => {
+            if (Array.isArray(pages) && pages.length > 0) {
+              setSitePages((prev) => {
+                const existingSlugs = new Set(prev.map((p) => p.slug.toLowerCase().replace(/^\//, "")));
+                const newItems: BuilderPageItem[] = pages
+                  .filter((p) => !existingSlugs.has(p.slug.toLowerCase().replace(/^\//, "")))
+                  .map((p) => ({
+                    id: p.id,
+                    title: p.title,
+                    slug: p.slug.startsWith("/") ? p.slug : `/${p.slug}`,
+                    is_home: false,
+                    seo_title: `${p.title} | ${document.title || "Loja"}`,
+                    seo_description: `Acesse ${p.title} na loja oficial.`,
+                  }));
+                return [...prev, ...newItems];
+              });
+            }
+            toast.success(`Módulo ${appId} ativado! Árvore de páginas atualizada.`);
           }}
         />
       )}

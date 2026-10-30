@@ -137,10 +137,10 @@ export function CreateCommunityModal({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Sparkles className="size-5 text-primary" />
-            <span>Criar Nova Comunidade</span>
+            <span>Nova Comunidade</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Crie seu espaço na comunidade com capa editável, feed nativo e ferramentas por nicho.
+            Espaço para grupos e discussões locais.
           </DialogDescription>
         </DialogHeader>
 
@@ -210,35 +210,35 @@ export function CreateCommunityModal({
             </div>
           </div>
 
-          {/* Estilo da Capa: Gradiente ou Imagem */}
-          <div className="space-y-3 p-4 rounded-2xl bg-muted/30 border border-border/60">
+          {/* Estilo da Capa: Cores ou Imagem */}
+          <div className="space-y-3 p-4 rounded-2xl bg-muted/40">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold flex items-center gap-2">
                 <Palette className="size-4 text-primary" />
-                <span>Capa Panorâmica Integrada</span>
+                <span>Capa</span>
               </Label>
-              <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/60">
+              <div className="flex items-center gap-1 bg-background p-1 rounded-lg">
                 <button
                   type="button"
                   onClick={() => setCoverMode("gradient")}
-                  className={`h-7 px-2 rounded-md text-2xs font-bold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  className={`h-9 px-3 rounded-md text-xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     coverMode === "gradient"
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary text-primary-foreground font-bold"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Gradiente Mesh
+                  Cores
                 </button>
                 <button
                   type="button"
                   onClick={() => setCoverMode("image")}
-                  className={`h-7 px-2 rounded-md text-2xs font-bold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  className={`h-9 px-3 rounded-md text-xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     coverMode === "image"
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary text-primary-foreground font-bold"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Foto Personalizada
+                  Imagem
                 </button>
               </div>
             </div>

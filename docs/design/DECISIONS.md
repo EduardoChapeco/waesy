@@ -1,5 +1,21 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-377: Ativação em Cascata de Módulos Verticais no Omni Builder (Wix Studio Parity), Erradicação de AI-Smell e Purga de Mock Fallbacks em Sitemaps
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. No Omni Builder, a ativação de apps comerciais (Delivery, Supermercado, Eventos, Agendamentos, E-Commerce) não propagava as rotas dinâmicas vinculadas ao tenant (/cardapio, /produto, /carrinho, /pedidos) para a árvore de páginas (`sitePages`) do editor e para o Sitemap Visual (`WixVisualSitemapModal`).
+  2. Presença de dados sintéticos e rotas mockadas hardcoded em `systemGroups` do Sitemap Visual (`/mobilidade`, `/turismo`) em violação à Invariante B.33 (Anti-Fake).
+  3. Presença de "AI-smell" visual: ícones de sparkles e varinhas mágicas em botões e seletores do builder, descrições prolixas e jargões internos.
+- **Decisão:**
+  1. Conectado `onAppInstalled` em `OmniAppMarketModal` e `OmniEditor` para receber as páginas provisionadas pelo blueprint do app e inseri-las atomicamente na árvore de páginas do tenant em `experience_documents`.
+  2. Atualizados os blueprints canônicos em `omni-apps-blueprint.functions.ts` com as rotas completas de ponta a ponta (Delivery: `/cardapio`, `/produto`, `/carrinho`, `/pedidos`, `/acompanhar`; Supermercado: `/mercado`, `/departamento`, `/produto`, `/carrinho`, `/pedidos`, `/clube`; etc.).
+  3. Integrada a hidratação automática de `sitePages` via `listExperienceDocuments` no `OmniEditor`, eliminando placeholders estáticos.
+  4. Sitemap Visual refatorado para distribuir dinamicamente apenas páginas reais do tenant em grupos semânticos (Principais, Loja & Verticais, Transacionais e Customizadas), omitindo grupos vazios.
+  5. Erradicados todos os ícones de `Sparkles` e `Wand2` nos módulos do Builder (`OmniEditor`, `OmniAppMarketModal`, `BuilderWixStudioPanels`, `PhotoStudioModal`, `vitrine-block-inspector`, `StudioTemplateFactory`), substituídos por controles limpos e semânticos (`Layers`, `Smartphone`, `Code2`, `Image`, `Tag`, `Globe`).
+  6. Garantidos touch targets >= 44px (`min-h-11`) em todos os controles interativos móveis e desktop.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.20, B.26, B.31, B.33; apple-design/SKILL.md; anti-ai-design/SKILL.md.
+- **Consequências:** Paridade total com o modelo Wix Studio Apps, zero fallbacks sintéticos, sitemap 100% fiel ao banco relacional e interface limpa livre de AI-smell.
+
 ## DEC-376: Prontidão Agêntica 100/100 (Modelo Ora / Is-Agentic 20 Checks), Negociação HTTP Markdown, Handshake MCP Streamable HTTP, Ficha Cadastral Cartão CNPJ e SEO/GEO Unificado
 - **Data:** 2026-10-29
 - **Contexto:**

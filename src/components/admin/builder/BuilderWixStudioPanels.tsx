@@ -9,7 +9,6 @@ import { useState } from "react";
 import {
   Globe,
   Search,
-  Sparkles,
   Plus,
   Copy,
   Check,
@@ -24,7 +23,6 @@ import {
   Smartphone,
   LayoutGrid,
   Layers,
-  Wand2,
   ShieldCheck,
   Code2,
   Eye,
@@ -137,26 +135,87 @@ export function WixVisualSitemapModal({
     toast.success(`Configurações de SEO e GEO salvas para "${selectedPage.title}"!`);
   };
 
+  const mainPages = pages.filter((p) => {
+    const slug = (p.slug || "").toLowerCase().replace(/^\//, "");
+    return p.is_home || slug === "" || slug === "home" || slug === "sobre" || slug === "contato";
+  });
+
+  const storeAndVertPages = pages.filter((p) => {
+    const slug = (p.slug || "").toLowerCase().replace(/^\//, "");
+    return (
+      !p.is_home &&
+      (slug.includes("loja") ||
+        slug.includes("cardapio") ||
+        slug.includes("mercado") ||
+        slug.includes("produto") ||
+        slug.includes("catalogo") ||
+        slug.includes("departamento") ||
+        slug.includes("eventos") ||
+        slug.includes("evento") ||
+        slug.includes("ingressos") ||
+        slug.includes("agendamento") ||
+        slug.includes("procedimento") ||
+        slug.includes("profissionais") ||
+        slug.includes("turismo") ||
+        slug.includes("mobilidade"))
+    );
+  });
+
+  const appsAndTransactPages = pages.filter((p) => {
+    const slug = (p.slug || "").toLowerCase().replace(/^\//, "");
+    return (
+      !p.is_home &&
+      (slug.includes("carrinho") ||
+        slug.includes("sacola") ||
+        slug.includes("pedidos") ||
+        slug.includes("compras") ||
+        slug.includes("acompanhar") ||
+        slug.includes("checkout") ||
+        slug.includes("clube") ||
+        slug.includes("meus-ingressos") ||
+        slug.includes("meus-agendamentos") ||
+        slug.includes("conta") ||
+        slug.includes("noticias") ||
+        slug.includes("portal") ||
+        slug.includes("artigo") ||
+        slug.includes("bio") ||
+        slug.includes("links"))
+    );
+  });
+
+  const customPages = pages.filter(
+    (p) => !mainPages.includes(p) && !storeAndVertPages.includes(p) && !appsAndTransactPages.includes(p)
+  );
+
   const systemGroups = [
     {
       groupTitle: "Páginas Principais (Main Pages)",
-      items: pages,
+      items: mainPages.length > 0 ? mainPages : pages,
     },
-    {
-      groupTitle: "Páginas de Loja & Verticais (Store & Booking)",
-      items: [
-        { id: "sys_shop", title: "Catálogo & Carrinho", slug: "/loja", is_home: false },
-        { id: "sys_cars", title: "Aluguel de Carros (Mín. 3 Diárias)", slug: "/mobilidade", is_home: false },
-        { id: "sys_tourism", title: "Portal de Viagens & Vouchers", slug: "/turismo", is_home: false },
-      ],
-    },
-    {
-      groupTitle: "Área de Membros & Apps Instalados",
-      items: [
-        { id: "sys_members", title: "Minha Conta & Pedidos", slug: "/minha-conta", is_home: false },
-        { id: "sys_news", title: "Portal de Notícias Prométhée", slug: "/noticias", is_home: false },
-      ],
-    },
+    ...(storeAndVertPages.length > 0
+      ? [
+          {
+            groupTitle: "Páginas de Loja & Verticais (Store & Booking)",
+            items: storeAndVertPages,
+          },
+        ]
+      : []),
+    ...(appsAndTransactPages.length > 0
+      ? [
+          {
+            groupTitle: "Área Transacional & Apps Instalados",
+            items: appsAndTransactPages,
+          },
+        ]
+      : []),
+    ...(customPages.length > 0
+      ? [
+          {
+            groupTitle: "Páginas Customizadas",
+            items: customPages,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -489,8 +548,8 @@ export function WixVisualSitemapModal({
                     }}
                     className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <Wand2 className="size-3.5 text-primary" />
-                    <span>Auto-Otimizar SEO/GEO com AI Squad (100/100)</span>
+                    <Globe className="size-3.5 text-primary" />
+                    <span>Otimizar Metadados SEO/GEO</span>
                   </Button>
 
                   <div>
@@ -1391,7 +1450,7 @@ export function LovableAiSquadSplitPanel({
       <div className="p-4 border-b border-border bg-muted/20 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-            <Wand2 className="size-4" />
+            <Bot className="size-4" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-foreground">AI Squad Split Studio</h3>
@@ -1449,7 +1508,7 @@ export function LovableAiSquadSplitPanel({
                   className="w-full min-h-11 p-2 rounded-lg border border-border bg-background hover:bg-muted/50 text-left text-xs font-semibold text-foreground flex items-center justify-between gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span className="truncate">{preset}</span>
-                  <Sparkles className="size-3.5 text-primary shrink-0" />
+                  <ArrowRight className="size-3.5 text-primary shrink-0" />
                 </button>
               ))}
             </div>
@@ -1687,7 +1746,7 @@ export function WixScrollAnimationsAndDockingInspector({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-            <Sparkles className="size-3.5 text-primary" />
+            <Move className="size-3.5 text-primary" />
             <span>Animações de Rolagem (12 Efeitos Wix)</span>
           </Label>
           <Badge variant="outline" className="text-xs font-mono uppercase">

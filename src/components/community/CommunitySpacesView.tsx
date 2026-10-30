@@ -196,7 +196,7 @@ export function CommunitySpacesView({
           <button
             type="button"
             onClick={handleShare}
-            className="absolute top-3 right-3 size-11 min-h-11 min-w-11 rounded-xl bg-background/80 backdrop-blur-md hover:bg-background text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            className="absolute top-3 right-3 size-11 min-h-11 min-w-11 rounded-xl bg-background hover:bg-muted text-foreground flex items-center justify-center shadow-xs transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             aria-label="Compartilhar comunidade"
           >
             <Share2 className="size-4" />

@@ -138,11 +138,6 @@ export function ListingTemplateSelector({
         </Badge>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        O Waesy restringe os modelos visuais para garantir total coerência com o segmento{" "}
-        <strong className="text-foreground">{nicheConfig?.label ?? niche}</strong>.
-      </p>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
         {allowedTemplates.map((tmpl) => {
           const templateId = tmpl.id;

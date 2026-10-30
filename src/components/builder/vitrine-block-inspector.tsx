@@ -8,7 +8,6 @@ import {
   Monitor,
   Plus,
   Smartphone,
-  Sparkles,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -226,7 +225,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
       {hasSectionHeader ? (
         <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="size-4 text-primary shrink-0" />
+            <Layers className="size-4 text-primary shrink-0" />
             <span className="text-xs font-bold text-foreground">Cabeçalho da Seção</span>
           </div>
 
@@ -1618,7 +1617,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                     label: "Novo Atalho",
                     subtitle: "",
                     badge: "",
-                    iconName: "Sparkles",
+                    iconName: "Tag",
                     shape: config.defaultShape || "squircle",
                     tone: "default",
                     showLabel: true,
@@ -1694,7 +1693,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                       Ícone Vetorial
                     </label>
                     <select
-                      value={btn.iconName || "Sparkles"}
+                      value={btn.iconName || "Tag"}
                       onChange={(e) => updateBtn({ iconName: e.target.value })}
                       className={SELECT_CLASS}
                     >
@@ -1797,7 +1796,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                         label: "Novo Item",
                         href: "/",
                         cardVariant: "squircle",
-                        icon: "Sparkles",
+                        icon: "Tag",
                         isActive: true,
                       },
                     ],
@@ -1857,7 +1856,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                                 label: "Novo Item",
                                 href: "/",
                                 cardVariant: "squircle",
-                                icon: "Sparkles",
+                                icon: "Tag",
                                 isActive: true,
                               },
                             ],
@@ -1928,7 +1927,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                                   Ícone
                                 </label>
                                 <select
-                                  value={item.icon || "Sparkles"}
+                                  value={item.icon || "Tag"}
                                   onChange={(e) => updateItem({ icon: e.target.value })}
                                   className={SELECT_CLASS}
                                 >

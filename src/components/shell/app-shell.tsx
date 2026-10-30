@@ -80,6 +80,7 @@ function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): stri
     "/conta/trocas": "Trocas e Devoluções",
     "/conta/verificacao": "Verificação Civil",
     "/conta/viagens": "Minhas Viagens",
+    "/comunidades": "Comunidades",
   };
   const cleanPath = pathname.replace(/\/+$/, "") || "/";
   if (map[cleanPath]) return map[cleanPath];
@@ -123,6 +124,7 @@ export function checkHasCustomPageMobileHeader(pathname: string): boolean {
     "/beleza",
     "/limpeza",
     "/livros",
+    "/comunidades",
   ]);
 
   if (exactCustomRoutes.has(clean)) return true;
@@ -323,6 +325,8 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/entrega") ||
     location.pathname.startsWith("/c/") ||
     location.pathname.includes("/c/") ||
+    location.pathname.startsWith("/comunidades") ||
+    location.pathname.includes("/comunidades") ||
     location.pathname.includes("/contato");
 
   const isFeedPage = location.pathname.startsWith("/feed");

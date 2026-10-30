@@ -14,9 +14,7 @@ import {
   X,
   Crop,
   Sliders,
-  Sparkles,
   Scissors,
-  Wand2,
   RotateCcw,
   Download,
   Save,
@@ -91,17 +89,17 @@ export function PhotoStudioModal({
         <DialogHeader className="h-14 px-6 border-b border-border/80 flex flex-row items-center justify-between flex-none bg-card select-none">
           <div className="flex items-center gap-3">
             <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
-              <Sparkles className="size-4" />
+              <ImageIcon className="size-4" />
             </div>
             <div>
               <DialogTitle className="text-sm font-bold flex items-center gap-2">
-                Photo Studio Pro
+                Photo Studio
                 <Badge variant="outline" className="text-2xs font-normal">
-                  Wix-Level In-Canvas Editor
+                  Editor de Mídia
                 </Badge>
               </DialogTitle>
               <p className="text-2xs text-muted-foreground">
-                Ajuste cores, proporções e efeitos sem sair do construtor
+                Ajuste cores, proporções e filtros diretamente no construtor
               </p>
             </div>
           </div>
@@ -176,8 +174,8 @@ export function PhotoStudioModal({
                   activeTab === "ai" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Wand2 className="size-3.5" />
-                <span>IA</span>
+                <Sliders className="size-3.5" />
+                <span>Filtros</span>
               </button>
             </div>
 

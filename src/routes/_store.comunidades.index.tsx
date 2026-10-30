@@ -80,14 +80,14 @@ function CommunitiesDirectoryPage() {
               Comunidades
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Participe de grupos temáticos estilo Threads ou crie seu próprio espaço.
+              Grupos e discussões locais por interesse.
             </p>
           </div>
 
           <Button
             type="button"
             onClick={() => setIsCreateOpen(true)}
-            className="h-11 min-h-11 px-5 rounded-full font-bold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
+            className="h-11 min-h-11 px-4 rounded-xl font-semibold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
           >
             <Plus className="size-4 mr-2" />
             <span>Criar Comunidade</span>
@@ -100,8 +100,8 @@ function CommunitiesDirectoryPage() {
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nome, @slug ou assunto..."
-            className="h-11 min-h-11 pl-10 pr-4 rounded-full text-xs sm:text-sm bg-muted/40 border-border/60"
+            placeholder="Buscar comunidades..."
+            className="h-11 min-h-11 pl-10 pr-4 rounded-xl text-xs sm:text-sm bg-muted/40 border-0"
           />
         </div>
 
@@ -110,7 +110,7 @@ function CommunitiesDirectoryPage() {
           <button
             type="button"
             onClick={() => setActiveTab("all")}
-            className={`h-11 min-h-11 px-4 rounded-full text-xs font-bold transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            className={`h-11 min-h-11 px-4 rounded-xl text-xs font-semibold transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               activeTab === "all"
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -123,7 +123,7 @@ function CommunitiesDirectoryPage() {
               key={key}
               type="button"
               onClick={() => setActiveTab(key)}
-              className={`h-11 min-h-11 px-4 rounded-full text-xs font-bold transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`h-11 min-h-11 px-4 rounded-xl text-xs font-semibold transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 activeTab === key
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -173,7 +173,7 @@ function CommunitiesDirectoryPage() {
                 <Link
                   key={comm.id}
                   to={`/_store/c/${comm.slug}` as any}
-                  className="group relative rounded-3xl overflow-hidden border border-border/50 hover:border-border transition-colors duration-200 block shadow-xs hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="group relative rounded-2xl overflow-hidden bg-card transition-colors duration-200 block shadow-xs hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {/* Fundo Gradiente ou Imagem */}
                   <div

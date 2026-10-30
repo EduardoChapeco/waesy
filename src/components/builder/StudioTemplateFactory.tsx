@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { WandSparkles, Loader2, Save, Check, AlertTriangle, FilePlus2 } from "lucide-react";
+import { Loader2, Save, Check, AlertTriangle, FilePlus2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -178,14 +178,14 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button type="button" variant="outline" className="min-h-11 w-full justify-start gap-2 text-xs">
-          <WandSparkles className="size-3.5" /> Criar modelo com IA
+          <FilePlus2 className="size-3.5" /> Gerar Modelo Customizado
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-screen max-w-4xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Waesy Studio — Criador de Páginas com IA</DialogTitle>
+          <DialogTitle>Waesy Studio — Criador de Modelos</DialogTitle>
           <DialogDescription>
-            Descreva o seu negócio e objetivos para gerar uma página personalizada e de alto impacto pronta para edição.
+            Defina o nicho e seções para estruturar uma nova página pronta para edição.
           </DialogDescription>
         </DialogHeader>
 
@@ -235,7 +235,7 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
               </div>
             </fieldset>
             <Button type="submit" disabled={isGenerating || niche.trim().length < 2} className="w-full gap-2">
-              {isGenerating ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <WandSparkles className="size-4" />}
+              {isGenerating ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <FilePlus2 className="size-4" />}
               {isGenerating ? "Criando e formatando..." : "Criar Modelo"}
             </Button>
           </form>
