@@ -25,6 +25,9 @@ const clientOnlyServerCoreGuard = {
 export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
+    router: {
+      routeFileIgnorePattern: "(^|[\\\\/])__tests__([\\\\/]|$)|\\.test\\.(tsx?|jsx?)$",
+    },
   },
   nitro: {
     preset: "cloudflare-pages",

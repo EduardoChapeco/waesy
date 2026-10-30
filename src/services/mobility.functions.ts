@@ -5,7 +5,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import * as crypto from "node:crypto";
+declare const crypto: any;
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 
@@ -2804,6 +2804,9 @@ export interface MobilityReceiptBreakdown {
   totalCents: number;
   platformFeeCents: number;
   driverEarningsCents: number;
+  passengerServiceFeeCents?: number;
+  driverPlatformFeeCents?: number;
+  totalPassengerPaidCents?: number;
 }
 
 export function calculateMobilityReceiptBreakdownHelper(params: {
@@ -2823,6 +2826,10 @@ export function calculateMobilityReceiptBreakdownHelper(params: {
   const stairsFeeCents = params.notes?.includes("Escada") ? 3500 : 0;
   const distanceFeeCents = Math.max(0, finalPriceCents - baseFareCents - helperFeeCents - stairsFeeCents - tipCents);
 
+  // Invariante Bilateral Waesy Go (SPEC-20261030): R$ 0,99 cobrado do cliente e R$ 0,99 do condutor com opacidade mútua
+  const passengerServiceFeeCents = 99;
+  const driverPlatformFeeCents = 99;
+
   return {
     baseFareCents,
     distanceFeeCents,
@@ -2831,7 +2838,10 @@ export function calculateMobilityReceiptBreakdownHelper(params: {
     tipCents,
     totalCents: finalPriceCents,
     platformFeeCents: 99, // R$ 0,99 Waesy Go Fixa (B.23)
-    driverEarningsCents: Math.max(0, finalPriceCents - 99),
+    driverEarningsCents: Math.max(0, finalPriceCents - driverPlatformFeeCents),
+    passengerServiceFeeCents,
+    driverPlatformFeeCents,
+    totalPassengerPaidCents: finalPriceCents + passengerServiceFeeCents,
   };
 }
 

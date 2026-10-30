@@ -24,10 +24,9 @@ import {
   Fuel,
   SlidersHorizontal,
   TrendingUp,
-  Sparkles,
+  Smartphone,
 } from "lucide-react";
 import { formatCents, cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 export interface InvoiceItem {
   id: string;
@@ -58,8 +57,12 @@ export interface CreditCardInvoiceViewProps {
   usedLimitCents?: number;
   invoices?: InvoiceMonth[];
   onPayInvoiceClick?: (invoice: InvoiceMonth) => void;
+  onCloseInvoiceClick?: (invoice: InvoiceMonth) => void;
   onVirtualCardClick?: () => void;
   onAdjustLimitClick?: () => void;
+  onHelpClick?: () => void;
+  onManageCardsClick?: () => void;
+  onInvestClick?: () => void;
   onBackClick?: () => void;
   className?: string;
 }
@@ -71,8 +74,12 @@ export function CreditCardInvoiceView({
   usedLimitCents = 0,
   invoices = [],
   onPayInvoiceClick,
+  onCloseInvoiceClick,
   onVirtualCardClick,
   onAdjustLimitClick,
+  onHelpClick,
+  onManageCardsClick,
+  onInvestClick,
   onBackClick,
   className,
 }: CreditCardInvoiceViewProps) {
@@ -123,7 +130,7 @@ export function CreditCardInvoiceView({
 
         <button
           type="button"
-          onClick={() => toast.info("Central de Atendimento Cartões")}
+          onClick={onHelpClick}
           aria-label="Ajuda sobre fatura"
           className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
@@ -198,18 +205,25 @@ export function CreditCardInvoiceView({
           </div>
         </div>
 
-        {/* Botão Primário Pagar Fatura */}
-        <div className="pt-2">
+        {/* Ações da Fatura: Pagar Fatura e Fechar Fatura (se aberta) */}
+        <div className="pt-2 flex flex-col sm:flex-row gap-2">
+          {currentInvoice.status === "open" && currentInvoice.totalCents > 0 && onCloseInvoiceClick && (
+            <button
+              type="button"
+              onClick={() => onCloseInvoiceClick(currentInvoice)}
+              className="flex-1 h-12 min-h-12 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-bold text-xs flex items-center justify-center gap-2 border border-border shadow-xs active:scale-95 transition-transform transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            >
+              <span>Fechar Fatura</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
               if (onPayInvoiceClick) {
                 onPayInvoiceClick(currentInvoice);
-              } else {
-                toast.success(`Iniciando pagamento da fatura de ${currentInvoice.fullLabel}`);
               }
             }}
-            className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-transform transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            className="flex-1 h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-transform transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
           >
             <CreditCard className="size-4" />
             <span>Pagar Fatura</span>
@@ -221,7 +235,7 @@ export function CreditCardInvoiceView({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
         <button
           type="button"
-          onClick={() => toast.info("Lista de Meus Cartões")}
+          onClick={onManageCardsClick}
           className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
@@ -234,7 +248,7 @@ export function CreditCardInvoiceView({
 
         <button
           type="button"
-          onClick={onAdjustLimitClick || (() => toast.info("Limite Extra Pré-aprovado"))}
+          onClick={onAdjustLimitClick}
           className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
@@ -247,11 +261,11 @@ export function CreditCardInvoiceView({
 
         <button
           type="button"
-          onClick={onVirtualCardClick || (() => toast.info("Abrir Cartão Virtual"))}
+          onClick={onVirtualCardClick}
           className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
-            <Sparkles className="size-4" />
+            <Smartphone className="size-4" />
           </div>
           <span className="text-3xs font-bold text-zinc-800 leading-tight block truncate w-full">
             Virtual
@@ -260,7 +274,7 @@ export function CreditCardInvoiceView({
 
         <button
           type="button"
-          onClick={() => toast.info("Investir em CDB do Waesy Bank")}
+          onClick={onInvestClick}
           className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
         >
           <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">

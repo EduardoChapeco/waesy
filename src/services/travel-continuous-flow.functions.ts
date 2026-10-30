@@ -262,11 +262,11 @@ export const getPublicContractSignerByToken = createServerFn({ method: "GET" })
       };
       agency: { name: string; whatsapp?: string | null };
     } | null> => {
-      const anonClient = getAnonServerClient();
+      const supabase = getServerClient();
 
-      const { data: signer, error: sErr } = await anonClient
+      const { data: signer, error: sErr } = await supabase
         .from("travel_contract_signers")
-        .select("*, travel_contracts(id, contract_title, client_name, destination, package_summary, total_value_cents, payment_conditions, store_id)")
+        .select("id, contract_id, store_id, signer_role, full_name, cpf_cnpj, email, whatsapp, share_percentage, share_amount_cents, payment_method, public_sign_token, signature_status, signed_at, rejection_reason, created_at, updated_at, travel_contracts(id, contract_title, client_name, destination, package_summary, total_value_cents, payment_conditions, store_id)")
         .eq("public_sign_token", data.token)
         .maybeSingle();
 
@@ -277,7 +277,7 @@ export const getPublicContractSignerByToken = createServerFn({ method: "GET" })
       let agencyWhatsapp: string | null = null;
 
       if (rawContract?.store_id) {
-        const { data: store } = await anonClient
+        const { data: store } = await supabase
           .from("stores")
           .select("name, settings")
           .eq("id", rawContract.store_id)
@@ -304,11 +304,7 @@ export const getPublicContractSignerByToken = createServerFn({ method: "GET" })
           public_sign_token: signer.public_sign_token,
           signature_status: signer.signature_status,
           signed_at: signer.signed_at,
-          signer_ip: signer.signer_ip,
-          signer_user_agent: signer.signer_user_agent,
-          signature_hash: signer.signature_hash,
           rejection_reason: signer.rejection_reason,
-          audit_metadata: signer.audit_metadata,
           created_at: signer.created_at,
           updated_at: signer.updated_at,
         },
@@ -348,9 +344,9 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
       const { getRealClientIP } = await import("@/lib/network-telemetry.server");
       const ipAddress = getRealClientIP(request);
       const userAgent = request.headers.get("user-agent")?.slice(0, 512) || "Desconhecido";
-      const anonClient = getAnonServerClient();
+      const supabase = getServerClient();
 
-      const { data: signer, error: sErr } = await anonClient
+      const { data: signer, error: sErr } = await supabase
         .from("travel_contract_signers")
         .select("id, contract_id, store_id, full_name, cpf_cnpj, share_amount_cents, payment_method, signature_status")
         .eq("public_sign_token", data.token)
@@ -369,7 +365,7 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
 
-      const { error: updErr } = await anonClient
+      const { data: updatedSigner, error: updErr } = await supabase
         .from("travel_contract_signers")
         .update({
           signature_status: "signed",
@@ -383,9 +379,13 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
           },
           updated_at: now,
         })
-        .eq("id", signer.id);
+        .eq("id", signer.id)
+        .eq("signature_status", "pending")
+        .select("id")
+        .maybeSingle();
 
       if (updErr) throw new Error("Erro ao salvar assinatura eletrônica: " + updErr.message);
+      if (!updatedSigner) throw new Error("A assinatura não pôde ser confirmada.");
 
       // Automação Pós-Assinatura: verificar se TODOS os pagadores/assinantes do contrato assinaram
       let allSignersCompleted = false;

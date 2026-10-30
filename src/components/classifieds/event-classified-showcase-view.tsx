@@ -1550,12 +1550,16 @@ export function EventClassifiedShowcaseView({
                             {t.authorName}
                           </span>
                           <div className="flex items-center gap-1">
-                            {Array.from({ length: t.rating || 5 }).map((_, idx) => (
-                              <Star
-                                key={idx}
-                                className="size-3 fill-amber-400 text-amber-400"
-                              />
-                            ))}
+                            {Number(t.rating) > 0 ? (
+                              Array.from({ length: Math.min(5, Math.floor(Number(t.rating))) }).map((_, idx) => (
+                                <Star
+                                  key={idx}
+                                  className="size-3 fill-amber-400 text-amber-400"
+                                />
+                              ))
+                            ) : (
+                              <span className="text-2xs text-muted-foreground">Avaliação não informada</span>
+                            )}
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground break-words">

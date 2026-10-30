@@ -47,7 +47,7 @@ export const ChoiceCard = React.forwardRef<HTMLDivElement, ChoiceCardProps>(
  onKeyDown={handleKeyDown}
  className={cn(
  "squircle squircle-hover bg-card p-5 relative select-none cursor-pointer flex flex-col justify-between transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
- selected && "squircle-selected border-primary",
+ selected && "squircle-selected",
  disabled && "opacity-50 pointer-events-none cursor-not-allowed",
  className,
  )}
@@ -75,7 +75,7 @@ export const ChoiceCard = React.forwardRef<HTMLDivElement, ChoiceCardProps>(
 
  {selected && (
  <div className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center ">
- <Check className="size-3.5 stroke-[3]" />
+ <Check className="size-3.5" />
  </div>
  )}
  </div>

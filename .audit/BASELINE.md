@@ -1,14 +1,14 @@
 # BASELINE.md — Baseline Mensurável do Sistema (P05)
 
 **Data da Medição:** 2026-10-01  
-**Métrica Global:** 1922 arquivos em `src/` | 650,909 linhas de código | 23.57 MB
+**Métrica Global:** 2557 arquivos em `src/` | 951.300 linhas de código | 36.21 MB
 
 ---
 
 ## 1. Contagem Estrutural
-- **Rotas:** 416
-- **Componentes:** 722
-- **Serviços / BFF:** 441
+- **Rotas:** 461
+- **Componentes:** 966
+- **Serviços / BFF:** 628
 - **Hooks:** 22
 
 ---
@@ -16,26 +16,26 @@
 ## 2. Top 20 Maiores Arquivos (Alvos Prioritários de Refatoração / Modularização)
 | Arquivo | Linhas | Tamanho (KB) |
 |---|---|---|
-| `src/routes/_store.conta.classificados.novo.tsx` | 9569 | 478.7 KB |
-| `src/routeTree.gen.ts` | 8818 | 365.5 KB |
-| `src/components/classifieds/editorial-showcase-view.tsx` | 3154 | 172.6 KB |
-| `src/services/mining.functions.ts` | 4104 | 143.7 KB |
-| `src/components/commerce/canonical-store-profile-view.tsx` | 2989 | 142.5 KB |
-| `src/routes/_store.membro.$id.tsx` | 3728 | 126.5 KB |
-| `src/routes/_store.checkout.tsx` | 3011 | 120.9 KB |
-| `src/components/profile/professional-resume-editor.tsx` | 3041 | 104.7 KB |
-| `src/services/classifieds.functions.ts` | 3001 | 103.6 KB |
-| `src/components/mining/mining-dashboard.tsx` | 2268 | 99.3 KB |
-| `src/routes/workspace.turismo.viagens.$id.tsx` | 2077 | 99.0 KB |
-| `src/routes/workspace.comercial.tsx` | 2013 | 94.0 KB |
-| `src/lib/routes.ts` | 3506 | 93.4 KB |
-| `src/routes/admin-master.mining.tsx` | 2060 | 93.2 KB |
-| `src/routes/_store.afiliados.tsx` | 1835 | 89.2 KB |
-| `src/services/travel-lifecycle.functions.ts` | 2358 | 87.7 KB |
-| `src/components/classifieds/convenience-showcase-view.tsx` | 1935 | 87.5 KB |
-| `src/routes/workspace.financeiro.recebiveis.tsx` | 1970 | 86.9 KB |
-| `src/services/ai-conversations.functions.ts` | 2111 | 80.6 KB |
-| `src/registries/mcp-tool-registry.ts` | 2196 | 80.3 KB |
+| `src/integrations/supabase/types.ts` | 45793 | 1442.8 KB |
+| `src/lib/data/airports-catalog.ts` | 7513 | 844.4 KB |
+| `src/routes/_store.conta.classificados.novo.tsx` | 11764 | 616.1 KB |
+| `src/routeTree.gen.ts` | 9572 | 404.5 KB |
+| `src/components/builder/OmniEditor.tsx` | 4322 | 189.7 KB |
+| `src/components/classifieds/editorial-showcase-view.tsx` | 3191 | 176.5 KB |
+| `src/services/mining.functions.ts` | 4432 | 160.7 KB |
+| `src/components/commerce/canonical-store-profile-view.tsx` | 3191 | 158.1 KB |
+| `src/services/builder.functions.ts` | 4371 | 141.1 KB |
+| `src/routes/workspace.atendimento.index.tsx` | 3137 | 140.6 KB |
+| `src/services/classifieds.functions.ts` | 4087 | 139.1 KB |
+| `src/services/ai-conversations.functions.ts` | 3755 | 137.3 KB |
+| `src/services/events.functions.ts` | 3791 | 130.2 KB |
+| `src/routes/_store.membro.$id.tsx` | 3692 | 128.1 KB |
+| `src/routes/_store.checkout.tsx` | 3011 | 125.3 KB |
+| `src/components/commerce/travel/travel-package-form.tsx` | 2606 | 120.7 KB |
+| `src/lib/builder/omni-templates.ts` | 3225 | 117.3 KB |
+| `src/components/builder/vitrine-block-inspector.tsx` | 2786 | 114.4 KB |
+| `src/routes/workspace.comercial.tsx` | 2397 | 113.9 KB |
+| `src/services/ads.functions.ts` | 2865 | 111.0 KB |
 
 ---
 

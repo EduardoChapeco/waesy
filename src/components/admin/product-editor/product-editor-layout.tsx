@@ -102,7 +102,7 @@ export function ProductEditorLayout({ sections, children, preview }: ProductEdit
                 type="button"
                 onClick={() => scrollTo(section.id)} /* focus-visible: */
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-full whitespace-nowrap border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                  "flex items-center gap-2 px-3 py-2 min-h-11 text-xs font-semibold rounded-full whitespace-nowrap border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
                   isActive
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-card border-border text-muted-foreground hover:text-foreground",
@@ -121,7 +121,7 @@ export function ProductEditorLayout({ sections, children, preview }: ProductEdit
             variant="outline"
             size="sm"
             onClick={() => setIsWideMode(false)} /* focus-visible: */
-            className="h-8 px-3 text-xs font-semibold rounded-full gap-2 shrink-0 bg-card border-border hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring cursor-pointer hidden lg:inline-flex"
+             className="h-11 min-h-11 px-3 text-xs font-semibold rounded-full gap-2 shrink-0 bg-card border-border hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring cursor-pointer hidden lg:inline-flex"
             title="Restaurar visualização dividida com preview ao vivo"
           >
             <Minimize2 className="size-3.5 text-primary" />
@@ -153,7 +153,7 @@ export function ProductEditorLayout({ sections, children, preview }: ProductEdit
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsWideMode(true)} /* focus-visible: */
-                className="h-7 px-2 text-xs font-semibold gap-1 text-primary hover:bg-primary/10 rounded-md focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                 className="h-11 min-h-11 px-2 text-xs font-semibold gap-2 text-primary hover:bg-primary/10 rounded-md focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                 title="Expandir área para modo foco amplo (tabela cheia)"
               >
                 <Maximize2 className="size-3" />
@@ -166,7 +166,7 @@ export function ProductEditorLayout({ sections, children, preview }: ProductEdit
                 type="button"
                 onClick={() => scrollTo(section.id)} /* focus-visible: */
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-colors text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                   "flex items-center gap-3 px-3 py-2 min-h-11 text-xs font-semibold rounded-lg transition-colors text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
                   activeSection === section.id
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",

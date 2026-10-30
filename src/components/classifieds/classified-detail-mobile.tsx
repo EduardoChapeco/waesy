@@ -312,15 +312,6 @@ export function ClassifiedDetailMobile({
         },
       };
     }
-    if (false) {
-      return {
-        label: "Candidatar-se à Vaga",
-        action: () => {
-          if (onOpenApplyModal) onOpenApplyModal();
-          else if (cleanPhone) handleWhatsApp();
-        },
-      };
-    }
     if (isConversational) {
       return {
         label: isStartingChat ? "Iniciando..." : "Enviar Mensagem",

@@ -165,6 +165,7 @@ export async function trackAndOpenWhatsApp(
                 data: {
                   storeId: params.storeId!,
                   eventName: "Contact",
+                  eventId: `contact_${check.leadCode}`,
                   eventSourceUrl: originUrl || attr.landingUrl || undefined,
                   userData: {
                     fbp: attr.fbp,

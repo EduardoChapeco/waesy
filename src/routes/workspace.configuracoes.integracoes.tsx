@@ -20,6 +20,9 @@ import { getWorkspaceLinkedInStatus, getLinkedInAuthRedirectUrl, disconnectLinke
 import { getExternalAdsOAuthUrl } from "@/services/ads.functions";
 import { Linkedin, Loader2 } from "lucide-react";
 import { listWorkspaceWhatsAppInstances, saveWorkspaceWhatsAppInstance, toggleWorkspaceWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
+import { WhatsAppQrConnectModal } from "@/components/chat/whatsapp-qr-connect-modal";
+import { WhatsAppTeamSectorsDrawer } from "@/components/chat/whatsapp-team-sectors-drawer";
+import { QrCode } from "lucide-react";
 import { testCurrentInfotravelConnection } from "@/services/infotravel";
 
 export const Route = createFileRoute("/workspace/configuracoes/integracoes")({
@@ -445,6 +448,8 @@ function WhatsAppInstancesPanel({
 }) {
   const [instances, setInstances] = useState(initialInstances || []);
   const [saving, setSaving] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [sectorsDrawerOpen, setSectorsDrawerOpen] = useState(false);
   const [form, setForm] = useState({
     displayName: "WhatsApp principal",
     provider: "meta_cloud_api" as "meta_cloud_api" | "evolution_api" | "wasender_api" | "render_bridge" | "custom_webhook",
@@ -483,7 +488,7 @@ function WhatsAppInstancesPanel({
     finally { setSaving(false); }
   };
   return <Card className="lg:col-span-2 border-primary/20">
-    <CardHeader><CardTitle className="text-sm flex items-center gap-2"><MessageCircle className="size-4 text-primary" /> Instâncias WhatsApp e canais</CardTitle><CardDescription className="text-xs">Cada número tem credenciais, status e auditoria próprios. Meta oficial e conectores não oficiais permanecem separados.</CardDescription></CardHeader>
+    <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><CardTitle className="text-sm flex items-center gap-2"><MessageCircle className="size-4 text-primary" /> Instâncias WhatsApp e canais</CardTitle><CardDescription className="text-xs">Cada número tem credenciais, status e auditoria próprios. Meta oficial e conectores não oficiais permanecem separados.</CardDescription></div><div className="flex flex-wrap items-center gap-2"><Button type="button" size="sm" onClick={() => setQrModalOpen(true)} className="h-11 min-h-11 text-xs font-bold gap-2"><QrCode className="size-4" />Conectar via QR Code</Button><Button type="button" size="sm" variant="outline" onClick={() => setSectorsDrawerOpen(true)} className="h-11 min-h-11 text-xs gap-2"><Layers className="size-4" />Setores & Permissões</Button></div></CardHeader>
     <CardContent className="space-y-5">
       <div className="grid gap-3">{instances.map((instance) => <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3"><div className="min-w-0"><div className="flex items-center gap-2"><span className="font-semibold text-sm truncate">{instance.display_name}</span><Badge variant={instance.is_active ? "default" : "secondary"}>{instance.status}</Badge><Badge variant="outline">{instance.connection_mode === "official" ? "Oficial" : "Não oficial"}</Badge></div><p className="text-2xs text-muted-foreground mt-1">{instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "identificador pendente"} · {instance.instance_key}</p></div><Button type="button" size="sm" variant={instance.is_active ? "outline" : "default"} disabled={saving} onClick={async () => { try { await toggleWorkspaceWhatsAppInstance({ data: { id: instance.id, active: !instance.is_active } }); await refresh(); } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao alterar instância."); } }} className="h-8 text-xs shrink-0">{instance.is_active ? "Desativar" : "Ativar"}</Button></div>)}{instances.length === 0 && <p className="text-xs text-muted-foreground border border-dashed rounded-lg p-4">Nenhuma instância cadastrada.</p>}</div>
       <form onSubmit={save} className="grid md:grid-cols-2 gap-3 border-t border-border/60 pt-4">
@@ -495,7 +500,10 @@ function WhatsAppInstancesPanel({
         {form.provider === "meta_cloud_api" && <><div><Label className="text-xs">WABA ID</Label><Input className="h-9 text-xs" value={form.businessAccountId} onChange={(e) => setForm({ ...form, businessAccountId: e.target.value })} /></div><div><Label className="text-xs">Access Token</Label><Input type="password" className="h-9 text-xs" value={form.accessToken} onChange={(e) => setForm({ ...form, accessToken: e.target.value })} /></div><div><Label className="text-xs">App Secret</Label><Input type="password" className="h-9 text-xs" value={form.appSecret} onChange={(e) => setForm({ ...form, appSecret: e.target.value })} /></div><div><Label className="text-xs">Verify Token</Label><Input type="password" className="h-9 text-xs" value={form.verifyToken} onChange={(e) => setForm({ ...form, verifyToken: e.target.value })} /></div></>}
         <div className="md:col-span-2 flex justify-end"><Button type="submit" disabled={saving} size="sm" className="h-8 text-xs">{saving ? "Salvando..." : "Cadastrar instância pendente"}</Button></div>
       </form>
+      {/* drawer-hook */}
     </CardContent>
+    <WhatsAppQrConnectModal open={qrModalOpen} onOpenChange={setQrModalOpen} instances={instances} onInstancesUpdated={refresh} />
+    <WhatsAppTeamSectorsDrawer open={sectorsDrawerOpen} onOpenChange={setSectorsDrawerOpen} companyId="" instanceId={instances[0]?.id} />
   </Card>;
 }
 

@@ -97,7 +97,11 @@ export function decryptSecret(encryptedPayload: string): string {
   const authTag = Buffer.from(authTagHex, "hex");
   const ciphertext = Buffer.from(ciphertextHex, "hex");
 
-  const decipher = createDecipheriv(ALGORITHM, key, iv);
+  if (authTag.length !== TAG_LENGTH) {
+    throw new Error(`[crypto-vault] Auth tag inválida (esperado ${TAG_LENGTH} bytes, recebido ${authTag.length})`);
+  }
+
+  const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: TAG_LENGTH });
   decipher.setAuthTag(authTag); // Valida integridade — lança se adulterado
 
   const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);

@@ -59,8 +59,13 @@ export interface P2PTransferResultDTO {
   pixCopiaECola?: string;
 }
 
-// Chave canônica para HMAC de comprovantes (em prod lida via env)
-const RECEIPT_HMAC_SECRET = process.env.FINANCIAL_RECEIPT_SECRET || "waesy_sec_rec_hmac_2026_ledger_sign";
+function getReceiptHmacSecret(): string {
+  const secret = process.env.FINANCIAL_RECEIPT_SECRET;
+  if (!secret) {
+    throw new Error("FINANCIAL_RECEIPT_SECRET não configurado; assinatura financeira bloqueada.");
+  }
+  return secret;
+}
 
 /**
  * Utilitário puro: Gera hash chain para entrada do ledger
@@ -91,7 +96,7 @@ export function signReceiptPayload(payload: {
   payeeName: string;
 }): string {
   const canonicalData = `${payload.transactionId}:${payload.authenticationCode}:${payload.amountCents}:${payload.issuedAt}:${payload.payerName}:${payload.payeeName}`;
-  return createHmac("sha256", RECEIPT_HMAC_SECRET).update(canonicalData).digest("hex");
+  return createHmac("sha256", getReceiptHmacSecret()).update(canonicalData).digest("hex");
 }
 
 /**
@@ -597,6 +602,9 @@ export async function settlePixDepositWebhookAtomic(params: {
   amountCents: number;
   provider: string;
 }): Promise<{ settled: boolean; alreadySettled?: boolean }> {
+  if (!params.providerRef.trim() || !params.provider.trim() || params.amountCents <= 0) {
+    throw new Error("Confirmação Pix inválida: provedor, referência e valor são obrigatórios.");
+  }
   const supabase = getServerClient();
 
   const { data: entry } = await supabase
@@ -615,6 +623,10 @@ export async function settlePixDepositWebhookAtomic(params: {
 
   if (entry.status !== "PENDING") {
     throw new Error(`Transação ${params.transactionId} não está pendente (status atual: ${entry.status}).`);
+  }
+
+  if (Number(entry.amount_cents) !== params.amountCents) {
+    throw new Error("Valor confirmado pelo provedor diverge do valor pendente.");
   }
 
   const nowIso = new Date().toISOString();
@@ -638,7 +650,7 @@ export async function settlePixDepositWebhookAtomic(params: {
   });
 
   // Atualiza para SETTLED atomicamente
-  const { error: updateErr } = await supabase
+  const { data: updatedEntry, error: updateErr } = await supabase
     .from("financial_ledger_entries")
     .update({
       status: "SETTLED",
@@ -650,10 +662,15 @@ export async function settlePixDepositWebhookAtomic(params: {
       },
     })
     .eq("id", entry.id)
-    .eq("status", "PENDING");
+    .eq("status", "PENDING")
+    .select("id")
+    .maybeSingle();
 
   if (updateErr) {
     throw new Error(`Falha ao liquidar lançamento contábil: ${updateErr.message}`);
+  }
+  if (!updatedEntry) {
+    return { settled: false, alreadySettled: true };
   }
 
   // Gera comprovante oficial assinado
@@ -712,9 +729,13 @@ export const getReceiptDetails = createServerFn({ method: "GET" })
     })
   )
   .handler(async ({ data: { idOrCode } }): Promise<FinancialReceiptDTO | null> => {
+    const identity = await getServerIdentity();
     const supabase = getServerClient();
 
-    let query = supabase.from("financial_receipts").select("*");
+    let query = supabase
+      .from("financial_receipts")
+      .select("*")
+      .or(`payer_profile_id.eq.${identity.id},payee_profile_id.eq.${identity.id}`);
 
     // Verifica se é UUID ou código alfanumérico
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrCode);

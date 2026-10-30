@@ -90,6 +90,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  description: description.trim(),
  amount_cents: amountCents,
  payment_method: paymentMethod,
+       idempotency_key: globalThis.crypto.randomUUID(),
  },
  });
 
@@ -106,10 +107,16 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  };
 
  const handleDeleteEntry = async (id: string) => {
- if (!window.confirm("Deseja realmente remover este lançamento?")) return;
  try {
- await deleteTourCashEntry({ data: { store_id: storeId, entry_id: id } });
- toast.success("Lançamento removido");
+ await deleteTourCashEntry({
+   data: {
+     store_id: storeId,
+     entry_id: id,
+     idempotency_key: globalThis.crypto.randomUUID(),
+     reason: "Estorno solicitado pelo operador",
+   },
+ });
+ toast.success("Lançamento estornado");
  loadData();
  } catch (err: any) {
  toast.error(err?.message || "Erro ao remover lançamento");
@@ -255,7 +262,10 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  variant="ghost"
  size="icon"
  onClick={() => handleDeleteEntry(item.id)}
- className="size-7 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer"
+ disabled={Boolean(item.reversal_of_id || item.reversed_at)}
+ aria-label={item.reversal_of_id || item.reversed_at ? "Lançamento já estornado" : "Estornar lançamento"}
+ title={item.reversal_of_id || item.reversed_at ? "Lançamento já estornado" : "Estornar lançamento"}
+ className="size-11 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer disabled:cursor-not-allowed"
  >
  <Trash2 className="size-3.5" />
  </Button>

@@ -94,7 +94,7 @@ describe("Waesy Bank — CardSettingsDrawer", () => {
 });
 
 describe("Waesy Bank — LoanSimulationSheet", () => {
-  it("renderiza a simulação de empréstimo com limite pré-aprovado e parcelas", () => {
+  it("renderiza a simulação de empréstimo e solicita análise sem prometer saque", () => {
     const html = renderToStaticMarkup(
       <LoanSimulationSheet
         open={true}
@@ -108,7 +108,7 @@ describe("Waesy Bank — LoanSimulationSheet", () => {
     expect(html).toContain("Quanto você precisa?");
     expect(html).toContain("Em quantas parcelas?");
     expect(html).toContain("Valor da parcela");
-    expect(html).toContain("Confirmar e Sacar via Pix");
+    expect(html).toContain("Solicitar análise");
   });
 });
 

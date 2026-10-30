@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-10-30T03:40:41.166Z",
-  "totalFiles": 2552,
-  "totalImported": 1987,
-  "discoveredUnreferencedCount": 72,
-  "intentionalUnreferencedCount": 72,
+  "timestamp": "2026-10-30T19:20:17.556Z",
+  "totalFiles": 2574,
+  "totalImported": 2004,
+  "discoveredUnreferencedCount": 71,
+  "intentionalUnreferencedCount": 71,
   "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
     "src/components/admin/builder/builder-canvas.tsx",
@@ -40,7 +40,6 @@
     "src/components/ui/aspect-ratio.tsx",
     "src/components/ui/breadcrumb.tsx",
     "src/components/ui/chart.tsx",
-    "src/components/ui/collapsible.tsx",
     "src/components/ui/context-menu.tsx",
     "src/components/ui/fluid-noise-surface.tsx",
     "src/components/ui/hover-card.tsx",

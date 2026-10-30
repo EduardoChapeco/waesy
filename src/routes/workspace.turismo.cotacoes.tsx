@@ -905,7 +905,7 @@ export default function AgencyQuotesPage() {
                      setFlightOffers(mapped);
                      setFlightSearchFeedback({
                        searched: true,
-                       isConfigured: res.isInfotravelConfigured,
+                       isConfigured: res.isWoobaConfigured,
                        message: res.statusMessage,
                      });
                      if (mapped.length > 0) {
@@ -926,14 +926,14 @@ export default function AgencyQuotesPage() {
                    <div className="space-y-1">
                      <p className="text-xs font-bold text-foreground">
                        {flightSearchFeedback.isConfigured
-                         ? "Nenhum voo encontrado para os filtros informados"
-                         : "Conector GDS InfoTravel não configurado nesta agência"}
+                         ? "Nenhum voo Wooba encontrado para os filtros informados"
+                         : "Conector Wooba não configurado nesta agência"}
                      </p>
                      <p className="text-xs text-muted-foreground">
                        {flightSearchFeedback.message ||
                          (flightSearchFeedback.isConfigured
                            ? "Tente alterar a data de embarque ou utilize o Studio Universal para importar tarifa via OCR."
-                           : "Ative suas credenciais InfoTravel no Hub de Integrações para consultar disponibilidade aérea em tempo real.")}
+                           : "Ative suas credenciais Wooba no Hub de Integrações para consultar disponibilidade aérea em tempo real.")}
                      </p>
                    </div>
                    {!flightSearchFeedback.isConfigured && (

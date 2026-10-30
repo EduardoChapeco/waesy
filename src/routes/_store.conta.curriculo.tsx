@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { SeoGeoOptimizationPanel, type SeoGeoMetadata } from "@/components/seo";
 import {
   Printer,
   Download,
@@ -35,7 +36,7 @@ import {
   Linkedin,
   Languages as LanguagesIcon,
   Palette,
-  Sparkles,
+  Globe,
   ZoomIn,
   ZoomOut,
   Copy,
@@ -244,8 +245,14 @@ export default function MeuCurriculoPage() {
   const activeResume = resumesList[activeResumeIndex] || null;
 
   // ── ESTADO DA VIEW ATIVA NO EDITOR ──
-  const [activeTab, setActiveTab] = useState<"conteudo" | "design" | "analisar" | "vagas" | "integracoes">("conteudo");
+  const [activeTab, setActiveTab] = useState<"conteudo" | "design" | "seo" | "analisar" | "vagas" | "integracoes">("conteudo");
   const [activeMobileView, setActiveMobileView] = useState<"edit" | "preview">("edit");
+  const [seoGeo, setSeoGeo] = useState<SeoGeoMetadata>({
+    seoTitle: "",
+    seoDescription: "",
+    keywords: [],
+    allowAiIndexing: true,
+  });
 
   // ── ESTADOS DE ZOOM DA FOLHA A4 ──
   const [zoomLevel, setZoomLevel] = useState<number>(100);
@@ -933,7 +940,8 @@ export default function MeuCurriculoPage() {
             {[
               { id: "conteudo", label: "Conteúdo", icon: FileText },
               { id: "design", label: "Design & Estilo", icon: Palette },
-              { id: "analisar", label: "Análise ATS", icon: Sparkles },
+              { id: "seo", label: "SEO & Busca", icon: Globe },
+              { id: "analisar", label: "Análise ATS", icon: ShieldCheck },
               { id: "vagas", label: "Vagas & Match", icon: Briefcase },
               { id: "integracoes", label: "LinkedIn", icon: Linkedin },
             ].map((tab) => {
@@ -1497,6 +1505,20 @@ export default function MeuCurriculoPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* ── ABA: OTIMIZAÇÃO SEO, GEO E INDEXAÇÃO AGÊNTICA ── */}
+            {activeTab === "seo" && (
+              <div className="space-y-4">
+                <SeoGeoOptimizationPanel
+                  value={seoGeo}
+                  onChange={setSeoGeo}
+                  referenceTitle={`${fullName} - ${occupation}`}
+                  referenceDescription={summary}
+                  referenceAddress={`${city} / ${state}`}
+                  defaultOpen={true}
+                />
               </div>
             )}
 

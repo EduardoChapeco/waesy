@@ -7,6 +7,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getCurrentIdentity } from "@/services/cart-helpers";
+import { getServerIdentity } from "@/lib/server-access";
+import { createCanonicalQuoteSession } from "@/services/travel-quote-session.service";
 
 // ─── Interfaces & Tipagens ───────────────────────────────────────────────────
 
@@ -627,6 +629,11 @@ export type TravelTripType = "air_package" | "hotel_only" | "cruise" | "bus" | "
 
 export interface TravelQuoteRequestDTO {
  id: string;
+ store_id?: string | null;
+ quote_session_id?: string | null;
+ lead_id?: string | null;
+ room_occupancies?: Array<{ adults: number; childrenAges: number[] }>;
+ source?: string | null;
  origin_city: string;
  origin_iata?: string | null;
  destination_city: string;
@@ -772,6 +779,11 @@ export const listAgencyTravelQuotes = createServerFn({ method: "GET" })
     (rows || []).forEach((r: any) => {
       quotesMap.set(r.id, {
         id: r.id,
+        store_id: r.store_id,
+        quote_session_id: r.quote_session_id,
+        lead_id: r.lead_id,
+        room_occupancies: r.room_occupancies || [],
+        source: r.source,
         origin_city: r.origin_city,
         origin_iata: r.origin_iata,
         destination_city: r.destination_city,
@@ -853,6 +865,9 @@ export const listAgencyTravelQuotes = createServerFn({ method: "GET" })
   });
 
 export const createAgencyTravelQuoteSchema = z.object({
+ store_id: z.string().uuid().optional().nullable(),
+ quote_session_id: z.string().uuid().optional().nullable(),
+ lead_id: z.string().uuid().optional().nullable(),
  contact_name: z.string().min(2, "Nome do cliente é obrigatório"),
  contact_whatsapp: z.string().min(8, "WhatsApp do cliente é obrigatório"),
  contact_email: z.string().optional().nullable(),
@@ -865,12 +880,18 @@ export const createAgencyTravelQuoteSchema = z.object({
  adults_count: z.number().int().min(1).default(2),
  children_count: z.number().int().min(0).default(0),
  children_ages: z.array(z.number().int()).optional().nullable(),
+ room_occupancies: z.array(z.object({
+   adults: z.number().int().min(1).max(9),
+   childrenAges: z.array(z.number().int().min(0).max(17)).max(8),
+ })).max(8).optional().default([]),
  flexible_dates: z.boolean().optional().default(false),
  rooms_count: z.number().int().min(1).default(1),
  trip_type: z.enum(["air_package", "hotel_only", "cruise", "bus", "visa_assistance"]).default("air_package"),
  budget_tier: z.enum(["economy", "standard", "premium", "luxury"]).default("standard"),
  special_notes: z.string().optional().nullable(),
  agency_notes: z.string().optional().nullable(),
+ source: z.string().min(1).max(80).default("workspace"),
+ metadata: z.record(z.unknown()).optional().default({}),
  quote_amount_cents: z.number().int().nonnegative().optional().nullable(),
  status: z.enum(["new", "analyzing", "quoted", "won", "lost"]).default("new"),
 });
@@ -879,9 +900,61 @@ export const createAgencyTravelQuote = createServerFn({ method: "POST" })
  .validator(createAgencyTravelQuoteSchema)
  .handler(async ({ data }) => {
  const supabase = getServerClient();
+ const identity = await getServerIdentity().catch(() => null);
+ const elevatedRoles = ["owner", "admin", "manager", "master", "platform_admin", "superadmin"];
+ if (data.store_id && (!identity || (data.store_id !== identity.store_id && !elevatedRoles.includes(identity.role)))) {
+   throw new Error("A loja informada não pertence ao contexto autenticado.");
+ }
+ const storeId = data.store_id || identity?.store_id || null;
+ const roomOccupancies = data.room_occupancies.length > 0
+   ? data.room_occupancies
+   : [{ adults: data.adults_count, childrenAges: data.children_ages || [] }];
+ let quoteSessionId = data.quote_session_id || null;
+
+ if (!quoteSessionId && storeId && identity?.id) {
+   quoteSessionId = await createCanonicalQuoteSession({
+     agencyId: storeId,
+     userId: identity.id,
+     productType: data.trip_type === "hotel_only" ? "hotel" : data.trip_type === "bus" ? "bus" : "package",
+     payload: {
+       originCity: data.origin_city,
+       destinationCity: data.destination_city,
+       departureDate: data.departure_date || null,
+       returnDate: data.return_date || null,
+       roomOccupancies,
+       tripType: data.trip_type,
+       source: data.source,
+     },
+   });
+ }
+
+ if (quoteSessionId && storeId) {
+   const { data: session, error: sessionError } = await supabase
+     .from("travel_quote_sessions")
+     .select("id")
+     .eq("id", quoteSessionId)
+     .eq("agency_id", storeId)
+     .maybeSingle();
+   if (sessionError || !session?.id) throw new Error("A sessão de busca não pertence à agência desta cotação.");
+ }
+ if (data.lead_id && storeId) {
+   const { data: lead, error: leadLookupError } = await supabase
+     .from("leads_crm")
+     .select("id")
+     .eq("id", data.lead_id)
+     .eq("store_id", storeId)
+     .maybeSingle();
+   if (leadLookupError || !lead?.id) throw new Error("O lead informado não pertence à agência desta cotação.");
+ }
+
+ const protocolNumber = `COT-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
  const { data: inserted, error } = await supabase
  .from("travel_quotes")
  .insert({
+ store_id: storeId,
+ protocol_number: protocolNumber,
+ quote_session_id: quoteSessionId,
+ lead_id: data.lead_id || null,
  origin_city: data.origin_city,
  origin_iata: data.origin_iata || null,
  destination_city: data.destination_city,
@@ -892,6 +965,7 @@ export const createAgencyTravelQuote = createServerFn({ method: "POST" })
  adults_count: data.adults_count,
  children_count: data.children_count,
  children_ages: data.children_ages || [],
+ room_occupancies: roomOccupancies,
  flexible_dates: data.flexible_dates ?? false,
  trip_type: data.trip_type,
  contact_name: data.contact_name,
@@ -901,6 +975,8 @@ export const createAgencyTravelQuote = createServerFn({ method: "POST" })
  special_notes: data.special_notes || null,
  agency_notes: data.agency_notes || null,
  quote_amount_cents: data.quote_amount_cents || null,
+ source: data.source,
+ metadata: data.metadata,
  status: data.status,
  })
  .select("id")
@@ -911,7 +987,46 @@ export const createAgencyTravelQuote = createServerFn({ method: "POST" })
  throw new Error(error.message || "Erro ao cadastrar cotação.");
  }
 
- return { id: inserted.id };
+ let leadId = data.lead_id || null;
+ if (storeId && !leadId) {
+   const phone = data.contact_whatsapp.replace(/\D/g, "");
+   const email = data.contact_email?.trim().toLowerCase() || null;
+   const existingByPhone = phone
+     ? await supabase.from("leads_crm").select("id").eq("store_id", storeId).eq("phone", phone).maybeSingle()
+     : { data: null };
+   const existingByEmail = !existingByPhone.data && email
+     ? await supabase.from("leads_crm").select("id").eq("store_id", storeId).eq("email", email).maybeSingle()
+     : { data: null };
+   leadId = existingByPhone.data?.id || existingByEmail.data?.id || null;
+   if (!leadId) {
+     const { data: lead, error: leadError } = await supabase.from("leads_crm").insert({
+       store_id: storeId,
+       full_name: data.contact_name,
+       email,
+       phone: phone || null,
+       title: `Cotação de viagem para ${data.destination_city}`,
+       destination: data.destination_city,
+       travel_start: data.departure_date || null,
+       travel_end: data.return_date || null,
+       estimated_value_cents: data.quote_amount_cents || null,
+       source: data.source,
+       message: data.special_notes || data.agency_notes || null,
+       custom_fields: {
+         room_occupancies: roomOccupancies,
+         quote_id: inserted.id,
+         quote_session_id: quoteSessionId,
+       },
+       status: "new",
+     }).select("id").single();
+     if (leadError || !lead?.id) {
+       throw new Error(`Cotação salva, mas o lead CRM não foi vinculado: ${leadError?.message || "ID ausente"}`);
+     }
+     leadId = lead.id;
+   }
+   await supabase.from("travel_quotes").update({ lead_id: leadId }).eq("id", inserted.id);
+ }
+
+ return { id: inserted.id, leadId, quoteSessionId, protocol: protocolNumber };
  });
 
 export const updateAgencyTravelQuoteSchema = z.object({

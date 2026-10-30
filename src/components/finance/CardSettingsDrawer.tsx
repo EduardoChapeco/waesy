@@ -16,7 +16,7 @@
  * ============================================================================
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   CreditCard,
   Lock,
@@ -52,7 +52,10 @@ export interface CardSettingsDrawerProps {
   maxLimitCents?: number;
   isTemporaryBlocked?: boolean;
   onToggleBlock?: (blocked: boolean) => void;
-  onUpdateLimit?: (newLimitCents: number) => void;
+  onUpdateLimit?: (newLimitCents: number) => void | Promise<void>;
+  onHelpClick?: () => void;
+  onVirtualCardClick?: () => void;
+  onReplacementRequest?: () => void;
   className?: string;
 }
 
@@ -68,12 +71,16 @@ export function CardSettingsDrawer({
   isTemporaryBlocked = false,
   onToggleBlock,
   onUpdateLimit,
+  onHelpClick,
+  onVirtualCardClick,
+  onReplacementRequest,
   className,
 }: CardSettingsDrawerProps) {
   const [showSensitiveData, setShowSensitiveData] = useState(false);
   const [isLocked, setIsLocked] = useState(isTemporaryBlocked);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showLimitSlider, setShowLimitSlider] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Switches de segurança
   const [contactlessEnabled, setContactlessEnabled] = useState(true);
@@ -82,23 +89,38 @@ export function CardSettingsDrawer({
   // Slider de Limite (em reais)
   const [sliderValue, setSliderValue] = useState<number>(currentLimitCents / 100);
 
-  const handleCopy = (text: string, label: string) => {
+  useEffect(() => {
+    setIsLocked(isTemporaryBlocked);
+  }, [isTemporaryBlocked]);
+
+  useEffect(() => {
+    setSliderValue(currentLimitCents / 100);
+  }, [currentLimitCents]);
+
+  const handleCopy = async (text: string, label: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-      setCopiedField(label);
-      toast.success(`${label} copiado!`);
-      setTimeout(() => setCopiedField(null), 2000);
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopiedField(label);
+        toast.success(`${label} copiado!`);
+        setTimeout(() => setCopiedField(null), 2000);
+      } catch {
+        toast.error(`Não foi possível copiar ${label.toLowerCase()}.`);
+      }
     }
   };
 
-  const handleToggleLock = () => {
+  const handleToggleLock = async () => {
     const next = !isLocked;
-    setIsLocked(next);
-    onToggleBlock?.(next);
-    if (next) {
-      toast.warning("Cartão bloqueado temporariamente.");
-    } else {
-      toast.success("Cartão desbloqueado para compras.");
+    setIsSaving(true);
+    try {
+      await onToggleBlock?.(next);
+      setIsLocked(next);
+      toast.success(next ? "Cartão bloqueado temporariamente." : "Cartão desbloqueado para compras.");
+    } catch {
+      toast.error("Não foi possível sincronizar o bloqueio do cartão.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -138,7 +160,7 @@ export function CardSettingsDrawer({
 
           <button
             type="button"
-            onClick={() => toast.info("Central de Ajuda e Segurança")}
+      onClick={onHelpClick}
             aria-label="Ajuda sobre configurações do cartão"
             className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
           >
@@ -236,6 +258,7 @@ export function CardSettingsDrawer({
                 <Switch
                   checked={isLocked}
                   onCheckedChange={handleToggleLock}
+                  disabled={isSaving}
                   aria-label="Ativar bloqueio temporário"
                   className="data-[state=checked]:bg-rose-500 focus-visible:ring-2 focus-visible:ring-lime-500"
                 />
@@ -244,7 +267,10 @@ export function CardSettingsDrawer({
               {/* Item 2: Cartão Virtual */}
               <button
                 type="button"
-                onClick={() => toast.info("Detalhes do Cartão Virtual Ativo")}
+                onClick={() => {
+                  onVirtualCardClick?.();
+                  if (!onVirtualCardClick) setShowSensitiveData(true);
+                }}
                 className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
@@ -311,9 +337,11 @@ export function CardSettingsDrawer({
                       min={100}
                       max={maxLimitCents / 100}
                       step={50}
-                      onValueChange={(val) => {
-                        setSliderValue(val[0]);
-                        onUpdateLimit?.(val[0] * 100);
+                      onValueChange={(val) => setSliderValue(val[0] ?? 100)}
+                      onValueCommit={(val) => {
+                        const committedValue = val[0] ?? 100;
+                        setSliderValue(committedValue);
+                        void onUpdateLimit?.(committedValue * 100);
                       }}
                       className="py-2"
                     />
@@ -333,7 +361,8 @@ export function CardSettingsDrawer({
               {/* Item: Pedir segunda via */}
               <button
                 type="button"
-                onClick={() => toast.info("Solicitação de 2ª via do cartão físico enviada!")}
+                onClick={onReplacementRequest}
+                disabled={!onReplacementRequest}
                 className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
@@ -344,8 +373,10 @@ export function CardSettingsDrawer({
                     <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
                       Pedir segunda via
                     </span>
-                    <span className="text-2xs text-muted-foreground block truncate">
-                      Envio em até 5 dias úteis para seu endereço
+                    <span className="text-2xs text-muted-foreground block">
+                      {onReplacementRequest
+                        ? "Solicite pelo atendimento da conta"
+                        : "Atendimento indisponível no momento"}
                     </span>
                   </div>
                 </div>

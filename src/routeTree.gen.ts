@@ -13,8 +13,12 @@ import { Route as StoreRouteImport } from './routes/_store'
 import { Route as AdminMasterRouteImport } from './routes/admin-master'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as PainelRouteImport } from './routes/painel'
+import { Route as SitemapClassificadosDotxmlRouteImport } from './routes/sitemap-classificados[.]xml'
+import { Route as SitemapEmpresasDotxmlRouteImport } from './routes/sitemap-empresas[.]xml'
+import { Route as SitemapIndexDotxmlRouteImport } from './routes/sitemap-index[.]xml'
 import { Route as SitemapNewsDotxmlRouteImport } from './routes/sitemap-news[.]xml'
 import { Route as SitemapProductsDotxmlRouteImport } from './routes/sitemap-products[.]xml'
+import { Route as SitemapProdutosDotxmlRouteImport } from './routes/sitemap-produtos[.]xml'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as WaesynewsRouteImport } from './routes/waesynews'
@@ -467,6 +471,22 @@ const PainelRoute = PainelRouteImport.update({
   path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapClassificadosDotxmlRoute =
+  SitemapClassificadosDotxmlRouteImport.update({
+    id: '/sitemap-classificados.xml',
+    path: '/sitemap-classificados.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SitemapEmpresasDotxmlRoute = SitemapEmpresasDotxmlRouteImport.update({
+  id: '/sitemap-empresas.xml',
+  path: '/sitemap-empresas.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapIndexDotxmlRoute = SitemapIndexDotxmlRouteImport.update({
+  id: '/sitemap-index.xml',
+  path: '/sitemap-index.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapNewsDotxmlRoute = SitemapNewsDotxmlRouteImport.update({
   id: '/sitemap-news.xml',
   path: '/sitemap-news.xml',
@@ -475,6 +495,11 @@ const SitemapNewsDotxmlRoute = SitemapNewsDotxmlRouteImport.update({
 const SitemapProductsDotxmlRoute = SitemapProductsDotxmlRouteImport.update({
   id: '/sitemap-products.xml',
   path: '/sitemap-products.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapProdutosDotxmlRoute = SitemapProdutosDotxmlRouteImport.update({
+  id: '/sitemap-produtos.xml',
+  path: '/sitemap-produtos.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -2780,8 +2805,12 @@ export interface FileRoutesByFullPath {
   '/admin-master': typeof AdminMasterRouteWithChildren
   '/home': typeof HomeRoute
   '/painel': typeof PainelRoute
+  '/sitemap-classificados.xml': typeof SitemapClassificadosDotxmlRoute
+  '/sitemap-empresas.xml': typeof SitemapEmpresasDotxmlRoute
+  '/sitemap-index.xml': typeof SitemapIndexDotxmlRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
+  '/sitemap-produtos.xml': typeof SitemapProdutosDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
   '/waesynews': typeof WaesynewsRoute
@@ -3217,8 +3246,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/painel': typeof PainelRoute
+  '/sitemap-classificados.xml': typeof SitemapClassificadosDotxmlRoute
+  '/sitemap-empresas.xml': typeof SitemapEmpresasDotxmlRoute
+  '/sitemap-index.xml': typeof SitemapIndexDotxmlRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
+  '/sitemap-produtos.xml': typeof SitemapProdutosDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
   '/waesynews': typeof WaesynewsRoute
@@ -3650,8 +3683,12 @@ export interface FileRoutesById {
   '/admin-master': typeof AdminMasterRouteWithChildren
   '/home': typeof HomeRoute
   '/painel': typeof PainelRoute
+  '/sitemap-classificados.xml': typeof SitemapClassificadosDotxmlRoute
+  '/sitemap-empresas.xml': typeof SitemapEmpresasDotxmlRoute
+  '/sitemap-index.xml': typeof SitemapIndexDotxmlRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
+  '/sitemap-produtos.xml': typeof SitemapProdutosDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
   '/waesynews': typeof WaesynewsRoute
@@ -4092,8 +4129,12 @@ export interface FileRouteTypes {
     | '/admin-master'
     | '/home'
     | '/painel'
+    | '/sitemap-classificados.xml'
+    | '/sitemap-empresas.xml'
+    | '/sitemap-index.xml'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
+    | '/sitemap-produtos.xml'
     | '/sitemap.xml'
     | '/status'
     | '/waesynews'
@@ -4529,8 +4570,12 @@ export interface FileRouteTypes {
   to:
     | '/home'
     | '/painel'
+    | '/sitemap-classificados.xml'
+    | '/sitemap-empresas.xml'
+    | '/sitemap-index.xml'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
+    | '/sitemap-produtos.xml'
     | '/sitemap.xml'
     | '/status'
     | '/waesynews'
@@ -4961,8 +5006,12 @@ export interface FileRouteTypes {
     | '/admin-master'
     | '/home'
     | '/painel'
+    | '/sitemap-classificados.xml'
+    | '/sitemap-empresas.xml'
+    | '/sitemap-index.xml'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
+    | '/sitemap-produtos.xml'
     | '/sitemap.xml'
     | '/status'
     | '/waesynews'
@@ -5402,8 +5451,12 @@ export interface RootRouteChildren {
   AdminMasterRoute: typeof AdminMasterRouteWithChildren
   HomeRoute: typeof HomeRoute
   PainelRoute: typeof PainelRoute
+  SitemapClassificadosDotxmlRoute: typeof SitemapClassificadosDotxmlRoute
+  SitemapEmpresasDotxmlRoute: typeof SitemapEmpresasDotxmlRoute
+  SitemapIndexDotxmlRoute: typeof SitemapIndexDotxmlRoute
   SitemapNewsDotxmlRoute: typeof SitemapNewsDotxmlRoute
   SitemapProductsDotxmlRoute: typeof SitemapProductsDotxmlRoute
+  SitemapProdutosDotxmlRoute: typeof SitemapProdutosDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
   WaesynewsRoute: typeof WaesynewsRoute
@@ -5479,6 +5532,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap-classificados.xml': {
+      id: '/sitemap-classificados.xml'
+      path: '/sitemap-classificados.xml'
+      fullPath: '/sitemap-classificados.xml'
+      preLoaderRoute: typeof SitemapClassificadosDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap-empresas.xml': {
+      id: '/sitemap-empresas.xml'
+      path: '/sitemap-empresas.xml'
+      fullPath: '/sitemap-empresas.xml'
+      preLoaderRoute: typeof SitemapEmpresasDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap-index.xml': {
+      id: '/sitemap-index.xml'
+      path: '/sitemap-index.xml'
+      fullPath: '/sitemap-index.xml'
+      preLoaderRoute: typeof SitemapIndexDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap-news.xml': {
       id: '/sitemap-news.xml'
       path: '/sitemap-news.xml'
@@ -5491,6 +5565,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap-products.xml'
       fullPath: '/sitemap-products.xml'
       preLoaderRoute: typeof SitemapProductsDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap-produtos.xml': {
+      id: '/sitemap-produtos.xml'
+      path: '/sitemap-produtos.xml'
+      fullPath: '/sitemap-produtos.xml'
+      preLoaderRoute: typeof SitemapProdutosDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -9510,8 +9591,12 @@ const rootRouteChildren: RootRouteChildren = {
   AdminMasterRoute: AdminMasterRouteWithChildren,
   HomeRoute: HomeRoute,
   PainelRoute: PainelRoute,
+  SitemapClassificadosDotxmlRoute: SitemapClassificadosDotxmlRoute,
+  SitemapEmpresasDotxmlRoute: SitemapEmpresasDotxmlRoute,
+  SitemapIndexDotxmlRoute: SitemapIndexDotxmlRoute,
   SitemapNewsDotxmlRoute: SitemapNewsDotxmlRoute,
   SitemapProductsDotxmlRoute: SitemapProductsDotxmlRoute,
+  SitemapProdutosDotxmlRoute: SitemapProdutosDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatusRoute: StatusRoute,
   WaesynewsRoute: WaesynewsRoute,

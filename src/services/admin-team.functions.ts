@@ -3,6 +3,19 @@ import { z } from "zod";
 
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { cleanDocument, validateCnpjMod11, validateCpfMod11 } from "@/lib/document-validator";
+
+const contractorDocumentSchema = z
+ .string()
+ .trim()
+ .max(20, "Documento excede o tamanho permitido.")
+ .refine((value) => {
+  if (!value) return true;
+  const digits = cleanDocument(value);
+  if (digits.length === 11) return validateCpfMod11(value);
+  if (digits.length === 14) return validateCnpjMod11(value);
+  return /^[0-9A-Za-z./-]{5,20}$/.test(value);
+ }, "Informe um CPF, CNPJ ou RG válido.");
 
 // ---------------------------------------------------------------------------
 // Team Management (Equipe)
@@ -307,7 +320,7 @@ export const upsertContractor = createServerFn({ method: "POST" })
         "atendimento",
         "outro",
       ]).default("outro"),
-      documentNumber: z.string().optional().nullable(),
+      documentNumber: contractorDocumentSchema.optional().nullable(),
       contactPhone: z.string().optional().nullable(),
       contactEmail: z.string().optional().nullable(),
       hourlyRateCents: z.number().int().min(0).default(0),

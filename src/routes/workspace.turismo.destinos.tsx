@@ -631,7 +631,7 @@ export default function WorkspaceDestinationsPage() {
  <Button
  size="sm"
  onClick={handleOpenCreate}
- className="rounded-lg text-xs font-bold gap-2 h-9 mt-2"
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 sm:h-9 mt-2"
  >
  <Plus className="size-4" />
  <span>Cadastrar Primeiro Destino com Base Canônica</span>
@@ -747,7 +747,7 @@ export default function WorkspaceDestinationsPage() {
  size="sm"
  variant="ghost"
  onClick={() => handleOpenEdit(dest)}
- className="rounded-lg text-xs gap-2 h-10 sm:h-8 px-3 font-bold cursor-pointer"
+ className="rounded-lg text-xs gap-2 h-11 min-h-11 sm:h-8 px-3 font-bold cursor-pointer"
  >
  <Edit2 className="size-3.5" />
  <span>Editar Studio</span>
@@ -758,7 +758,7 @@ export default function WorkspaceDestinationsPage() {
  size="sm"
  variant="ghost"
  onClick={() => setPreviewModalDest(dest)}
- className="rounded-lg text-xs gap-1 h-10 sm:h-8 px-2 font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+ className="rounded-lg text-xs gap-1 h-11 min-h-11 sm:h-8 px-2 font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
  title="Visualizar Página Completa do Destino"
  >
  <Eye className="size-3.5" />
@@ -826,6 +826,7 @@ export default function WorkspaceDestinationsPage() {
  onValueChange={setActiveTab}
  className="flex-1 flex flex-col overflow-hidden"
  >
+ {/* design-lint-ignore DL-30 reason:"Horizontal tab rail inside studio sheet" expiry:"2028-12-31" */}
  <div className="px-5 pt-3 pb-2 border-b border-border/60 bg-card overflow-x-auto no-scrollbar ">
  <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-6 h-9 rounded-lg p-1 bg-muted/50">
  <TabsTrigger value="identificacao" className="text-xs font-bold rounded-lg gap-2 py-1">
@@ -1128,7 +1129,7 @@ export default function WorkspaceDestinationsPage() {
  <button
  type="button"
  onClick={() => handleRemoveGalleryUrl(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1.5 right-1.5 size-11 min-h-11 sm:size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>
@@ -1225,7 +1226,7 @@ export default function WorkspaceDestinationsPage() {
  variant="ghost"
  disabled={idx === 0}
  onClick={() => handleMoveSection(idx, "up")}
- className="size-7 rounded-lg"
+ className="size-11 min-h-11 sm:size-7 rounded-lg"
  title="Mover para cima"
  >
  <ChevronUp className="size-3.5" />
@@ -1236,7 +1237,7 @@ export default function WorkspaceDestinationsPage() {
  variant="ghost"
  disabled={idx === sections.length - 1}
  onClick={() => handleMoveSection(idx, "down")}
- className="size-7 rounded-lg"
+ className="size-11 min-h-11 sm:size-7 rounded-lg"
  title="Mover para baixo"
  >
  <ChevronDown className="size-3.5" />
@@ -1246,7 +1247,7 @@ export default function WorkspaceDestinationsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleRemoveSection(idx)}
- className="size-7 text-destructive hover:bg-destructive/10 rounded-lg"
+ className="size-11 min-h-11 sm:size-7 text-destructive hover:bg-destructive/10 rounded-lg"
  title="Excluir seção"
  >
  <Trash2 className="size-3.5" />
@@ -1339,7 +1340,7 @@ export default function WorkspaceDestinationsPage() {
  };
  handleUpdateSection(idx, { items: [...currentItems, newItem] });
  }}
- className="rounded-lg text-xs text-muted-foreground/75 font-bold h-7 px-3 gap-1"
+ className="rounded-lg text-xs text-muted-foreground/75 font-bold h-11 min-h-11 sm:h-7 px-3 gap-1"
  >
  <Plus className="size-3" />
  <span>+ Adicionar Item</span>
@@ -1381,7 +1382,7 @@ export default function WorkspaceDestinationsPage() {
  const copy = (section.items || []).filter((_, i) => i !== itemIdx);
  handleUpdateSection(idx, { items: copy });
  }}
- className="size-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
+ className="size-11 min-h-11 sm:size-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
  >
  <Trash2 className="size-3" />
  </Button>
@@ -1446,7 +1447,7 @@ export default function WorkspaceDestinationsPage() {
  type="button"
  onClick={() => setNewReviewRating(s)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "size-8 rounded-lg font-bold font-mono text-xs border transition-colors duration-200 cursor-pointer",
+ "size-11 min-h-11 sm:size-8 rounded-lg font-bold font-mono text-xs border transition-colors duration-200 cursor-pointer",
  s === newReviewRating
  ? "bg-primary text-primary-foreground border-primary shadow-2xs"
  : "bg-background border-border/80 text-muted-foreground hover:bg-muted"
@@ -1475,7 +1476,7 @@ export default function WorkspaceDestinationsPage() {
  type="button"
  size="sm"
  onClick={handleAddReview}
- className="rounded-lg text-xs font-bold h-9 px-4 gap-2 bg-primary text-primary-foreground"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 px-4 gap-2 bg-primary text-primary-foreground"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Depoimento</span>
@@ -1537,7 +1538,7 @@ export default function WorkspaceDestinationsPage() {
  <button
  type="button"
  onClick={() => handleRemoveReview(rev.id)}
- className="absolute top-2 right-2 size-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-2 right-2 size-11 min-h-11 sm:size-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Remover avaliação"
  >
  <X className="size-3" />
@@ -1628,7 +1629,7 @@ export default function WorkspaceDestinationsPage() {
  <Camera className="size-12" />
  </div>
  )}
- <div className="absolute inset-0 bg-black/60" />
+ <div className="absolute inset-0 bg-slate-950/60" />
 
  <div className="absolute bottom-6 left-6 right-6 space-y-2 text-foreground">
  <div className="flex flex-wrap items-center gap-2">
@@ -1743,7 +1744,7 @@ export default function WorkspaceDestinationsPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsSheetOpen(false)}
- className="rounded-lg text-xs h-10 px-4 cursor-pointer"
+ className="rounded-lg text-xs h-11 min-h-11 sm:h-10 px-4 cursor-pointer"
  >
  Cancelar
  </Button>
@@ -1754,7 +1755,7 @@ export default function WorkspaceDestinationsPage() {
  size="sm"
  variant="outline"
  onClick={() => setActiveTab("preview")}
- className="rounded-lg text-xs font-semibold h-10 px-4 gap-2 cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-11 min-h-11 sm:h-10 px-4 gap-2 cursor-pointer"
  >
  <Eye className="size-4 text-muted-foreground" />
  <span>Ver Preview</span>
@@ -1765,7 +1766,7 @@ export default function WorkspaceDestinationsPage() {
  size="sm"
  disabled={createMut.isPending || updateMut.isPending || !name.trim()}
  onClick={handleSubmit}
- className="rounded-lg text-xs font-bold h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer shadow-xs"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer shadow-xs"
  >
  <CheckCircle2 className="size-4 text-emerald-500" />
  <span>
@@ -1808,7 +1809,7 @@ export default function WorkspaceDestinationsPage() {
  className="w-full h-full object-cover"
  />
  )}
- <div className="absolute inset-0 bg-black/60 flex items-end p-5 text-foreground">
+ <div className="absolute inset-0 bg-slate-950/60 flex items-end p-5 text-foreground">
  <div>
  <Badge className="bg-primary text-primary-foreground text-xs mb-1">
  {previewModalDest.state} • {previewModalDest.country}

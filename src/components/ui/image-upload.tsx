@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
+import { ingestExternalMediaUrl } from "@/services/storage.functions";
 
 export type AspectRatioPreset = "square" | "classified" | "widescreen" | "banner" | "cover" | "header" | "free" | "portrait" | "compact_banner";
 
@@ -62,7 +63,7 @@ export function ImageUpload({
 
  const isAvatar = variant === "avatar";
 
- const handleApplyManualUrl = (urlToApply?: string) => {
+ const handleApplyManualUrl = async (urlToApply?: string) => {
  const rawUrl = (urlToApply || manualUrl).trim();
  if (!rawUrl) return;
 
@@ -71,10 +72,21 @@ export function ImageUpload({
  return;
  }
 
- onChange(rawUrl);
- setShowManualUrl(false);
- setManualUrl("");
- toast.success("URL de imagem aplicada com sucesso!");
+ setIsUploading(true);
+ try {
+   const ingested = await ingestExternalMediaUrl({
+     data: { externalUrl: rawUrl, bucket, folder: "images" },
+   });
+   onChange(ingested.url);
+   setShowManualUrl(false);
+   setManualUrl("");
+   toast.success("Imagem importada e armazenada com sucesso!");
+ } catch (error) {
+   const message = error instanceof Error ? error.message : "Falha ao importar a imagem.";
+   toast.error(message);
+ } finally {
+   setIsUploading(false);
+ }
  };
 
  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +126,7 @@ export function ImageUpload({
  const pastedText = e.clipboardData?.getData("text/plain")?.trim();
  if (pastedText && /^https?:\/\//i.test(pastedText)) {
  e.preventDefault();
- handleApplyManualUrl(pastedText);
+ void handleApplyManualUrl(pastedText);
  }
  };
 

@@ -8,4 +8,5 @@ export * from "./SupermarketProductDetailModal";
 export * from "./SupermarketCartSheet";
 export * from "./SupermarketBottomNav";
 export * from "./SupermarketClubDashboardView";
+export * from "./SupermarketBarcodeScannerModal";
 export * from "./ProductCatalogPricingSheet";

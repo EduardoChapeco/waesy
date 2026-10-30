@@ -25,18 +25,30 @@ import { NicheTemplateDefinition } from "./templates";
 import { STUDIO_TEMPLATE_CATALOG, getStudioTemplate, materializeStudioManifest, materializeStudioTemplate } from "@/lib/builder/studio-catalog";
 import type { StudioTemplateManifest } from "@/lib/builder/studio-manifest";
 import type { BuilderAssetRef } from "@/lib/builder/asset-contract";
-import { LiveTemplatePreviewModal } from "./LiveTemplatePreviewModal";
 import { StudioTemplateFactory } from "./StudioTemplateFactory";
 import { BlockErrorBoundary } from "./BlockErrorBoundary";
-import { HostingDomainConnectModal } from "./HostingDomainConnectModal";
-import { BuilderCodeExplorerModal } from "@/components/admin/builder/BuilderCodeExplorerModal";
-import { OmniAppMarketModal } from "@/components/admin/builder/OmniAppMarketModal";
 import { BuilderDockedRail, type DockedRailActivePanel } from "@/components/admin/builder/builder-docked-rail";
 import { BuilderAddPanel3Col } from "@/components/admin/builder/builder-add-panel-3col";
 import { BuilderPagesPanel, type BuilderPageItem } from "@/components/admin/builder/builder-pages-panel";
 import { BuilderGlobalThemePanel, type GlobalThemeConfig } from "@/components/admin/builder/builder-global-theme-panel";
 import { BuilderCmsPanel } from "@/components/admin/builder/builder-cms-panel";
-import { PhotoStudioModal } from "@/components/admin/builder/PhotoStudioModal";
+
+// Lazy-loaded heavy modal boundaries for code splitting and route budget compliance
+const LiveTemplatePreviewModal = React.lazy(() =>
+  import("./LiveTemplatePreviewModal").then((m) => ({ default: m.LiveTemplatePreviewModal })),
+);
+const HostingDomainConnectModal = React.lazy(() =>
+  import("./HostingDomainConnectModal").then((m) => ({ default: m.HostingDomainConnectModal })),
+);
+const BuilderCodeExplorerModal = React.lazy(() =>
+  import("@/components/admin/builder/BuilderCodeExplorerModal").then((m) => ({ default: m.BuilderCodeExplorerModal })),
+);
+const OmniAppMarketModal = React.lazy(() =>
+  import("@/components/admin/builder/OmniAppMarketModal").then((m) => ({ default: m.OmniAppMarketModal })),
+);
+const PhotoStudioModal = React.lazy(() =>
+  import("@/components/admin/builder/PhotoStudioModal").then((m) => ({ default: m.PhotoStudioModal })),
+);
 import {
   WixVisualSitemapModal,
   WixMenuManagerDrawer,
@@ -4178,80 +4190,87 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         </SheetContent>
       </Sheet>
 
-      {/* ── MODAL DE LIVE PREVIEW DE TEMPLATE (FASE 3 - TRY BEFORE YOU BUY) ── */}
-      <LiveTemplatePreviewModal
-        template={previewTemplate}
-        isOpen={!!previewTemplate}
-        onClose={() => setPreviewTemplate(null)}
-        onSelectTemplate={(tplId) => {
-          handleApplyTemplate(tplId);
-          setPreviewTemplate(null);
-        }}
-      />
+      {/* ── MODAIS CARREGADOS SOB DEMANDA (LAZY BOUNDARY CORE WEB VITALS) ── */}
+      <React.Suspense fallback={null}>
+        {/* ── MODAL DE LIVE PREVIEW DE TEMPLATE (FASE 3 - TRY BEFORE YOU BUY) ── */}
+        {previewTemplate && (
+          <LiveTemplatePreviewModal
+            template={previewTemplate}
+            isOpen={!!previewTemplate}
+            onClose={() => setPreviewTemplate(null)}
+            onSelectTemplate={(tplId) => {
+              handleApplyTemplate(tplId);
+              setPreviewTemplate(null);
+            }}
+          />
+        )}
 
-      {/* ── MODAL DE DOMÍNIOS & HOSPEDAGEM (OFFLOAD LITESPEED / FREE SUBDOMAIN) ── */}
-      <HostingDomainConnectModal
-        isOpen={isDomainModalOpen}
-        onClose={() => setIsDomainModalOpen(false)}
-        storeSlug={document.slug}
-        storeName={document.title || "Minha Loja"}
-      />
+        {/* ── MODAL DE DOMÍNIOS & HOSPEDAGEM (OFFLOAD LITESPEED / FREE SUBDOMAIN) ── */}
+        {isDomainModalOpen && (
+          <HostingDomainConnectModal
+            isOpen={isDomainModalOpen}
+            onClose={() => setIsDomainModalOpen(false)}
+            storeSlug={document.slug}
+            storeName={document.title || "Minha Loja"}
+          />
+        )}
 
-      {/* MODAL DO EXPLORADOR DE CÓDIGO TANSTACK START (LOVABLE PARITY) */}
-      {isCodeExplorerOpen && (
-        <BuilderCodeExplorerModal
-          isOpen={isCodeExplorerOpen}
-          onClose={() => setIsCodeExplorerOpen(false)}
-          document={document}
-        />
-      )}
+        {/* MODAL DO EXPLORADOR DE CÓDIGO TANSTACK START (LOVABLE PARITY) */}
+        {isCodeExplorerOpen && (
+          <BuilderCodeExplorerModal
+            isOpen={isCodeExplorerOpen}
+            onClose={() => setIsCodeExplorerOpen(false)}
+            document={document}
+          />
+        )}
 
-      {/* MODAL DO OMNI APPS MARKET (WIX APPS PARITY) */}
-      {isAppMarketOpen && (
-        <OmniAppMarketModal
-          isOpen={isAppMarketOpen}
-          onClose={() => setIsAppMarketOpen(false)}
-          storeId={document.store_id}
-          onAppInstalled={(appId, pages) => {
-            if (Array.isArray(pages) && pages.length > 0) {
-              setSitePages((prev) => {
-                const existingSlugs = new Set(prev.map((p) => p.slug.toLowerCase().replace(/^\//, "")));
-                const newItems: BuilderPageItem[] = pages
-                  .filter((p) => !existingSlugs.has(p.slug.toLowerCase().replace(/^\//, "")))
-                  .map((p) => ({
-                    id: p.id,
-                    title: p.title,
-                    slug: p.slug.startsWith("/") ? p.slug : `/${p.slug}`,
-                    is_home: false,
-                    seo_title: `${p.title} | ${document.title || "Loja"}`,
-                    seo_description: `Acesse ${p.title} na loja oficial.`,
-                  }));
-                return [...prev, ...newItems];
-              });
+        {/* MODAL DO OMNI APPS MARKET (WIX APPS PARITY) */}
+        {isAppMarketOpen && (
+          <OmniAppMarketModal
+            isOpen={isAppMarketOpen}
+            onClose={() => setIsAppMarketOpen(false)}
+            storeId={document.store_id}
+            onAppInstalled={(appId, pages) => {
+              if (Array.isArray(pages) && pages.length > 0) {
+                setSitePages((prev) => {
+                  const existingSlugs = new Set(prev.map((p) => p.slug.toLowerCase().replace(/^\//, "")));
+                  const newItems: BuilderPageItem[] = pages
+                    .filter((p) => !existingSlugs.has(p.slug.toLowerCase().replace(/^\//, "")))
+                    .map((p) => ({
+                      id: p.id,
+                      title: p.title,
+                      slug: p.slug.startsWith("/") ? p.slug : `/${p.slug}`,
+                      is_home: false,
+                      seo_title: `${p.title} | ${document.title || "Loja"}`,
+                      seo_description: `Acesse ${p.title} na loja oficial.`,
+                    }));
+                  return [...prev, ...newItems];
+                });
+              }
+              toast.success(`Módulo ${appId} ativado! Árvore de páginas atualizada.`);
+            }}
+          />
+        )}
+
+        {/* MODAL DO PHOTO STUDIO PRO (WIX PHOTO STUDIO PARITY) */}
+        {isPhotoStudioOpen && (
+          <PhotoStudioModal
+            isOpen={isPhotoStudioOpen}
+            onClose={() => setIsPhotoStudioOpen(false)}
+            imageUrl={
+              (selectedBlock?.config as any)?.imageUrl ||
+              (selectedBlock?.config as any)?.coverImageUrl ||
+              ""
             }
-            toast.success(`Módulo ${appId} ativado! Árvore de páginas atualizada.`);
-          }}
-        />
-      )}
-
-      {/* MODAL DO PHOTO STUDIO PRO (WIX PHOTO STUDIO PARITY) */}
-      {isPhotoStudioOpen && (
-        <PhotoStudioModal
-          isOpen={isPhotoStudioOpen}
-          onClose={() => setIsPhotoStudioOpen(false)}
-          imageUrl={
-            (selectedBlock?.config as any)?.imageUrl ||
-            (selectedBlock?.config as any)?.coverImageUrl ||
-            ""
-          }
-          onSaveImage={(newUrl, adjustments) => {
-            if (selectedBlock) {
-              handleUpdateConfig("photoAdjustments", adjustments);
-              if (newUrl) handleUpdateConfig("imageUrl", newUrl);
-            }
-          }}
-        />
-      )}
+            onSaveImage={(newUrl, adjustments) => {
+              if (selectedBlock) {
+                handleUpdateConfig("photoAdjustments", adjustments);
+                if (newUrl) handleUpdateConfig("imageUrl", newUrl);
+              }
+            }}
+          />
+        )}
+      </React.Suspense>
 
       {/* MODAL DO VISUAL SITEMAP & GEO/SEO INSPECTOR */}
       {isVisualSitemapOpen && (

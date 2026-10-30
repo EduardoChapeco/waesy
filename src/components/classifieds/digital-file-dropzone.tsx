@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { UploadCloud, X, Loader2, FileText, CheckCircle2, AlertCircle, FileArchive } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getBrowserClient } from "@/lib/supabase";
+import { uploadMediaUniversal } from "@/services/storage.functions";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -44,31 +44,30 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
     setUploadProgress(10);
 
     try {
-      const supabase = getBrowserClient();
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-      const timestamp = Date.now();
-      const randomStr = Math.random().toString(36).substring(2, 8);
-      const filePath = `digital/${timestamp}_${randomStr}_${sanitizedName}`;
 
       setUploadProgress(40);
-      const { data, error } = await supabase.storage
-        .from("classifieds")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (error) {
-        console.error("[DigitalDropzone] Erro no upload:", error);
-        throw new Error(error.message || "Falha ao enviar arquivo.");
-      }
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Não foi possível ler o arquivo."));
+        reader.readAsDataURL(file);
+      });
+      const uploaded = await uploadMediaUniversal({
+        data: {
+          base64Data,
+          fileName: sanitizedName,
+          fileType: file.type || "application/octet-stream",
+          bucket: "classifieds",
+          folder: "digital",
+        },
+      });
+      if (!uploaded?.url) throw new Error("O storage não retornou uma URL assinada.");
 
       setUploadProgress(80);
-      const { data: pubData } = supabase.storage.from("classifieds").getPublicUrl(filePath);
-
       setUploadProgress(100);
       onChange({
-        url: pubData.publicUrl || filePath,
+        url: uploaded.url,
         name: file.name,
         sizeBytes: file.size,
       });

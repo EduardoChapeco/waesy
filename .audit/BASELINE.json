@@ -1,126 +1,126 @@
 {
-  "timestamp": "2026-10-06T21:00:13.189Z",
+  "timestamp": "2026-10-30T12:59:17.733Z",
   "metrics": {
-    "totalSourceFiles": 1922,
-    "componentsCount": 722,
+    "totalSourceFiles": 2557,
+    "componentsCount": 966,
     "hooksCount": 22,
-    "routesCount": 416,
-    "servicesCount": 441,
-    "totalLinesOfCode": 650909,
-    "totalSizeBytes": 24710275
+    "routesCount": 461,
+    "servicesCount": 628,
+    "totalLinesOfCode": 951300,
+    "totalSizeBytes": 37964137
   },
   "top20LargestFiles": [
     {
+      "path": "src/integrations/supabase/types.ts",
+      "sizeBytes": 1477438,
+      "lineCount": 45793
+    },
+    {
+      "path": "src/lib/data/airports-catalog.ts",
+      "sizeBytes": 864676,
+      "lineCount": 7513
+    },
+    {
       "path": "src/routes/_store.conta.classificados.novo.tsx",
-      "sizeBytes": 490151,
-      "lineCount": 9569
+      "sizeBytes": 630885,
+      "lineCount": 11764
     },
     {
       "path": "src/routeTree.gen.ts",
-      "sizeBytes": 374278,
-      "lineCount": 8818
+      "sizeBytes": 414185,
+      "lineCount": 9572
+    },
+    {
+      "path": "src/components/builder/OmniEditor.tsx",
+      "sizeBytes": 194249,
+      "lineCount": 4322
     },
     {
       "path": "src/components/classifieds/editorial-showcase-view.tsx",
-      "sizeBytes": 176790,
-      "lineCount": 3154
+      "sizeBytes": 180780,
+      "lineCount": 3191
     },
     {
       "path": "src/services/mining.functions.ts",
-      "sizeBytes": 147180,
-      "lineCount": 4104
+      "sizeBytes": 164515,
+      "lineCount": 4432
     },
     {
       "path": "src/components/commerce/canonical-store-profile-view.tsx",
-      "sizeBytes": 145925,
-      "lineCount": 2989
+      "sizeBytes": 161875,
+      "lineCount": 3191
     },
     {
-      "path": "src/routes/_store.membro.$id.tsx",
-      "sizeBytes": 129515,
-      "lineCount": 3728
+      "path": "src/services/builder.functions.ts",
+      "sizeBytes": 144442,
+      "lineCount": 4371
     },
     {
-      "path": "src/routes/_store.checkout.tsx",
-      "sizeBytes": 123809,
-      "lineCount": 3011
-    },
-    {
-      "path": "src/components/profile/professional-resume-editor.tsx",
-      "sizeBytes": 107191,
-      "lineCount": 3041
+      "path": "src/routes/workspace.atendimento.index.tsx",
+      "sizeBytes": 143965,
+      "lineCount": 3137
     },
     {
       "path": "src/services/classifieds.functions.ts",
-      "sizeBytes": 106061,
-      "lineCount": 3001
-    },
-    {
-      "path": "src/components/mining/mining-dashboard.tsx",
-      "sizeBytes": 101709,
-      "lineCount": 2268
-    },
-    {
-      "path": "src/routes/workspace.turismo.viagens.$id.tsx",
-      "sizeBytes": 101420,
-      "lineCount": 2077
-    },
-    {
-      "path": "src/routes/workspace.comercial.tsx",
-      "sizeBytes": 96258,
-      "lineCount": 2013
-    },
-    {
-      "path": "src/lib/routes.ts",
-      "sizeBytes": 95685,
-      "lineCount": 3506
-    },
-    {
-      "path": "src/routes/admin-master.mining.tsx",
-      "sizeBytes": 95387,
-      "lineCount": 2060
-    },
-    {
-      "path": "src/routes/_store.afiliados.tsx",
-      "sizeBytes": 91386,
-      "lineCount": 1835
-    },
-    {
-      "path": "src/services/travel-lifecycle.functions.ts",
-      "sizeBytes": 89839,
-      "lineCount": 2358
-    },
-    {
-      "path": "src/components/classifieds/convenience-showcase-view.tsx",
-      "sizeBytes": 89551,
-      "lineCount": 1935
-    },
-    {
-      "path": "src/routes/workspace.financeiro.recebiveis.tsx",
-      "sizeBytes": 89008,
-      "lineCount": 1970
+      "sizeBytes": 142453,
+      "lineCount": 4087
     },
     {
       "path": "src/services/ai-conversations.functions.ts",
-      "sizeBytes": 82517,
-      "lineCount": 2111
+      "sizeBytes": 140644,
+      "lineCount": 3755
     },
     {
-      "path": "src/registries/mcp-tool-registry.ts",
-      "sizeBytes": 82198,
-      "lineCount": 2196
+      "path": "src/services/events.functions.ts",
+      "sizeBytes": 133301,
+      "lineCount": 3791
+    },
+    {
+      "path": "src/routes/_store.membro.$id.tsx",
+      "sizeBytes": 131145,
+      "lineCount": 3692
+    },
+    {
+      "path": "src/routes/_store.checkout.tsx",
+      "sizeBytes": 128339,
+      "lineCount": 3011
+    },
+    {
+      "path": "src/components/commerce/travel/travel-package-form.tsx",
+      "sizeBytes": 123583,
+      "lineCount": 2606
+    },
+    {
+      "path": "src/lib/builder/omni-templates.ts",
+      "sizeBytes": 120163,
+      "lineCount": 3225
+    },
+    {
+      "path": "src/components/builder/vitrine-block-inspector.tsx",
+      "sizeBytes": 117164,
+      "lineCount": 2786
+    },
+    {
+      "path": "src/routes/workspace.comercial.tsx",
+      "sizeBytes": 116605,
+      "lineCount": 2397
+    },
+    {
+      "path": "src/services/ads.functions.ts",
+      "sizeBytes": 113631,
+      "lineCount": 2865
     }
   ],
   "checksSummary": {
-    "C01": 1724,
-    "C02": 1,
+    "C01": 1975,
+    "C02": 0,
     "C03": 0,
     "C04": 0,
     "C05": 0,
-    "C06": 537,
-    "C07": 395,
-    "C08": 298,
-    "C09": 232,
+    "C06": 548,
+    "C07": 487,
+    "C08": 10,
+    "C09": 237,
     "C10": 0,
     "C11": 0,
     "C12": 0,
@@ -129,12 +129,12 @@
     "C15": 0,
     "C16": 0,
     "C17": 0,
-    "C18": 43,
+    "C18": 109,
     "C19": 0,
     "C20": 0,
     "C21": 0,
-    "C22": 20,
-    "C23": 6161,
+    "C22": 21,
+    "C23": 7835,
     "C24": 0,
     "C25": 0,
     "C26": 8,
@@ -148,7 +148,7 @@
     "C34": 0,
     "C35": 0,
     "C36": 0,
-    "C37": 87,
+    "C37": 117,
     "C38": 0,
     "C39": 0,
     "C40": 0,

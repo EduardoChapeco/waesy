@@ -13,7 +13,7 @@ export interface FlightOfferCardProps {
   duration: string;
   stops: number; // 0 = Direto, 1 = 1 parada, etc.
   stopsDescription?: string;
-  baggageIncluded: boolean;
+  baggageIncluded?: boolean;
   price: string;
   pricePerPerson?: string;
   conditions?: string;
@@ -135,7 +135,13 @@ export function FlightOfferCard({
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <Luggage className="size-3.5" />
-            <span>{baggageIncluded ? "Bagagem inclusa" : "Sem bagagem despachada"}</span>
+            <span>
+              {baggageIncluded === undefined
+                ? "Bagagem não informada"
+                : baggageIncluded
+                  ? "Bagagem inclusa"
+                  : "Sem bagagem despachada"}
+            </span>
           </div>
           {conditions && <span className="truncate">{conditions}</span>}
         </div>

@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Users,
   MessageSquare,
@@ -83,73 +83,20 @@ export interface CommunitySpacesViewProps {
   products?: CommunityProductItem[];
   onJoinToggle?: (isMember: boolean) => void;
   onNewThreadClick?: () => void;
+  onLikeToggle?: (threadId: string, liked: boolean) => void;
   onRsvpClick?: (sessionId: string) => void;
   onProductClick?: (productId: string) => void;
   className?: string;
 }
 
-const DEFAULT_THREADS: CommunityThreadItem[] = [
-  {
-    id: "thread-1",
-    authorName: "Lucas Alencar",
-    authorUsername: "lucas.dev",
-    timeAgo: "2h",
-    content: "Alguém participando do hackathon local neste fim de semana? Estamos montando um time focado em soluções urbanas!",
-    likesCount: 14,
-    repliesCount: 6,
-  },
-  {
-    id: "thread-2",
-    authorName: "Mariana Costa",
-    authorUsername: "maricosta",
-    timeAgo: "5h",
-    content: "Compartilhando as fotos do workshop de inteligência artificial de ontem. Foi incrível ver tantos criadores reunidos!",
-    likesCount: 38,
-    repliesCount: 12,
-  },
-];
-
-const DEFAULT_SESSIONS: CommunitySessionItem[] = [
-  {
-    id: "session-1",
-    title: "Encontro Mensal de Inovação & Networking",
-    dateStr: "Quinta, 29 de Outubro às 19:30",
-    location: "Hub de Negócios Central • Sala 04",
-    priceCents: 0,
-    rsvpsCount: 42,
-  },
-  {
-    id: "session-2",
-    title: "Masterclass: Crescimento Local com IA",
-    dateStr: "Sábado, 07 de Novembro às 14:00",
-    location: "Online ao Vivo com Certificado",
-    priceCents: 4900,
-    rsvpsCount: 19,
-  },
-];
-
-const DEFAULT_PRODUCTS: CommunityProductItem[] = [
-  {
-    id: "prod-1",
-    title: "Camiseta Oficial da Comunidade 100% Algodão",
-    priceCents: 7990,
-    category: "Vestuário",
-  },
-  {
-    id: "prod-2",
-    title: "Acesso Vitalício ao Grupo VIP de Mentoria",
-    priceCents: 19700,
-    category: "Conteúdo Digital",
-  },
-];
-
 export function CommunitySpacesView({
   community,
-  threads = DEFAULT_THREADS,
-  sessions = DEFAULT_SESSIONS,
-  products = DEFAULT_PRODUCTS,
+  threads = [],
+  sessions = [],
+  products = [],
   onJoinToggle,
   onNewThreadClick,
+  onLikeToggle,
   onRsvpClick,
   onProductClick,
   className,
@@ -158,19 +105,63 @@ export function CommunitySpacesView({
   const [isMember, setIsMember] = useState(Boolean(community.isMember));
   const [likedThreads, setLikedThreads] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    const hasActiveData =
+      (activeTab === "threads" && threads.length > 0) ||
+      (activeTab === "sessions" && sessions.length > 0) ||
+      (activeTab === "shop" && products.length > 0) ||
+      activeTab === "members";
+    if (hasActiveData) return;
+    setActiveTab(threads.length > 0 ? "threads" : sessions.length > 0 ? "sessions" : products.length > 0 ? "shop" : "members");
+  }, [activeTab, products.length, sessions.length, threads.length]);
+
   const handleToggleLike = (threadId: string) => {
-    setLikedThreads((prev) => ({ ...prev, [threadId]: !prev[threadId] }));
+    if (!onLikeToggle) {
+      toast.error("Ação de curtida indisponível neste espaço.");
+      return;
+    }
+    const nextLiked = !likedThreads[threadId];
+    setLikedThreads((prev) => ({ ...prev, [threadId]: nextLiked }));
+    onLikeToggle(threadId, nextLiked);
   };
 
   const handleToggleJoin = () => {
+    if (!onJoinToggle) {
+      toast.error("A participação desta comunidade ainda não está conectada.");
+      return;
+    }
     const next = !isMember;
     setIsMember(next);
-    onJoinToggle?.(next);
+    onJoinToggle(next);
     if (next) {
       toast.success(`Você agora faz parte de ${community.title}!`);
     } else {
       toast.info(`Você saiu de ${community.title}.`);
     }
+  };
+
+  const handleNewThread = () => {
+    if (!onNewThreadClick) {
+      toast.error("A criação de discussões ainda não está conectada.");
+      return;
+    }
+    onNewThreadClick();
+  };
+
+  const handleRsvp = (sessionId: string) => {
+    if (!onRsvpClick) {
+      toast.error("As inscrições desta sessão ainda não estão conectadas.");
+      return;
+    }
+    onRsvpClick(sessionId);
+  };
+
+  const handleProductClick = (productId: string) => {
+    if (!onProductClick) {
+      toast.error("O catálogo desta comunidade ainda não está conectado.");
+      return;
+    }
+    onProductClick(productId);
   };
 
   const handleShare = () => {
@@ -271,7 +262,7 @@ export function CommunitySpacesView({
 
       {/* ── 2. Régua de Abas em Linha Única Horizontal Contínua (AGENTS.md B.39) ── */}
       <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar p-1 rounded-2xl bg-muted/40 border border-border/60">
-        <button
+        {threads.length > 0 && <button
           type="button"
           onClick={() => setActiveTab("threads")}
           className={cn(
@@ -283,9 +274,9 @@ export function CommunitySpacesView({
         >
           <MessageSquare className="size-4" />
           <span>Discussões ({threads.length})</span>
-        </button>
+        </button>}
 
-        <button
+        {sessions.length > 0 && <button
           type="button"
           onClick={() => setActiveTab("sessions")}
           className={cn(
@@ -297,9 +288,9 @@ export function CommunitySpacesView({
         >
           <Calendar className="size-4" />
           <span>Sessões & Encontros ({sessions.length})</span>
-        </button>
+        </button>}
 
-        <button
+        {products.length > 0 && <button
           type="button"
           onClick={() => setActiveTab("shop")}
           className={cn(
@@ -311,7 +302,7 @@ export function CommunitySpacesView({
         >
           <ShoppingBag className="size-4" />
           <span>Loja do Criador ({products.length})</span>
-        </button>
+        </button>}
 
         <button
           type="button"
@@ -340,7 +331,7 @@ export function CommunitySpacesView({
             </div>
             <button
               type="button"
-              onClick={onNewThreadClick}
+              onClick={handleNewThread}
               className="flex-1 text-left text-xs text-muted-foreground h-11 min-h-11 px-4 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors flex items-center cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
             >
               Iniciar uma conversa ou compartilhar com o espaço...
@@ -349,7 +340,11 @@ export function CommunitySpacesView({
 
           {/* Lista de Threads */}
           <div className="space-y-3">
-            {threads.map((t) => (
+            {threads.length === 0 ? (
+              <div className="rounded-2xl bg-muted/30 p-6 text-center text-xs text-muted-foreground">
+                Ainda não há discussões neste espaço.
+              </div>
+            ) : threads.map((t) => (
               <div
                 key={t.id}
                 className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 shadow-xs space-y-3"
@@ -390,7 +385,7 @@ export function CommunitySpacesView({
                   </button>
                   <button
                     type="button"
-                    onClick={() => onNewThreadClick?.()}
+                    onClick={handleNewThread}
                     className="h-11 min-h-11 px-2 flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <MessageSquare className="size-4" />
@@ -414,7 +409,11 @@ export function CommunitySpacesView({
       {/* ABA 2: SESSÕES & EVENTOS */}
       {activeTab === "sessions" && (
         <div className="space-y-3">
-          {sessions.map((s) => (
+          {sessions.length === 0 ? (
+            <div className="rounded-2xl bg-muted/30 p-6 text-center text-xs text-muted-foreground">
+              Ainda não há sessões publicadas.
+            </div>
+          ) : sessions.map((s) => (
             <div
               key={s.id}
               className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -437,7 +436,7 @@ export function CommunitySpacesView({
                 </span>
                 <Button
                   type="button"
-                  onClick={() => onRsvpClick?.(s.id)}
+                  onClick={() => handleRsvp(s.id)}
                   className="rounded-xl h-11 min-h-11 px-5 text-xs font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Garantir Vaga ({s.rsvpsCount})
@@ -450,11 +449,15 @@ export function CommunitySpacesView({
 
       {/* ABA 3: LOJA DO CRIADOR */}
       {activeTab === "shop" && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+        products.length === 0 ? (
+          <div className="rounded-2xl bg-muted/30 p-6 text-center text-xs text-muted-foreground">
+            Ainda não há produtos publicados.
+          </div>
+        ) : <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           {products.map((p) => (
             <div
               key={p.id}
-              onClick={() => onProductClick?.(p.id)}
+              onClick={() => handleProductClick(p.id)}
               className="rounded-2xl bg-card border border-border/80 p-3 space-y-2 hover:border-foreground/30 transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <div className="w-full aspect-square rounded-xl bg-muted/40 flex items-center justify-center overflow-hidden">
@@ -477,7 +480,7 @@ export function CommunitySpacesView({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onProductClick?.(p.id);
+                    handleProductClick(p.id);
                   }}
                   className="rounded-xl h-11 min-h-11 px-4 text-2xs font-bold bg-foreground text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >

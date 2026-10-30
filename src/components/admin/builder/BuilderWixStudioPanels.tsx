@@ -58,6 +58,7 @@ import {
   validateAndSanitizeBuilderPrompt,
 } from "@/services/ai-builder-squad";
 import { evaluateAgenticReadiness } from "@/lib/agentic/agentic-readiness-engine";
+import { SeoGeoOptimizationPanel } from "@/components/seo";
 
 // ── 1. VISUAL SITEMAP & SEO / GEO (GENERATIVE ENGINE OPTIMIZATION) MODAL ──
 
@@ -553,36 +554,22 @@ export function WixVisualSitemapModal({
                     <span>Otimizar Metadados SEO/GEO</span>
                   </Button>
 
-                  <div>
-                    <Label className="text-xs font-bold">Tag de Título (Title Tag)</Label>
-                    <Input
-                      value={seoTitleDraft}
-                      onChange={(e) => setSeoTitleDraft(e.target.value)}
-                      className="h-11 min-h-11 text-xs mt-1 bg-background"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-bold">Meta Descrição (Meta Description)</Label>
-                    <Textarea
-                      value={seoDescDraft}
-                      onChange={(e) => setSeoDescDraft(e.target.value)}
-                      rows={3}
-                      className="text-xs mt-1 bg-background resize-none"
-                    />
-                  </div>
-
-                  <label className="flex items-center justify-between p-3 rounded-lg border border-border bg-background cursor-pointer min-h-11">
-                    <span className="text-xs font-semibold text-foreground">
-                      Permitir que motores de busca indexem esta página
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={indexable}
-                      onChange={(e) => setIndexable(e.target.checked)}
-                      className="size-4"
-                    />
-                  </label>
+                  <SeoGeoOptimizationPanel
+                    value={{
+                      seoTitle: seoTitleDraft,
+                      seoDescription: seoDescDraft,
+                      keywords: [],
+                      allowAiIndexing: indexable,
+                    }}
+                    onChange={(m) => {
+                      setSeoTitleDraft(m.seoTitle || "");
+                      setSeoDescDraft(m.seoDescription || "");
+                      setIndexable(Boolean(m.allowAiIndexing));
+                    }}
+                    referenceTitle={selectedPage.title}
+                    referenceDescription={selectedPage.title}
+                    defaultOpen={true}
+                  />
 
                   <Button
                     type="button"

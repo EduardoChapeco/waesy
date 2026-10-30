@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { TransferChatThreadModal } from "@/components/chat/TransferChatThreadModal";
 import { QuickAnswersManagerModal } from "@/components/chat/QuickAnswersManagerModal";
 import { ScheduleWhatsAppMessageModal } from "@/components/chat/ScheduleWhatsAppMessageModal";
+import { WhatsAppQrConnectModal } from "@/components/chat/whatsapp-qr-connect-modal";
+import { WhatsAppTeamSectorsDrawer } from "@/components/chat/whatsapp-team-sectors-drawer";
 import { listStoreQuickAnswers } from "@/services/chat-operations.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import {
@@ -195,6 +197,8 @@ function WorkspaceAtendimentoPage() {
   const [transferModalOpen, setTransferModalOpen] = useState(false);
   const [quickAnswersModalOpen, setQuickAnswersModalOpen] = useState(false);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [qrConnectModalOpen, setQrConnectModalOpen] = useState(false);
+  const [teamSectorsDrawerOpen, setTeamSectorsDrawerOpen] = useState(false);
 
   // Queries de Macros Dinâmicas e Membros da Equipe
   const { data: storeMacros = [] } = useQuery({
@@ -444,6 +448,20 @@ function WorkspaceAtendimentoPage() {
 
   // Instâncias de WhatsApp
   const [whatsappInstances, setWhatsappInstances] = useState<WhatsAppChannelInstanceDTO[]>(initialInstances || []);
+  const [isRefreshingWhatsApp, setIsRefreshingWhatsApp] = useState(false);
+
+  const handleRefreshWhatsAppStatus = async () => {
+    setIsRefreshingWhatsApp(true);
+    try {
+      const instances = await listWorkspaceWhatsAppInstances();
+      setWhatsappInstances(instances);
+      toast.success("Status da conexão WhatsApp atualizado.");
+    } catch (error: any) {
+      toast.error(error?.message || "Não foi possível atualizar a conexão WhatsApp.");
+    } finally {
+      setIsRefreshingWhatsApp(false);
+    }
+  };
 
   // Estados SDR
   const [sdrSessions] = useState<SdrChatSessionDTO[]>(initialSdrSessions || []);
@@ -472,8 +490,10 @@ function WorkspaceAtendimentoPage() {
   const [text, setText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
-  const [showCustomer360, setShowCustomer360] = useState(false);
+  const [showCustomer360, setShowCustomer360] = useState(true);
   const [isWhisperMode, setIsWhisperMode] = useState(false);
+  const [aiAutoReplyPerThread, setAiAutoReplyPerThread] = useState<Record<string, boolean>>({});
+  const [assignedAgentPerThread, setAssignedAgentPerThread] = useState<Record<string, string>>({});
   const [quickReplies] = useState<QuickReplyItem[]>(initialQuickReplies || [
     { id: "qr_ola", shortcut: "ola", title: "Saudação de Boas-Vindas", content: "Olá {{nome}}! Seja bem-vindo ao atendimento oficial da {{loja}}. Como podemos ajudar?", category: "geral" },
     { id: "qr_pix", shortcut: "pix", title: "Chave PIX", content: "Nossa chave PIX oficial é gerada diretamente no seu pedido com confirmação automática em segundos!", category: "financeiro" },
@@ -1605,6 +1625,48 @@ function WorkspaceAtendimentoPage() {
                   />
                 )}
 
+                {/* Seletor de Modo: Responder ao Cliente vs Nota Interna da Equipe (Padrão TrackChat / WhatsOmni) */}
+                <div className="flex items-center justify-between gap-2 pb-1">
+                  <div className="inline-flex items-center rounded-lg bg-muted/60 p-1 border border-border/60">
+                    <button
+                      type="button"
+                      onClick={() => setIsWhisperMode(false)}
+                      className={cn(
+                        "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
+                        !isWhisperMode
+                          ? "bg-background text-foreground shadow-2xs font-bold"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      <MessageSquare className="size-3.5 text-emerald-600" />
+                      <span>Responder (Cliente)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsWhisperMode(true)}
+                      className={cn(
+                        "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
+                        isWhisperMode
+                          ? "bg-amber-500/20 text-amber-800 dark:text-amber-200 shadow-2xs font-bold"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      <Lock className="size-3.5 text-amber-600" />
+                      <span>Nota Interna (Equipe)</span>
+                    </button>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setTeamSectorsDrawerOpen(true)}
+                    className="h-11 min-h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground gap-2"
+                  >
+                    <Layers className="size-3.5 text-primary" />
+                    <span className="hidden sm:inline">Setores & Filas</span>
+                  </Button>
+                </div>
+
                 {/* Banner Modo Nota Interna (Whisper) com Design Âmbar Whaticket/Chatwoot */}
                 {isWhisperMode && (
                   <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-950 dark:text-amber-100 text-xs font-semibold animate-in fade-in">
@@ -1769,6 +1831,78 @@ function WorkspaceAtendimentoPage() {
                   Fechar
                 </Button>
               </div>
+              {/* Controles estilo TrackChat / WhatsOmni: AI Assistant Control, Team Router & Assignee */}
+              <div className="space-y-3 mb-4 pb-4 border-b border-border/60">
+                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Bot className="size-4 text-primary" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                        AI Assistant Control
+                      </span>
+                    </div>
+                    <Switch
+                      checked={aiAutoReplyPerThread[activeThread.id] ?? true}
+                      onCheckedChange={(checked) => {
+                        setAiAutoReplyPerThread((prev) => ({
+                          ...prev,
+                          [activeThread.id]: checked,
+                        }));
+                        toast.success(
+                          checked
+                            ? "IA Copilot Auto-Reply ativado para este contato."
+                            : "IA Copilot pausado. Atendimento assumido manualmente.",
+                        );
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    Responder automaticamente dúvidas, catálogo e cotações para este cliente.
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                    Setor / Fila (Assigned Team Router)
+                  </Label>
+                  <select
+                    value={activeThread.department || "geral"}
+                    onChange={(e) => handleDepartmentChange(e.target.value)}
+                    className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {Object.entries(departmentLabels).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                    Atendente Responsável (Assigned To)
+                  </Label>
+                  <select
+                    value={assignedAgentPerThread[activeThread.id] || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setAssignedAgentPerThread((prev) => ({
+                        ...prev,
+                        [activeThread.id]: val,
+                      }));
+                      toast.success("Atendente atribuído à conversa!");
+                    }}
+                    className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <option value="">Fila Automática (Round-Robin)</option>
+                    {(teamMembers || []).map((m: any) => (
+                      <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
+                        {m.full_name || m.name || m.email || "Atendente"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               <Customer360Sidebar
                 customerId={activeThread.customer?.id}
                 storeId={store?.id || ""}
@@ -1785,7 +1919,79 @@ function WorkspaceAtendimentoPage() {
                 </SheetTitle>
               </SheetHeader>
               <div className="p-4">
-                <Customer360Sidebar
+                {/* Controles estilo TrackChat / WhatsOmni: AI Assistant Control, Team Router & Assignee */}
+              <div className="space-y-3 mb-4 pb-4 border-b border-border/60">
+                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Bot className="size-4 text-primary" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                        AI Assistant Control
+                      </span>
+                    </div>
+                    <Switch
+                      checked={aiAutoReplyPerThread[activeThread.id] ?? true}
+                      onCheckedChange={(checked) => {
+                        setAiAutoReplyPerThread((prev) => ({
+                          ...prev,
+                          [activeThread.id]: checked,
+                        }));
+                        toast.success(
+                          checked
+                            ? "IA Copilot Auto-Reply ativado para este contato."
+                            : "IA Copilot pausado. Atendimento assumido manualmente.",
+                        );
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug">
+                    Responder automaticamente dúvidas, catálogo e cotações para este cliente.
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                    Setor / Fila (Assigned Team Router)
+                  </Label>
+                  <select
+                    value={activeThread.department || "geral"}
+                    onChange={(e) => handleDepartmentChange(e.target.value)}
+                    className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {Object.entries(departmentLabels).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                    Atendente Responsável (Assigned To)
+                  </Label>
+                  <select
+                    value={assignedAgentPerThread[activeThread.id] || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setAssignedAgentPerThread((prev) => ({
+                        ...prev,
+                        [activeThread.id]: val,
+                      }));
+                      toast.success("Atendente atribuído à conversa!");
+                    }}
+                    className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <option value="">Fila Automática (Round-Robin)</option>
+                    {(teamMembers || []).map((m: any) => (
+                      <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
+                        {m.full_name || m.name || m.email || "Atendente"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <Customer360Sidebar
                   customerId={activeThread?.customer?.id}
                   storeId={store?.id || ""}
                 />
@@ -2434,10 +2640,14 @@ function WorkspaceAtendimentoPage() {
             </div>
             <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
               <span className="text-xs text-muted-foreground font-semibold">Satisfação (CSAT)</span>
-              <p className="text-2xl font-bold font-mono text-amber-500 flex items-center gap-1">
-                <Star className="size-5 fill-amber-500" />
-                <span>{metrics?.avg_rating || 4.8} / 5.0</span>
-              </p>
+              {Number(metrics?.avg_rating || 0) > 0 ? (
+                <p className="text-2xl font-bold font-mono text-amber-500 flex items-center gap-1">
+                  <Star className="size-5 fill-amber-500" />
+                  <span>{metrics.avg_rating} / 5.0</span>
+                </p>
+              ) : (
+                <p className="text-xs font-medium text-muted-foreground">Sem avaliações registradas</p>
+              )}
             </div>
           </div>
         </div>
@@ -2505,20 +2715,53 @@ function WorkspaceAtendimentoPage() {
               {/* Área do QR Code */}
               <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border/80 rounded-lg bg-muted/10 space-y-3">
                 <div className="size-48 bg-card p-3 rounded-lg border border-border shadow-xs flex items-center justify-center">
-                  <QrCode className="size-40 text-neutral-900" />
+                  {whatsappInstances[0]?.public_config?.qr_code_url ? (
+                    <img
+                      src={String(whatsappInstances[0].public_config.qr_code_url)}
+                      alt="QR Code de conexão do WhatsApp"
+                      className="size-full object-contain"
+                    />
+                  ) : (
+                    <QrCode className="size-40 text-neutral-900" />
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
-                  QR Code gerado com criptografia segura ponto a ponto.
+                  {whatsappInstances[0]?.public_config?.qr_code_url
+                    ? "Use este QR Code para conectar o aparelho."
+                    : "O provedor ainda não disponibilizou um QR Code persistido para esta instância."}
                 </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => toast.success("Código QR atualizado com sucesso!")}
-                  className="rounded-lg text-xs gap-2 cursor-pointer"
-                >
-                  <RefreshCw className="size-4" />
-                  Atualizar QR Code
-                </Button>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setQrConnectModalOpen(true)}
+                    className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <QrCode className="size-4" />
+                    Gerar QR Code / Novo Número
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setTeamSectorsDrawerOpen(true)}
+                    className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Layers className="size-4" />
+                    Setores & Permissões
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRefreshWhatsAppStatus}
+                    disabled={isRefreshingWhatsApp}
+                    className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <RefreshCw className={cn("size-4", isRefreshingWhatsApp && "animate-spin motion-reduce:animate-none")} />
+                    Atualizar status
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -3105,6 +3348,28 @@ function WorkspaceAtendimentoPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <WhatsAppQrConnectModal
+        open={qrConnectModalOpen}
+        onOpenChange={setQrConnectModalOpen}
+        instances={whatsappInstances}
+        canManageConnection={Boolean(isSupervisor ?? true)}
+        onInstancesUpdated={() => {
+          handleRefreshWhatsAppStatus();
+        }}
+      />
+
+      <WhatsAppTeamSectorsDrawer
+        open={teamSectorsDrawerOpen}
+        onOpenChange={setTeamSectorsDrawerOpen}
+        companyId={store?.id || ""}
+        instanceId={whatsappInstances[0]?.id}
+        availableAgents={(teamMembers || []).map((m: any) => ({
+          id: String(m.id || m.user_id),
+          name: String(m.full_name || m.name || m.email || "Atendente"),
+          role: String(m.role || "operator"),
+        }))}
+      />
     </div>
   );
 }

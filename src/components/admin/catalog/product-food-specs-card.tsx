@@ -334,7 +334,7 @@ export function ProductFoodSpecsCard({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemoveDiscountRule(idx)}
-                  className="size-10 sm:size-9 p-0 flex items-center justify-center text-muted-foreground hover:text-destructive cursor-pointer rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                   className="size-11 min-h-11 min-w-11 p-0 flex items-center justify-center text-muted-foreground hover:text-destructive cursor-pointer rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   <Trash2 className="size-3.5" />
                 </Button>

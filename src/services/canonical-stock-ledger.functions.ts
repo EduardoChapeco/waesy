@@ -29,7 +29,7 @@ export const recordStockMovementSchema = z.object({
   variantId: z.string().uuid(),
   storeId: z.string().uuid(),
   movementType: stockMovementTypeSchema,
-  qty: z.number().int(),
+  qty: z.number().int().refine((value) => value !== 0, 'A quantidade deve ser diferente de zero.'),
   referenceType: z.string().optional(),
   referenceId: z.string().uuid().optional(),
   note: z.string().optional(),
@@ -46,76 +46,25 @@ export async function _recordStockMovement(
 ) {
   const db = getServerClient();
 
-  // 1. Verifica a existência e dados atuais da variante
-  const { data: variant, error: variantError } = await db
-    .from('product_variants')
-    .select('id, store_id, stock, reserved_stock, sku')
-    .eq('id', input.variantId)
-    .single();
-
-  if (variantError || variant === null || variant === undefined) {
-    throw new Error(`Variante não encontrada: ${input.variantId}`);
+  if (input.movementType === 'reserve' || input.movementType === 'release') {
+    throw new Error('Reservas devem usar exclusivamente o checkout atômico.');
   }
 
-  if (variant.store_id !== input.storeId) {
-    throw new Error('Inconsistência de isolamento multi-tenant: Loja divergente.');
+  const { data: movement, error } = await db.rpc('record_stock_movement_atomic', {
+    p_variant_id: input.variantId,
+    p_store_id: input.storeId,
+    p_movement_type: input.movementType,
+    p_qty: input.qty,
+    p_reference_type: input.referenceType ?? null,
+    p_reference_id: input.referenceId ?? null,
+    p_note: input.note ?? null,
+    p_actor_id: actorId ?? null,
+  });
+
+  if (error || !movement) {
+    console.error('[stock-ledger] Erro ao gravar ledger:', error);
+    throw new Error(error?.message || 'Falha ao registrar movimentação no ledger imutável de estoque.');
   }
-
-  // 2. Trava contra venda além do disponível (E8)
-  const availableStock = (variant.stock || 0) - (variant.reserved_stock || 0);
-
-  if (input.movementType === 'reserve' && input.qty > availableStock) {
-    throw new Error(
-      `Estoque insuficiente para reserva. Disponível: ${availableStock}, Solicitado: ${input.qty}`
-    );
-  }
-
-  // 3. Insere o registro imutável no ledger
-  const { data: movement, error: insertError } = await db
-    .from('stock_movements')
-    .insert({
-      variant_id: input.variantId,
-      store_id: input.storeId,
-      movement_type: input.movementType,
-      qty: input.qty,
-      reference_type: input.referenceType,
-      reference_id: input.referenceId,
-      note: input.note,
-      actor_id: actorId || null,
-    })
-    .select('*')
-    .single();
-
-  if (insertError) {
-    console.error('[stock-ledger] Erro ao gravar ledger:', insertError);
-    throw new Error('Falha ao registrar movimentação no ledger imutável de estoque.');
-  }
-
-  // 4. Atualiza os contadores na variante de forma atômica
-  let newStock = variant.stock || 0;
-  let newReserved = variant.reserved_stock || 0;
-
-  if (input.movementType === 'reserve') {
-    newReserved += input.qty;
-  } else if (input.movementType === 'release') {
-    newReserved = Math.max(0, newReserved - input.qty);
-  } else if (input.movementType === 'sale') {
-    newStock = Math.max(0, newStock - input.qty);
-    newReserved = Math.max(0, newReserved - input.qty);
-  } else if (input.movementType === 'purchase' || input.movementType === 'return') {
-    newStock += input.qty;
-  } else if (input.movementType === 'damage' || input.movementType === 'adjustment') {
-    newStock += input.qty; // qty pode ser positivo ou negativo
-  }
-
-  await db
-    .from('product_variants')
-    .update({
-      stock: newStock,
-      reserved_stock: newReserved,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', input.variantId);
 
   return movement;
 }

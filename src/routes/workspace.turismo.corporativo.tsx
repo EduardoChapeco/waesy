@@ -37,8 +37,10 @@ import {
 } from "@/services/corporate-travel.functions";
 import type { AirTicketCreditDTO } from "@/types/corporate-travel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { ScheduleWhatsAppMessageModal } from "@/components/chat/ScheduleWhatsAppMessageModal";
 
 export const Route = createFileRoute("/workspace/turismo/corporativo")({
   head: () => ({ meta: [{ title: "Viagens Corporativas & Gestão B2B | Workspace" }] }),
@@ -55,7 +57,7 @@ export default function AgencyCorporateCockpitPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   // 1. Checagem do Gate Master da Agência
-  const { data: capability, isLoading: isCapLoading } = useQuery({
+  const { data: capability, isLoading: isCapLoading, refetch: refetchCapability } = useQuery({
     queryKey: ["agency-corporate-capability", agencyId],
     queryFn: () => getAgencyCorporateCapability({ data: { storeId: agencyId } }),
     enabled: Boolean(agencyId),
@@ -69,14 +71,14 @@ export default function AgencyCorporateCockpitPage() {
   });
 
   // 3. Faturas Corporativas
-  const { data: invoices = [] } = useQuery({
+  const { data: invoices = [], refetch: refetchInvoices } = useQuery({
     queryKey: ["agency-corporate-invoices", agencyId],
     queryFn: () => listCorporateInvoices({ data: { agencyId } }),
     enabled: Boolean(agencyId && capability?.status === "approved"),
   });
 
   // 4. Casos de Reconciliação
-  const { data: reconciliationCases = [] } = useQuery({
+  const { data: reconciliationCases = [], refetch: refetchReconciliationCases } = useQuery({
     queryKey: ["agency-reconciliation-cases", agencyId],
     queryFn: () => listReconciliationCases({ data: { agencyId } }),
     enabled: Boolean(agencyId && capability?.status === "approved"),
@@ -86,6 +88,29 @@ export default function AgencyCorporateCockpitPage() {
   const [linkCompanyOpen, setLinkCompanyOpen] = useState(false);
   const [targetCompanyId, setTargetCompanyId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
+  const [isRefreshingSupport, setIsRefreshingSupport] = useState(false);
+  const [isRecipientDialogOpen, setIsRecipientDialogOpen] = useState(false);
+  const [isScheduleWhatsAppOpen, setIsScheduleWhatsAppOpen] = useState(false);
+  const [whatsappRecipientPhone, setWhatsappRecipientPhone] = useState("");
+  const [whatsappRecipientName, setWhatsappRecipientName] = useState("");
+  const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
+
+  const handleRefreshSupport = async () => {
+    setIsRefreshingSupport(true);
+    try {
+      await Promise.all([
+        refetchCapability(),
+        refetchAccounts(),
+        refetchInvoices(),
+        refetchReconciliationCases(),
+      ]);
+      toast.success("Status do canal atualizado");
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível atualizar o status do canal");
+    } finally {
+      setIsRefreshingSupport(false);
+    }
+  };
 
   const handleRequestCapability = async () => {
     try {
@@ -549,12 +574,13 @@ export default function AgencyCorporateCockpitPage() {
                   </div>
                 </div>
                 <Button
-                  onClick={() => toast.success("Webhook e motor de IA operacional em tempo real.")}
+                  onClick={handleRefreshSupport}
+                  disabled={isRefreshingSupport}
                   variant="outline"
                   className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
                 >
                   <RefreshCw className="size-4 mr-2" />
-                  Sincronizar Canal
+                  {isRefreshingSupport ? "Atualizando..." : "Atualizar Status"}
                 </Button>
               </div>
             </div>
@@ -610,13 +636,13 @@ export default function AgencyCorporateCockpitPage() {
                       Opções Wooba enviadas via WhatsApp · Dentro da política da empresa
                     </span>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => toast.info("Consultor Excelência Tour acionado no chat")}
-                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  <Link
+                    to={"/workspace/atendimento" as any}
+                    search={{ search: "Carlos Eduardo" } as any}
+                    className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg px-4 text-xs font-semibold shrink-0 text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Assumir Atendimento
-                  </Button>
+                  </Link>
                 </div>
 
                 <div className="p-4 rounded-lg border border-border/80 bg-muted/20 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
@@ -635,8 +661,9 @@ export default function AgencyCorporateCockpitPage() {
                     </span>
                   </div>
                   <Button
+                    type="button"
                     variant="outline"
-                    onClick={() => toast.info("Reenviando lembrete de aprovação")}
+                    onClick={() => setIsRecipientDialogOpen(true)}
                     className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Reenviar WhatsApp
@@ -659,8 +686,16 @@ export default function AgencyCorporateCockpitPage() {
                     </span>
                   </div>
                   <Button
+                    type="button"
                     variant="outline"
-                    onClick={() => toast.info("Comprovante visualizado")}
+                    onClick={() => {
+                      const invoice = invoices[0];
+                      if (!invoice) {
+                        toast.error("Nenhum documento corporativo persistido para visualizar.");
+                        return;
+                      }
+                      setSelectedInvoice(invoice);
+                    }}
                     className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Ver Comprovante
@@ -670,6 +705,101 @@ export default function AgencyCorporateCockpitPage() {
             </div>
           </div>
         )}
+
+        <Dialog open={isRecipientDialogOpen} onOpenChange={setIsRecipientDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reenviar lembrete por WhatsApp</DialogTitle>
+              <DialogDescription>
+                Informe o destinatário antes de abrir o agendamento persistido de mensagem.
+              </DialogDescription>
+            </DialogHeader>
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (whatsappRecipientPhone.replace(/\D/g, "").length < 8) {
+                  toast.error("Informe um telefone válido.");
+                  return;
+                }
+                setIsRecipientDialogOpen(false);
+                setIsScheduleWhatsAppOpen(true);
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="corporate-whatsapp-recipient-name">Nome do destinatário</Label>
+                <Input
+                  id="corporate-whatsapp-recipient-name"
+                  value={whatsappRecipientName}
+                  onChange={(event) => setWhatsappRecipientName(event.target.value)}
+                  className="h-11"
+                  placeholder="Nome do viajante ou gestor"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="corporate-whatsapp-recipient-phone">WhatsApp</Label>
+                <Input
+                  id="corporate-whatsapp-recipient-phone"
+                  value={whatsappRecipientPhone}
+                  onChange={(event) => setWhatsappRecipientPhone(event.target.value)}
+                  className="h-11"
+                  placeholder="(00) 00000-0000"
+                  required
+                />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsRecipientDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit">Continuar</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        <ScheduleWhatsAppMessageModal
+          isOpen={isScheduleWhatsAppOpen}
+          onClose={() => setIsScheduleWhatsAppOpen(false)}
+          recipientPhone={whatsappRecipientPhone}
+          recipientName={whatsappRecipientName || "destinatário"}
+        />
+
+        <Dialog open={Boolean(selectedInvoice)} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Comprovante corporativo</DialogTitle>
+              <DialogDescription>
+                Documento carregado da fatura corporativa persistida.
+              </DialogDescription>
+            </DialogHeader>
+            {selectedInvoice ? (
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Fatura</span>
+                  <strong>{selectedInvoice.invoice_number || selectedInvoice.id}</strong>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Total</span>
+                  <strong>{formatMoney(selectedInvoice.total_amount_cents || 0)}</strong>
+                </div>
+                {selectedInvoice.receipt_url || selectedInvoice.document_url ? (
+                  <a
+                    href={selectedInvoice.receipt_url || selectedInvoice.document_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-11 min-h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Abrir documento
+                  </a>
+                ) : (
+                  <p className="rounded-lg border border-dashed border-border p-4 text-xs text-muted-foreground">
+                    Esta fatura não possui arquivo de comprovante persistido.
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </DialogContent>
+        </Dialog>
 
         {/* ABA 4: CONCILIAÇÃO */}
         {activeTab === "conciliacao" && (

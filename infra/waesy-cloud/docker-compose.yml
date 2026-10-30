@@ -1,0 +1,151 @@
+# =============================================================================
+# WAESY CLOUD — STACK SOBERANO ORACLE CLOUD ALWAYS FREE (147.15.61.45)
+# Inclui: PostgreSQL 17, Redis 7, Evolution API v2.3.7 (WhatsApp Baileys),
+# PostgREST, GoTrue Auth, Storage API e Playwright Browser Agent Pool.
+# =============================================================================
+
+services:
+  # ─── 1. BANCO DE DADOS SOBERANO (POSTGRESQL 17) ────────────────────────────
+  waesy-db:
+    image: postgres:17-alpine
+    container_name: waesy-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-waesy_production}
+      POSTGRES_USER: ${POSTGRES_USER:-waesy_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-SuaSenhaSuperSegura123_Waesy}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U waesy_admin -d waesy_production"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── 2. REDIS 7 (FILAS OUTBOX, SESSÕES WHATSAPP E CACHE DE AGENTES) ────────
+  waesy-redis:
+    image: redis:7-alpine
+    container_name: waesy-redis
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-RedisSenhaSegura123}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # ─── 3. EVOLUTION API v2.3.7 (WHATSAPP MULTI-DEVICE & BAILEYS ENGINE) ──────
+  whatsapp-api:
+    image: evoapicloud/evolution-api:latest
+    container_name: waesy-whatsapp-api
+    restart: always
+    depends_on:
+      waesy-db:
+        condition: service_healthy
+      waesy-redis:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - SERVER_URL=${EVOLUTION_SERVER_URL:-http://147.15.61.45:8080}
+      - DOCKER_ENV=true
+      - LOG_LEVEL=INFO
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-WaesyApiKey_Master_2026_WhatsApp}
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://waesy_admin:${POSTGRES_PASSWORD:-SuaSenhaSuperSegura123_Waesy}@waesy-db:5432/waesy_production?schema=public
+      - DATABASE_CONNECTION_CLIENT_NAME=waesy_whatsapp
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_MESSAGE_HISTORIC=true
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://:${REDIS_PASSWORD:-RedisSenhaSegura123}@waesy-redis:6379/1
+      - WEBHOOK_GLOBAL_ENABLED=true
+      - WEBHOOK_GLOBAL_URL=${WEBHOOK_GLOBAL_URL:-https://usewaesy.pages.dev/api/webhooks/whatsapp}
+      - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=true
+    volumes:
+      - evolution_instances:/evolution/instances
+
+  # ─── 4. POSTGREST (CAMADA REST AUTOMÁTICA COMPATÍVEL SUPABASE) ─────────────
+  waesy-rest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: waesy-postgrest
+    restart: always
+    depends_on:
+      waesy-db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      PGRST_DB_URI: postgresql://waesy_admin:${POSTGRES_PASSWORD:-SuaSenhaSuperSegura123_Waesy}@waesy-db:5432/waesy_production
+      PGRST_DB_SCHEMAS: public,storage
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${WAESY_JWT_SECRET:-waesy-sovereign-jwt-secret-key-hs256-production-2026}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+
+  # ─── 5. GOTRUE AUTH (AUTENTICAÇÃO JWT & SESSÕES SOBERANAS) ─────────────────
+  waesy-auth:
+    image: supabase/gotrue:v2.158.1
+    container_name: waesy-gotrue
+    restart: always
+    depends_on:
+      waesy-db:
+        condition: service_healthy
+    ports:
+      - "9999:9999"
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: ${API_EXTERNAL_URL:-http://147.15.61.45:9999}
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://waesy_admin:${POSTGRES_PASSWORD:-SuaSenhaSuperSegura123_Waesy}@waesy-db:5432/waesy_production?search_path=auth
+      GOTRUE_SITE_URL: ${SITE_URL:-https://usewaesy.pages.dev}
+      GOTRUE_JWT_SECRET: ${WAESY_JWT_SECRET:-waesy-sovereign-jwt-secret-key-hs256-production-2026}
+      GOTRUE_JWT_EXP: 3600
+
+  # ─── 6. STORAGE API (BUCKETS S3-COMPATIBLE & ARQUIVOS WAESY CLOUD) ─────────
+  waesy-storage:
+    image: supabase/storage-api:v1.11.13
+    container_name: waesy-storage
+    restart: always
+    depends_on:
+      waesy-db:
+        condition: service_healthy
+      waesy-rest:
+        condition: service_started
+    ports:
+      - "5000:5000"
+    environment:
+      ANON_KEY: ${SUPABASE_ANON_KEY:-waesy-anon-key}
+      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-waesy-service-role-key}
+      POSTGREST_URL: http://waesy-rest:3000
+      PGRST_JWT_SECRET: ${WAESY_JWT_SECRET:-waesy-sovereign-jwt-secret-key-hs256-production-2026}
+      DATABASE_URL: postgres://waesy_admin:${POSTGRES_PASSWORD:-SuaSenhaSuperSegura123_Waesy}@waesy-db:5432/waesy_production
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: waesy-sovereign
+      REGION: sa-saopaulo-1
+    volumes:
+      - storage_data:/var/lib/storage
+
+  # ─── 7. PLAYWRIGHT CLOUD BROWSER POOL (SELF-HOSTED STEEL.DEV / FIRECRAWL) ──
+  waesy-browser-agent:
+    image: mcr.microsoft.com/playwright:v1.50.0-noble
+    container_name: waesy-browser-agent
+    restart: always
+    ipc: host
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      BROWSER_POOL_MAX_CONTEXTS: 4
+      REDIS_URL: redis://:${REDIS_PASSWORD:-RedisSenhaSegura123}@waesy-redis:6379/2
+      WAESY_AGENT_TOKEN: ${WAESY_AGENT_TOKEN:-WaesyBrowserPool_Secret_2026}
+    command: ["npx", "-y", "playwright@1.50.0", "run-server", "--port", "3002", "--host", "0.0.0.0"]
+
+volumes:
+  postgres_data:
+  redis_data:
+  evolution_instances:
+  storage_data:

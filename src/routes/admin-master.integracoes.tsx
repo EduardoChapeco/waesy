@@ -5,7 +5,7 @@ import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { Check, Compass, Navigation, Search, Cpu, Building2, Globe2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plug, MapPin, CreditCard, Mail, Truck, Sliders, Eye, EyeOff, CheckCircle2, AlertCircle, Clock, ShieldCheck, RefreshCw, Save, Radio, Layers, Plus, Trash2, Terminal, Activity, Zap, Linkedin, Copy, ExternalLink, Lock, Plane } from 'lucide-react';
+import { Plug, MapPin, CreditCard, Mail, Truck, Sliders, Eye, EyeOff, CheckCircle2, AlertCircle, Clock, ShieldCheck, RefreshCw, Save, Radio, Layers, Plus, Trash2, Terminal, Activity, Zap, Linkedin, Copy, ExternalLink, Lock, Plane, Database } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,12 +21,16 @@ import { GmapsScraperPanel } from "@/components/admin/gmaps-scraper-panel";
 import { WebAgentPanel } from "@/components/admin/web-agent-panel";
 import { InfotravelIntegrationPanel } from "@/components/admin/infotravel-integration-panel";
 import { listMasterWhatsAppInstances, toggleMasterWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
+import { WaesyCloudIntegrationPanel } from "@/components/admin/waesy-cloud-integration-panel";
+import { getWaesyCloudStatus, type WaesyCloudStatusDTO } from "@/services/waesy-cloud.functions";
+import { WhatsAppQrConnectModal } from "@/components/chat/whatsapp-qr-connect-modal";
+import { QrCode, Smartphone } from "lucide-react";
 
 export const Route = createFileRoute("/admin-master/integracoes")({
  head: () => ({ meta: [{ title: "APIs, Pools e Orquestrador Global | Waesy Master" }] }),
  loader: async () => {
  try {
- const [integrations, pools, prompts, linkedInCreds, whatsappInstances] = await Promise.all([
+ const [integrations, pools, prompts, linkedInCreds, whatsappInstances, waesyCloudStatus] = await Promise.all([
  getPlatformApiIntegrations().catch(() => ({
  mapbox_token: "",
  stripe_public_key: "",
@@ -60,10 +64,11 @@ export const Route = createFileRoute("/admin-master/integracoes")({
           hasSecretConfigured: false,
         })),
         listMasterWhatsAppInstances().catch(() => []),
+        getWaesyCloudStatus().catch(() => null),
  ]);
 
  const gov = await getPublicApiGovernanceSettings().catch(() => DEFAULT_PUBLIC_API_GOVERNANCE);
-      return { integrations, pools, prompts, gov: gov || DEFAULT_PUBLIC_API_GOVERNANCE, linkedInCreds, whatsappInstances };
+      return { integrations, pools, prompts, gov: gov || DEFAULT_PUBLIC_API_GOVERNANCE, linkedInCreds, whatsappInstances, waesyCloudStatus };
  } catch {
  return {
  integrations: {
@@ -92,24 +97,124 @@ export const Route = createFileRoute("/admin-master/integracoes")({
           hasSecretConfigured: false,
         },
         whatsappInstances: [],
+        waesyCloudStatus: null,
       };
  }
  },
  component: AdminMasterIntegracoesPage,
 });
 
-type TabType = "pools" | "prompts" | "maps" | "payments" | "comms" | "logistics" | "webhooks" | "linkedin" | "gmaps" | "webagent" | "infotravel";
+type TabType = "database" | "pools" | "prompts" | "maps" | "payments" | "comms" | "logistics" | "webhooks" | "linkedin" | "gmaps" | "webagent" | "infotravel";
 
 function MasterWhatsAppInstancesPanel({ instances, onChanged }: { instances: WhatsAppChannelInstanceDTO[]; onChanged: () => void }) {
  const [busyId, setBusyId] = useState<string | null>(null);
- return <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4">
-  <div><h3 className="text-sm font-bold">Instâncias WhatsApp — visão global</h3><p className="text-xs text-muted-foreground mt-1">Controle de operação por loja, provedor, modo oficial/não oficial e último estado conhecido. Credenciais nunca são exibidas.</p></div>
-  <div className="space-y-2">{instances.map((instance) => <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3"><div><div className="flex items-center gap-2"><span className="text-xs font-semibold">{instance.display_name}</span><Badge variant={instance.is_active ? "default" : "secondary"}>{instance.status}</Badge><Badge variant="outline">{instance.connection_mode === "official" ? "Oficial" : "Não oficial"}</Badge></div><p className="text-xs text-muted-foreground mt-1">Loja: {instance.store_id} · {instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "sem identificador"}</p></div><Button size="sm" variant={instance.is_active ? "outline" : "default"} disabled={busyId === instance.id} onClick={async () => { setBusyId(instance.id); try { await toggleMasterWhatsAppInstance({ data: { id: instance.id, storeId: instance.store_id, active: !instance.is_active } }); toast.success("Status da instância atualizado."); onChanged(); } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao atualizar instância."); } finally { setBusyId(null); } }} className="text-xs">{instance.is_active ? "Desativar" : "Ativar"}</Button></div>)}{instances.length === 0 && <p className="text-xs text-muted-foreground border border-dashed rounded-lg p-4">Nenhuma instância registrada.</p>}</div>
- </div>;
+ const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+
+ return (
+  <div className="space-y-6">
+   <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
+     <div className="space-y-1">
+      <div className="flex items-center gap-2">
+       <Smartphone className="size-4 text-emerald-500" />
+       <h3 className="text-sm font-bold text-foreground">Número Global Oficial Waesy (Concierge Mobilidade, Aéreo & Verificação Civil)</h3>
+       <Badge variant="outline" className="text-3xs font-mono border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+        Oracle Cloud · 147.15.61.45:8080
+       </Badge>
+      </div>
+      <p className="text-xs text-muted-foreground max-w-2xl">
+       Canal oficial da plataforma para chamada de corridas Waesy Go (com OTP de 4 dígitos), cotações de passagens aéreas corporativas e validação automática de telefone em <code>profiles.phone_verified_at</code>.
+      </p>
+     </div>
+     <Button
+      type="button"
+      onClick={() => setIsQrModalOpen(true)}
+      className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
+     >
+      <QrCode className="size-4" />
+      <span>Parear WhatsApp Global via QR</span>
+     </Button>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+     <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
+      <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">Validação Civil</span>
+      <p className="text-xs font-semibold text-foreground">Auto-Verificação de Perfil</p>
+      <p className="text-2xs text-muted-foreground">Marca o WhatsApp do cidadão como verificado ao enviar mensagem para o número global.</p>
+     </div>
+     <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
+      <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">Mobilidade Waesy Go</span>
+      <p className="text-xs font-semibold text-foreground">Corridas, Fretes & Mudanças</p>
+      <p className="text-2xs text-muted-foreground">Cotação instantânea por localização ou texto, despacho e código OTP de embarque.</p>
+     </div>
+     <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
+      <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">Viagens & Lojas</span>
+      <p className="text-xs font-semibold text-foreground">Aéreo Corporativo & Catálogo</p>
+      <p className="text-2xs text-muted-foreground">Cotações de voos/pacotes e roteamento inteligente para lojas e reservas locais.</p>
+     </div>
+    </div>
+   </div>
+
+   <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4">
+    <div>
+     <h3 className="text-sm font-bold">Instâncias WhatsApp — visão global</h3>
+     <p className="text-xs text-muted-foreground mt-1">Controle de operação por loja, provedor, modo oficial/não oficial e último estado conhecido. Credenciais nunca são exibidas.</p>
+    </div>
+    <div className="space-y-2">
+     {instances.map((instance) => (
+      <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+       <div>
+        <div className="flex items-center gap-2">
+         <span className="text-xs font-semibold">{instance.display_name}</span>
+         <Badge variant={instance.is_active ? "default" : "secondary"}>{instance.status}</Badge>
+         <Badge variant="outline">{instance.connection_mode === "official" ? "Oficial" : "Não oficial"}</Badge>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+         Loja: {instance.store_id} · {instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "sem identificador"}
+        </p>
+       </div>
+       <Button
+        size="sm"
+        variant={instance.is_active ? "outline" : "default"}
+        disabled={busyId === instance.id}
+        onClick={async () => {
+         setBusyId(instance.id);
+         try {
+          await toggleMasterWhatsAppInstance({ data: { id: instance.id, storeId: instance.store_id, active: !instance.is_active } });
+          toast.success("Status da instância atualizado.");
+          onChanged();
+         } catch (error) {
+          toast.error(error instanceof Error ? error.message : "Erro ao atualizar instância.");
+         } finally {
+          setBusyId(null);
+         }
+        }}
+        className="text-xs h-11 min-h-11"
+       >
+        {instance.is_active ? "Desativar" : "Ativar"}
+       </Button>
+      </div>
+     ))}
+     {instances.length === 0 && (
+      <p className="text-xs text-muted-foreground border border-dashed rounded-lg p-4">Nenhuma instância registrada.</p>
+     )}
+    </div>
+   </div>
+
+   <WhatsAppQrConnectModal
+    open={isQrModalOpen}
+    onOpenChange={setIsQrModalOpen}
+    instances={instances}
+    onInstancesUpdated={onChanged}
+    canManageConnection={true}
+    isPlatformMaster={true}
+   />
+  </div>
+ );
 }
 
 function AdminMasterIntegracoesPage() {
- const { integrations: initialData, pools: initialPools, prompts: initialPrompts, gov: initialGov, linkedInCreds: initialLinkedIn, whatsappInstances = [] } = ((Route.useLoaderData?.() as any) || {});
+ const { integrations: initialData, pools: initialPools, prompts: initialPrompts, gov: initialGov, linkedInCreds: initialLinkedIn, whatsappInstances = [], waesyCloudStatus: initialWaesyCloud } = ((Route.useLoaderData?.() as any) || {});
  const router = useRouter();
 
  const [activeTab, setActiveTab] = useState<TabType>("pools");
@@ -488,6 +593,20 @@ function AdminMasterIntegracoesPage() {
  <div className="flex flex-nowrap overflow-x-auto no-scrollbar snap-x gap-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
  <button
  type="button"
+ onClick={() => setActiveTab("database")}
+ className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
+ activeTab === "database"
+ ? "bg-foreground text-background shadow-xs"
+ : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+ >
+ <Database className="size-4" />
+ <span>Waesy Cloud & Banco</span>
+ <Badge variant="outline" className="text-3xs px-2 py-0 border-primary/40 text-primary bg-primary/10">BaaS</Badge>
+ </button>
+
+ <button
+ type="button"
  onClick={() => setActiveTab("pools")}
  className={`flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200 shrink-0 cursor-pointer ${
  activeTab === "pools"
@@ -618,6 +737,14 @@ function AdminMasterIntegracoesPage() {
     <Badge variant="outline" className="text-3xs px-2 py-0 border-sky-500/40 text-sky-500 bg-sky-500/10">Sync</Badge>
   </button>
  </div>
+
+ {/* ── ABA: WAESY CLOUD & BANCO DE DADOS SOBERANO ── */}
+ {activeTab === "database" && (
+ <WaesyCloudIntegrationPanel
+ initialStatus={initialWaesyCloud}
+ onRefresh={() => router.invalidate()}
+ />
+ )}
 
  {/* ── ABA 1: POOL DE CHAVES & ROTAÇÃO ── */}
  {activeTab === "pools" && (
@@ -1180,7 +1307,7 @@ function AdminMasterIntegracoesPage() {
                     </div>
 
                     {cepResult.latitude && cepResult.longitude && (
-                      <div className="h-[180px] w-full rounded-lg overflow-hidden border border-border/70">
+                      <div className="h-44 w-full rounded-lg overflow-hidden border border-border/70">
                         <MapLibreCanvas
                           provider={govSettings.defaultMapProvider}
                           center={{ lat: cepResult.latitude, lng: cepResult.longitude }}
@@ -1872,7 +1999,7 @@ function AdminMasterIntegracoesPage() {
             <Button
               type="submit"
               disabled={isSavingLinkedIn}
-              className="rounded-lg font-bold text-xs h-9 gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-foreground"
+              className="rounded-lg font-bold text-xs h-11 min-h-11 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Save className="size-3.5" />
               <span>{isSavingLinkedIn ? "Criptografando..." : "Salvar Credenciais no Cofre"}</span>
@@ -1983,7 +2110,7 @@ function AdminMasterIntegracoesPage() {
 
  {/* Modal: Editar Prompt Master */}
  <Dialog open={isPromptModalOpen} onOpenChange={setIsPromptModalOpen}>
- <DialogContent className="sm:max-w-2xl sm:rounded-lg max-h-[85vh] overflow-y-auto no-scrollbar">
+ <DialogContent className="sm:max-w-2xl sm:rounded-lg max-h-screen overflow-y-auto no-scrollbar">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold">
  {editingPrompt ? "Editar Prompt" : "Novo Prompt"}

@@ -641,6 +641,7 @@ export const createTravelProposal = createServerFn({ method: "POST" })
           .insert({
             store_id: effectiveStoreId,
             created_by_profile_id: identity?.id || null,
+            quote_id: input.quoteId || null,
             public_token: publicToken,
             canvas_format: input.canvasFormat || "a4-portrait",
             template_theme: input.templateTheme || "editorial-flat",

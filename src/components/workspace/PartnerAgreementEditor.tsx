@@ -18,7 +18,8 @@ import {
   Layers, 
   CheckCircle2, 
   PenTool,
-  AlertCircle
+  AlertCircle,
+  X
 } from "lucide-react";
 import { getPartnerAgreement, savePartnerAgreement } from "@/services/services-erp.functions";
 import { DigitalSignatureCanvas } from "@/components/workspace/DigitalSignatureCanvas";
@@ -477,9 +478,10 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
                   variant="ghost"
                   size="sm"
                   onClick={() => setSignatureModalOpen(false)}
-                  className="size-8 p-0"
+                  className="size-11 min-h-11 min-w-11 rounded-lg p-0 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  aria-label="Fechar"
                 >
-                  ✕
+                  <X className="size-4" />
                 </Button>
               </div>
 

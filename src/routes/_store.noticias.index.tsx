@@ -35,19 +35,26 @@ export const Route = createFileRoute("/_store/noticias/")({
     const activeCity = resolveActiveCity(location?.search);
     try {
       const [articles, banners, sponsors] = await Promise.all([
-        listPublicArticles({ data: { limit: 60, city: activeCity } }).catch(() => []),
-        listActiveBanners({ data: { placement: "noticias", city: activeCity } }).catch(() => []),
-        listPublicNewsSponsors({ data: { limit: 12 } }).catch(() => []),
+        listPublicArticles({ data: { limit: 60, city: activeCity } }),
+        listActiveBanners({ data: { placement: "noticias", city: activeCity } }),
+        listPublicNewsSponsors({ data: { limit: 12 } }),
       ]);
       return {
         articles: (articles || []) as NewsArticleDTO[],
         banners: (banners || []) as BannerDTO[],
         sponsors: (sponsors || []) as SponsorDTO[],
         activeCity: activeCity || "",
+        loadError: "",
       };
     } catch (err) {
       console.error("[loader:_store.noticias.index] Unhandled error:", err);
-      return { articles: [], banners: [], sponsors: [], activeCity: "" };
+      return {
+        articles: [],
+        banners: [],
+        sponsors: [],
+        activeCity: activeCity || "",
+        loadError: "news_load_failed",
+      };
     }
   },
   component: NoticiasEditorialPage,
@@ -59,6 +66,7 @@ function NoticiasEditorialPage() {
     banners = [],
     sponsors = [],
     activeCity = "",
+    loadError = "",
   } = (Route.useLoaderData?.() as any) || {};
 
   return (
@@ -67,6 +75,7 @@ function NoticiasEditorialPage() {
       initialSponsors={sponsors}
       initialBanners={banners}
       initialActiveCity={activeCity}
+    initialLoadError={loadError}
     />
   );
 }

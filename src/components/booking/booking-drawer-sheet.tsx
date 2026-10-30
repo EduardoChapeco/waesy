@@ -99,13 +99,13 @@ export function BookingDrawerSheet({
                 </strong>.
               </p>
               <div className="pt-4 flex flex-col gap-2">
-                <Button asChild className="rounded-lg font-bold text-xs h-10">
+                <Button asChild className="rounded-lg font-bold text-xs h-11 min-h-11">
                   <Link to="/conta/agendamentos">Ver Meus Agendamentos</Link>
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => onOpenChange(false)}
-                  className="rounded-lg font-bold text-xs h-10"
+                  className="rounded-lg font-bold text-xs h-11 min-h-11"
                 >
                   Fechar
                 </Button>
@@ -158,7 +158,7 @@ export function BookingDrawerSheet({
                         setSelectedSlot(null);
                       }}
                       className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "h-8 px-3 rounded-lg text-xs font-medium border shrink-0 transition-colors duration-200 cursor-pointer",
+                        "min-h-11 px-3 rounded-lg text-xs font-medium border shrink-0 transition-colors duration-200 cursor-pointer",
                         !selectedResourceId
                           ? "bg-foreground text-background border-foreground font-bold"
                           : "bg-muted/40 border-border/50 text-muted-foreground hover:bg-muted"
@@ -177,7 +177,7 @@ export function BookingDrawerSheet({
                             setSelectedSlot(null);
                           }}
                           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "h-8 px-3 rounded-lg text-xs font-medium border shrink-0 transition-colors duration-200 cursor-pointer",
+                            "min-h-11 px-3 rounded-lg text-xs font-medium border shrink-0 transition-colors duration-200 cursor-pointer",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
                               : "bg-muted/40 border-border/50 text-muted-foreground hover:bg-muted"
@@ -223,7 +223,7 @@ export function BookingDrawerSheet({
                           type="button"
                           onClick={() => setSelectedSlot(slotIso)}
                           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "h-9 rounded-lg text-xs font-mono font-bold border transition-colors duration-200 cursor-pointer flex items-center justify-center",
+                            "min-h-11 rounded-lg text-xs font-mono font-bold border transition-colors duration-200 cursor-pointer flex items-center justify-center",
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary shadow-xs"
                               : "bg-card border-border/60 hover:bg-muted text-foreground"

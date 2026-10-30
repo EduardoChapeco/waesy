@@ -867,7 +867,7 @@ function WorkspaceHotelsPage() {
  return (
  <div
  key={hotel.id}
- className="bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/40 transition-colors duration-200 group flex flex-col shadow-2xs hover:shadow-sm"
+ className="bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/40 transition-colors duration-200 group flex flex-col"
  >
  {/* Foto de Capa & Badges */}
  <div className="relative aspect-video w-full bg-muted/30 overflow-hidden">
@@ -883,7 +883,7 @@ function WorkspaceHotelsPage() {
  <span className="text-xs">Sem foto de capa</span>
  </div>
  )}
- <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+ <div className="absolute inset-0 bg-slate-950/60 pointer-events-none" />
 
  {/* Top Badges */}
  <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
@@ -906,7 +906,7 @@ function WorkspaceHotelsPage() {
 
  {/* Bottom Info on Capa */}
  <div className="absolute bottom-3 left-3 right-3 text-foreground space-y-1">
- <h4 className="text-base font-bold drop-shadow-sm truncate">{hotel.name}</h4>
+ <h4 className="text-base font-bold truncate">{hotel.name}</h4>
  <p className="text-xs text-foreground/80 truncate flex items-center gap-1">
  <MapPin className="size-3 shrink-0 text-primary-foreground/90" />
  <span>
@@ -1010,7 +1010,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => duplicateMut.mutate(hotel.id)}
- className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Duplicar Hotel"
  >
  <Copy className="size-4 sm:size-3.5" />
@@ -1021,7 +1021,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleExportHotelsRoomsCSV([hotel], `hotel-${hotel.name.toLowerCase().replace(/\s+/g, "-")}-quartos.csv`)}
- className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Exportar Ficha de Quartos (CSV)"
  >
  <Download className="size-4 sm:size-3.5" />
@@ -1048,6 +1048,7 @@ function WorkspaceHotelsPage() {
  ) : (
  /* ── MODO TABELA OPERACIONAL ── */
  <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
+ {/* design-lint-ignore DL-30 reason:"Tabela operacional com rolagem horizontal no workspace de hoteis" expiry:"2027-12-31" */}
  <div className="overflow-x-auto no-scrollbar">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-semibold">
@@ -1118,7 +1119,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => setPreviewHotel(hotel)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Raio-X do Hotel"
  >
  <Eye className="size-4 sm:size-3.5" />
@@ -1127,7 +1128,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleOpenEdit(hotel)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Editar"
  >
  <Edit2 className="size-4 sm:size-3.5" />
@@ -1136,7 +1137,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => duplicateMut.mutate(hotel.id)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Duplicar"
  >
  <Copy className="size-4 sm:size-3.5" />
@@ -1145,7 +1146,7 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => handleExportHotelsRoomsCSV([hotel], `hotel-${hotel.name.toLowerCase().replace(/\s+/g, "-")}-quartos.csv`)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  title="Exportar Ficha de Quartos (CSV)"
  >
  <Download className="size-4 sm:size-3.5" />
@@ -1190,7 +1191,7 @@ function WorkspaceHotelsPage() {
                       <span className="text-xs font-medium">Sem foto de capa cadastrada</span>
                     </div>
                   )}
- <div className="absolute inset-0 bg-black/60" />
+ <div className="absolute inset-0 bg-slate-950/60" />
  <div className="absolute bottom-4 left-5 right-5 text-foreground">
  <div className="flex items-center gap-2 text-xs font-bold mb-1">
  <span className="px-2 py-1 rounded-full bg-card/20 backdrop-blur-md text-foreground font-mono text-xs">
@@ -1373,6 +1374,7 @@ function WorkspaceHotelsPage() {
  <span>Preencher com Preset de Resort Famoso (1 Toque):</span>
  </span>
  </div>
+ {/* design-lint-ignore DL-30 reason:"Trilho horizontal de presets de resort no sheet de hoteis" expiry:"2027-12-31" */}
  <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
  {FAMOUS_HOTEL_PRESETS.map((preset) => (
  <button
@@ -1389,6 +1391,7 @@ function WorkspaceHotelsPage() {
  </SheetHeader>
 
  <Tabs value={sheetTab} onValueChange={setSheetTab} className="flex-1 flex flex-col">
+ {/* design-lint-ignore DL-30 reason:"Trilho horizontal de abas do sheet de configuracao de hotel" expiry:"2027-12-31" */}
  <div className="px-5 pt-3 border-b border-border/60 bg-muted/10 shrink-0 overflow-x-auto no-scrollbar">
  <TabsList className="bg-transparent border-b-0 h-9 p-0 gap-4">
  <TabsTrigger
@@ -1726,7 +1729,7 @@ function WorkspaceHotelsPage() {
  <button
  type="button"
  onClick={() => handleRemovePhoto(idx)}
- className="absolute top-1.5 right-1.5 size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1.5 right-1.5 size-11 min-h-11 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>
@@ -1782,7 +1785,7 @@ function WorkspaceHotelsPage() {
  size="sm"
  variant="ghost"
  onClick={() => handleRemoveRoomCategory(room.id)}
- className="size-7 p-0 rounded-lg text-destructive hover:bg-destructive/10"
+ className="size-11 min-h-11 p-0 rounded-lg text-destructive hover:bg-destructive/10"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -2112,7 +2115,7 @@ function WorkspaceHotelsPage() {
  bio_bullets: formData.bio_bullets.filter((_, i) => i !== idx),
  })
  }
- className="size-8 sm:size-5 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 min-h-11 sm:size-8 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  ×
  </button>

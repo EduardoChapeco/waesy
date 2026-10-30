@@ -76,7 +76,7 @@ export function BuilderCodeExplorerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-[85vh] p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-2xl">
+      <DialogContent className="max-w-5xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-2xl">
         {/* Header Superior */}
         <DialogHeader className="h-14 px-4 border-b border-border/80 flex flex-row items-center justify-between flex-none bg-card select-none">
           <div className="flex items-center gap-3">
@@ -102,7 +102,7 @@ export function BuilderCodeExplorerModal({
               variant="outline"
               size="sm"
               onClick={handleCopy}
-              className="h-9 px-3 rounded-lg text-xs font-semibold gap-1.5 cursor-pointer"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
             >
               {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
               <span>{copied ? "Copiado!" : "Copiar Arquivo"}</span>
@@ -112,7 +112,7 @@ export function BuilderCodeExplorerModal({
               type="button"
               size="sm"
               onClick={handleDownloadZip}
-              className="h-9 px-3 rounded-lg text-xs font-bold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-xs"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-xs"
             >
               <Download className="size-3.5" />
               <span>Exportar Projeto</span>
@@ -123,7 +123,7 @@ export function BuilderCodeExplorerModal({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="size-9 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+              className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <X className="size-4" />
             </Button>
@@ -149,7 +149,7 @@ export function BuilderCodeExplorerModal({
                   type="button"
                   onClick={() => setSelectedFile(filePath)}
                   className={cn(
-                    "w-full text-left px-2.5 py-1.5 rounded-md flex items-center gap-2 transition-colors cursor-pointer text-xs truncate",
+                    "w-full text-left px-3 py-2 rounded-md flex items-center gap-2 transition-colors cursor-pointer text-xs truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isSelected
                       ? "bg-primary/15 text-primary font-bold border border-primary/20"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"

@@ -1,13 +1,22 @@
 {
-  "generatedAt": "2026-09-19T14:44:53.422Z",
+  "generatedAt": "2026-10-30T12:26:08.278Z",
   "eixo1_orphanedTables": [
     "ad_properties",
     "ad_vehicles",
-    "affiliate_commissions",
     "agencies",
-    "agent_registry",
+    "ai_agent_definitions",
     "ai_brain_settings",
+    "ai_job_charges",
+    "ai_prompt_execution_logs",
+    "ai_quality_benchmarks",
+    "ai_quality_evaluation_runs",
+    "ai_skill_tools",
+    "ai_skill_versions",
+    "ai_squad_definitions",
+    "ai_squad_handoffs",
+    "ai_squad_members",
     "ai_squads",
+    "ai_task_routing_rules",
     "audit_log",
     "boarding_cards",
     "boarding_checklist_templates",
@@ -20,30 +29,40 @@
     "campaign_metrics",
     "canonical_device_models",
     "canonical_vehicle_models",
+    "card_invoice_items",
+    "chat_access_audit_events",
+    "chat_conversation_keys",
+    "chat_departments",
+    "classified_metrics_daily",
     "clients",
     "company_reputation_profiles",
+    "copilot_activity_steps",
+    "copilot_execution_steps",
+    "copilot_executions",
     "corporate_clients",
     "corporate_rfps",
     "courier_payouts",
-    "crawl_seeds",
-    "curation_squad_registry",
+    "crm_universal_import_batches",
     "customer_credit_transactions",
-    "customer_portal_configs",
     "delivery_pins",
     "demographic_profiles_ibge",
     "domain_configs",
     "event_assets_inventory",
-    "event_contractors",
-    "event_ticket_batches",
-    "experience_pages",
+    "financial_events",
     "folders",
     "gift_card_usages",
     "global_ncm_tributes",
-    "group_tour_enrollments",
     "group_tours",
     "holidays_calendar",
     "hr_departments",
     "hr_positions",
+    "indexed_businesses",
+    "indexed_events",
+    "indexed_jobs",
+    "indexed_products",
+    "integration_connector_events",
+    "intercity_bus_bookings",
+    "intercity_bus_schedules",
     "inventory_adjustments_log",
     "invite_telemetry",
     "job_postings",
@@ -61,119 +80,178 @@
     "pos_settings",
     "proposal_items",
     "proposals",
+    "quote_provider_executions",
+    "recurring_billing_attempts",
     "rental_applications",
     "reputation_complaints",
     "reputation_interactions",
+    "resource_availabilities",
     "rma_inspections",
     "rma_items",
     "shipment_webhooks_inbox",
     "shipping_options",
+    "simlab_calibration_ledger",
     "simlab_personas",
     "simlab_research_sessions",
     "sponsor_placements",
-    "squad_template_agents",
-    "squad_templates",
     "stock_reservations",
-    "store_ad_accounts",
     "store_delivery_surge_policies",
     "store_growth_bounties",
     "store_hr_delegations",
     "store_moderation_suspensions",
-    "store_squad_runs",
-    "store_squads",
-    "support_tickets",
     "synthetic_agent_memories",
     "system_flags",
     "system_wipe_logs",
-    "token_ledger_transactions",
+    "telemetry_logs",
     "token_recharge_webhooks_inbox",
     "transaction_certificates",
+    "travel_agent_commission_tiers",
+    "travel_budget_items",
+    "travel_budgets",
     "travel_contract_certificates",
+    "travel_document_conflict_resolutions",
     "travel_flight_alternatives",
     "travel_group_tours",
+    "travel_proposal_versions",
+    "travel_quote_room_configs",
+    "travel_quote_sessions",
+    "travel_sale_payments",
+    "travel_sales",
+    "travel_trip_cancellations_and_credits",
+    "travel_trips",
+    "travel_visa_ds160_evaluations",
+    "travel_voucher_apply_operations",
     "traveler_forms",
     "trip_rooming_list",
     "trips",
-    "user_behavior_events",
-    "user_category_affinity",
+    "user_skill_settings",
+    "user_token_debit_ledger",
     "user_token_transactions",
     "visual_workflow_executions",
     "visual_workflows",
     "vouchers",
-    "webhook_events"
+    "webhook_events",
+    "whatsapp_flow_runs",
+    "whatsapp_outbox_attempts",
+    "whatsapp_provider_circuit_breakers",
+    "whatsapp_provider_webhook_events",
+    "whatsapp_wave8_test_runs",
+    "whatsapp_webhook_inbox",
+    "whatsapp_worker_heartbeats",
+    "workspace_builder_documents",
+    "wz_conversion_rates"
   ],
   "eixo2_orphanedServices": [
+    "ai-artifact-compiler.functions",
+    "ai-builder-composition.functions",
+    "ai-connectors-vault.functions",
+    "ai-master-prompts.functions",
+    "ai-media-jobs.functions",
+    "ai-memory-curation.functions",
+    "ai-persona.functions",
+    "ai-quality-benchmark.functions",
+    "ai-scheduled-tasks.functions",
+    "ai-tasks-durability.functions",
     "ai.functions",
     "audit.functions",
     "billing.functions",
     "canonical-catalog.functions",
+    "canonical-stock-ledger.functions",
     "cash-safes.functions",
     "central-knowledge.functions",
+    "chat-commerce.functions",
     "claim.functions",
     "classifieds-workspace-bridge.functions",
     "company-delivery.functions",
+    "contact-enrichment.functions",
+    "copilot-memory.functions",
+    "customer.functions",
+    "document-artifacts.functions",
+    "event-tickets.functions",
     "external-events.functions",
     "finance.functions",
+    "financial-settlement.functions",
+    "financial.functions",
+    "fipe.functions",
     "fulfillment.functions",
+    "geo-search.functions",
+    "gmaps-scraper.functions",
     "group-tour-cash.functions",
+    "hotel-mining.functions",
+    "ibge-market-intelligence.functions",
+    "ifood-reconciliation.functions",
+    "image-proxy.functions",
+    "installments.functions",
+    "listing-promotion.functions",
     "machine.functions",
+    "magic-onboarding.functions",
     "marketing-engagement.functions",
+    "marketplace-checkout.functions",
     "master-catalog.functions",
     "match-time.functions",
     "modifiers.functions",
+    "multi-store-checkout.functions",
     "nexus-operations.functions",
     "notifications-push.functions",
+    "oauth-nexus.functions",
+    "omni-apps-blueprint.functions",
+    "orders.functions",
     "portal-waitlist.functions",
+    "quick-order.functions",
     "seller.functions",
     "service-orders.functions",
+    "services-erp.functions",
+    "simlab-observed-experiments.functions",
     "squad-content.functions",
+    "studio-template-generation.functions",
+    "studio-template-library.functions",
     "tag-audit.functions",
+    "ticket.functions",
     "timeline.functions",
-    "tourism-airports.functions",
+    "token-quota.functions",
     "tourism-operations.functions",
+    "travel-ai-extractor.functions",
+    "travel-commission.functions",
+    "travel-continuous-flow.functions",
+    "travel-credit-intelligence.functions",
+    "travel-credit-vault.functions",
+    "travel-financial.functions",
     "travel-installments.functions",
-    "upsell.functions"
+    "travel-issuance-guard.functions",
+    "travel-operator-sync.functions",
+    "travel-pax-anamnesis.functions",
+    "travel-pre-boarding-and-commissions.functions",
+    "travel-reviews.functions",
+    "unified-listing-workflow.functions",
+    "unsplash.functions",
+    "vertical-ai-modules.functions",
+    "voucher.functions",
+    "web-agent.functions",
+    "whatsapp-contact-identity.functions",
+    "whatsapp-messaging.functions",
+    "whatsapp-operations-metrics.functions",
+    "workspace-catalog.functions"
   ],
   "eixo3_ledgerGaps": [
     {
-      "service": "payment.functions.ts",
-      "mutations": 7
-    },
-    {
       "service": "checkout.functions.ts",
-      "mutations": 3
-    },
-    {
-      "service": "order.functions.ts",
-      "mutations": 18
-    },
-    {
-      "service": "commission.functions.ts",
-      "mutations": 3
+      "mutations": 9
     },
     {
       "service": "giftcard.functions.ts",
-      "mutations": 0
-    },
-    {
-      "service": "affiliates.functions.ts",
-      "mutations": 18
+      "mutations": 2
     },
     {
       "service": "personal-finance.functions.ts",
-      "mutations": 6
+      "mutations": 8
     },
     {
       "service": "client-wallet.functions.ts",
       "mutations": 0
     },
     {
-      "service": "cash.functions.ts",
-      "mutations": 14
-    },
-    {
       "service": "group-tour-cash.functions.ts",
-      "mutations": 8
+      "mutations": 14
     },
     {
       "service": "financial-obligations.functions.ts",
@@ -181,33 +259,33 @@
     },
     {
       "service": "marketplace-hub.functions.ts",
-      "mutations": 9
+      "mutations": 41
     },
     {
       "service": "marketplace-webhooks.functions.ts",
-      "mutations": 16
+      "mutations": 18
     },
     {
       "service": "travel-lifecycle.functions.ts",
-      "mutations": 10
+      "mutations": 14
     }
   ],
   "eixo4_forensicGaps": [
     {
       "service": "auth.functions.ts",
-      "mutations": 9
+      "mutations": 16
     },
     {
       "service": "payment.functions.ts",
-      "mutations": 14
+      "mutations": 16
     },
     {
       "service": "checkout.functions.ts",
-      "mutations": 2
+      "mutations": 9
     },
     {
       "service": "order.functions.ts",
-      "mutations": 21
+      "mutations": 28
     },
     {
       "service": "commission.functions.ts",
@@ -215,39 +293,35 @@
     },
     {
       "service": "giftcard.functions.ts",
-      "mutations": 3
-    },
-    {
-      "service": "affiliates.functions.ts",
-      "mutations": 22
-    },
-    {
-      "service": "store.functions.ts",
       "mutations": 14
     },
     {
+      "service": "affiliates.functions.ts",
+      "mutations": 24
+    },
+    {
+      "service": "store.functions.ts",
+      "mutations": 17
+    },
+    {
       "service": "kyc.functions.ts",
-      "mutations": 1
+      "mutations": 2
     },
     {
       "service": "security.functions.ts",
       "mutations": 11
     },
     {
-      "service": "secret-vault.functions.ts",
-      "mutations": 1
-    },
-    {
       "service": "api-orchestrator.functions.ts",
-      "mutations": 12
+      "mutations": 19
     },
     {
       "service": "tokens.functions.ts",
-      "mutations": 16
+      "mutations": 12
     },
     {
       "service": "receivables.functions.ts",
-      "mutations": 21
+      "mutations": 30
     },
     {
       "service": "legal.functions.ts",
@@ -255,47 +329,56 @@
     },
     {
       "service": "contracts.functions.ts",
-      "mutations": 21
+      "mutations": 26
     },
     {
       "service": "marketplace-hub.functions.ts",
-      "mutations": 9
+      "mutations": 26
     },
     {
       "service": "marketplace-webhooks.functions.ts",
-      "mutations": 11
+      "mutations": 17
     },
     {
       "service": "crm.functions.ts",
-      "mutations": 29
+      "mutations": 34
     },
     {
       "service": "mining.functions.ts",
-      "mutations": 32
+      "mutations": 77
     },
     {
       "service": "classifieds.functions.ts",
-      "mutations": 23
+      "mutations": 31
     }
   ],
   "eixo5_keySecurityIssues": [
+    "src\\lib\\conversation-crypto.server.ts",
     "src\\lib\\session-audit.server.ts",
     "src\\routes\\api.auth.govbr.callback.ts",
-    "src\\routes\\api.auth.marketplace.callback.ts",
+    "src\\services\\ai-conversations.functions.ts",
+    "src\\services\\ai-core-gateway.functions.ts",
     "src\\services\\api-orchestrator.functions.ts",
-    "src\\services\\contracts.functions.ts",
+    "src\\services\\auth.functions.ts",
     "src\\services\\courier-verification.functions.ts",
+    "src\\services\\image-proxy.functions.ts",
+    "src\\services\\infotravel.ts",
     "src\\services\\integrations.functions.ts",
+    "src\\services\\mining\\auction-harvester.ts",
+    "src\\services\\mining\\real-estate-harvester.ts",
     "src\\services\\mining.functions.ts",
+    "src\\services\\news.functions.ts",
+    "src\\services\\onboarding-pipeline.server.ts",
+    "src\\services\\payment-gateway.server.ts",
     "src\\services\\personal-finance.functions.ts",
     "src\\services\\private-store.functions.ts",
-    "src\\services\\secret-vault.functions.ts"
+    "src\\services\\travel-wooba-connector.service.ts"
   ],
   "summary": {
-    "totalTables": 461,
-    "totalServices": 176,
-    "p0Critical": 15,
-    "p1High": 32,
+    "totalTables": 772,
+    "totalServices": 288,
+    "p0Critical": 10,
+    "p1High": 40,
     "p2Medium": 80
   }
 }

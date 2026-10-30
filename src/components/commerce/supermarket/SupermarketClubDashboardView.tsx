@@ -9,6 +9,7 @@ import {
   ListChecks,
   Gift,
   ArrowRight,
+  Star,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ interface SupermarketClubDashboardViewProps {
   onProductClick?: (product: SupermarketProductCardDTO) => void;
   onOpenDigitalFlyer?: () => void;
   onOpenStoreList?: () => void;
+  onOpenStatement?: () => void;
   className?: string;
 }
 
@@ -35,6 +37,7 @@ export function SupermarketClubDashboardView({
   onProductClick,
   onOpenDigitalFlyer,
   onOpenStoreList,
+  onOpenStatement,
   className,
 }: SupermarketClubDashboardViewProps) {
   const formattedCashback = (clubData.cashbackBalanceCents / 100)
@@ -47,52 +50,63 @@ export function SupermarketClubDashboardView({
   return (
     <div className={cn("space-y-6 px-4 py-4 max-w-4xl mx-auto select-none", className)}>
       {/* ── Header do Membro do Clube ── */}
-      <div className="p-5 rounded-3xl bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 text-white space-y-4">
+      <div className="p-5 rounded-3xl bg-card border border-border/80 text-foreground space-y-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="space-y-0.5">
-            <span className="text-2xs uppercase tracking-wider text-blue-200 font-bold">
+          <div className="space-y-1">
+            <span className="text-2xs uppercase tracking-wider text-muted-foreground font-bold">
               Programa de Vantagens
             </span>
             <h2 className="text-xl font-black">
               {clubData.userName ? `Olá, ${clubData.userName}` : "Bem-vindo ao Clube"}
             </h2>
-            <p className="text-xs text-blue-100 font-medium">
+            <p className="text-xs text-muted-foreground font-medium">
               Você tem acesso aos descontos e cashback exclusivos da rede.
             </p>
           </div>
 
-          <div className="size-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center font-black text-lg border border-white/20 shrink-0">
-            ★
+          <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-border/60 shrink-0">
+            <Star weight="fill" className="size-6 text-amber-500" />
           </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onOpenStatement}
+            className="h-11 min-h-11 rounded-xl text-xs font-bold gap-1 shrink-0 focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span>Extrato</span>
+            <ArrowRight size={14} weight="bold" />
+          </Button>
         </div>
 
         {/* ── Cards de Métricas em Grade (Cashback, Cupons, Carteira) ── */}
-        <div className="grid grid-cols-3 gap-2 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
           {/* Saldo de Cashback */}
-          <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 flex flex-col justify-between">
-            <CurrencyCircleDollar size={20} weight="fill" className="text-emerald-400 mb-1" />
-            <span className="text-3xs text-blue-200 font-semibold">Cashback</span>
-            <span className="text-sm font-black">R$ {formattedCashback}</span>
+          <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 flex flex-col justify-between">
+            <CurrencyCircleDollar size={20} weight="fill" className="text-emerald-500 mb-1" />
+            <span className="text-3xs text-muted-foreground font-semibold">Cashback</span>
+            <span className="text-sm font-black text-foreground">R$ {formattedCashback}</span>
           </div>
 
           {/* Cupons Ativos */}
-          <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 flex flex-col justify-between">
-            <Ticket size={20} weight="fill" className="text-amber-300 mb-1" />
-            <span className="text-3xs text-blue-200 font-semibold">Cupons</span>
-            <span className="text-sm font-black">{clubData.activeCouponsCount} ativos</span>
+          <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 flex flex-col justify-between">
+            <Ticket size={20} weight="fill" className="text-amber-500 mb-1" />
+            <span className="text-3xs text-muted-foreground font-semibold">Cupons</span>
+            <span className="text-sm font-black text-foreground">{clubData.activeCouponsCount} ativos</span>
           </div>
 
           {/* Cartão / Carteira */}
-          <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 flex flex-col justify-between">
-            <Wallet size={20} weight="fill" className="text-purple-300 mb-1" />
-            <span className="text-3xs text-blue-200 font-semibold">Cartão Loja</span>
-            <span className="text-sm font-black truncate">Ativo</span>
+          <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 flex flex-col justify-between">
+            <Wallet size={20} weight="fill" className="text-primary mb-1" />
+            <span className="text-3xs text-muted-foreground font-semibold">Cartão Loja</span>
+            <span className="text-sm font-black text-foreground truncate">Ativo</span>
           </div>
         </div>
       </div>
 
       {/* ── Card Economizômetro ── */}
-      <div className="p-4 rounded-2xl bg-card border border-border/60 flex items-center justify-between gap-3 shadow-sm">
+      <div className="p-4 rounded-2xl bg-card border border-border/60 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="size-11 rounded-xl bg-emerald-600/10 text-emerald-600 flex items-center justify-center shrink-0">
             <PiggyBank size={24} weight="duotone" />
@@ -107,18 +121,10 @@ export function SupermarketClubDashboardView({
           </div>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-11 min-h-11 rounded-xl text-xs font-bold gap-1 shrink-0 focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <span>Extrato</span>
-          <ArrowRight size={14} weight="bold" />
-        </Button>
       </div>
 
       {/* ── Atalhos Rápidos de Supermercado em Círculos ── */}
-      <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 py-1">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 py-1">
         {[
           { id: "cashback", label: "Cashback", icon: CurrencyCircleDollar, color: "text-emerald-600" },
           { id: "encarte", label: "Encarte Digital", icon: BookOpen, color: "text-blue-600", onClick: onOpenDigitalFlyer },
@@ -132,7 +138,7 @@ export function SupermarketClubDashboardView({
               key={item.id}
               type="button"
               onClick={item.onClick}
-              className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex flex-col items-center gap-2 p-2 rounded-2xl hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11"
             >
               <div className="size-12 rounded-full bg-muted/80 flex items-center justify-center border border-border/60">
                 <IconComp size={22} weight="duotone" className={item.color} />

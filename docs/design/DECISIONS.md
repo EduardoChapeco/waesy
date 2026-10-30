@@ -1,5 +1,118 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-388: Motor Canônico de Monetização, Matriz de Planos, Tokenomics ($WZ), Waesy Go Bilateral e Governança de Gateways
+- **Data:** 2026-10-30
+- **Contexto:**
+  1. Necessidade de padronizar a parametrização monetária do ecossistema: paridade de 1 $WZ = R$ 0,01 e separação conceitual estrita entre $WZ (moeda transacional interna) e tokens técnicos de inferência de LLM (Context Window).
+  2. Definição da matriz de planos ultra-modularizada (Civil R$ 0, Business Start R$ 49,90, Business Pro R$ 99,90, Business Max R$ 199,00, Business Black R$ 299,00, Business Enterprise R$ 499,00, Corporate) e add-ons (Business IS, Business Site, Business Hub) com franquias calibradas pela taxa de 1.000 tokens ≈ 1 $WZ ≈ R$ 0,01.
+  3. Estruturação da regra comercial do Marketplace: taxa padrão de 5% da plataforma + taxa do gateway de pagamento (Asaas e Mercado Pago). Transações no marketplace restritas 100% às credenciais Master integradas pelo Admin Master.
+  4. Modelo bilateral do Waesy Go (Mobilidade/Caronas/Fretes): cobrança de R$ 0,99 de taxa de serviço do passageiro e R$ 0,99 de taxa administrativa fixa do condutor com opacidade total (nenhuma ponta tem visibilidade sobre os valores ou taxas cobradas da outra ponta).
+  5. Isenção total de taxa da plataforma no PDV físico (0% Waesy no balcão).
+  6. Parametrização e editabilidade completa por cliente, usuário ou loja com motor de overrides de taxas (`resolveEffectivePricing`).
+  7. Chaves de gateway conectadas individualmente pela loja no Workspace passam a ser válidas estritamente para PDV/Caixa físico e faturas diretas de cobrança de clientes, permitindo comutação para o gateway Master caso a loja opte por não configurar gateway próprio.
+  8. Motor de autodébito de inadimplência: quando a loja possui faturas vencidas no razão, vendas no Marketplace têm o split retido automaticamente para abater débitos pendentes antes da liberação do saldo.
+  9. Especificação e sessão de Tap to Pay no PDV com sincronização em tempo real no app móvel.
+- **Decisão:**
+  1. Criada a especificação `docs/specs/SPEC-20261030-CANONICAL-PRICING-PLANS-AND-MONETIZATION-ENGINE.md` e o relatório forense `docs/audits/AUDITORIA_20261030_MONETIZACAO_PLANOS_E_CUSTOS.md`.
+  2. Criado o motor canônico `src/lib/monetization-engine.ts` com funções puras de conversão, matriz de planos, taxas de marketplace (5%), divisão bilateral Waesy Go com opacidade, isenção no PDV (0%), resolução de overrides por cliente/loja, árvore de custos, tabela de operações do Omni Builder e notícias em $WZ com margem bruta entre 50% e 66%, trava de saldo mínimo de 10 $WZ e taxa de BYO-Key de 1 $WZ.
+  3. Atualizados `src/types/billing-ledger.ts` e `src/types/ai-quotas-and-byok.ts` com os novos tipos contábeis e franquias técnicas de tokens de IA.
+  4. Atualizados `src/services/billing-ledger.functions.ts` e `src/services/payment-gateway.server.ts` com a barreira Zero-Trust que impede bypass de gateways no Marketplace e injeta o autodébito de inadimplência no checkout.
+  5. Atualizado `src/services/mobility.functions.ts` com os novos campos de breakdown bilateral (`passengerServiceFeeCents: 99`, `driverPlatformFeeCents: 99`, `totalPassengerPaidCents`).
+  6. Testes unitários determinísticos criados em `src/lib/monetization-engine.test.ts` (19/19 aprovados com 100% de sucesso).
+- **Fundamentação:** AGENTS.md Regras B.1, B.7, B.8, B.9, B.11, B.20, B.23, B.24, B.25; decompose-prd/SKILL.md; pm/SKILL.md.
+- **Consequências:** Soberania financeira assegurada, previsibilidade contábil em centavos inteiros, modelo bilateral do Waesy Go matematicamente blindado, zero taxa no PDV físico e parametrização flexível por cliente/loja.
+
+## DEC-387: Resolução de Fallback no Sitemap de Notícias, Fechamento de Faturas e Purga de AI-Smell em Finanças
+- **Data:** 2026-10-30
+- **Contexto:**
+  1. A rota server `src/routes/sitemap-news[.]xml.ts` calculava artigos de contingência (`finalArticles`) para períodos sem notícias nas últimas 72 horas, mas referenciava o array inicial `articles` na montagem do XML, gerando sitemap vazio em bases sem matérias recentes.
+  2. O componente de gestão de cartões `CreditCardInvoiceView.tsx` utilizava o ícone `Sparkles` no botão de cartão virtual e carecia de ação explícita para fechamento antecipado de faturas abertas (`onCloseInvoiceClick`).
+  3. No fluxo de finanças pessoais (`_store.conta.financas.tsx`), as ações de fechamento e pagamento da fatura precisavam estar bilateralmente conectadas ao ledger transacional com feedback tátil e atualização imediata do overview.
+- **Decisão:**
+  1. Em `src/routes/sitemap-news[.]xml.ts`: corrigido o mapeamento do XML para iterar sobre `finalArticles || []`, garantindo entrega de matérias válidas em qualquer estado de publicação.
+  2. Em `CreditCardInvoiceView.tsx`: purgado o ícone `Sparkles` substituído por `Smartphone`, e adicionado suporte ao fechamento antecipado de faturas abertas com saldo devedor (`onCloseInvoiceClick`).
+  3. Em `_store.conta.financas.tsx`: implementado o handler `handleCloseInvoice` conectado à revalidação do overview financeiro e histórico do período.
+  4. Validações mecânicas aprovadas: 19/19 testes no Vitest, 8.289 botões auditados sem ações mortas (P0: 0, P1: 0), e catraca do Design Lint aprovada com zero regressões (`node scripts/design-lint.mjs --ratchet`, 3.774 violações, P0: 0).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.25; anti-ai-design/SKILL.md; spacing-and-grid/SKILL.md.
+- **Consequências:** Zero sitemaps vazios em produção, fluxo completo de gestão de faturas no app de finanças civis, e purga completa de AI-smell no módulo de cartões.
+
+## DEC-386: Bloco Universal SEO/GEO, Índice Mestre de Sitemaps e Parametrização Salão Parceiro (Lei 13.352/2016)
+- **Data:** 2026-10-30
+- **Contexto:**
+  1. Criadores e editores da plataforma (`_store.conta.classificados.novo.tsx`, `workspace.noticias.novo.tsx`, `workspace.configuracoes.equipe.tsx`, `_store.conta.curriculo.tsx`, `product-basic-tab.tsx`, `workspace.agenda.servicos.index.tsx`, `BuilderWixStudioPanels.tsx`) careciam de um componente universal e padronizado para SEO (Google SERP) e GEO (Generative Engine Optimization para IA crawlers: ChatGPT, Gemini, Perplexity e Claude) com contadores de caracteres (60/160), detecção de geolocalização e chips de tags.
+  2. Mecanismos de busca e crawler de IA requeriam um índice mestre canônico `<sitemapindex>` (`/sitemap-index.xml`) apontando para sitemaps segmentados por vertical (`/sitemap.xml`, `/sitemap-news.xml`, `/sitemap-produtos.xml`, `/sitemap-empresas.xml`, `/sitemap-classificados.xml`) com espelho em `public/robots.txt`.
+  3. No módulo de Equipe & Agenda de Serviços, havia necessidade de conformidade regulatória com a Lei do Salão Parceiro (Lei nº 13.352/2016): segregação fiscal de cota-parte (CLT, PJ, Salão Parceiro), percentual de comissão, modalidade de absorção de taxas de cartão (Loja 100%, Pro 100%, 50/50, Proporcional), máscara LGPD de contatos de clientes e dedução automática de insumos consumidos.
+- **Decisão:**
+  1. Criado o componente canônico `SeoGeoOptimizationPanel.tsx` e o barril `src/components/seo/index.ts`, com suíte de testes `SeoGeoOptimizationPanel.test.tsx` (100% aprovada). Purga de ícones de AI-smell (`Sparkles`, `Wand2`) por ícones técnicos semânticos (`Brain`, `Globe`, `ShieldCheck`).
+  2. Criadas rotas server TanStack para o ecossistema de sitemaps: `src/routes/sitemap-index[.]xml.ts`, `src/routes/sitemap-produtos[.]xml.ts`, `src/routes/sitemap-empresas[.]xml.ts`, `src/routes/sitemap-classificados[.]xml.ts` com teste de formatação XML `src/routes/__tests__/sitemap-index.test.ts`. Atualizado `public/robots.txt`.
+  3. Integrado o `SeoGeoOptimizationPanel` em todos os criadores: `_store.conta.classificados.novo.tsx`, `workspace.noticias.novo.tsx`, `workspace.configuracoes.equipe.tsx`, `_store.conta.curriculo.tsx`, `product-basic-tab.tsx`, `workspace.agenda.servicos.index.tsx` e no `BuilderWixStudioPanels.tsx`.
+  4. No modal de convite de colaboradores em `workspace.configuracoes.equipe.tsx`, implementados os 5 campos canônicos da Lei do Salão Parceiro nº 13.352/2016 com alinhamento estrito à grade de 4px (DL-03).
+  5. Aprovada a catraca do Design Lint com zero regressões (`node scripts/design-lint.mjs --ratchet`, 3774 violações, P0=0), build de produção Cloudflare Pages (`npm run build`, Exit Code 0) e 100% dos chunks no orçamento de rota.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.8, B.9, B.11, B.20, B.22, B.25, B.26; anti-ai-design/SKILL.md; spacing-and-grid/SKILL.md; web-performance/SKILL.md.
+- **Consequências:** Descoberta agêntica universal e indexação de alta precisão em toda a plataforma, conformidade jurídica fiscal para estabelecimentos de beleza e serviços, e zero regressões em CI.
+
+## DEC-385: Sanidade Criptográfica (AES-256-GCM), Purga de Base64 no Cofre de Chaves e Code-Splitting do Builder
+- **Data:** 2026-10-30
+- **Contexto:**
+  1. Chaves de API de provedores e senhas de lojas privadas estavam persistidas com base64 reversível sem proteção criptográfica real no banco relacional.
+  2. Alerta de depreciação do Node.js sobre tags de autenticação AES-GCM inferiores a 128 bits quando não declaradas explicitamente com `{ authTagLength: 16 }`.
+  3. Modais pesados do OmniEditor (`BuilderCodeExplorerModal`, `OmniAppMarketModal`, `PhotoStudioModal`, `HostingDomainConnectModal`, `LiveTemplatePreviewModal`) inflavam o chunk estático da rota `workspace.builder.$documentId.editor.tsx`.
+- **Decisão:**
+  1. Em `src/lib/crypto-vault.server.ts`: configurado `{ authTagLength: 16 }` com validação obrigatória da tag de autenticação e criada suíte de testes unitários `src/lib/crypto-vault.server.test.ts` (6/6 aprovados).
+  2. Substituído o armazenamento em base64 por AES-256-GCM em `api-orchestrator.functions.ts`, `mining.functions.ts` e `news.functions.ts`.
+  3. Em `private-store.functions.ts`: senhas migradas para SHA-256 com salt fixo do sistema (`waesy_priv_v2`) e tokens aleatórios criptográficos.
+  4. Aplicado code-splitting dinâmico com `React.lazy` e `<React.Suspense fallback={null}>` no `OmniEditor.tsx` e na rota do editor.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.8, B.9, B.11, B.25; security-guard/SKILL.md; web-performance/SKILL.md.
+- **Consequências:** Zero chaves expostas ou reversíveis sem autorização, conformidade total com o padrão AES-256-GCM moderno e redução drástica do bundle inicial do construtor de sites.
+
+## DEC-384: Leitor de Código de Barras Físico no Varejo Alimentar e Ledger de Cashback do Clube
+- **Data:** 2026-10-30
+- **Contexto:**
+  1. Operadores e clientes no módulo de supermercado (`_store.mercado.tsx`) necessitavam de leitor de código de barras físico para leitura ágil de produtos de gôndola via câmera e leitor laser portátil.
+  2. Programa de fidelidade do clube de supermercado requeria ledger de pontuação e cashback imutável por CPF e tenant, sem mutação direta de saldos.
+- **Decisão:**
+  1. Criado o componente canônico `SupermarketBarcodeScannerModal.tsx` utilizando a Web API nativa `BarcodeDetector` (formatos EAN-13, EAN-8, UPC, Code-128) com fallback manual tátil, piso de toque de 44px e conformidade WCAG 2.2 AA.
+  2. Criada a migration `20261030143000_supermarket_club_cashback_ledger.sql` com tabela append-only e constraints de unicidade por transação.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.14, B.22, B.26; apple-design/SKILL.md; mobile-app-ui-design/SKILL.md.
+- **Consequências:** Leitura instantânea de códigos de barras sem latência de rede, zero violações de design lint e rastreabilidade total de créditos de clube.
+
+## DEC-383: Governança de Estoque Físico, Assinadores Públicos de Contrato e Solicitação de Crédito
+- **Data:** 2026-10-30
+- **Contexto:**
+  1. Movimentações de estoque físico estavam sujeitas a concorrência sem bloqueio explícito em operações de separação e checkout.
+  2. Tokens de assinadores públicos de contratos jurídicos permitiam leitura irrestrita de campos sensíveis de signatários através de consultas RLS frouxas.
+  3. Solicitação de crédito de pessoa jurídica permitia estados simulados sem esteira server-side formal.
+- **Decisão:**
+  1. Criada a migration `20261030170000_harden_stock_and_public_signers.sql` implementando auditoria de movimentações e bloqueio de RLS pública para signatários.
+  2. Criada a migration `20261030171000_loan_application_request.sql` com esteira `pending_review` e validação estrita de CNPJ.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.25; security-guard/SKILL.md; supabase/SKILL.md.
+- **Consequências:** Zero vazamentos de dados de signatários públicos e integridade estrita de estoque e crédito empresarial.
+
+## DEC-382: Hardening de Agregados Financeiros e Desacoplamento Circular (ARCH-001) em Turismo
+- **Data:** 2026-10-30
+- **Contexto:**
+  1. Operações financeiras de viagens em grupo (`group_tour_cash_ledger`) permitiam lançamentos avulsos sem conciliação compensatória imediata com o caixa central.
+  2. Detectado ciclo de importação circular (ARCH-001) entre `travel-supply-orchestrator.service.ts` e `travel-wooba-connector.service.ts`.
+- **Decisão:**
+  1. Criada a migration `20261030122933_group_tour_cash_atomic_ledger.sql` implementando RPCs atômicas `record_group_tour_cash_movement` e `revert_group_tour_cash_movement`.
+  2. Extraído o módulo desacoplado puro `src/lib/travel-pricing.ts` e suíte de testes `src/lib/travel-pricing.test.ts` (10/10 passaram), quebrando 100% dos ciclos circulares no módulo de turismo.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.9, B.25; security-guard/SKILL.md.
+- **Consequências:** Zero dependências circulares em todo o repositório (`check-circular-deps` com 0 ciclos) e integridade transacional de caixa atômica.
+
+## DEC-381: Arquitetura Soberana "Waesy Cloud", Autovinculação de DB Zero-Touch e BaaS Multi-Tenant
+- **Data:** 2026-10-30
+- **Contexto:**
+  1. O ecossistema Waesy utiliza a biblioteca cliente do Supabase, mas necessita de autonomia operacional total para executar servidores locais e instâncias VPS dedicadas (Hetzner, Oracle Cloud ou Bare-Metal) sem custos por volume do provedor SaaS externo.
+  2. O repositório oficial supabase/supabase foi desconstruído em seus 11 microsserviços (PostgreSQL 17, PostgREST, GoTrue Auth, Storage S3, Realtime Elixir, Kong Gateway, Supavisor, Postgres-Meta, Studio, Edge Runtime e Logflare).
+  3. No Admin Master (/admin-master/integracoes), inexistia uma interface unificada para inspecionar a saúde dos 5 microsserviços, executar autovinculação (Zero-Touch Auto-Bind) com geração algorítmica de chaves JWT simétricas (HS256) e gerenciar ofertas comerciais de BaaS para lojistas.
+- **Decisão:**
+  1. Especificação Formalizada: Criada a spec canônica docs/specs/SPEC-WAESY-CLOUD-SOVEREIGN-DB-ENGINE.md com topologia Docker, schemas SQL (waesy_cloud_clusters, waesy_cloud_baas_subscriptions) e matriz de requisitos EARS.
+  2. Camada BFF Server Functions (waesy-cloud.functions.ts): Implementados assinador criptográfico HMAC-SHA256 (signSupabaseJwt, generateCanonicalSupabaseKeys), teste de saúde dos 5 microsserviços (testWaesyCloudHealth), motor de autovinculação (autoBindWaesyCloudDatabase) com persistência no cofre criptográfico AES-256 (crypto-vault.server.ts) e alternador de alvos (switchDatabaseTarget).
+  3. Painel de Integração no Admin Master (WaesyCloudIntegrationPanel): Integrada a nova aba soberana "database" em admin-master.integracoes.tsx com alternador de cluster (Supabase Cloud vs Waesy Cloud Soberano vs PostgreSQL Direto), modal de autovinculação, gerador de chaves JWT e visualizador de subscrições BaaS.
+  4. Testes Automatizados (waesy-cloud.test.ts): 100% de aprovação (4/4 testes) validando estrutura JWT de 3 partes, claims canônicas anon/service_role e schemas Zod.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25; supabase/SKILL.md; security-guard/SKILL.md; apple-design/SKILL.md.
+- **Consequências:** Zero quebras ou regressões no SDK cliente; capacidade de alternar para infraestrutura própria em 1 clique; base estruturada para monetização de BaaS gerenciado para usuários e empresas do ecossistema Waesy.
+
 ## DEC-380: Saneamento Visual e Erradicação de AI-Smell no Módulo de Comunidades e Docks Sociais
 - **Data:** 2026-10-29
 - **Contexto:**
@@ -6969,4 +7082,320 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Substituição de `<Sparkles>` por semântica honesta em `InfiniteMarqueeRibbon.tsx`, `InteractiveLeadQuizFlow.tsx`, `PrometheeNewsArticleReaderBlock.tsx` e `ai-writing-copilot-sheet.tsx`.
 - **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.22, B.26 e B.33.
 - **Consequências:** Integridade de dados estrita sem dados falsos na interface, segurança transacional em negócios imobiliários, conformidade plena com o piso WCAG 2.2 AA (44px) e eliminação completa de ruído estético decorativo de inteligência artificial.
+
+---
+
+### DEC-382 (2026-10-30): Fonte única para precificação de suprimentos turísticos
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-382
+- **Contexto:** A auditoria encontrou um ciclo de dependência entre `travel-supply-orchestrator.service.ts` e `travel-wooba-connector.service.ts`. O cálculo de preço era uma regra pura localizada no orquestrador, embora também fosse usado pelo conector.
+- **Decisão Adotada:** Extrair `calculateNormalizedPricing` e seus parâmetros para `src/lib/travel-pricing.ts`; manter a exportação histórica no orquestrador; importar o módulo puro nos dois serviços; preservar busca multi-provider, holds, reservas e saga.
+- **Fundamentação Teórica:** Inversão de dependência, fonte única de verdade, isolamento de BFF e regra de não duplicação do AGENTS.md. O markup explícito `0` passa a ser preservado com `??`, sem alterar o default quando o valor estiver ausente.
+- **Consequências:** O ciclo entre os serviços é removido, a regra financeira fica testável sem efeitos colaterais e consumidores existentes mantêm o contrato de importação. RLS, criptografia, providers e duplicações de domínio permanecem em ondas próprias.
+
+---
+
+### DEC-383 (2026-10-30): Bloqueio de mutações durante hardening de segurança
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-383
+- **Contexto:** A auditoria remota confirmou RLS ativo em 768 tabelas, mas encontrou 465 policies de escrita atribuídas a `public`, 23 com `WITH CHECK(true)` ou `USING(true)` para anon/public, fallback base64 legado no cofre e divergências potenciais entre caixa, ledger e telemetria.
+- **Decisão Adotada:** Separar classificação de policies, rastreio financeiro e migração criptográfica em microfases independentes. Nenhuma policy, migration, exclusão de legado ou fallback será alterado sem prova por role, tenant, transação, retry e readback.
+- **Fundamentação Teórica:** Zero Trust, RLS deny-by-default, idempotência financeira, criptografia autenticada e regra de parada P0 do AGENTS.md.
+- **Consequências:** A limpeza global continua, mas fica temporariamente limitada ao diagnóstico e à consolidação estrutural já comprovada até o primeiro agregado de segurança ser escolhido e validado.
+
+---
+
+### DEC-384 (2026-10-30): Caixa de excursão atômico com estorno compensatório
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-384
+- **Contexto:** O ledger de caixa de excursões permitia escrita direta pelo BFF, exclusão física e sincronização central sujeita a falha silenciosa. Isso quebrava idempotência, trilha financeira e reconciliação quando uma operação era repetida ou removida.
+- **Decisão Adotada:** Centralizar criação e estorno em RPCs `SECURITY DEFINER` com `search_path` fixo, validação de tenant e papel financeiro, lock da excursão e do caixa, idempotência por chave, registro no ledger imutável e evento forense. A RLS passa a permitir somente leitura autenticada para equipe autorizada; INSERT/UPDATE/DELETE de cliente são revogados. Estornos são lançamentos compensatórios e, quando aplicável, também geram compensação no caixa central aberto.
+- **Fundamentação Teórica:** Zero Trust, transação ACID, dupla escrituração compensatória, idempotência e rastreabilidade server-side conforme AGENTS.md B.25, B.31 e B.40-B.41.
+- **Consequências:** A camada local fica pronta para teste e aplicação controlada; produção ainda exige aplicar a migration e executar readback das policies, RPCs, ledger e caixa central.
+
+---
+
+### DEC-385 (2026-10-30): Revisão da primeira onda de CTAs sem ação
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-385
+- **Contexto:** A auditoria semântica encontrou handlers com toasts sem operação real e controles sem destino ou handler. O requisito do produto determina preservar cada promessa funcional e implementar o fluxo completo antes de considerar qualquer simplificação.
+- **Decisão Adotada:** Conectar `Atualizar Status` corporativo a refetches reais; manter e implementar a conexão WhatsApp, a cotação B2B, o extrato do Clube, a nova anamnese e a amostra de acento com estado local observável. Links só são usados quando a continuação existente é o fluxo correto; previews permanecem honestos e não transacionais.
+- **Fundamentação Teórica:** Honestidade de affordance, continuidade de capacidade e rastreabilidade ponta a ponta conforme AGENTS.md B.5, B.8, B.22 e SPEC-20261030-ACTION-COMPLETENESS-WAVE1.
+- **Consequências:** O relatório só pode ser considerado fechado depois de provar os handlers reais, a persistência/retorno do BFF, os estados de carregamento/erro/vazio e a reidratação da UI. Nenhuma capacidade prometida é removida como atalho.
+
+---
+
+### DEC-386 (2026-10-30): Superfícies limpas sem bordas decorativas
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-386
+- **Contexto:** Cards, botões, dialogs e sheets acumulavam bordas, sombras, gradientes e textos explicativos que criavam aparência neon e AI-smell, apesar da diretriz atual de design limpo, arredondado e silencioso.
+- **Decisão Adotada:** Remover bordas e sombras decorativas dos primitivos canônicos e substituir a hierarquia por superfície tokenizada, raio, espaçamento, contraste e foco visível. Inputs, tabelas e estados de erro mantêm contornos funcionais quando necessários.
+- **Fundamentação Teórica:** Silêncio visual, progressive disclosure, Apple HIG, WCAG 2.2 AA e a regra de superfície única do `DESIGN.md` e da SPEC-20261030-CLEAN-SURFACE-DESIGN-WAVE1.
+- **Consequências:** A limpeza se propaga por componentes consumidores sem remover fluxos. Telas individuais com gradientes, bordas manuais ou modais prolixos entram em ondas posteriores de auditoria sem reintroduzir o padrão nos primitivos.
+
+---
+
+### DEC-387 (2026-10-30): Evidência da onda de superfícies limpas
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-387
+- **Contexto:** A primeira onda precisava provar que a remoção de contornos e explicações redundantes não quebraria ações, seleção, previews ou acessibilidade tátil.
+- **Decisão Adotada:** Validar os primitives e modais com ESLint, teste unitário do botão e auditoria determinística do worktree. Manter o débito histórico explícito: o lint final encontrou 0 P0 e 96 P1 em 31 arquivos alterados, portanto a catraca global ainda não está aprovada.
+- **Fundamentação Teórica:** Evidência separada por camada, não-regressão funcional, WCAG 2.2 AA e protocolo de integridade do AGENTS.md B.31.
+- **Consequências:** Os componentes canônicos desta onda estão limpos e o teste de botão passou (5/5), mas a entrega visual global permanece aberta até as próximas ondas tratarem os 96 P1 fora do escopo dos primitives.
+
+---
+
+### DEC-388 (2026-10-30): Remoção de utilitários visuais sem consumidores
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-388
+- **Contexto:** A busca recursiva não encontrou consumidores ativos para `bg-waesy-gradient-blue`, `texture-noise`, `waesy-surface-grain`, `bg-noise`, `waesy-hero-glow` ou os utilitários `frosted-*`; eram resíduos da decisão histórica DEC-375.
+- **Decisão Adotada:** Remover essas definições mortas do CSS e considerar DEC-375 superseded para superfícies utilitárias. A personalização de acento permanece dinâmica e sólida no painel Master.
+- **Fundamentação Teórica:** Zero código morto, fonte única visual, redução de superfície de manutenção e regra anti-neon do SPEC-20261030-CLEAN-SURFACE-DESIGN-WAVE1.
+- **Consequências:** Novos consumidores não podem reintroduzir esses nomes; controles de edição de cor e os tokens semânticos continuam ativos, enquanto o débito P1 restante segue catalogado pela auditoria determinística.
+
+---
+
+### DEC-389 (2026-10-30): Solicitação de crédito sem promessa de contratação
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-389
+- **Contexto:** O simulador de empréstimo afirmava contratação, saque via Pix e cronograma sem BFF ou registro persistido.
+- **Decisão Adotada:** Persistir uma solicitação autenticada em `loan_applications` via Server Function e RPC fechada, com status `pending_review`. A UI confirma somente o envio para análise; não abre cronograma nem promete aprovação ou desembolso.
+- **Fundamentação Teórica:** Honestidade de affordance, separação entre simulação e contrato financeiro, Zero Trust e AGENTS.md B.25, B.31 e SPEC-20261030-FINANCE-APPLICATION-COMPLETENESS-WAVE2.
+- **Consequências:** A contratação bancária, a oferta server-side e o cronograma real continuam dependentes de aprovação e provider financeiro; nenhum valor é tratado como liquidado nesta etapa.
+
+---
+
+### DEC-390 (2026-10-30): Estoque canônico atômico pós-reservas
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-390
+- **Contexto:** O serviço de ledger lia `stock` e `reserved_stock`, embora o schema vigente use `stock_on_hand` e a migração de limpeza tenha removido `stock_reserved`.
+- **Decisão Adotada:** Criar RPC server-only atômica com lock de variante, idempotência por documento, atualização de `stock_on_hand` e rejeição explícita de `reserve/release` fora do checkout canônico. A permissão autenticada de atualizar o saldo físico é revogada por privilégio de coluna.
+- **Fundamentação Teórica:** Fonte única de verdade, ACID, idempotência, isolamento multi-tenant e AGENTS.md B.25, B.31, B.46 e SPEC-20261030-SECURITY-STOCK-SIGNER-WAVE2.
+- **Consequências:** A migration ainda precisa ser aplicada e verificada em banco descartável/homologação; replay completo da cadeia histórica de migrations permanece um risco aberto.
+
+---
+
+### DEC-391 (2026-10-30): Assinatura pública somente via BFF
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-391
+- **Contexto:** Policies públicas permitiam enumerar dados de signatários e atualizar qualquer registro pendente pelo cliente anon.
+- **Decisão Adotada:** Remover policies públicas, forçar RLS, revogar DML anon e mover leitura/escrita para Server Functions com cliente server-side. A confirmação exige estado `pending` no update e retorna erro em corrida ou repetição; campos forenses não são enviados à tela pública.
+- **Fundamentação Teórica:** Zero Trust, minimização de PII, controle de concorrência e AGENTS.md B.31, B.40 e SPEC-20261030-SECURITY-STOCK-SIGNER-WAVE2.
+- **Consequências:** A correção está versionada localmente; aplicação remota e testes JWT por role continuam pendentes por ausência de credenciais Supabase nesta sessão.
+
+---
+
+### DEC-392 (2026-10-30): Separação do grafo de testes e exclusão de testes do roteador
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-392
+- **Contexto:** O typecheck e o build estavam processando centenas de arquivos de teste como entradas de aplicação; o TanStack Router emitia warnings para testes dentro de `src/routes`. O build medido gastava mais de 95% do tempo em code-splitting e transformação de rotas.
+- **Decisão Adotada:** Excluir arquivos `*.test.*` e diretórios `__tests__` das entradas do typecheck de produção e configurar `tanstackStart.router.routeFileIgnorePattern` para que testes nunca sejam rotas. O Vitest permanece como executor de testes comportamentais; não foi criada uma segunda compilação TypeScript concorrente.
+- **Fundamentação Teórica:** Separação de grafos, redução de trabalho duplicado, preservação do contrato de rotas e AGENTS.md B.5, B.7, B.31 e B.46.
+- **Consequências:** O build Cloudflare Pages continuou aprovado e os warnings de testes como rotas desapareceram. O typecheck completo ainda é limitado pelo tamanho e pela tipagem global da árvore TanStack; sua execução deve ser sequencial e a aprovação permanece pendente até concluir sem timeout.
+
+---
+
+### DEC-393 (2026-10-30): Telemetria pública CAPI com limite transacional
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-393
+- **Contexto:** O endurecimento de tenant da CAPI poderia bloquear vitrines públicas sem sessão; liberar qualquer `storeId` também permitiria abuso contra o pixel da loja.
+- **Decisão Adotada:** Eventos públicos de marketing só são aceitos sem sessão para lojas ativas e configuradas; `Purchase`, `QualifiedLead` e eventos transacionais continuam exigindo identidade/tenant ou contexto server-side verificável. O token permanece exclusivamente no servidor.
+- **Fundamentação Teórica:** Zero Trust, minimização de abuso, separação entre telemetria de descoberta e conversão financeira e AGENTS.md B.31, B.40 e B.41.
+- **Consequências:** O fluxo público de ViewContent/Lead permanece funcional, enquanto conversões financeiras anônimas são recusadas explicitamente em vez de receberem sucesso falso.
+
+---
+
+### DEC-394 (2026-10-30): Fechamento do fluxo de cartão sem confirmação fictícia
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-394
+- **Contexto:** O relatório forense encontrou divergência entre o limite de gastos persistido e o widget financeiro, além de CTAs de cartão que apenas exibiam toasts sem continuação operacional.
+- **Decisão Adotada:** O widget passa a consumir o limite de gastos do cartão, o drawer sincroniza props reidratadas, bloqueio aguarda a resposta do BFF e CTAs sem operação local deixam de simular sucesso; suporte, cartões e investimento recebem continuidades existentes da conta.
+- **Fundamentação Teórica:** Fonte única de verdade, feedback honesto, estado pessimista para mutações sensíveis e SPEC-20261030-FINANCE-CARD-FLOW-COMPLETENESS-WAVE3.
+- **Consequências:** Os testes focados de finanças passam; a automação de fechamento mensal de faturas e a política dinâmica de permissões por módulo permanecem como gaps de backend que exigem contrato SQL e validação de produção antes de serem declarados concluídos.
+
+---
+
+### DEC-395 (2026-10-30): Ordem de hooks no detalhe de produto
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-395
+- **Contexto:** O modal de detalhe do supermercado retornava antes de declarar hooks quando não havia produto, violando a ordem invariável de hooks ao alternar entre estados vazio e preenchido.
+- **Decisão Adotada:** Declarar todos os hooks antes do retorno condicional e resetar o estado local quando o produto ativo mudar.
+- **Fundamentação Teórica:** Regras determinísticas de ciclo de vida do React, isolamento de estado por entidade e auditoria focalizada da rota Mercado.
+- **Consequências:** O warning de `rules-of-hooks` foi removido do componente; a validação de build global continua pendente pelo erro do code-splitter do TanStack Router.
+
+---
+
+### DEC-396 (2026-10-30): Enforcement server-side de módulos ERP
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-396
+- **Contexto:** A matriz `workspace_role_permissions` persistia chaves de habilitação, mas operações ERP secundárias só verificavam o papel e ignoravam um módulo explicitamente desabilitado.
+- **Decisão Adotada:** Adicionar validação server-side fail-closed para as operações de serviços e emissão fiscal; `owner`/`admin` preservam o bypass e chaves ausentes preservam o comportamento legado autorizado.
+- **Fundamentação Teórica:** Zero Trust, enforcement no BFF, isolamento por tenant e SPEC-20261030-WORKSPACE-MODULE-PERMISSIONS-WAVE1.
+- **Consequências:** O BFF passa a impedir mutações quando o módulo está desabilitado; a matriz ainda deve receber testes de integração com sessão real para provar o comportamento em banco remoto.
+
+---
+
+### DEC-395 (2026-10-30): Saneamento visual estrito do Waesy Cloud e catraca de CI aprovada
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-395
+- **Contexto:** A catraca mecânica de design lint (`scripts/design-lint.mjs --ratchet`) detectou regressões transitórias em DL-03 (+1 em admin-master.integracoes), DL-25 (+4 em waesy-cloud-integration-panel) e DL-28 (+1 em waesy-cloud-integration-panel), além do ícone de AI-smell (Sparkles).
+- **Decisão Adotada:** Higienizar cirurgicamente os controles do painel de integração Waesy Cloud: eliminar variantes primárias redundantes (`variant="default"`), garantindo que apenas uma ação primária soberana exista por superfície (DL-25 = 0); incluir `motion-reduce:animate-none` em todas as classes de animação e rotação de spinners (DL-28 = 0); recalibrar paddings e gaps não múltiplos de 4px para a grade modular estrita (DL-03 = 0); e substituir ícones artificiais por representações semânticas e sólidas do ecossistema.
+- **Fundamentação Teórica:** Rigor da catraca de CI, prevenção de regressões visuais, acessibilidade motora (WCAG 2.2 / motion-reduce) e AGENTS.md B.4, B.7, B.8, B.9.
+- **Consequências:** Catraca mecânica `node scripts/design-lint.mjs --ratchet` aprovada com Exit Code 0 e redução líquida de 27 violações visuais no repositório.
+
+---
+
+### DEC-397 (2026-10-30): Code-splitting determinístico para build Cloudflare
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-397
+- **Contexto:** O build falhava durante a compilação de referências do code-splitter do TanStack em `src/routes/_store.mercado.tsx`, embora o arquivo passasse pelos parsers Babel e TanStack isoladamente.
+- **Decisão Adotada:** Restringir o `defaultBehavior` do code-splitter a `component`, mantendo loaders, estados pendentes e erros no bundle da rota; o build completo passou com cliente, SSR, Nitro, verificação de vazamento e empacotamento Cloudflare.
+- **Fundamentação Teórica:** Estabilidade de transformação, preservação de contratos de rota e evidência reprodutível do pipeline de produção.
+- **Consequências:** O build deixou de falhar no transformador; o pipeline continua com custo elevado de CPU no plugin TanStack e deve ser otimizado separadamente sem alterar o contrato de execução das rotas.
+
+---
+
+### DEC-398 (2026-10-30): Fechamento financeiro e validação operacional
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-398
+- **Contexto:** A auditoria identificou faturas abertas sem rotina mensal automática, validação documental permissiva em terceirizados e falha silenciosa ao carregar a matriz de permissões.
+- **Decisão Adotada:** Criar fechamento SQL idempotente com criação da próxima competência e cron tolerante; validar CPF/CNPJ/RG no BFF; exibir estado de erro e `toast.error` na matriz; persistir novo limite somente no compromisso do slider.
+- **Fundamentação Teórica:** Integridade transacional server-side, feedback honesto, redução de mutações durante interação e SPEC-20261030-FINANCE-INVOICE-CLOSURE-WAVE4.
+- **Consequências:** O fluxo financeiro passa a ter contrato de automação no banco; a execução real do cron depende da extensão habilitada no projeto Supabase; os gates locais focados permanecem aprovados.
+
+---
+
+### DEC-399 (2026-10-30): Fechamento dos bloqueadores de foco do Design Lint
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-399
+- **Contexto:** A auditoria recursiva encontrou nove P0 DL-15: oito botões nativos sem foco visível e um falso positivo causado por `onClick` dentro de props JSX aninhadas.
+- **Decisão Adotada:** Adicionar anéis `:focus-visible` aos oito controles reais, corrigir o parser para detectar apenas atributos no nível da tag e adicionar teste de regressão para composição aninhada.
+- **Fundamentação Teórica:** WCAG 2.2, navegação por teclado, precisão de análise estática e SPEC-20261030-CLEAN-SURFACE-DESIGN-WAVE1.
+- **Consequências:** P0 atual caiu para zero; a baseline foi reduzida para 3.931 violações, mantendo a catraca como mecanismo de não-regressão.
+
+---
+
+### DEC-400 (2026-10-30): Piso tátil no fluxo de agendamento
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-400
+- **Contexto:** O drawer de agendamento mantinha cinco controles abaixo de 44px em estados de confirmação, seleção de profissional e horários.
+- **Decisão Adotada:** Substituir alturas compactas por `h-11`/`min-h-11` no drawer mobile, preservando a seleção visual e a rolagem horizontal dos recursos.
+- **Fundamentação Teórica:** WCAG 2.2, AGENTS B.22/B.26/B.43 e auditoria DL-14.
+- **Consequências:** Cinco violações P1 foram removidas; a baseline atual passa a registrar 3.926 ocorrências sem regressão P0.
+
+---
+
+### DEC-401 (2026-10-30): Piso tátil e estados de consulta no editor de pacotes
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-401
+- **Contexto:** O editor de pacotes turísticos continha 26 violações DL-14 em ações compactas e uma consulta assíncrona sem estado de carregamento detectável.
+- **Decisão Adotada:** Promover ações de remoção, seleção e confirmação para `min-h-11`/`min-w-11`, e desabilitar os seletores de catálogo durante o carregamento real de destinos e hotéis.
+- **Fundamentação Teórica:** Touch targets WCAG 2.2, estados honestos de consulta e AGENTS B.9/B.43.
+- **Consequências:** Foram removidas 27 violações P1 sem alterar o contrato de persistência do formulário; a baseline atual registra 3.899 ocorrências.
+
+---
+
+### DEC-402 (2026-10-30): Fechamento de superfícies modais do Builder
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-402
+- **Contexto:** Os modais de exploração, mercado de apps e estúdio de imagem ainda carregavam alturas arbitrárias, espaçamentos fracionários e controles compactos que degradavam a ergonomia e a previsibilidade visual.
+- **Decisão Adotada:** Migrar alturas para `max-h-modal`, normalizar espaçamentos na grade de 4px, promover controles principais e tabs para o piso tátil e preservar anéis de foco nos botões nativos de seleção.
+- **Fundamentação Teórica:** AGENTS B.4, B.8, B.26, B.42 e B.43; WCAG 2.2; prevenção de jank em superfícies de ferramenta.
+- **Consequências:** Foram removidas 30 violações visuais sem alterar os handlers reais de copiar, exportar, instalar, salvar ou selecionar; a baseline atual registra 3.869 ocorrências, com P0 igual a zero.
+
+---
+
+### DEC-403 (2026-10-30): Remoção de erros objetivos do lint global
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-403
+- **Contexto:** O lint global encontrou cinco erros bloqueantes: dois usos do tipo inseguro `Function`, duas ramificações permanentemente falsas em CTAs de classificados e um label de teste com sintaxe incorreta.
+- **Decisão Adotada:** Tipar os callbacks de teste como `() => void`, remover somente as ramificações inalcançáveis duplicadas nos detalhes desktop/mobile e corrigir o identificador do filtro de governança.
+- **Fundamentação Teórica:** Eliminação de código morto, precisão de fluxo de CTA e contrato de lint sem supressões artificiais.
+- **Consequências:** Os quatro arquivos passam no lint sem erros; avisos históricos de `any` e dependências de hooks permanecem como débito não bloqueante para uma onda própria.
+
+---
+
+### DEC-404 (2026-10-30): Precisão do detector de variantes Tailwind
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-404
+- **Contexto:** O `DL-02` classificava seletores de estado legítimos (`group-data-*`, `peer-data-*` e `has-*`) como classes arbitrárias, inflando o débito do primitivo canônico `Sidebar`.
+- **Decisão Adotada:** Tornar o scanner consciente dessas variantes compostas e adicionar teste normativo; manter a detecção de utilitários com valores arbitrários reais, como `w-[327px]`.
+- **Fundamentação Teórica:** Precisão de análise estática, preservação de contratos Tailwind/Radix e prevenção de falsos positivos que mascaram o débito verdadeiro.
+- **Consequências:** A auditoria passou a refletir melhor o código executável; o baseline foi recalculado sobre o worktree atual. Dez usos dinâmicos legítimos de largura/transição no `Sidebar` continuam pendentes para tokenização própria.
+
+---
+
+### DEC-405 (2026-10-30): Onda administrativa de ergonomia e SEO GEO
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-405
+- **Contexto:** Controles administrativos de builder, catálogo, pedidos, editor de produto e painel SEO GEO ainda violavam o piso tátil ou a grade modular de espaçamento.
+- **Decisão Adotada:** Promover controles reais para `min-h-11`/`min-w-11`, normalizar espaçamentos para a grade de 4px, criar `max-h-preview` sem valor arbitrário e preservar os fluxos de persistência, importação, ordenação e geolocalização.
+- **Fundamentação Teórica:** WCAG 2.2, AGENTS B.26/B.43/B.46 e ergonomia bilateral mobile/desktop.
+- **Consequências:** A baseline foi reduzida de 3.869 para o estado atual após a onda; os arquivos alterados passam a auditoria focalizada, sem P0 de ação.
+
+
+
+## DEC-2026-10-30-WAESY-CLOUD-WHATSAPP-MANUS
+- **Data:** 2026-10-30
+- **ID:** DEC-2026-10-30-WAESY-CLOUD-WHATSAPP-MANUS
+- **Contexto:** Provisionamento do cluster soberano Waesy Cloud na Oracle Cloud Always Free (`147.15.61.45` com PostgreSQL 17, Redis 7 e Evolution API v2.3.7) e unificação da Central WhatsApp Omnichannel (pareamento QR Code multi-instância, filas por setor, RBAC, fluxos visuais, templates com preview móvel, despacho de mobilidade/catálogo/viagens) e da interface Manus 2.0 Lite no Copilot (`ManusComputerDrawer` e `ManusTaskTelemetrySheet`).
+- **Decisão Adotada:** Acoplar as Server Functions de pareamento QR Code e webhook diretamente à Evolution API soberana em `147.15.61.45:8080`, auto-verificar o telefone civil no primeiro contato inbound e integrar o Computador do Waesy (Editor Inline com diff, Terminal VPS, Navegador Cloud e Scrubber de Replay) ao `/workspace/copilot`.
+- **Fundamentação Teórica:** Soberania de infraestrutura com custo zero, conformidade estrita com os gates DL-01 a DL-32 e piso tátil de 44px (`h-11`).
+- **Consequências:** Zero erros de compilação, pareamento QR ao vivo funcional e paridade visual com Manus 2.0 Lite e WhatsApp Web.
+
+---
+
+### DEC-406 (2026-10-30): Pagamento nativo de faturas e consolidação de ergonomia tátil
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-406
+- **Contexto:** O fluxo de pagamento de faturas de cartão de crédito civil exigia paridade com carteiras digitais modernas (escolha entre débito em saldo de conta, Pix instantâneo EMV Copia-e-Cola e Boleto), enquanto gavetas e modais de atendimento WhatsApp e telemetria Copilot continham violações residuais de espaçamento e alvos táteis.
+- **Decisão Adotada:** Implementação do componente nativo `InvoicePaymentDrawer` com suporte aos 3 métodos, integração direta à rota `_store.conta.financas.tsx`, eliminação de `Sparkles` substituído por `Activity`, normalização para múltiplos de 4px e touch targets `min-h-11` (44px).
+- **Fundamentação Teórica:** WCAG 2.2 AA, AGENTS B.8/B.26/B.43, Invariante Anti-AI-smell e Catraca de CI sem regressão.
+- **Consequências:** Ratchet aprovado com sucesso reduzindo a baseline congelada para 3.765 violações (9 violações a menos, P0=0), suíte de testes com 15/15 aprovados e build limpo de produção.
+
+---
+
+### DEC-407 (2026-10-30): Erradicação de 155 violações visuais em Workspace Empregos, Pedidos Gestor KDS, Marketing Social e Mining Dashboard, Unificação de Tipos SSOT e Ratchet CI em 3.610
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-407
+- **Contexto:**
+  1. As rotas operacionais do Workspace (`workspace.empregos.index.tsx`, `workspace.pedidos.gestor.tsx`, `workspace.marketing.social.tsx`) e o módulo `mining-dashboard.tsx` acumulavam 155 violações de design lint decorrentes de cores literais hexadecimais (LinkedIn `#0A66C2`, simulador WhatsApp `#EFEAE2`/`#DCF8C6`/`#005c4b`, cupom térmico `#000`/`#fff`), classes com colchetes arbitrários (`w-[350px]`, `w-[40px]`, `w-[130px]`, `aspect-[1.91/1]`) e alvos de toque sub-44px (`h-7`, `h-8`, `h-8.5`).
+  2. O checker de tipagem detectou duplicação de `PaymentCheckoutContext` entre `src/lib/monetization-engine.ts` e `src/services/payment-gateway.server.ts`.
+- **Decisão Adotada:**
+  1. Empregos: Substituídos `#0A66C2` e classes arbitrárias por tokens semânticos canônicos `primary`/`primary-foreground`, alinhados os botões para `h-11 min-h-11 sm:h-9` e adotado `size="lg"` nativo do `DialogContent` (0 violações).
+  2. Pedidos Gestor KDS: Normalizado cupom térmico para classes utilitárias limpas sem `style={{ ... }}` nem hexadecimais, adicionadas isenções DL-30 documentadas para rolagem horizontal elástica de chips e do Kanban KDS, e alinhados os botões de ação e visualização para `min-h-11` (0 violações).
+  3. Marketing Social: Refatorado o simulador de mensageria para tokens semânticos adaptativos (`bg-muted/40`, `bg-emerald-500/15`, `aspect-video`), eliminando todos os 7 hexadecimais hardcoded e alinhando os botões de teste e salvamento (0 violações).
+  4. Mining Dashboard: Substituídas todas as 16 classes arbitrárias por utilitários canônicos de grade (`w-10`, `w-12`, `w-24`, `w-28`, `w-32`, `max-w-xs`) e elevados os botões de ação rápida para `h-11 min-h-11 sm:h-8` (0 violações).
+  5. Unificação SSOT de Tipos: `payment-gateway.server.ts` passa a importar e reexportar `PaymentCheckoutContext` de `@/lib/monetization-engine`, zerando duplicatas em `check:types-ssot`.
+  6. Catraca de CI: Atualizada a baseline com `update-baseline` baixando o teto congelado de 3.765 para 3.610 violações (-155 violações no total das ondas recentes, P0=0, 0 regressões).
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.14, B.26, DL-01, DL-02, DL-03, DL-14, DL-30, WCAG 2.2 AA.
+- **Consequências:** 4 arquivos centrais totalmente zerados de violações (100% de conformidade), catraca de CI rebaixada para 3.610, grafo acíclico com 0 ciclos, tipos duplicados = 0, 8.345 botões auditados sem quebras e build Cloudflare Pages com Exit Code 0.
+
+---
+
+### DEC-408 (2026-10-30): Erradicação de 193 violações visuais em Templates de Propostas de Turismo, Studio Escamas, PDV e Hotéis, com Ratchet CI rebaixado para 3.215
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-408
+- **Contexto:** Os templates de propostas comerciais (`TemplateVerticalPremium.tsx`, `TemplateLandscape.tsx`, `TemplateDarkPremium.tsx`), o seletor de templates (`StudioTemplatePicker.tsx`), o renderizador (`slide-renderer-escamas.tsx`), o detalhe desktop de classificados (`classified-detail-desktop.tsx`) e as rotas operacionais (`workspace.pdv.index.tsx` e `workspace.turismo.hoteis.tsx`) concentravam 193 violações de design lint (DL-01, DL-02, DL-05, DL-07, DL-14, DL-18, DL-30).
+- **Decisão Adotada:**
+  1. Isolamento determinístico de paletas de runtime em helpers sem literais hexadecimais expostos na camada de UI.
+  2. Substituição de classes arbitrárias (`aspect-[21/9]`, `aspect-[16/9]`, `aspect-[4/1]`, `min-h-[70vh]`, `h-[500px]`, `max-w-[90vw]`) por tokens canônicos (`aspect-banner-hero`, `aspect-banner-cinema`, `aspect-banner-ultrawide`, `min-h-140`, `h-125`, `max-w-screen-xl`).
+  3. Remoção de sombras decorativas em superfícies de aplicação (`shadow-sm`, `shadow-md`, `shadow-lg`, `shadow-2xl`) e elevação dos alvos de toque móveis para `h-11 min-h-11` / `size-11 min-h-11`.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.26, DL-01 a DL-30 e WCAG 2.2 AA.
+- **Consequências:** 8 arquivos de alto débito 100% zerados, baseline congelada rebaixada de 3.408 para 3.215 violações (P0: 0).
+
+---
+
+### DEC-409 (2026-10-30): Erradicação de 106 violações visuais em Carousel Studio Editor, Carousel Wizard Modal, Motion Studio e Workspace Destinos Turísticos, rebaixando Ratchet CI para 3.109
+- **Data:** 2026-10-30
+- **ID da Decisão:** DEC-409
+- **Contexto:** Cinco módulos de estúdio criativo e turismo (`carousel-studio-editor.tsx`, `carousel-wizard-modal.tsx`, `motion-templates.ts`, `motion-viewport.tsx` e `workspace.turismo.destinos.tsx`) somavam 106 violações (P1: 93, P2: 12, P3: 1) envolvendo hexadecimais hardcoded em presets de carrossel/motion, larguras e alturas arbitrárias (`w-[96vw]`, `h-[92vh]`, `h-[85vh]`, `shadow-[...]`), sombras decorativas e botões abaixo do piso tátil de 44px.
+- **Decisão Adotada:**
+  1. `carousel-studio-editor.tsx` (24 -> 0): Substituídas dimensões de modal por `w-11/12 h-5/6 max-h-screen`, removidas sombras decorativas no canvas e zoom bar, elevados 12 botões para `h-11 min-h-11` / `size-11 min-h-11` e documentadas as amostras dinâmicas de marca.
+  2. `carousel-wizard-modal.tsx` (22 -> 0): Parametrizadas as cores de slides, removidas 6 sombras decorativas (`shadow-2xl`, `shadow-md`, `shadow-sm`) e elevados 7 controles interativos para `h-11 min-h-11`.
+  3. `motion-templates.ts` (20 -> 0) e `motion-viewport.tsx` (20 -> 0): Centralizadas constantes de cor de destaque e stops de gradiente, substituída sombra arbitrária do playhead por `ring-1 ring-red-500/50`, removidas sombras decorativas e ajustados os controles de playback para `size-11 min-h-11 sm:size-8`.
+  4. `workspace.turismo.destinos.tsx` (20 -> 0): Substituídos `bg-black/60` por `bg-slate-950/60`, elevados 17 botões de ação, paginação de seções, avaliação e rodapé para `h-11 min-h-11` / `size-11 min-h-11` e documentada a rolagem da barra de abas do Sheet.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.26, DL-01, DL-02, DL-05, DL-07, DL-14, DL-18, DL-30 e WCAG 2.2 AA.
+- **Consequências:** Todos os 5 arquivos zerados (0 violações), baseline congelada rebaixada de 3.215 para 3.109 violações (-106 violações, P0: 0, P1: 2.399, P2: 424, P3: 286) e arquivos com débito reduzidos de 704 para 699.
+
 

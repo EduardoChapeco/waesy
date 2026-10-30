@@ -118,7 +118,6 @@ export function CanonicalStoreProfileView({
 
   // Modal de Lightbox para fotos dos posts
   const [lightboxPost, setLightboxPost] = useState<any | null>(null);
-  const [isBioExpanded, setIsBioExpanded] = useState(false);
 
   // Estado de Seções Personalizáveis da Vitrine (Wix / App Builder Style)
   const [vitrineSections, setVitrineSections] = useState<VitrineSectionConfig[]>(() => {
@@ -499,11 +498,12 @@ export function CanonicalStoreProfileView({
       toast.success("Solicitação de atendimento enviada com sucesso!");
 
       // Telemetria de Lead (Meta Pixel client-side & CAPI server-side)
+      const eventId = `lead_quote_${store?.id || "store"}_${Date.now()}`;
       if (typeof window !== "undefined" && typeof (window as any).fbq === "function") {
         (window as any).fbq("track", "Lead", {
           content_name: quoteService || "Atendimento Geral",
           content_category: "quote",
-        });
+        }, { eventID: eventId });
       }
       if (store?.id) {
         import("@/services/pixels.functions")
@@ -512,6 +512,7 @@ export function CanonicalStoreProfileView({
               data: {
                 storeId: store.id,
                 eventName: "Lead",
+                eventId,
                 eventSourceUrl: window.location.href,
                 customData: {
                   service_needed: quoteService,
@@ -811,15 +812,6 @@ function cleanAddressSegment(text: string): string {
               >
                 {store.description || settings.bio || settings.about}
               </p>
-              {false && (
-                <button
-                  type="button"
-                  onClick={() => setIsBioExpanded(!isBioExpanded)}
-                  className="text-xs font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  {isBioExpanded ? "Ver menos" : "...mais"}
-                </button>
-              )}
             </div>
           )}
 

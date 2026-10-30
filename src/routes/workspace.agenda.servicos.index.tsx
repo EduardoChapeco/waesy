@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench, Star, HelpCircle, Percent, DollarSign, Calendar, Sparkles, MessageSquare } from "lucide-react";
+import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench, Star, HelpCircle, Percent, DollarSign, Calendar, Globe, MessageSquare } from "lucide-react";
 import { ServiceSearchDialog } from "@/components/admin/services/service-search-dialog";
 import type { OnDemandMarketplaceService } from "@/lib/data/services-catalog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { SeoGeoOptimizationPanel, type SeoGeoMetadata } from "@/components/seo";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,12 @@ function ServicesIndexPage() {
  const [isSheetOpen, setIsSheetOpen] = useState(false);
  const [isSearchCatalogOpen, setIsSearchCatalogOpen] = useState(false);
  const [form, setForm] = useState<ServiceFormState>(INITIAL_FORM);
+ const [seoGeo, setSeoGeo] = useState<SeoGeoMetadata>({
+   seoTitle: "",
+   seoDescription: "",
+   keywords: [],
+   allowAiIndexing: true,
+ });
 
  const { data: res, isLoading } = useQuery({
  queryKey: ["booking-services"],
@@ -181,7 +188,7 @@ function ServicesIndexPage() {
      onClick={() => setIsSearchCatalogOpen(true)}
      variant="outline"
      size="sm"
-     className="rounded-lg font-bold text-xs gap-2 border-border/60 hover:bg-muted/30 text-foreground shadow-sm"
+     className="rounded-lg font-bold text-xs gap-2 border-border/60 hover:bg-muted/30 text-foreground"
    >
      <Star className="size-3.5 text-amber-500" />
      <span>Importar do Catálogo</span>
@@ -224,7 +231,7 @@ function ServicesIndexPage() {
  <TableHead className="font-semibold text-xs">Duração</TableHead>
  <TableHead className="font-semibold text-xs">Preço</TableHead>
  <TableHead className="font-semibold text-xs">Status</TableHead>
- <TableHead className="text-right font-semibold text-xs w-[80px]">Ações</TableHead>
+ <TableHead className="text-right font-semibold text-xs w-20">Ações</TableHead>
  </TableRow>
  </TableHeader>
  <TableBody className="divide-y divide-border/40">
@@ -295,7 +302,7 @@ function ServicesIndexPage() {
  <TooltipProvider delayDuration={200}>
  <div className="space-y-4 p-1 pb-16">
  <Tabs defaultValue="cadastro" className="w-full">
- <TabsList className="grid grid-cols-1 sm:grid-cols-3 max-w-md h-auto sm:h-11 p-1 bg-muted/60 rounded-lg mb-4">
+ <TabsList className="grid grid-cols-2 sm:grid-cols-4 max-w-lg h-auto sm:h-11 p-1 bg-muted/60 rounded-lg mb-4">
  <TabsTrigger value="cadastro" className="rounded-lg font-bold text-xs">
  Cadastro
  </TabsTrigger>
@@ -304,6 +311,9 @@ function ServicesIndexPage() {
  </TabsTrigger>
  <TabsTrigger value="cuidados" className="rounded-lg font-bold text-xs">
  Cuidados & CRM
+ </TabsTrigger>
+ <TabsTrigger value="seo" className="rounded-lg font-bold text-xs">
+ SEO & IA
  </TabsTrigger>
  </TabsList>
 
@@ -409,7 +419,7 @@ function ServicesIndexPage() {
  <TabsContent value="regras" className="space-y-4 pt-1">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-2">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Label className="text-xs font-bold text-foreground">Modelo de Preço</Label>
  <Tooltip>
  <TooltipTrigger asChild>
@@ -451,7 +461,7 @@ function ServicesIndexPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-2">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Label htmlFor="service-cost" className="text-xs font-bold text-foreground">
  Custo Adicional (R$)
  </Label>
@@ -474,7 +484,7 @@ function ServicesIndexPage() {
  </div>
 
  <div className="space-y-2">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Label className="text-xs font-bold text-foreground">Comissão Padrão</Label>
  <Tooltip>
  <TooltipTrigger asChild>
@@ -512,7 +522,7 @@ function ServicesIndexPage() {
  {/* ABA 3: CUIDADOS & CRM RETORNO */}
  <TabsContent value="cuidados" className="space-y-4 pt-1">
  <div className="space-y-2">
- <div className="flex items-center gap-1.5">
+ <div className="flex items-center gap-2">
  <Label htmlFor="return-days" className="text-xs font-bold text-foreground">
  Tempo de Retorno (Dias para CRM)
  </Label>
@@ -563,6 +573,17 @@ function ServicesIndexPage() {
  className="rounded-lg text-xs resize-none"
  />
  </div>
+ </TabsContent>
+
+ {/* ABA 4: SEO & GEO / DESCOBERTA AGÊNTICA */}
+ <TabsContent value="seo" className="space-y-4 pt-1">
+ <SeoGeoOptimizationPanel
+ value={seoGeo}
+ onChange={setSeoGeo}
+ referenceTitle={form.title}
+ referenceDescription={form.description}
+ defaultOpen={true}
+ />
  </TabsContent>
  </Tabs>
 

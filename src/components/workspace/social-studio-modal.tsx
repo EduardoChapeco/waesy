@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,17 +22,26 @@ export interface SocialStudioModalProps {
 export function SocialStudioModal({
   isOpen,
   onClose,
-  product = {
-    title: "Produto Destaque da Loja",
-    priceCents: 12990,
-    imageUrl: "/brand-logo.png",
-    category: "Lançamento",
-    description: "Confira este produto incrível com entrega rápida pela nossa loja.",
-  },
+  product,
   storeName = "Minha Loja Waesy",
 }: SocialStudioModalProps) {
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1" | "16:9">("9:16");
   const [copiedCaption, setCopiedCaption] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  if (!product) {
+    return (
+      <Dialog open={isOpen} onOpenChange={(value) => !value && onClose()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Selecione um produto</DialogTitle>
+            <DialogDescription>O estúdio precisa de um produto persistido para gerar o post.</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   const captionText = `${product.title}\n\nPor apenas ${formatMoney(product.priceCents)}!\n\n ${storeName}\n Peça agora no WhatsApp ou compre pelo link da bio!\n\n#usewaesy #${storeName.toLowerCase().replace(/\s+/g, "")} #oferta`;
 
@@ -45,6 +54,30 @@ export function SocialStudioModal({
   const handleShareWhatsApp = () => {
     const waUrl = `https://wa.me/?text=${encodeURIComponent(captionText)}`;
     window.open(waUrl, "_blank");
+  };
+
+  const handleDownloadImage = async () => {
+    if (!frameRef.current || isDownloading) return;
+
+    setIsDownloading(true);
+    try {
+      const { default: html2canvas } = await import("html2canvas");
+      const canvas = await html2canvas(frameRef.current, {
+        backgroundColor: null,
+        useCORS: true,
+        scale: 2,
+      });
+      const link = document.createElement("a");
+      link.download = `${product.title.toLowerCase().replace(/[^a-z0-9]+/gi, "-") || "waesy-post"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      toast.success("Imagem HD baixada.");
+    } catch (error) {
+      console.error("[SocialStudio] Falha ao exportar imagem:", error);
+      toast.error("Não foi possível gerar a imagem. Tente novamente.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -74,7 +107,9 @@ export function SocialStudioModal({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-0 divide-y md:divide-y-0 md:divide-x divide-border">
           {/* Visual Canvas Preview */}
           <div className="md:col-span-7 p-6 bg-muted/30 flex flex-col items-center justify-center min-h-96">
-            <Tabs value={aspectRatio} onValueChange={(v) => setAspectRatio(v as any)} className="w-full mb-4">
+            <Tabs value={aspectRatio} onValueChange={(v) => {
+              if (v === "9:16" || v === "1:1" || v === "16:9") setAspectRatio(v);
+            }} className="w-full mb-4">
               <TabsList className="grid grid-cols-1 sm:grid-cols-3 w-full max-w-xs mx-auto h-11">
                 <TabsTrigger value="9:16" className="text-xs h-9">Story (9:16)</TabsTrigger>
                 <TabsTrigger value="1:1" className="text-xs h-9">Feed (1:1)</TabsTrigger>
@@ -84,6 +119,7 @@ export function SocialStudioModal({
 
             {/* Rendered Frame Preview */}
             <div
+              ref={frameRef}
               className={`relative overflow-hidden rounded-lg border border-border/80 bg-zinc-950 text-foreground shadow-lg transition-colors duration-200 duration-300 flex flex-col justify-between ${
                 aspectRatio === "9:16"
                   ? "w-60 aspect-[9/16] p-5"
@@ -168,13 +204,12 @@ export function SocialStudioModal({
 
             <div className="space-y-2 pt-2 border-t border-border">
               <Button
-                onClick={() => {
-                  toast.success("Download da imagem em alta resolução gerado com sucesso!");
-                }}
+                onClick={handleDownloadImage}
+                disabled={isDownloading}
                 className="w-full h-11 min-h-11 text-xs font-bold gap-2"
               >
                 <DownloadSimple className="w-4 h-4" />
-                Baixar Imagem HD
+                {isDownloading ? "Gerando imagem..." : "Baixar Imagem HD"}
               </Button>
               <Button variant="ghost" onClick={onClose} className="w-full h-11 min-h-11 text-xs">
                 Fechar

@@ -9,8 +9,8 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { decryptSecret } from "@/lib/crypto-vault.server";
 import { formatMoney } from "@/lib/money";
+import { calculateNormalizedPricing } from "@/lib/travel-pricing";
 import type { TravelOfferDTO, TravelOfferPricing } from "@/types/corporate-travel";
-import { calculateNormalizedPricing } from "@/services/travel-supply-orchestrator.service";
 
 // ─── 1. Schemas de Credenciais e Configuração do Cofre ──────────────────────
 
@@ -179,9 +179,19 @@ export async function searchWoobaFlights(
   const json = await response.json().catch(() => ({}));
   const rawFlights: any[] = json.Flights || json.flights || json.Offers || [];
 
-  return rawFlights.map((flight: any, idx: number): TravelOfferDTO => {
-    const netCents = Math.round(Number(flight.NetPrice || flight.net_price || 0) * 100);
-    const taxesCents = Math.round(Number(flight.Taxes || flight.taxes || 0) * 100);
+  return rawFlights.flatMap((flight: any): TravelOfferDTO[] => {
+    const providerFlightId = String(flight.FlightId || flight.id || "").trim();
+    const carrierName = String(flight.AirlineName || flight.carrier_name || "").trim();
+    const flightNumber = String(flight.FlightNumber || flight.flight_number || "").trim();
+    const departureTime = String(flight.DepartureTime || flight.departure_time || "").trim();
+    const arrivalTime = String(flight.ArrivalTime || flight.arrival_time || "").trim();
+    const netAmount = Number(flight.NetPrice ?? flight.net_price);
+    if (!providerFlightId || !carrierName || !flightNumber || !departureTime || !arrivalTime || !Number.isFinite(netAmount) || netAmount <= 0) {
+      return [];
+    }
+
+    const netCents = Math.round(netAmount * 100);
+    const taxesCents = Math.max(0, Math.round(Number(flight.Taxes ?? flight.taxes ?? 0) * 100));
 
     const pricing = calculateNormalizedPricing({
       netAmountCents: netCents,
@@ -192,13 +202,14 @@ export async function searchWoobaFlights(
       currency: "BRL",
     });
 
-    const carrierName = flight.AirlineName || flight.carrier_name || "Companhia Aérea";
-    const fareFamily = flight.FareFamily || flight.fare_family || "Standard";
-    const baggageAllowed = flight.BaggageAllowance || (fareFamily.toLowerCase().includes("light") ? "0PC (Apenas mala de mão 10kg)" : "1PC (23kg despachada inclusa)");
-    const isRefundable = !fareFamily.toLowerCase().includes("light") && !fareFamily.toLowerCase().includes("promo");
+    const fareFamily = String(flight.FareFamily || flight.fare_family || "").trim();
+    const baggageAllowed = String(flight.BaggageAllowance || flight.baggage_allowance || "").trim() || undefined;
+    const isRefundable = fareFamily
+      ? !fareFamily.toLowerCase().includes("light") && !fareFamily.toLowerCase().includes("promo")
+      : undefined;
 
-    return {
-      offer_id: `wooba_${flight.FlightId || flight.id || idx}_${Date.now()}`,
+    return [{
+      offer_id: `wooba_${providerFlightId}`,
       provider_code: "wooba",
       product_type: "flight",
       pricing,
@@ -216,16 +227,21 @@ export async function searchWoobaFlights(
       details: {
         carrier_name: carrierName,
         carrier_iata: flight.AirlineCode || flight.carrier_iata,
-        flight_number: flight.FlightNumber || "Voo Regular",
+        flight_number: flightNumber,
         origin: params.originIata,
         destination: params.destinationIata,
-        departure_time: flight.DepartureTime || "08:00",
-        arrival_time: flight.ArrivalTime || "10:30",
-        duration_minutes: Number(flight.DurationMinutes || 150),
-        stops_count: Number(flight.Stops || 0),
+        departure_time: departureTime,
+        arrival_time: arrivalTime,
+        duration_minutes: Number.isFinite(Number(flight.DurationMinutes ?? flight.duration_minutes))
+          ? Number(flight.DurationMinutes ?? flight.duration_minutes)
+          : undefined,
+        stops_count: Number.isFinite(Number(flight.Stops ?? flight.stops))
+          ? Number(flight.Stops ?? flight.stops)
+          : undefined,
         segments: flight.Segments || [],
       },
-    };
+      raw_snapshot_ref: providerFlightId,
+    }];
   });
 }
 
@@ -281,19 +297,30 @@ export async function createWoobaFlightHold(
   }
 
   const json = await response.json();
-  const timeLimit = json.TimeLimit || new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString();
-  const pnr = json.RecordLocator || json.PNR || `WB${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-  const totalCents = Math.round(Number(json.TotalAmount || 0) * 100);
+  const timeLimit = String(json.TimeLimit || json.time_limit || "").trim();
+  const pnr = String(json.RecordLocator || json.PNR || json.record_locator || "").trim();
+  const totalCents = Math.round(Number(json.TotalAmount ?? json.total_amount) * 100);
+  const airline = String(json.AirlineName || json.airline_name || "").trim();
+  const flightNumbers = Array.isArray(json.FlightNumbers)
+    ? json.FlightNumbers.map((value: unknown) => String(value).trim()).filter(Boolean)
+    : [];
+  if (!timeLimit || Number.isNaN(new Date(timeLimit).getTime()) || !pnr || !airline || !Number.isFinite(totalCents) || totalCents <= 0 || flightNumbers.length === 0) {
+    throw new WoobaConnectorError(
+      "HOLD_RESPONSE_INCOMPLETE",
+      "O Wooba não confirmou PNR, limite de tempo, valor e voos da pré-reserva.",
+      false,
+    );
+  }
 
   return {
     pnr,
     timeLimit,
-    expiresInHours: 4,
-    airline: json.AirlineName || "Companhia Aérea",
-    flightNumbers: json.FlightNumbers || ["Voo Confirmado"],
+    expiresInHours: Math.max(0, (new Date(timeLimit).getTime() - Date.now()) / 3600000),
+    airline,
+    flightNumbers,
     totalPriceCents: totalCents,
     totalPriceDisplay: formatMoney(totalCents),
-    cancellationPolicy: "Reserva provisória sem custo. Se não emitida até o time-limit, cancela automaticamente sem multa.",
+    cancellationPolicy: String(json.CancellationPolicy || json.cancellation_policy || "").trim(),
     holdStatus: "active_hold",
   };
 }

@@ -343,8 +343,8 @@ function KDSPage() {
  padding: 0;
  margin: 0;
  font-family: monospace;
- color: #000;
- background: #fff;
+ color: black;
+ background: white;
  }
  .no-print {
  display: none;
@@ -380,7 +380,7 @@ function KDSPage() {
  variant={viewMode === "kanban" ? "default" : "ghost"}
  size="sm"
  onClick={() => setViewMode("kanban")}
- className="h-8 text-xs font-bold rounded-lg gap-2"
+ className="h-11 min-h-11 sm:h-9 sm:min-h-9 text-xs font-bold rounded-lg gap-2"
  >
  <Kanban className="size-3.5" />
  Kanban KDS
@@ -389,7 +389,7 @@ function KDSPage() {
  variant={viewMode === "live_dashboard" ? "default" : "ghost"}
  size="sm"
  onClick={() => setViewMode("live_dashboard")}
- className="h-8 text-xs font-bold rounded-lg gap-2"
+ className="h-11 min-h-11 sm:h-9 sm:min-h-9 text-xs font-bold rounded-lg gap-2"
  >
  <LayoutDashboard className="size-3.5" />
  Live Dashboard
@@ -473,6 +473,7 @@ function KDSPage() {
  </div>
 
  {/* Chips de Canais Omnichannel */}
+ {/* design-lint-ignore DL-30 reason:"Barra horizontal de chips de canais com scroll tátil elástico" expiry:"2027-10-30" */}
  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
  {[
  { id: "all", label: "Todos os Canais" },
@@ -658,7 +659,7 @@ function KDSPage() {
  variant="outline"
  title="Avisar cliente WhatsApp"
  onClick={(e) => handleNotifyCustomerWhatsApp(ord, e)}
- className="size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
  >
  <MessageCircle className="size-4" />
  </Button>
@@ -758,7 +759,7 @@ function KDSPage() {
  variant="ghost"
  title="Avisar cliente WhatsApp"
  onClick={(e) => handleNotifyCustomerWhatsApp(ord, e)}
- className="size-8 rounded-lg text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
+ className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
  >
  <MessageCircle className="size-4" />
  </Button>
@@ -767,7 +768,7 @@ function KDSPage() {
  size="sm"
  variant="outline"
  onClick={() => setSelectedOrder(ord)}
- className="h-8 rounded-lg text-xs font-bold cursor-pointer"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold cursor-pointer"
  >
  Detalhes
  </Button>
@@ -852,7 +853,7 @@ function KDSPage() {
  </div>
  ) : (
  /* Kanban Board */
- <main className="flex-1 overflow-x-auto no-scrollbar p-4 flex gap-4 bg-muted/30 no-print">
+ <main /* design-lint-ignore DL-30 reason:"Quadro Kanban de pedidos com colunas de rolagem horizontal contínua" expiry:"2027-10-30" */ className="flex-1 overflow-x-auto no-scrollbar p-4 flex gap-4 bg-muted/30 no-print">
  {columns.map((col) => {
  const isPrepCol = col.id === "processing";
  const colOrders = orders
@@ -897,7 +898,7 @@ function KDSPage() {
  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
  return (
- <div key={col.id} className="flex-shrink-0 w-[350px] flex flex-col gap-3 h-full">
+ <div key={col.id} className="flex-shrink-0 w-88 flex flex-col gap-3 h-full">
  <div
  className={`rounded-lg border ${col.color} p-3 flex items-center justify-between bg-surface-paper `}
  >
@@ -1032,7 +1033,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Imprimir comanda térmica (80mm)"
- className="size-11 sm:size-9 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
+ className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
  onClick={(e) => {
  e.stopPropagation();
  setSelectedOrder(order);
@@ -1048,7 +1049,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Imprimir Recibo"
- className="size-11 sm:size-9 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
+ className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
  onClick={(e) => {
  e.stopPropagation();
  window.open(`/workspace/pedidos/${order.id}/recibo`, "_blank");
@@ -1064,7 +1065,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Avisar cliente no WhatsApp"
- className="size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
  onClick={(e) => handleNotifyCustomerWhatsApp(order, e)}
  >
  <MessageCircle className="size-4" />
@@ -1343,7 +1344,7 @@ function KDSPage() {
  const addr = encodeURIComponent(`${selectedOrder.shipping_address.street}, ${selectedOrder.shipping_address.number || ""}, ${selectedOrder.shipping_address.city || ""}`);
  window.open(`https://www.google.com/maps/search/?api=1&query=${addr}`, "_blank");
  }}
- className="h-9 rounded-lg text-xs font-semibold gap-2"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold gap-2"
  >
  <Navigation className="size-3.5 text-primary" />
  Google Maps
@@ -1356,7 +1357,7 @@ function KDSPage() {
  const addr = encodeURIComponent(`${selectedOrder.shipping_address.street}, ${selectedOrder.shipping_address.number || ""}, ${selectedOrder.shipping_address.city || ""}`);
  window.open(`https://waze.com/ul?q=${addr}`, "_blank");
  }}
- className="h-9 rounded-lg text-xs font-semibold gap-2"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold gap-2"
  >
  <Navigation className="size-3.5 text-info" />
  Waze
@@ -1498,23 +1499,16 @@ function KDSPage() {
 
  {/* Printable Receipt (Escondido na tela normal) */}
  {selectedOrder && (
- <div id="printable-receipt" className="hidden">
- <div
- style={{
- textAlign: "center",
- marginBottom: "15px",
- paddingBottom: "10px",
- borderBottom: "1px dashed #000",
- }}
- >
- <h2 style={{ margin: "0 0 5px 0", fontSize: "16px" }}>
+ <div id="printable-receipt" className="hidden font-mono">
+ <div className="text-center mb-4 pb-2 border-b border-dashed border-current">
+ <h2 className="m-0 mb-1 text-base font-bold">
  PEDIDO #{selectedOrder.id.split("-")[0].toUpperCase()}
  </h2>
- <p style={{ margin: "0", fontSize: "12px" }}>
+ <p className="m-0 text-xs">
  {new Date(selectedOrder.created_at).toLocaleString("pt-BR")}
  </p>
  {selectedOrder.origin_type && (
- <p style={{ margin: "5px 0 0 0", fontSize: "14px", fontWeight: "bold" }}>
+ <p className="m-0 mt-1 text-sm font-bold">
  {selectedOrder.origin_type === "table"
  ? "MESA" + (selectedOrder.table_identifier || "")
  : "BALCÃO"}
@@ -1522,29 +1516,20 @@ function KDSPage() {
  )}
  </div>
 
- <div
- style={{ marginBottom: "15px", paddingBottom: "10px", borderBottom: "1px dashed #000" }}
- >
- <p style={{ margin: "0 0 5px 0", fontSize: "14px", fontWeight: "bold" }}>CLIENTE:</p>
- <p style={{ margin: "0", fontSize: "14px" }}>
+ <div className="mb-4 pb-2 border-b border-dashed border-current">
+ <p className="m-0 mb-1 text-sm font-bold">CLIENTE:</p>
+ <p className="m-0 text-sm">
  {selectedOrder.customer_snapshot?.name || selectedOrder.customer?.name || "Avulso"}
  </p>
  </div>
 
- <div style={{ marginBottom: "15px" }}>
- <p style={{ margin: "0 0 10px 0", fontSize: "14px", fontWeight: "bold" }}>ITENS:</p>
+ <div className="mb-4">
+ <p className="m-0 mb-2 text-sm font-bold">ITENS:</p>
  {selectedOrder.order_items?.map((item: any) => {
  const options = item.selected_options ? Object.values(item.selected_options) : [];
  return (
- <div key={item.id} style={{ marginBottom: "10px" }}>
- <div
- style={{
- display: "flex",
- justifyContent: "space-between",
- fontSize: "14px",
- fontWeight: "bold",
- }}
- >
+ <div key={item.id} className="mb-2">
+ <div className="flex justify-between text-sm font-bold">
  <span>
  {item.qty}x {item.product_title}
  </span>
@@ -1552,7 +1537,7 @@ function KDSPage() {
  {options.map((opt: any, idx: number) => (
  <div
  key={idx}
- style={{ fontSize: "12px", marginLeft: "15px", marginTop: "2px" }}
+ className="text-xs ml-4 mt-1"
  >
  + {opt.label}
  </div>
@@ -1562,16 +1547,7 @@ function KDSPage() {
  })}
  </div>
 
- <div
- style={{
- borderTop: "1px dashed #000",
- paddingTop: "10px",
- display: "flex",
- justifyContent: "space-between",
- fontSize: "16px",
- fontWeight: "bold",
- }}
- >
+ <div className="border-t border-dashed border-current pt-2 flex justify-between text-base font-bold">
  <span>TOTAL:</span>
  <span>{formatMoney(selectedOrder.total_cents)}</span>
  </div>
@@ -1623,7 +1599,7 @@ function KDSPage() {
  size="sm"
  variant="outline"
  onClick={() => handleNotifyCustomerWhatsApp(ord)}
- className="h-8 text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg"
+ className="h-11 min-h-11 sm:h-9 text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg"
  >
  <MessageCircle className="size-3.5 mr-1" />
  WhatsApp
@@ -1635,7 +1611,7 @@ function KDSPage() {
  setSelectedOrder(ord);
  setAlertModalOpen(false);
  }}
- className="h-8 text-xs font-bold rounded-lg"
+ className="h-11 min-h-11 sm:h-9 text-xs font-bold rounded-lg"
  >
  Abrir
  </Button>

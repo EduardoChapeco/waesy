@@ -22,6 +22,11 @@ import { uploadComposerAttachments } from "@/lib/copilot-attachments";
 import type { AIChatAction } from "@/components/chat/structured-message-view";
 import { getUserSession } from "@/services/auth.functions";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { ManusComputerDrawer } from "@/components/chat/manus-computer-drawer";
+import { ManusTaskTelemetrySheet } from "@/components/chat/manus-task-telemetry-sheet";
+import { CopilotBackgroundTasksDrawer } from "@/components/chat/copilot-background-tasks-drawer";
+import { Button } from "@/components/ui/button";
+import { Monitor, Info, CheckCircle2, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -152,6 +157,9 @@ function WorkspaceCopilotPage() {
   ]);
 
   const [isSending, setIsSending] = useState(false);
+  const [computerDrawerOpen, setComputerDrawerOpen] = useState(false);
+  const [telemetrySheetOpen, setTelemetrySheetOpen] = useState(false);
+  const [backgroundTasksOpen, setBackgroundTasksOpen] = useState(false);
   const activeRunRef = useRef(0);
   const threadLoadRef = useRef(0);
   const activeThreadRef = useRef(activeThreadId);
@@ -443,6 +451,51 @@ function WorkspaceCopilotPage() {
 
   return (
     <div className="size-full flex-1 flex flex-col min-h-0 overflow-hidden bg-background">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border/70 bg-card/80 shrink-0 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+            <CheckCircle2 className="size-3.5" />
+            Waesy 2.0 Lite
+          </span>
+          <span className="text-xs text-muted-foreground truncate hidden sm:inline">
+            Orquestrador Multi-Agente · Computador & Navegador Cloud
+          </span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setBackgroundTasksOpen(true)}
+            className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2"
+          >
+            <Clock className="size-4 text-emerald-600" />
+            <span className="hidden sm:inline">Segundo Plano</span>
+            <span className="rounded bg-muted px-2 py-0 font-mono text-xs">2</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setComputerDrawerOpen(true)}
+            className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2"
+          >
+            <Monitor className="size-4 text-primary" />
+            <span>Computador do Waesy</span>
+            <span className="rounded bg-muted px-2 py-0 font-mono text-xs">3/3</span>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setTelemetrySheetOpen(true)}
+            className="size-11 focus-visible:ring-2"
+            aria-label="Informações da tarefa"
+          >
+            <Info className="size-4" />
+          </Button>
+        </div>
+      </div>
       <AIChatShell
         threads={threads}
         activeThreadId={activeThreadId}
@@ -463,6 +516,36 @@ function WorkspaceCopilotPage() {
         isStreaming={isSending}
         currentUserProfileId={effectiveUserId || undefined}
         className="h-full min-h-0 border-none rounded-none"
+      />
+      <ManusComputerDrawer open={computerDrawerOpen} onOpenChange={setComputerDrawerOpen} />
+      <ManusTaskTelemetrySheet open={telemetrySheetOpen} onOpenChange={setTelemetrySheetOpen} />
+      <CopilotBackgroundTasksDrawer
+        open={backgroundTasksOpen}
+        onOpenChange={setBackgroundTasksOpen}
+        tasks={[
+          {
+            id: "bg-1",
+            task_type: "playwright_browser_agent",
+            title: "Monitoramento de concorrentes locais & catálogo via Navegador Cloud",
+            status: "completed",
+            progress_percent: 100,
+            current_step: "Planilha comparativa gerada",
+            cost_wz: 12,
+            created_at: new Date().toISOString(),
+          },
+          {
+            id: "bg-2",
+            task_type: "whatsapp_sdr_sync",
+            title: "Sincronização de filas WhatsApp Omnichannel & qualificação IA SDR",
+            status: "completed",
+            progress_percent: 100,
+            current_step: "3 canais ativos sincronizados na VPS 147.15.61.45",
+            cost_wz: 8,
+            created_at: new Date().toISOString(),
+          },
+        ]}
+      />
+      <span className="hidden"
       />
     </div>
   );

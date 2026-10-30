@@ -7,10 +7,13 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * Todo ingresso emitido recebe assinatura digital HMAC-SHA256 vinculada aos metadados do bilhete.
  */
 
-const TICKET_MASTER_SECRET =
-  process.env.TICKET_CRYPT_SECRET ||
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  "waesy-tickets-sovereign-master-secret-2026";
+function getTicketMasterSecret(): string {
+  const secret = process.env.TICKET_CRYPT_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) {
+    throw new Error("TICKET_CRYPT_SECRET não configurado; emissão e validação bloqueadas.");
+  }
+  return secret;
+}
 
 const SAFE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 
@@ -54,7 +57,7 @@ export function signTicketPayload(input: TicketSignInput): SignedTicketPayload {
   const issuedAt = input.issuedAt || Math.floor(Date.now() / 1000);
   const message = `${input.ticketId}:${input.eventId}:${input.lotId}:${input.ownerProfileId}:${issuedAt}`;
 
-  const hmac = createHmac("sha256", TICKET_MASTER_SECRET);
+  const hmac = createHmac("sha256", getTicketMasterSecret());
   hmac.update(message);
   const signature = hmac.digest("hex");
 
@@ -128,7 +131,7 @@ export function verifyTicketPayload(
     // Se temos contexto completo, recomputa a assinatura e confere timing-safe
     if (context?.eventId && context?.lotId && context?.ownerProfileId) {
       const message = `${ticketId}:${context.eventId}:${context.lotId}:${context.ownerProfileId}:${issuedAt}`;
-      const hmac = createHmac("sha256", TICKET_MASTER_SECRET);
+      const hmac = createHmac("sha256", getTicketMasterSecret());
       hmac.update(message);
       const expectedSig = hmac.digest("hex");
 

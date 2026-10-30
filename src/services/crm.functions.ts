@@ -1015,6 +1015,14 @@ export const saveTravelerPreferences = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
 
+    const { data: customer, error: customerError } = await supabase
+      .from("customers_crm")
+      .select("id")
+      .eq("id", input.customerId)
+      .eq("store_id", identity.store_id)
+      .single();
+    if (customerError || !customer) throw new Error("Cliente não pertence à loja ativa.");
+
     const { data, error } = await supabase
       .from("crm_clinical_records")
       .insert({
@@ -1874,7 +1882,7 @@ export const addLeadMeeting = createServerFn({ method: "POST" })
 
     if (error) throw new Error("Erro ao agendar reunião: " + error.message);
 
-    await supabase.from("lead_activities").insert({
+    const { error: activityError } = await supabase.from("lead_activities").insert({
       lead_id: input.leadId,
       store_id: identity.store_id,
       author_id: identity.id,
@@ -1882,6 +1890,10 @@ export const addLeadMeeting = createServerFn({ method: "POST" })
       content: `Reunião agendada: "${input.title}" para ${new Date(input.scheduledAt).toLocaleString("pt-BR")}`,
       metadata: { meeting_id: meeting.id },
     });
+    if (activityError) {
+      await supabase.from("lead_meetings").delete().eq("id", meeting.id).eq("store_id", identity.store_id);
+      throw new Error("A reunião foi revertida porque a atividade do lead não pôde ser registrada.");
+    }
 
     return meeting;
   });

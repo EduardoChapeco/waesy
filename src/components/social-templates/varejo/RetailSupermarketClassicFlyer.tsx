@@ -24,24 +24,24 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
         transform: `scale(${scale})`,
         transformOrigin: "top left",
       }}
-      className={`relative bg-[#FFDF00] text-slate-950 overflow-hidden font-sans select-none flex flex-col justify-between p-12 border-[24px] border-[#CC0000] ${className}`}
+      className={`relative bg-amber-400 text-slate-950 overflow-hidden font-sans select-none flex flex-col justify-between p-12 border-12 border-red-600 ${className}`}
     >
       {/* Moldura Clássica Interna de Linha Fina */}
-      <div className="absolute inset-4 border-4 border-[#CC0000] pointer-events-none rounded-xl" />
+      <div className="absolute inset-4 border-4 border-red-600 pointer-events-none rounded-xl" />
 
       {/* Ornamentos de Canto Tradicionais de Cartaz de Oferta */}
-      <div className="absolute top-8 left-8 w-16 h-16 border-t-8 border-l-8 border-[#003399] rounded-tl-xl pointer-events-none" />
-      <div className="absolute top-8 right-8 w-16 h-16 border-t-8 border-r-8 border-[#003399] rounded-tr-xl pointer-events-none" />
-      <div className="absolute bottom-8 left-8 w-16 h-16 border-b-8 border-l-8 border-[#003399] rounded-bl-xl pointer-events-none" />
-      <div className="absolute bottom-8 right-8 w-16 h-16 border-b-8 border-r-8 border-[#003399] rounded-br-xl pointer-events-none" />
+      <div className="absolute top-8 left-8 w-16 h-16 border-t-8 border-l-8 border-blue-900 rounded-tl-xl pointer-events-none" />
+      <div className="absolute top-8 right-8 w-16 h-16 border-t-8 border-r-8 border-blue-900 rounded-tr-xl pointer-events-none" />
+      <div className="absolute bottom-8 left-8 w-16 h-16 border-b-8 border-l-8 border-blue-900 rounded-bl-xl pointer-events-none" />
+      <div className="absolute bottom-8 right-8 w-16 h-16 border-b-8 border-r-8 border-blue-900 rounded-br-xl pointer-events-none" />
 
       {/* Topo: Header Impactante OFERTA com Efeito 3D Vintage */}
       <div className="relative z-10 text-center pt-6">
         <div className="inline-block relative">
           <span
-            className="text-8xl sm:text-9xl font-black uppercase tracking-tighter text-[#E60000] drop-shadow-[0_8px_0_#002277]"
+            className="text-8xl sm:text-9xl font-black uppercase tracking-tighter text-red-600"
             style={{
-              WebkitTextStroke: "4px #002277",
+              WebkitTextStroke: "4px navy",
             }}
           >
             {data.promoBadge || "OFERTA"}
@@ -50,7 +50,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
 
         {data.storeName && (
           <div className="mt-3 flex items-center justify-center gap-2">
-            <span className="bg-[#002277] text-foreground font-black text-2xl uppercase tracking-wider px-6 py-2 rounded-full shadow-md">
+            <span className="bg-blue-950 text-foreground font-black text-2xl uppercase tracking-wider px-6 py-2 rounded-full border-2 border-white/30">
               {data.storeName}
             </span>
           </div>
@@ -61,7 +61,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center my-4">
         {/* Foto do Produto se disponível */}
         {data.backgroundImageUrl && (
-          <div className="relative w-80 h-80 sm:w-96 sm:h-96 rounded-2xl overflow-hidden shadow-2xl border-4 border-white mb-6 bg-card flex items-center justify-center">
+          <div className="relative w-80 h-80 sm:w-96 sm:h-96 rounded-2xl overflow-hidden border-4 border-white mb-6 bg-card flex items-center justify-center">
             <img
               src={data.backgroundImageUrl}
               alt={data.title}
@@ -72,7 +72,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
         )}
 
         {/* Título do Produto em Tipografia Condensada e Legível */}
-        <h1 className="text-6xl sm:text-7xl font-black uppercase tracking-tight text-center text-foreground leading-[1.05] max-w-3xl line-clamp-2 drop-shadow-sm">
+        <h1 className="text-6xl sm:text-7xl font-black uppercase tracking-tight text-center text-foreground leading-tight max-w-3xl line-clamp-2">
           {data.title}
         </h1>
 
@@ -88,7 +88,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
             {data.highlights.slice(0, 3).map((h, i) => (
               <span
                 key={i}
-                className="bg-card border-2 border-slate-900 px-5 py-2 rounded-lg text-xl font-black text-slate-900 shadow-sm"
+                className="bg-card border-2 border-slate-900 px-5 py-2 rounded-lg text-xl font-black text-slate-900"
               >
                 {h}
               </span>
@@ -104,7 +104,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
           {/* Estrela / Explosão Amarela/Vermelha em SVG */}
           <div className="relative flex items-center justify-center p-10">
             <svg
-              className="absolute w-[440px] h-[340px] text-[#CC0000] drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
+              className="absolute w-110 h-85 text-red-600"
               viewBox="0 0 100 100"
               fill="currentColor"
             >
@@ -113,11 +113,11 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
 
             {/* Valor do Preço em Branco Gigante */}
             <div className="relative z-10 flex items-baseline text-foreground">
-              <span className="text-5xl font-black mr-2 drop-shadow-[0_6px_0_#000000]">
+              <span className="text-5xl font-black mr-2">
                 R$
               </span>
               <span
-                className="text-9xl font-black tracking-tighter drop-shadow-[0_8px_0_#000000]"
+                className="text-9xl font-black tracking-tighter"
                 style={{
                   fontFamily: "system-ui, -apple-system, sans-serif",
                 }}
@@ -125,7 +125,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
                 {reais}
               </span>
               <span
-                className="text-6xl font-black ml-1 -translate-y-8 drop-shadow-[0_6px_0_#000000]"
+                className="text-6xl font-black ml-1 -translate-y-8"
                 style={{
                   fontFamily: "system-ui, -apple-system, sans-serif",
                 }}
@@ -139,7 +139,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
 
       {/* CTA Inferior de Alavancagem */}
       <div className="relative z-10 text-center pt-2">
-        <span className="inline-block bg-[#002277] text-foreground font-black text-2xl uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg">
+        <span className="inline-block bg-blue-950 text-foreground font-black text-2xl uppercase tracking-widest px-8 py-4 rounded-xl border-2 border-white/30">
           {data.ctaLabel || "APROVEITE HOJE MESMO"}
         </span>
       </div>

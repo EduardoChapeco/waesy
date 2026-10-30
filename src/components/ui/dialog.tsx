@@ -62,7 +62,7 @@ const DialogContent = React.forwardRef<
             ? "fixed inset-0 z-50 flex flex-col w-screen h-dvh max-w-none rounded-none border-none bg-background p-0 overflow-hidden duration-150"
             : isForceCompact
             ? "fixed inset-0 z-50 flex flex-col w-full h-full max-w-none rounded-none border-none bg-background pt-6 pt-safe pb-6 pb-safe px-4 sm:px-6 overflow-y-auto no-scrollbar duration-150 overscroll-contain"
-            : "fixed inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col w-full max-h-overlay-max rounded-lg border border-border bg-background p-6 overflow-y-auto no-scrollbar duration-150 overscroll-contain",
+            : "fixed inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col w-full max-h-overlay-max rounded-2xl bg-background p-6 overflow-y-auto no-scrollbar duration-150 overscroll-contain",
           !isForceCompact && !isScreen && sizeClasses,
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           className,

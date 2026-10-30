@@ -46,6 +46,7 @@ const DigitalFileDropzone = lazy(() =>
 import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
+import { SeoGeoOptimizationPanel, type SeoGeoMetadata } from "@/components/seo";
 import { cn } from "@/lib/utils";
 import { ClassifiedTemplateStyle, ClassifiedDisplayMode, CivilInquiryQuestion, CivilInquiryConfig } from "@/types/unified-ad-engine";
 
@@ -1216,6 +1217,18 @@ function SpecializedClassifiedEditor({
         ? initialData.attributes.bio_bullets.join("\n")
         : ""
   );
+
+  const [seoGeo, setSeoGeo] = useState<SeoGeoMetadata>({
+    seoTitle: initialData?.attributes?.seo_title || initialData?.title || "",
+    seoDescription: initialData?.attributes?.seo_description || initialData?.attributes?.summary || "",
+    keywords: Array.isArray(initialData?.attributes?.tags) ? initialData.attributes.tags : [],
+    latitude: initialData?.latitude ?? null,
+    longitude: initialData?.longitude ?? null,
+    neighborhood: initialData?.neighborhood || "",
+    city: initialData?.city || "",
+    state: initialData?.state || "",
+    allowAiIndexing: initialData?.attributes?.allow_ai_indexing ?? true,
+  });
 
   const buildCurrentNicheContext = () => {
     const ctx: Record<string, any> = {};
@@ -10443,6 +10456,20 @@ const [aiInstructions, setAiInstructions] = useState("");
                 </div>
               )}
 
+              {/* Otimização Universal de SEO, GEO e Indexação Agêntica */}
+              <SeoGeoOptimizationPanel
+                value={seoGeo}
+                onChange={(upd) => {
+                  setSeoGeo(upd);
+                  if (upd.keywords && upd.keywords.length > 0) {
+                    setEditorialTags(upd.keywords);
+                  }
+                }}
+                referenceTitle={title}
+                referenceDescription={description}
+                referenceAddress={locationName}
+              />
+
               {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
               {isPaymentAllowed && niche.id !== "evento" && (
                 <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
@@ -11706,8 +11733,8 @@ const [aiInstructions, setAiInstructions] = useState("");
                     previewViewport={previewDevice}
                     isOwner={true}
                     canManage={true}
-                    onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                    onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
+                    onOpenBookingModal={undefined}
+                    onOpenProposalModal={undefined}
                     onEdit={() => {
                       setIsPreviewModalOpen(false);
                       setCurrentStep(2);

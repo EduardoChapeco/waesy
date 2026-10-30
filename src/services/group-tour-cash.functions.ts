@@ -19,6 +19,10 @@ export interface TourCashEntryItem {
  receipt_url?: string | null;
  occurred_at: string;
  created_at: string;
+  central_cash_register_entry_id?: string | null;
+  reversal_of_id?: string | null;
+  reversal_reason?: string | null;
+  reversed_at?: string | null;
 }
 
 export const CreateCashEntrySchema = z.object({
@@ -32,6 +36,7 @@ export const CreateCashEntrySchema = z.object({
  receipt_url: z.string().optional().nullable(),
  occurred_at: z.string().optional(),
  sync_with_central_cash: z.boolean().optional().default(false),
+  idempotency_key: z.string().uuid(),
 });
 
 // ---------------------------------------------------------------------------
@@ -66,58 +71,30 @@ export const createTourCashEntry = createServerFn({ method: "POST" })
  }
 
  const db = getServerClient();
- const { data: created, error } = await db
- .from("group_tour_cash_ledger")
- .insert({
- store_id: data.store_id,
- tour_id: data.tour_id,
- entry_type: data.entry_type,
- category: data.category,
- description: data.description.trim(),
- amount_cents: data.amount_cents,
- payment_method: data.payment_method,
- receipt_url: data.receipt_url || null,
- registered_by_profile_id: identity.id,
- occurred_at: data.occurred_at || new Date().toISOString(),
- })
- .select()
- .single();
+ const { data: result, error } = await db.rpc("record_group_tour_cash_entry", {
+   p_store_id: data.store_id,
+   p_tour_id: data.tour_id,
+   p_entry_type: data.entry_type,
+   p_category: data.category,
+   p_description: data.description.trim(),
+   p_amount_cents: data.amount_cents,
+   p_payment_method: data.payment_method,
+   p_receipt_url: data.receipt_url || null,
+   p_occurred_at: data.occurred_at || null,
+   p_sync_with_central_cash: data.sync_with_central_cash,
+   p_idempotency_key: data.idempotency_key,
+   p_actor_id: identity.id,
+   p_actor_role: identity.role || "authenticated_user",
+ });
 
- if (error) throw error;
-
- // ── Conciliação Transacional com o Caixa Central da Loja ──
- if (data.sync_with_central_cash) {
-   try {
-     const { data: openRegister } = await db
-       .from("cash_registers")
-       .select("id")
-       .eq("store_id", data.store_id)
-       .eq("status", "open")
-       .order("opened_at", { ascending: false })
-       .limit(1)
-       .maybeSingle();
-
-     if (openRegister?.id) {
-       // Se foi saída da excursão com sync (ex: adiantamento de float retirado do caixa geral), gera sangria no caixa central
-       // Se foi devolução de sobra (inflow na excursão), gera reforço no caixa central
-       const centralEntryType = data.entry_type === "inflow" ? "cash_in" : "cash_out";
-       await db.from("cash_register_entries").insert({
-         cash_register_id: openRegister.id,
-         amount_cents: data.amount_cents,
-         entry_type: centralEntryType,
-         notes: `[Conciliação Excursão] ${data.description.trim()} · Ref: #${data.tour_id.slice(0, 8)}`,
-       });
-     }
-   } catch (syncErr) {
-     console.warn("[group-tour-cash] Falha silenciosa ao sincronizar com caixa central:", syncErr);
-   }
- }
-
- return created;
+ if (error) throw new Error(`Não foi possível registrar o caixa da excursão: ${error.message}`);
+ const entry = (result as { entry?: TourCashEntryItem } | null)?.entry;
+ if (!entry) throw new Error("O caixa não retornou o lançamento persistido.");
+ return entry;
  });
 
 export const deleteTourCashEntry = createServerFn({ method: "POST" })
- .validator(z.object({ store_id: z.string().uuid(), entry_id: z.string().uuid() }))
+ .validator(z.object({ store_id: z.string().uuid(), entry_id: z.string().uuid(), reason: z.string().optional(), idempotency_key: z.string().uuid() }))
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
  assertStoreAccess(identity);
@@ -126,14 +103,17 @@ export const deleteTourCashEntry = createServerFn({ method: "POST" })
  }
 
  const db = getServerClient();
- const { error } = await db
- .from("group_tour_cash_ledger")
- .delete()
- .eq("id", data.entry_id)
- .eq("store_id", data.store_id);
+ const { data: result, error } = await db.rpc("reverse_group_tour_cash_entry", {
+   p_store_id: data.store_id,
+   p_entry_id: data.entry_id,
+   p_reason: data.reason || "Estorno solicitado pelo operador",
+   p_idempotency_key: data.idempotency_key,
+   p_actor_id: identity.id,
+   p_actor_role: identity.role || "authenticated_user",
+ });
 
- if (error) throw error;
- return { success: true };
+ if (error) throw new Error(`Não foi possível estornar o lançamento: ${error.message}`);
+ return result as { success: boolean; replayed?: boolean; entry?: TourCashEntryItem };
  });
 
 export const getTourCashSummary = createServerFn({ method: "GET" })

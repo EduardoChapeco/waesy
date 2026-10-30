@@ -758,7 +758,7 @@ export function EditorialShowcaseView({
               entityId={classified.id}
               entityType="classified"
               title={classified.title}
-              className="size-9"
+              className="size-11 min-h-11"
             />
           )}
         </div>
@@ -795,7 +795,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={handleEditClick}
-                className="h-8 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
+                className="h-11 min-h-11 sm:h-9 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
               >
                 <Edit3 className="size-3.5" />
                 <span>Editar Anúncio</span>
@@ -807,7 +807,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={onOpenCompanionCard}
-                className="h-8 gap-2 rounded-lg border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer"
+                className="h-11 min-h-11 sm:h-9 gap-2 rounded-lg border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer"
                 title="Guia Digital WhatsApp"
               >
                 <Smartphone className="size-3.5" />
@@ -820,7 +820,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsPromoFlyerOpen(true)}
-                className="h-8 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
+                className="h-11 min-h-11 sm:h-9 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
                 title="Gerar Flyer 9:16"
               >
                 <Star className="size-3.5" />
@@ -832,7 +832,7 @@ export function EditorialShowcaseView({
               variant="ghost"
               size="sm"
               onClick={handleShare}
-              className="h-8 gap-2 rounded-lg text-muted-foreground hover:text-foreground font-semibold text-xs cursor-pointer"
+              className="h-11 min-h-11 sm:h-9 gap-2 rounded-lg text-muted-foreground hover:text-foreground font-semibold text-xs cursor-pointer"
             >
               <Share2 className="size-3.5" />
               <span>Compartilhar</span>
@@ -842,7 +842,7 @@ export function EditorialShowcaseView({
                 entityId={classified.id}
                 entityType="classified"
                 title={classified.title}
-                className="size-8"
+                className="size-11 min-h-11"
               />
             )}
           </div>
@@ -855,11 +855,11 @@ export function EditorialShowcaseView({
             {/* ── Galeria Editorial Proporcional (Hero Natural 16:10 + Miniaturas) ── */}
             {images.length > 0 && (
               <div className="w-full space-y-2">
-                <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] rounded-none sm:rounded-lg overflow-hidden bg-muted/30 border-0 sm:border sm:border-border/40 group">
+                <div className="relative w-full aspect-banner-classic sm:aspect-post-card rounded-none sm:rounded-lg overflow-hidden bg-muted/30 border-0 sm:border sm:border-border/40 group">
                   <img role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     src={images[activeImageIndex] || images[0]}
                     alt={classified.title}
-                    className="size-full object-cover object-center cursor-pointer group-hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="size-full object-cover object-center cursor-pointer group-hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
                   />
                   <div className="absolute top-3 right-3 flex items-center gap-2">
@@ -879,6 +879,7 @@ export function EditorialShowcaseView({
 
                 {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal (Início 100% visível na margem esquerda) */}
                 {images.length > 1 && (
+                  /* design-lint-ignore DL-30 reason:"Trilho horizontal de miniaturas da galeria de fotos com overflow nativo" expiry:"2027-12-31" */
                   <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 sm:px-0 py-2 w-full">
                     {images.slice(0, images.length > 10 ? 9 : 10).map((img, idx) => {
                       const isActive = activeImageIndex === idx;
@@ -890,7 +891,7 @@ export function EditorialShowcaseView({
                           className={cn(
                             "relative aspect-square size-14 sm:size-16 rounded-lg overflow-hidden border bg-muted shrink-0 group cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                             isActive
-                              ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
+                              ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-105"
                               : "border-border/50 hover:border-primary/50 opacity-80 hover:opacity-100"
                           )}
                           title={`Ver imagem ${idx + 1}`}
@@ -1005,7 +1006,7 @@ export function EditorialShowcaseView({
 
           <div className="flex items-center gap-2 shrink-0">
             {storeProfileUrl ? (
-              <Button asChild size="sm" variant="outline" className="h-8 px-3 rounded-lg text-xs font-bold border-border/80 hover:bg-background">
+              <Button asChild size="sm" variant="outline" className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold border-border/80 hover:bg-background">
                 <Link to={storeProfileUrl}>
                   <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
                   <ChevronRight className="size-3 ml-1" />
@@ -1046,6 +1047,7 @@ export function EditorialShowcaseView({
 
         {/* ── Abas Canônicas em Linha Única Horizontal Contínua (Invariante B.39) ── */}
         <div className="border-t border-border/40 pt-1 px-4 sm:px-0">
+          {/* design-lint-ignore DL-30 reason:"Barra horizontal de abas canonicas em linha unica com overflow nativo" expiry:"2027-12-31" */}
           <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto no-scrollbar gap-1 pb-px w-full">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
@@ -1101,8 +1103,8 @@ export function EditorialShowcaseView({
                               playsInline
                               preload="metadata"
                             />
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                              <div className="size-9 rounded-lg bg-card/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center">
+                              <div className="size-9 rounded-lg bg-card/20 backdrop-blur-md border border-white/40 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <Play className="size-4 fill-white text-foreground ml-1" />
                               </div>
                             </div>
@@ -1124,7 +1126,7 @@ export function EditorialShowcaseView({
                               </span>
                             )}
                             <div className="absolute inset-0 bg-foreground/15 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <Maximize2 className="size-4 text-foreground drop-shadow-md" />
+                              <Maximize2 className="size-4 text-foreground" />
                             </div>
                           </div>
                         )}
@@ -1464,7 +1466,7 @@ export function EditorialShowcaseView({
           {activeTab === "itinerary" && (
             <div className="pt-4 space-y-4">
               {itineraryDays.length > 0 ? (
-                <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-[2px] before:bg-border/80">
+                <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-border/80">
                     {itineraryDays.map((item: any, idx: number) => (
                     <div key={idx} className="relative space-y-3">
                       <div className="absolute -left-7 top-0.5 size-7 rounded-lg bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground">
@@ -2542,7 +2544,7 @@ export function EditorialShowcaseView({
             </div>
 
             {storeProfileUrl && (
-              <Button asChild size="sm" variant="outline" className="h-8 px-3 rounded-lg text-xs font-bold border-border/80 hover:bg-background shrink-0">
+              <Button asChild size="sm" variant="outline" className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold border-border/80 hover:bg-background shrink-0">
                 <Link to={storeProfileUrl}>
                   <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
                   <ChevronRight className="size-3 ml-1" />
@@ -2558,7 +2560,7 @@ export function EditorialShowcaseView({
       </div>
 
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
-      <div className={cn(isForcedMobile ? "hidden" : "md:hidden", "fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]")}>
+      <div className={cn(isForcedMobile ? "hidden" : "md:hidden", "fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-3 pb-safe")}>
         <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2 sm:py-3 flex items-center justify-between gap-3">
           {/* Lado Esquerdo: Valor Parcelado / Total Limpo (Sem cortes, clicável para abrir opções) */}
           <button
@@ -2602,7 +2604,7 @@ export function EditorialShowcaseView({
                       {formatMoney(priceCents)}
                     </span>
                   )}
-                  <ChevronUp className="size-3.5 text-muted-foreground shrink-0 group-hover:translate-y-[-1px] transition-transform" />
+                  <ChevronUp className="size-3.5 text-muted-foreground shrink-0 group-hover:-translate-y-0.5 transition-transform" />
                 </div>
                 <div className="flex items-center gap-2 text-xs sm:text-xs text-muted-foreground flex-wrap gap-1">
                   {maxInstallments > 1 ? (
@@ -2674,7 +2676,7 @@ export function EditorialShowcaseView({
               <button
                 type="button"
                 onClick={() => setFullscreenImage(null)}
-                className="size-9 rounded-lg bg-foreground/70 hover:bg-foreground/90 text-foreground flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="size-11 rounded-lg bg-foreground/70 hover:bg-foreground/90 text-foreground flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Fechar (Esc)"
                 aria-label="Fechar ampliação"
               >
@@ -2683,7 +2685,7 @@ export function EditorialShowcaseView({
             </div>
 
             {/* Imagem Principal Centralizada */}
-            <div className="relative w-full h-[70vh] sm:h-[80vh] flex items-center justify-center p-4">
+            <div className="relative w-full flex-1 min-h-0 flex items-center justify-center p-4">
               <img
                 src={fullscreenImage}
                 alt={`Foto ${activeImageIndex + 1}`}
@@ -2863,7 +2865,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     handleWhatsAppDirect();
                   }}
-                  className="w-full min-h-12 p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full min-h-12 p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-between text-left transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-emerald-500 text-foreground flex items-center justify-center shrink-0">
@@ -2882,7 +2884,7 @@ export function EditorialShowcaseView({
               <button
                 type="button"
                 onClick={() => setShowChatInput(!showChatInput)}
-                className="w-full min-h-12 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 border border-border/50 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full min-h-12 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 border border-border/50 flex items-center justify-between text-left transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-center gap-3">
                   <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -2909,7 +2911,7 @@ export function EditorialShowcaseView({
                     type="button"
                     onClick={handleSendAppMessage}
                     disabled={isSendingMessage || !contactMessage.trim()}
-                    className="w-full h-10 rounded-lg text-xs font-bold gap-2"
+                    className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2"
                   >
                     {isSendingMessage ? "Enviando..." : "Enviar Mensagem pelo Chat"}
                   </Button>
@@ -2925,7 +2927,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     setIsPixPaymentModalOpen(true);
                   }}
-                  className="w-full min-h-12 p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full min-h-12 p-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-between text-left transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-emerald-600 text-foreground flex items-center justify-center shrink-0">
@@ -2947,7 +2949,7 @@ export function EditorialShowcaseView({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsContactModalOpen(false)}
-                  className="w-full min-h-12 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/25 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full min-h-12 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/25 flex items-center justify-between text-left transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-blue-600 text-foreground flex items-center justify-center shrink-0">
@@ -2970,7 +2972,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     setIsBookingDossierOpen(true);
                   }}
-                  className="w-full min-h-12 p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full min-h-12 p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-background/20 text-background flex items-center justify-center shrink-0">
@@ -2990,7 +2992,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     onOpenProposalModal();
                   }}
-                  className="w-full min-h-12 p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-[0.99] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full min-h-12 p-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-lg bg-background/20 text-background flex items-center justify-center shrink-0">
@@ -3087,7 +3089,7 @@ export function EditorialShowcaseView({
                   setIsPixPaymentModalOpen(false);
                   handleWhatsAppDirect();
                 }}
-                className="w-full h-10 rounded-lg border-emerald-500/30 text-emerald-600 font-semibold text-xs gap-2"
+                className="w-full h-11 min-h-11 rounded-lg border-emerald-500/30 text-emerald-600 font-semibold text-xs gap-2"
               >
                 <MessageCircle className="size-4" />
                 <span>Enviar Comprovante pelo WhatsApp</span>

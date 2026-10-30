@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   ShareNetwork,
@@ -45,19 +45,32 @@ export function SupermarketProductDetailModal({
   onAddToCart,
   isMember = false,
 }: SupermarketProductDetailModalProps) {
-  if (!product) return null;
-
   const [quantity, setQuantity] = useState(1);
   const [unitMode, setUnitMode] = useState<"un" | "kg">(
-    product.freshFoodSpecs?.pricing_unit === "kg" ? "kg" : "un",
+    product?.freshFoodSpecs?.pricing_unit === "kg" ? "kg" : "un",
   );
   const [ripeness, setRipeness] = useState<"menos_maduro" | "maduro" | "mais_maduro">("maduro");
   const [selectedPrep, setSelectedPrep] = useState<string>(
-    product.freshFoodSpecs?.prep_options?.[0] || "",
+    product?.freshFoodSpecs?.prep_options?.[0] || "",
   );
   const [instructions, setInstructions] = useState("");
   const [isEditingInstructions, setIsEditingInstructions] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const productPricingUnit = product?.freshFoodSpecs?.pricing_unit;
+  const productDefaultPrep = product?.freshFoodSpecs?.prep_options?.[0] || "";
+
+  useEffect(() => {
+    if (!product?.id) return;
+    setQuantity(1);
+    setUnitMode(productPricingUnit === "kg" ? "kg" : "un");
+    setRipeness("maduro");
+    setSelectedPrep(productDefaultPrep);
+    setInstructions("");
+    setIsEditingInstructions(false);
+    setIsFavorite(false);
+  }, [product?.id, productDefaultPrep, productPricingUnit]);
+
+  if (!product) return null;
 
   // Preço efetivo
   const effectivePriceCents =

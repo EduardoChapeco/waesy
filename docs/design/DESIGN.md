@@ -30,7 +30,7 @@ O que o Waesy NUNCA deve parecer:
 **Regra Suprema:** A interface deve comunicar clareza, ordem e contexto antes mesmo de o usuário ler o conteúdo textual.
 
 ### C.1.1 Doutrina Apple HIG, Squircles Grandes e Anti-Truncate
-1. **Squircles Apple HIG com Curvatura Contínua:** Os containers de cards principais (`SquircleCard`, `.squircle-card`, `.squircle-card-lg`) utilizam raio generoso contínuo (`rounded-2xl` 16px e `rounded-3xl` 24px) com borda discreta de 1px (`border-border/70`), eliminando arestas duras e sensação brutalista.
+1. **Squircles Apple HIG com Curvatura Contínua:** Os containers de cards principais (`SquircleCard`, `.squircle-card`, `.squircle-card-lg`) utilizam raio generoso contínuo (`rounded-2xl` 16px e `rounded-3xl` 24px), sem borda decorativa. A separação nasce de superfície, contraste tonal e espaço.
 2. **Anti-Truncate Intelligence:** Proibido o uso de `truncate` ou reticências em títulos, preços, condições comerciais ou parâmetros técnicos. O container acomoda o texto integralmente com `break-words text-wrap: balance/pretty whitespace-normal leading-tight`.
 3. **Casca Workstation Desktop com Card Imersivo Elevado (>=840px):** A barra lateral ultrafina integra-se ao fundo da janela (Level 0), enquanto a área central de trabalho é elevada como um card contínuo (Level 1) com cantos suaves e padding generoso, unificando tanto as vitrines públicas quanto os workspaces corporativos.
 4. **Mobile Native App (<600px):** Ergonomia tátil com alvos de toque >= 44x44px (`h-11 min-h-11`), safe area superior e inferior, sheets em 100dvh e ações primárias ancoradas no polegar.
@@ -123,8 +123,10 @@ O sistema de componentes é estritamente particionado em doze camadas desacoplad
 | Variável CSS | Papel Semântico | Descrição |
 | --- | --- | --- |
 | `--border-subtle` | Divisórias internas, linhas de grade em tabelas | Linha ultra-discreta de 1px |
-| `--border-default` | Borda padrão de cards, containers e cabeçalhos | Borda nítida de 1px |
+| `--border-default` | Divisórias estruturais e estados funcionais | Linha nítida de 1px quando necessária |
 | `--border-strong` | Borda de inputs ativos e componentes em foco | Contorno visível de alta percepção |
+
+**Regra de superfície limpa:** `--border-subtle` e `--border-default` não são aplicados por padrão em cards, painéis, botões, dialogs ou sheets. Permanecem reservados a divisórias de dados, inputs, tabelas, estados de erro e foco funcional.
 
 ### 4. Acentos e Feedback
 | Variável CSS | Função | Descrição |
@@ -132,8 +134,6 @@ O sistema de componentes é estritamente particionado em doze camadas desacoplad
 | `--accent` | Acento institucional do ecossistema | Azul intermediário canônico Waesy (`#0066FF`), dinamicamente configurável no Admin Master |
 | `--accent-hover` | Hover de botões de destaque | Azul intermediário enriquecido (`#0052CC`) |
 | `--accent-soft` | Fundo sutil de tags, badges e seleção | Fundo translúcido com 10% de opacidade (`rgba(0, 102, 255, 0.10)`) |
-| `.bg-waesy-gradient-blue` | Gradiente institucional de destaque | Transição suave de base azul profunda para azul intermediário com realce celeste |
-| `.texture-noise` | Textura tátil de micro-granulado | SVG fractal noise a 5% que elimina banding e confere acabamento analógico refinado |
 | `--success` | Sucesso, pago, finalizado, disponível | Verde neutro operacional (`#16A34A`) |
 | `--warning` | Alerta, pendente, atenção requerida | Âmbar neutro operacional (`#D97706`) |
 | `--danger` | Crítico, recusado, erro, exclusão | Vermelho neutro operacional (`#DC2626`) |
@@ -173,7 +173,7 @@ Proibido o uso de valores ímpares arbitrários (DL-03).
 Sombras são restritas a camadas contextuais e flutuantes. Em conformidade com o princípio Silencioso, a hierarquia é produzida por superfície, borda e espaçamento:
 
 - **Level 0 (Canvas):** Fundo mestre da aplicação (`--canvas`), sombra nenhuma.
-- **Level 1 (Surface):** Cards, blocos de dados e seções (`--surface` com contorno de 1px `--border-default`), sombra nenhuma.
+- **Level 1 (Surface):** Cards, blocos de dados e seções (`--surface` sem contorno decorativo), sombra nenhuma.
 - **Level 2 (Raised):** Painéis recolhíveis, master panel elevado com borda contrastante, sombra imperceptível de 1px.
 - **Level 3 (Popover / Dropdown):** Menus de contexto, autocompletes, tooltips (`box-shadow: 0 4px 12px rgba(0,0,0,0.06)`).
 - **Level 4 (Modal / Sheet):** Diálogos centrais e Bottom Sheets móveis sobre backdrop fosco (`box-shadow: 0 16px 40px rgba(0,0,0,0.12)`).
@@ -319,7 +319,7 @@ O ecossistema da Página Inicial (`_store.index.tsx`) e o módulo de personaliza
 
 ### 2. `IFoodSquareCategoryButton` (Botão Quadrado 1:1 de Categorias)
 - **Papel:** Navegação visual por nichos, atalhos de delivery e categorias comerciais.
-- **Geometria:** Quadrado perfeito `1:1` (`aspect-square`), com dimensões mínimas de 80x80px a 96x96px (`w-20 sm:w-24`) e cantos arredondados sem bordas duras (`rounded-lg bg-card border border-border/60`).
+- **Geometria:** Quadrado perfeito `1:1` (`aspect-square`), com dimensões mínimas de 80x80px a 96x96px (`w-20 sm:w-24`) e cantos arredondados sem bordas duras (`rounded-lg bg-card`).
 - **Comportamento Mídia Pura:** Quando `showText` for falso, a imagem preenche 100% da área do card (`object-cover size-full`). Quando verdadeiro, centraliza a mídia (`size-12 object-contain`) com rótulo conciso de 1 linha (`line-clamp-1 text-xs font-semibold`).
 
 ### 3. `MetamorphicBannerSlider` (Carrossel Anti-Jank com Seletor de Aspect Ratio)
@@ -379,7 +379,7 @@ O ecossistema Waesy rejeita o paradigma clássico de "site responsivo fluido" qu
 ### 1. A Anatomia do Squircle Generoso
 - A assinatura geométrica soberana da plataforma é o **Squircle com Curvatura Contínua Apple HIG** (`squircle-card`, `rounded-3xl` / `rounded-2xl` / `rounded-card`).
 - Em cartões de vitrine, fichas técnicas, blocos de produtos e destaques, os cantos arredondados contidos eliminam as quinas duras de cards genéricos, oferecendo sensação tátil agradável e moderna.
-- Elevação flat pura: proibidas sombras decorativas difusas em superfícies de aplicação; o contraste e a delimitação decorrem de bordas sutis (`border border-border/60 hover:border-foreground/30`) e background sólido semitransparente.
+- Elevação flat pura: proibidas sombras decorativas difusas e bordas decorativas em superfícies de aplicação; o contraste decorre de background sólido tokenizado, espaçamento, raio e estados de foco.
 
 ### 2. Inteligência Tipográfica Anti-Truncate (Zero Informação Cortada)
 - É terminantemente proibido o uso preguiçoso da classe CSS `truncate` ou reticências silenciosas (`...`) para mascarar títulos de anúncios, preços, condições de parcelamento, badges operacionais ou parâmetros chave de pacotes.

@@ -5,6 +5,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { createHash, randomBytes } from "crypto";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertOwnerAccess, assertManagerAccess } from "@/lib/server-access";
 
@@ -54,7 +55,9 @@ export const getStorePrivacySettings = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const { data: store, error } = await supabase
       .from("stores")
-      .select("id, name, slug, is_hidden_from_directory, access_type, access_password_hash, marketplace_commission_enabled, only_catalog_mode")
+      .select(
+        "id, name, slug, is_hidden_from_directory, access_type, access_password_hash, marketplace_commission_enabled, only_catalog_mode",
+      )
       .eq("id", targetStoreId)
       .single();
 
@@ -94,10 +97,14 @@ export const updateStorePrivacySettings = createServerFn({ method: "POST" })
       updated_at: new Date().toISOString(),
     };
 
-    // Se senha fornecida, armazena hash base64 com salt
-    if (data.accessType === "password_protected" && data.accessPassword && data.accessPassword.trim()) {
-      const salted = `waesy_priv:${data.storeId}:${data.accessPassword.trim()}`;
-      payload.access_password_hash = Buffer.from(salted).toString("base64");
+    // Se senha fornecida, armazena hash criptográfico SHA-256 com salt
+    if (
+      data.accessType === "password_protected" &&
+      data.accessPassword &&
+      data.accessPassword.trim()
+    ) {
+      const salted = `waesy_priv_v2:${data.storeId}:${data.accessPassword.trim()}`;
+      payload.access_password_hash = createHash("sha256").update(salted).digest("hex");
     } else if (data.accessType === "public") {
       payload.access_password_hash = null;
     }
@@ -136,14 +143,15 @@ export const verifyStoreAccessPassword = createServerFn({ method: "POST" })
     z.object({
       storeSlugOrId: z.string(),
       password: z.string().min(1, "Digite a senha de acesso"),
-    })
+    }),
   )
   .handler(async ({ data: { storeSlugOrId, password } }) => {
     const supabase = getServerClient();
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      storeSlugOrId
-    );
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        storeSlugOrId,
+      );
 
     let query = supabase.from("stores").select("id, name, slug, access_type, access_password_hash");
     if (isUuid) {
@@ -164,14 +172,34 @@ export const verifyStoreAccessPassword = createServerFn({ method: "POST" })
     }
 
     const expectedHash = store.access_password_hash;
-    const providedHash = Buffer.from(`waesy_priv:${store.id}:${password.trim()}`).toString("base64");
+    const cleanPassword = password.trim();
 
-    if (providedHash !== expectedHash) {
+    // Validação compatível: SHA-256 canônico com fallback defensivo para legado base64
+    const sha256Hash = createHash("sha256")
+      .update(`waesy_priv_v2:${store.id}:${cleanPassword}`)
+      .digest("hex");
+    const legacyHash = Buffer.from(`waesy_priv:${store.id}:${cleanPassword}`).toString("base64");
+
+    const isValid = expectedHash === sha256Hash || expectedHash === legacyHash;
+
+    if (!isValid) {
       throw new Error("Senha incorreta. Solicite a senha de acesso diretamente ao lojista.");
     }
 
-    // Token seguro de desbloqueio temporário (válido na sessão)
-    const unlockToken = Buffer.from(`unlocked:${store.id}:${Date.now()}`).toString("base64");
+    // Se a senha foi validada pelo hash legado, migra transparentemente para SHA-256
+    if (expectedHash === legacyHash) {
+      try {
+        await supabase
+          .from("stores")
+          .update({ access_password_hash: sha256Hash })
+          .eq("id", store.id);
+      } catch {
+        // Ignora erro não bloqueante de migração de hash legado
+      }
+    }
+
+    // Token seguro de desbloqueio temporário (criptograficamente aleatório)
+    const unlockToken = randomBytes(24).toString("hex");
 
     return {
       authorized: true,

@@ -906,7 +906,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     variant="ghost"
                     size="sm"
                     onClick={() => setSelectedProductIds([])}
-                    className="text-xs h-7 px-2 text-muted-foreground hover:text-foreground"
+                    className="text-xs h-11 min-h-11 sm:h-8 px-2 text-muted-foreground hover:text-foreground"
                   >
                     Desmarcar todos
                   </Button>
@@ -1135,7 +1135,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     disabled={isProcessingBatch}
                     onClick={handleBatchApproveProducts}
-                    className="h-7 px-3 rounded-lg text-xs font-normal"
+                    className="h-11 min-h-11 sm:h-8 px-3 rounded-lg text-xs font-normal"
                   >
                     Aprovar
                   </Button>
@@ -1144,7 +1144,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     disabled={isProcessingBatch}
                     onClick={handleBatchRejectProducts}
-                    className="h-7 px-3 rounded-lg text-xs font-normal"
+                    className="h-11 min-h-11 sm:h-8 px-3 rounded-lg text-xs font-normal"
                   >
                     Rejeitar
                   </Button>
@@ -1153,7 +1153,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     disabled={isProcessingBatch}
                     onClick={handleBatchDeleteProducts}
-                    className="h-7 px-3 rounded-lg text-xs font-normal text-destructive hover:bg-destructive/10"
+                    className="h-11 min-h-11 sm:h-8 px-3 rounded-lg text-xs font-normal text-destructive hover:bg-destructive/10"
                   >
                     Excluir
                   </Button>
@@ -1255,17 +1255,17 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/20 border-b border-border/40">
-                    <TableHead className="w-[40px] text-xs font-normal text-muted-foreground">
+                    <TableHead className="w-10 text-xs font-normal text-muted-foreground">
                       <Checkbox
                         checked={minedProducts.length > 0 && selectedProductIds.length === minedProducts.length}
                         onCheckedChange={handleToggleSelectAllProducts}
                         className="size-4"
                       />
                     </TableHead>
-                    <TableHead className="w-[50px] text-xs font-normal text-muted-foreground"></TableHead>
+                    <TableHead className="w-12 text-xs font-normal text-muted-foreground"></TableHead>
                     <TableHead className="text-xs font-normal text-muted-foreground">Produto</TableHead>
-                    <TableHead className="w-[130px] text-xs font-normal text-muted-foreground">Origem</TableHead>
-                    <TableHead className="w-[110px] text-xs font-normal text-muted-foreground">Preço</TableHead>
+                    <TableHead className="w-32 text-xs font-normal text-muted-foreground">Origem</TableHead>
+                    <TableHead className="w-28 text-xs font-normal text-muted-foreground">Preço</TableHead>
                     <TableHead className="w-25 text-xs font-normal text-muted-foreground">Status</TableHead>
                     <TableHead className="w-52 text-right text-xs font-normal text-muted-foreground">Ações</TableHead>
                   </TableRow>
@@ -1289,7 +1289,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       const isChecked = selectedProductIds.includes(p.id);
                       return (
                       <TableRow key={p.id} className="border-b border-border/30 hover:bg-muted/10">
-                        <TableCell className="w-[40px] p-2 pl-3">
+                        <TableCell className="w-10 p-2 pl-3">
                           <Checkbox
                             checked={isChecked}
                             onCheckedChange={() => handleToggleSelectProduct(p.id)}
@@ -1308,7 +1308,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                         <TableCell className="font-medium text-xs text-foreground truncate max-w-65">
                           {p.title}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground truncate max-w-[130px]">
+                        <TableCell className="text-xs text-muted-foreground truncate max-w-32">
                           {p.source_domain}
                         </TableCell>
                         <TableCell className="text-xs font-semibold text-foreground">
@@ -1341,7 +1341,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                               variant="outline"
                               size="sm"
                               onClick={() => handleOpenImportProduct(p)}
-                              className="h-7 px-2 rounded-lg text-xs font-medium gap-1 cursor-pointer"
+                              className="h-11 min-h-11 sm:h-8 px-2 rounded-lg text-xs font-medium gap-1 cursor-pointer"
                               title="Importar para Loja"
                             >
                               <ShoppingBag className="w-3 h-3" />
@@ -1462,9 +1462,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   <TableHead className="text-xs font-normal text-muted-foreground">Domínio</TableHead>
                   <TableHead className="w-45 text-xs font-normal text-muted-foreground">Motivo</TableHead>
                   <TableHead className="w-25 text-xs font-normal text-muted-foreground">Status HTTP</TableHead>
-                  <TableHead className="w-[90px] text-xs font-normal text-muted-foreground">Falhas</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Falhas</TableHead>
                   <TableHead className="w-40 text-xs font-normal text-muted-foreground">Repouso Até</TableHead>
-                  <TableHead className="w-[110px] text-right text-xs font-normal text-muted-foreground">Ação</TableHead>
+                  <TableHead className="w-28 text-right text-xs font-normal text-muted-foreground">Ação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1505,7 +1505,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                           size="sm"
                           onClick={() => handleResetCooldown(cd.domain)}
                           disabled={isResettingCooldown === cd.domain}
-                          className="h-7 px-2 rounded-lg text-xs font-normal gap-1 cursor-pointer"
+                          className="h-11 min-h-11 sm:h-8 px-2 rounded-lg text-xs font-normal gap-1 cursor-pointer"
                         >
                           {isResettingCooldown === cd.domain ? (
                             <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
@@ -1581,9 +1581,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <TableRow className="bg-muted/20 border-b border-border/40">
                   <TableHead className="w-35 text-xs font-normal text-muted-foreground">Domínio</TableHead>
                   <TableHead className="text-xs font-normal text-muted-foreground">URL</TableHead>
-                  <TableHead className="w-[90px] text-xs font-normal text-muted-foreground">Prioridade</TableHead>
-                  <TableHead className="w-[110px] text-xs font-normal text-muted-foreground">Status</TableHead>
-                  <TableHead className="w-[110px] text-right text-xs font-normal text-muted-foreground">Data</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Prioridade</TableHead>
+                  <TableHead className="w-28 text-xs font-normal text-muted-foreground">Status</TableHead>
+                  <TableHead className="w-28 text-right text-xs font-normal text-muted-foreground">Data</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1606,7 +1606,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                       <TableCell className="font-medium text-xs text-foreground truncate max-w-35">
                         {item.domain}
                       </TableCell>
-                      <TableCell className="text-xs truncate max-w-[340px]">
+                      <TableCell className="text-xs truncate max-w-xs">
                         <a
                           href={item.url}
                           target="_blank"
@@ -1710,7 +1710,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                   <TableHead className="w-40 text-xs font-normal text-muted-foreground">Localização</TableHead>
                   <TableHead className="w-25 text-xs font-normal text-muted-foreground">Qualidade</TableHead>
                   <TableHead className="w-30 text-xs font-normal text-muted-foreground">Ghost Tenant</TableHead>
-                  <TableHead className="w-[90px] text-right text-xs font-normal text-muted-foreground">Fonte</TableHead>
+                  <TableHead className="w-24 text-right text-xs font-normal text-muted-foreground">Fonte</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1913,7 +1913,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                           size="sm"
                           onClick={() => handleRunScraper("rss-fetcher", { targetUrl: feed.feed_url })}
                           disabled={Boolean(isRunningScraper)}
-                          className="h-7 px-2 rounded-lg text-xs font-normal"
+                          className="h-11 min-h-11 sm:h-8 px-2 rounded-lg text-xs font-normal"
                         >
                           Sincronizar
                         </Button>
@@ -1934,9 +1934,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                 <TableRow className="bg-muted/20 border-b border-border/40">
                   <TableHead className="w-35 text-xs font-normal text-muted-foreground">Minerador</TableHead>
                   <TableHead className="text-xs font-normal text-muted-foreground">Ação</TableHead>
-                  <TableHead className="w-[90px] text-xs font-normal text-muted-foreground">Afetados</TableHead>
-                  <TableHead className="w-[90px] text-xs font-normal text-muted-foreground">Duração</TableHead>
-                  <TableHead className="w-[130px] text-right text-xs font-normal text-muted-foreground">Data/Hora</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Afetados</TableHead>
+                  <TableHead className="w-24 text-xs font-normal text-muted-foreground">Duração</TableHead>
+                  <TableHead className="w-32 text-right text-xs font-normal text-muted-foreground">Data/Hora</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

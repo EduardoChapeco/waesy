@@ -84,7 +84,7 @@ export function PhotoStudioModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-[85vh] p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-2xl">
+      <DialogContent className="max-w-5xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-2xl">
         {/* Header Superior */}
         <DialogHeader className="h-14 px-6 border-b border-border/80 flex flex-row items-center justify-between flex-none bg-card select-none">
           <div className="flex items-center gap-3">
@@ -110,7 +110,7 @@ export function PhotoStudioModal({
               variant="outline"
               size="sm"
               onClick={resetAll}
-              className="h-9 px-3 rounded-lg text-xs font-semibold gap-1.5 cursor-pointer"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
             >
               <RotateCcw className="size-3.5" />
               <span>Redefinir</span>
@@ -120,7 +120,7 @@ export function PhotoStudioModal({
               type="button"
               size="sm"
               onClick={handleSave}
-              className="h-9 px-4 rounded-lg text-xs font-bold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
             >
               <Save className="size-3.5" />
               <span>Salvar Imagem</span>
@@ -131,7 +131,7 @@ export function PhotoStudioModal({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="size-9 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+              className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <X className="size-4" />
             </Button>
@@ -148,7 +148,7 @@ export function PhotoStudioModal({
                 type="button"
                 onClick={() => setActiveTab("adjust")}
                 className={cn(
-                  "py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5",
+                  "py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   activeTab === "adjust" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -159,7 +159,7 @@ export function PhotoStudioModal({
                 type="button"
                 onClick={() => setActiveTab("crop")}
                 className={cn(
-                  "py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5",
+                  "py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   activeTab === "crop" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -170,7 +170,7 @@ export function PhotoStudioModal({
                 type="button"
                 onClick={() => setActiveTab("ai")}
                 className={cn(
-                  "py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5",
+                  "py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   activeTab === "ai" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -281,7 +281,7 @@ export function PhotoStudioModal({
                       type="button"
                       onClick={() => setAdjustments((prev) => ({ ...prev, aspectRatio: ratio.id }))}
                       className={cn(
-                        "p-2.5 rounded-xl border text-xs font-semibold text-center transition-colors cursor-pointer",
+                        "p-3 rounded-xl border text-xs font-semibold text-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         adjustments.aspectRatio === ratio.id
                           ? "bg-primary/10 border-primary text-primary font-bold shadow-2xs"
                           : "bg-card border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -310,7 +310,7 @@ export function PhotoStudioModal({
                     variant="outline"
                     size="sm"
                     onClick={() => toast.info("Remoção de fundo processada via IA.")}
-                    className="h-9 mt-2 text-xs font-bold cursor-pointer"
+                    className="h-11 min-h-11 mt-2 text-xs font-bold cursor-pointer"
                   >
                     Executar Cut Out
                   </Button>
@@ -321,13 +321,13 @@ export function PhotoStudioModal({
 
           {/* Coluna 2: Canvas de Visualização Central */}
           <main className="flex-1 bg-zinc-950/90 flex items-center justify-center p-8 overflow-hidden relative">
-            <div className="max-w-2xl max-h-[70vh] flex items-center justify-center overflow-hidden rounded-2xl border border-border/40 shadow-2xl bg-zinc-900/50">
+            <div className="max-w-2xl max-h-modal flex items-center justify-center overflow-hidden rounded-2xl border border-border/40 shadow-2xl bg-zinc-900/50">
               {imageUrl ? (
                 <img
                   src={imageUrl}
                   alt="Imagem no Studio"
                   style={filterStyle}
-                  className="max-h-[65vh] w-auto object-contain transition-all duration-200"
+                  className="max-h-modal w-auto object-contain transition-colors duration-200"
                 />
               ) : (
                 <div className="p-16 text-center text-muted-foreground flex flex-col items-center gap-3">

@@ -177,7 +177,17 @@ export const saveIntegrationCredential = createServerFn({ method: "POST" })
 
  const isWhatsAppCloud = provider === "whatsapp_cloud_api";
  const isInfotravel = provider === "infotravel";
- const publicMetadata = isWhatsAppCloud
+ const publicKeysByProvider: Record<string, string[]> = {
+   meta_pixel: ["pixel_id", "page_id", "ad_account_id", "catalog_id"],
+   meta_ads: ["account_id", "account_name", "pixel_id", "page_id", "catalog_id"],
+   google_analytics: ["measurement_id"],
+   google_ads: ["conversion_id", "customer_id", "account_name"],
+   tiktok_pixel: ["pixel_id"],
+ };
+ const providerPublicKeys = publicKeysByProvider[provider] || [];
+ const publicMetadata = providerPublicKeys.length > 0
+   ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => providerPublicKeys.includes(key)))
+   : isWhatsAppCloud
    ? Object.fromEntries(
        Object.entries(tokenPayload).filter(([key]) => ["phone_number_id", "business_account_id", "waba_id"].includes(key)),
      )
@@ -186,7 +196,9 @@ export const saveIntegrationCredential = createServerFn({ method: "POST" })
          Object.entries(tokenPayload).filter(([key]) => ["base_url", "auth", "api_key_header", "search_hotels_path", "search_flights_path", "search_transfers_path", "search_activities_path", "import_booking_path", "create_booking_path", "run_periodic_sync_path", "test_connection_path"].includes(key)),
        )
      : {};
- const secretPayload = isWhatsAppCloud
+ const secretPayload = providerPublicKeys.length > 0
+   ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => !providerPublicKeys.includes(key)))
+   : isWhatsAppCloud
    ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => !Object.keys(publicMetadata).includes(key)))
    : isInfotravel
      ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => !Object.keys(publicMetadata).includes(key)))
@@ -198,9 +210,9 @@ export const saveIntegrationCredential = createServerFn({ method: "POST" })
   {
  store_id: identity.store_id,
  provider,
-   token_payload: isWhatsAppCloud || isInfotravel ? publicMetadata : tokenPayload,
-   public_metadata: isWhatsAppCloud || isInfotravel ? publicMetadata : {},
-   secret_payload_encrypted: isWhatsAppCloud || isInfotravel ? encryptSecret(JSON.stringify(secretPayload)) : null,
+   token_payload: publicMetadata,
+   public_metadata: publicMetadata,
+   secret_payload_encrypted: Object.keys(secretPayload).length > 0 ? encryptSecret(JSON.stringify(secretPayload)) : null,
  is_active: isActive,
  updated_at: new Date().toISOString(),
  },

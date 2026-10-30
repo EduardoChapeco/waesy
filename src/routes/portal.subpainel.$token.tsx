@@ -48,8 +48,8 @@ export const Route = createFileRoute("/portal/subpainel/$token")({
     try {
       const [subpanel, products, orders] = await Promise.all([
         getEventSubpanelByToken({ data: { token: params.token } }),
-        listSubpanelProducts({ data: { token: params.token } }).catch(() => []),
-        listSubpanelOrders({ data: { token: params.token } }).catch(() => []),
+        listSubpanelProducts({ data: { token: params.token } }),
+        listSubpanelOrders({ data: { token: params.token } }),
       ]);
       return { subpanel, products: products || [], initialOrders: orders || [] };
     } catch (err: any) {
@@ -71,34 +71,6 @@ interface QuickProduct {
   priceCents: number;
 }
 
-const DEFAULT_QUICK_PRODUCTS: Record<string, QuickProduct[]> = {
-  bar: [
-    { id: "b1", name: "Chopp Pilsen 500ml", priceCents: 1800 },
-    { id: "b2", name: "Chopp IPA 500ml", priceCents: 2200 },
-    { id: "b3", name: "Água Mineral 500ml", priceCents: 600 },
-    { id: "b4", name: "Refrigerante Lata", priceCents: 800 },
-    { id: "b5", name: "Energético Lata", priceCents: 1600 },
-    { id: "b6", name: "Dose de Destilado", priceCents: 2500 },
-  ],
-  foodtruck: [
-    { id: "f1", name: "Burger Artesanal", priceCents: 3500 },
-    { id: "f2", name: "Batata Frita Especial", priceCents: 2200 },
-    { id: "f3", name: "Pastel Gourmet", priceCents: 1600 },
-    { id: "f4", name: "Água / Refrigerante", priceCents: 800 },
-  ],
-  merchandise: [
-    { id: "m1", name: "Camiseta Oficial do Evento", priceCents: 8900 },
-    { id: "m2", name: "Copo Colecionável", priceCents: 1500 },
-    { id: "m3", name: "Boné Personalizado", priceCents: 5900 },
-    { id: "m4", name: "Tirante / Cordão", priceCents: 1200 },
-  ],
-  ticketing_box: [
-    { id: "t1", name: "Ingresso Portaria (Inteira)", priceCents: 12000 },
-    { id: "t2", name: "Ingresso Portaria (Meia)", priceCents: 6000 },
-    { id: "t3", name: "Acesso Área VIP", priceCents: 18000 },
-  ],
-};
-
 function EventSubpanelPortalPage() {
   const { subpanel, products: dbProducts, initialOrders, error } = Route.useLoaderData() as any;
   const { token } = Route.useParams();
@@ -114,7 +86,7 @@ function EventSubpanelPortalPage() {
   // Calculadora de Buffet a Quilo / Valor Avulso
   const [customLabel, setCustomLabel] = useState("");
   const [weightGrams, setWeightGrams] = useState("");
-  const [pricePerKgReais, setPricePerKgReais] = useState("69.90");
+  const [pricePerKgReais, setPricePerKgReais] = useState("");
   const [customValueReais, setCustomValueReais] = useState("");
 
   if (!subpanel || error) {
@@ -139,15 +111,11 @@ function EventSubpanelPortalPage() {
   const templateTipo = subpanel.template_tipo || "bar_simples";
   const allowCustomPrice = Boolean(subpanel.allow_custom_price || templateTipo === "buffet_kg");
 
-  // Catálogo dinâmico: usa produtos do banco se cadastrados, ou os defaults canônicos
-  const quickProducts: QuickProduct[] =
-    dbProducts && dbProducts.length > 0
-      ? dbProducts.map((p: any) => ({
-          id: p.id,
-          name: p.nome || p.name,
-          priceCents: p.price_cents,
-        }))
-      : DEFAULT_QUICK_PRODUCTS[panelType] || DEFAULT_QUICK_PRODUCTS.bar;
+  const quickProducts: QuickProduct[] = (dbProducts || []).map((p: any) => ({
+    id: p.id,
+    name: p.nome || p.name,
+    priceCents: p.price_cents,
+  }));
 
   const cartTotalCents = cart.reduce((acc, item) => acc + item.product.priceCents * item.qty, 0);
 
@@ -419,7 +387,11 @@ function EventSubpanelPortalPage() {
           )}
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {quickProducts.map((item) => (
+            {quickProducts.length === 0 ? (
+              <div className="col-span-full rounded-lg bg-muted/30 p-6 text-center text-xs text-muted-foreground">
+                Nenhum produto publicado para este subpainel.
+              </div>
+            ) : quickProducts.map((item) => (
               <button
                 key={item.id}
                 type="button"

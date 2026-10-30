@@ -9,6 +9,17 @@ import {
   type BillingLineItemDTO,
   type BillingStatementDTO,
 } from "@/types/billing-ledger";
+import {
+  MARKETPLACE_PLATFORM_FEE_RATE,
+  calculateMarketplaceOrderSplit,
+  calculateDelinquencyAutoDebit,
+  calculateMobilityBilateralSplit,
+  resolveEffectivePricing,
+  type PdvTapToPaySessionDTO,
+  type PricingOverridesDTO,
+  type EffectivePricingRulesDTO,
+  type MobilityBilateralSplitResult,
+} from "@/lib/monetization-engine";
 
 // ---------------------------------------------------------------------------
 // 1. REGISTRAR MICROTAXA POR PEDIDO (R$ 0,99 ATÔMICO)
@@ -507,4 +518,395 @@ export async function executeAtomicInvoiceLedgerBoost(params: {
     status: ledgerStatus,
   };
 }
+
+// ---------------------------------------------------------------------------
+// 7. REGISTRAR TAXA PADRÃO DE MARKETPLACE (5% SOBRE SUBTOTAL)
+// ---------------------------------------------------------------------------
+export const RecordMarketplacePlatformFeeSchema = z.object({
+  storeId: z.string().uuid("ID da loja inválido"),
+  orderId: z.string().min(1, "ID do pedido obrigatório"),
+  subtotalCents: z.number().int().positive("Subtotal deve ser positivo"),
+  feeRate: z.number().positive().default(MARKETPLACE_PLATFORM_FEE_RATE),
+  description: z.string().optional(),
+});
+
+export const recordMarketplacePlatformFee = createServerFn({ method: "POST" })
+  .validator(RecordMarketplacePlatformFeeSchema)
+  .handler(async ({ data }): Promise<BillingLineItemDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+
+    const feeCents = Math.round(data.subtotalCents * data.feeRate);
+    const now = new Date();
+
+    // Idempotência estrita: se a taxa da plataforma para este pedido já foi registrada, retorna
+    const { data: existingFee } = await supabase
+      .from("billing_line_items")
+      .select("*")
+      .eq("store_id", data.storeId)
+      .eq("origin_event_id", `MKT-FEE-${data.orderId}`)
+      .eq("fee_type", "MARKETPLACE_PLATFORM_FEE_5_PERCENT")
+      .maybeSingle();
+
+    if (existingFee) {
+      return {
+        id: existingFee.id,
+        invoiceId: existingFee.invoice_id,
+        storeId: existingFee.store_id,
+        originEventId: existingFee.origin_event_id,
+        description: existingFee.description,
+        amountCents: existingFee.amount_cents,
+        feeType: existingFee.fee_type as BillingFeeType,
+        createdAt: existingFee.created_at,
+      };
+    }
+
+    // Localizar ou criar fatura aberta
+    const periodStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      .toISOString()
+      .split("T")[0];
+
+    let { data: invoice } = await supabase
+      .from("billing_invoices")
+      .select("id, total_cents")
+      .eq("store_id", data.storeId)
+      .eq("status", "OPEN")
+      .gte("period_start", periodStart)
+      .lte("period_end", periodEnd)
+      .maybeSingle();
+
+    if (!invoice) {
+      const invoiceNumber = `FAT-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}-${data.storeId.slice(0, 4).toUpperCase()}`;
+      const { data: createdInvoice } = await supabase
+        .from("billing_invoices")
+        .insert({
+          store_id: data.storeId,
+          invoice_number: invoiceNumber,
+          period_start: periodStart,
+          period_end: periodEnd,
+          total_cents: 0,
+          status: "OPEN",
+        })
+        .select("id, total_cents")
+        .single();
+      invoice = createdInvoice;
+    }
+
+    const desc = data.description || `Taxa de Plataforma Marketplace (5%) - Pedido #${data.orderId.slice(0, 8)}`;
+    const { data: item, error: itemError } = await supabase
+      .from("billing_line_items")
+      .insert({
+        invoice_id: invoice?.id || null,
+        store_id: data.storeId,
+        origin_event_id: `MKT-FEE-${data.orderId}`,
+        description: desc,
+        amount_cents: feeCents,
+        fee_type: "MARKETPLACE_PLATFORM_FEE_5_PERCENT",
+        created_at: now.toISOString(),
+      })
+      .select("*")
+      .single();
+
+    if (itemError) {
+      throw new Error("Erro ao gravar taxa de marketplace: " + itemError.message);
+    }
+
+    return {
+      id: item.id,
+      invoiceId: item.invoice_id,
+      storeId: item.store_id,
+      originEventId: item.origin_event_id,
+      description: item.description,
+      amountCents: item.amount_cents,
+      feeType: item.fee_type as BillingFeeType,
+      createdAt: item.created_at,
+    };
+  });
+
+// ---------------------------------------------------------------------------
+// 8. MOTOR DE INADIMPLÊNCIA: AUTODÉBITO DE FATURAS VENCIDAS NO SPLIT
+// ---------------------------------------------------------------------------
+export const ExecuteDelinquencyAutoDebitSchema = z.object({
+  storeId: z.string().uuid("ID da loja inválido"),
+  orderId: z.string().min(1, "ID do pedido obrigatório"),
+  merchantNetCents: z.number().int().positive("Valor líquido do lojista deve ser positivo"),
+});
+
+export const executeDelinquencyAutoDebit = createServerFn({ method: "POST" })
+  .validator(ExecuteDelinquencyAutoDebitSchema)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const now = new Date();
+
+    // 1. Consultar faturas com débito aberto/vencido da loja
+    const { data: overdueInvoices } = await supabase
+      .from("billing_invoices")
+      .select("id, invoice_number, total_cents, status")
+      .eq("store_id", data.storeId)
+      .in("status", ["OVERDUE", "OPEN"])
+      .gt("total_cents", 0)
+      .order("period_start", { ascending: true });
+
+    const totalOverdueCents = (overdueInvoices || []).reduce(
+      (sum, inv) => sum + (inv.total_cents || 0),
+      0
+    );
+
+    const calc = calculateDelinquencyAutoDebit({
+      merchantNetCents: data.merchantNetCents,
+      overdueInvoicesTotalCents: totalOverdueCents,
+    });
+
+    if (calc.withheldCents <= 0) {
+      return {
+        storeId: data.storeId,
+        orderId: data.orderId,
+        withheldCents: 0,
+        releasedPayoutCents: data.merchantNetCents,
+        remainingDebtCents: 0,
+        settledInvoicesCount: 0,
+        status: "NO_DEBT",
+      };
+    }
+
+    // 2. Abater o valor retido nas faturas pendentes em ordem cronológica
+    let remainingToDeduct = calc.withheldCents;
+    let settledCount = 0;
+
+    for (const inv of overdueInvoices || []) {
+      if (remainingToDeduct <= 0) break;
+
+      const deduction = Math.min(remainingToDeduct, inv.total_cents);
+      const newTotal = inv.total_cents - deduction;
+      remainingToDeduct -= deduction;
+
+      await supabase
+        .from("billing_invoices")
+        .update({
+          total_cents: newTotal,
+          status: newTotal === 0 ? "PAID" : inv.status,
+          updated_at: now.toISOString(),
+        })
+        .eq("id", inv.id);
+
+      await supabase.from("billing_line_items").insert({
+        invoice_id: inv.id,
+        store_id: data.storeId,
+        origin_event_id: `AUTODEBIT-${data.orderId}`,
+        description: `Autodébito compensatório retido de venda Marketplace (#${data.orderId.slice(0, 8)})`,
+        amount_cents: -deduction, // Lançamento a crédito/abatimento
+        fee_type: "DELINQUENCY_AUTO_DEBIT",
+        created_at: now.toISOString(),
+      });
+
+      if (newTotal === 0) settledCount++;
+    }
+
+    return {
+      storeId: data.storeId,
+      orderId: data.orderId,
+      withheldCents: calc.withheldCents,
+      releasedPayoutCents: calc.releasedPayoutCents,
+      remainingDebtCents: calc.remainingDebtCents,
+      settledInvoicesCount: settledCount,
+      status: calc.fullySettled ? "FULLY_SETTLED" : "PARTIALLY_SETTLED",
+    };
+  });
+
+// ---------------------------------------------------------------------------
+// 9. TAP TO PAY PDV: CRIAÇÃO E SINCRONIZAÇÃO DE SESSÃO
+// ---------------------------------------------------------------------------
+export const CreatePdvTapSessionSchema = z.object({
+  storeId: z.string().uuid("ID da loja inválido"),
+  orderId: z.string().min(1, "ID do pedido obrigatório"),
+  amountCents: z.number().int().positive("Valor deve ser positivo"),
+  cashierTerminalId: z.string().min(1, "Terminal de caixa obrigatório"),
+});
+
+export const createPdvTapSession = createServerFn({ method: "POST" })
+  .validator(CreatePdvTapSessionSchema)
+  .handler(async ({ data }): Promise<PdvTapToPaySessionDTO> => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "seller", "master"], data.storeId);
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutos de validade
+
+    const sessionId = `TAP-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    const session: PdvTapToPaySessionDTO = {
+      sessionId,
+      storeId: data.storeId,
+      orderId: data.orderId,
+      amountCents: data.amountCents,
+      currency: "BRL",
+      status: "WAITING_TAP",
+      cashierTerminalId: data.cashierTerminalId,
+      createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+    };
+
+    return session;
+  });
+
+// ---------------------------------------------------------------------------
+// 10. MOBILIDADE WAESY GO: REGISTRO BILATERAL COM OPACIDADE DE TAXAS
+// ---------------------------------------------------------------------------
+export const RecordMobilityBilateralFeeSchema = z.object({
+  rideId: z.string().min(1, "ID da corrida obrigatório"),
+  passengerProfileId: z.string().uuid().optional(),
+  driverProfileId: z.string().uuid("ID do condutor obrigatório"),
+  fareCents: z.number().int().positive("Tarifa da corrida deve ser positiva"),
+  passengerFeeCents: z.number().int().default(99),
+  driverFeeCents: z.number().int().default(99),
+  driverGatewayRatePercent: z.number().default(0.0099),
+});
+
+export const recordMobilityBilateralPlatformFee = createServerFn({ method: "POST" })
+  .validator(RecordMobilityBilateralFeeSchema)
+  .handler(async ({ data }): Promise<MobilityBilateralSplitResult> => {
+    const supabase = getServerClient();
+    const now = new Date();
+
+    const split = calculateMobilityBilateralSplit({
+      fareCents: data.fareCents,
+      passengerFeeCents: data.passengerFeeCents,
+      driverFeeCents: data.driverFeeCents,
+      driverGatewayRatePercent: data.driverGatewayRatePercent,
+    });
+
+    // 1. Gravar lançamento contábil da taxa do passageiro (R$ 0,99)
+    try {
+      await supabase.from("financial_ledger_entries").insert({
+        transaction_id: `RIDE-PASSENGER-FEE-${data.rideId}`,
+        debit_account_id: data.passengerProfileId || data.driverProfileId,
+        credit_account_id: data.driverProfileId,
+        amount_cents: split.platformAudit.passengerFeeCents,
+        currency: "BRL",
+        entry_type: "PLATFORM_FEE",
+        status: "SETTLED",
+        description: `Taxa de serviço civil de mobilidade Waesy Go (#${data.rideId.slice(0, 8)})`,
+        metadata: {
+          rideId: data.rideId,
+          role: "passenger",
+          chargedCents: split.passengerView.totalChargedCents,
+        },
+        hash_chain: `RIDE_PASS_${data.rideId}_${now.getTime()}`,
+        created_at: now.toISOString(),
+      });
+    } catch {
+      // Ignora falha de gravação de extrato secundário para não bloquear a transação
+    }
+
+    // 2. Gravar lançamento contábil da taxa fixa do motorista (R$ 0,99)
+    try {
+      await supabase.from("financial_ledger_entries").insert({
+        transaction_id: `RIDE-DRIVER-FEE-${data.rideId}`,
+        debit_account_id: data.driverProfileId,
+        credit_account_id: data.driverProfileId,
+        amount_cents: split.platformAudit.driverFeeCents,
+        currency: "BRL",
+        entry_type: "PLATFORM_FEE",
+        status: "SETTLED",
+        description: `Taxa administrativa fixa de condutor Waesy Go (#${data.rideId.slice(0, 8)})`,
+        metadata: {
+          rideId: data.rideId,
+          role: "driver",
+          grossFareCents: split.driverView.grossFareCents,
+          netEarningsCents: split.driverView.netEarningsCents,
+        },
+        hash_chain: `RIDE_DRV_${data.rideId}_${now.getTime()}`,
+        created_at: now.toISOString(),
+      });
+    } catch {
+      // Ignora falha de gravação de extrato secundário para não bloquear a transação
+    }
+
+    return split;
+  });
+
+// ---------------------------------------------------------------------------
+// 11. PARAMETRIZAÇÃO & CUSTOMIZAÇÃO DE TAXAS POR LOJA OU CLIENTE
+// ---------------------------------------------------------------------------
+export const GetCustomPricingRulesSchema = z.object({
+  storeId: z.string().uuid("ID da loja obrigatório"),
+});
+
+export const getStoreCustomPricingRules = createServerFn({ method: "GET" })
+  .validator(GetCustomPricingRulesSchema)
+  .handler(async ({ data }): Promise<EffectivePricingRulesDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "finance", "master"], data.storeId);
+
+    const { data: store } = await supabase
+      .from("stores")
+      .select("settings")
+      .eq("id", data.storeId)
+      .maybeSingle();
+
+    const overrides = (store?.settings as any)?.pricing_overrides as PricingOverridesDTO | undefined;
+    return resolveEffectivePricing(overrides);
+  });
+
+export const SaveCustomPricingRulesSchema = z.object({
+  storeId: z.string().uuid("ID da loja obrigatório"),
+  marketplaceFeeRate: z.number().min(0).max(0.5).optional(),
+  mobilityPassengerFeeCents: z.number().int().min(0).optional(),
+  mobilityDriverFeeCents: z.number().int().min(0).optional(),
+  pdvPlatformFeeRate: z.number().min(0).max(0.2).optional(),
+  planDiscountPercent: z.number().min(0).max(100).optional(),
+  customAiTokensBonus: z.number().int().min(0).optional(),
+  isFeeExempt: z.boolean().optional(),
+  notes: z.string().optional(),
+});
+
+export const saveStoreCustomPricingRules = createServerFn({ method: "POST" })
+  .validator(SaveCustomPricingRulesSchema)
+  .handler(async ({ data }): Promise<EffectivePricingRulesDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    // Apenas Master ou Admin da Loja com perfil corporativo pode customizar taxas
+    assertStoreAccess(identity, ["admin", "owner", "master", "platform_admin"], data.storeId);
+
+    const { data: store } = await supabase
+      .from("stores")
+      .select("settings")
+      .eq("id", data.storeId)
+      .maybeSingle();
+
+    const currentSettings = (store?.settings || {}) as Record<string, any>;
+    const updatedOverrides: PricingOverridesDTO = {
+      entityType: "store",
+      entityId: data.storeId,
+      marketplaceFeeRate: data.marketplaceFeeRate,
+      mobilityPassengerFeeCents: data.mobilityPassengerFeeCents,
+      mobilityDriverFeeCents: data.mobilityDriverFeeCents,
+      pdvPlatformFeeRate: data.pdvPlatformFeeRate,
+      planDiscountPercent: data.planDiscountPercent,
+      customAiTokensBonus: data.customAiTokensBonus,
+      isFeeExempt: data.isFeeExempt,
+      notes: data.notes,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const newSettings = {
+      ...currentSettings,
+      pricing_overrides: updatedOverrides,
+    };
+
+    const { error } = await supabase
+      .from("stores")
+      .update({ settings: newSettings, updated_at: new Date().toISOString() })
+      .eq("id", data.storeId);
+
+    if (error) {
+      throw new Error("Erro ao salvar parametrização de taxas da loja: " + error.message);
+    }
+
+    return resolveEffectivePricing(updatedOverrides);
+  });
 

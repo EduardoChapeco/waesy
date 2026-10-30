@@ -116,9 +116,15 @@ Disallow: /api/cron/
 # -----------------------------------------------------------------------------
 # Sitemaps Canônicos da Rede Waesy
 # -----------------------------------------------------------------------------
+Sitemap: https://waesy.com.br/sitemap-index.xml
 Sitemap: https://waesy.com.br/sitemap.xml
-Sitemap: https://waesy.com.br/sitemap-products.xml
 Sitemap: https://waesy.com.br/sitemap-news.xml
+Sitemap: https://waesy.com.br/sitemap-produtos.xml
+Sitemap: https://waesy.com.br/sitemap-empresas.xml
+Sitemap: https://waesy.com.br/sitemap-classificados.xml
+Sitemap: https://waesy.pages.dev/sitemap-index.xml
 Sitemap: https://waesy.pages.dev/sitemap.xml
-Sitemap: https://waesy.pages.dev/sitemap-products.xml
 Sitemap: https://waesy.pages.dev/sitemap-news.xml
+Sitemap: https://waesy.pages.dev/sitemap-produtos.xml
+Sitemap: https://waesy.pages.dev/sitemap-empresas.xml
+Sitemap: https://waesy.pages.dev/sitemap-classificados.xml

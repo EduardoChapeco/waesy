@@ -5,6 +5,7 @@
  */
 
 import { getServerClient } from "@/lib/supabase";
+import { calculateNormalizedPricing } from "@/lib/travel-pricing";
 import {
   searchWoobaFlights,
   searchWoobaCars,
@@ -17,15 +18,22 @@ import {
 } from "@/services/infotravel";
 import type {
   TravelOfferDTO,
-  TravelOfferPricing,
   SagaBookingResult,
   SagaStepState,
 } from "@/types/corporate-travel";
+import { createCanonicalQuoteSession } from "@/services/travel-quote-session.service";
+
+export { calculateNormalizedPricing } from "@/lib/travel-pricing";
 
 export interface NormalizedSearchQuery {
   agencyId: string;
   companyId?: string;
   productType: "flight" | "hotel" | "car" | "package" | "bus";
+  /**
+   * Restringe a busca a canais explicitamente autorizados para o contexto.
+   * Busca aérea isolada usa Wooba por padrão; pacotes continuam multi-provider.
+   */
+  providerCodes?: Array<"wooba" | "infotravel" | "rexturadvance" | "consolidator" | "manual">;
   originTerminalId?: string;
   destinationTerminalId?: string;
   originIata?: string;
@@ -37,37 +45,9 @@ export interface NormalizedSearchQuery {
   cabinClass?: "economy" | "premium_economy" | "business" | "first";
 }
 
-/**
- * Normaliza os preços respeitando a segregação estrita de margens:
- * NET + TAXES + SUPPLIER FEE + AGENCY MARKUP + SERVICE FEE = SELLING TOTAL
- */
-export function calculateNormalizedPricing(params: {
-  netAmountCents: number;
-  taxAmountCents?: number;
-  supplierFeeCents?: number;
-  agencyMarkupPercent?: number;
-  agencyFixedFeeCents?: number;
-  currency?: string;
-}): TravelOfferPricing {
-  const net = Math.max(0, params.netAmountCents);
-  const taxes = Math.max(0, params.taxAmountCents || 0);
-  const supplierFee = Math.max(0, params.supplierFeeCents || 0);
-
-  const markupPct = Math.max(0, params.agencyMarkupPercent || 10);
-  const markupAmount = Math.round((net * markupPct) / 100);
-  const serviceFee = Math.max(0, params.agencyFixedFeeCents || 0);
-
-  const sellingTotal = net + taxes + supplierFee + markupAmount + serviceFee;
-
-  return {
-    net_amount_cents: net,
-    tax_amount_cents: taxes,
-    supplier_fee_cents: supplierFee,
-    agency_markup_cents: markupAmount,
-    service_fee_cents: serviceFee,
-    selling_total_cents: sellingTotal,
-    currency: params.currency || "BRL",
-  };
+export function resolveProviderCodesForSearch(query: Pick<NormalizedSearchQuery, "productType" | "providerCodes">): string[] | undefined {
+  if (query.providerCodes?.length) return query.providerCodes;
+  return query.productType === "flight" ? ["wooba"] : undefined;
 }
 
 /**
@@ -86,7 +66,10 @@ export async function executeMultiProviderSearch(
     .eq("store_id", query.agencyId)
     .eq("is_active", true);
 
-  const activeProviders = integrations || [];
+  const allowedProviderCodes = resolveProviderCodesForSearch(query);
+  const activeProviders = (integrations || []).filter((provider) =>
+    !allowedProviderCodes || allowedProviderCodes.includes(provider.provider_code as any),
+  );
   if (activeProviders.length === 0) {
     return {
       offers: [],
@@ -113,10 +96,12 @@ export async function executeMultiProviderSearch(
         // Chamada ao conector InfoTravel REST/JSON
         const markupPct = Number(provider.default_markup_percent ?? 10);
         if (query.productType === "car") {
-          const pickupLoc = query.destinationIata || query.originIata || query.destinationTerminalId || "XAP";
-          const dropoffDate =
-            query.returnDate ||
-            new Date(new Date(query.departureDate).getTime() + 3 * 86400000).toISOString().slice(0, 10);
+          const pickupLoc = query.destinationIata || query.originIata || query.destinationTerminalId;
+          const dropoffDate = query.returnDate;
+          if (!pickupLoc || !dropoffDate) {
+            errors.push("infotravel: local e data de devolução são obrigatórios para cotar carro");
+            return;
+          }
           const carQuotes = await infotravelSearchCarRentals({
             data: {
               pickupAirportOrCity: pickupLoc,
@@ -125,8 +110,14 @@ export async function executeMultiProviderSearch(
             },
           });
           for (const car of carQuotes) {
-            const dailyCents = Math.round(Number(car.dailyRateBrl || 129) * 100);
-            const totalCents = Math.round(Number(car.totalRateBrl || car.dailyRateBrl * 3) * 100);
+            const dailyAmountBrl = Number(car.dailyRateBrl);
+            const totalAmountBrl = Number(car.totalRateBrl);
+            if (!Number.isFinite(dailyAmountBrl) || dailyAmountBrl <= 0 || !Number.isFinite(totalAmountBrl) || totalAmountBrl <= 0) {
+              errors.push(`infotravel: oferta de carro ${car.id} sem tarifa válida`);
+              continue;
+            }
+            const dailyCents = Math.round(dailyAmountBrl * 100);
+            const totalCents = Math.round(totalAmountBrl * 100);
             const pricing = calculateNormalizedPricing({
               netAmountCents: totalCents,
               agencyMarkupPercent: markupPct,
@@ -152,10 +143,10 @@ export async function executeMultiProviderSearch(
                 pickup_location: car.pickupLocation,
                 dropoff_location: car.dropoffLocation,
                 daily_rate_cents: dailyCents,
-                daily_rate_brl: car.dailyRateBrl,
-                total_three_days_brl: car.dailyRateBrl * 3,
-                free_cancellation: true,
-                payment_timing: "pay_at_pickup",
+                daily_rate_brl: dailyAmountBrl,
+                total_rate_brl: totalAmountBrl,
+                free_cancellation: undefined,
+                payment_timing: undefined,
               },
             });
           }
@@ -166,13 +157,19 @@ export async function executeMultiProviderSearch(
             date: query.departureDate,
           });
           for (const f of gdsFlights) {
-            const netCents = Math.round(Number(f.price || 0) * 100);
+            const flightNumber = String(f.flight_number || "").trim();
+            const netAmount = Number(f.price);
+            if (!flightNumber || !Number.isFinite(netAmount) || netAmount <= 0) {
+              errors.push("infotravel: oferta aérea sem identificador ou tarifa válida");
+              continue;
+            }
+            const netCents = Math.round(netAmount * 100);
             const pricing = calculateNormalizedPricing({
               netAmountCents: netCents,
               agencyMarkupPercent: markupPct,
             });
             offers.push({
-              offer_id: `infotravel_flt_${f.flight_number || Date.now()}`,
+              offer_id: `infotravel_flt_${flightNumber}`,
               provider_code: "infotravel",
               product_type: "flight",
               pricing,
@@ -181,7 +178,7 @@ export async function executeMultiProviderSearch(
               policy_status: "within_policy",
               policy_violation_reasons: [],
               rules: {
-                is_refundable: true,
+                is_refundable: undefined,
               },
               details: {
                 flight_number: f.flight_number,
@@ -191,22 +188,30 @@ export async function executeMultiProviderSearch(
             });
           }
         } else if (query.productType === "hotel" && query.destinationIata) {
-          const checkout =
-            query.returnDate ||
-            new Date(new Date(query.departureDate).getTime() + 2 * 86400000).toISOString().slice(0, 10);
+          const checkout = query.returnDate;
+          if (!checkout) {
+            errors.push("infotravel: data de checkout é obrigatória para cotar hotel");
+            return;
+          }
           const gdsHotels = await infotravelSearchHotels(query.agencyId, {
             city: query.destinationIata,
             checkin: query.departureDate,
             checkout,
           });
           for (const h of gdsHotels) {
-            const netCents = Math.round(Number((h as any).price_per_night || (h as any).price || 0) * 100);
+            const hotelName = String((h as any).name || "").trim();
+            const netAmount = Number((h as any).price_per_night ?? (h as any).price);
+            if (!hotelName || !Number.isFinite(netAmount) || netAmount <= 0) {
+              errors.push("infotravel: hotel sem identificação ou tarifa válida");
+              continue;
+            }
+            const netCents = Math.round(netAmount * 100);
             const pricing = calculateNormalizedPricing({
               netAmountCents: netCents,
               agencyMarkupPercent: markupPct,
             });
             offers.push({
-              offer_id: `infotravel_htl_${h.name || Date.now()}`,
+              offer_id: `infotravel_htl_${hotelName}`,
               provider_code: "infotravel",
               product_type: "hotel",
               pricing,
@@ -215,10 +220,10 @@ export async function executeMultiProviderSearch(
               policy_status: "within_policy",
               policy_violation_reasons: [],
               rules: {
-                is_refundable: true,
+                is_refundable: undefined,
               },
               details: {
-                hotel_name: h.name,
+                hotel_name: hotelName,
                 city: query.destinationIata,
               },
             });
@@ -436,33 +441,7 @@ export async function createQuoteSession(params: {
   productType: "flight" | "hotel" | "car" | "bus" | "transfer" | "package";
   payload: Record<string, unknown>;
 }): Promise<string> {
-  const supabase = getServerClient();
-  const payloadStr = JSON.stringify(params.payload);
-  // Hash determinístico simples para auditoria
-  let hash = 0;
-  for (let i = 0; i < payloadStr.length; i++) {
-    hash = (hash << 5) - hash + payloadStr.charCodeAt(i);
-    hash |= 0;
-  }
-  const searchPayloadHash = `h_${Math.abs(hash)}`;
-
-  const { data: row } = await supabase
-    .from("travel_quote_sessions")
-    .insert({
-      agency_id: params.agencyId,
-      company_id: params.companyId || null,
-      user_id: params.userId,
-      project_id: params.projectId || null,
-      trip_id: params.tripId || null,
-      product_type: params.productType,
-      search_payload_hash: searchPayloadHash,
-      search_payload_json: params.payload,
-      status: "started",
-    })
-    .select("id")
-    .single();
-
-  return row?.id || `sess_${Date.now()}`;
+  return createCanonicalQuoteSession(params);
 }
 
 export async function recordProviderExecution(params: {

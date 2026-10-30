@@ -15,6 +15,7 @@ import { getAnonServerClient, getServerClient, SupabaseUnconfiguredError } from 
 import { publishDomainEvent } from "./domain-events.functions";
 import { getServerIdentity } from "@/lib/server-access";
 import { createGatewayPayment } from "./payment-gateway.server";
+import { recordMarketplacePlatformFee, executeDelinquencyAutoDebit } from "./billing-ledger.functions";
 
 // ---------------------------------------------------------------------------
 // Schemas Zod de Entrada e Saída
@@ -209,6 +210,7 @@ export const createMarketplaceOrderFn = createServerFn({ method: "POST" })
         payer: data.customer,
         cardToken: data.cardToken,
         installments: data.installments,
+        context: "marketplace",
       });
     } catch (gatewayError) {
       if (data.paymentMethod !== "cash_on_delivery") {
@@ -219,6 +221,28 @@ export const createMarketplaceOrderFn = createServerFn({ method: "POST" })
       }
       throw gatewayError;
     }
+
+    // 1. Registra atomicamente a taxa de plataforma de 5% sobre o subtotal de produtos (SPEC-20261030)
+    recordMarketplacePlatformFee({
+      data: {
+        storeId: data.storeId,
+        orderId,
+        subtotalCents: Number(atomic.subtotal_cents),
+      },
+    }).catch((feeErr) => {
+      console.error("[marketplace-checkout] Erro ao registrar taxa de plataforma 5%:", feeErr);
+    });
+
+    // 2. Executa retenção de inadimplência caso a loja possua faturas vencidas em aberto
+    executeDelinquencyAutoDebit({
+      data: {
+        storeId: data.storeId,
+        orderId,
+        merchantNetCents: Math.max(0, Math.round(Number(atomic.subtotal_cents) * 0.95)),
+      },
+    }).catch((debtErr) => {
+      console.error("[marketplace-checkout] Erro no autodébito de inadimplência:", debtErr);
+    });
 
     const { error: paymentUpdateError } = await supabase.from("payments").update({
       provider_name: gateway?.provider ?? "manual",

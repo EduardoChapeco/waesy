@@ -72,6 +72,7 @@ export function ProductTelemetry({
     trackedRef.current = true;
 
     const valueNum = priceCents ? priceCents / 100 : 0;
+    const eventId = `view_content_${productId}`;
     const url = canonicalUrl || (typeof window !== "undefined" ? window.location.href : "");
 
     // Disparo Client-Side Meta Pixel
@@ -82,7 +83,7 @@ export function ProductTelemetry({
         content_type: "product",
         value: valueNum,
         currency,
-      });
+      }, { eventID: eventId });
     }
 
     // Disparo Client-Side Google Analytics (GA4 / GTM)
@@ -108,6 +109,7 @@ export function ProductTelemetry({
         data: {
           storeId,
           eventName: "ViewContent",
+          eventId,
           eventSourceUrl: url,
           customData: {
             content_name: title,
@@ -183,6 +185,7 @@ export function trackAddToCartEvent({
   currency?: string;
 }) {
   const valueNum = (priceCents * quantity) / 100;
+  const eventId = `add_to_cart_${productId}`;
 
   // 1. Browser Meta Pixel
   if (typeof (window as any).fbq === "function") {
@@ -192,7 +195,7 @@ export function trackAddToCartEvent({
       content_type: "product",
       value: valueNum,
       currency,
-    });
+    }, { eventID: eventId });
   }
 
   // 2. Browser Google Analytics
@@ -217,6 +220,7 @@ export function trackAddToCartEvent({
       data: {
         storeId,
         eventName: "AddToCart",
+        eventId,
         eventSourceUrl: typeof window !== "undefined" ? window.location.href : undefined,
         customData: {
           content_name: productTitle,
@@ -259,6 +263,7 @@ export function trackPurchaseEvent({
   customerPhone?: string;
 }) {
   const valueNum = totalCents ? totalCents / 100 : 0;
+  const eventId = `purchase_${orderId}`;
   const contentIds = items.map((it) => it.productId).filter(Boolean) as string[];
   const numItems = items.reduce((acc, it) => acc + (it.quantity || 1), 0);
 
@@ -270,7 +275,7 @@ export function trackPurchaseEvent({
       value: valueNum,
       currency,
       num_items: numItems,
-    });
+    }, { eventID: eventId });
   }
 
   // 2. Browser Google Analytics 4 (purchase)
@@ -303,6 +308,7 @@ export function trackPurchaseEvent({
       data: {
         storeId,
         eventName: "Purchase",
+        eventId,
         eventSourceUrl: typeof window !== "undefined" ? window.location.href : undefined,
         customData: {
           order_id: orderId,

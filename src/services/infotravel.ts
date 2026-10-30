@@ -3,6 +3,14 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
 import { type Hotel, type Flight } from "@/services/proposals";
+import { searchWoobaFlights } from "@/services/travel-wooba-connector.service";
+import {
+  createCanonicalQuoteSession,
+  finalizeCanonicalQuoteSession,
+  persistCanonicalOfferSnapshots,
+  recordCanonicalProviderExecution,
+} from "@/services/travel-quote-session.service";
+import type { TravelOfferDTO } from "@/types/corporate-travel";
 import { INFOTRAVEL_CONTRACT_VERSION, mapApiHotelToCanonical, mapApiFlightToCanonical, mapInfotravelV1BookingToNormalized, type NormalizedBooking, type ApiHotelAvail, type ApiFlightAvail, type InfotravelV1BookingDTO } from "@/types/infotravel";
 
 // ── Erro estruturado para credenciais não configuradas ─────────────────────
@@ -576,6 +584,31 @@ export interface InfoTravelPackageAvailItem {
   priceTotalBrl: number;
   taxesBrl: number;
   commissionPercent: number;
+  imageUrl?: string | null;
+  description?: string | null;
+  quoteSessionId?: string;
+  offerSnapshotId?: string;
+}
+
+const InfoTravelRoomOccupancySchema = z.object({
+  adults: z.number().int().min(1).max(9),
+  childrenAges: z.array(z.number().int().min(0).max(17)).max(8).default([]),
+});
+
+export type InfoTravelRoomOccupancy = z.infer<typeof InfoTravelRoomOccupancySchema>;
+
+export function normalizeInfoTravelRoomOccupancies(input: {
+  adults: number;
+  childrenAges?: number[];
+  roomOccupancies?: InfoTravelRoomOccupancy[];
+}): InfoTravelRoomOccupancy[] {
+  const parsed = z
+    .array(InfoTravelRoomOccupancySchema)
+    .min(1)
+    .max(8)
+    .safeParse(input.roomOccupancies?.length ? input.roomOccupancies : [{ adults: input.adults, childrenAges: input.childrenAges || [] }]);
+  if (!parsed.success) throw new Error("A composição de quartos e idades dos passageiros é inválida.");
+  return parsed.data;
 }
 
 export interface InfoTravelAllotmentGroupItem {
@@ -763,6 +796,7 @@ export const infotravelSearchPackages = createServerFn({ method: "POST" })
       returnDate: z.string().min(8),
       adults: z.number().min(1).default(2),
       childrenAges: z.array(z.number()).optional().default([]),
+      roomOccupancies: z.array(InfoTravelRoomOccupancySchema).min(1).max(8).optional(),
       operatorSlug: z
         .enum([
           "infotravel_default",
@@ -782,81 +816,171 @@ export const infotravelSearchPackages = createServerFn({ method: "POST" })
     assertStoreAccess(identity);
 
     const safeDestination = sanitizeInfotravelSearchText(data.destination);
-
-    return await withInfotravelResilience(
-      {
-        storeId: identity.store_id,
+    const roomOccupancies = normalizeInfoTravelRoomOccupancies(data);
+    const quoteSessionId = await createCanonicalQuoteSession({
+      agencyId: identity.store_id,
+      userId: identity.id,
+      productType: "package",
+      payload: {
+        destination: safeDestination,
+        departureDate: data.departureDate,
+        returnDate: data.returnDate,
+        roomOccupancies,
         operatorSlug: data.operatorSlug,
-        action: "packageAvail",
-        params: { ...data, destination: safeDestination },
       },
-      async () => {
-        const creds = await resolveStoreInfotravelCredentials(identity.store_id, data.operatorSlug);
-        if (!creds) {
-          await recordInfotravelApiError(
-            identity,
-            data.operatorSlug,
-            "/api/v1/utility/packageAvail",
-            `Credenciais InfoTravel (${data.operatorSlug.toUpperCase()}) não configuradas no Hub de Integrações.`,
-          );
-          throw new InfotravelNotConfiguredError();
-        }
+    });
+    const startedAt = Date.now();
 
-        const startDate = new Date(data.departureDate);
-        const endDate = new Date(data.returnDate);
-        const nights = Math.max(
-          1,
-          Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
-        );
-
-        const endpoint = `${creds.baseUrl}/api/v1/utility/packageAvail`;
-        let res: Response;
-        try {
-          res = await fetch(endpoint, {
-            method: "POST",
-            headers: creds.authHeader,
-            body: JSON.stringify({
-              destination: safeDestination,
-              departure: data.departureDate,
-              arrival: data.returnDate,
-              occupancies: [{ adults: data.adults, childrenAges: data.childrenAges }],
-              operator: data.operatorSlug,
-            }),
-          });
-        } catch (networkErr: any) {
-          const msg = `Falha de conexão com InfoTravel (${data.operatorSlug.toUpperCase()}): ${networkErr?.message || "Erro de rede"}`;
-          await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg);
-          throw new Error(msg);
-        }
-
-        if (!res.ok) {
-          const errText = await res.text().catch(() => "");
-          const msg = `Erro HTTP ${res.status} na API InfoTravel (${data.operatorSlug.toUpperCase()}): ${errText.slice(0, 180) || res.statusText}`;
-          await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg, res.status);
-          throw new Error(msg);
-        }
-
-        const json = await res.json();
-        const list = Array.isArray(json?.packageAvail) ? json.packageAvail : [];
-        return list.map((pkg: any, idx: number) => ({
-          id: String(pkg.id || `PKG-${idx + 1}`),
+    try {
+      const packages: InfoTravelPackageAvailItem[] = await withInfotravelResilience(
+        {
+          storeId: identity.store_id,
           operatorSlug: data.operatorSlug,
-          packageName: String(pkg.name || `Pacote ${safeDestination}`),
-          destinationName: safeDestination,
-          departureDate: data.departureDate,
-          returnDate: data.returnDate,
-          nights,
-          includesFlight: Boolean(pkg.includesFlight ?? true),
-          includesHotel: Boolean(pkg.includesHotel ?? true),
-          includesTransfer: Boolean(pkg.includesTransfer ?? true),
-          hotelName: String(pkg.hotel?.name || ""),
-          boardType: String(pkg.board?.name || ""),
-          priceTotalBrl: Number(pkg.price?.amount || 0),
-          taxesBrl: Number(pkg.taxes?.amount || 0),
-          commissionPercent: Number(pkg.commissionPercent || 0),
-        }));
-      },
-    );
+          action: "packageAvail",
+          params: { ...data, destination: safeDestination, roomOccupancies },
+        },
+        async () => {
+          const creds = await resolveStoreInfotravelCredentials(identity.store_id, data.operatorSlug);
+          if (!creds) {
+            await recordInfotravelApiError(
+              identity,
+              data.operatorSlug,
+              "/api/v1/utility/packageAvail",
+              `Credenciais InfoTravel (${data.operatorSlug.toUpperCase()}) não configuradas no Hub de Integrações.`,
+            );
+            throw new InfotravelNotConfiguredError();
+          }
+
+          const startDate = new Date(data.departureDate);
+          const endDate = new Date(data.returnDate);
+          const nights = Math.max(
+            1,
+            Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+          );
+
+          const endpoint = `${creds.baseUrl}/api/v1/utility/packageAvail`;
+          let res: Response;
+          try {
+            res = await fetch(endpoint, {
+              method: "POST",
+              headers: creds.authHeader,
+              body: JSON.stringify({
+                destination: safeDestination,
+                departure: data.departureDate,
+                arrival: data.returnDate,
+                occupancies: roomOccupancies,
+                operator: data.operatorSlug,
+              }),
+            });
+          } catch (networkErr: any) {
+            const msg = `Falha de conexão com InfoTravel (${data.operatorSlug.toUpperCase()}): ${networkErr?.message || "Erro de rede"}`;
+            await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg);
+            throw new Error(msg);
+          }
+
+          if (!res.ok) {
+            const errText = await res.text().catch(() => "");
+            const msg = `Erro HTTP ${res.status} na API InfoTravel (${data.operatorSlug.toUpperCase()}): ${errText.slice(0, 180) || res.statusText}`;
+            await recordInfotravelApiError(identity, data.operatorSlug, endpoint, msg, res.status);
+            throw new Error(msg);
+          }
+
+          const json = await res.json();
+          const list = Array.isArray(json?.packageAvail) ? json.packageAvail : [];
+          return list.flatMap((pkg: any) => {
+            const id = typeof pkg.id === "string" ? pkg.id.trim() : "";
+            const packageName = typeof pkg.name === "string" ? pkg.name.trim() : "";
+            const priceTotalBrl = Number(pkg.price?.amount);
+            if (!id || !packageName || !Number.isFinite(priceTotalBrl) || priceTotalBrl <= 0) return [];
+            return [{
+              id,
+              operatorSlug: data.operatorSlug,
+              packageName,
+              destinationName: safeDestination,
+              departureDate: data.departureDate,
+              returnDate: data.returnDate,
+              nights,
+              includesFlight: Boolean(pkg.includesFlight),
+              includesHotel: Boolean(pkg.includesHotel),
+              includesTransfer: Boolean(pkg.includesTransfer),
+              hotelName: typeof pkg.hotel?.name === "string" ? pkg.hotel.name : "",
+              boardType: typeof pkg.board?.name === "string" ? pkg.board.name : "",
+              priceTotalBrl,
+              taxesBrl: Math.max(0, Number(pkg.taxes?.amount) || 0),
+              commissionPercent: Math.max(0, Number(pkg.commissionPercent) || 0),
+              imageUrl: typeof pkg.hotel?.imageUrl === "string" ? pkg.hotel.imageUrl : typeof pkg.imageUrl === "string" ? pkg.imageUrl : null,
+              description: typeof pkg.description === "string" ? pkg.description : null,
+            }];
+          });
+        },
+      );
+
+      await recordCanonicalProviderExecution({
+        quoteSessionId,
+        providerCode: `infotravel_${data.operatorSlug}`,
+        latencyMs: Date.now() - startedAt,
+        status: packages.length > 0 ? "success" : "no_availability",
+        cacheHit: false,
+      });
+
+      const normalizedOffers: TravelOfferDTO[] = packages.map((pkg) => ({
+        offer_id: pkg.id,
+        provider_code: "infotravel",
+        product_type: "package",
+        pricing: {
+          net_amount_cents: Math.max(0, Math.round((pkg.priceTotalBrl - pkg.taxesBrl) * 100)),
+          tax_amount_cents: Math.round(pkg.taxesBrl * 100),
+          supplier_fee_cents: 0,
+          agency_markup_cents: 0,
+          service_fee_cents: 0,
+          selling_total_cents: Math.round(pkg.priceTotalBrl * 100),
+          currency: "BRL",
+        },
+        expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        revalidate_required: true,
+        policy_status: "within_policy",
+        policy_violation_reasons: [],
+        rules: { fare_family: pkg.boardType || undefined },
+        details: {
+          origin: null,
+          destination: pkg.destinationName,
+          departure_date: pkg.departureDate,
+          return_date: pkg.returnDate,
+          package_name: pkg.packageName,
+          hotel_name: pkg.hotelName,
+          description: pkg.description,
+          image_url: pkg.imageUrl,
+        },
+        raw_snapshot_ref: pkg.id,
+      }));
+      const snapshotIds = await persistCanonicalOfferSnapshots({ quoteSessionId, offers: normalizedOffers });
+      await finalizeCanonicalQuoteSession({
+        quoteSessionId,
+        providerCount: 1,
+        successfulProviderCount: packages.length > 0 ? 1 : 0,
+        failedProviderCount: 0,
+        status: "completed",
+      });
+
+      return packages.map((pkg) => ({ ...pkg, quoteSessionId, offerSnapshotId: snapshotIds.get(pkg.id) }));
+    } catch (error) {
+      await recordCanonicalProviderExecution({
+        quoteSessionId,
+        providerCode: `infotravel_${data.operatorSlug}`,
+        latencyMs: Date.now() - startedAt,
+        status: "error",
+        errorCode: error instanceof Error ? error.name : "INFOTRAVEL_SEARCH_FAILED",
+        cacheHit: false,
+      }).catch(() => undefined);
+      await finalizeCanonicalQuoteSession({
+        quoteSessionId,
+        providerCount: 1,
+        successfulProviderCount: 0,
+        failedProviderCount: 1,
+        status: "failed",
+      }).catch(() => undefined);
+      throw error;
+    }
   });
 
 export const infotravelSearchAllotments = createServerFn({ method: "POST" })
@@ -1222,13 +1346,15 @@ export interface AgencyGdsFlightOfferDTO {
   duration: string;
   stops: number;
   stopsDescription?: string;
-  baggageIncluded: boolean;
+  baggageIncluded?: boolean;
   priceCents: number;
   pricePerPersonCents: number;
   conditions: string;
   isBestOption: boolean;
   isCheapest: boolean;
-  source: "infotravel_gds" | "agency_inventory";
+  source: "wooba_gds";
+  quoteSessionId?: string;
+  offerSnapshotId?: string;
 }
 
 export const searchAgencyGdsFlightsFn = createServerFn({ method: "POST" })
@@ -1242,9 +1368,10 @@ export const searchAgencyGdsFlightsFn = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }): Promise<{
-    isInfotravelConfigured: boolean;
+    isWoobaConfigured: boolean;
     offers: AgencyGdsFlightOfferDTO[];
     statusMessage?: string;
+    quoteSessionId: string;
   }> => {
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
@@ -1256,95 +1383,95 @@ export const searchAgencyGdsFlightsFn = createServerFn({ method: "POST" })
     const pax = Math.max(1, data.passengers);
 
     const offers: AgencyGdsFlightOfferDTO[] = [];
-    let isInfotravelConfigured = false;
+    let isWoobaConfigured = false;
     let statusMessage: string | undefined;
-
-    // 1. Tenta consultar o conector InfoTravel GDS se configurado
-    try {
-      const gdsFlights = await infotravelSearchFlights(identity.store_id, {
+    const quoteSessionId = await createCanonicalQuoteSession({
+      agencyId: identity.store_id,
+      userId: identity.id,
+      productType: "flight",
+      payload: {
         origin: originIata,
         destination: destIata,
-        date: data.departureDate,
-      });
-      isInfotravelConfigured = true;
+        departureDate: data.departureDate,
+        returnDate: data.returnDate || null,
+        passengers: pax,
+      },
+    });
+    const startedAt = Date.now();
 
-      for (const f of gdsFlights) {
-        const unitCents = Math.round(Number(f.price || 0) * 100);
+    // Voo isolado tem canal único: Wooba. InfoTravel permanece reservado à composição de pacotes.
+    try {
+      const gdsFlights = await searchWoobaFlights({
+        agencyId: identity.store_id,
+        originIata,
+        destinationIata: destIata,
+        departureDate: data.departureDate,
+        returnDate: data.returnDate,
+        adultsCount: pax,
+      });
+      isWoobaConfigured = true;
+
+      await recordCanonicalProviderExecution({
+        quoteSessionId,
+        providerCode: "wooba",
+        latencyMs: Date.now() - startedAt,
+        status: gdsFlights.length > 0 ? "success" : "no_availability",
+        cacheHit: false,
+      });
+      const snapshotIds = await persistCanonicalOfferSnapshots({
+        quoteSessionId,
+        offers: gdsFlights,
+      });
+
+      for (const offer of gdsFlights) {
+        const details = offer.details || {};
         offers.push({
-          airline: String((f as any).airline || "Cia Aérea GDS"),
-          flightNumber: String(f.flight_number || "GDS"),
-          departureTime: String((f as any).departure_time || "08:00"),
-          departureAirport: String(f.origin || originIata),
-          arrivalTime: String((f as any).arrival_time || "11:15"),
-          arrivalAirport: String(f.destination || destIata),
-          duration: String((f as any).duration || "3h 15m"),
-          stops: Number((f as any).stops || 0),
-          baggageIncluded: Boolean((f as any).baggage_included ?? true),
-          priceCents: unitCents * pax,
-          pricePerPersonCents: unitCents,
-          conditions: "Tarifa tempo real via InfoTravel GDS",
+          airline: String(details.carrier_name || ""),
+          flightNumber: String(details.flight_number || ""),
+          departureTime: String(details.departure_time || ""),
+          departureAirport: String(details.origin || originIata),
+          arrivalTime: String(details.arrival_time || ""),
+          arrivalAirport: String(details.destination || destIata),
+          duration: details.duration_minutes ? `${details.duration_minutes} min` : "",
+          stops: Number(details.stops_count || 0),
+          stopsDescription: Number(details.stops_count || 0) === 0 ? "Direto" : `${details.stops_count} parada(s)`,
+          baggageIncluded: offer.rules.baggage_allowance
+            ? !String(offer.rules.baggage_allowance).startsWith("0PC")
+            : undefined,
+          priceCents: offer.pricing.selling_total_cents,
+          pricePerPersonCents: Math.round(offer.pricing.selling_total_cents / pax),
+          conditions: offer.rules.fare_family || "",
           isBestOption: false,
           isCheapest: false,
-          source: "infotravel_gds",
+          source: "wooba_gds",
+          quoteSessionId,
+          offerSnapshotId: snapshotIds.get(offer.offer_id),
         });
       }
+      await finalizeCanonicalQuoteSession({
+        quoteSessionId,
+        providerCount: 1,
+        successfulProviderCount: gdsFlights.length > 0 ? 1 : 0,
+        failedProviderCount: 0,
+        status: "completed",
+      });
     } catch (err) {
-      if (err instanceof InfotravelNotConfiguredError) {
-        isInfotravelConfigured = false;
-      } else if (err instanceof Error) {
-        statusMessage = err.message;
-      }
-    }
-
-    // 2. Consulta também bloqueios/itinerários reais cadastrados no banco da agência
-    try {
-      const db = getServerClient();
-      const { data: itineraries } = await db
-        .from("travel_flight_itineraries")
-        .select("id, title, notes, segments:travel_flight_segments(*)")
-        .eq("store_id", identity.store_id)
-        .eq("status", "active")
-        .limit(10);
-
-      if (Array.isArray(itineraries)) {
-        for (const it of itineraries) {
-          const segs = Array.isArray((it as any).segments) ? (it as any).segments : [];
-          const firstSeg = segs[0];
-          if (!firstSeg) continue;
-
-          const matchesRoute =
-            firstSeg.destination_iata?.toUpperCase() === destIata ||
-            firstSeg.destination_city?.toLowerCase().includes(destClean.toLowerCase());
-
-          if (matchesRoute || offers.length === 0) {
-            const depTime = firstSeg.departure_at
-              ? new Date(firstSeg.departure_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-              : "09:00";
-            const arrTime = firstSeg.arrival_at
-              ? new Date(firstSeg.arrival_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-              : "12:10";
-            offers.push({
-              airline: String(firstSeg.airline_name || firstSeg.airline_code || "Bloqueio Agência"),
-              flightNumber: `${firstSeg.airline_code || ""} ${firstSeg.flight_number || ""}`.trim(),
-              departureTime: depTime,
-              departureAirport: String(firstSeg.origin_iata || originIata),
-              arrivalTime: arrTime,
-              arrivalAirport: String(firstSeg.destination_iata || destIata),
-              duration: segs.length > 1 ? `${segs.length} trechos` : "Voo direto",
-              stops: Math.max(0, segs.length - 1),
-              baggageIncluded: !String(firstSeg.baggage || "").toLowerCase().includes("sem"),
-              priceCents: 0,
-              pricePerPersonCents: 0,
-              conditions: String(it.notes || firstSeg.baggage || "Bloqueio registrado na agência"),
-              isBestOption: false,
-              isCheapest: false,
-              source: "agency_inventory",
-            });
-          }
-        }
-      }
-    } catch {
-      // Tabela opcional ou sem registros
+      await recordCanonicalProviderExecution({
+        quoteSessionId,
+        providerCode: "wooba",
+        latencyMs: Date.now() - startedAt,
+        status: "error",
+        errorCode: err instanceof Error ? err.name : "WOOBA_SEARCH_FAILED",
+        cacheHit: false,
+      }).catch(() => undefined);
+      await finalizeCanonicalQuoteSession({
+        quoteSessionId,
+        providerCount: 1,
+        successfulProviderCount: 0,
+        failedProviderCount: 1,
+        status: "failed",
+      }).catch(() => undefined);
+      statusMessage = err instanceof Error ? err.message : "Não foi possível consultar o Wooba nesta tentativa.";
     }
 
     if (offers.length > 0) {
@@ -1361,9 +1488,10 @@ export const searchAgencyGdsFlightsFn = createServerFn({ method: "POST" })
     }
 
     return {
-      isInfotravelConfigured,
+      isWoobaConfigured,
       offers,
       statusMessage,
+      quoteSessionId,
     };
   });
 

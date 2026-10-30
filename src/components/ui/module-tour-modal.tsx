@@ -82,10 +82,10 @@ export function ModuleTourModal({
 
   return (
     <Dialog open={open} onOpenChange={(val) => (!val ? handleClose() : undefined)}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-lg border border-border/60 bg-background shadow-2xl">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl bg-background">
         {/* Faixa Superior com Barra de Progresso em Fio */}
         <div className="relative pt-6 px-6 pb-2">
-          <div className="flex items-center justify-between pb-3 border-b border-border/40">
+          <div className="flex items-center justify-between pb-3">
             <div className="flex items-center gap-2">
               <span className="text-2xs font-bold uppercase tracking-wider text-primary font-mono">
                 {moduleName}
@@ -127,8 +127,8 @@ export function ModuleTourModal({
         <div className="p-6 pt-3 space-y-5">
           {/* Ícone e Destaque */}
           <div className="flex items-start gap-4">
-            <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 shadow-xs">
-              <Icon className="size-6 stroke-[1.8]" />
+            <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Icon className="size-6" />
             </div>
             <div className="space-y-1 min-w-0">
               {currentSlide.highlightBadge && (
@@ -149,20 +149,19 @@ export function ModuleTourModal({
 
           {/* Dica de Ouro Pro */}
           {currentSlide.tip && (
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-2xs text-foreground/80 flex items-start gap-2">
-              <span className="font-bold text-primary shrink-0">Dica:</span>
-              <span className="leading-snug">{currentSlide.tip}</span>
-            </div>
+            <p className="text-2xs text-muted-foreground leading-snug">
+              {currentSlide.tip}
+            </p>
           )}
         </div>
 
         {/* Footer / Ações */}
-        <div className="p-4 bg-muted/20 border-t border-border/40 flex items-center justify-between gap-3">
+        <div className="p-4 bg-muted/20 flex items-center justify-between gap-3">
           <Button
             type="button"
             variant="ghost"
             onClick={handleClose}
-            className="text-xs text-muted-foreground hover:text-foreground h-9 px-3 rounded-lg cursor-pointer"
+            className="text-xs text-muted-foreground hover:text-foreground h-11 min-h-11 px-3 rounded-lg cursor-pointer"
           >
             Pular Tour
           </Button>
@@ -173,7 +172,7 @@ export function ModuleTourModal({
                 type="button"
                 variant="outline"
                 onClick={handlePrev}
-                className="h-9 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
               >
                 <ChevronLeft className="size-3.5" />
                 <span>Voltar</span>
@@ -184,14 +183,14 @@ export function ModuleTourModal({
               type="button"
               onClick={handleNext}
               className={cn(
-                "h-9 px-4 rounded-lg text-xs font-bold gap-2 shadow-xs transition-colors duration-200 cursor-pointer",
+                "h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 transition-colors duration-200 cursor-pointer",
                 isLast
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "bg-foreground text-background hover:bg-foreground/90"
               )}
             >
               <span>{isLast ? "Entendido, Começar!" : "Próximo"}</span>
-              {isLast ? <Check className="size-3.5 stroke-[2.5]" /> : <ChevronRight className="size-3.5" />}
+              {isLast ? <Check className="size-3.5" /> : <ChevronRight className="size-3.5" />}
             </Button>
           </div>
         </div>
@@ -218,7 +217,7 @@ export function ModuleTourTrigger({
       variant="outline"
       size="sm"
       onClick={onClick}
-      className={cn("h-8 px-3 rounded-lg text-2xs font-semibold gap-2 border-border/60 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary", className)}
+      className={cn("h-11 min-h-11 px-3 rounded-lg text-2xs font-semibold gap-2 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary", className)}
       title={label}
     >
       <HelpCircle className="size-3.5 text-primary" />

@@ -561,13 +561,12 @@ export default function CompanyCorporateTravelPage() {
             entre em contato com uma agência credenciada ou solicite a vinculação.
           </p>
           <div className="pt-2 flex justify-center">
-            <Button
-              variant="default"
-              className="h-11 min-h-11 px-6 font-semibold focus-visible:ring-2 focus-visible:ring-primary"
-              onClick={() => toast.info("Funcionalidade de solicitação disponível pelo catálogo de agências")}
+            <Link
+              to="/workspace/turismo/fornecedores"
+              className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg bg-primary px-6 font-semibold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Consultar Agências Parceiras
-            </Button>
+            </Link>
           </div>
         </div>
       </div>

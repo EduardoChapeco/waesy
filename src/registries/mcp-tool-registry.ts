@@ -891,7 +891,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     tier: "store_staff",
     requiredScope: "store:tourism:write",
     permission: { action: "create", resource: "orders" },
-    idempotent: false,
+    idempotent: true,
     rateLimitBucket: "webmcp_tool_call_staff",
     inputZodSchema: z.object({
       storeId: z.string().uuid(),
@@ -2494,8 +2494,8 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     inputZodSchema: z.object({
       storeId: z.string().uuid(),
       leadId: z.string().uuid(),
-      stage: z.string(),
-      estimatedValueBrl: z.number().optional().default(0),
+      stage: z.enum(["qualified", "proposal", "negotiation", "won", "converted", "lost"]),
+      estimatedValueBrl: z.number().optional(),
     }),
     inputSchema: {
       type: "object",
@@ -2508,6 +2508,9 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       required: ["storeId", "leadId", "stage"],
     },
     handler: async (ctx, args) => {
+      if (!ctx.storeId || ctx.storeId !== args.storeId) {
+        throw new Error("Tenant do contexto não corresponde à loja solicitada.");
+      }
       const { data: lead, error } = await ctx.supabase
         .from("leads_crm")
         .select("id, full_name, email, phone, notes, estimated_value_cents, custom_fields")
@@ -2518,7 +2521,10 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       if (error || !lead) throw new Error("Lead não localizado no CRM da loja.");
 
       const { dispatchClosedLoopLeadQualification } = await import("@/services/pixels.functions");
-      const conversionValue = args.estimatedValueBrl || ((lead.estimated_value_cents || 0) / 100);
+      const conversionValue = Number(lead.estimated_value_cents || 0) / 100;
+      if (["won", "converted"].includes(args.stage) && conversionValue <= 0) {
+        throw new Error("Conversão financeira exige valor persistido maior que zero.");
+      }
       const cf = (lead.custom_fields as Record<string, any>) || {};
 
       const result = await dispatchClosedLoopLeadQualification({
@@ -2526,6 +2532,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
           storeId: args.storeId,
           leadId: lead.id,
           stage: args.stage,
+          eventId: `lead_${lead.id}_${args.stage}`,
           email: lead.email,
           phone: lead.phone,
           conversionValue,
@@ -2535,6 +2542,10 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
           sourceUrl: cf.sourceUrl || cf.attribution?.sourceUrl || null,
         },
       });
+
+      if (!result.success) {
+        throw new Error("A conversão qualificada não foi entregue a nenhum canal conectado.");
+      }
 
       return {
         status: "synced",

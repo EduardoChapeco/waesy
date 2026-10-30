@@ -90,8 +90,8 @@ function QuickOpenRegisterInlineCard() {
  };
 
   return (
-  <div className="flex min-h-[70vh] items-center justify-center w-full sm:px-0 animate-in fade-in duration-200">
-  <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 sm:shadow-sm space-y-6 text-center">
+  <div className="flex min-h-140 items-center justify-center w-full sm:px-0 animate-in fade-in duration-200">
+  <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 space-y-6 text-center">
  <div className="size-14 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
  <Banknote className="size-7" />
  </div>
@@ -196,8 +196,8 @@ export const Route = createFileRoute("/workspace/pdv/")({
  (error instanceof Error ? error.message : String(error)).includes("CAIXA_EXPIRADO")
  ) {
   return (
-  <div className="flex min-h-[70vh] items-center justify-center w-full sm:px-0">
-  <div className="w-full max-w-md text-center bg-card sm:border border-destructive/30 p-8 sm:p-10 sm:rounded-lg space-y-5 sm:shadow-sm">
+  <div className="flex min-h-140 items-center justify-center w-full sm:px-0">
+  <div className="w-full max-w-md text-center bg-card sm:border border-destructive/30 p-8 sm:p-10 sm:rounded-lg space-y-5">
  <div className="size-16 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
  <MonitorPause className="size-8" />
  </div>
@@ -881,8 +881,8 @@ function PdvTerminal() {
 
   if (activeRegister.isExpired) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center w-full px-4 sm:px-0 animate-in fade-in duration-200">
-        <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 sm:shadow-sm space-y-6 text-center">
+      <div className="flex min-h-140 items-center justify-center w-full px-4 sm:px-0 animate-in fade-in duration-200">
+        <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 space-y-6 text-center">
           <div className="size-14 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
             <Clock className="size-7" />
           </div>
@@ -966,7 +966,7 @@ function PdvTerminal() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-9 sm:size-8 rounded-lg cursor-pointer"
+                      className="size-11 min-h-11 sm:size-8 rounded-lg cursor-pointer"
                       onClick={() => updateQty(item.id, -1)}
                     >
                       <Minus className="size-3.5" />
@@ -975,7 +975,7 @@ function PdvTerminal() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-9 sm:size-8 rounded-lg cursor-pointer"
+                      className="size-11 min-h-11 sm:size-8 rounded-lg cursor-pointer"
                       onClick={() => updateQty(item.id, 1)}
                     >
                       <Plus className="size-3.5" />
@@ -985,7 +985,7 @@ function PdvTerminal() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-9 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="size-11 min-h-11 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                     onClick={() => removeItem(item.id)}
                   >
                     <X className="size-4" />
@@ -1056,7 +1056,7 @@ function PdvTerminal() {
   );
 
  return (
- <div className="flex flex-col h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] overflow-hidden bg-background rounded-lg border border-border/80 shadow-xs">
+ <div className="flex flex-col h-full max-h-screen overflow-hidden bg-background rounded-lg border border-border/80 shadow-xs">
  {/* ── BARRA SUPERIOR OPERACIONAL (POS Header) ── */}
  <header className="p-3 px-4 border-b border-border/70 bg-card flex flex-wrap items-center justify-between gap-3 shrink-0">
  <div className="flex items-center gap-3 flex-1 min-w-72 max-w-xl">
@@ -1151,7 +1151,7 @@ function PdvTerminal() {
  variant="ghost"
  size="icon"
  onClick={() => setShortcutsModalOpen(true)}
- className="size-9 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 sm:size-9 rounded-lg text-muted-foreground hover:text-foreground"
  title="Atalhos de Teclado"
  >
  <Keyboard className="size-4" />
@@ -1167,7 +1167,7 @@ function PdvTerminal() {
  variant="ghost"
  size="icon"
  onClick={toggleFullscreen}
- className="size-9 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-11 min-h-11 sm:size-9 rounded-lg text-muted-foreground hover:text-foreground"
  title="Alternar Tela Cheia"
  >
  {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
@@ -1231,6 +1231,7 @@ function PdvTerminal() {
  {/* Coluna Esquerda: Catálogo Tátil de Produtos */}
  <div className="flex-1 flex flex-col min-w-0 border-r border-border/70 overflow-hidden">
  {/* Carrossel Tátil de Categorias */}
+ {/* design-lint-ignore DL-30 reason:"Trilho horizontal de categorias de produtos no PDV" expiry:"2027-12-31" */}
  <div className="p-3 sm:p-3 border-b border-border/70 bg-card/60 overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0 snap-x snap-mandatory">
  <button
  type="button"
@@ -1286,7 +1287,7 @@ function PdvTerminal() {
  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={`${product.id}-${variant.id || "def"}`}
  onClick={() => handleProductClick(product, variant)}
- className={`relative rounded-lg bg-card border transition-colors duration-200 cursor-pointer flex flex-col justify-between overflow-hidden group select-none hover:shadow-xs hover:border-primary/50 active:scale-[0.98] ${
+ className={`relative rounded-lg bg-card border transition-colors duration-200 cursor-pointer flex flex-col justify-between overflow-hidden group select-none hover:shadow-xs hover:border-primary/50 active:scale-95 ${
  inCartQty > 0 ? "border-primary ring-1 ring-primary/40" : "border-border/80"
  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
@@ -1301,7 +1302,7 @@ function PdvTerminal() {
  />
  ) : (
  <div className="size-full flex flex-col items-center justify-center text-muted-foreground/40 bg-muted/20">
- <ImageIcon className="size-8 stroke-[1.5]" />
+ <ImageIcon className="size-8 stroke-1" />
  </div>
  )}
 
@@ -1394,7 +1395,7 @@ function PdvTerminal() {
             </div>
           </DialogHeader>
 
-          <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+          <div className="p-5 space-y-4 max-h-160 overflow-y-auto">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {((floorPlan?.tables as any[]) || [
                 { id: "m1", label: "Mesa 01", seats: 4 },
@@ -1421,7 +1422,7 @@ function PdvTerminal() {
                       setIsFloorPlanModalOpen(false);
                       toast.success(`${table.label} selecionada para atendimento`);
                     }}
-                    className={`flex flex-col items-center justify-center p-4 rounded-lg border text-center transition-colors duration-200 cursor-pointer min-h-[96px] ${
+                    className={`flex flex-col items-center justify-center p-4 rounded-lg border text-center transition-colors duration-200 cursor-pointer min-h-24 ${
                       isSelected
                         ? "bg-primary/10 border-primary text-primary shadow-xs ring-2 ring-primary/20"
                         : "bg-card border-border/70 hover:border-primary/50 hover:bg-muted/30 text-foreground"
@@ -1592,7 +1593,7 @@ function PdvTerminal() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                         onClick={() => handleRemoveSplitPayment(idx)}
                       >
                         <Trash2 className="size-3.5" />

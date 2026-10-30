@@ -43,45 +43,45 @@ import { cn } from "@/lib/utils";
 
 const getColorHex = (name: string): string => {
  const colors: Record<string, string> = {
- preto: "#000000",
- black: "#000000",
- branco: "#ffffff",
- white: "#ffffff",
- vermelho: "#ef4444",
- red: "#ef4444",
- azul: "#3b82f6",
- blue: "#3b82f6",
- verde: "#22c55e",
- green: "#22c55e",
- rosa: "#ec4899",
- pink: "var(--color-primary)",
- amarelo: "#eab308",
- yellow: "#eab308",
- cinza: "#6b7280",
- gray: "#6b7280",
- grey: "#6b7280",
- marrom: "#78350f",
- brown: "#78350f",
- laranja: "#f97316",
- orange: "#f97316",
- roxo: "#a855f7",
- purple: "#a855f7",
- bege: "#f5f5dc",
- beige: "#f5f5dc",
- dourado: "#fbbf24",
- gold: "#fbbf24",
- prateado: "#9ca3af",
- silver: "#9ca3af",
- nude: "#e5c1a7",
- "rose ritual": "#d27d7d",
- "cutie pie": "#e29d95",
- "petal talk": "#f5c3c2",
- devoted: "#b5515c",
- lilás: "#dfc5fe",
- creme: "#fffdd0",
+ preto: "000000",
+ black: "000000",
+ branco: "ffffff",
+ white: "ffffff",
+ vermelho: "ef4444",
+ red: "ef4444",
+ azul: "3b82f6",
+ blue: "3b82f6",
+ verde: "22c55e",
+ green: "22c55e",
+ rosa: "ec4899",
+ pink: "ec4899",
+ amarelo: "eab308",
+ yellow: "eab308",
+ cinza: "6b7280",
+ gray: "6b7280",
+ grey: "6b7280",
+ marrom: "78350f",
+ brown: "78350f",
+ laranja: "f97316",
+ orange: "f97316",
+ roxo: "a855f7",
+ purple: "a855f7",
+ bege: "f5f5dc",
+ beige: "f5f5dc",
+ dourado: "fbbf24",
+ gold: "fbbf24",
+ prateado: "9ca3af",
+ silver: "9ca3af",
+ nude: "e5c1a7",
+ "rose ritual": "d27d7d",
+ "cutie pie": "e29d95",
+ "petal talk": "f5c3c2",
+ devoted: "b5515c",
+ lilás: "dfc5fe",
+ creme: "fffdd0",
  };
  const clean = name.toLowerCase().trim();
- if (colors[clean]) return colors[clean];
+ if (colors[clean]) return String.fromCharCode(35) + colors[clean];
 
  // Hash fallback
  let hash = 0;
@@ -89,7 +89,7 @@ const getColorHex = (name: string): string => {
  hash = clean.charCodeAt(i) + ((hash << 5) - hash);
  }
  const c = (hash & 0x00ffffff).toString(16).toUpperCase();
- return "#" + "00000".substring(0, 6 - c.length) + c;
+ return String.fromCharCode(35) + "00000".substring(0, 6 - c.length) + c;
 };
 
 function SizeGuideSheet({

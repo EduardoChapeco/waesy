@@ -47,6 +47,9 @@ export const Route = createFileRoute("/admin-master/marca")({
  component: AdminMasterMarcaPage,
 });
 
+// design-lint-ignore DL-01 reason:"Tabela canonica de presets de cores da marca no painel master" expiry:"2027-12-31"
+const ACCENT_PRESETS = [{ name: "Oficial", hex: "#0066FF", dot: "bg-blue-600" }, { name: "Azul Intenso", hex: "#0070F3", dot: "bg-sky-500" }, { name: "Apple HIG", hex: "#0A84FF", dot: "bg-blue-500" }, { name: "Sky Profundo", hex: "#0284C7", dot: "bg-sky-600" }];
+
 function AdminMasterMarcaPage() {
  const { brand: initialBrand } = ((Route.useLoaderData?.() as any) || {});
  const router = useRouter();
@@ -59,6 +62,7 @@ function AdminMasterMarcaPage() {
  const [faviconUrl, setFaviconUrl] = useState<string | null>(initialBrand.favicon_url || null);
  // design-lint-ignore DL-01 reason:"Cor padrao de acento azul intermediario no painel master" expiry:"2027-12-31"
  const [accentColor, setAccentColor] = useState(initialBrand.accent_color || "#0066FF");
+ const [accentPreviewApplied, setAccentPreviewApplied] = useState(false);
  // design-lint-ignore DL-01 reason:"Cor padrao estrutural neutra preta no painel master" expiry:"2027-12-31"
  const [primaryColor, setPrimaryColor] = useState(initialBrand.primary_color || "#09090b");
  // design-lint-ignore DL-01 reason:"Cor padrao secundaria azul escuro no painel master" expiry:"2027-12-31"
@@ -218,13 +222,13 @@ function AdminMasterMarcaPage() {
  return (
  <div className="space-y-6 pb-28">
  {/* ── Cabeçalho do Editor ── */}
- <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/40 pb-5">
+ <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-5">
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
  Identidade e Marca Global
  </h1>
- <Badge variant="outline" className="text-2xs font-mono border-primary/30 text-primary">
+ <Badge variant="secondary" className="text-2xs font-mono text-primary">
  Propagação Bilateral
  </Badge>
  </div>
@@ -236,11 +240,11 @@ function AdminMasterMarcaPage() {
  {/* Indicador de Status */}
  <div className="flex items-center gap-2">
  {isDirty ? (
- <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-semibold px-3 py-1">
+ <Badge className="bg-amber-500/10 text-amber-600 text-xs font-semibold px-3 py-1">
  ● Alterações não salvas
  </Badge>
  ) : (
- <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-semibold px-3 py-1">
+ <Badge className="bg-emerald-500/10 text-emerald-600 text-xs font-semibold px-3 py-1">
   Sincronizado com o sistema
  </Badge>
  )}
@@ -252,7 +256,7 @@ function AdminMasterMarcaPage() {
  {/* Coluna Esquerda: Formulários de Configuração (7 colunas) */}
  <div className="lg:col-span-7 space-y-6">
  {/* 1. Nome & Exibição na Barra Superior */}
- <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card space-y-4">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <Type className="size-4" />
@@ -280,7 +284,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
- <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/40">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
  <div>
  <p className="text-xs font-semibold text-foreground">Exibir Nome</p>
  <p className="text-2xs text-muted-foreground">Texto na barra superior</p>
@@ -288,7 +292,7 @@ function AdminMasterMarcaPage() {
  <Switch checked={showName} onCheckedChange={setShowName} id="show-name-toggle" />
  </div>
 
- <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/40">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
  <div>
  <p className="text-xs font-semibold text-foreground">Exibir Logo</p>
  <p className="text-2xs text-muted-foreground">Imagem da marca no topo</p>
@@ -300,7 +304,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 2. Upload de Logomarca Oficial */}
- <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-info/10 text-info flex items-center justify-center shrink-0">
@@ -318,7 +322,7 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="sm"
  onClick={() => setLogoUrl(null)}
- className="text-xs text-destructive hover:bg-destructive/10 h-8 gap-1"
+ className="text-xs text-destructive hover:bg-destructive/10 h-11 min-h-11 sm:h-9 gap-1"
  >
  <Trash2 className="size-3.5" />
  <span>Remover</span>
@@ -326,8 +330,8 @@ function AdminMasterMarcaPage() {
  )}
  </div>
 
- <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted/20 border border-dashed border-border/60">
- <div className="size-20 rounded-lg bg-background border border-border/60 flex items-center justify-center p-2 shrink-0 overflow-hidden shadow-xs">
+ <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted/20">
+ <div className="size-20 rounded-lg bg-background flex items-center justify-center p-2 shrink-0 overflow-hidden">
  {logoUrl ? (
  <img src={logoUrl} alt="Logo" className="size-full object-contain" />
  ) : (
@@ -362,7 +366,7 @@ function AdminMasterMarcaPage() {
  size="sm"
  onClick={() => logoInputRef.current?.click()}
  disabled={isUploading.logo}
- className="rounded-lg text-xs font-semibold h-9 gap-2 cursor-pointer w-full sm:w-auto"
+ className="rounded-lg text-xs font-semibold h-11 min-h-11 sm:h-9 gap-2 cursor-pointer w-full sm:w-auto"
  >
  {isUploading.logo ? (
  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
@@ -376,7 +380,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 3. Upload de Favicon */}
- <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
@@ -394,7 +398,7 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="sm"
  onClick={() => setFaviconUrl(null)}
- className="text-xs text-destructive hover:bg-destructive/10 h-8 gap-1"
+ className="text-xs text-destructive hover:bg-destructive/10 h-11 min-h-11 sm:h-9 gap-1"
  >
  <Trash2 className="size-3.5" />
  <span>Remover</span>
@@ -402,8 +406,8 @@ function AdminMasterMarcaPage() {
  )}
  </div>
 
- <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted/20 border border-dashed border-border/60">
- <div className="size-12 rounded-lg bg-background border border-border/60 flex items-center justify-center p-2 shrink-0 overflow-hidden shadow-xs">
+ <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted/20">
+ <div className="size-12 rounded-lg bg-background flex items-center justify-center p-2 shrink-0 overflow-hidden">
  {faviconUrl ? (
  <img src={faviconUrl} alt="Favicon" className="size-full object-contain" />
  ) : (
@@ -433,7 +437,7 @@ function AdminMasterMarcaPage() {
  size="sm"
  onClick={() => faviconInputRef.current?.click()}
  disabled={isUploading.favicon}
- className="rounded-lg text-xs font-semibold h-9 gap-2 cursor-pointer w-full sm:w-auto"
+ className="rounded-lg text-xs font-semibold h-11 min-h-11 sm:h-9 gap-2 cursor-pointer w-full sm:w-auto"
  >
  {isUploading.favicon ? (
  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
@@ -447,7 +451,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 4. Cores Padrão do Site & Identidade Visual (Azul Intermediário Canônico & Preto Estrutural) */}
- <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -462,20 +466,20 @@ function AdminMasterMarcaPage() {
  </p>
  </div>
  </div>
- <Badge variant="outline" className="text-3xs font-mono border-primary/30 text-primary">
+ <Badge variant="secondary" className="text-3xs font-mono text-primary">
  Zero Hardcode
  </Badge>
  </div>
 
  {/* Seletor do Tom de Azul Intermediário (Acento / Assinatura) */}
- <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-4">
+ <div className="p-4 rounded-lg bg-muted/20 space-y-4">
  <div className="space-y-1">
  <Label htmlFor="accent-color-input" className="text-xs font-bold text-foreground flex items-center gap-2">
  <span>Azul Intermediário Canônico (Cor de Acento / Secundário)</span>
- <span className="size-3.5 rounded-full border border-border/60 shrink-0" style={{ backgroundColor: accentColor }} />
+ <span className="size-3.5 rounded-full shrink-0" /* design-lint-ignore DL-05 reason:"Amostra dinamica de cor de acento customizada" expiry:"2027-12-31" */ style={{ backgroundColor: accentColor }} />
  </Label>
  <p className="text-2xs text-muted-foreground">
- Assinatura visual do ecossistema para badges, foco, links ativos, micro-indicadores e gradientes de destaque.
+ Acento usado em badges, foco, links ativos e micro-indicadores.
  </p>
  </div>
 
@@ -486,78 +490,43 @@ function AdminMasterMarcaPage() {
  type="color"
  value={accentColor}
  onChange={(e) => setAccentColor(e.target.value)}
- className="size-10 rounded-lg cursor-pointer border border-border/60 p-0.5 bg-background shrink-0"
+ className="size-10 rounded-lg cursor-pointer border border-border/60 p-1 bg-background shrink-0"
  title="Selecionar cor de acento"
  />
  <Input
  id="accent-color-input"
  value={accentColor}
  onChange={(e) => setAccentColor(e.target.value)}
- placeholder="#0066FF"
+ placeholder="Ex: Azul Royal"
  className="w-28 font-mono text-xs font-bold uppercase rounded-lg h-10 bg-background"
  />
  </div>
 
  {/* Presets Canônicos de Azul Intermediário */}
  <div className="flex flex-wrap items-center gap-2 flex-1">
+ {ACCENT_PRESETS.map((preset) => (
  <Button
+ key={preset.name}
  type="button"
  variant="outline"
  size="sm"
- // design-lint-ignore DL-01 reason:"Preset de tom de azul intermediario oficial" expiry:"2027-12-31"
- onClick={() => setAccentColor("#0066FF")}
- // design-lint-ignore DL-01 reason:"Comparacao de tom de azul intermediario oficial" expiry:"2027-12-31"
- className={`h-8 text-2xs font-semibold rounded-lg px-2.5 gap-1.5 cursor-pointer ${accentColor.toLowerCase() === "#0066ff" ? "border-primary bg-primary/10 text-primary font-bold" : ""}`}
+ onClick={() => setAccentColor(preset.hex)}
+ className={`h-11 min-h-11 sm:h-9 text-2xs font-semibold rounded-lg px-3 gap-2 cursor-pointer ${accentColor.toLowerCase() === preset.hex.toLowerCase() ? "ring-2 ring-primary bg-primary/10 text-primary font-bold" : ""}`}
  >
- <span className="size-2 rounded-full bg-blue-600 shrink-0" />
- <span>Oficial (#0066FF)</span>
+ <span className={`size-2 rounded-full ${preset.dot} shrink-0`} />
+ <span>{preset.name}</span>
  </Button>
- <Button
- type="button"
- variant="outline"
- size="sm"
- // design-lint-ignore DL-01 reason:"Preset de azul eletrico linear" expiry:"2027-12-31"
- onClick={() => setAccentColor("#0070F3")}
- // design-lint-ignore DL-01 reason:"Comparacao de tom de azul linear" expiry:"2027-12-31"
- className={`h-8 text-2xs font-semibold rounded-lg px-2.5 gap-1.5 cursor-pointer ${accentColor.toLowerCase() === "#0070f3" ? "border-primary bg-primary/10 text-primary font-bold" : ""}`}
- >
- <span className="size-2 rounded-full bg-sky-500 shrink-0" />
- <span>Elétrico (#0070F3)</span>
- </Button>
- <Button
- type="button"
- variant="outline"
- size="sm"
- // design-lint-ignore DL-01 reason:"Preset de azul Apple HIG" expiry:"2027-12-31"
- onClick={() => setAccentColor("#0A84FF")}
- // design-lint-ignore DL-01 reason:"Comparacao de tom de azul Apple" expiry:"2027-12-31"
- className={`h-8 text-2xs font-semibold rounded-lg px-2.5 gap-1.5 cursor-pointer ${accentColor.toLowerCase() === "#0a84ff" ? "border-primary bg-primary/10 text-primary font-bold" : ""}`}
- >
- <span className="size-2 rounded-full bg-blue-500 shrink-0" />
- <span>Apple HIG (#0A84FF)</span>
- </Button>
- <Button
- type="button"
- variant="outline"
- size="sm"
- // design-lint-ignore DL-01 reason:"Preset de azul Sky profundo" expiry:"2027-12-31"
- onClick={() => setAccentColor("#0284C7")}
- // design-lint-ignore DL-01 reason:"Comparacao de tom de azul Sky profundo" expiry:"2027-12-31"
- className={`h-8 text-2xs font-semibold rounded-lg px-2.5 gap-1.5 cursor-pointer ${accentColor.toLowerCase() === "#0284c7" ? "border-primary bg-primary/10 text-primary font-bold" : ""}`}
- >
- <span className="size-2 rounded-full bg-sky-600 shrink-0" />
- <span>Sky Profundo (#0284C7)</span>
- </Button>
+ ))}
  </div>
  </div>
  </div>
 
  {/* Seletor da Cor Primária Neutra (Preto/Cinza Estrutural) */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-2">
+ <div className="p-3 rounded-lg bg-muted/20 space-y-2">
  <Label htmlFor="primary-color-input" className="text-xs font-bold text-foreground flex items-center justify-between">
  <span>Cor Estrutural (Preto / Tipografia)</span>
- <span className="size-3 rounded-full border border-border/60 shrink-0" style={{ backgroundColor: primaryColor }} />
+ <span className="size-3 rounded-full shrink-0" /* design-lint-ignore DL-05 reason:"Amostra dinamica de cor de marca configurada" expiry:"2027-12-31" */ style={{ backgroundColor: primaryColor }} />
  </Label>
  <div className="flex items-center gap-2">
  <input
@@ -565,23 +534,23 @@ function AdminMasterMarcaPage() {
  type="color"
  value={primaryColor}
  onChange={(e) => setPrimaryColor(e.target.value)}
- className="size-8 rounded-lg cursor-pointer border border-border/60 p-0.5 bg-background shrink-0"
+ className="size-10 sm:size-8 rounded-lg cursor-pointer border border-border/60 p-1 bg-background shrink-0"
  title="Selecionar cor primária"
  />
  <Input
  id="primary-color-input"
  value={primaryColor}
  onChange={(e) => setPrimaryColor(e.target.value)}
- placeholder="#09090B"
- className="font-mono text-xs font-bold uppercase rounded-lg h-8 bg-background flex-1"
+ placeholder="Ex: Preto Puro"
+ className="font-mono text-xs font-bold uppercase rounded-lg h-10 sm:h-8 bg-background flex-1"
  />
  </div>
  </div>
 
- <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-2">
+ <div className="p-3 rounded-lg bg-muted/20 space-y-2">
  <Label htmlFor="secondary-color-input" className="text-xs font-bold text-foreground flex items-center justify-between">
  <span>Tom Secundário (Hover / Contornos)</span>
- <span className="size-3 rounded-full border border-border/60 shrink-0" style={{ backgroundColor: secondaryColor }} />
+ <span className="size-3 rounded-full shrink-0" /* design-lint-ignore DL-05 reason:"Amostra dinamica de cor de marca configurada" expiry:"2027-12-31" */ style={{ backgroundColor: secondaryColor }} />
  </Label>
  <div className="flex items-center gap-2">
  <input
@@ -589,53 +558,49 @@ function AdminMasterMarcaPage() {
  type="color"
  value={secondaryColor}
  onChange={(e) => setSecondaryColor(e.target.value)}
- className="size-8 rounded-lg cursor-pointer border border-border/60 p-0.5 bg-background shrink-0"
+ className="size-10 sm:size-8 rounded-lg cursor-pointer border border-border/60 p-1 bg-background shrink-0"
  title="Selecionar cor secundária"
  />
  <Input
  id="secondary-color-input"
  value={secondaryColor}
  onChange={(e) => setSecondaryColor(e.target.value)}
- placeholder="#0052CC"
- className="font-mono text-xs font-bold uppercase rounded-lg h-8 bg-background flex-1"
+ placeholder="Ex: Azul Escuro"
+ className="font-mono text-xs font-bold uppercase rounded-lg h-10 sm:h-8 bg-background flex-1"
  />
  </div>
  </div>
  </div>
 
- {/* Amostra em Tempo Real: Gradiente com Textura Granulado/Noise e Frosted Glass */}
- <div className="p-4 rounded-lg bg-muted/15 border border-border/40 space-y-3">
+ {/* Amostra em tempo real do acento aplicado */}
+ <div className="p-4 rounded-lg bg-muted/15 space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground">
- Amostra Canônica: Gradiente com Textura Granulado & Efeito Frosted Glass
+ Amostra do acento
  </span>
- <Badge variant="outline" className="text-3xs font-mono">
- CSS .texture-noise + .bg-waesy-gradient-blue
+ <Badge variant="secondary" className="text-3xs font-mono">
+ Cor sólida
  </Badge>
  </div>
 
- {/* Cartão de Demonstração fiel à imagem de referência (Número 4 em vidro fosco sobre gradiente azul com noise) */}
+ {/* Cartão de demonstração do acento configurado no painel */}
  <div
- className="relative overflow-hidden rounded-xl p-6 text-white bg-waesy-gradient-blue texture-noise flex items-center justify-between gap-6 shadow-sm"
+ className="relative overflow-hidden rounded-xl p-6 text-primary-foreground flex items-center justify-between gap-6"
+ /* design-lint-ignore DL-05 reason:"Amostra dinamica do acento configurado" expiry:"2027-12-31" */
  style={{
- // design-lint-ignore DL-01 reason:"Gradiente dinâmico com acento azul do painel master" expiry:"2027-12-31"
- background: `linear-gradient(135deg, color-mix(in srgb, ${accentColor} 75%, #001845) 0%, ${accentColor} 50%, color-mix(in srgb, ${accentColor} 70%, #7dd3fc) 100%)`,
+ backgroundColor: accentColor,
  }}
  >
  <div className="relative z-10 space-y-1">
- <span className="text-3xs font-bold uppercase tracking-wider text-white/80">
- Assinatura Visual de Destaque
+ <span className="text-3xs font-bold uppercase tracking-wider text-primary-foreground/80">
+ Acento configurado
  </span>
- <p className="text-sm font-bold text-white tracking-tight">
- Tom de Azul Intermediário + Granulado Fino
- </p>
- <p className="text-2xs text-white/80 max-w-sm">
- Filtro de textura tátil sutil eliminando banding e conferindo acabamento fosco premium Apple/Linear.
+ <p className="text-sm font-bold text-primary-foreground tracking-tight">
+ Cor aplicada à prévia
  </p>
  </div>
 
- {/* Emblema Frosted Glass idêntico ao elemento 4 translúcido da imagem */}
- <div className="relative z-10 size-16 sm:size-20 rounded-2xl waesy-frosted-glass flex items-center justify-center shadow-lg border border-white/30 text-white font-extrabold text-2xl sm:text-3xl shrink-0 select-none">
+ <div className="relative z-10 size-16 sm:size-20 rounded-2xl bg-primary-foreground/15 flex items-center justify-center text-primary-foreground font-extrabold text-2xl sm:text-3xl shrink-0 select-none">
  4
  </div>
  </div>
@@ -645,16 +610,20 @@ function AdminMasterMarcaPage() {
  <Button
  type="button"
  size="sm"
- style={{ backgroundColor: accentColor, color: "#ffffff" }}
- className="rounded-lg h-9 text-xs font-bold px-4 hover:opacity-90 transition-opacity"
+ onClick={() => setAccentPreviewApplied((current) => !current)}
+ /* design-lint-ignore DL-05 reason:"Previa interativa de acento dinamico da plataforma" expiry:"2027-12-31" */
+ style={{ backgroundColor: accentColor, color: "var(--primary-foreground)" }}
+ className="rounded-lg h-11 min-h-11 text-xs font-bold px-4 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ aria-pressed={accentPreviewApplied}
  >
- Botão de Acento
+ {accentPreviewApplied ? "Acento aplicado à prévia" : "Aplicar acento à prévia"}
  </Button>
  <div
+ /* design-lint-ignore DL-05 reason:"Previa interativa de badge com acento dinamico" expiry:"2027-12-31" */
  style={{ backgroundColor: `color-mix(in srgb, ${accentColor} 12%, transparent)`, color: accentColor }}
- className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-current/20 flex items-center gap-1.5"
+ className="text-xs font-semibold px-3 py-2 rounded-lg bg-muted/40 flex items-center gap-2"
  >
- <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: accentColor }} />
+ <span className="size-2 rounded-full shrink-0" /* design-lint-ignore DL-05 reason:"Indicador de amostra de acento" expiry:"2027-12-31" */ style={{ backgroundColor: accentColor }} />
  <span>Badge Secundário de Assinatura</span>
  </div>
  <div className="text-2xs text-muted-foreground ml-auto">
@@ -665,7 +634,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 5. Backgrounds Imersivos da Tela de Login (3 Breakpoints) */}
- <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card space-y-4">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <ImageIcon className="size-4" />
@@ -682,7 +651,7 @@ function AdminMasterMarcaPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
  {/* Breakpoint 1: Desktop (16:9) */}
- <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-3 flex flex-col justify-between">
+ <div className="p-3 rounded-lg bg-muted/20 space-y-3 flex flex-col justify-between">
  <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1">
@@ -691,7 +660,7 @@ function AdminMasterMarcaPage() {
  </span>
  <span className="text-2xs font-mono text-muted-foreground">1920×1080</span>
  </div>
- <div className="relative rounded-lg overflow-hidden bg-background aspect-video flex items-center justify-center border border-border/60">
+ <div className="relative rounded-lg overflow-hidden bg-background aspect-video flex items-center justify-center">
  {loginBgDesktopUrl ? (
  <img src={loginBgDesktopUrl} alt="Desktop" className="size-full object-cover" />
  ) : (
@@ -718,7 +687,7 @@ function AdminMasterMarcaPage() {
  size="sm"
  onClick={() => desktopInputRef.current?.click()}
  disabled={isUploading.login_desktop}
- className="flex-1 rounded-lg text-2xs font-semibold h-8 gap-1 cursor-pointer"
+ className="flex-1 rounded-lg text-2xs font-semibold h-11 min-h-11 sm:h-9 gap-1 cursor-pointer"
  >
  {isUploading.login_desktop ? (
  <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
@@ -733,16 +702,16 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="icon"
  onClick={() => setLoginBgDesktopUrl(null)}
- className="size-8 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
+ className="size-11 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
  >
- <Trash2 className="size-3" />
+ <Trash2 className="size-4" />
  </Button>
  )}
  </div>
  </div>
 
  {/* Breakpoint 2: Tablet (4:3) */}
- <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-3 flex flex-col justify-between">
+ <div className="p-3 rounded-lg bg-muted/20 space-y-3 flex flex-col justify-between">
  <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1">
@@ -751,7 +720,7 @@ function AdminMasterMarcaPage() {
  </span>
  <span className="text-2xs font-mono text-muted-foreground">1024×768</span>
  </div>
- <div className="relative rounded-lg overflow-hidden bg-background aspect-[4/3] flex items-center justify-center border border-border/60">
+ <div className="relative rounded-lg overflow-hidden bg-background aspect-banner-classic flex items-center justify-center">
  {loginBgTabletUrl ? (
  <img src={loginBgTabletUrl} alt="Tablet" className="size-full object-cover" />
  ) : (
@@ -778,7 +747,7 @@ function AdminMasterMarcaPage() {
  size="sm"
  onClick={() => tabletInputRef.current?.click()}
  disabled={isUploading.login_tablet}
- className="flex-1 rounded-lg text-2xs font-semibold h-8 gap-1 cursor-pointer"
+ className="flex-1 rounded-lg text-2xs font-semibold h-11 min-h-11 sm:h-9 gap-1 cursor-pointer"
  >
  {isUploading.login_tablet ? (
  <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
@@ -793,16 +762,16 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="icon"
  onClick={() => setLoginBgTabletUrl(null)}
- className="size-8 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
+ className="size-11 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
  >
- <Trash2 className="size-3" />
+ <Trash2 className="size-4" />
  </Button>
  )}
  </div>
  </div>
 
  {/* Breakpoint 3: Mobile (9:16) */}
- <div className="p-3 rounded-lg bg-muted/20 border border-border/40 space-y-3 flex flex-col justify-between">
+ <div className="p-3 rounded-lg bg-muted/20 space-y-3 flex flex-col justify-between">
  <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1">
@@ -811,7 +780,7 @@ function AdminMasterMarcaPage() {
  </span>
  <span className="text-2xs font-mono text-muted-foreground">1080×1920</span>
  </div>
- <div className="relative rounded-lg overflow-hidden bg-background aspect-[9/16] max-h-36 mx-auto flex items-center justify-center border border-border/60 w-full">
+ <div className="relative rounded-lg overflow-hidden bg-background aspect-post-moment max-h-36 mx-auto flex items-center justify-center w-full">
  {loginBgMobileUrl ? (
  <img src={loginBgMobileUrl} alt="Mobile" className="size-full object-cover" />
  ) : (
@@ -838,7 +807,7 @@ function AdminMasterMarcaPage() {
  size="sm"
  onClick={() => mobileInputRef.current?.click()}
  disabled={isUploading.login_mobile}
- className="flex-1 rounded-lg text-2xs font-semibold h-8 gap-1 cursor-pointer"
+ className="flex-1 rounded-lg text-2xs font-semibold h-11 min-h-11 sm:h-9 gap-1 cursor-pointer"
  >
  {isUploading.login_mobile ? (
  <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
@@ -853,9 +822,9 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="icon"
  onClick={() => setLoginBgMobileUrl(null)}
- className="size-8 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
+ className="size-11 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
  >
- <Trash2 className="size-3" />
+ <Trash2 className="size-4" />
  </Button>
  )}
  </div>
@@ -864,7 +833,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 5. Canais Oficiais de Suporte & Atendimento */}
- <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card space-y-4">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
  <Globe className="size-4" />
@@ -951,7 +920,7 @@ function AdminMasterMarcaPage() {
  {/* Coluna Direita: Truthful Live Preview Real (5 colunas) */}
  <div className="lg:col-span-5">
  <div className="sticky top-6 space-y-4">
- <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
+ <div className="p-5 rounded-lg bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
  <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -990,17 +959,17 @@ function AdminMasterMarcaPage() {
  <TabsContent value="topbar" className="pt-3 space-y-3">
  <div
  style={{ "--magic-accent-primary": accentColor, "--primary": accentColor } as React.CSSProperties}
- className="rounded-lg bg-background border border-border/60 overflow-hidden shadow-xs"
+ className="rounded-lg bg-background overflow-hidden"
 >
  {/* Header TopBar */}
- <div className="px-4 py-3 flex items-center justify-between gap-2 border-b border-border/40">
+ <div className="px-4 py-3 flex items-center justify-between gap-2">
  {/* Logo + Nome */}
  <div className="flex items-center gap-2 shrink-0">
  {showLogo && logoUrl ? (
  <img
  src={logoUrl}
  alt="Logo"
- className="h-6 max-w-[90px] object-contain"
+ className="h-6 max-w-24 object-contain"
  />
  ) : null}
  {(showName || !logoUrl) && (
@@ -1017,7 +986,7 @@ function AdminMasterMarcaPage() {
 
  {/* Busca Simulada */}
  <div className="hidden sm:flex flex-1 max-w-35 mx-1">
- <div className="w-full flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 text-2xs text-muted-foreground border border-border/30">
+ <div className="w-full flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 text-2xs text-muted-foreground">
  <Search className="size-3" />
  <span>Buscar produtos...</span>
  </div>
@@ -1025,10 +994,10 @@ function AdminMasterMarcaPage() {
 
  {/* Ícones Canônicos */}
  <div className="flex items-center gap-1 shrink-0">
- <div className="size-7 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-center text-muted-foreground">
+ <div className="size-7 rounded-lg bg-muted/30 flex items-center justify-center text-muted-foreground">
  <ShoppingBag className="size-3.5" />
  </div>
- <div className="size-7 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-center text-muted-foreground">
+ <div className="size-7 rounded-lg bg-muted/30 flex items-center justify-center text-muted-foreground">
  <Bell className="size-3.5" />
  </div>
  <div className="size-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-2xs font-bold">
@@ -1038,17 +1007,18 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* Trilho de Chips */}
+ {/* design-lint-ignore DL-30 reason:"Trilho horizontal de preview de navegacao com overflow nativo" expiry:"2027-12-31" */}
  <div className="px-3 py-2 bg-muted/15 flex items-center gap-2 overflow-x-auto no-scrollbar text-2xs">
- <span className="px-2 py-1 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background text-foreground font-medium shrink-0">
  Início
  </span>
- <span className="px-2 py-1 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background text-foreground font-medium shrink-0">
  Ofertas
  </span>
- <span className="px-2 py-1 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background text-foreground font-medium shrink-0">
  Gastronomia
  </span>
- <span className="px-2 py-1 rounded-md bg-background border border-border/40 text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background text-foreground font-medium shrink-0">
  Mercado
  </span>
  </div>
@@ -1071,7 +1041,7 @@ function AdminMasterMarcaPage() {
  variant={loginBreakpoint === "desktop" ? "default" : "ghost"}
  size="sm"
  onClick={() => setLoginBreakpoint("desktop")}
- className="h-6 px-2 text-2xs rounded-md"
+ className="h-11 min-h-11 sm:h-8 px-3 text-2xs rounded-md"
  >
  Desktop
  </Button>
@@ -1080,7 +1050,7 @@ function AdminMasterMarcaPage() {
  variant={loginBreakpoint === "tablet" ? "default" : "ghost"}
  size="sm"
  onClick={() => setLoginBreakpoint("tablet")}
- className="h-6 px-2 text-2xs rounded-md"
+ className="h-11 min-h-11 sm:h-8 px-3 text-2xs rounded-md"
  >
  Tablet
  </Button>
@@ -1089,7 +1059,7 @@ function AdminMasterMarcaPage() {
  variant={loginBreakpoint === "mobile" ? "default" : "ghost"}
  size="sm"
  onClick={() => setLoginBreakpoint("mobile")}
- className="h-6 px-2 text-2xs rounded-md"
+ className="h-11 min-h-11 sm:h-8 px-3 text-2xs rounded-md"
  >
  Mobile
  </Button>
@@ -1098,12 +1068,12 @@ function AdminMasterMarcaPage() {
 
  {/* Canvas da Tela de Login */}
  <div
- className={`relative rounded-lg overflow-hidden bg-foreground border border-border/60 mx-auto transition-colors duration-200 ${
+ className={`relative rounded-lg overflow-hidden bg-foreground mx-auto transition-colors duration-200 ${
  loginBreakpoint === "desktop"
  ? "aspect-video w-full"
  : loginBreakpoint === "tablet"
- ? "aspect-[4/3] w-full"
- : "aspect-[9/16] max-h-80 w-44"
+ ? "aspect-banner-classic w-full"
+ : "aspect-post-moment max-h-80 w-44"
  }`}
  >
  {/* Imagem de Fundo Real */}
@@ -1134,27 +1104,27 @@ function AdminMasterMarcaPage() {
  )}
 
  {/* Overlay Escuro */}
- <div className="absolute inset-0 bg-foreground/40 backdrop-blur-[0.5px]" />
+ <div className="absolute inset-0 bg-foreground/40 backdrop-blur-xs" />
 
  {/* Topo do Login */}
  <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
- <div className="px-2 py-1 rounded-lg bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground text-3xs font-bold">
+ <div className="px-2 py-1 rounded-lg bg-foreground/60 backdrop-blur-md text-foreground text-3xs font-bold">
  {platformName || "WAESY"}
  </div>
- <div className="px-2 py-1 rounded-lg bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground/80 text-3xs">
+ <div className="px-2 py-1 rounded-lg bg-foreground/60 backdrop-blur-md text-foreground/80 text-3xs">
  Voltar
  </div>
  </div>
 
  {/* Card de Autenticação no Canto */}
- <div className="absolute bottom-2 right-2 left-2 sm:left-auto sm:w-56 p-3 rounded-lg bg-foreground/85 backdrop-blur-xl border border-white/25 z-10 space-y-2">
+ <div className="absolute bottom-2 right-2 left-2 sm:left-auto sm:w-56 p-3 rounded-lg bg-foreground/85 backdrop-blur-xl z-10 space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-2xs font-bold text-foreground">Acessar Conta</span>
  <Badge className="bg-primary text-primary-foreground text-3xs px-2 py-0">
  {platformName || "Waesy"}
  </Badge>
  </div>
- <div className="h-6 rounded-md bg-card/10 border border-white/15 px-2 flex items-center justify-between text-3xs text-foreground/60">
+ <div className="h-6 rounded-md bg-card/10 px-2 flex items-center justify-between text-3xs text-foreground/60">
  <span>E-mail ou CPF...</span>
  <ArrowRight className="size-2.5 text-foreground" />
  </div>
@@ -1169,8 +1139,8 @@ function AdminMasterMarcaPage() {
  <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
  Aba do Navegador
  </p>
- <div className="flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 border border-border/50 w-full">
- <div className="size-4 rounded overflow-hidden flex items-center justify-center bg-background border border-border/40 shrink-0">
+ <div className="flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 w-full">
+ <div className="size-4 rounded overflow-hidden flex items-center justify-center bg-background shrink-0">
  {faviconUrl ? (
  <img src={faviconUrl} alt="favicon" className="size-full object-contain" />
  ) : (
@@ -1189,7 +1159,7 @@ function AdminMasterMarcaPage() {
  <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
  Canais no Rodapé
  </p>
- <div className="p-4 rounded-lg bg-background border border-border/60 space-y-3 text-xs">
+ <div className="p-4 rounded-lg bg-background space-y-3 text-xs">
  <div className="flex items-center gap-2 text-foreground font-semibold">
  <Phone className="size-3.5 text-emerald-500" />
  <span>{supportWhatsapp || "Não informado"}</span>
@@ -1218,7 +1188,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* ── Barra de Ação Flutuante Sticky (Salvar Alterações) ── */}
- <div className="fixed bottom-0 left-0 md:left-64 right-0 z-40 bg-background border-t border-border/60 p-4 pb-safe">
+ <div className="fixed bottom-0 left-0 md:left-64 right-0 z-40 bg-background p-4 pb-safe">
  <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
  <div className="flex items-center gap-2">
  <span className="text-xs sm:text-sm font-semibold text-foreground">
@@ -1238,7 +1208,7 @@ function AdminMasterMarcaPage() {
  size="sm"
  onClick={() => router.invalidate()}
  disabled={isSubmitting}
- className="rounded-lg text-xs font-semibold h-10 px-4 cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer"
  >
  Descartar
  </Button>
@@ -1246,7 +1216,7 @@ function AdminMasterMarcaPage() {
  type="button"
  onClick={handleSave}
  disabled={isSubmitting}
- className="rounded-lg text-xs font-bold h-10 px-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+ className="rounded-lg text-xs font-bold h-11 min-h-11 px-6 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
  >
  {isSubmitting ? (
  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />

@@ -2758,18 +2758,32 @@ export async function executeIngestAdConversionEventMcp(
 ) {
   const { createHash } = await import("node:crypto");
   const sha256 = (val: string) => createHash("sha256").update(val.trim().toLowerCase()).digest("hex");
+  const rawPhone = data.customerPhone?.replace(/\D/g, "") || "";
+  const nationalPhone = rawPhone.startsWith("55") && (rawPhone.length === 12 || rawPhone.length === 13) ? rawPhone.slice(2) : rawPhone;
+  const normalizedPhone = nationalPhone.length === 10 || nationalPhone.length === 11 ? `+55${nationalPhone}` : null;
+  const eventId = data.orderId?.trim() || null;
 
   const hashedEmail = data.customerEmail ? sha256(data.customerEmail) : undefined;
-  const hashedPhone = data.customerPhone ? sha256(data.customerPhone.replace(/\D/g, "")) : undefined;
+  const hashedPhone = normalizedPhone ? sha256(normalizedPhone) : undefined;
 
   const results: Array<{ platform: string; status: string; details?: any }> = [];
+
+  if (!eventId) {
+    return {
+      eventName: data.eventName,
+      orderId: null,
+      valueBrl: data.valueCents / 100,
+      dispatchedAt: new Date().toISOString(),
+      results: [{ platform: "all", status: "blocked", details: "Identificador transacional real obrigatório para deduplicação." }],
+    };
+  }
 
   // 1. Meta Conversions API (CAPI)
   try {
     const metaAuth = await resolveValidStoreAdToken(supabase, storeId, "meta_ads");
     if (metaAuth.pixelId) {
       const capiRes = await fetch(
-        `https://graph.facebook.com/v20.0/${metaAuth.pixelId}/events?access_token=${encodeURIComponent(metaAuth.accessToken)}`,
+        `https://graph.facebook.com/v19.0/${metaAuth.pixelId}/events?access_token=${encodeURIComponent(metaAuth.accessToken)}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -2779,8 +2793,8 @@ export async function executeIngestAdConversionEventMcp(
                 event_name: data.eventName,
                 event_time: Math.floor(Date.now() / 1000),
                 action_source: "website",
-                event_id: data.orderId || `waesy_${Date.now()}`,
-                event_source_url: data.eventSourceUrl || "https://usewaesy.pages.dev",
+                event_id: eventId,
+                ...(data.eventSourceUrl ? { event_source_url: data.eventSourceUrl } : {}),
                 user_data: {
                   ...(hashedEmail ? { em: [hashedEmail] } : {}),
                   ...(hashedPhone ? { ph: [hashedPhone] } : {}),
@@ -2829,7 +2843,7 @@ export async function executeIngestAdConversionEventMcp(
           events: [
             {
               eventTimestamp: new Date().toISOString(),
-              transactionId: data.orderId || `waesy_${Date.now()}`,
+              transactionId: eventId,
               conversionValue: Number((data.valueCents / 100).toFixed(2)),
               currency: data.currency || "BRL",
               userData: {

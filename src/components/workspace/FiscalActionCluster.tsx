@@ -82,7 +82,7 @@ export function FiscalActionCluster({
               <button
                 type="button"
                 disabled
-                className="inline-flex items-center justify-center size-11 min-h-11 min-w-11 rounded-lg border border-border/40 bg-muted/20 text-muted-foreground/40 opacity-40 cursor-not-allowed font-semibold text-xs"
+                className="inline-flex items-center justify-center size-11 min-h-11 min-w-11 rounded-lg border border-border/40 bg-muted/20 text-muted-foreground/40 opacity-40 cursor-not-allowed font-semibold text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={`Sem ${isServiceType ? "serviços" : "produtos"} neste pedido`}
               >
                 {label}
@@ -103,7 +103,7 @@ export function FiscalActionCluster({
               <button
                 type="button"
                 disabled
-                className="inline-flex items-center justify-center h-11 w-11 rounded-lg border border-border bg-muted/40 text-muted-foreground opacity-50 cursor-not-allowed font-semibold text-xs transition-colors"
+                className="inline-flex items-center justify-center h-11 w-11 rounded-lg border border-border bg-muted/40 text-muted-foreground opacity-50 cursor-not-allowed font-semibold text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={`Você ainda não contratou a emissão de ${type}`}
               >
                 {label}

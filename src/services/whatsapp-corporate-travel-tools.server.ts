@@ -100,6 +100,7 @@ export async function toolSearchCorporateFlightsWooba(
     agencyId: input.agencyId,
     companyId: input.companyId,
     productType: "flight",
+    providerCodes: ["wooba"],
     originIata: input.originIata.toUpperCase().trim(),
     destinationIata: input.destinationIata.toUpperCase().trim(),
     departureDate: input.departureDate,
@@ -113,7 +114,7 @@ export async function toolSearchCorporateFlightsWooba(
   }
 
   // Se não houver ofertas reais do conector, formatar resposta honesta sem inventar voos sintéticos
-  const flights: CorporateFlightOption[] = searchResult.offers.map((offer) => {
+  const flights: CorporateFlightOption[] = searchResult.offers.flatMap((offer) => {
     const isWithinPolicy = offer.pricing.selling_total_cents <= flightPriceCeilingCents;
     const policyReason = isWithinPolicy
       ? "Dentro da política da empresa"
@@ -121,21 +122,31 @@ export async function toolSearchCorporateFlightsWooba(
 
     const itin = (offer as any).itinerary_summary || {};
     const segment = itin.segments?.[0];
-    return {
-      flightNumber: segment?.flight_number || "Voo Direto",
-      airline: itin.carrier_name || (offer as any).supplier_name || "Companhia Aérea",
+    const flightNumber = String(segment?.flight_number || (offer as any).details?.flight_number || "").trim();
+    const airline = String(itin.carrier_name || (offer as any).details?.carrier_name || (offer as any).supplier_name || "").trim();
+    const departureTime = String(segment?.departure_time || (offer as any).details?.departure_time || "").trim();
+    const arrivalTime = String(segment?.arrival_time || (offer as any).details?.arrival_time || "").trim();
+    const durationMinutes = Number(itin.total_duration_minutes ?? (offer as any).details?.duration_minutes);
+    const stopsCount = Number(itin.stops_count ?? (offer as any).details?.stops_count);
+    if (!flightNumber || !airline || !departureTime || !arrivalTime || !Number.isFinite(durationMinutes) || durationMinutes <= 0 || !Number.isFinite(stopsCount) || stopsCount < 0) {
+      warnings.push(`Oferta ${offer.offer_id} descartada: o provedor não retornou os dados operacionais mínimos do voo.`);
+      return [];
+    }
+    return [{
+      flightNumber,
+      airline,
       origin: input.originIata,
       destination: input.destinationIata,
-      departureTime: segment?.departure_time || "08:00",
-      arrivalTime: segment?.arrival_time || "10:30",
-      durationMinutes: itin.total_duration_minutes || 120,
-      stopsCount: itin.stops_count || 0,
-      stopsDescription: (itin.stops_count || 0) === 0 ? "Direto" : `${itin.stops_count} parada(s)`,
+      departureTime,
+      arrivalTime,
+      durationMinutes,
+      stopsCount,
+      stopsDescription: stopsCount === 0 ? "Direto" : `${stopsCount} parada(s)`,
       totalPriceCents: offer.pricing.selling_total_cents,
       totalPriceDisplay: formatMoney(offer.pricing.selling_total_cents),
       isWithinPolicy,
       policyReason,
-    };
+    }];
   });
 
   return {
@@ -197,12 +208,13 @@ export async function toolDispatchWhatsAppApproval(params: {
     .maybeSingle();
 
   if (error) {
-    console.warn("[toolDispatchWhatsAppApproval] Outbox queue insert fallback:", error.message);
+    throw new Error(`Não foi possível enfileirar a aprovação no WhatsApp: ${error.message}`);
   }
+  if (!outboxItem?.id) throw new Error("A aprovação não recebeu um identificador de outbox.");
 
   return {
     success: true,
-    dispatchId: outboxItem?.id || `disp_${Date.now()}`,
+    dispatchId: outboxItem.id,
     message: formattedMsg,
   };
 }
@@ -274,9 +286,12 @@ export async function toolIngestWhatsAppExpenseReceipt(params: {
     },
   });
 
-  const amountCents = (ocrResult as any)?.totalAmountCents || 4500;
-  const merchant = (ocrResult as any)?.hotelName || (ocrResult as any)?.airlineName || "Estabelecimento Comercial";
-  const category = (ocrResult as any)?.hotelName ? "hospedagem" : "alimentacao";
+  const amountCents = Number((ocrResult as any)?.totalAmountCents);
+  const merchant = String((ocrResult as any)?.merchantName || (ocrResult as any)?.hotelName || (ocrResult as any)?.airlineName || "").trim();
+  const category = String((ocrResult as any)?.expenseCategory || ((ocrResult as any)?.hotelName ? "hospedagem" : (ocrResult as any)?.airlineName ? "transporte_aereo" : "")).trim();
+  if (!Number.isFinite(amountCents) || amountCents <= 0 || !merchant || !category) {
+    throw new Error("O comprovante não retornou valor, estabelecimento e categoria suficientes para lançamento.");
+  }
 
   const { data: expense, error } = await supabase
     .from("corporate_travel_expenses")

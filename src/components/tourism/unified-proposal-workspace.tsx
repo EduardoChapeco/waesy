@@ -313,8 +313,8 @@ export function UnifiedProposalWorkspace({
       adultsCount: lead?.passenger_count ? Math.max(1, lead.passenger_count) : 2,
       childrenCount: 0,
       childrenAges: [],
-      baseAdultPriceCents: lead?.estimated_value_cents ? Math.round(lead.estimated_value_cents / 2) : 391819,
-      baseChildPriceCents: 185000,
+       baseAdultPriceCents: lead?.estimated_value_cents ? Math.round(lead.estimated_value_cents / 2) : 0,
+       baseChildPriceCents: 0,
       addons: [],
       payerName: lead?.fullName || initialClientName || "",
     },
@@ -329,14 +329,16 @@ export function UnifiedProposalWorkspace({
       operatorSlug: string;
       adultPriceCents: number;
       isRecommended: boolean;
+       quoteSessionId?: string;
+       offerSnapshotId?: string;
     }>
   >([
     {
       optionLabel: "Opção 1 — Seleção Principal",
-      hotelName: "Hotel Central Recomendado",
-      airlineDesc: "Voo + Bagagem 23kg + Transfer Regular",
-      operatorSlug: "orinter",
-      adultPriceCents: lead?.estimated_value_cents ? Math.round(lead.estimated_value_cents / 2) : 391819,
+       hotelName: "",
+       airlineDesc: "",
+       operatorSlug: "",
+       adultPriceCents: lead?.estimated_value_cents ? Math.round(lead.estimated_value_cents / 2) : 0,
       isRecommended: true,
     },
   ]);
@@ -388,8 +390,8 @@ export function UnifiedProposalWorkspace({
         adultsCount: 2,
         childrenCount: 0,
         childrenAges: [],
-        baseAdultPriceCents: rooms[0]?.baseAdultPriceCents || 391819,
-        baseChildPriceCents: rooms[0]?.baseChildPriceCents || 185000,
+        baseAdultPriceCents: rooms[0]?.baseAdultPriceCents || 0,
+        baseChildPriceCents: rooms[0]?.baseChildPriceCents || 0,
         addons: [],
         payerName: "",
       },
@@ -529,6 +531,10 @@ export function UnifiedProposalWorkspace({
           returnDate,
           adults: rooms.reduce((acc, r) => acc + r.adultsCount, 0),
           childrenAges: rooms.flatMap((r) => r.childrenAges),
+          roomOccupancies: rooms.map((r) => ({
+            adults: r.adultsCount,
+            childrenAges: r.childrenAges,
+          })),
           operatorSlug: infotravelOperatorFilter,
         },
       });
@@ -545,6 +551,8 @@ export function UnifiedProposalWorkspace({
           operatorSlug: pkg.operatorSlug,
           adultPriceCents: Math.round((pkg.priceTotalBrl / 2) * 100),
           isRecommended: idx === 0,
+          quoteSessionId: pkg.quoteSessionId,
+          offerSnapshotId: pkg.offerSnapshotId,
         }))
       );
       toast.success(`${packages.length} pacotes carregados diretamente da API InfoTravel!`);
@@ -559,7 +567,7 @@ export function UnifiedProposalWorkspace({
   // Mutação para Salvar a Proposta Canônica
   const saveProposalMutation = useMutation({
     mutationFn: async ({ openStudioAfterSave }: { openStudioAfterSave: boolean }) => {
-      const mainHotel = bundleOptions[0]?.hotelName || `Hospedagem em ${destinationQuery}`;
+      const mainHotel = bundleOptions[0]?.hotelName || "";
       const roomSummaryLines = calculation.rooms.map(
         (r) =>
           `• ${r.roomLabel} (${r.adultsCount} Adultos${r.childrenCount > 0 ? ` + ${r.childrenCount} Crianças` : ""}): ${formatMoney(r.roomTotalCents)}${
@@ -594,29 +602,35 @@ export function UnifiedProposalWorkspace({
 
       // Cria cotação no CRM se houver telefone
       let createdQuoteId: string | undefined;
-      if (mode === "kanban_lead_quote" || clientPhone) {
+      if (clientPhone.trim()) {
         try {
           const qRes = await createAgencyTravelQuote({
             data: {
-              CustomerName: clientName || "Cliente em Atendimento",
-              CustomerWhatsapp: clientPhone || "49999999999",
-              CustomerEmail: clientEmail || undefined,
-              DestinationRaw: destinationQuery,
-              OriginCity: originCity,
-              DepartureDate: departureDate,
-              ReturnDate: returnDate,
-              Adults: calculation.totalAdults,
-              Children: calculation.totalChildren,
-              ChildrenAges: calculation.rooms.flatMap((r) => r.childrenAges),
-              TripType: "air_package",
-              HotelName: mainHotel,
-              QuoteAmountCents: calculation.grandTotalCents,
-              AgencyNotes: fullSummary,
-            } as any,
+              contact_name: clientName || "Cliente em Atendimento",
+              contact_whatsapp: clientPhone,
+              contact_email: clientEmail || null,
+              destination_city: destinationQuery,
+              origin_city: originCity,
+              departure_date: departureDate || null,
+              return_date: returnDate || null,
+              adults_count: calculation.totalAdults,
+              children_count: calculation.totalChildren,
+              children_ages: calculation.rooms.flatMap((r) => r.childrenAges),
+              room_occupancies: calculation.rooms.map((r) => ({
+                adults: r.adultsCount,
+                childrenAges: r.childrenAges,
+              })),
+              trip_type: "air_package",
+              quote_session_id: bundleOptions[0]?.quoteSessionId || null,
+              quote_amount_cents: calculation.grandTotalCents || null,
+              agency_notes: [mainHotel, fullSummary].filter(Boolean).join("\n"),
+              source: "workspace_unified_proposal",
+            },
           });
-          createdQuoteId = (qRes as any)?.id;
-        } catch {
-          // Continua para salvar a proposta
+          createdQuoteId = qRes.id;
+        } catch (error) {
+          toast.error(error instanceof Error ? error.message : "Não foi possível salvar a cotação no CRM.");
+          throw error;
         }
       }
 
@@ -635,6 +649,7 @@ export function UnifiedProposalWorkspace({
 
       const propRes = await createTravelProposal({
         data: {
+          quoteId: createdQuoteId,
           title: effectiveTitle,
           destinationCity: destinationQuery,
           travelStartDate: departureDate || undefined,
@@ -664,43 +679,24 @@ export function UnifiedProposalWorkspace({
                   ...f,
                   departure_date: departureDate,
                 }))
-              : [
-                  {
-                    id: "fl-ida",
-                    type: "outbound",
-                    airline: "Voo Regular Confirmado",
-                    airline_name: "Voo Regular Confirmado",
-                    flight_number: "G3 / LA",
-                    origin: originCity.match(/\(([A-Z]{3})\)/)?.[1] || "XAP",
-                    origin_iata: originCity.match(/\(([A-Z]{3})\)/)?.[1] || "XAP",
-                    origin_city: originCity,
-                    destination: gatewayResolution?.primaryAirportIata || "DEST",
-                    destination_iata: gatewayResolution?.primaryAirportIata || "DEST",
-                    destination_city: destinationQuery,
-                    departure_date: departureDate,
-                    departure_time: "09:00",
-                    arrival_time: "14:30",
-                    baggage_included:
-                      "1 item pessoal + 1 mala de mão 10kg + bagagem despachada conforme contrato",
-                    stops_count: 1,
-                    stops: 1,
-                  },
-                ],
-          hotels: bundleOptions.map((opt, idx) => ({
-            id: `ht-${idx + 1}`,
+              : [],
+          hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt, idx) => ({
+            id: opt.offerSnapshotId || `hotel-${idx + 1}`,
             hotel_name: opt.hotelName,
             name: opt.hotelName,
-            stars: matchedPkgTemplate?.hotels?.[0]?.stars || 4,
+            stars: matchedPkgTemplate?.hotels?.[0]?.stars,
             destination: destinationQuery,
             checkin_date: departureDate,
             checkout_date: returnDate,
             check_in: departureDate,
             check_out: returnDate,
-            nights_count: 5,
+            nights_count: departureDate && returnDate
+              ? Math.max(1, Math.ceil((new Date(returnDate).getTime() - new Date(departureDate).getTime()) / 86400000))
+              : undefined,
             room_type: calculation.rooms.map((r) => r.roomLabel).join(" | "),
-            board_basis: calculation.rooms[0]?.mealPlan || "Café da Manhã",
+            board_basis: calculation.rooms[0]?.mealPlan || "",
             image_url: matchedPkgTemplate?.hotels?.[0]?.image_url || matchedPkgTemplate?.coverImageUrl,
-            amenities: matchedPkgTemplate?.hotels?.[0]?.amenities || ["Wi-Fi", "Piscina", "Café da Manhã"],
+            amenities: matchedPkgTemplate?.hotels?.[0]?.amenities || [],
           })),
           itinerary: matchedPkgTemplate?.itinerary || [],
           transfers: (matchedPkgTemplate?.transfers as any) || [],
@@ -773,25 +769,25 @@ export function UnifiedProposalWorkspace({
         destination_city: destinationQuery,
         travel_start_date: departureDate || null,
         travel_end_date: returnDate || null,
-        flights: [
-          {
-            airline_name: "Voo Regular Confirmado",
-            origin_iata: originCity.match(/\(([A-Z]{3})\)/)?.[1] || "XAP",
-            destination_iata: gatewayResolution?.primaryAirportIata || "DEST",
-          },
-        ],
-        hotels: bundleOptions.map((opt) => ({
+        flights: matchedPkgTemplate?.flights || [],
+        hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt) => ({
           hotel_name: opt.hotelName,
         })),
         itinerary: matchedPkgTemplate?.itinerary || [],
         transfers: (matchedPkgTemplate?.transfers || []).map((t: any) => ({
-          type: t.type || "Privativo",
-          vehicle: t.vehicle || t.vehicle_type || "Van / Executivo",
+          type: t.type,
+          vehicle: t.vehicle || t.vehicle_type,
           date: t.date,
           notes: t.notes || t.description,
         })),
         tours: matchedPkgTemplate?.tours || [],
-        rooms: [],
+        rooms: calculation.rooms.map((room) => ({
+          roomNumber: room.roomNumber,
+          roomType: room.roomLabel,
+          adults: room.adultsCount,
+          children: room.childrenCount,
+          childrenAges: room.childrenAges,
+        })),
         includes: selectedInclusions,
         excludes: [],
         pricing: {

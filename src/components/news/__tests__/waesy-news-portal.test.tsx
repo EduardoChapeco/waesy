@@ -26,8 +26,8 @@ describe("WaesyNewsPortal, Modular Prométhée Omni Blocks & Real News Pipeline"
     expect(html).toContain("Estúdio PNG");
     expect(html).toContain("Cidades da Região:");
     expect(html).toContain("Visualização em Grade");
-    expect(html).toContain("Ler mais");
-    expect(html).toContain("BREAKING NEWS");
+    expect(html).toContain("Sem matérias neste filtro");
+    expect(html).not.toContain("BREAKING NEWS");
     expect(html).toContain("ADS");
     expect(html).toContain("Feito com");
     expect(html).toContain("/brand-logo.png");

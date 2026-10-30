@@ -1,10 +1,15 @@
 import { getServerClient } from "@/lib/supabase";
+import type { PaymentCheckoutContext } from "@/lib/monetization-engine";
+
+declare const process: any;
 
 import { getActiveIntegrationPayload } from "./integrations.functions";
 
 type PaymentMethod = "pix" | "credit_card";
 
 export type SupportedGatewayProvider = "mercado_pago" | "asaas" | "paypal" | "stripe";
+
+export type { PaymentCheckoutContext };
 
 export interface CreateGatewayPaymentInput {
   orderId: string;
@@ -16,6 +21,7 @@ export interface CreateGatewayPaymentInput {
   installments?: number;
   provider?: SupportedGatewayProvider;
   storeId?: string;
+  context?: PaymentCheckoutContext;
 }
 
 export interface GatewayPaymentResult {
@@ -37,14 +43,20 @@ export async function createGatewayPayment(input: CreateGatewayPaymentInput): Pr
   const email = input.payer.email?.trim();
   if (!email) throw new Error("E-mail do pagador é obrigatório para o gateway.");
 
+  const context: PaymentCheckoutContext = input.context || "marketplace";
+  // Invariante Soberana de Isolamento:
+  // Marketplace: Tramita EXCLUSIVAMENTE pelas APIs conectadas pelo Admin Master.
+  // PDV / Fatura Direta: Pode usar credencial própria da loja (storeId) ou recorrer ao gateway Master.
+  const allowStoreGateway = context === "pdv" || context === "invoice";
+
   // 1. ASAAS
   if (selectedProvider === "asaas") {
     let asaasApiKey = process.env.ASAAS_API_KEY?.trim();
-    if (input.storeId) {
+    if (allowStoreGateway && input.storeId) {
       const storeCreds = await getActiveIntegrationPayload(input.storeId, "asaas");
       if (storeCreds?.api_key) asaasApiKey = storeCreds.api_key;
     }
-    if (!asaasApiKey) throw new Error("Gateway Asaas não configurado.");
+    if (!asaasApiKey) throw new Error("Gateway Asaas Master não configurado.");
 
     const isSandbox = asaasApiKey.startsWith("$aact_");
     const baseUrl = isSandbox ? "https://sandbox.asaas.com/api/v3" : "https://api.asaas.com/api/v3";
@@ -136,11 +148,14 @@ export async function createGatewayPayment(input: CreateGatewayPaymentInput): Pr
 
   // 2. PAYPAL
   if (selectedProvider === "paypal") {
+    if (context === "marketplace") {
+      throw new Error("Transações no Marketplace são restritas aos gateways integrados pelo Admin Master (Asaas e Mercado Pago).");
+    }
     let clientId = process.env.PAYPAL_CLIENT_ID?.trim();
     let clientSecret = process.env.PAYPAL_CLIENT_SECRET?.trim();
     let environment = process.env.PAYPAL_ENVIRONMENT?.trim() || "production";
 
-    if (input.storeId) {
+    if (allowStoreGateway && input.storeId) {
       const storeCreds = await getActiveIntegrationPayload(input.storeId, "paypal");
       if (storeCreds?.client_id) clientId = storeCreds.client_id;
       if (storeCreds?.client_secret) clientSecret = storeCreds.client_secret;
@@ -154,7 +169,7 @@ export async function createGatewayPayment(input: CreateGatewayPaymentInput): Pr
     const baseApiUrl = isSandbox ? "https://api-m.sandbox.paypal.com" : "https://api-m.paypal.com";
 
     // Obter OAuth Token
-    const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    const authHeader = btoa(`${clientId}:${clientSecret}`);
     const tokenRes = await fetch(tokenUrl, {
       method: "POST",
       headers: {
@@ -211,7 +226,7 @@ export async function createGatewayPayment(input: CreateGatewayPaymentInput): Pr
 
   // 3. MERCADO PAGO (Default)
   let token = process.env.MERCADO_PAGO_ACCESS_TOKEN?.trim();
-  if (input.storeId) {
+  if (allowStoreGateway && input.storeId) {
     const storeCreds = await getActiveIntegrationPayload(input.storeId, "mercadopago");
     if (storeCreds?.access_token) token = storeCreds.access_token;
   }

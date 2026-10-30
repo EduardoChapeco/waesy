@@ -36,6 +36,7 @@ import {
   SupermarketCartSheet,
   SupermarketBottomNav,
   SupermarketClubDashboardView,
+  SupermarketBarcodeScannerModal,
 } from "@/components/commerce/supermarket";
 import { useCartContext } from "@/lib/cart-context";
 import { toast } from "sonner";
@@ -149,6 +150,7 @@ function MercadoVerticalPage() {
   const [selectedWindow, setSelectedWindow] = useState<DeliveryWindowDTO | null>(null);
   const [selectedProductDetail, setSelectedProductDetail] = useState<SupermarketProductCardDTO | null>(null);
   const [isSupermarketCartOpen, setIsSupermarketCartOpen] = useState(false);
+  const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
 
   const handleDepartmentChange = (depId: string) => {
     setActiveDepartment(depId);
@@ -206,10 +208,16 @@ function MercadoVerticalPage() {
   const filteredProducts = useMemo(() => {
     let list = supermarketProducts;
 
-    // Filtro por termo de busca
+    // Filtro por termo de busca ou código de barras/EAN/SKU
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      list = list.filter((p) => p.title.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q));
+      list = list.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.brand?.toLowerCase().includes(q) ||
+          p.sku?.toLowerCase().includes(q) ||
+          (p as any).ean?.toLowerCase().includes(q),
+      );
     }
 
     // Filtro por departamento
@@ -306,12 +314,13 @@ function MercadoVerticalPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-12 select-none">
-      {/* ── 1. Header Canônico de Supermercado com Busca Pílula ── */}
+      {/* ── 1. Header Canônico de Supermercado com Busca Pílula e Scanner ── */}
       <SupermarketHeaderCluster
         storeName={storeName}
         storeLogoUrl={storeLogoUrl}
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
+        onBarcodeScanClick={() => setIsBarcodeScannerOpen(true)}
         cartItemCount={cartItemCount}
         onOpenCart={() => setIsSupermarketCartOpen(true)}
         couponsCount={clubMemberData?.activeCouponsCount || 0}
@@ -442,6 +451,16 @@ function MercadoVerticalPage() {
         onClose={() => setIsSupermarketCartOpen(false)}
         freeShippingThresholdCents={15000}
         orderBumpProduct={filteredProducts[0] || null}
+      />
+
+      {/* ── 9.1 Modal de Leitor de Código de Barras (Scanner de EAN/SKU) ── */}
+      <SupermarketBarcodeScannerModal
+        isOpen={isBarcodeScannerOpen}
+        onClose={() => setIsBarcodeScannerOpen(false)}
+        onDetected={(barcode) => {
+          setSearchQuery(barcode);
+          toast.success(`Código identificado: ${barcode}`);
+        }}
       />
 
       {/* ── 10. Bottom Navigation Especial de Supermercado Mobile ── */}

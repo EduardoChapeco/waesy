@@ -53,6 +53,7 @@ export interface WaesyNewsPortalProps {
   initialSponsors?: SponsorDTO[];
   initialBanners?: BannerDTO[];
   initialActiveCity?: string;
+  initialLoadError?: string;
 }
 
 
@@ -63,68 +64,12 @@ interface PortalComment {
   createdAtLabel: string;
 }
 
-const OFFLINE_TEST_FALLBACK_ARTICLES: NormalizedPrometheeArticle[] = [
-  {
-    id: "fallback-sjc-1",
-    slug: "parque-tecnologico-sjc-expansao-aeroespacial",
-    title: "Parque Tecnológico amplia polo de inovação regional",
-    lead: "Novos laboratórios compartilhados conectam indústria regional, universidades e fornecedores especializados.",
-    body: [
-      "O complexo tecnológico oficializou a ampliação de sua área dedicada a sistemas embarcados e mobilidade limpa.",
-      "Empresas instaladas destacam a abertura de frentes técnicas para engenheiros e analistas.",
-    ],
-    bulletSummary: [
-      "Ampliação de laboratórios integrados.",
-      "Conexão direta entre universidades e cadeia produtiva.",
-    ],
-    quote: "A integração regional acelera projetos industriais de alto valor agregado.",
-    category: "Economia",
-    city: "São Miguel do Oeste",
-    state: "SC",
-    publishedAgo: "15min",
-    publishedDateLabel: "Edição atual",
-    readingTime: "4 min",
-    author: "Redação Waesy",
-    role: "Apuração Regional",
-    isBreaking: true,
-    likesCount: 48,
-    commentsCount: 11,
-    coverImageUrl: null,
-  },
-  {
-    id: "fallback-taubate-2",
-    slug: "integracao-viaria-regional",
-    title: "Central integrada reduz tempo de atendimento viário regional",
-    lead: "Monitoramento óptico em tempo real agiliza alertas operacionais nos acessos urbanos e rodoviários da região.",
-    body: [
-      "Equipes municipais de trânsito passaram a operar com compartilhamento instantâneo de ocorrências nos horários de maior fluxo.",
-      "Motoristas recebem orientação preventiva nos painéis eletrônicos e canais comunitários verificados.",
-    ],
-    bulletSummary: [
-      "Monitoramento integrado nos corredores urbanos.",
-      "Redução no tempo médio de resposta operacional.",
-    ],
-    quote: "Informação rápida salva tempo do trabalhador e evita retenções prolongadas.",
-    category: "Segurança",
-    city: "Chapecó",
-    state: "SC",
-    publishedAgo: "34min",
-    publishedDateLabel: "Edição atual",
-    readingTime: "3 min",
-    author: "Editoria Cidades",
-    role: "Plantão Viário",
-    isBreaking: true,
-    likesCount: 31,
-    commentsCount: 7,
-    coverImageUrl: null,
-  },
-];
-
 export function WaesyNewsPortal({
   initialArticles = [],
   initialSponsors = [],
   initialBanners = [],
   initialActiveCity = "",
+  initialLoadError,
 }: WaesyNewsPortalProps) {
   const [selectedCity, setSelectedCity] = useState<string>(
     initialActiveCity && initialActiveCity !== "all" && initialActiveCity !== "Global"
@@ -161,8 +106,7 @@ export function WaesyNewsPortal({
 
   const normalizedArticles = useMemo<NormalizedPrometheeArticle[]>(() => {
     const dbNormalized = initialArticles.map((item, idx) => normalizePrometheeArticle(item, idx));
-    const basePool = dbNormalized.length > 0 ? dbNormalized : OFFLINE_TEST_FALLBACK_ARTICLES;
-    return [...citizenArticles, ...basePool];
+    return [...citizenArticles, ...dbNormalized];
   }, [citizenArticles, initialArticles]);
 
   // Hidrata localização salva no app Waesy ou parâmetro ?artigo=slug
@@ -185,7 +129,7 @@ export function WaesyNewsPortal({
         if (found) setActiveArticle(found);
       }
     }
-  }, []);
+  }, [normalizedArticles]);
 
   // Carrega comentários reais quando abre reportagem
   useEffect(() => {
@@ -958,7 +902,15 @@ export function WaesyNewsPortal({
                 </div>
               </div>
 
-              {feedArticles.length === 0 ? (
+              {initialLoadError ? (
+                <div className="rounded-3xl border border-destructive/30 bg-card p-8 text-center space-y-3">
+                  <div className="size-12 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto">
+                    <Newspaper className="size-5 text-destructive" />
+                  </div>
+                  <h3 className="text-base font-bold text-foreground">Notícias indisponíveis</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Não foi possível carregar as matérias agora.</p>
+                </div>
+              ) : feedArticles.length === 0 ? (
                 <div className="rounded-3xl border border-border bg-card p-8 text-center space-y-3">
                   <div className="size-12 rounded-2xl border border-border bg-muted/30 flex items-center justify-center mx-auto">
                     <Newspaper className="size-5 text-muted-foreground" />

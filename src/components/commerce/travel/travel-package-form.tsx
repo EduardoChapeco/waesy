@@ -166,12 +166,12 @@ export function TravelPackageForm({
   const [isSavingHotel, setIsSavingHotel] = useState(false);
 
   // Queries para carregar Destinos e Banco de Hotéis
-  const { data: destinationsList = [] } = useQuery({
+  const { data: destinationsList = [], isLoading: isLoadingDestinations } = useQuery({
     queryKey: ["travel_destinations_options"],
     queryFn: () => listDestinations().catch(() => []),
   });
 
-  const { data: hotelsBankList = [] } = useQuery({
+  const { data: hotelsBankList = [], isLoading: isLoadingHotels } = useQuery({
     queryKey: ["travel_hotels_options"],
     queryFn: () => listHotelsBank().catch(() => []),
   });
@@ -787,7 +787,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={() => setShowNewDestModal(!showNewDestModal)}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Novo Destino</span>
@@ -802,7 +802,7 @@ export function TravelPackageForm({
                   <span>Vincular do Catálogo de Destinos</span>
                 </Label>
                 <Select onValueChange={handleSelectDestinationFromBank}>
-                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectTrigger disabled={isLoadingDestinations} className="h-11 rounded-lg text-xs bg-background">
                     <SelectValue placeholder="Escolher um destino cadastrado..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -824,7 +824,7 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewDestModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -858,7 +858,7 @@ export function TravelPackageForm({
                     variant="ghost"
                     onClick={() => setShowNewDestModal(false)}
                     disabled={isSavingDest}
-                    className="rounded-lg text-xs h-9"
+                    className="rounded-lg text-xs min-h-11"
                   >
                     Cancelar
                   </Button>
@@ -867,7 +867,7 @@ export function TravelPackageForm({
                     size="sm"
                     onClick={handleQuickAddDest}
                     disabled={isSavingDest || !quickDestName.trim()}
-                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-9"
+                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 min-h-11"
                   >
                     {isSavingDest ? (
                       <>
@@ -1013,7 +1013,7 @@ export function TravelPackageForm({
                             size="sm"
                             disabled={idx === 0}
                             onClick={() => moveBioBullet(idx, "up")}
-                            className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                             title="Mover para cima"
                           >
                             <ChevronUp className="size-3.5" />
@@ -1024,7 +1024,7 @@ export function TravelPackageForm({
                             size="sm"
                             disabled={idx === resort.bio_bullets!.length - 1}
                             onClick={() => moveBioBullet(idx, "down")}
-                            className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                             title="Mover para baixo"
                           >
                             <ChevronDown className="size-3.5" />
@@ -1036,7 +1036,7 @@ export function TravelPackageForm({
                         variant="ghost"
                         size="sm"
                         onClick={() => removeBioBullet(idx)}
-                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -1060,7 +1060,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={addItineraryDay}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Adicionar Dia</span>
@@ -1076,7 +1076,7 @@ export function TravelPackageForm({
                   size="sm"
                   variant="outline"
                   onClick={addItineraryDay}
-                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
+                  className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer"
                 >
                   <Plus className="size-3.5" />
                   <span>Cadastrar Primeiro Dia</span>
@@ -1109,7 +1109,7 @@ export function TravelPackageForm({
                           size="sm"
                           disabled={idx === 0}
                           onClick={() => moveDay(idx, "up")}
-                          className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                           title="Mover dia para cima"
                         >
                           <ChevronUp className="size-3.5" />
@@ -1120,7 +1120,7 @@ export function TravelPackageForm({
                           size="sm"
                           disabled={idx === itinerary.length - 1}
                           onClick={() => moveDay(idx, "down")}
-                          className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                           title="Mover dia para baixo"
                         >
                           <ChevronDown className="size-3.5" />
@@ -1130,7 +1130,7 @@ export function TravelPackageForm({
                           variant="ghost"
                           size="sm"
                           onClick={() => removeItineraryDay(idx)}
-                          className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                           title="Excluir dia"
                         >
                           <Trash2 className="size-3.5" />
@@ -1176,7 +1176,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={addRecommendation}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Adicionar Dica</span>
@@ -1198,7 +1198,7 @@ export function TravelPackageForm({
                         variant="ghost"
                         size="sm"
                         onClick={() => removeRecommendation(idx)}
-                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -1263,7 +1263,7 @@ export function TravelPackageForm({
                   size="sm"
                   variant="outline"
                   onClick={() => setShowNewHotelModal(!showNewHotelModal)}
-                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Plus className="size-3.5" />
                   <span>+ Novo Hotel</span>
@@ -1278,6 +1278,7 @@ export function TravelPackageForm({
                 placeholder="Buscar hotel, resort ou pousada (ex: Salinas, Nannai, Tivoli)..."
                 value={resort.name}
                 storeHotels={hotelsBankList}
+                disabled={isLoadingHotels}
                 onChange={(hotelId, hotelItem) => handleSelectHotelFromCombobox(hotelId, hotelItem)}
                 helperText="Busque no banco central ou no catálogo de sua agência para preencher automaticamente destino, fotos e refeições."
               />
@@ -1291,7 +1292,7 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewHotelModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -1340,7 +1341,7 @@ export function TravelPackageForm({
                     variant="ghost"
                     onClick={() => setShowNewHotelModal(false)}
                     disabled={isSavingHotel}
-                    className="rounded-lg text-xs h-9"
+                    className="rounded-lg text-xs min-h-11"
                   >
                     Cancelar
                   </Button>
@@ -1349,7 +1350,7 @@ export function TravelPackageForm({
                     size="sm"
                     onClick={handleQuickAddHotel}
                     disabled={isSavingHotel || !quickHotelName.trim() || !quickHotelCity.trim()}
-                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-9"
+                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 min-h-11"
                   >
                     {isSavingHotel ? (
                       <>
@@ -1456,7 +1457,7 @@ export function TravelPackageForm({
                       <button
                         type="button"
                         onClick={() => removeBadge(idx)}
-                        className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <X className="size-3" />
                       </button>
@@ -1734,7 +1735,7 @@ export function TravelPackageForm({
                           <button
                             type="button"
                             onClick={() => handleRemoveGateway(gw)}
-                            className="size-4 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 min-h-11 min-w-11 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <X className="size-2.5" />
                           </button>
@@ -1844,7 +1845,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={handleAddDeparture}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Adicionar Saída</span>
@@ -1862,7 +1863,7 @@ export function TravelPackageForm({
                   size="sm"
                   variant="outline"
                   onClick={handleAddDeparture}
-                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer"
                 >
                   <Plus className="size-3.5" />
                   <span>Cadastrar Primeira Saída</span>
@@ -1884,7 +1885,7 @@ export function TravelPackageForm({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveDeparture(opt.id)}
-                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -2281,7 +2282,7 @@ export function TravelPackageForm({
                       type="button"
                       onClick={() => toggleInclusion(item)}
                       className={cn(
-                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isChecked
                           ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-semibold"
                           : "bg-background border-border/60 text-muted-foreground hover:border-emerald-500/30"
@@ -2347,7 +2348,7 @@ export function TravelPackageForm({
                       type="button"
                       onClick={() => toggleExclusion(item)}
                       className={cn(
-                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isChecked
                           ? "bg-destructive/15 border-destructive/40 text-destructive font-semibold"
                           : "bg-background border-border/60 text-muted-foreground hover:border-destructive/30"
@@ -2408,7 +2409,7 @@ export function TravelPackageForm({
                       type="button"
                       onClick={() => toggleBoardingDoc(item)}
                       className={cn(
-                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isChecked
                           ? "bg-primary/15 border-primary/40 text-primary font-semibold"
                           : "bg-background border-border/60 text-muted-foreground hover:border-primary/30"

@@ -88,7 +88,7 @@ export function ProductModifiersCard({
  variant="outline"
  size="sm"
  onClick={handleCreateNew}
- className="h-7 text-xs gap-2 font-medium border-dashed text-primary hover:text-primary hover:bg-primary/5"
+  className="h-11 min-h-11 text-xs gap-2 font-medium border-dashed text-primary hover:text-primary hover:bg-primary/5"
  >
  <Plus className="size-3.5" />
  Novo Grupo
@@ -222,7 +222,7 @@ export function ProductModifiersCard({
             className="group relative flex flex-col items-center justify-center p-8 text-center rounded-lg border-2 border-dashed border-border/80 hover:border-primary/50 bg-muted/10 hover:bg-primary/[0.02] cursor-pointer transition-colors space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
  <div className="size-12 rounded-lg bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center text-primary transition-transform duration-200 group-hover:scale-110 shadow-xs ring-4 ring-primary/5">
- <Plus className="size-6 stroke-[2.5]" />
+  <Plus className="size-6 stroke-2" />
  </div>
 
  <div className="space-y-1 max-w-sm">
@@ -242,7 +242,7 @@ export function ProductModifiersCard({
  e.stopPropagation();
  handleCreateNew();
  }}
- className="h-8 text-xs font-bold gap-2 shadow-xs"
+  className="h-11 min-h-11 text-xs font-bold gap-2 shadow-xs"
  >
  <Plus className="size-3.5" />
  Adicionar Rapidamente
