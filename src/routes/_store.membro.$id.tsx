@@ -428,8 +428,8 @@ export function MemberPublicProfileView({
         </div>
       ) : (
         <>
-          {/* ── CABEÇALHO DO PERFIL CANÔNICO (INSTAGRAM / THREADS / APPLE HIG — SEM CAPA) ── */}
-          <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-4 shadow-xs">
+          {/* ── CABEÇALHO DO PERFIL CANÔNICO (INSTAGRAM / THREADS / APPLE HIG — SUPERFÍCIE UNIFICADA) ── */}
+          <div className="w-full space-y-4 px-1 sm:px-0">
             {/* Top Row: Avatar Squircle 1:1 e Stats em Linha Horizontal */}
             <div className="flex items-center justify-between gap-4">
               {/* Avatar 1:1 Squircle */}
@@ -744,9 +744,9 @@ export function MemberPublicProfileView({
  </div>
  )}
 
- {/* ── Seletor de Tipo de Perfil / Modos: Vitrine / Publicações / Sobre & Currículo (Logo depois das infos da bio e links, antes das abas do perfil) ── */}
- <div className="flex items-center justify-between gap-2 pt-2 pb-1 border-t border-border/40">
- <div className="flex flex-nowrap overflow-x-auto no-scrollbar tab-list items-center gap-1 p-1 rounded-lg bg-muted/40 text-xs font-semibold">
+ {/* ── Seletor de Tipo de Perfil / Modos: Segmented Control 100% de Largura (Padrão Threads / Apple HIG) ── */}
+ <div className="w-full pt-2 pb-1 border-t border-border/40">
+ <div className="w-full flex items-center gap-1 p-1 rounded-lg bg-muted/40 text-xs font-semibold">
  {isBrandPersonaView ? (
  <>
  <Link
@@ -754,7 +754,7 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "comercial" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "comercial"
  ? "bg-background text-foreground font-bold shadow-xs"
  : "text-muted-foreground hover:text-foreground"
@@ -767,7 +767,7 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "social" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "social"
  ? "bg-background text-foreground font-bold shadow-xs"
  : "text-muted-foreground hover:text-foreground"
@@ -780,7 +780,7 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "profissional" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "profissional"
  ? "bg-background text-foreground font-bold shadow-xs"
  : "text-muted-foreground hover:text-foreground"
@@ -796,7 +796,7 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "social" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "social"
  ? "bg-background text-foreground font-bold shadow-xs"
  : "text-muted-foreground hover:text-foreground"
@@ -809,7 +809,7 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "profissional" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "profissional"
  ? "bg-background text-foreground font-bold shadow-xs"
  : "text-muted-foreground hover:text-foreground"

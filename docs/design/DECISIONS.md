@@ -1,5 +1,22 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-379: Saneamento Sistêmico de Nichos, Erradicação de Fakes B.33, Geometria Canônica de Cards e Perfil Unificado
+- **Data:** 2026-10-29
+- **Contexto:**
+  1. A auditoria sistêmica profunda identificou vazamentos estruturais entre nichos: em `isNichePaymentApplicable`, a ausência de exclusão explícita de `hospitality_stay`, `hospedagem` e `temporada` permitia a exibição indevida de simuladores de parcelamento de cartão no crédito em anúncios de aluguel por temporada e diárias, cujo modelo financeiro opera sob reservas diretas (diárias + taxa de limpeza).
+  2. Presença de fallbacks sintéticos (`990` centavos em quilo nos classificados, fallback fixo `"Excelência Tour"` e métrica `"4.9 "` forjada em templates de vídeo) em desacordo com a Invariante B.33 (Anti-Fake).
+  3. No perfil público (`_store.membro.$id.tsx`), o cabeçalho encontrava-se encapsulado em um card fechado com borda (`rounded-2xl bg-card border border-border/40`) e as abas de navegação operavam em contêiner estreito com scroll horizontal sem distribuição uniforme.
+  4. Cards canônicos de classificados (`ClassifiedItemCard` e `UniversalNicheCard`) apresentavam bordas visíveis (`border border-border/60`), duplicatas de imagem borrada no split horizontal e pills com `backdrop-blur-md`.
+  5. Presença de ícones de AI-smell (`Sparkles`) em formulários de classificados, geolocalização de endereço e no composer do chat.
+- **Decisão:**
+  1. Refatorado `isNichePaymentApplicable` em `semantics.ts` para isolar estritamente o nicho de hospedagem/temporada do fluxo de pagamento tradicional C2C, restringindo as ações financeiras ao checkout de diárias via `ClassifiedBookingDialog`.
+  2. Erradicados os fallbacks sintéticos: `price_per_kg_cents` agora persiste `null` quando não fornecido; `storeName` no estúdio de viagem deriva exclusivamente do tenant real ou é omitido; notas de avaliação `"4.9 "` forjadas foram removidas de `motion-templates.ts`; e `TestimonialCarousel` agora é omitido graciosamente se não houver reviews reais (`if (testimonials.length === 0) return null`).
+  3. Perfil público unificado: removida a casca de card fechado do cabeçalho de `_store.membro.$id.tsx`, assentando avatar, bio e métricas sociais diretamente sobre a superfície `bg-background`, e abas de navegação convertidas em Segmented Control padrão Threads com 100% de largura dividida igualmente (`w-full flex-1 text-center h-11 min-h-11`).
+  4. Geometria canônica de cards: removidas as bordas perimetrais (`border-0 bg-card shadow-xs`) em `ClassifiedItemCard` e `UniversalNicheCard`, imagem no split horizontal em `object-cover size-full` sem duplicatas em blur, e purgado `backdrop-blur-md` na floating pill.
+  5. Erradicados os ícones de `Sparkles` no formulário de classificados (`Compass`), no formulário de endereço canônico (`Navigation`) e no composer de chat (`Smile`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.28, B.31, B.33, B.35; apple-design/SKILL.md; anti-ai-design/SKILL.md.
+- **Consequências:** Zero mocks, dados fake ou avaliações forjadas em 100% das superfícies auditadas; isolamento hermético entre nichos; conformidade com os princípios ergonômicos Apple HIG e aprovação contínua na catraca de integridade visual.
+
 ## DEC-378: Fechamento End-to-End do Varejo Alimentar, Badges Contextuais Dinâmicas, Desambiguação de Hospedagem e Runtime Público de Apps Verticais (/cardapio, /departamento, /pedidos)
 - **Data:** 2026-10-29
 - **Contexto:**

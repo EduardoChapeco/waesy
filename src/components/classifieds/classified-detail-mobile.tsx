@@ -734,7 +734,7 @@ export function ClassifiedDetailMobile({
                 <div className="space-y-1 min-w-0">
                   <span className="text-xs font-bold text-foreground block break-words text-wrap">Negociação & Troca</span>
                   <p className="text-xs text-muted-foreground break-words text-wrap">
-                    {attrs.accepts_trade ? "Aceita veículo na troca como parte do pagamento." : "Propostas comerciais e financiamento sob consulta."}
+                    {attrs.accepts_trade ? "Aceita veículo na troca como parte do pagamento." : "Propostas comerciais e financiamento disponíveis."}
                   </p>
                 </div>
                 {onOpenProposalModal && (

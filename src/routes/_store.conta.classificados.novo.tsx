@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tansta
 import { useState, useMemo, useEffect, useRef, useCallback, lazy } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Sparkles, ExternalLink, Film } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Compass, Camera, ExternalLink, Film } from 'lucide-react';
 import type { StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import type { ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -3283,7 +3283,7 @@ const [aiInstructions, setAiInstructions] = useState("");
           supports_fresh_pricing: true,
           default_pricing_mode: groceryDefaultPricingMode,
           avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-          price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+          price_per_kg_cents: groceryPricePerKgCents || null,
           price_per_unit_cents: priceCents || 0,
         } : undefined;
         attributes.grocery_ripeness_config = groceryRipenessEnabled ? {
@@ -4027,7 +4027,7 @@ const [aiInstructions, setAiInstructions] = useState("");
           supports_fresh_pricing: true,
           default_pricing_mode: groceryDefaultPricingMode,
           avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-          price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+          price_per_kg_cents: groceryPricePerKgCents || null,
           price_per_unit_cents: priceCents || 0,
         } : undefined,
         grocery_ripeness_config: groceryRipenessEnabled ? {
@@ -4825,8 +4825,8 @@ const [aiInstructions, setAiInstructions] = useState("");
                     onClick={() => setTravelStudioOpen(true)}
                     className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-primary/40 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <Sparkles className="size-4 shrink-0 text-primary" />
-                    <span>Estúdio Excelência (Story 9:16 + WhatsApp)</span>
+                    <Compass className="size-4 shrink-0 text-primary" />
+                    <span>Estúdio de Divulgação (Story 9:16 + WhatsApp)</span>
                   </Button>
                 </div>
 
@@ -11668,7 +11668,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                         supports_fresh_pricing: true,
                         default_pricing_mode: groceryDefaultPricingMode,
                         avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-                        price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+                        price_per_kg_cents: groceryPricePerKgCents || null,
                         price_per_unit_cents: priceCents || 0,
                       } : undefined,
                       groceryRipenessConfig: groceryRipenessEnabled ? {
@@ -11750,7 +11750,7 @@ const [aiInstructions, setAiInstructions] = useState("");
           priceCents={priceCents ?? null}
           installments={maxInstallments}
           backgroundImageUrl={images[0] || null}
-          storeName={selectedStoreId ? undefined : "Excelência Tour"}
+          storeName={selectedStoreId ? userStores.find((s) => s.id === selectedStoreId)?.name : undefined}
           onAttachToClassified={(imageUrl) => {
             setImages((prev) => [imageUrl, ...prev]);
             toast.success("Story 9:16 exportado e adicionado à galeria de fotos!");

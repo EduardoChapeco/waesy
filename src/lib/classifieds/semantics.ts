@@ -1468,7 +1468,17 @@ export function isNichePaymentApplicable(nicheIdOrClassified: string | any): boo
     const n = resolveClassifiedNiche(nicheIdOrClassified);
     resolvedId = n?.id || "";
   }
-  return resolvedId !== "job" && resolvedId !== "vaga" && resolvedId !== "donation" && resolvedId !== "doacao";
+  const nonPaymentNiches = new Set([
+    "job",
+    "vaga",
+    "donation",
+    "doacao",
+    "hospitality_stay",
+    "hospedagem",
+    "temporada",
+    "aluguel_temporada",
+  ]);
+  return !nonPaymentNiches.has(resolvedId);
 }
 
 export interface ClassifiedPaymentMethodItem {

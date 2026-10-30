@@ -1098,7 +1098,7 @@ export function ClassifiedDetailDesktop({
                         <span>Boleto Bancário</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {attrs.boleto_due_days ? `Vencimento em ${attrs.boleto_due_days} dias` : "À vista sob consulta"}
+                        {attrs.boleto_due_days ? `Vencimento em ${attrs.boleto_due_days} dias` : "Pagamento à vista"}
                       </p>
                     </div>
                   )}

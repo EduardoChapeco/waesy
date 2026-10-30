@@ -1721,7 +1721,7 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
         { id: "btn-1", label: "Ofertas", iconName: "Tag", tone: "primary", href: "#ofertas" },
         { id: "btn-2", label: "Catálogo", iconName: "ShoppingBag", tone: "default", href: "#produtos" },
         { id: "btn-3", label: "Serviços", iconName: "Wrench", tone: "default", href: "#servicos" },
-        { id: "btn-4", label: "Novidades", iconName: "Sparkles", badge: "Novo", tone: "default", href: "#novidades" },
+        { id: "btn-4", label: "Novidades", iconName: "Tag", badge: "Novo", tone: "default", href: "#novidades" },
         { id: "btn-5", label: "Agenda", iconName: "Calendar", tone: "default", href: "#agenda" },
         { id: "btn-6", label: "Localização", iconName: "MapPin", tone: "default", href: "#contato" },
         { id: "btn-7", label: "Cupons", iconName: "Ticket", tone: "accent", href: "#cupons" },
@@ -2081,7 +2081,7 @@ import {
   Compass,
   Share2,
   HelpCircle,
-  Sparkles,
+  Store,
   Newspaper,
 } from "lucide-react";
 
@@ -2100,7 +2100,7 @@ export type WixBlockCategory =
 
 export const WIX_CATEGORY_CONFIG: { id: WixBlockCategory; label: string; icon: any }[] = [
   { id: "all", label: "Todos", icon: LayoutGrid },
-  { id: "vitrine_app", label: "Vitrine & App", icon: Sparkles },
+  { id: "vitrine_app", label: "Vitrine & App", icon: Store },
   { id: "news_editorial", label: "Notícias & Jornal", icon: Newspaper },
   { id: "hero", label: "Apresentação", icon: LayoutTemplate },
   { id: "gastronomy", label: "Gastronomia", icon: UtensilsCrossed },
