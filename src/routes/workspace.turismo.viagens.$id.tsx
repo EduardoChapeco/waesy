@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, RefreshCw, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode } from "lucide-react";
+import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, RefreshCw, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode, Calculator } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -19,6 +19,7 @@ import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operat
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
 import { FAMOUS_HOTEL_PRESETS } from "@/lib/hotel-presets";
+import { CancellationPenaltyCalculatorDialog } from "@/components/turismo/cancellation-penalty-calculator-dialog";
 
 export const Route = createFileRoute("/workspace/turismo/viagens/$id")({
   head: ({ loaderData }: any) => ({
@@ -87,6 +88,7 @@ function WorkspaceTripDetailPage() {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isImportVoucherOpen, setIsImportVoucherOpen] = useState(false);
   const [isInfotravelBusy, setIsInfotravelBusy] = useState(false);
+  const [isPenaltyCalculatorOpen, setIsPenaltyCalculatorOpen] = useState(false);
 
   // ── Estados Financeiros & Boletos 3-em-1 ──
   const tripFinancialDetails = (aggregate?.trip?.financial_details || {}) as any;
@@ -463,6 +465,16 @@ function WorkspaceTripDetailPage() {
                 <Ticket className="size-4 sm:size-3.5 text-primary" />
                 <span>Vouchers</span>
               </Link>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsPenaltyCalculatorOpen(true)}
+              className="rounded-lg text-xs font-bold gap-2 h-11 px-4 sm:px-3 cursor-pointer"
+            >
+              <Calculator className="size-4 sm:size-3.5 text-primary" />
+              <span>Simular Multa ANAC</span>
             </Button>
 
             <Button
@@ -2198,6 +2210,14 @@ function WorkspaceTripDetailPage() {
           const updated = await getTripAggregate({ data: { tripId: trip.id } }).catch(() => null);
           if (updated) setAggregate(updated);
         }}
+      />
+
+      {/* ── SIMULADOR & CALCULADORA DE MULTAS CONTRATUAIS ANAC ── */}
+      <CancellationPenaltyCalculatorDialog
+        open={isPenaltyCalculatorOpen}
+        onOpenChange={setIsPenaltyCalculatorOpen}
+        defaultTripTotalCents={trip.total_cents || 100000}
+        departureDate={trip.travel_start_date || undefined}
       />
     </div>
   );
