@@ -106,7 +106,7 @@ REVOKE UPDATE ON public.product_variants FROM anon;
 REVOKE UPDATE ON public.product_variants FROM authenticated;
 GRANT UPDATE (
   product_id, sku, barcode, status, price_override_cents, cost_cents,
-  weight_grams, attributes, stock_alert_qty, display_name, ean, height_cm,
+  attributes, stock_alert_qty, display_name, ean, height_cm,
   length_cm, requires_payment_for_backorder, backorder_lead_time_days,
   weight_kg, wholesale_price_cents, width_cm, allow_backorder
 ) ON public.product_variants TO authenticated;

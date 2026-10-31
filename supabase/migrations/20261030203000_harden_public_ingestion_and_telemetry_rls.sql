@@ -51,7 +51,7 @@ CREATE POLICY "travel_quote_requests_insert_secure"
   WITH CHECK (
     store_id IS NOT NULL
     AND client_name IS NOT NULL
-    AND client_contact IS NOT NULL
+    AND (client_phone IS NOT NULL OR client_email IS NOT NULL)
   );
 
 -- 6. LEADS_CRM: Validação defensiva de leads públicos (status deve ser 'new' e ter contato válido)
