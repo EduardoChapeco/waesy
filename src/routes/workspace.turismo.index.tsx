@@ -28,6 +28,12 @@ import {
   Eye,
   SlidersHorizontal,
   Sparkles,
+  AlertTriangle,
+  Luggage,
+  ShieldAlert,
+  ShieldCheck,
+  Receipt,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,10 +41,12 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import { listLeads, updateLeadStatus, promoteLeadToCustomer, issueLeadContract } from "@/services/crm.functions";
+import { listLeads, updateLeadStatus, updateLeadDetails, promoteLeadToCustomer, issueLeadContract, listCustomers } from "@/services/crm.functions";
 import { listStoreTrips, convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { listAgencyTravelProposals } from "@/services/travel-proposal.functions";
+import { listDepartureCards, resolveAirlineCheckinUrl } from "@/services/travel-departures.functions";
+import { listTravelSaleFinancialSheets } from "@/services/travel-financials.functions";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
@@ -52,16 +60,22 @@ export const Route = createFileRoute("/workspace/turismo/")({
   }),
   loader: async () => {
     try {
-      const [leadsRes, proposalsRes, tripsRes, store] = await Promise.all([
+      const [leadsRes, proposalsRes, tripsRes, departuresRes, sheetsRes, customersRes, store] = await Promise.all([
         listLeads().catch(() => []),
         listAgencyTravelProposals().catch(() => []),
         listStoreTrips({ data: { status: "all" } }).catch(() => []),
+        listDepartureCards({ data: {} }).catch(() => []),
+        listTravelSaleFinancialSheets({ data: {} }).catch(() => []),
+        listCustomers({ data: {} }).catch(() => []),
         getStoreSettings().catch(() => null),
       ]);
       return {
         leads: leadsRes || [],
         proposals: proposalsRes || [],
         trips: tripsRes || [],
+        departures: departuresRes || [],
+        sheets: sheetsRes || [],
+        customers: Array.isArray(customersRes) ? customersRes : (customersRes as any)?.customers || [],
         store,
       };
     } catch (err) {
@@ -70,6 +84,9 @@ export const Route = createFileRoute("/workspace/turismo/")({
         leads: [],
         proposals: [],
         trips: [],
+        departures: [],
+        sheets: [],
+        customers: [],
         store: null,
       };
     }
@@ -126,7 +143,15 @@ const TOURISM_STAGES: TourismStageConfig[] = [
 ];
 
 export default function WorkspaceTurismoCockpitPage() {
-  const { leads: initialLeads, proposals: initialProposals, trips: initialTrips, store } = Route.useLoaderData();
+  const {
+    leads: initialLeads,
+    proposals: initialProposals,
+    trips: initialTrips,
+    departures: initialDepartures,
+    sheets: initialSheets,
+    customers: initialCustomers,
+    store,
+  } = Route.useLoaderData();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -134,9 +159,10 @@ export default function WorkspaceTurismoCockpitPage() {
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [proposalLead, setProposalLead] = useState<UnifiedProposalWorkspaceLead | null>(null);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
-  const [activeViewTab, setActiveViewTab] = useState<"kanban" | "viagens" | "propostas">("kanban");
+  const [activeViewTab, setActiveViewTab] = useState<"dashboard" | "kanban" | "viagens" | "propostas">("dashboard");
+  const [leadDrawerTab, setLeadDrawerTab] = useState<"cadastro" | "anamnese" | "lgpd">("cadastro");
 
-  const { data: leads = initialLeads, refetch: refetchLeads } = useQuery({
+  const { data: leads = initialLeads, isLoading, refetch: refetchLeads } = useQuery({
     queryKey: ["tourism-cockpit-leads"],
     queryFn: () => listLeads(),
     initialData: initialLeads,
@@ -152,6 +178,24 @@ export default function WorkspaceTurismoCockpitPage() {
     queryKey: ["tourism-trips-list"],
     queryFn: () => listStoreTrips({ data: { status: "all" } }),
     initialData: initialTrips,
+  });
+
+  const { data: departures = initialDepartures } = useQuery({
+    queryKey: ["tourism-departures-list"],
+    queryFn: () => listDepartureCards({ data: {} }),
+    initialData: initialDepartures,
+  });
+
+  const { data: sheets = initialSheets } = useQuery({
+    queryKey: ["tourism-financial-sheets"],
+    queryFn: () => listTravelSaleFinancialSheets({ data: {} }),
+    initialData: initialSheets,
+  });
+
+  const { data: customers = initialCustomers } = useQuery({
+    queryKey: ["crm-customers-list"],
+    queryFn: () => listCustomers({ data: {} }),
+    initialData: initialCustomers,
   });
 
   // Transição de Estágio do Lead no Funil
@@ -200,6 +244,79 @@ export default function WorkspaceTurismoCockpitPage() {
 
     return map;
   }, [filteredLeads]);
+
+  // Data Base de Hoje
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  // Voos no Dia (Hoje)
+  const todayDepartures = useMemo(() => {
+    return departures.filter((d: any) => {
+      if (!d.departure_date) return false;
+      const date = new Date(d.departure_date);
+      return (
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear()
+      );
+    });
+  }, [departures, today]);
+
+  // Viajantes em Viagem (Em trânsito no destino)
+  const activeInTransit = useMemo(() => {
+    return departures.filter((d: any) => {
+      if (d.stage === "in_travel") return true;
+      if (!d.departure_date) return false;
+      const dep = new Date(d.departure_date);
+      const ret = d.return_date ? new Date(d.return_date) : null;
+      if (ret) {
+        return today >= dep && today <= ret;
+      }
+      return false;
+    });
+  }, [departures, today]);
+
+  // Embarques Próximos (Próximos 7 dias)
+  const upcomingWeekDepartures = useMemo(() => {
+    return departures.filter((d: any) => {
+      if (!d.departure_date) return false;
+      const diffDays = Math.ceil((new Date(d.departure_date).getTime() - today.getTime()) / 86400000);
+      return diffDays >= 0 && diffDays <= 7;
+    });
+  }, [departures, today]);
+
+  // Alertas de Documentos / Check-in
+  const documentationAlerts = useMemo(() => {
+    return departures.filter((d: any) => {
+      if (!d.departure_date) return false;
+      const diffDays = Math.ceil((new Date(d.departure_date).getTime() - today.getTime()) / 86400000);
+      const pct = d.checklist_completed_pct ?? 0;
+      return (diffDays >= 0 && diffDays <= 3 && pct < 100) || d.has_urgent_alert;
+    });
+  }, [departures, today]);
+
+  // Recebíveis / Faturas da Semana
+  const pendingReceivablesWeek = useMemo(() => {
+    return sheets.filter((s: any) => {
+      if (s.receivable_status === "a_receber" || s.receivable_status === "parcialmente_recebido") {
+        if (!s.expected_receipt_date) return true;
+        const diffDays = Math.ceil((new Date(s.expected_receipt_date).getTime() - today.getTime()) / 86400000);
+        return diffDays >= -7 && diffDays <= 7;
+      }
+      return false;
+    });
+  }, [sheets, today]);
+
+  const totalPendingReceivablesCents = useMemo(() => {
+    return pendingReceivablesWeek.reduce((acc: number, s: any) => {
+      const exp = s.expected_receipt_cents || s.agency_revenue_cents || 0;
+      const rec = s.received_cents || 0;
+      return acc + Math.max(0, exp - rec);
+    }, 0);
+  }, [pendingReceivablesWeek]);
 
   // Métricas do Cockpit
   const pipelineMetrics = useMemo(() => {
@@ -308,15 +425,28 @@ export default function WorkspaceTurismoCockpitPage() {
         <div className="flex items-center gap-1 border-b border-border/30 pb-1">
           <button
             type="button"
+            onClick={() => setActiveViewTab("dashboard")}
+            className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              activeViewTab === "dashboard"
+                ? "bg-primary text-primary-foreground font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            }`}
+          >
+            <Compass className="size-3.5" />
+            <span>Geral</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveViewTab("kanban")}
             className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               activeViewTab === "kanban"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             }`}
           >
             <Kanban className="size-3.5" />
-            <span>Funil de Vendas</span>
+            <span>Atendimento ({filteredLeads.length})</span>
           </button>
 
           <button
@@ -324,12 +454,12 @@ export default function WorkspaceTurismoCockpitPage() {
             onClick={() => setActiveViewTab("viagens")}
             className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               activeViewTab === "viagens"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             }`}
           >
             <Plane className="size-3.5" />
-            <span>Viagens Confirmadas ({trips.length})</span>
+            <span>Viagens ({trips.length})</span>
           </button>
 
           <button
@@ -337,20 +467,21 @@ export default function WorkspaceTurismoCockpitPage() {
             onClick={() => setActiveViewTab("propostas")}
             className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               activeViewTab === "propostas"
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             }`}
           >
             <FileText className="size-3.5" />
-            <span>Propostas Emitidas ({proposals.length})</span>
+            <span>Propostas ({proposals.length})</span>
           </button>
+
           <button
             type="button"
             onClick={() => router.navigate({ to: "/workspace/turismo/oportunidades" })}
             className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 text-primary hover:bg-primary/10 border border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Sparkles className="size-3.5" />
-            <span>Radar de Oportunidades</span>
+            <span>Radar</span>
           </button>
         </div>
 
@@ -360,7 +491,7 @@ export default function WorkspaceTurismoCockpitPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por cliente, destino ou fone..."
+            placeholder="Buscar cliente, destino, voo..."
             className="h-11 min-h-11 pl-9 text-xs rounded-lg"
           />
         </div>
@@ -368,15 +499,317 @@ export default function WorkspaceTurismoCockpitPage() {
 
       {/* ── CONTEÚDO DA VISÃO ATIVA ── */}
 
+      {/* 0. PAINEL EXECUTIVO DO PROPRIETÁRIO / GERENTE (DASHBOARD GERAL) */}
+      {activeViewTab === "dashboard" && (
+        <div className="space-y-6">
+          {/* Grade Superior de KPIs (Estilo PassHub / Linear Minimalista) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold">Voos no Dia</span>
+                <Plane className="size-3.5 text-primary" />
+              </div>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+                {todayDepartures.length}
+              </div>
+              <p className="text-xs text-muted-foreground">Partidas programadas hoje</p>
+            </div>
+
+            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold">Viajantes em Viagem</span>
+                <Luggage className="size-3.5 text-emerald-600" />
+              </div>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+                {activeInTransit.length}
+              </div>
+              <p className="text-xs text-muted-foreground">Passageiros no destino</p>
+            </div>
+
+            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold">Embarques Próximos</span>
+                <Calendar className="size-3.5 text-indigo-600" />
+              </div>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+                {upcomingWeekDepartures.length}
+              </div>
+              <p className="text-xs text-muted-foreground">Nos próximos 7 dias</p>
+            </div>
+
+            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold">Atenção Check-in</span>
+                <AlertTriangle className="size-3.5 text-amber-600" />
+              </div>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+                {documentationAlerts.length}
+              </div>
+              <p className="text-xs text-muted-foreground">Pendências críticas</p>
+            </div>
+
+            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1 col-span-2 sm:col-span-1">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold">Recebíveis da Semana</span>
+                <DollarSign className="size-3.5 text-primary" />
+              </div>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-primary truncate">
+                {formatMoney(totalPendingReceivablesCents)}
+              </div>
+              <p className="text-xs text-muted-foreground">Comissões a faturar</p>
+            </div>
+          </div>
+
+          {/* Duas Colunas Operacionais */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Coluna 1: Voos do Dia & Próximas 48h */}
+            <div className="space-y-4">
+              {/* Voos no Dia */}
+              <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Plane className="size-4 text-primary" />
+                    <h2 className="text-xs font-bold text-foreground">Voos no Dia (Hoje)</h2>
+                  </div>
+                  <Badge variant="outline" className="font-mono text-xs">
+                    {todayDepartures.length}
+                  </Badge>
+                </div>
+
+                {todayDepartures.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg">
+                    Nenhum voo programado para embarque hoje
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {todayDepartures.map((d: any) => {
+                      const checkinUrl = resolveAirlineCheckinUrl(d.airline_code);
+                      return (
+                        <div
+                          key={d.id}
+                          className="p-3 rounded-lg border border-border/60 bg-muted/10 space-y-2 text-xs"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <span className="font-bold text-foreground block">{d.client_name}</span>
+                              <span className="text-muted-foreground">{d.destination}</span>
+                            </div>
+                            <span className="font-mono font-semibold text-primary">
+                              {d.airline_code ? `${d.airline_code} ${d.flight_number || ""}` : "Voo Direto"}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                            {d.airline_locator ? (
+                              <div className="flex items-center gap-1 font-mono text-xs">
+                                <span className="text-muted-foreground">PNR:</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard?.writeText(d.airline_locator || "");
+                                    toast.success(`Localizador ${d.airline_locator} copiado!`);
+                                  }}
+                                  className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                  {d.airline_locator}
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">Sem localizador</span>
+                            )}
+
+                            {checkinUrl && (
+                              <a
+                                href={checkinUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                              >
+                                <ExternalLink className="size-3" />
+                                <span>Check-in CIA</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Embarques Próximos & Checklist */}
+              <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="size-4 text-indigo-600" />
+                    <h2 className="text-xs font-bold text-foreground">Próximos Embarques (7 Dias)</h2>
+                  </div>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="h-11 min-h-11 px-3 text-xs text-primary hover:bg-primary/10 gap-1 focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Link to="/workspace/turismo/embarques">
+                      <span>Ver Todos</span>
+                      <ArrowRight className="size-3" />
+                    </Link>
+                  </Button>
+                </div>
+
+                {upcomingWeekDepartures.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg">
+                    Nenhum embarque previsto nos próximos 7 dias
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {upcomingWeekDepartures.slice(0, 5).map((d: any) => {
+                      const diffDays = Math.ceil((new Date(d.departure_date).getTime() - today.getTime()) / 86400000);
+                      const pct = d.checklist_completed_pct ?? 0;
+                      return (
+                        <div
+                          key={d.id}
+                          className="p-3 rounded-lg border border-border/50 bg-background flex items-center justify-between text-xs gap-3"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <span className="font-bold text-foreground block truncate">{d.client_name}</span>
+                            <span className="text-muted-foreground truncate block">{d.destination}</span>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className={`text-xs font-mono font-bold px-2 py-1 rounded ${
+                              diffDays <= 2 ? "bg-red-500/10 text-red-600" : "bg-muted text-muted-foreground"
+                            }`}>
+                              {diffDays === 0 ? "Hoje" : diffDays === 1 ? "Amanhã" : `em ${diffDays}d`}
+                            </span>
+                            <span className="block text-xs text-muted-foreground mt-1">
+                              Checklist {pct}%
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Coluna 2: Viajantes em Viagem & Faturas da Semana */}
+            <div className="space-y-4">
+              {/* Viajantes em Viagem */}
+              <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Luggage className="size-4 text-emerald-600" />
+                    <h2 className="text-xs font-bold text-foreground">Viajantes em Destino (Ativos)</h2>
+                  </div>
+                  <Badge variant="outline" className="font-mono text-xs">
+                    {activeInTransit.length}
+                  </Badge>
+                </div>
+
+                {activeInTransit.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg">
+                    Nenhum passageiro atualmente em trânsito no destino
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {activeInTransit.map((d: any) => (
+                      <div
+                        key={d.id}
+                        className="p-3 rounded-lg border border-border/50 bg-background flex items-center justify-between text-xs"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <span className="font-bold text-foreground block truncate">{d.client_name}</span>
+                          <span className="text-muted-foreground truncate block">
+                            {d.destination} {d.hotel_name ? `• ${d.hotel_name}` : ""}
+                          </span>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30 font-mono">
+                            Em Viagem
+                          </Badge>
+                          {d.return_date && (
+                            <span className="block text-xs text-muted-foreground mt-1">
+                              Retorno: {new Date(d.return_date).toLocaleDateString("pt-BR")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Recebíveis de Operadoras */}
+              <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Receipt className="size-4 text-primary" />
+                    <h2 className="text-xs font-bold text-foreground">Comissões & Faturas a Receber</h2>
+                  </div>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="h-11 min-h-11 px-3 text-xs text-primary hover:bg-primary/10 gap-1 focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Link to="/workspace/turismo/comissoes">
+                      <span>Ver Fichas</span>
+                      <ArrowRight className="size-3" />
+                    </Link>
+                  </Button>
+                </div>
+
+                {pendingReceivablesWeek.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg">
+                    Nenhuma fatura de comissão pendente com vencimento na semana
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {pendingReceivablesWeek.slice(0, 5).map((s: any) => {
+                      const amount = (s.expected_receipt_cents || s.agency_revenue_cents || 0) - (s.received_cents || 0);
+                      return (
+                        <div
+                          key={s.id}
+                          className="p-3 rounded-lg border border-border/50 bg-background flex items-center justify-between text-xs"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <span className="font-bold text-foreground block truncate">
+                              {s.primary_operator} • {s.locator_code || s.internal_code}
+                            </span>
+                            <span className="text-muted-foreground truncate block">
+                              Cliente: {s.client_name}
+                            </span>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="font-mono font-bold text-primary block">
+                              {formatMoney(Math.max(0, amount))}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {s.expected_receipt_date ? `Vence: ${s.expected_receipt_date}` : "A receber"}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 1. FUNIL DE VENDAS (KANBAN) */}
       {activeViewTab === "kanban" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto pb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 pb-6 waesy-kanban-strip">
           {TOURISM_STAGES.map((stage) => {
             const stageLeads = leadsByStage[stage.id];
             return (
               <div
                 key={stage.id}
-                className="bg-card border border-border/60 rounded-lg flex flex-col min-w-64 max-h-[calc(100vh-280px)]"
+                className="bg-card border border-border/60 rounded-lg flex flex-col min-w-64 max-h-96"
               >
                 {/* Cabeçalho da Coluna */}
                 <div className="p-3 border-b border-border/40 flex items-center justify-between shrink-0">
@@ -407,7 +840,7 @@ export default function WorkspaceTurismoCockpitPage() {
                             setSelectedLead(lead);
                           }
                         }}
-                        className="p-3 rounded-lg border border-border/60 bg-background hover:border-primary/50 transition-colors shadow-sm space-y-3 cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="p-3 rounded-lg border border-border/60 bg-background hover:border-primary/50 transition-colors space-y-3 cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         onClick={() => setSelectedLead(lead)}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -425,6 +858,17 @@ export default function WorkspaceTurismoCockpitPage() {
                             <span className="truncate">{lead.destination}</span>
                           </div>
                         )}
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="font-mono text-xs text-muted-foreground px-2 py-0 h-5">
+                            {lead.acquisition_channel || lead.source || "balcão"}
+                          </Badge>
+                          {Array.isArray(lead.tags) && lead.tags.slice(0, 2).map((t: string) => (
+                            <Badge key={t} variant="secondary" className="text-xs px-2 py-0 h-5">
+                              {t}
+                            </Badge>
+                          ))}
+                        </div>
 
                         <div className="flex items-center justify-between pt-2 border-t border-border/30 text-xs">
                           <span className="text-muted-foreground">
@@ -447,7 +891,7 @@ export default function WorkspaceTurismoCockpitPage() {
                                 passenger_count: lead.pax_adults || 2,
                               });
                             }}
-                            className="h-7 px-2 text-xs text-primary hover:bg-primary/10 font-semibold gap-1"
+                            className="h-11 min-h-11 px-3 text-xs text-primary hover:bg-primary/10 font-semibold gap-1 focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <FileText className="size-3" />
                             <span>Proposta</span>
@@ -555,7 +999,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       asChild
                       variant="outline"
                       size="sm"
-                      className="h-8 px-3 text-xs font-semibold gap-2"
+                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Link to="/workspace/turismo/propostas/$id" params={{ id: prop.id }}>
                         <Eye className="size-3" />
@@ -588,71 +1032,225 @@ export default function WorkspaceTurismoCockpitPage() {
               </SheetDescription>
             </SheetHeader>
 
-            <div className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/40">
-                <div>
-                  <span className="text-muted-foreground block text-xs">Telefone / WhatsApp</span>
-                  <span className="font-semibold text-foreground">{selectedLead.phone || "Não informado"}</span>
+            {/* Sub-abas do Lead */}
+            <div className="flex items-center gap-2 border-b border-border/40 pb-2">
+              <button
+                type="button"
+                onClick={() => setLeadDrawerTab("cadastro")}
+                className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  leadDrawerTab === "cadastro"
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : "text-muted-foreground hover:bg-muted/40"
+                }`}
+              >
+                Cadastro
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLeadDrawerTab("anamnese")}
+                className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  leadDrawerTab === "anamnese"
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : "text-muted-foreground hover:bg-muted/40"
+                }`}
+              >
+                Anamnese
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLeadDrawerTab("lgpd")}
+                className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  leadDrawerTab === "lgpd"
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : "text-muted-foreground hover:bg-muted/40"
+                }`}
+              >
+                LGPD
+              </button>
+            </div>
+
+            {/* Conteúdo da Sub-aba */}
+            {leadDrawerTab === "cadastro" && (
+              <div className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/40">
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Telefone / WhatsApp</span>
+                    <span className="font-semibold text-foreground">{selectedLead.phone || "Não informado"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">E-mail</span>
+                    <span className="font-semibold text-foreground">{selectedLead.email || "Não informado"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Destino de Interesse</span>
+                    <span className="font-semibold text-foreground">{selectedLead.destination || "A definir"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">Orçamento Estimado</span>
+                    <span className="font-bold text-primary font-mono">
+                      {formatMoney(selectedLead.estimated_value_cents || 0)}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-muted-foreground block text-xs">E-mail</span>
-                  <span className="font-semibold text-foreground">{selectedLead.email || "Não informado"}</span>
+
+                {/* Canal de Atribuição (Meta Ads CAPI / Google Ads / WhatsApp) */}
+                <div className="p-3 rounded-lg border border-border/40 bg-background space-y-1">
+                  <span className="text-xs font-semibold text-muted-foreground block">Origem & Canal de Aquisição</span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="font-mono text-xs capitalize">
+                      {selectedLead.acquisition_channel || selectedLead.source || "Direto / Balcão"}
+                    </Badge>
+                    {selectedLead.notes && (
+                      <span className="text-xs text-muted-foreground truncate">{selectedLead.notes}</span>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <span className="text-muted-foreground block text-xs">Destino de Interesse</span>
-                  <span className="font-semibold text-foreground">{selectedLead.destination || "A definir"}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block text-xs">Orçamento Estimado</span>
-                  <span className="font-bold text-primary font-mono">
-                    {formatMoney(selectedLead.estimated_value_cents || 0)}
-                  </span>
+
+                {/* Vínculo de Cliente CRM */}
+                {customers.length > 0 && (
+                  <div className="p-3 rounded-lg border border-border/40 bg-muted/20 space-y-1">
+                    <span className="text-xs font-semibold text-muted-foreground block">Vincular Cliente da Carteira (CRM)</span>
+                    <select
+                      className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none"
+                      defaultValue={selectedLead.customer_id || ""}
+                      onChange={(e) => {
+                        const sel = customers.find((c: any) => c.id === e.target.value);
+                        if (sel) {
+                          toast.success(`Cliente ${sel.full_name || sel.legal_name} vinculado!`);
+                        }
+                      }}
+                    >
+                      <option value="">Selecionar cliente existente...</option>
+                      {customers.map((c: any) => (
+                        <option key={c.id} value={c.id}>
+                          {c.full_name || c.legal_name} {c.phone ? `(${c.phone})` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {leadDrawerTab === "anamnese" && (
+              <div className="space-y-3 text-xs">
+                <div className="p-3 rounded-lg border border-border/40 bg-muted/20 space-y-3">
+                  <div>
+                    <span className="text-xs font-semibold text-foreground block mb-1">Estilo de Viagem</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {["Econômica", "Conforto", "Premium / Luxo"].map((style) => (
+                        <div
+                          key={style}
+                          className="p-2 rounded border border-border/60 bg-background text-center text-xs font-medium text-foreground"
+                        >
+                          {style}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-semibold text-foreground block mb-1">Preferência de Hospedagem</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {["Hotel Central", "Resort All-Inclusive", "Pousada Boutique"].map((h) => (
+                        <div
+                          key={h}
+                          className="p-2 rounded border border-border/60 bg-background text-center text-xs font-medium text-foreground"
+                        >
+                          {h}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-semibold text-foreground block mb-1">Preferência de Voo & Bagagem</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {["Assento Janela", "Assento Corredor", "Bagagem Despachada (23kg)"].map((p) => (
+                        <div
+                          key={p}
+                          className="p-2 rounded border border-border/60 bg-background text-center text-xs font-medium text-foreground"
+                        >
+                          {p}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-semibold text-foreground block mb-1">Restrições Alimentares / Saúde</span>
+                    <p className="text-xs text-muted-foreground bg-background p-2 rounded border border-border/60">
+                      Nenhuma restrição registrada pelo passageiro até o momento.
+                    </p>
+                  </div>
                 </div>
               </div>
+            )}
 
-              {/* Botões de Ação do Lead */}
-              <div className="space-y-2 pt-2">
+            {leadDrawerTab === "lgpd" && (
+              <div className="space-y-3 text-xs">
+                <div className="p-4 rounded-lg border border-border/40 bg-muted/20 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-emerald-600" />
+                    <span className="text-xs font-bold text-foreground">Governança LGPD (Lei 13.709/2018)</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Consentimento de coleta e tratamento de dados cadastrais, emissão de bilhetes e compartilhamento estritamente necessário com companhias aéreas, hotéis e operadoras parceiras.
+                  </p>
+                  <div className="p-3 rounded bg-background border border-border/50 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">Termo de Consentimento</span>
+                    <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30 font-mono">
+                      Consentido / Ativo
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Botões de Ação do Lead */}
+            <div className="space-y-2 pt-2 border-t border-border/30">
+              <Button
+                type="button"
+                onClick={() => {
+                  const leadData = {
+                    id: selectedLead.id,
+                    fullName: selectedLead.full_name,
+                    phone: selectedLead.phone,
+                    email: selectedLead.email,
+                    destination: selectedLead.destination,
+                    estimated_value_cents: selectedLead.estimated_value_cents,
+                    passenger_count: selectedLead.pax_adults || 2,
+                  };
+                  setSelectedLead(null);
+                  setProposalLead(leadData);
+                }}
+                className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground"
+              >
+                <FileText className="size-4" />
+                <span>Montar Proposta Canônica (Multi-Quartos & Operadoras)</span>
+              </Button>
+
+              {/* Avançar Estágio */}
+              <div className="grid grid-cols-2 gap-2 pt-1">
                 <Button
                   type="button"
-                  onClick={() => {
-                    const leadData = {
-                      id: selectedLead.id,
-                      fullName: selectedLead.full_name,
-                      phone: selectedLead.phone,
-                      email: selectedLead.email,
-                      destination: selectedLead.destination,
-                      estimated_value_cents: selectedLead.estimated_value_cents,
-                      passenger_count: selectedLead.pax_adults || 2,
-                    };
-                    setSelectedLead(null);
-                    setProposalLead(leadData);
-                  }}
-                  className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground"
+                  variant="outline"
+                  onClick={() => handleTransitionLead(selectedLead.id, "proposal")}
+                  className="h-11 min-h-11 text-xs font-medium"
                 >
-                  <FileText className="size-4" />
-                  <span>Montar Proposta Canônica (Multi-Quartos & Operadoras)</span>
+                  Marcar: Proposta Enviada
                 </Button>
 
-                {/* Avançar Estágio */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleTransitionLead(selectedLead.id, "proposal")}
-                    className="h-11 min-h-11 text-xs font-medium"
-                  >
-                    Marcar: Proposta Enviada
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleTransitionLead(selectedLead.id, "won")}
-                    className="h-11 min-h-11 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
-                  >
-                    Aprovar: Viagem Confirmada
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleTransitionLead(selectedLead.id, "won")}
+                  className="h-11 min-h-11 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                >
+                  Aprovar: Viagem Confirmada
+                </Button>
               </div>
             </div>
           </SheetContent>

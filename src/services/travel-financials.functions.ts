@@ -369,7 +369,7 @@ export const upsertTravelSaleFinancialSheet = createServerFn({ method: "POST" })
     ]);
 
     if (non_commissionable_fees.length > 0) {
-      await supabase.from("travel_sale_non_commissionable_fees").insert(
+      const { error: feeErr } = await supabase.from("travel_sale_non_commissionable_fees").insert(
         non_commissionable_fees.map((f) => ({
           sheet_id: sheetId,
           fee_type: f.fee_type,
@@ -377,10 +377,14 @@ export const upsertTravelSaleFinancialSheet = createServerFn({ method: "POST" })
           amount_cents: f.amount_cents,
         }))
       );
+      if (feeErr) {
+        console.error("[upsertTravelSaleFinancialSheet] Erro ao salvar taxas não comissionáveis:", feeErr);
+        throw new Error(`Falha ao registrar taxas não comissionáveis: ${feeErr.message}`);
+      }
     }
 
     if (calc.over_deductions_resolved.length > 0) {
-      await supabase.from("travel_sale_over_deductions").insert(
+      const { error: overErr } = await supabase.from("travel_sale_over_deductions").insert(
         calc.over_deductions_resolved.map((d) => ({
           sheet_id: sheetId,
           deduction_type: d.deduction_type,
@@ -390,10 +394,14 @@ export const upsertTravelSaleFinancialSheet = createServerFn({ method: "POST" })
           notes: d.notes || null,
         }))
       );
+      if (overErr) {
+        console.error("[upsertTravelSaleFinancialSheet] Erro ao salvar deduções do over:", overErr);
+        throw new Error(`Falha ao registrar deduções do over: ${overErr.message}`);
+      }
     }
 
     if (calc.internal_costs_resolved.length > 0) {
-      await supabase.from("travel_sale_internal_costs").insert(
+      const { error: costErr } = await supabase.from("travel_sale_internal_costs").insert(
         calc.internal_costs_resolved.map((c) => ({
           sheet_id: sheetId,
           cost_type: c.cost_type,
@@ -407,10 +415,14 @@ export const upsertTravelSaleFinancialSheet = createServerFn({ method: "POST" })
           notes: c.notes || null,
         }))
       );
+      if (costErr) {
+        console.error("[upsertTravelSaleFinancialSheet] Erro ao salvar custos internos:", costErr);
+        throw new Error(`Falha ao registrar custos internos: ${costErr.message}`);
+      }
     }
 
     if (supplier_items.length > 0) {
-      await supabase.from("travel_sale_supplier_items").insert(
+      const { error: supErr } = await supabase.from("travel_sale_supplier_items").insert(
         supplier_items.map((item) => ({
           sheet_id: sheetId,
           item_category: item.item_category,
@@ -431,10 +443,14 @@ export const upsertTravelSaleFinancialSheet = createServerFn({ method: "POST" })
           invoice_number: item.invoice_number || null,
         }))
       );
+      if (supErr) {
+        console.error("[upsertTravelSaleFinancialSheet] Erro ao salvar itens de operadora:", supErr);
+        throw new Error(`Falha ao registrar itens por fornecedor/operadora: ${supErr.message}`);
+      }
     }
 
     // Registrar Log de Auditoria
-    await supabase.from("travel_financial_audit_logs").insert({
+    const { error: auditErr } = await supabase.from("travel_financial_audit_logs").insert({
       sheet_id: sheetId,
       actor_profile_id: identity?.userId || null,
       actor_name: seller_name || "Operador Financeiro",
@@ -444,6 +460,9 @@ export const upsertTravelSaleFinancialSheet = createServerFn({ method: "POST" })
       new_value: `Venda: R$ ${(calc.gross_sale_cents / 100).toFixed(2)} | Receita Agência: R$ ${(calc.agency_revenue_cents / 100).toFixed(2)} | Resultado: R$ ${(calc.net_result_cents / 100).toFixed(2)}`,
       reason: audit_reason || (id ? "Atualização da composição financeira da reserva" : "Abertura da ficha financeira da venda"),
     });
+    if (auditErr) {
+      console.warn("[upsertTravelSaleFinancialSheet] Aviso ao registrar log de auditoria:", auditErr.message);
+    }
 
     return {
       success: true,

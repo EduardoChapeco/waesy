@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { humanizeErrorMessage } from '@/lib/humanize-error';
 import { getStoreSettings } from '@/services/store.functions';
 import { exportElementAsPdf } from '@/lib/pdf-export';
-import { listDepartureCards, getDepartureWithChecklist, createDepartureCard, updateDepartureStage, updateDepartureDetails, toggleChecklistItem, addChecklistItem, uploadBoardingDocument, deleteDepartureCard, AIRLINE_CHECKIN_LINKS, type DepartureWithChecklist, type ChecklistItem, type BoardingDocument, type ChecklistCategory, type DocumentType } from '@/services/travel-departures.functions';
+import { listDepartureCards, getDepartureWithChecklist, createDepartureCard, updateDepartureStage, updateDepartureDetails, toggleChecklistItem, addChecklistItem, uploadBoardingDocument, deleteDepartureCard, AIRLINE_CHECKIN_LINKS, resolveAirlineCheckinUrl, type DepartureWithChecklist, type ChecklistItem, type BoardingDocument, type ChecklistCategory, type DocumentType } from '@/services/travel-departures.functions';
 import { DEPARTURE_STAGES, type DepartureStage } from '@/types/travel-departures';
 import { useWorkspaceStore } from '@/lib/store-context';
 import { listCustomers } from '@/services/crm.functions';
@@ -116,7 +116,7 @@ function WorkspaceBoardingPage() {
   const storeId = loaderData?.store?.id || currentStore?.id || '';
 
   // View mode
-  const [viewMode, setViewMode] = useState<'calendar' | 'kanban' | 'pre_boarding_studio'>('calendar');
+  const [viewMode, setViewMode] = useState<'calendar' | 'kanban' | 'kanban_days' | 'pre_boarding_studio'>('calendar');
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
 
@@ -425,6 +425,52 @@ function WorkspaceBoardingPage() {
     [cards, activeTab, search]
   );
 
+  // Daily Kanban (Visão Contínua Dia a Dia)
+  const dailyKanbanColumns = useMemo(() => {
+    const base = new Date();
+    base.setHours(0, 0, 0, 0);
+    const cols: Array<{
+      date: Date;
+      dateKey: string;
+      label: string;
+      isToday: boolean;
+      cards: DepartureWithChecklist[];
+    }> = [];
+
+    for (let offset = -1; offset <= 21; offset++) {
+      const cur = new Date(base);
+      cur.setDate(base.getDate() + offset);
+      const isCurToday = offset === 0;
+      const isCurTomorrow = offset === 1;
+      const isCurYesterday = offset === -1;
+
+      const dateKey = cur.toISOString().split('T')[0];
+      const dayCards = filteredKanban.filter((c) => {
+        if (!c.departure_date) return false;
+        const d = new Date(c.departure_date);
+        return isSameDay(d, cur);
+      });
+
+      const dayName = cur.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+      const dayNum = cur.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+      let title = `${dayName.toUpperCase()} ${dayNum}`;
+      if (isCurToday) title = `Hoje (${dayNum})`;
+      else if (isCurTomorrow) title = `Amanhã (${dayNum})`;
+      else if (isCurYesterday) title = `Ontem (${dayNum})`;
+
+      cols.push({
+        date: cur,
+        dateKey,
+        label: title,
+        isToday: isCurToday,
+        cards: dayCards,
+      });
+    }
+
+    return cols;
+  }, [filteredKanban]);
+
   // Detail card
   const detail = detailData?.departure;
   const checklist = detailData?.checklist || [];
@@ -453,8 +499,9 @@ function WorkspaceBoardingPage() {
       <WorkspaceCanonicalToolbar
         viewModes={[
           { id: 'calendar', label: 'Calendário', icon: Calendar },
-          { id: 'kanban', label: 'Kanban', icon: Users },
-          { id: 'pre_boarding_studio', label: 'Apresentação Pré-Embarque & Reunião', icon: FileText },
+          { id: 'kanban', label: 'Estágios', icon: Users },
+          { id: 'kanban_days', label: 'Diário', icon: Clock },
+          { id: 'pre_boarding_studio', label: 'Apresentação', icon: FileText },
         ]}
         activeViewMode={viewMode}
         onViewModeChange={(m) => setViewMode(m as any)}
@@ -693,6 +740,62 @@ function WorkspaceBoardingPage() {
                   </div>
                 );
               })}
+            </div>
+          )
+        )}
+
+        {/* ── KANBAN DIÁRIO (VISÃO DIA A DIA) ── */}
+        {viewMode === 'kanban_days' && (
+          isLoading ? (
+            <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />Carregando linha do tempo diária...
+            </div>
+          ) : (
+            <div className="flex gap-3 pb-4 min-h-96 waesy-kanban-strip">
+              {dailyKanbanColumns.map(col => (
+                <div
+                  key={col.dateKey}
+                  className={`flex-none w-72 rounded-lg border flex flex-col transition-colors ${
+                    col.isToday
+                      ? 'border-primary/50 bg-primary/5'
+                      : 'border-border/60 bg-muted/20'
+                  }`}
+                >
+                  <div className={`px-3 py-2 border-b flex items-center justify-between shrink-0 ${
+                    col.isToday ? 'border-primary/30 bg-primary/10' : 'border-border/40'
+                  }`}>
+                    <div className="flex items-center gap-2 min-w-0">
+                      {col.isToday && <span className="size-2 rounded-full bg-primary animate-pulse" />}
+                      <span className={`text-xs font-bold truncate ${col.isToday ? 'text-primary' : 'text-foreground'}`}>
+                        {col.label}
+                      </span>
+                    </div>
+                    <Badge
+                      variant={col.isToday ? 'default' : 'outline'}
+                      className="font-mono text-xs h-6 px-2"
+                    >
+                      {col.cards.length}
+                    </Badge>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-3 space-y-3 max-h-96 no-scrollbar">
+                    {col.cards.length === 0 ? (
+                      <div className="h-20 rounded border border-dashed border-border/40 flex items-center justify-center text-xs text-muted-foreground/60">
+                        Nenhum embarque
+                      </div>
+                    ) : (
+                      col.cards.map(card => (
+                        <DepartureCard
+                          key={card.id}
+                          card={card}
+                          onOpen={() => setSelectedDepartureId(card.id)}
+                          compact={false}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )
         )}
@@ -981,6 +1084,7 @@ function DepartureCard({
     'border-border bg-card';
 
   const pct = card.checklist_completed_pct || 0;
+  const checkinUrl = resolveAirlineCheckinUrl(card.airline_code);
 
   return (
     <div
@@ -996,10 +1100,11 @@ function DepartureCard({
       className={`p-4 rounded-lg border cursor-pointer hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${urgencyClass}`}
     >
       <div className="flex items-start justify-between gap-1 mb-2">
-        <div>
-          <h4 className="text-xs font-bold text-foreground leading-tight">{card.client_name}</h4>
-          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-            <MapPin className="size-2.5" />{card.destination}
+        <div className="min-w-0 flex-1">
+          <h4 className="text-xs font-bold text-foreground leading-tight truncate">{card.client_name}</h4>
+          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 truncate">
+            <MapPin className="size-2.5 shrink-0" />
+            <span className="truncate">{card.destination}</span>
           </p>
         </div>
         <span className={`text-xs font-mono font-bold px-2 py-1 rounded shrink-0 ${
@@ -1014,11 +1119,16 @@ function DepartureCard({
 
       {!compact && (
         <>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono mb-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono mb-2 flex-wrap">
             <span>{new Date(card.departure_date).toLocaleDateString('pt-BR')}</span>
             <span>·</span>
             <span>{card.passengers_count}pax</span>
-            {card.airline_code && <><span>·</span><span className="text-indigo-600">{card.airline_code}</span></>}
+            {card.airline_code && (
+              <>
+                <span>·</span>
+                <span className="text-primary font-semibold">{card.airline_code} {card.flight_number || ''}</span>
+              </>
+            )}
           </div>
 
           {/* Checklist progress */}
@@ -1034,6 +1144,42 @@ function DepartureCard({
               />
             </div>
           </div>
+
+          {/* Quick Airline Check-in & Locator */}
+          {(card.airline_locator || checkinUrl) && (
+            <div className="pt-2 mt-2 border-t border-border/40 flex items-center justify-between gap-2">
+              {card.airline_locator ? (
+                <div className="flex items-center gap-1 font-mono text-xs">
+                  <span className="text-muted-foreground text-xs">PNR:</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard?.writeText(card.airline_locator || '');
+                      toast.success(`Localizador ${card.airline_locator} copiado!`);
+                    }}
+                    className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    title="Clique para copiar"
+                  >
+                    {card.airline_locator}
+                  </button>
+                </div>
+              ) : <div />}
+
+              {checkinUrl && (
+                <a
+                  href={checkinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                >
+                  <ExternalLink className="size-3" />
+                  <span>Check-in CIA</span>
+                </a>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>
