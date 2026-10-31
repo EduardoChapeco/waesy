@@ -451,17 +451,18 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
             }
           }
 
-          // 3. Gerar automaticamente o carnê de parcelas/boletos em travel_trip_installment_boletos
-          if (storeId && totalValueCents > 0) {
+          // 3. Gerar parcelas do plano contratado em travel_trip_installment_boletos
+          if (storeId && tripId && totalValueCents > 0) {
             const condText = String(contractRow?.payment_conditions || "");
             const matchInstallments = condText.match(/(\d+)\s*x/i);
             const installmentsCount = Math.min(
-              15,
-              Math.max(1, matchInstallments ? parseInt(matchInstallments[1], 10) : 4),
+              24,
+              Math.max(1, matchInstallments ? parseInt(matchInstallments[1], 10) : 1),
             );
             const perInstallmentCents = Math.floor(totalValueCents / installmentsCount);
             const remainderCents = totalValueCents - perInstallmentCents * installmentsCount;
 
+            const operatorName = (contractRow as any)?.operator_name || "Operadora";
             const boletoRows = Array.from({ length: installmentsCount }, (_, idx) => {
               const dueDate = new Date(Date.now() + (idx + 1) * 30 * 24 * 60 * 60 * 1000)
                 .toISOString()
@@ -469,16 +470,16 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
               const amountCents = idx === 0 ? perInstallmentCents + remainderCents : perInstallmentCents;
               return {
                 store_id: storeId,
-                trip_id: tripId || signer.contract_id,
+                trip_id: tripId,
                 installment_number: idx + 1,
                 total_installments: installmentsCount,
                 due_date: dueDate,
                 amount_cents: amountCents,
                 currency: "BRL",
-                operator_slug: "orinter",
-                payment_channel: (signer as any).payment_method === "boleto" ? "orinter_portal" : "agency_pix",
+                operator_slug: operatorName.toLowerCase().replace(/\s+/g, "_"),
+                payment_channel: (signer as any).payment_method === "boleto" ? "operator_boleto" : "agency_direct",
                 status: "pending",
-                customer_notes: `Parcela ${idx + 1}/${installmentsCount} gerada automaticamente após assinatura do contrato`,
+                customer_notes: `Parcela ${idx + 1}/${installmentsCount} do contrato formalizado`,
               };
             });
 

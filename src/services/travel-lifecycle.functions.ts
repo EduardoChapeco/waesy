@@ -256,7 +256,9 @@ export const getTripAggregate = createServerFn({ method: "GET" })
  supabase.from("trip_passengers").select("*").eq("trip_id", data.tripId),
  supabase.from("trip_confirmation_items").select("*").eq("trip_id", data.tripId).order("service_date", { ascending: true }),
  supabase.from("tourism_vouchers").select("*").eq("trip_id", data.tripId).order("created_at", { ascending: false }),
- supabase.from("travel_contracts").select("*").eq("destination", trip.destination_city).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+ trip.proposal_id
+   ? supabase.from("travel_contracts").select("*").eq("proposal_id", trip.proposal_id).order("created_at", { ascending: false }).limit(1).maybeSingle()
+   : supabase.from("travel_contracts").select("*").eq("trip_id", data.tripId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
  ]);
 
  const storeSettings = (trip.stores as any)?.settings || {};
