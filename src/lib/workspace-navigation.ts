@@ -238,52 +238,52 @@ const GROUP_TURISMO_COMMERCIAL: NavGroup = {
   icon: Kanban,
   section: "niche",
   items: [
-    { path: "/workspace/turismo", label: "Funil Comercial", icon: Kanban },
-    { path: "/workspace/turismo/propostas", label: "Propostas Emitidas", icon: FileText },
-    { path: "/workspace/turismo/cotacoes", label: "Cotações Rápidas", icon: Plane },
-    { path: "/workspace/turismo/corporativo", label: "Turismo B2B", icon: Building2 },
+    { path: "/workspace/turismo", label: "Atendimento", icon: Kanban },
+    { path: "/workspace/turismo/propostas", label: "Propostas", icon: FileText },
+    { path: "/workspace/turismo/cotacoes", label: "Cotações", icon: Plane },
+    { path: "/workspace/turismo/corporativo", label: "Empresas", icon: Building2 },
   ],
 };
 
 const GROUP_TURISMO_OPERATIONS: NavGroup = {
   id: "tourism-trips",
-  label: "Viagens & Operações",
+  label: "Operações",
   icon: Compass,
   section: "niche",
   items: [
-    { path: "/workspace/turismo/viagens", label: "Viagens Confirmadas", icon: Compass },
-    { path: "/workspace/turismo/grupos", label: "Excursões & Frota", icon: Bus },
-    { path: "/workspace/turismo/vouchers", label: "Vouchers & Bilhetes", icon: Ticket },
-    { path: "/workspace/turismo/reacomodacao", label: "Reacomodação ANAC", icon: RefreshCw },
-    { path: "/workspace/turismo/incidentes", label: "SAC & Contingências", icon: AlertTriangle },
+    { path: "/workspace/turismo/viagens", label: "Viagens", icon: Compass },
+    { path: "/workspace/turismo/grupos", label: "Grupos", icon: Bus },
+    { path: "/workspace/turismo/vouchers", label: "Vouchers", icon: Ticket },
+    { path: "/workspace/turismo/reacomodacao", label: "Reacomodação", icon: RefreshCw },
+    { path: "/workspace/turismo/incidentes", label: "Suporte", icon: AlertTriangle },
   ],
 };
 
 const GROUP_TURISMO_BOARDING: NavGroup = {
   id: "tourism-boarding",
-  label: "Passageiros & Embarque",
+  label: "Embarque",
   icon: UserCheck,
   section: "niche",
   items: [
-    { path: "/workspace/turismo/embarques", label: "Gestão de Embarques", icon: Calendar },
-    { path: "/workspace/clientes", label: "Lista de Passageiros", icon: Users },
-    { path: "/workspace/turismo/vistos", label: "Vistos & Documentação", icon: Globe },
-    { path: "/workspace/turismo/documentos-ocr", label: "Documentos & OCR", icon: FileText },
+    { path: "/workspace/turismo/embarques", label: "Embarques", icon: Calendar },
+    { path: "/workspace/clientes", label: "Passageiros", icon: Users },
+    { path: "/workspace/turismo/vistos", label: "Vistos", icon: Globe },
+    { path: "/workspace/turismo/documentos-ocr", label: "Documentos", icon: FileText },
   ],
 };
 
 const GROUP_TURISMO_CATALOG: NavGroup = {
   id: "tourism-catalog",
-  label: "Catálogo & Parceiros",
+  label: "Catálogo",
   icon: Package,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Roteiros & Pacotes", icon: Package },
-    { path: "/workspace/turismo/destinos", label: "Destinos & Atrativos", icon: MapPin },
-    { path: "/workspace/turismo/hoteis", label: "Banco de Hotéis", icon: Building2 },
-    { path: "/workspace/turismo/fornecedores", label: "Operadoras & Parceiros", icon: Building2 },
-    { path: "/workspace/turismo/contratos", label: "Contratos Turísticos", icon: FileText },
-    { path: "/workspace/turismo/comissoes", label: "Comissões & Over", icon: DollarSign },
+    { path: "/workspace/catalogo/produtos", label: "Pacotes", icon: Package },
+    { path: "/workspace/turismo/destinos", label: "Destinos", icon: MapPin },
+    { path: "/workspace/turismo/hoteis", label: "Hotéis", icon: Building2 },
+    { path: "/workspace/turismo/fornecedores", label: "Operadoras", icon: Building2 },
+    { path: "/workspace/turismo/contratos", label: "Contratos", icon: FileText },
+    { path: "/workspace/turismo/comissoes", label: "Comissões", icon: DollarSign },
   ],
 };
 

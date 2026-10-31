@@ -492,29 +492,17 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
           }
 
           // 4. Registrar automaticamente na planilha de vendas e comissões
+          // 4. Registrar na planilha de vendas apenas com base em dados reais confirmados
           if (storeId && totalValueCents > 0) {
-            const supplierNetCents = Math.round(totalValueCents * 0.88);
-            const agencyCommissionCents = Math.max(0, totalValueCents - supplierNetCents);
-            const agentCommissionCents = Math.round(agencyCommissionCents * 0.15);
+            const { data: tripData } = await supabase
+              .from("travel_trips")
+              .select("cost_cents, operator, primary_supplier, agent_id")
+              .eq("id", tripId)
+              .maybeSingle();
 
-            await supabase.from("travel_agent_commission_splits").insert({
-              store_id: storeId,
-              trip_id: tripId,
-              reservation_code: `CTR-${String(signer.contract_id).slice(0, 8).toUpperCase()}`,
-              operator_name: "Orinter",
-              agent_name: "Consultor Responsável",
-              lead_source: "contrato_assinado",
-              gross_sale_cents: totalValueCents,
-              supplier_net_cents: supplierNetCents,
-              agency_commission_cents: agencyCommissionCents,
-              financed_by_operator_cents: supplierNetCents,
-              pix_received_by_agency_cents: agencyCommissionCents,
-              retained_commission_from_pix_cents: agencyCommissionCents,
-              net_remittance_to_operator_cents: 0,
-              agent_commission_rate_pct: 15,
-              agent_commission_cents: agentCommissionCents,
-              payout_status: "pending",
-            });
+            const supplierNetCents = Number(tripData?.cost_cents) > 0 ? Number(tripData?.cost_cents) : 0;
+            const agencyCommissionCents = supplierNetCents > 0 ? Math.max(0, totalValueCents - supplierNetCents) : 0;
+            const operatorName = tripData?.operator || tripData?.primary_supplier || "Operadora Não Informada";
 
             await supabase.from("travel_sales_spreadsheet_rows").insert({
               store_id: storeId,
@@ -524,7 +512,7 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
               destination: contractRow?.destination || "Pacote Turístico",
               gross_sale_cents: totalValueCents,
               net_commissionable_cents: agencyCommissionCents,
-              agent_commission_cents: agentCommissionCents,
+              agent_commission_cents: 0,
               status: "active",
             });
 

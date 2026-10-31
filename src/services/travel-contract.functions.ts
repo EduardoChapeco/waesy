@@ -672,25 +672,21 @@ export const generateTravelReservationCheckout = createServerFn({ method: "POST"
 
     let pixBrCode: string | null = null;
     if (input.generatePix && input.totalValueCents > 0) {
-      try {
-        const storeSettings = (storeRow?.settings as Record<string, any>) || {};
-        const pixKey =
-          storeSettings.pix_key ||
-          storeRow?.cnpj?.replace(/\D/g, "") ||
-          storeRow?.phone?.replace(/\D/g, "") ||
-          "pix@waesy.com";
+      const storeSettings = (storeRow?.settings as Record<string, any>) || {};
+      const configuredPixKey = typeof storeSettings.pix_key === "string" ? storeSettings.pix_key.trim() : "";
 
-        pixBrCode = generatePixBrCode({
-          pixKey,
-          amountCents: input.totalValueCents,
-          merchantName: storeRow?.name || "WAESY TURISMO",
-          merchantCity: "CHAPECO",
-          txId: (publicToken || "RESERVA").slice(0, 20),
-          description: input.packageSummary.slice(0, 30),
-        });
-      } catch (err: any) {
-        console.warn("[generateTravelReservationCheckout] Falha defensiva ao gerar Pix:", err?.message);
+      if (!configuredPixKey) {
+        throw new Error("Chave Pix da agência não configurada. Configure a chave Pix nas configurações da empresa antes de gerar cobranças.");
       }
+
+      pixBrCode = generatePixBrCode({
+        pixKey: configuredPixKey,
+        amountCents: input.totalValueCents,
+        merchantName: (storeRow?.name || "AGENCIA DE TURISMO").trim(),
+        merchantCity: "BRASIL",
+        txId: (publicToken || "RESERVA").slice(0, 20),
+        description: input.packageSummary.slice(0, 30),
+      });
     }
 
     const appOrigin = process.env.VITE_APP_URL || "https://waesy.com";

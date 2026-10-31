@@ -253,7 +253,7 @@ const INITIAL_DEMO_SHEETS: SaleFinancialRecord[] = [
 function TravelSalesFinancialCompositionPage() {
   const { initialSheets } = (Route.useLoaderData?.() as any) || {};
   const [sheets, setSheets] = useState<SaleFinancialRecord[]>(
-    Array.isArray(initialSheets) && initialSheets.length > 0 ? initialSheets : INITIAL_DEMO_SHEETS
+    Array.isArray(initialSheets) ? initialSheets : []
   );
 
   // Filtros Gerenciais
