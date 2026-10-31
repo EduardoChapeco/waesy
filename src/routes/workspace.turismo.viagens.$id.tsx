@@ -41,7 +41,7 @@ export const Route = createFileRoute("/workspace/turismo/viagens/$id")({
   component: WorkspaceTripDetailPage,
 });
 
-type ActiveTab = "overview" | "passengers" | "locators" | "contract" | "vouchers" | "financial";
+type ActiveTab = "overview" | "passengers" | "services" | "locators" | "contract" | "vouchers" | "financial";
 
 function checkDocumentValidity(
   expiryDateStr?: string | null,
@@ -547,6 +547,18 @@ function WorkspaceTripDetailPage() {
         >
           <Users className="size-3.5" />
           <span>Viajantes & Validades ({aggregate.passengers.length})</span>
+        </button>
+
+        <button /* focus-visible:ring-2 */
+          onClick={() => setActiveTab("services")} /* focus-visible:ring-2 */
+          className={`h-11 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/20 outline-none rounded-t ${
+            activeTab === "services"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Compass className="size-3.5" />
+          <span>Serviços & Ingressos</span>
         </button>
 
         <button /* focus-visible:ring-2 */
@@ -1128,6 +1140,67 @@ function WorkspaceTripDetailPage() {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ABA 2.5: SERVIÇOS & INGRESSOS CONTRATADOS */}
+      {activeTab === "services" && (
+        <div className="p-4 rounded-lg bg-card border border-border/80 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
+            <div>
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                <Compass className="size-4 text-primary" />
+                <span>Passeios, Ingressos, Traslados e Serviços Adicionais</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Gestão e acréscimo de serviços na viagem com incremento no valor contratado e comissão apurada.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Traslados Contratados */}
+            <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+              <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
+                <Car className="size-4 text-primary" />
+                <span>Traslados e Transfers</span>
+              </div>
+              {Array.isArray(trip.transfers) && trip.transfers.length > 0 ? (
+                <div className="space-y-2">
+                  {trip.transfers.map((tr: any, idx: number) => (
+                    <div key={idx} className="p-3 rounded border border-border/50 bg-background text-xs space-y-1">
+                      <span className="font-bold text-foreground">{tr.title || tr.description || `Transfer #${idx + 1}`}</span>
+                      <p className="text-muted-foreground">{tr.pickup_location || "Origem"} → {tr.dropoff_location || "Destino"}</p>
+                      {tr.service_date && <span className="text-xs text-muted-foreground block font-mono">Data: {tr.service_date}</span>}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">Nenhum transfer privativo ou regular vinculado a esta reserva.</p>
+              )}
+            </div>
+
+            {/* Passeios & Ingressos */}
+            <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+              <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
+                <Ticket className="size-4 text-primary" />
+                <span>Ingressos e Tours Locais</span>
+              </div>
+              {Array.isArray(trip.tours) && trip.tours.length > 0 ? (
+                <div className="space-y-2">
+                  {trip.tours.map((tour: any, idx: number) => (
+                    <div key={idx} className="p-3 rounded border border-border/50 bg-background text-xs space-y-1">
+                      <span className="font-bold text-foreground">{tour.title || tour.name || `Passeio #${idx + 1}`}</span>
+                      <p className="text-muted-foreground">{tour.description || "Ingresso oficial de atração"}</p>
+                      {tour.tour_date && <span className="text-xs text-muted-foreground block font-mono">Data: {tour.tour_date}</span>}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">Nenhum passeio ou ingresso registrado nesta viagem.</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

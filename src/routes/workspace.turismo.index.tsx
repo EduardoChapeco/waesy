@@ -41,7 +41,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import { listLeads, updateLeadStatus, updateLeadDetails, promoteLeadToCustomer, issueLeadContract, listCustomers } from "@/services/crm.functions";
+import { listLeads, updateLeadStatus, updateLeadDetails, promoteLeadToCustomer, issueLeadContract, listCustomers, addLeadMeeting } from "@/services/crm.functions";
 import { listStoreTrips, convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { listAgencyTravelProposals } from "@/services/travel-proposal.functions";
@@ -160,7 +160,11 @@ export default function WorkspaceTurismoCockpitPage() {
   const [proposalLead, setProposalLead] = useState<UnifiedProposalWorkspaceLead | null>(null);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [activeViewTab, setActiveViewTab] = useState<"dashboard" | "kanban" | "viagens" | "propostas">("dashboard");
-  const [leadDrawerTab, setLeadDrawerTab] = useState<"cadastro" | "anamnese" | "lgpd">("cadastro");
+  const [leadDrawerTab, setLeadDrawerTab] = useState<"cadastro" | "anamnese" | "lgpd" | "reuniao">("cadastro");
+  const [meetingTitle, setMeetingTitle] = useState("");
+  const [meetingDate, setMeetingDate] = useState("");
+  const [meetingType, setMeetingType] = useState<"call" | "video" | "in_person">("call");
+  const [isSavingMeeting, setIsSavingMeeting] = useState(false);
 
   const { data: leads = initialLeads, isLoading, refetch: refetchLeads } = useQuery({
     queryKey: ["tourism-cockpit-leads"],
@@ -1069,6 +1073,18 @@ export default function WorkspaceTurismoCockpitPage() {
               >
                 LGPD
               </button>
+
+              <button
+                type="button"
+                onClick={() => setLeadDrawerTab("reuniao")}
+                className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  leadDrawerTab === "reuniao"
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : "text-muted-foreground hover:bg-muted/40"
+                }`}
+              >
+                Reunião
+              </button>
             </div>
 
             {/* Conteúdo da Sub-aba */}
@@ -1140,42 +1156,87 @@ export default function WorkspaceTurismoCockpitPage() {
                   <div>
                     <span className="text-xs font-semibold text-foreground block mb-1">Estilo de Viagem</span>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {["Econômica", "Conforto", "Premium / Luxo"].map((style) => (
-                        <div
-                          key={style}
-                          className="p-2 rounded border border-border/60 bg-background text-center text-xs font-medium text-foreground"
-                        >
-                          {style}
-                        </div>
-                      ))}
+                      {["Econômica", "Conforto", "Premium / Luxo"].map((style) => {
+                        const isSelected = (selectedLead.notes || "").includes(style);
+                        return (
+                          <button
+                            type="button"
+                            key={style}
+                            onClick={async () => {
+                              const updatedNotes = `${selectedLead.notes || ""}\nEstilo: ${style}`.trim();
+                              await updateLeadDetails({ data: { leadId: selectedLead.id, notes: updatedNotes } });
+                              setSelectedLead((prev: any) => ({ ...prev, notes: updatedNotes }));
+                              refetchLeads();
+                              toast.success(`Estilo salvo: ${style}`);
+                            }}
+                            className={`p-2 rounded border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+                              isSelected
+                                ? "border-primary bg-primary/10 text-primary font-bold"
+                                : "border-border/60 bg-background text-foreground hover:bg-muted/40"
+                            }`}
+                          >
+                            {style}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
                   <div>
                     <span className="text-xs font-semibold text-foreground block mb-1">Preferência de Hospedagem</span>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {["Hotel Central", "Resort All-Inclusive", "Pousada Boutique"].map((h) => (
-                        <div
-                          key={h}
-                          className="p-2 rounded border border-border/60 bg-background text-center text-xs font-medium text-foreground"
-                        >
-                          {h}
-                        </div>
-                      ))}
+                      {["Hotel Central", "Resort All-Inclusive", "Pousada Boutique"].map((h) => {
+                        const isSelected = (selectedLead.notes || "").includes(h);
+                        return (
+                          <button
+                            type="button"
+                            key={h}
+                            onClick={async () => {
+                              const updatedNotes = `${selectedLead.notes || ""}\nHospedagem: ${h}`.trim();
+                              await updateLeadDetails({ data: { leadId: selectedLead.id, notes: updatedNotes } });
+                              setSelectedLead((prev: any) => ({ ...prev, notes: updatedNotes }));
+                              refetchLeads();
+                              toast.success(`Hospedagem salva: ${h}`);
+                            }}
+                            className={`p-2 rounded border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+                              isSelected
+                                ? "border-primary bg-primary/10 text-primary font-bold"
+                                : "border-border/60 bg-background text-foreground hover:bg-muted/40"
+                            }`}
+                          >
+                            {h}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
                   <div>
                     <span className="text-xs font-semibold text-foreground block mb-1">Preferência de Voo & Bagagem</span>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {["Assento Janela", "Assento Corredor", "Bagagem Despachada (23kg)"].map((p) => (
-                        <div
-                          key={p}
-                          className="p-2 rounded border border-border/60 bg-background text-center text-xs font-medium text-foreground"
-                        >
-                          {p}
-                        </div>
-                      ))}
+                      {["Assento Janela", "Assento Corredor", "Bagagem Despachada (23kg)"].map((p) => {
+                        const isSelected = (selectedLead.notes || "").includes(p);
+                        return (
+                          <button
+                            type="button"
+                            key={p}
+                            onClick={async () => {
+                              const updatedNotes = `${selectedLead.notes || ""}\nPreferencia: ${p}`.trim();
+                              await updateLeadDetails({ data: { leadId: selectedLead.id, notes: updatedNotes } });
+                              setSelectedLead((prev: any) => ({ ...prev, notes: updatedNotes }));
+                              refetchLeads();
+                              toast.success(`Preferência salva: ${p}`);
+                            }}
+                            className={`p-2 rounded border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+                              isSelected
+                                ? "border-primary bg-primary/10 text-primary font-bold"
+                                : "border-border/60 bg-background text-foreground hover:bg-muted/40"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1184,6 +1245,83 @@ export default function WorkspaceTurismoCockpitPage() {
                     <p className="text-xs text-muted-foreground bg-background p-2 rounded border border-border/60">
                       Nenhuma restrição registrada pelo passageiro até o momento.
                     </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {leadDrawerTab === "reuniao" && (
+              <div className="space-y-3 text-xs">
+                <div className="p-4 rounded-lg border border-border/40 bg-muted/20 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="size-4 text-primary" />
+                    <span className="text-xs font-bold text-foreground">Agendar Reunião ou Alinhamento com Cliente</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-muted-foreground block">Assunto da Reunião</label>
+                    <Input
+                      value={meetingTitle}
+                      onChange={(e) => setMeetingTitle(e.target.value)}
+                      placeholder="Ex: Apresentação da Cotação Orlando / Réveillon"
+                      className="h-11 rounded-lg text-xs"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-muted-foreground block">Data e Horário</label>
+                      <Input
+                        type="datetime-local"
+                        value={meetingDate}
+                        onChange={(e) => setMeetingDate(e.target.value)}
+                        className="h-11 rounded-lg text-xs font-mono"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-muted-foreground block">Tipo de Encontro</label>
+                      <select
+                        value={meetingType}
+                        onChange={(e) => setMeetingType(e.target.value as any)}
+                        className="w-full h-11 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <option value="call">Ligação Telefônica / WhatsApp</option>
+                        <option value="video">Videoconferência (Google Meet / Zoom)</option>
+                        <option value="in_person">Presencial na Agência</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      type="button"
+                      disabled={isSavingMeeting || !meetingTitle.trim() || !meetingDate}
+                      onClick={async () => {
+                        setIsSavingMeeting(true);
+                        try {
+                          await addLeadMeeting({
+                            data: {
+                              leadId: selectedLead.id,
+                              title: meetingTitle.trim(),
+                              scheduledAt: new Date(meetingDate).toISOString(),
+                              meetingType,
+                              durationMinutes: 30,
+                            },
+                          });
+                          toast.success("Reunião agendada com sucesso!");
+                          setMeetingTitle("");
+                          setMeetingDate("");
+                          refetchLeads();
+                        } catch (err: any) {
+                          toast.error(err?.message || "Erro ao agendar reunião.");
+                        } finally {
+                          setIsSavingMeeting(false);
+                        }
+                      }}
+                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg bg-primary text-primary-foreground cursor-pointer"
+                    >
+                      {isSavingMeeting ? "Agendando..." : "Confirmar Agendamento"}
+                    </Button>
                   </div>
                 </div>
               </div>
