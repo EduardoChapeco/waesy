@@ -296,7 +296,45 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  })();
  }
 
-   return {
+    // Zero-Trust Civil Initialization: Login sempre inicia com Identidade Civil Pessoal limpa
+    try {
+      const { setCookie } = await import("@tanstack/start-server-core");
+      const isProd = process.env.NODE_ENV === "production";
+      setCookie("waesy_active_context", "civil", {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+        httpOnly: false,
+        secure: isProd,
+        sameSite: "lax",
+      });
+      setCookie("waesy_active_tenant", "", {
+        path: "/",
+        maxAge: 0,
+        httpOnly: false,
+        secure: isProd,
+        sameSite: "lax",
+      });
+      setCookie("waesy_store_id", "", {
+        path: "/",
+        maxAge: 0,
+        httpOnly: false,
+        secure: isProd,
+        sameSite: "lax",
+      });
+      setCookie("waesy_active_creator", "", {
+        path: "/",
+        maxAge: 0,
+        httpOnly: false,
+        secure: isProd,
+        sameSite: "lax",
+      });
+      const { clearIdentityCache } = await import("@/lib/server-access");
+      clearIdentityCache();
+    } catch (cookieErr) {
+      console.warn("[auth:signInWithPassword] Erro ao sanitizar cookies:", cookieErr);
+    }
+
+    return {
       status: "success" as const,
       session: data.session
         ? {
@@ -549,13 +587,28 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
  throw new Error(error.message);
  }
 
- // Clear guest session manually using H3-compatible util
- setResponseHeader(
- "Set-Cookie",
- `waesy_guest_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${
- getEnvVar("VITE_SITE_URL")?.includes("localhost") ? "" : "; Secure"
- }`,
- );
+  // Clear guest session manually using H3-compatible util
+  setResponseHeader(
+  "Set-Cookie",
+  `waesy_guest_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${
+  getEnvVar("VITE_SITE_URL")?.includes("localhost") ? "" : "; Secure"
+  }`,
+  );
+
+  // Purga atômica de todos os cookies de contexto e tenant corporativo
+  try {
+    const { setCookie } = await import("@tanstack/start-server-core");
+    const isProd = process.env.NODE_ENV === "production";
+    const purgeOpts = { path: "/", maxAge: 0, httpOnly: false, secure: isProd, sameSite: "lax" as const };
+    setCookie("waesy_active_context", "", purgeOpts);
+    setCookie("waesy_active_tenant", "", purgeOpts);
+    setCookie("waesy_store_id", "", purgeOpts);
+    setCookie("waesy_active_creator", "", purgeOpts);
+    const { clearIdentityCache } = await import("@/lib/server-access");
+    clearIdentityCache();
+  } catch (err) {
+    console.warn("[auth:signOut] Erro ao purgar cookies de contexto:", err);
+  }
 
  if (userId) {
    void recordAuthAuditEvent({

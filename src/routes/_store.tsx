@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { AppShell } from "@/components/shell/app-shell";
 import { GlobalPopupRenderer } from "@/components/commerce/global-popup-renderer";
 import { CartProvider, useCartContext } from "@/lib/cart-context";
+import { getClientActiveContext, setClientContextCookies } from "@/lib/context-auth";
 import { ErrorState, UnconfiguredState } from "@/components/state/states";
 import { StoreAnalyticsInjector } from "@/components/analytics/StoreAnalyticsInjector";
 
@@ -25,6 +26,11 @@ export const Route = createFileRoute("/_store")({
  getActiveGlobalPopups().catch(() => []),
  getUserSession().catch(() => null),
  ]);
+  // Zero-Trust Civil Root para SSR da Vitrine Pública:
+  // A vitrine pública opera sob identidade civil pessoal, impedindo vazamento de store_id residual
+  const sanitizedSession = sessionRes
+    ? { ...sessionRes, store_id: null }
+    : null;
  return {
  menus: menusRes || [],
  store: storeRes || null,
@@ -32,7 +38,7 @@ export const Route = createFileRoute("/_store")({
  carts,
  globalCarts: globalCarts || [],
  popups: popupsRes || [],
- session: sessionRes || null,
+ session: sanitizedSession,
  };
  } catch {
  return {
@@ -120,6 +126,18 @@ function StoreLayout() {
  useEffect(() => {
  initCart(carts, globalCarts);
  }, [carts, globalCarts, initCart]);
+
+  // Zero-Trust Civil Root na Vitrine Pública (DEC-206):
+  // Garante que o usuário que navega no marketplace/vitrine pública opere sempre em sua Identidade Civil,
+  // higienizando cookies residuais de loja herdados de visitas prévias ao /workspace.
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const activeCtx = getClientActiveContext();
+      if (activeCtx === "store") {
+        setClientContextCookies({ context: "civil" });
+      }
+    }
+  }, []);
 
  const storeData = store?.data || store;
  const storeName = brand?.platform_name || storeData?.name || "Waesy Local Marketplace";

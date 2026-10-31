@@ -136,10 +136,10 @@ export function UnifiedFeedCard({
   return (
     <article
       className={cn(
-        "rounded-lg border transition-colors duration-200 overflow-hidden",
+        "bg-transparent text-foreground transition-colors duration-200 overflow-hidden",
         hasMedia
-          ? "bg-card border-border/60"
-          : "bg-gray-50 dark:bg-zinc-900/60 border-border/50 p-4 sm:p-5"
+          ? "bg-transparent"
+          : "bg-transparent p-2 sm:p-3"
       )}
     >
       {/* Header do Autor */}

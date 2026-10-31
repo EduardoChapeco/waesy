@@ -98,7 +98,8 @@ function AIConfigurationPage() {
  });
 
  const handleSaveKey = () => {
- if (!secretKey.trim() || secretKey.length < 6) {
+ const sanitizedKey = secretKey.trim().replace(/^[\(\[\{"'`\s]+|[\)\]\}"'`\s,;]+$/g, "").replace(/^bearer\s+/i, "");
+ if (!sanitizedKey || sanitizedKey.length < 4) {
  toast.error("Informe uma chave de API válida.");
  return;
  }
@@ -109,7 +110,7 @@ function AIConfigurationPage() {
  data: {
  provider: provider as any,
  label: finalLabel,
- secretKey: secretKey.trim(),
+ secretKey: sanitizedKey,
  dailyBudgetCents: budgetCents,
  scope: "organization",
  },

@@ -606,11 +606,12 @@ function UnifiedIntegrationsHubPage() {
   // Handlers para Secret Vault (IA BYOK)
   const handleSaveSecret = async (provider: string, secretKey: string) => {
     try {
+      const sanitized = secretKey.trim().replace(/^[\(\[\{"'`\s]+|[\)\]\}"'`\s,;]+$/g, "").replace(/^bearer\s+/i, "");
       await saveSecretKey({
         data: {
           provider: provider as any,
           label: `Chave ${provider.toUpperCase()} Pessoal`,
-          secretKey,
+          secretKey: sanitized,
           scope: "personal",
           dailyBudgetCents: 10000,
         },
@@ -623,10 +624,11 @@ function UnifiedIntegrationsHubPage() {
   };
 
   const handleTestSecret = async (provider: string, secretKey: string) => {
+    const sanitized = secretKey ? secretKey.trim().replace(/^[\(\[\{"'`\s]+|[\)\]\}"'`\s,;]+$/g, "").replace(/^bearer\s+/i, "") : undefined;
     return await testSecretKeyConnection({
       data: {
         provider: provider as any,
-        secretKey: secretKey || undefined,
+        secretKey: sanitized || undefined,
       },
     });
   };

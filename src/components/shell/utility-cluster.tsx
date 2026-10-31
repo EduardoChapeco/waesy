@@ -102,11 +102,17 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
     ? document.cookie.match(/waesy_active_tenant=([^;]+)/)?.[1] || null
     : null;
 
-  // Sanitização anti-fantasma (Auto-heal B7)
+  // Sanitização anti-fantasma (Auto-heal B7 & Zero-Trust Civil Root DEC-206)
   let activeContext: "civil" | "store" | "creator" = rawContext;
   let activeCreatorId: string | null = null;
 
-  if (activeContext === "creator") {
+  if (activeContext === "store") {
+    // Zero-Trust Civil Root: A vitrine pública nunca deve herdar perfil empresarial sem ação voluntária
+    activeContext = "civil";
+    if (typeof window !== "undefined") {
+      setClientContextCookies({ context: "civil" });
+    }
+  } else if (activeContext === "creator") {
     if (creatorProfiles.length === 0) {
       activeContext = "civil";
       if (typeof window !== "undefined") {
@@ -164,6 +170,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
   const handleLogout = async () => {
     try {
       if (typeof window !== "undefined") {
+        setClientContextCookies({ context: "civil" });
         try {
           const { getBrowserClient } = await import("@/lib/supabase");
           await getBrowserClient().auth.signOut().catch(() => {});

@@ -14,8 +14,11 @@ import { ThumbnailPreviewRail } from "@/components/community/thumbnail-preview-r
 import { MomentsStatusPicker } from "@/components/social/moments-status-picker";
 import { getMuralFeed, type MuralFeedResponse } from "@/services/social.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
-import { MessageSquare, Loader2, Users, Compass, Plane, Image as ImageIcon } from "lucide-react";
+import { MessageSquare, Loader2, Users, Compass, Plane, Image as ImageIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/feed")({
   head: () => ({
@@ -62,7 +65,7 @@ const FEED_TABS: { id: FeedTab; label: string }[] = [
 function FeedPage() {
   const { initialFeed, profile, session } = ((Route.useLoaderData?.() as any) || {});
   const [activeTab, setActiveTab] = useState<FeedTab>("for_you");
-  const [displayMode, setDisplayMode] = useState<"threads" | "instagram">("threads");
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
 
   const { data: feed, isLoading } = useQuery({
     queryKey: ["community-feed", activeTab],
@@ -85,67 +88,32 @@ function FeedPage() {
     <div className="min-h-dvh bg-background text-foreground pb-24">
       {/* ─── Feed Container Central (Largura Padrão Editorial & Padrão 1px Mobile) ───────────── */}
       <div className="max-w-2xl mx-auto px-0 sm:px-4 py-2 sm:py-5 space-y-3 sm:space-y-4">
-        {/* ── 1. Menu de Abas Canônicas (Apple HIG) ───────────────────────── */}
-        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar px-0">
-          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl border border-border/40 grow sm:grow-0 overflow-x-auto no-scrollbar">
+        {/* ── 1. Menu de Abas Discreto no Topo (Padrão TikTok / Threads) ── */}
+        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/40">
+          <div className="flex items-center justify-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar px-4 h-11 min-h-11">
             {FEED_TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   type="button"
-                  className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11 px-4 sm:px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-200 cursor-pointer select-none ${
+                  className={cn(
+                    "h-11 min-h-11 px-1 flex items-center justify-center relative font-semibold text-xs sm:text-sm whitespace-nowrap transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     isActive
-                      ? "bg-card text-foreground shadow-xs font-bold"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                  }`}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    if (tab.id === "photos") setDisplayMode("instagram");
-                  }}
+                      ? "text-foreground font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={() => setActiveTab(tab.id)}
                 >
-                  {tab.label}
+                  <span>{tab.label}</span>
+                  {isActive && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground rounded-full" />
+                  )}
                 </button>
               );
             })}
           </div>
-
-          {/* Alternador de Visualização Canônica: Threads (Editorial) vs Instagram (Grade Visual) */}
-          <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl border border-border/40 shrink-0">
-            <button
-              type="button"
-              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer select-none ${
-                displayMode === "threads"
-                  ? "bg-card text-foreground shadow-xs font-bold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-              }`}
-              onClick={() => setDisplayMode("threads")}
-              title="Modo Threads (Editorial & Conversas)"
-              aria-label="Modo Threads"
-            >
-              <AlignLeft className="size-4" />
-            </button>
-            <button
-              type="button"
-              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer select-none ${
-                displayMode === "instagram"
-                  ? "bg-card text-foreground shadow-xs font-bold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-              }`}
-              onClick={() => setDisplayMode("instagram")}
-              title="Modo Instagram (Grade Fotográfica)"
-              aria-label="Modo Instagram"
-            >
-              <LayoutGrid className="size-4" />
-            </button>
-          </div>
         </div>
-
-        {/* ── 2. Composer de Postagem (Superfície Única — Zero Card Duplo) ──── */}
-        <InlinePostComposer
-          session={session || (profile ? { user: profile } : undefined)}
-          profile={profile}
-        />
 
         {/* ── 3. Lista de Publicações & Estados da Comunidade ───────────────── */}
         {isLoading ? (
@@ -212,34 +180,9 @@ function FeedPage() {
               </p>
             </div>
           </div>
-        ) : displayMode === "instagram" || activeTab === "photos" ? (
-          /* ── Modo Instagram: Grade Fotográfica 3 Colunas (CLS = 0) ── */
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-            {items.map((post: any) => (
-              <UnifiedFeedCard
-                key={post.id}
-                post={{
-                  id: post.id,
-                  content_text: post.content_text,
-                  media_urls: post.media_urls,
-                  media_url: post.media_urls?.[0],
-                  likes_count: post.likes_count,
-                  comments_count: post.comments_count ?? post.replies_count ?? 0,
-                  author: {
-                    id: post.author?.id,
-                    full_name: post.author?.name,
-                    avatar_url: post.author?.avatar_url,
-                    is_verified: post.author?.is_verified,
-                  },
-                  created_at: post.created_at,
-                }}
-                mode="grid"
-              />
-            ))}
-          </div>
         ) : (
-          /* ── Modo Threads: Card Editorial com Linha Contínua & Ações Táteis ── */
-          <div className="space-y-3 sm:space-y-4">
+          /* ── Modo Threads: Feed Editorial Contínuo & Flat (Zero Containeritis) ── */
+          <div className="divide-y divide-border/40">
             {items.map((post: any) => (
               <FeedThreadPostCard
                 key={post.id}
@@ -251,6 +194,53 @@ function FeedPage() {
           </div>
         )}
       </div>
+
+      {/* ── Botão Flutuante (+) Contextual Canônico Estilo Chat & Threads ── */}
+      <button
+        type="button"
+        onClick={() => {
+          if (!session?.user && !session?.id && !profile?.id) {
+            toast.info("Faça login para publicar no feed social.");
+            return;
+          }
+          setIsComposerOpen(true);
+        }}
+        aria-label="Criar nova publicação"
+        title="Criar publicação"
+        className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-30 size-14 rounded-full bg-primary text-primary-foreground shadow-xs hover:opacity-95 active:scale-95 transition-transform duration-200 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        <Plus className="size-6 stroke-[2.5]" />
+      </button>
+
+      {/* ── Modal Canônico Nova Thread (Padrão Threads / Imagens 2 e 5) ── */}
+      <Dialog open={isComposerOpen} onOpenChange={setIsComposerOpen}>
+        <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden bg-background border-border/60">
+          <DialogHeader className="px-4 py-3 border-b border-border/40 flex flex-row items-center justify-between space-y-0">
+            <button
+              type="button"
+              onClick={() => setIsComposerOpen(false)}
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md px-1 py-0.5"
+            >
+              Cancelar
+            </button>
+            <DialogTitle className="text-sm font-bold text-foreground text-center">
+              Nova publicação
+            </DialogTitle>
+            <div className="w-12" />
+          </DialogHeader>
+
+          <div className="p-4 max-h-[80vh] overflow-y-auto">
+            <InlinePostComposer
+              session={session || (profile ? { user: profile } : undefined)}
+              profile={profile}
+              onSuccess={() => {
+                setIsComposerOpen(false);
+                toast.success("Publicação compartilhada no feed social!");
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

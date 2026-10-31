@@ -167,7 +167,7 @@ const SignerInputSchema = z.object({
   email: z.string().trim().email().optional().nullable(),
   whatsapp: z.string().trim().optional().nullable(),
   sharePercentage: z.number().min(0.01).max(100.0).default(100.0),
-  shareAmountCents: z.number().int().nonnegative().default(0),
+  shareAmountCents: z.number().int().nonnegative().optional(),
   paymentMethod: z.enum(["pix", "card", "boleto", "cash", "transfer", "other"]).default("pix"),
 });
 
@@ -194,14 +194,7 @@ export const configureContractSigners = createServerFn({ method: "POST" })
       throw new Error("Contrato não encontrado nesta agência.");
     }
 
-    // Limpar signers não assinados para reconfiguração
-    await supabase
-      .from("travel_contract_signers")
-      .delete()
-      .eq("contract_id", data.contractId)
-      .eq("signature_status", "pending");
-
-    // Inserir os novos pagadores/assinantes
+    // Reconciliar a composição inteira antes de qualquer exclusão.
     const rowsToInsert = data.signers.map((s) => ({
       contract_id: data.contractId,
       store_id: identity.store_id,
@@ -211,10 +204,30 @@ export const configureContractSigners = createServerFn({ method: "POST" })
       email: s.email || null,
       whatsapp: s.whatsapp || null,
       share_percentage: s.sharePercentage,
-      share_amount_cents: s.shareAmountCents || Math.round((contract.total_value_cents * s.sharePercentage) / 100),
+      share_amount_cents: s.shareAmountCents ?? Math.round((contract.total_value_cents * s.sharePercentage) / 100),
       payment_method: s.paymentMethod,
       signature_status: "pending",
     }));
+
+    const percentageTotal = rowsToInsert.reduce((total, row) => total + row.share_percentage, 0);
+    const amountTotal = rowsToInsert.reduce((total, row) => total + row.share_amount_cents, 0);
+    const contractTotal = Number(contract.total_value_cents);
+    if (Math.abs(percentageTotal - 100) > 0.00000001) {
+      throw new Error("As cotas dos pagadores devem somar 100%.");
+    }
+    if (!Number.isSafeInteger(contractTotal) || !Number.isSafeInteger(amountTotal) || amountTotal !== contractTotal) {
+      throw new Error("As cotas em centavos devem corresponder ao total do contrato.");
+    }
+
+    // Sem RPC transacional: erros devem interromper o fluxo, nunca anunciar sucesso.
+    const { error: deleteErr } = await supabase
+      .from("travel_contract_signers")
+      .delete()
+      .eq("contract_id", data.contractId)
+      .eq("signature_status", "pending");
+    if (deleteErr) {
+      throw new Error("Erro ao substituir assinantes do contrato: " + deleteErr.message);
+    }
 
     const { error: insErr } = await supabase
       .from("travel_contract_signers")
@@ -505,7 +518,7 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
             const agencyCommissionCents = supplierNetCents > 0 ? Math.max(0, totalValueCents - supplierNetCents) : 0;
             const operatorName = tripData?.operator || tripData?.primary_supplier || "Operadora Não Informada";
 
-            await supabase.from("travel_sales_spreadsheet_rows").insert({
+            const { data: recordedCommission, error: commissionError } = await supabase.from("travel_sales_spreadsheet_rows").insert({
               store_id: storeId,
               trip_id: tripId,
               contract_id: signer.contract_id,
@@ -515,9 +528,9 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
               net_commissionable_cents: agencyCommissionCents,
               agent_commission_cents: 0,
               status: "active",
-            });
+            }).select("id").maybeSingle();
 
-            commissionRecorded = true;
+            commissionRecorded = !commissionError && Boolean(recordedCommission?.id);
           }
         }
       } catch {

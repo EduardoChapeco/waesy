@@ -193,9 +193,12 @@ function ClientCarnesPage() {
             ) : null
           }
           rightActions={
-            <Button asChild size="sm" variant="outline" className="min-h-11 h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer">
-              <Link to="/mercado">Lojas</Link>
-            </Button>
+            <Link
+              to="/mercado"
+              className="h-11 min-h-11 px-3 inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
+            >
+              Lojas
+            </Link>
           }
         />
       )}

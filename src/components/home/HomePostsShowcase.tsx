@@ -17,6 +17,7 @@ import {
 } from "@/services/admin-home-cms.functions";
 import { RichPostContent } from "@/components/community/rich-post-content";
 import { Quote } from "lucide-react";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 
 function isVideoUrl(url?: string | null): boolean {
   if (!url) return false;
@@ -138,9 +139,12 @@ export function HomePostsShowcase({
                       <span className="text-xs sm:text-sm font-bold text-foreground break-words text-wrap truncate">
                         {post.authorName || "Membro da comunidade"}
                       </span>
-                      {post.isVerified && (
-                        <CheckCircle size={14} weight="fill" className="text-info shrink-0" />
-                      )}
+                      <VerifiedBadge
+                        isVerified={post.isVerified}
+                        badgeUrl={(post as any)?.verifiedBadgeUrl}
+                        size="sm"
+                        title="Membro Verificado pelo Admin Master"
+                      />
                       <span className="text-xs text-muted-foreground shrink-0">
                         {formatRelativeTime(post.publishedAt)}
                       </span>

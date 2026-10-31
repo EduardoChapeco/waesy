@@ -95,6 +95,7 @@ const ASPECT_RATIOS: Array<{ id: HomeAspectRatio; label: string; ratioDesc: stri
 
 
 export const CANONICAL_PRESETS = [
+  { key: "chat_noor_bento", title: "Menu Noor Chat (Tetris Bento Grid)", layout: "bento_grid", aspect: "auto", desc: "Grade modular de 3 linhas do chat (3 botões em cima, 2 embaixo sendo 1 duplo, chamada de mobilidade)" },
   { key: "hero_banners", title: "Destaques Principais", layout: "carousel", aspect: "ifood", desc: "Carrossel panorâmico principal com paginação em traços" },
   { key: "quick_categories_ifood", title: "Categorias Principais", layout: "horizontal_scroll", aspect: "1:1", desc: "Dock 5x2 de categorias com 10 atalhos" },
   { key: "feature_mini_banners", title: "No Waesy também tem", layout: "carousel", aspect: "4:5", desc: "Mini-banners verticais de vantagens e serviços" },

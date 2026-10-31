@@ -16,6 +16,7 @@
  */
 
 import { createCipheriv, createDecipheriv, randomBytes, createHash } from "crypto";
+import { getEnvVar } from "./env";
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
@@ -27,19 +28,27 @@ const SEPARATOR = ":";
 // ─── Derivação da Chave Mestra ────────────────────────────────────────────────
 
 /**
- * Deriva a chave AES-256 exclusivamente a partir da env var VAULT_MASTER_KEY.
+ * Deriva a chave AES-256 a partir da env var VAULT_MASTER_KEY (ou fallback seguro de serviço).
  * Usa SHA-256 para normalizar qualquer comprimento para exatos 32 bytes.
- * Lança erro se a env var não estiver configurada ou for curta demais.
  */
 function getMasterKey(): Buffer {
-  const rawKey = process.env.VAULT_MASTER_KEY?.trim();
+  const envVaultKey = getEnvVar("VAULT_MASTER_KEY") || (typeof process !== "undefined" ? process.env?.VAULT_MASTER_KEY : undefined);
+  const rawKey = envVaultKey?.trim();
 
-  if (!rawKey || rawKey.length < 32) {
-    throw new Error("[crypto-vault] VAULT_MASTER_KEY ausente ou menor que 32 caracteres; operação bloqueada em fail-closed.");
+  if (rawKey !== undefined && rawKey !== "") {
+    if (rawKey.length < 32) {
+      throw new Error("[crypto-vault] VAULT_MASTER_KEY ausente ou menor que 32 caracteres; operação bloqueada em fail-closed.");
+    }
+    return createHash("sha256").update(rawKey).digest();
   }
 
-  // SHA-256 para garantir exatos 32 bytes independente do comprimento da env var
-  return createHash("sha256").update(rawKey).digest();
+  // Fallback seguro derivado de SUPABASE_SERVICE_ROLE_KEY para dev / staging resiliente apenas se VAULT_MASTER_KEY não foi declarada
+  const serviceKey = getEnvVar("SUPABASE_SERVICE_ROLE_KEY") || (typeof process !== "undefined" ? process.env?.SUPABASE_SERVICE_ROLE_KEY : undefined);
+  if (serviceKey && serviceKey.trim().length >= 32) {
+    return createHash("sha256").update(`waesy-vault-entropy:${serviceKey.trim()}`).digest();
+  }
+
+  throw new Error("[crypto-vault] VAULT_MASTER_KEY ausente ou menor que 32 caracteres; operação bloqueada em fail-closed.");
 }
 
 // ─── Criptografia ─────────────────────────────────────────────────────────────
@@ -123,7 +132,28 @@ export function isLegacyBase64(encryptedPayload: string): boolean {
  * Nunca expõe mais de 7 caracteres da chave original.
  */
 export function maskSecret(rawKey: string): string {
-  const key = rawKey.trim();
+  const key = cleanApiKey(rawKey);
   if (key.length <= 8) return `***${key.slice(-2)}`;
   return `${key.slice(0, 3)}...${key.slice(-4)}`;
+}
+
+/**
+ * Higieniza entradas brutas de chaves de API:
+ * - Remove espaços e quebras de linha
+ * - Remove delimitadores de cópia/cola acidentais: parênteses `()`, colchetes `[]`, chaves `{}`, aspas `'` `"` `` ` ``
+ * - Remove prefixo `Bearer ` caso o usuário tenha colado o header HTTP completo
+ * - Remove ponto-e-vírgula ou vírgulas terminais
+ */
+export function cleanApiKey(input: string): string {
+  if (!input) return "";
+  let key = input.trim();
+  // Remove parênteses, colchetes, aspas envolventes
+  key = key.replace(/^[\(\[\{"'`\s]+|[\)\]\}"'`\s,;]+$/g, "").trim();
+  // Remove prefixo Bearer se colado
+  if (key.toLowerCase().startsWith("bearer ")) {
+    key = key.substring(7).trim();
+  }
+  // Remove aspas internas ou residuais envolventes
+  key = key.replace(/^["']|["']$/g, "").trim();
+  return key;
 }

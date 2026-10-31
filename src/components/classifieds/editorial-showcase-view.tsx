@@ -18,6 +18,7 @@ import { LeadFormModal } from "@/components/leads/lead-form-modal";
 import { resolveClassifiedNiche, getClassifiedFeatureCards, getClassifiedPaymentMethods, getClassifiedHeroHighlight, getClassifiedEditorialSpecs, getClassifiedPrimaryCtaLabel } from "@/lib/classifieds/semantics";
 import { formatDate } from "@/lib/datetime";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 import { DepartureOption, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
 import { TravelBookingDossierModal } from "./travel-booking-dossier-modal";
@@ -990,16 +991,19 @@ export function EditorialShowcaseView({
               )}
             </div>
             <div className="min-w-0 flex flex-col">
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <span className="font-extrabold text-xs sm:text-sm text-foreground break-words">
                   {advertiserName}
                 </span>
-                <span title="Verificado Waesy" className="inline-flex shrink-0">
-                  <CheckCircle2 className="size-3.5 text-blue-500" />
-                </span>
+                <VerifiedBadge
+                  isVerified={Boolean((classified as any)?.store?.is_verified || (classified as any)?.author?.is_verified || (classified as any)?.is_verified)}
+                  badgeUrl={(classified as any)?.store?.verified_badge_url || (classified as any)?.author?.verified_badge_url || null}
+                  size="sm"
+                  title="Verificado pelo Admin Master"
+                />
               </div>
               <span className="text-xs text-muted-foreground break-words">
-                {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : "Anunciante Verificado")}
+                {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : ((classified as any)?.store?.is_verified || (classified as any)?.author?.is_verified ? "Anunciante Verificado" : "Anunciante"))}
               </span>
             </div>
           </div>
@@ -2529,13 +2533,16 @@ export function EditorialShowcaseView({
                 )}
               </div>
               <div className="min-w-0 flex flex-col">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
                   <span className="font-bold text-sm text-foreground break-words">
                     {advertiserName}
                   </span>
-                  <span title="Verificado Waesy" className="inline-flex shrink-0">
-                    <CheckCircle2 className="size-3.5 text-blue-500" />
-                  </span>
+                  <VerifiedBadge
+                    isVerified={Boolean((classified as any)?.store?.is_verified || (classified as any)?.author?.is_verified || (classified as any)?.is_verified)}
+                    badgeUrl={(classified as any)?.store?.verified_badge_url || (classified as any)?.author?.verified_badge_url || null}
+                    size="sm"
+                    title="Verificado pelo Admin Master"
+                  />
                 </div>
                 <span className="text-xs text-muted-foreground break-words">
                   {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : "Anunciante")}

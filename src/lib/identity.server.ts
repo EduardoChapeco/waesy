@@ -232,12 +232,9 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     } else {
       activeStoreId = memberships[0]?.store_id || null;
     }
-  } else if (matchedMembership) {
-    activeStoreId = matchedMembership.store_id;
-    activeContext = "store";
-  } else if (isPlatformAdmin && activeStoreId) {
-    activeContext = "store";
   } else {
+    // Zero-Trust Civil Root: Qualquer outro valor ou ausência de contexto opera como civil pessoal.
+    // NUNCA promover silenciosamente para store apenas por coincidir com membership de loja.
     activeStoreId = null;
     activeContext = "civil";
   }

@@ -253,13 +253,17 @@ export const getTripAggregate = createServerFn({ method: "GET" })
  }
 
  const [paxRes, confRes, vouchersRes, contractRes] = await Promise.all([
- supabase.from("trip_passengers").select("*").eq("trip_id", data.tripId),
- supabase.from("trip_confirmation_items").select("*").eq("trip_id", data.tripId).order("service_date", { ascending: true }),
- supabase.from("tourism_vouchers").select("*").eq("trip_id", data.tripId).order("created_at", { ascending: false }),
+ supabase.from("trip_passengers").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId),
+ supabase.from("trip_confirmation_items").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId).order("service_date", { ascending: true }),
+ supabase.from("tourism_vouchers").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId).order("created_at", { ascending: false }),
  trip.proposal_id
-   ? supabase.from("travel_contracts").select("*").eq("proposal_id", trip.proposal_id).order("created_at", { ascending: false }).limit(1).maybeSingle()
-   : supabase.from("travel_contracts").select("*").eq("trip_id", data.tripId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+   ? supabase.from("travel_contracts").select("*").eq("store_id", trip.store_id).eq("proposal_id", trip.proposal_id).order("created_at", { ascending: false }).limit(1).maybeSingle()
+   : supabase.from("travel_contracts").select("*").eq("store_id", trip.store_id).eq("trip_id", data.tripId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
  ]);
+
+ for (const [label, result] of [["passageiros", paxRes], ["confirmações", confRes], ["vouchers", vouchersRes], ["contrato", contractRes]] as const) {
+   if (result.error) throw new Error(`Erro ao carregar ${label}: ${result.error.message}`);
+ }
 
  const storeSettings = (trip.stores as any)?.settings || {};
 
@@ -553,9 +557,12 @@ export const createManualTrip = createServerFn({ method: "POST" })
     }
 
     const tripId = newTrip.id;
+    const assertManualWrite = (error: { message: string } | null, label: string) => {
+      if (error) throw new Error(`Viagem ${tripId} criada parcialmente; falha em ${label}: ${error.message}. Revise esta viagem antes de repetir a criação.`);
+    };
 
     // Inserir passageiro principal
-    await supabase.from("trip_passengers").insert({
+    const { error: passengerError } = await supabase.from("trip_passengers").insert({
       trip_id: tripId,
       store_id: effectiveStoreId,
       full_name: data.clientName,
@@ -564,35 +571,26 @@ export const createManualTrip = createServerFn({ method: "POST" })
       phone: data.clientWhatsapp || null,
       is_lead_passenger: true,
     });
+    assertManualWrite(passengerError, "passageiro");
 
     // Inserir localizador de voo se informado
-    if (data.flightLocator || data.airlineName) {
-      await supabase.from("trip_confirmation_items").insert({
+    if (data.flightLocator?.trim()) {
+      const { error: confirmationError } = await supabase.from("trip_confirmation_items").insert({
         trip_id: tripId,
         store_id: effectiveStoreId,
         item_type: "flight",
         provider_name: data.airlineName || "Cia Aérea",
-        locator_code: data.flightLocator || `LOC-${Math.floor(1000 + Math.random() * 9000)}`,
+        locator_code: data.flightLocator.trim(),
         status: "confirmed",
         notes: `Voo para ${data.destinationCity}`,
       });
+      assertManualWrite(confirmationError, "confirmação aérea");
     }
 
-    // Inserir hotel se informado
-    if (data.hotelName) {
-      await supabase.from("trip_confirmation_items").insert({
-        trip_id: tripId,
-        store_id: effectiveStoreId,
-        item_type: "hotel",
-        provider_name: data.hotelName,
-        locator_code: `HTL-${Math.floor(10000 + Math.random() * 90000)}`,
-        status: "confirmed",
-        notes: `Hospedagem em ${data.destinationCity}`,
-      });
-    }
+    // O hotel permanece na composição; confirmação exige localizador real do fornecedor.
 
     // Criar voucher geral da viagem
-    await supabase.from("tourism_vouchers").insert({
+    const { error: voucherError } = await supabase.from("tourism_vouchers").insert({
       trip_id: tripId,
       store_id: effectiveStoreId,
       public_token: voucherToken,
@@ -609,6 +607,7 @@ export const createManualTrip = createServerFn({ method: "POST" })
       emergency_contacts: [...(data.clientWhatsapp ? [{ name: "", phone: data.clientWhatsapp }] : [])],
       observations: null,
     });
+    assertManualWrite(voucherError, "voucher");
 
     return {
       success: true,

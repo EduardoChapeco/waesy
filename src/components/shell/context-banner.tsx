@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Store, Award, ArrowRightLeft, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { purgeCorporateContextCookies, setClientContextCookies } from "@/lib/context-auth";
+import { setTenantContext } from "@/services/identity.functions";
 
 export interface ActiveContextBannerProps {
   session?: any;
@@ -36,14 +38,11 @@ export function ActiveContextBanner({ session }: ActiveContextBannerProps) {
         window.document.cookie = `waesy_active_creator=${encodeURIComponent(fallbackHandle)}; path=/; max-age=31536000; SameSite=Lax`;
       }
 
-      // Se o contexto for store, tenta resolver o nome da loja via memberships
-      if (ctx === "store" && session?.memberships && tenant) {
-        const found = session.memberships.find((m: any) => m.store_id === tenant);
-        if (found?.name) {
-          setStoreName(found.name);
-        } else {
-          setStoreName("Minha Empresa");
-        }
+      // Zero-Trust Civil Root (DEC-206): Vitrine pública nunca opera com empresa residual
+      if (ctx === "store") {
+        setClientContextCookies({ context: "civil" });
+        setActiveContext("civil");
+        return;
       }
 
       setActiveContext(ctx);
@@ -53,13 +52,9 @@ export function ActiveContextBanner({ session }: ActiveContextBannerProps) {
     parseCookies();
   }, [session]);
 
-  const handleSwitchToCivil = () => {
-    if (typeof window !== "undefined") {
-      window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
-      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-      window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
-    }
+  const handleSwitchToCivil = async () => {
+    purgeCorporateContextCookies();
+    await setTenantContext({ data: { store_id: null } }).catch(() => null);
     toast.success("Alternado para Perfil Pessoal (Conta Civil).");
     window.location.reload();
   };

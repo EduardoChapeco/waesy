@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
 import {
   calculateSaleFinancials,
   NonCommissionableFeeItemSchema,
@@ -154,9 +154,11 @@ export const listTravelSaleFinancialSheets = createServerFn({ method: "GET" })
       searchQuery,
     } = data || {};
 
-    const identity = await getServerIdentity().catch(() => null);
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, undefined, storeId);
+    const resolvedStoreId = identity.store_id;
+    if (!resolvedStoreId) throw new Error("Selecione uma agência para consultar as comissões.");
     const supabase = getServerClient();
-    const resolvedStoreId = storeId || identity?.storeId;
 
     let query = supabase
       .from("travel_sale_financial_sheets")
@@ -173,9 +175,7 @@ export const listTravelSaleFinancialSheets = createServerFn({ method: "GET" })
       .order("sale_date", { ascending: false })
       .order("created_at", { ascending: false });
 
-    if (resolvedStoreId) {
-      query = query.eq("store_id", resolvedStoreId);
-    }
+    query = query.eq("store_id", resolvedStoreId);
     if (operatorFilter && operatorFilter !== "ALL") {
       query = query.eq("primary_operator", operatorFilter);
     }
@@ -197,8 +197,7 @@ export const listTravelSaleFinancialSheets = createServerFn({ method: "GET" })
 
     const { data: rows, error } = await query;
     if (error) {
-      console.warn("[listTravelSaleFinancialSheets] Aviso ao consultar:", error.message);
-      return [];
+      throw new Error(`Não foi possível carregar as comissões: ${error.message}`);
     }
     return rows || [];
   });

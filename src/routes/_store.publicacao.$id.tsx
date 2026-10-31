@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { Heart, MessageSquare, Share2, Bookmark, ChevronLeft, ShoppingBag, Calendar, MapPin, ExternalLink, Send, Star } from "lucide-react";
 import { toast } from "sonner";
 import { RichPostContent } from "@/components/community/rich-post-content";
@@ -193,20 +194,26 @@ function PostThreadPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
-      {/* Barra de Retorno */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" asChild className="h-11 min-h-11 px-3 rounded-lg text-xs">
-          <Link to="/feed">
-            <ChevronLeft className="h-4 w-4 mr-1" /> Voltar ao Feed
-          </Link>
-        </Button>
-        <span className="text-xs text-muted-foreground font-mono">
-          {formatRelativeTime(post.created_at)}
-        </span>
-      </div>
+      {/* Header Padronizado Canônico com Botão de Retorno e Ações Minimalistas */}
+      <NativeMobileHeader
+        title="Publicação"
+        showBack={true}
+        fallbackHref="/feed"
+        mobileOnly={false}
+        rightActions={
+          <button
+            type="button"
+            onClick={handleShare}
+            aria-label="Compartilhar"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Share2 className="size-5" />
+          </button>
+        }
+      />
 
-      {/* Cartão Central da Publicação */}
-      <article className="bg-card border border-border/60 rounded-lg p-5 sm:p-6 shadow-xs space-y-4">
+      {/* Publicação Central em Layout Threads Flat Contínuo (Zero Containeritis) */}
+      <article className="bg-transparent border-b border-border/40 pb-6 space-y-4 text-foreground">
         {/* Cabeçalho do Autor */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -462,14 +469,14 @@ function PostThreadPage() {
             Seja o primeiro a comentar nesta publicação.
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="divide-y divide-border/40">
             {comments.map((c: any) => (
-              <div key={c.id} className="bg-card border border-border/60 rounded-lg p-4 space-y-2 shadow-xs">
+              <div key={c.id} className="py-3 sm:py-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Avatar className="size-7 rounded-full border">
+                    <Avatar className="size-8 rounded-full border border-border/50">
                       <AvatarImage src={c.profile?.avatar_url || ""} />
-                      <AvatarFallback className="text-2xs">
+                      <AvatarFallback className="text-2xs font-bold bg-muted">
                         {c.profile?.full_name?.charAt(0)?.toUpperCase() || "M"}
                       </AvatarFallback>
                     </Avatar>
@@ -481,7 +488,7 @@ function PostThreadPage() {
                     {formatRelativeTime(c.created_at)}
                   </span>
                 </div>
-                <p className="text-xs sm:text-sm text-foreground/90 pl-9 whitespace-pre-line">
+                <p className="text-xs sm:text-sm text-foreground/90 pl-10 whitespace-pre-line leading-relaxed">
                   {c.content}
                 </p>
               </div>

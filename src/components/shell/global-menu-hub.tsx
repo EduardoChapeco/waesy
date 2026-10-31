@@ -14,6 +14,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/services/auth.functions";
+import { setClientContextCookies } from "@/lib/context-auth";
 import { toast } from "sonner";
 
 export interface GlobalMenuHubProps {
@@ -73,24 +74,19 @@ export function GlobalMenuHub({
 
   const handleSwitchContext = (type: "civil" | "creator" | "courier" | "store", storeId?: string) => {
     onOpenChange(false);
-    if (typeof window !== "undefined") {
-      window.document.cookie = `waesy_active_context=${type}; path=/; max-age=31536000; SameSite=Lax`;
-      if (type === "store" && storeId) {
-        window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
-      } else if (type !== "store") {
-        window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-      }
-      if (type !== "creator") {
-        window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
-      }
-    }
     if (type === "civil") {
+      setClientContextCookies({ context: "civil" });
       window.location.href = "/conta";
     } else if (type === "courier") {
+      setClientContextCookies({ context: "courier" });
       window.location.href = "/conta/entregador";
     } else if (type === "creator") {
+      setClientContextCookies({ context: "creator" });
       window.location.href = "/conta/criadores";
     } else if (type === "store") {
+      if (storeId) {
+        setClientContextCookies({ context: "store", storeId });
+      }
       window.location.href = "/workspace";
     }
   };

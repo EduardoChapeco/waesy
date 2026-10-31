@@ -7,7 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
-import { encryptSecret, decryptSecret, maskSecret } from "@/lib/crypto-vault.server";
+import { encryptSecret, decryptSecret, maskSecret, cleanApiKey } from "@/lib/crypto-vault.server";
 import {
   getActiveSecretForProvider,
   internalTestSecretKeyConnection,
@@ -116,7 +116,7 @@ export const saveApiKeyToPool = createServerFn({ method: "POST" })
     z.object({
       id: z.string().uuid().optional(),
       provider: apiProviderEnum,
-      label: z.string().min(2, "O rótulo deve ter pelo menos 2 caracteres"),
+      label: z.string().optional().default(""),
       apiKey: z.string().min(4, "Chave de API inválida"),
       priority: z.number().int().min(1).default(1),
       rateLimitPerMinute: z.number().int().min(1).default(60),
@@ -126,13 +126,18 @@ export const saveApiKeyToPool = createServerFn({ method: "POST" })
     await requireAdmin();
     const supabase = getServerClient();
 
-    const rawKey = data.apiKey.trim();
+    const rawKey = cleanApiKey(data.apiKey);
+    if (!rawKey || rawKey.length < 4) {
+      throw new Error("Chave de API inválida após sanitização.");
+    }
+
     const masked = maskSecret(rawKey);
     const encrypted = encryptSecret(rawKey);
+    const finalLabel = data.label?.trim() || `${data.provider.toUpperCase()} Key (${masked})`;
 
     const payload = {
       provider: data.provider,
-      label: data.label,
+      label: finalLabel,
       encrypted_key: encrypted,
       masked_key: masked,
       priority: data.priority,
@@ -240,7 +245,7 @@ export const batchSaveApiKeysToPool = createServerFn({ method: "POST" })
   .validator(
     z.object({
       provider: apiProviderEnum,
-      labelPrefix: z.string().min(2, "Informe o prefixo de identificação"),
+      labelPrefix: z.string().optional().default(""),
       rawKeysText: z.string().min(4, "Informe ao menos uma chave"),
       priority: z.number().int().min(1).default(1),
       rateLimitPerMinute: z.number().int().min(1).default(60),
@@ -252,8 +257,8 @@ export const batchSaveApiKeysToPool = createServerFn({ method: "POST" })
 
     const rawList = data.rawKeysText
       .split(/[\r\n,;]+/)
-      .map((k) => k.trim())
-      .filter((k) => k.length >= 6);
+      .map((k) => cleanApiKey(k))
+      .filter((k) => k.length >= 4);
 
     const uniqueRawKeys = [...new Set(rawList)];
     if (uniqueRawKeys.length === 0) {
@@ -267,14 +272,16 @@ export const batchSaveApiKeysToPool = createServerFn({ method: "POST" })
       .select("id, encrypted_key, masked_key")
       .eq("provider", data.provider);
 
+    const prefix = data.labelPrefix?.trim() || `${data.provider.toUpperCase()} Key`;
+
     for (let idx = 0; idx < uniqueRawKeys.length; idx++) {
       const rawKey = uniqueRawKeys[idx];
       const masked = maskSecret(rawKey);
       const encrypted = encryptSecret(rawKey);
       const keyLabel =
         uniqueRawKeys.length === 1
-          ? data.labelPrefix.trim()
-          : `${data.labelPrefix.trim()} #${idx + 1}`;
+          ? prefix
+          : `${prefix} #${idx + 1}`;
 
       const existingMatch = (existingKeys || []).find((k) => {
         if (k.masked_key !== masked) return false;

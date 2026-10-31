@@ -524,14 +524,12 @@ function CustomerOrdersPage() {
             ) : null
           }
           rightActions={
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
+            <Link
+              to="/mercado"
+              className="h-11 min-h-11 px-3 inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
             >
-              <Link to="/mercado">Explorar</Link>
-            </Button>
+              Explorar
+            </Link>
           }
         />
       )}
@@ -609,7 +607,7 @@ function CustomerOrdersPage() {
         <div
           role="tablist"
           aria-label="Seções de Compras"
-          className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/50"
+          className="grid grid-cols-3 w-full bg-muted/50 p-1 rounded-xl"
         >
           {(
             [
@@ -627,9 +625,9 @@ function CustomerOrdersPage() {
                 aria-selected={active}
                 onClick={() => setHubMode(tab.id)}
                 className={cn(
-                  "h-11 min-h-11 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "w-full h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   active
-                    ? "bg-background text-foreground shadow-2xs border border-border/60"
+                    ? "bg-background text-foreground font-bold shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -637,7 +635,7 @@ function CustomerOrdersPage() {
                 {tab.count > 0 && (
                   <span
                     className={cn(
-                      "px-2 py-0 rounded-full text-2xs font-mono",
+                      "px-1.5 py-0.5 rounded-full text-2xs font-mono leading-none",
                       active
                         ? "bg-primary/15 text-primary font-bold"
                         : "bg-muted text-muted-foreground",

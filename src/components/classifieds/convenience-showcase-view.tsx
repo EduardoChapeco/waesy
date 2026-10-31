@@ -15,6 +15,7 @@ import { GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, Or
 import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 
 export interface ConveniencePreviewData {
   title: string;
@@ -555,17 +556,14 @@ export function ConvenienceShowcaseView({
             )}
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
               <p className="text-xs font-bold text-foreground break-words text-wrap">{advertiserName}</p>
-              {isCompany ? (
-                <span title="Loja Oficial Verificada" className="inline-flex shrink-0">
-                  <CheckCircle2 className="size-3.5 text-blue-500" />
-                </span>
-              ) : (
-                <span title="Anunciante Verificado" className="inline-flex shrink-0">
-                  <ShieldCheck className="size-3.5 text-emerald-500" />
-                </span>
-              )}
+              <VerifiedBadge
+                isVerified={Boolean((classified as any)?.store?.is_verified || (classified as any)?.author?.is_verified || (classified as any)?.is_verified)}
+                badgeUrl={(classified as any)?.store?.verified_badge_url || (classified as any)?.author?.verified_badge_url || null}
+                size="sm"
+                title={isCompany ? "Loja Verificada pelo Admin Master" : "Anunciante Verificado pelo Admin Master"}
+              />
             </div>
             <p className="text-xs text-muted-foreground break-words text-wrap">
               {isCompany ? "Loja Oficial" : "Vendedor Particular"} • {locationName}

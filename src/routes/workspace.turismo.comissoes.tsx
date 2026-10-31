@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { formatMoney } from "@/lib/money";
 import {
@@ -56,11 +56,24 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/turismo/comissoes")({
   loader: async () => {
-    const sheets = await listTravelSaleFinancialSheets({ data: {} }).catch(() => []);
+    const sheets = await listTravelSaleFinancialSheets({ data: {} });
     return { initialSheets: sheets };
   },
   component: TravelSalesFinancialCompositionPage,
+  errorComponent: FinancialSheetsError,
 });
+
+function FinancialSheetsError({ reset }: { reset: () => void }) {
+  const router = useRouter();
+  return (
+    <div className="p-4 space-y-4" role="alert">
+      <p className="text-sm text-foreground">Não foi possível carregar as comissões.</p>
+      <Button className="h-11 min-h-11 focus-visible:ring-2" onClick={() => {
+        void router.invalidate().then(reset).catch(() => toast.error("Não foi possível atualizar as comissões."));
+      }}>Tentar novamente</Button>
+    </div>
+  );
+}
 
 interface SaleFinancialRecord {
   id: string;
@@ -441,7 +454,7 @@ function TravelSalesFinancialCompositionPage() {
     const receivedCents = Math.round((parseFloat(receivedReais.replace(",", ".")) || 0) * 100);
 
     const newRecord: SaleFinancialRecord = {
-      id: editingSheetId || `fin-${Date.now()}`,
+      id: editingSheetId || "",
       internal_code: internalCode.trim().toUpperCase(),
       client_name: clientName.trim(),
       client_document: clientDocument.trim() || undefined,
@@ -509,7 +522,7 @@ function TravelSalesFinancialCompositionPage() {
     };
 
     try {
-      await upsertTravelSaleFinancialSheet({
+      const result = await upsertTravelSaleFinancialSheet({
         data: {
           ...(editingSheetId && editingSheetId.length === 36 ? { id: editingSheetId } : {}),
           internal_code: newRecord.internal_code,
@@ -556,17 +569,26 @@ function TravelSalesFinancialCompositionPage() {
           general_notes: newRecord.general_notes,
           audit_reason: auditReason,
         },
-      }).catch(() => null);
+      });
+
+      if (!result?.success || !result.sheet?.id) {
+        throw new Error("A gravação não retornou uma ficha confirmada.");
+      }
+      const persistedSheets = await listTravelSaleFinancialSheets({ data: {} });
+      const savedRecord = persistedSheets.find((sheet) => sheet.id === result.sheet.id) as SaleFinancialRecord | undefined;
+      if (!savedRecord) throw new Error("A ficha foi enviada, mas não foi possível confirmar sua leitura. Atualize antes de reenviar.");
 
       setSheets((prev) => {
         if (editingSheetId) {
-          return prev.map((s) => (s.id === editingSheetId ? newRecord : s));
+          return prev.map((s) => (s.id === editingSheetId ? savedRecord : s));
         }
-        return [newRecord, ...prev];
+        return [savedRecord, ...prev];
       });
 
-      toast.success("Composição Financeira da Reserva salva e auditada!");
+      toast.success("Ficha salva.");
       setIsSheetModalOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar a ficha.");
     } finally {
       setIsSaving(false);
     }

@@ -1,0 +1,469 @@
+{
+  "status": "candidates_require_manual_confirmation",
+  "files": 40,
+  "tables": 85,
+  "findings": [
+    {
+      "file": "src/services/corporate-travel.functions.ts",
+      "line": 157,
+      "table": "corporate_travel_accounts",
+      "column": "name",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/corporate-travel.functions.ts",
+      "line": 215,
+      "table": "corporate_travel_accounts",
+      "column": "name",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/corporate-travel.functions.ts",
+      "line": 238,
+      "table": "corporate_travel_members",
+      "column": "full_name",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/corporate-travel.functions.ts",
+      "line": 238,
+      "table": "corporate_travel_members",
+      "column": "email",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/corporate-travel.functions.ts",
+      "line": 753,
+      "table": "travel_projects",
+      "column": "estimated_budget_cents",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/corporate-travel.functions.ts",
+      "line": 885,
+      "table": "travel_projects",
+      "column": "estimated_budget_cents",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/corporate-travel.functions.ts",
+      "line": 1014,
+      "table": "tourism_trips",
+      "column": "start_date",
+      "operation": "order"
+    },
+    {
+      "file": "src/services/travel-commercial-intelligence.functions.ts",
+      "line": 590,
+      "table": "travel_interests",
+      "column": "inclusionsWanted",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 280,
+      "table": "travel_contract_signers",
+      "column": "contract_title",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 280,
+      "table": "travel_contract_signers",
+      "column": "client_name",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 280,
+      "table": "travel_contract_signers",
+      "column": "destination",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 280,
+      "table": "travel_contract_signers",
+      "column": "package_summary",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 280,
+      "table": "travel_contract_signers",
+      "column": "total_value_cents",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 280,
+      "table": "travel_contract_signers",
+      "column": "payment_conditions",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 511,
+      "table": "travel_trips",
+      "column": "cost_cents",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 511,
+      "table": "travel_trips",
+      "column": "operator",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 511,
+      "table": "travel_trips",
+      "column": "primary_supplier",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-continuous-flow.functions.ts",
+      "line": 511,
+      "table": "travel_trips",
+      "column": "agent_id",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-issuance-guard.functions.ts",
+      "line": 343,
+      "table": "tourism_trips",
+      "column": "metadata",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 245,
+      "table": "tourism_trips",
+      "column": "name",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 245,
+      "table": "tourism_trips",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1169,
+      "table": "travel_proposals",
+      "column": "agency_name",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1169,
+      "table": "travel_proposals",
+      "column": "agency_logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1169,
+      "table": "travel_proposals",
+      "column": "agency_whatsapp",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1169,
+      "table": "travel_proposals",
+      "column": "cover_image_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1189,
+      "table": "travel_contracts",
+      "column": "agency_name",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1189,
+      "table": "travel_contracts",
+      "column": "agency_whatsapp",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1336,
+      "table": "travel_contracts",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1365,
+      "table": "tourism_trips",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1388,
+      "table": "tourism_vouchers",
+      "column": "destination_city",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1388,
+      "table": "tourism_vouchers",
+      "column": "travel_start_date",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1388,
+      "table": "tourism_vouchers",
+      "column": "travel_end_date",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1388,
+      "table": "tourism_vouchers",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1412,
+      "table": "travel_proposals",
+      "column": "destination",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1412,
+      "table": "travel_proposals",
+      "column": "start_date",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1412,
+      "table": "travel_proposals",
+      "column": "end_date",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1412,
+      "table": "travel_proposals",
+      "column": "client_phone",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1412,
+      "table": "travel_proposals",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1441,
+      "table": "trip_passengers",
+      "column": "destination_city",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1441,
+      "table": "trip_passengers",
+      "column": "travel_start_date",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1441,
+      "table": "trip_passengers",
+      "column": "travel_end_date",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1441,
+      "table": "trip_passengers",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1604,
+      "table": "travel_proposals",
+      "column": "agency_id",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1619,
+      "table": "tourism_trips",
+      "column": "client_phone",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1843,
+      "table": "tourism_trips",
+      "column": "name",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1843,
+      "table": "tourism_trips",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-lifecycle.functions.ts",
+      "line": 1843,
+      "table": "tourism_trips",
+      "column": "phone",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-mcp-gateway.service.ts",
+      "line": 158,
+      "table": "tourism_incident_tickets",
+      "column": "customer_name",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-mcp-gateway.service.ts",
+      "line": 158,
+      "table": "tourism_incident_tickets",
+      "column": "urgency",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-mcp-gateway.service.ts",
+      "line": 158,
+      "table": "tourism_incident_tickets",
+      "column": "category",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-mcp-gateway.service.ts",
+      "line": 158,
+      "table": "tourism_incident_tickets",
+      "column": "summary",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 799,
+      "table": "travel_proposals",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 983,
+      "table": "travel_proposals",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-proposal.functions.ts",
+      "line": 1151,
+      "table": "travel_proposals",
+      "column": "logo_url",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-suppliers.functions.ts",
+      "line": 166,
+      "table": "travel_suppliers",
+      "column": "rating",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-supply-orchestrator.service.ts",
+      "line": 63,
+      "table": "travel_operator_integrations",
+      "column": "credentials_vault_ref",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-supply-orchestrator.service.ts",
+      "line": 350,
+      "table": "travel_operator_integrations",
+      "column": "credentials_vault_ref",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/travel-supply-orchestrator.service.ts",
+      "line": 411,
+      "table": "tourism_incident_tickets",
+      "column": "customer_name",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-supply-orchestrator.service.ts",
+      "line": 411,
+      "table": "tourism_incident_tickets",
+      "column": "urgency",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-supply-orchestrator.service.ts",
+      "line": 411,
+      "table": "tourism_incident_tickets",
+      "column": "category",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-supply-orchestrator.service.ts",
+      "line": 411,
+      "table": "tourism_incident_tickets",
+      "column": "summary",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/travel-wooba-connector.service.ts",
+      "line": 47,
+      "table": "travel_operator_integrations",
+      "column": "credentials_vault_ref",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/whatsapp-corporate-travel-tools.server.ts",
+      "line": 78,
+      "table": "travel_policy_versions",
+      "column": "rules",
+      "operation": "select"
+    },
+    {
+      "file": "src/services/whatsapp-corporate-travel-tools.server.ts",
+      "line": 78,
+      "table": "travel_policy_versions",
+      "column": "is_active",
+      "operation": "eq"
+    },
+    {
+      "file": "src/services/whatsapp-corporate-travel-tools.server.ts",
+      "line": 296,
+      "table": "corporate_travel_expenses",
+      "column": "corporate_account_id",
+      "operation": "insert"
+    },
+    {
+      "file": "src/services/whatsapp-corporate-travel-tools.server.ts",
+      "line": 296,
+      "table": "corporate_travel_expenses",
+      "column": "expense_category",
+      "operation": "insert"
+    }
+  ]
+}

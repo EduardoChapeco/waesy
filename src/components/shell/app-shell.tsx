@@ -263,7 +263,9 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.startsWith("/imoveis/") ||
     location.pathname.startsWith("/veiculos/") ||
     location.pathname.startsWith("/vagas/") ||
-    (location.pathname.startsWith("/empregos/") && location.pathname !== "/empregos");
+    (location.pathname.startsWith("/empregos/") && location.pathname !== "/empregos") ||
+    location.pathname.startsWith("/publicacao/") ||
+    (location.pathname.startsWith("/noticias/") && location.pathname !== "/noticias");
 
   const isCleanMobileAppPage =
     location.pathname === "/" ||

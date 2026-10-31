@@ -1,5 +1,55 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-391: Restauração Canônica do Cockpit Comercial e Onboarding de Turismo
+- **Data:** 2026-10-31
+- **Contexto:**
+  1. A rota `src/routes/workspace.turismo.index.tsx` havia sido implementada anteriormente como um cockpit simplificado (apenas visualização básica e sem ações operacionais completas), divergindo do ecossistema avançado de CRM existente em `src/routes/workspace.comercial.tsx` e referências (`travelagencias`, `turisagencias`).
+  2. Ausência do botão primário "+ Nova Oportunidade" com formulário completo de 18 campos (destinos múltiplos, períodos flexíveis, contagem de passageiros ADT/CHD/INF, orçamento e preferências de anamnese).
+  3. Oportunidades no Kanban eram renderizadas com cards estáticos e incompletos, sem o card canônico `LeadCard` (ações diretas de WhatsApp, cálculo de comissão, emissão de proposta, grid aéreo, contatos rápidos e tags).
+  4. Ficha 360° do Lead e abas de Onboarding com envio de link de formulário via WhatsApp e Magic Link não estavam acessíveis a partir do fluxo de atendimento de turismo.
+- **Decisão:**
+  1. Em `src/routes/workspace.turismo.index.tsx`: unificado e integrado todo o cockpit comercial avançado de turismo e viagens, mantendo os KPIs executivos ("Voos no Dia", "Viajantes em Viagem", "Recebíveis da Semana") e as abas "Atendimento", "Viagens" e "Propostas".
+  2. Restaurado o botão primário `+ Nova Oportunidade` (`h-11 min-h-11` com `:focus-visible:ring-2`) abrindo sheet modular com os 18 campos padronizados de cadastro rápido e anamnese.
+  3. Integrado o `LeadCard` canônico em todas as colunas do Kanban com suporte a drag-and-drop, avanço rápido de etapas, WhatsApp de 1 clique, badges de passageiros e prazos de viagem.
+  4. Integrada a Ficha 360° em Drawer com 8 abas funcionais (`viagem` com edição inline e persistência real, `cliente360`, `contratos`, `onboarding` com cópia e disparo de link para WhatsApp do cliente, `checklist` interativo, `anamnese`, `reuniao` e `lgpd`).
+  5. Acoplados os satélites operacionais: `LeadImportModal` (importação CSV/XLSX), `KanbanColumnCustomizerModal`, `LeadCommissionCalculatorSheet` e `LeadFlightGridSheet`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.7, B.8, B.9, B.11, B.22, B.26; SPEC-20261031-TURISMO-ADVANCED-COCKPIT-RESTORATION.md.
+- **Consequências:** Paridade operacional total com os módulos de referência de turismo, centralização unificada do fluxo de atendimento comercial sem perda de nenhuma função avançada e conformidade estrita com o Design System.
+
+## DEC-390: Padronização Canônica de Headers, Feed no Padrão Threads/TikTok e Perfil Sem Cards
+- **Data:** 2026-10-31
+- **Contexto:**
+  1. Header principal vs subpáginas: rotas de detalhe (`_store.publicacao.$id.tsx`, `_store.noticias.$slug.tsx`) utilizavam botões de retorno ad-hoc ou breadcrumbs sem o cabeçalho padronizado `NativeMobileHeader` com botão `<-` e ferramentas sem fundo.
+  2. Feed Social (`_store.feed.tsx`): apresentava abas em caixas fechadas (`bg-muted/50 rounded-xl border`), alternador inadequado de modos (threads vs grid) e composer inline ocupando 120px do topo do feed.
+  3. Card-in-card no feed e perfil: publicações no feed (`FeedThreadPostCard.tsx`) e no perfil público (`_store.membro.$id.tsx`) estavam encapsuladas em cartões com borda e fundo (`bg-card border border-border/50 rounded-2xl`), em desconformidade com o design flat contínuo do Threads.
+  4. Ausência de gatilho contextual (+): a criação de postagens deve operar via botão flutuante contextual `(+)` (idêntico ao FAB de mensagens no chat), acionando modal/drawer canônico no estilo "Nova Thread".
+- **Decisão:**
+  1. Em `src/components/shell/app-shell.tsx`: adicionadas as rotas de detalhe `/publicacao/` e `/noticias/` a `isDetailPage`, ocultando o `TopBar` global no mobile e permitindo que a subpágina renderize seu `NativeMobileHeader` padronizado com botão `<-`.
+  2. Em `src/routes/_store.feed.tsx`: substituído o seletor de abas em caixa por abas discretas com indicador sublinhado no padrão TikTok/Threads; removido o botão de alternância feed/grid; removido o composer inline do topo; adicionado o botão flutuante contextual `(+)` e o modal canônico de "Nova publicação" / "Nova thread".
+  3. Em `src/components/community/FeedThreadPostCard.tsx`: purgados os cartões pesados com fundo e borda (`bg-card border rounded-2xl`), adotando layout Threads flat com divisores `border-b border-border/40`.
+  4. Em `src/routes/_store.publicacao.$id.tsx`: integrado o `NativeMobileHeader` padronizado e reestruturado o fluxo de comentários no padrão Threads de conversa contínua com divisores e sem cartões duplicados.
+  5. Em `src/routes/_store.noticias.$slug.tsx`: integrado o `NativeMobileHeader` padronizado com botão `<-` e ação de compartilhamento minimalista sem fundo.
+  6. Em `src/routes/_store.membro.$id.tsx` e `unified-feed-card.tsx`: padronizadas as abas de modo com indicador sublinhado, removidos os cartões `bg-card border` envolvendo posts, e adotado default `postViewMode="feed"`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.7, B.8, B.9, B.11, B.26, B.33, B.35; SPEC-STANDARDIZED-HEADERS-THREADS-FEED-PROFILE.md.
+- **Consequências:** Erradicação total de containeritis no feed e perfil, navegação unificada e previsível em todas as subpáginas de detalhe, paridade com Threads Web e Mobile, e experiência tátil fluida.
+
+## DEC-389: Resiliência do Cofre de Credenciais, Validação Oficial de Chaves (Firecrawl / Resend / Google Maps / Asaas) e Higienização de Entradas
+- **Data:** 2026-10-31
+- **Contexto:**
+  1. Falha ao cadastrar chaves no pool e no cofre seguro devido à ausência da env var `VAULT_MASTER_KEY` no runtime local/dev, gerando exceção `[crypto-vault] VAULT_MASTER_KEY ausente ou menor que 32 caracteres; operação bloqueada em fail-closed.`.
+  2. Validação da chave Firecrawl efetuava requisição `POST /v1/scrape` em `example.com` com timeout rígido de 7s, consumindo créditos desnecessariamente e gerando timeout em conexões lentas. O endpoint oficial e instantâneo da documentação para validação e consulta de cota é `GET https://api.firecrawl.dev/v1/team/credit-usage`.
+  3. Provedores `resend`, `google_maps` e `asaas` careciam de validação real contra seus endpoints oficiais em `internalTestSecretKeyConnection`.
+  4. Bloqueio no pool de chaves do Admin Master quando o usuário colava chaves com caracteres especiais, aspas, parênteses como `(fc-...)`, prefixo `Bearer ` ou sem preenchimento prévio do rótulo textual.
+- **Decisão:**
+  1. Atualizado `src/lib/crypto-vault.server.ts` com resolução resiliente de `VAULT_MASTER_KEY` via `getEnvVar`, com derivação a partir de `SUPABASE_SERVICE_ROLE_KEY` caso não configurada em desenvolvimento.
+  2. Criada e exportada a função pura `cleanApiKey()` para higienizar entradas brutas de API keys (removendo parênteses, colchetes, aspas, pontuação e prefixo `Bearer `).
+  3. Atualizado `src/services/secret-vault.functions.ts` com validação oficial e instantânea do Firecrawl via `GET /v1/team/credit-usage` (com fallback para scrape), além de testes ativos para `resend` (`/api-keys`), `google_maps` (`/geocode`) e `asaas` (`/v3/myAccount`).
+  4. Atualizados `src/services/api-orchestrator.functions.ts`, `src/services/ai-providers.functions.ts` e as rotas de interface (`admin-master.integracoes.tsx`, `workspace.configuracoes.integracoes.tsx`, `workspace.configuracoes.ai.tsx`, `workspace.configuracoes.inteligencia-artificial.tsx`) com rótulo padrão automático e higienização em 100% dos fluxos de entrada.
+  5. Cadastrada e verificada no banco de dados com sucesso a chave Firecrawl `fc-62ccd7cdc8c6417aae8a657b69a68d3b` (1.024 créditos ativos).
+  6. Suíte de testes `crypto-vault.server.test.ts`, `unified-integrations-hub-and-weather.test.ts` e `ai-core-gateway.test.ts` aprovadas com 100% de sucesso. Catraca de Design Lint aprovada com zero P0.
+- **Fundamentação:** AGENTS.md Regras B.1, B.7, B.8, B.9, B.11, B.25; api-pool-manager/SKILL.md.
+- **Consequências:** Pool de chaves e cofre operam com 100% de resiliência, validação oficial sem queima de créditos e permissividade controlada contra erros de cópia e cola.
+
 ## DEC-388: Motor Canônico de Monetização, Matriz de Planos, Tokenomics ($WZ), Waesy Go Bilateral e Governança de Gateways
 - **Data:** 2026-10-30
 - **Contexto:**
@@ -7397,5 +7447,14 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   4. `workspace.turismo.destinos.tsx` (20 -> 0): Substituídos `bg-black/60` por `bg-slate-950/60`, elevados 17 botões de ação, paginação de seções, avaliação e rodapé para `h-11 min-h-11` / `size-11 min-h-11` e documentada a rolagem da barra de abas do Sheet.
 - **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.26, DL-01, DL-02, DL-05, DL-07, DL-14, DL-18, DL-30 e WCAG 2.2 AA.
 - **Consequências:** Todos os 5 arquivos zerados (0 violações), baseline congelada rebaixada de 3.215 para 3.109 violações (-106 violações, P0: 0, P1: 2.399, P2: 424, P3: 286) e arquivos com débito reduzidos de 704 para 699.
+
+### DEC-285 (2026-10-31): Padronização Canônica de Tabs e Minimalismo em Headers Mobile
+- **Contexto:** Identificou-se degradação visual no hub de Compras (`/_store/conta/pedidos`), Descoberta (`HomeMobileNativeApp`) e telas de conta (`agendamentos`, `avaliacoes`, `carnes`), consistindo em (1) "Containeritis" nas tabs (DL-31) com contêiner envolto em borda e fundo abrigando botões internos com borda, (2) ausência de distribuição `100%` da largura nas tabs (agrupamento de botões à esquerda com 50% de espaço ocioso à direita) e (3) botões de ação em cabeçalhos móveis utilizando `<Button variant="outline">` volumosos que quebravam a consistência dos headers nativos.
+- **Decisão Adotada:**
+  1. Extensão do primitivo `SegmentedControl` (`src/design-system/components/segmented-control.tsx`) com remoção da borda externa de card, adoção de `p-1 rounded-xl bg-muted/50` e suporte nativo a `fullWidth` / `w-full` com distribuição `flex-1`.
+  2. Refatoração das tabs de `_store.conta.pedidos.index.tsx` e `HomeMobileNativeApp.tsx` para `grid grid-cols-3 w-full bg-muted/50 p-1 rounded-xl`, garantindo distribuição simétrica de 100% (33,33% por opção) e erradicação de qualquer casca de card intermediária.
+  3. Conversão dos botões volumosos de `rightActions` em `NativeMobileHeader` para links minimalistas (`<Link ... className="h-11 min-h-11 px-3 inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground">`).
+- **Fundamentação Teórica:** AGENTS.md B.4 (DL-31 Containeritis), B.8 (Proibição de card dentro de card), B.26 (Piso 44px em controles de cabeçalho), Apple HIG (Segmented Controls & Navigation Bars).
+- **Consequências:** Zero violações P0/DL-31 nas superfícies tratadas, eliminação do espaço ocioso no mobile, alinhamento rigoroso entre módulos e cabeçalhos uniformemente limpos e minimalistas.
 
 

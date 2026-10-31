@@ -46,6 +46,19 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
   const { globalCarts, cart, setIsCartOpen } = useCartContext();
 
   const isAuthenticated = Boolean(session?.user || session?.id);
+  const user = session?.user || session;
+  const userAvatar =
+    session?.avatarUrl ||
+    session?.avatar_url ||
+    user?.avatar_url ||
+    user?.user_metadata?.avatar_url ||
+    "";
+  const userInitials = (
+    user?.user_metadata?.name ||
+    user?.user_metadata?.full_name ||
+    user?.email ||
+    "U"
+  ).slice(0, 1).toUpperCase();
 
   // Total de itens no carrinho (global ou da loja corrente)
   const totalCartItems =
@@ -360,9 +373,41 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <div className="relative">
-                  <User className="size-5" strokeWidth={isProfileActive ? 2.5 : 1.75} />
-                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-primary" />
+                <div className="relative flex items-center justify-center">
+                  {isAuthenticated ? (
+                    userAvatar ? (
+                      <div
+                        className={cn(
+                          "size-6 rounded-full overflow-hidden transition-all duration-200 flex items-center justify-center bg-muted",
+                          isProfileActive
+                            ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                            : "ring-1 ring-border/60 hover:ring-foreground/40"
+                        )}
+                      >
+                        <img
+                          src={userAvatar}
+                          alt="Perfil"
+                          className="size-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className={cn(
+                          "size-6 rounded-full bg-muted text-foreground text-3xs font-bold flex items-center justify-center transition-all duration-200",
+                          isProfileActive
+                            ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                            : "ring-1 ring-border/60"
+                        )}
+                      >
+                        {userInitials}
+                      </div>
+                    )
+                  ) : (
+                    <User className="size-5" strokeWidth={isProfileActive ? 2.5 : 1.75} />
+                  )}
                 </div>
                 <span className="text-2xs font-semibold tracking-tight leading-none">Perfil</span>
               </button>

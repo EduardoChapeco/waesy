@@ -132,7 +132,7 @@ export function FeedThreadPostCard({
   return (
     <>
       <article
-        className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-border/50 bg-card text-foreground transition-colors duration-200 duration-200 hover:border-border/80 ${className}`}
+        className={`py-4 px-3 sm:px-4 bg-transparent text-foreground transition-colors duration-200 hover:bg-muted/10 ${className}`}
       >
         <div className="flex items-start gap-3">
           {/* ─── Coluna Esquerda: Avatar & Conector de Thread ─────────── */}

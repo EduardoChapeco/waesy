@@ -401,27 +401,29 @@ function AdminMasterIntegracoesPage() {
  };
 
  const handleSaveKeyToPool = async () => {
- if (!newKeyLabel.trim() || !newKeySecret.trim()) {
- toast.error("Preencha o rótulo base e pelo menos uma chave de API.");
+ if (!newKeySecret.trim()) {
+ toast.error("Informe pelo menos uma chave de API.");
  return;
  }
 
  const parsedKeys = newKeySecret
- .split(/[\r\n,]+/)
- .map((k) => k.trim())
- .filter((k) => k.length >= 5);
+ .split(/[\r\n,;]+/)
+ .map((k) => k.trim().replace(/^[\(\[\{"'`\s]+|[\)\]\}"'`\s,;]+$/g, "").replace(/^bearer\s+/i, ""))
+ .filter((k) => k.length >= 4);
 
  if (parsedKeys.length === 0) {
  toast.error("Nenhuma chave válida informada.");
  return;
  }
 
+ const baseLabel = newKeyLabel.trim() || `${newKeyProvider.toUpperCase()} Pool Key`;
+
  try {
  if (parsedKeys.length > 1) {
  const batchRes = await batchSaveApiKeysToPool({
  data: {
  provider: newKeyProvider,
- labelPrefix: newKeyLabel.trim() || "Key",
+ labelPrefix: baseLabel,
  rawKeysText: parsedKeys.join("\n"),
  priority: newKeyPriority,
  rateLimitPerMinute: newKeyRateLimit,
@@ -436,7 +438,7 @@ function AdminMasterIntegracoesPage() {
  const created = await saveApiKeyToPool({
  data: {
  provider: newKeyProvider,
- label: newKeyLabel.trim(),
+ label: baseLabel,
  apiKey: parsedKeys[0],
  priority: newKeyPriority,
  rateLimitPerMinute: newKeyRateLimit,
