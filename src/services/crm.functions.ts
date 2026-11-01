@@ -1439,6 +1439,8 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
  text: z.string(),
  done: z.boolean(),
  })).optional(),
+ pax_list: z.array(z.record(z.unknown())).optional(),
+ custom_fields: z.record(z.unknown()).optional(),
  lost_reason: z.string().optional().nullable(),
  }),
  )
@@ -1481,6 +1483,8 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
  if (updates.follow_up_at !== undefined) dbUpdates.follow_up_at = updates.follow_up_at;
  if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
  if (updates.checklist !== undefined) dbUpdates.checklist = updates.checklist;
+ if (updates.pax_list !== undefined) dbUpdates.pax_list = updates.pax_list;
+ if (updates.custom_fields !== undefined) dbUpdates.custom_fields = updates.custom_fields;
  if (updates.lost_reason !== undefined) dbUpdates.lost_reason = updates.lost_reason;
 
  const { error } = await supabase
@@ -2279,14 +2283,22 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
       trips = tripsData || [];
     }
 
-    // 3. Busca atividades da timeline isoladas por store_id
-    const { data: activities } = await supabase
-      .from("lead_activities")
-      .select("*")
-      .eq("lead_id", lead.id)
-      .eq("store_id", identity.store_id)
-      .order("created_at", { ascending: false })
-      .limit(30);
+    // 3. Busca atividades da timeline e reuniões isoladas por store_id
+    const [{ data: activities }, { data: meetings }] = await Promise.all([
+      supabase
+        .from("lead_activities")
+        .select("*")
+        .eq("lead_id", lead.id)
+        .eq("store_id", identity.store_id)
+        .order("created_at", { ascending: false })
+        .limit(30),
+      supabase
+        .from("lead_meetings")
+        .select("*")
+        .eq("lead_id", lead.id)
+        .eq("store_id", identity.store_id)
+        .order("scheduled_at", { ascending: true }),
+    ]);
 
     return {
       lead,
@@ -2296,6 +2308,7 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
       trips,
       incidents,
       activities: activities || [],
+      meetings: meetings || [],
     };
   });
 

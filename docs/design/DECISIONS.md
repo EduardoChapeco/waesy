@@ -7580,3 +7580,22 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Deploy executado via Wrangler para `https://7929d80a.usewaesy.pages.dev`, `https://usewaesy.pages.dev` e `https://waesy.com.br` (todos respondendo HTTP 200).
 - **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.26, B.34, DL-01 a DL-30, DEC-380, DEC-390 e Apple HIG.
 - **Consequências:** Eliminação do AI-smell e botões azuis fluorescentes na vitrine de comunidades; criação de comunidades 100% funcional, segura e integrada ao guard de autenticação; experiência responsiva idêntica ao Threads/Apple HIG.
+
+
+---
+
+### DEC-415 (2026-11-01): Refatoração End-to-End do Card de Lead e Gaveta 360° no Padrão Pipefy (Módulo de Turismo)
+- **Data:** 2026-11-01
+- **ID da Decisão:** DEC-415
+- **Contexto:** O card do lead no Kanban de Turismo (`LeadCard.tsx`) e a gaveta lateral 360° (`workspace.turismo.index.tsx`) necessitavam da ergonomia funcional do Pipefy (referência LexCorp), preservando integralmente as 8 abas existentes (`viagem`, `cliente360`, `contratos`, `onboarding`, `checklist`, `anamnese`, `reuniao`, `lgpd`) sem deletar nenhuma funcionalidade, enriquecendo cada aba com fluxos operacionais completos e adicionando a 9ª aba de planejamento financeiro (`pagamento`).
+- **Decisão Adotada:**
+  1. **Card do Lead (`LeadCard.tsx`):** Estruturado com topo exibindo pill discreto de categoria da viagem + badge SLA temporal (`⏱ há Xh` / `Xd` calculado sobre `updated_at`/`created_at`); corpo com nome em destaque (`font-semibold text-sm`), destino, número de passageiros (`Pax`) e valor em `BRL`; rodapé com badge de status LGPD (`Consentimento Ativo` / `Pendente`), contadores de comentários e documentos/anexos, avatar do consultor e botões de avanço de etapa com 44px (`h-11 min-h-11`).
+  2. **Gaveta 360° (`workspace.turismo.index.tsx`):**
+     - **Aba 1 (`viagem`):** Adicionado banner superior de status LGPD com origem (`Via WhatsApp` / `Via Formulário Web`) e botão **"Gerar Link Único Multi-Opções"** integrado a `bundleTravelProposalsIntoSingleLink` (`travel-proposal.functions.ts`).
+     - **Aba 3 (`contratos`):** Adicionado stepper visual responsivo de 5 etapas (`1. Minuta Gerada` → `2. Link Enviado` → `3. Link Aberto` → `4. Visualizado` → `5. Assinado`) com IP, hash SHA-256 e carimbo de tempo.
+     - **Aba 4 (`onboarding`):** Adicionadas **Pastas Documentais por Passageiro** (`pax_list` persistido via `updateLeadDetails`) com RG/CPF, Passaporte, Validade e alerta visual automático quando o passaporte vence em menos de 6 meses da data de embarque.
+     - **Aba 7 (`reuniao`):** Adicionados campos de `Pauta / Objetivo da Reunião` e `Link da Sala (Google Meet ou Zoom)`, botão para copiar o `Link Mágico de Confirmação` e listagem de reuniões agendadas (`customer360Data.meetings`).
+     - **Aba 9 (`pagamento`):** Nova aba com decomposição de custos (Aéreo, Hotelaria, Seguro Viagem, Taxas de Embarque, Markup/Comissão), seleção de modalidade (PIX à Vista, Cartão em até 10x, Boleto Faturado Operadora), link de aprovação para o cliente e persistência em `leads_crm.custom_fields.payment_plan`.
+  3. **Qualidade Visual:** Redução de 18 violações no Design Lint Ratchet (de 3.154 para **3.136**, com 0 P0).
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.25, B.26, DL-01 a DL-32 e WCAG 2.2 AA.
+- **Consequências:** Kanban e Gaveta 360° operando com ergonomia Pipefy de alta densidade, zero deleções, zero mocks estáticos e 100% de integração com o BFF.

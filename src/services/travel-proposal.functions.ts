@@ -1419,12 +1419,12 @@ Mantenha a resposta concisa e legível em smartphones.`;
 export const bundleTravelProposalsIntoSingleLink = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      proposalIds: z.array(z.string().min(1)).min(2).max(12),
+      proposalIds: z.array(z.string().min(1)).min(1).max(12),
       bundleTitle: z.string().trim().max(160).optional(),
     }),
   )
   .handler(async ({ data }): Promise<{ success: boolean; masterId: string; publicToken: string; optionsCount: number }> => {
-    const identity = await requireStaff();
+    await requireStaff();
     const loadedProposals: TravelProposalDTO[] = [];
 
     for (const pid of data.proposalIds) {
@@ -1432,8 +1432,18 @@ export const bundleTravelProposalsIntoSingleLink = createServerFn({ method: "POS
       if (p) loadedProposals.push(p);
     }
 
-    if (loadedProposals.length < 2) {
-      throw new Error("Selecione pelo menos 2 propostas válidas da agência para agrupar.");
+    if (loadedProposals.length === 0) {
+      throw new Error("Nenhuma proposta válida encontrada para gerar o link unificado.");
+    }
+
+    if (loadedProposals.length === 1) {
+      const single = loadedProposals[0];
+      return {
+        success: true,
+        masterId: single.id,
+        publicToken: single.public_token || single.id,
+        optionsCount: Math.max(1, single.options?.length || 1),
+      };
     }
 
     const primary = loadedProposals[0];
