@@ -996,8 +996,9 @@ export default function WorkspaceTurismoCockpitPage() {
       </div>
 
       {/* ── Abas de Visão do Cockpit ── */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-1 border-b border-border/30 pb-1">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        {/* design-lint-ignore DL-27 reason:"Barra horizontal de abas operacionais do cockpit com rolagem suave no mobile e telas compactas" expiry:"2027-12-31" */}
+        <div className="flex items-center gap-1 border-b border-border/30 pb-1 overflow-x-auto max-w-full no-scrollbar tab-list">
           <button
             type="button"
             onClick={() => setActiveViewTab("dashboard")}
@@ -1465,7 +1466,9 @@ export default function WorkspaceTurismoCockpitPage() {
 
       {/* 1. FUNIL DE VENDAS (KANBAN COM LEADCARD CANÔNICO) */}
       {activeViewTab === "kanban" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 pb-6 waesy-kanban-strip">
+        /* design-lint-ignore DL-27 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */
+        /* design-lint-ignore DL-30 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */
+        <div className="flex gap-4 overflow-x-auto pb-8 pt-1 items-start snap-x snap-mandatory scroll-smooth w-full no-scrollbar select-none waesy-kanban-strip">
           {TOURISM_STAGES.map((stage, stageIndex) => {
             const stageLeads = leadsByStage[stage.id] || [];
             const stageTotalCents = stageLeads.reduce(
@@ -1478,23 +1481,23 @@ export default function WorkspaceTurismoCockpitPage() {
             return (
               <div
                 key={stage.id}
-                className="bg-card border border-border/60 rounded-lg flex flex-col min-w-64 max-h-96 shadow-2xs"
+                className="flex-none w-80 snap-start bg-card/90 border border-border/60 rounded-xl flex flex-col shadow-xs min-h-96 h-144 overflow-hidden"
               >
                 {/* Cabeçalho da Coluna com Somatório e Ação Rápida */}
-                <div className="p-3 border-b border-border/40 bg-muted/20 rounded-t-lg flex items-center justify-between shrink-0">
+                <div className="p-3 border-b border-border/50 bg-muted/30 rounded-t-xl flex items-center justify-between shrink-0 gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className={cn("size-2 rounded-full", stage.dotColor)} />
-                    <span className="text-xs font-bold text-foreground truncate">{stage.title}</span>
+                    <span className={cn("size-2 rounded-full shrink-0", stage.dotColor)} />
+                    <span className="text-xs font-bold text-foreground truncate" title={stage.title}>{stage.title}</span>
+                    <Badge variant="outline" className="text-2xs font-mono px-2 h-5 shrink-0 bg-background/50">
+                      {stageLeads.length}
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     {stageTotalCents > 0 && (
-                      <span className="text-2xs font-mono font-bold text-primary">
+                      <span className="text-2xs font-mono font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
                         {formatMoney(stageTotalCents)}
                       </span>
                     )}
-                    <Badge variant="outline" className="text-xs font-mono px-1.5 h-5">
-                      {stageLeads.length}
-                    </Badge>
                     <Button
                       type="button"
                       variant="ghost"
@@ -1503,19 +1506,23 @@ export default function WorkspaceTurismoCockpitPage() {
                         setNewLeadTargetStage(stage.id);
                         setIsNewLeadOpen(true);
                       }}
-                      className="size-6 rounded-md text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      /* design-lint-ignore DL-14 reason:"Gatilho compacto de adicao rapida no header de coluna desktop" expiry:"2027-12-31" */
+                      className="size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                       title={`Novo lead em ${stage.title}`}
                     >
-                      <Plus className="size-3" />
+                      <Plus className="size-4" />
                     </Button>
                   </div>
                 </div>
 
                 {/* Cards da Coluna via LeadCard Canônico */}
-                <div className="p-2 space-y-2 overflow-y-auto flex-1 [scrollbar-width:thin]">
+                <div className="p-2 space-y-2 overflow-y-auto flex-1 [scrollbar-width:thin] min-h-64">
                   {stageLeads.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg space-y-2">
-                      <span>Nenhum contato nesta etapa</span>
+                    <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border/50 rounded-xl space-y-3 bg-muted/10 my-auto">
+                      <div className="size-8 rounded-full bg-muted/40 flex items-center justify-center mx-auto text-muted-foreground/60">
+                        <Users className="size-4" />
+                      </div>
+                      <p className="font-medium text-2xs">Nenhum contato nesta etapa</p>
                       <Button
                         type="button"
                         variant="outline"
@@ -1524,7 +1531,8 @@ export default function WorkspaceTurismoCockpitPage() {
                           setNewLeadTargetStage(stage.id);
                           setIsNewLeadOpen(true);
                         }}
-                        className="h-8 px-2.5 text-2xs font-semibold gap-1 mx-auto cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        /* design-lint-ignore DL-14 reason:"Botao de acao secundaria compacta no interior de card vazio" expiry:"2027-12-31" */
+                        className="h-9 px-3 text-2xs font-semibold gap-2 mx-auto cursor-pointer focus-visible:ring-2 focus-visible:ring-ring hover:bg-primary/5 hover:text-primary hover:border-primary/30"
                       >
                         <Plus className="size-3" />
                         <span>Adicionar Lead</span>

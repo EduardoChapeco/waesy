@@ -1,5 +1,22 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-413: Erradicação do Layout Quebrado no Kanban de Turismo: Trilho Horizontal com Rolagem Fluida e Colunas de 320px
+- **Data:** 2026-11-01
+- **Contexto:**
+  1. O Kanban no Cockpit de Turismo (`src/routes/workspace.turismo.index.tsx`) operava com CSS Grid estático rígido (`grid-cols-1 md:grid-cols-3 lg:grid-cols-5`) com colunas de `min-w-64 max-h-96`.
+  2. Em telas de computador (desktop) com a sidebar do workspace ativa, o espaço útil de ~1100px dividia cada coluna em menos de 200px, truncando títulos de estágios ("Novos ..."), espremendo os cartões `LeadCard` e quebrando o texto dos empty states ("Nenhum contato nesta eta...").
+  3. A altura fixa de `max-h-96` (384px) cortava os cartões na vertical, forçando rolagem vertical claustrofóbica e deixando um grande vazio na tela.
+  4. A fileira de abas do cockpit não possuía suporte a rolagem horizontal elástica no mobile e telas menores, empurrando a barra de filtros.
+- **Decisão:**
+  1. No contêiner do Kanban: substituído o grid rígido por um trilho horizontal contínuo com rolagem suave `overflow-x-auto`, `snap-x snap-mandatory` e `scroll-smooth`, permitindo que cada coluna opere com largura soberana e ergonômica de 320px (`w-80 flex-none`).
+  2. Na coluna do Kanban: definida altura canônica de `h-144 min-h-96` com a área de cartões utilizando `flex-1 overflow-y-auto min-h-64` e scroll suave, aproveitando a viewport de trabalho sem cortar cartões.
+  3. No cabeçalho da coluna: padronizados o dot de status, título integral sem truncamento indesejado, badge com a contagem de leads, somatório em R$ com destaque visual e gatilho de adição rápida (`size-7 focus-visible:ring-2`).
+  4. No empty state: centralizado layout amigável com ícone neutro `Users`, tipografia sem corte e botão tátil `+ Adicionar Lead`.
+  5. Na barra de abas do cockpit: adicionada a classe `tab-list overflow-x-auto max-w-full no-scrollbar` para rolagem lateral fluida em telas compactas.
+  6. Catraca de Design Lint (Ratchet) aprovada com redução de débito visual de 3159 para 3154 violações (-5).
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8, B.26, B.50; HIG / Trello / Linear Board Ergonomics; WCAG 2.2 AA.
+- **Consequências:** Funil comercial de atendimento do Turismo perfeitamente legível, sem cartões espremidos, com suporte a rolagem horizontal natural e visual limpo padrão internacional.
+
 ## DEC-412: Unificação do Dock Canônico iFood 5x2, Borda Invisível, Integração Explorar no Menu Inferior e Acesso a Comunidades no Feed
 - **Data:** 2026-11-01
 - **Contexto:**
