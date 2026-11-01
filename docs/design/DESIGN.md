@@ -433,3 +433,11 @@ O "Efeito Sanfona" (Accordion Jank) — caracterizado pelo empurrão súbito de 
   2. **Zero Dependências Circulares:** Validação contínua via `scripts/check-circular-deps.mjs`.
   3. **Zero Código Morto:** Varredura determinística via `scripts/dead-code-detector.mjs`.
   4. **Orçamento Gzip:** Rotas monitoradas e limitadas rigorosamente por `scripts/route-budget-guard.mjs`.
+
+---
+
+## C.21 Regra Pétrea de Soberania de Painéis, Separação Modular e Proibição de Duplicações Simplificadas
+
+1. **Proibição Absoluta de Duplicar ou Simplificar Painéis:** É expressamente proibido criar novos painéis paralelos ou simplificar fluxos existentes para contornar integrações complexas. Todo módulo existente (`workspace.turismo.*`, `workspace.clientes.*`, `workspace.financeiro.*`) DEVE ser preservado, conectado de ponta a ponta e aprimorado cirurgicamente sobre sua base canônica.
+2. **Módulos Especializados e Interconectados:** Cada etapa do ciclo operacional possui seu módulo dedicado (Atendimento Kanban, Radar de Oportunidades, Cotações Aéreas/Terrestres, Construtor de Propostas, Viagens Confirmadas, Embarques D-X, Empresas B2B, Operadoras/InfoTravel, Contratos, Documentos OCR e Comissões), mantendo navegação fluida sem perda de contexto.
+3. **Proibição de `Sparkles` e Cards Conversacionais:** Fica banido o uso do ícone `Sparkles` e de botões conversacionais com frases explicativas. Controles devem usar verbos diretos de até 3 palavras e ícones semânticos de domínio (`Compass`, `Plane`, `Building2`, `FileText`, `CheckCircle2`, `TrendingUp`).

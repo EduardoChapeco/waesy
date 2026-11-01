@@ -1,5 +1,24 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-392: Conexão End-to-End de Módulos de Turismo, Autopublicação OCR com Matching de Hotéis/Oportunidades, Reconciliação InfoTravel e Regra Pétrea Anti-Duplicação (B.50)
+- **Data:** 2026-10-31
+- **Contexto:**
+  1. Necessidade de codificar como Regra Pétrea nos documentos normativos (`AGENTS.md`, `.agents/AGENTS.md`, `docs/design/DESIGN.md`) a proibição absoluta de recriar painéis do zero ou criar versões simplificadas paralelas, mantendo a separação modular interconectada (`Atendimento`, `Oportunidades`, `Cotações`, `Propostas`, `Viagens`, `Embarques`, `Empresas B2B`, `Operadoras/InfoTravel`, `Comissões`).
+  2. Submódulos canônicos (`/workspace/turismo/oportunidades`, `/workspace/turismo/radar`, `/workspace/turismo/frota`, `/workspace/turismo/aereos`) estavam ausentes da árvore de navegação lateral (`src/lib/workspace-navigation.ts`).
+  3. No Kanban de Atendimento (`src/routes/workspace.turismo.index.tsx`), após enviar uma proposta o agente precisava visualizar todos os cenários de propostas já enviados para aquele lead, enviar novas propostas ilimitadas e converter qualquer proposta aceita em viagem confirmada (`convertProposalToTrip`).
+  4. A Ficha 360° do Cliente (`getCustomer360Profile` em `src/services/crm.functions.ts`) precisava retornar não apenas os leads e contratos, mas também todas as viagens confirmadas (`tourism_trips`) e chamados de suporte/incidentes (`tourism_incident_tickets`).
+  5. Na criação de pacotes/roteiros (`travel-package-form.tsx`), construtor de propostas (`unified-proposal-workspace.tsx`) e Radar de Oportunidades (`workspace.turismo.oportunidades.tsx`), o OCR de print/folder precisava buscar e vincular automaticamente o hotel/resort no banco soberano (`hotels_bank` / `GLOBAL_HOTELS_RESORTS_CATALOG`), autopublicar no catálogo (`classifieds`) e disparar o motor determinístico de oportunidades (`internalEvaluateOfferMatches`) destacando os leads compatíveis.
+  6. O painel de mineração/extensão InfoTravel (`InfotravelIntegrationPanel`) estava restrito ao Admin Master, possuía contadores iniciais hardcoded (`14` e `38`), e `ingestOperatorSyncBatch` gravava apenas o log bruto sem reconciliar clientes, viagens, passageiros, embarques e fichas financeiras.
+- **Decisão:**
+  1. Gravada a Invariante `B.50` em `AGENTS.md` e `.agents/AGENTS.md` e `C.21` em `docs/design/DESIGN.md`.
+  2. Expostos `/workspace/turismo/oportunidades`, `/workspace/turismo/aereos`, `/workspace/turismo/frota` e `/workspace/turismo/radar` em `src/lib/workspace-navigation.ts` e na barra modular de acesso rápido de `src/routes/workspace.turismo.index.tsx`.
+  3. Criada e conectada `publishExtractedTravelPackageToCatalogAndMatchRadar` em `src/services/travel-ai-extractor.functions.ts`, acoplada em `travel-package-form.tsx`, `unified-proposal-workspace.tsx` e `workspace.turismo.oportunidades.tsx`.
+  4. Expandido `getCustomer360Profile` (`src/services/crm.functions.ts`) e a aba `cliente360` (`src/routes/workspace.turismo.index.tsx`) com histórico de viagens (`tourism_trips`) e tickets (`tourism_incident_tickets`), além da lista de múltiplos cenários de propostas e botão de conversão atômica `convertProposalToTrip`.
+  5. Integrado `InfotravelIntegrationPanel` na aba `Sincronização InfoTravel` de `/workspace/turismo/fornecedores`, removidos os números hardcoded (`14`/`38`) e expandido `ingestOperatorSyncBatch` (`src/services/travel-operator-sync.functions.ts`) para reconciliar `customers_crm`, `tourism_trips`, `trip_passengers`, `travel_departures_kanban` e `travel_sale_financial_sheets`.
+  6. Purgado o ícone `Sparkles` e classes arbitrárias (`max-w-[220px]`, `max-h-[calc(100vh-280px)]`, `[scrollbar-width:thin]`) nos módulos de turismo.
+- **Fundamentação:** AGENTS.md Regras B.1 a B.50; `docs/design/DESIGN.md` C.21; `docs/specs/SPEC-20261031-TURISMO-END-TO-END-UNIFIED-CONNECTIONS.md`.
+- **Consequências:** Fluxo comercial, operacional e financeiro 100% interconectado sem duplicação de painéis, com OCR inteligente acoplado ao banco de hotéis e ao radar de oportunidades.
+
 ## DEC-391: Restauração Canônica do Cockpit Comercial e Onboarding de Turismo
 - **Data:** 2026-10-31
 - **Contexto:**

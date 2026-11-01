@@ -503,7 +503,7 @@ export function HomeDesktopWebApp({
                           </h3>
                           <VerifiedBadge
                             isVerified={item.is_verified}
-                            badgeUrl={item.verified_badge_url}
+                            badgeUrl={(item as any).verified_badge_url}
                             size="sm"
                             title="Empresa Verificada pelo Admin Master"
                           />

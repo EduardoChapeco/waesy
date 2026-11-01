@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Sparkles,
   Phone,
   MapPin,
   Calendar,
@@ -47,6 +46,11 @@ import {
 import { getStoreSettings } from "@/services/store.functions";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
+import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
+import {
+  publishExtractedTravelPackageToCatalogAndMatchRadar,
+  type ExtractedTravelAdDTO,
+} from "@/services/travel-ai-extractor.functions";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -85,8 +89,25 @@ export default function WorkspaceTurismoOportunidadesPage() {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isNewInterestOpen, setIsNewInterestOpen] = useState(false);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const [isOcrScannerOpen, setIsOcrScannerOpen] = useState(false);
   const [boardGrouping, setBoardGrouping] = useState<"stage" | "month" | "destination" | "temperature" | "grid">("stage");
   const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
+
+  const handleOcrOfferExtractedAndMatch = async (extracted: ExtractedTravelAdDTO) => {
+    try {
+      const res = await publishExtractedTravelPackageToCatalogAndMatchRadar({
+        data: extracted,
+      });
+      toast.success(
+        `Oferta "${res.offer.title}" publicada! ${res.radarMatchesFound} match(es) gerados no Radar e ${res.matchedCrmLeadsCount} lead(s) compatíveis.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["travel-opportunities"] });
+      queryClient.invalidateQueries({ queryKey: ["travel-interests"] });
+      setIsOcrScannerOpen(false);
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao cruzar oferta extraída com o Radar.");
+    }
+  };
 
   // Queries TanStack
   const { data: matches = initialMatches || [] } = useQuery({
@@ -197,7 +218,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
 
     if (boardGrouping === "stage") {
       const stages = [
-        { id: "new", title: "Novas Detectadas", icon: Sparkles },
+        { id: "new", title: "Novas Detectadas", icon: TrendingUp },
         { id: "approached", title: "Abordadas (WhatsApp)", icon: Phone },
         { id: "engaged", title: "Em Conversa", icon: MessageSquare },
         { id: "promoted_to_crm", title: "Promovidas ao CRM", icon: UserCheck },
@@ -213,7 +234,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
       const temps = [
         { id: "high", title: "Alta Prioridade (≥ 80%)", icon: TrendingUp },
         { id: "medium", title: "Média Prioridade (60–79%)", icon: SlidersHorizontal },
-        { id: "low", title: "Em Monitoramento (50–59%)", icon: Sparkles },
+        { id: "low", title: "Em Monitoramento (50–59%)", icon: CheckCircle2 },
       ];
       return temps.map((t) => ({
         ...t,
@@ -321,7 +342,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
             onClick={() => setActiveTab("opportunities")}
             className="h-11 min-h-11 px-4 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Sparkles className="size-4 mr-2" />
+            <TrendingUp className="size-4 mr-2" />
             Oportunidades do Radar ({matches.length})
           </Button>
           <Button
@@ -341,6 +362,15 @@ export default function WorkspaceTurismoOportunidadesPage() {
           >
             <Users className="size-4 mr-2" />
             Contatos Pré-CRM ({contacts.length})
+          </Button>
+          <Button
+            variant={isOcrScannerOpen ? "default" : "outline"}
+            size="sm"
+            onClick={() => setIsOcrScannerOpen((prev) => !prev)}
+            className="h-11 min-h-11 px-4 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Upload className="size-4 mr-2" />
+            Escanear Oferta OCR & Cruzar Leads
           </Button>
         </div>
 
@@ -414,12 +444,16 @@ export default function WorkspaceTurismoOportunidadesPage() {
       </div>
 
       {/* Conteúdo Principal */}
-      <main className="flex-1 p-4 max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-4 max-w-7xl mx-auto w-full space-y-4">
+        {isOcrScannerOpen && (
+          <TravelAiImporterBanner onExtracted={handleOcrOfferExtractedAndMatch} />
+        )}
+
         {activeTab === "opportunities" && (
           <div className="space-y-4">
             {filteredMatches.length === 0 ? (
               <Card className="p-12 text-center border-dashed border-border flex flex-col items-center justify-center">
-                <Sparkles className="size-12 text-muted-foreground mb-4" />
+                <TrendingUp className="size-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold text-foreground">Nenhuma oportunidade encontrada</h3>
                 <p className="text-sm text-muted-foreground mt-2 max-w-md">
                   Quando novas ofertas de pacotes forem publicadas ou importadas, o motor determinístico cruzará os
@@ -465,7 +499,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                       </div>
 
                       {/* Lista de Cards da Coluna */}
-                      <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
+                      <div className="flex flex-col gap-3 overflow-y-auto max-h-screen pr-1">
                         {col.matches.length === 0 ? (
                           <div className="p-6 text-center text-xs text-muted-foreground italic border border-dashed border-border/40 rounded-lg">
                             Nenhuma oportunidade nesta coluna
@@ -616,7 +650,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
         <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-6 space-y-6">
           <SheetHeader>
             <SheetTitle className="text-xl font-bold flex items-center gap-2">
-              <Sparkles className="size-5 text-primary" />
+              <TrendingUp className="size-5 text-primary" />
               Detalhamento de Compatibilidade
             </SheetTitle>
             <SheetDescription>

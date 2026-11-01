@@ -18,7 +18,6 @@ import {
   Upload,
   CheckCircle2,
   Calendar,
-  Sparkles,
   ExternalLink,
   Tag,
   Check,
@@ -45,6 +44,8 @@ import { createAgencyTravelQuote } from "@/services/tourism.functions";
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { parseUniversalDocumentOCR } from "@/services/multimodal-ocr.functions";
+import { publishExtractedTravelPackageToCatalogAndMatchRadar } from "@/services/travel-ai-extractor.functions";
+import { getHotelByNameOrSlug } from "@/lib/data/hotels-resorts-catalog";
 import {
   resolveDestinationGatewayEngine,
   calculateMultiRoomQuoteBreakdown,
@@ -429,6 +430,48 @@ export function UnifiedProposalWorkspace({
   };
 
   // OCR de Documentos / Orçamentos
+  const [isPublishingOcrToRadar, setIsPublishingOcrToRadar] = useState(false);
+
+  const handlePublishProposalToCatalogAndRadar = async () => {
+    if (!destinationQuery.trim()) {
+      toast.error("Informe o destino antes de publicar no Catálogo e Radar.");
+      return;
+    }
+    setIsPublishingOcrToRadar(true);
+    try {
+      const primaryHotel = bundleOptions[0]?.hotelName || hotelQuery || "";
+      const res = await publishExtractedTravelPackageToCatalogAndMatchRadar({
+        data: {
+          title: customTitle.trim() || `Pacote ${destinationQuery.trim()}`,
+          destination_city: destinationQuery.trim(),
+          destination_country: "Brasil",
+          departure_city: originCity || "Chapecó",
+          departure_date: departureDate || null,
+          return_date: returnDate || null,
+          hotel_name: primaryHotel || null,
+          meal_plan: rooms[0]?.mealPlan || "Café da Manhã",
+          transport_type: "airplane",
+          inclusions: selectedInclusions,
+          highlights: [],
+          price_cents: calculation.grandTotalCents || rooms[0]?.baseAdultPriceCents || 0,
+          max_installments: activeCampaign.maxCardInstallments || 12,
+          pricing_mode: "per_person",
+          visibility: "public",
+          confidence_score: 0.95,
+        },
+      });
+      toast.success(
+        `Publicado no catálogo! ${res.radarMatchesFound} match(es) no Radar e ${res.matchedCrmLeadsCount} lead(s) compatíveis.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["opportunity-matches"] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-crm-leads"] });
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao publicar oferta no Catálogo & Radar.");
+    } finally {
+      setIsPublishingOcrToRadar(false);
+    }
+  };
+
   const handleOcrFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -472,10 +515,21 @@ export function UnifiedProposalWorkspace({
             }
             const detectedHotelName = result.hotel?.name || result.companyName;
             if (detectedHotelName) {
-              setHotelQuery(detectedHotelName);
-              setBundleOptions((prev) =>
-                prev.map((opt, i) => (i === 0 ? { ...opt, hotelName: detectedHotelName } : opt))
+              const matchedInBank = (hotelSuggestions as any[]).find(
+                (h) => h.name && h.name.toLowerCase().includes(detectedHotelName.toLowerCase()),
               );
+              const matchedInStatic = getHotelByNameOrSlug(detectedHotelName);
+              const canonicalHotelName = matchedInBank?.name || matchedInStatic?.name || detectedHotelName;
+
+              setHotelQuery(canonicalHotelName);
+              setBundleOptions((prev) =>
+                prev.map((opt, i) => (i === 0 ? { ...opt, hotelName: canonicalHotelName } : opt))
+              );
+              if (matchedInBank?.city && !result.destinationCity) {
+                setDestinationQuery(matchedInBank.city);
+              } else if (matchedInStatic?.city && !result.destinationCity) {
+                setDestinationQuery(matchedInStatic.city);
+              }
             }
             if (result.financials?.totalCents && result.financials.totalCents > 0) {
               const paxDivisor = Math.max(1, result.participants?.length || 2);
@@ -497,7 +551,7 @@ export function UnifiedProposalWorkspace({
                 )
               );
             }
-            toast.success("Dados do documento extraídos com sucesso!", { id: toastId });
+            toast.success("Dados do documento extraídos e hotel vinculado com sucesso!", { id: toastId });
           } else {
             toast.info("Não foi possível identificar dados estruturados no arquivo.", { id: toastId });
           }
@@ -895,6 +949,22 @@ export function UnifiedProposalWorkspace({
                 >
                   <FileText className="size-3.5 text-primary" />
                   <span className="hidden sm:inline">Colar Texto</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePublishProposalToCatalogAndRadar}
+                  disabled={isPublishingOcrToRadar || !destinationQuery.trim()}
+                  className="h-11 min-h-11 px-3 text-xs gap-2 font-medium"
+                  title="Autopublicar no Catálogo de Viagens e cruzar com Radar de Oportunidades"
+                >
+                  {isPublishingOcrToRadar ? (
+                    <Loader2 className="size-3.5 animate-spin text-primary" />
+                  ) : (
+                    <CheckCircle2 className="size-3.5 text-primary" />
+                  )}
+                  <span className="hidden sm:inline">Publicar no Radar</span>
                 </Button>
               </div>
             </div>
@@ -1444,7 +1514,7 @@ export function UnifiedProposalWorkspace({
                               prev.map((o, i) => (i === idx ? { ...o, optionLabel: e.target.value } : o))
                             )
                           }
-                          className="h-9 font-semibold text-xs max-w-[220px]"
+                          className="h-9 font-semibold text-xs max-w-56"
                         />
                         <Badge variant="outline" className="text-xs font-mono">
                           {formatMoney(opt.adultPriceCents)}/adulto

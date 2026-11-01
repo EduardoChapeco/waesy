@@ -286,7 +286,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                     <div className="flex items-center gap-2 px-1 min-w-0">
                       {activeContext === "creator" ? (
                         <Award className="size-4 text-amber-500 shrink-0" />
-                      ) : activeContext === "store" ? (
+                      ) : (activeContext as string) === "store" ? (
                         <Store className="size-4 text-primary shrink-0" />
                       ) : (
                         <User className="size-4 text-muted-foreground shrink-0" />
@@ -294,7 +294,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                       <span className="text-xs font-semibold truncate text-foreground">
                         {activeContext === "creator"
                           ? `Criador: @${activeCreatorId || "ativo"}`
-                          : activeContext === "store"
+                          : (activeContext as string) === "store"
                           ? `Empresa: ${activeStoreName}`
                           : "Conta Civil Pessoal"}
                       </span>
@@ -419,7 +419,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                   )}
 
                   {/* ── CONTEXTO 2: MODO EMPRESA ATIVO ── */}
-                  {activeContext === "store" && (
+                  {(activeContext as string) === "store" && (
                     <>
                       <div className="text-xs font-bold text-primary uppercase tracking-wider px-3 py-1 flex items-center gap-2">
                         <Building2 className="size-3.5" />

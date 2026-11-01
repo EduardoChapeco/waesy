@@ -239,8 +239,10 @@ const GROUP_TURISMO_COMMERCIAL: NavGroup = {
   section: "niche",
   items: [
     { path: "/workspace/turismo", label: "Atendimento", icon: Kanban },
+    { path: "/workspace/turismo/oportunidades", label: "Oportunidades", icon: Target },
     { path: "/workspace/turismo/propostas", label: "Propostas", icon: FileText },
     { path: "/workspace/turismo/cotacoes", label: "Cotações", icon: Plane },
+    { path: "/workspace/turismo/aereos", label: "Malha Aérea", icon: Plane },
     { path: "/workspace/turismo/corporativo", label: "Empresas", icon: Building2 },
   ],
 };
@@ -253,6 +255,7 @@ const GROUP_TURISMO_OPERATIONS: NavGroup = {
   items: [
     { path: "/workspace/turismo/viagens", label: "Viagens", icon: Compass },
     { path: "/workspace/turismo/grupos", label: "Grupos", icon: Bus },
+    { path: "/workspace/turismo/frota", label: "Frota", icon: Bus },
     { path: "/workspace/turismo/vouchers", label: "Vouchers", icon: Ticket },
     { path: "/workspace/turismo/reacomodacao", label: "Reacomodação", icon: RefreshCw },
     { path: "/workspace/turismo/incidentes", label: "Suporte", icon: AlertTriangle },
@@ -282,6 +285,7 @@ const GROUP_TURISMO_CATALOG: NavGroup = {
     { path: "/workspace/turismo/destinos", label: "Destinos", icon: MapPin },
     { path: "/workspace/turismo/hoteis", label: "Hotéis", icon: Building2 },
     { path: "/workspace/turismo/fornecedores", label: "Operadoras", icon: Building2 },
+    { path: "/workspace/turismo/radar", label: "Radar", icon: Compass },
     { path: "/workspace/turismo/contratos", label: "Contratos", icon: FileText },
     { path: "/workspace/turismo/comissoes", label: "Comissões", icon: DollarSign },
   ],

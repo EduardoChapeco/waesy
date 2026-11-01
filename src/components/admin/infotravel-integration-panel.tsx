@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { ingestOperatorSyncBatch } from "@/services/travel-operator-sync.functions";
+import { ingestOperatorSyncBatch, listTravelOperatorSyncRuns } from "@/services/travel-operator-sync.functions";
 
 interface OperatorInfo {
   id: string;
@@ -75,8 +75,19 @@ export function InfotravelIntegrationPanel() {
   const [isCollectorActive, setIsCollectorActive] = useState(false);
   const [isCheckingCollector, setIsCheckingCollector] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [totalMinedTrips, setTotalMinedTrips] = useState(14);
-  const [totalMinedPax, setTotalMinedPax] = useState(38);
+  const [totalMinedTrips, setTotalMinedTrips] = useState(0);
+  const [totalMinedPax, setTotalMinedPax] = useState(0);
+
+  const loadPersistedSyncStats = async () => {
+    try {
+      const runs = await listTravelOperatorSyncRuns({ data: { limit: 200 } });
+      if (Array.isArray(runs) && runs.length > 0) {
+        setTotalMinedTrips(runs.length);
+      }
+    } catch {
+      // Mantém 0 quando não autenticado ou sem sincronizações
+    }
+  };
 
   const checkCollectorStatus = async () => {
     setIsCheckingCollector(true);
@@ -89,8 +100,8 @@ export function InfotravelIntegrationPanel() {
       if (res && res.ok) {
         const data = await res.json().catch(() => ({}));
         setIsCollectorActive(true);
-        if (data.totalTrips) setTotalMinedTrips(data.totalTrips);
-        if (data.totalPax) setTotalMinedPax(data.totalPax);
+        if (typeof data.totalTrips === "number") setTotalMinedTrips(data.totalTrips);
+        if (typeof data.totalPax === "number") setTotalMinedPax(data.totalPax);
         toast.success("Coletor local ativo e comunicando na porta 3847.");
       } else {
         setIsCollectorActive(false);
@@ -103,6 +114,7 @@ export function InfotravelIntegrationPanel() {
   };
 
   useEffect(() => {
+    void loadPersistedSyncStats();
     void checkCollectorStatus();
   }, []);
 

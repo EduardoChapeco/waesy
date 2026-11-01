@@ -27,7 +27,6 @@ import {
   Check,
   Eye,
   SlidersHorizontal,
-  Sparkles,
   AlertTriangle,
   Luggage,
   ShieldAlert,
@@ -331,6 +330,8 @@ export default function WorkspaceTurismoCockpitPage() {
     otherLeads: any[];
     contracts: any[];
     activities: any[];
+    trips?: any[];
+    incidents?: any[];
   } | null>(null);
   const [isLoading360, setIsLoading360] = useState(false);
 
@@ -390,6 +391,21 @@ export default function WorkspaceTurismoCockpitPage() {
     initialData: initialCustomers,
   });
 
+  // Conversão Direta de Proposta em Viagem Confirmada (Dossiê + Embarque + Financeiro)
+  const handleConvertProposalToTrip = async (proposalId: string) => {
+    try {
+      const res = await convertProposalToTrip({ data: { proposalId } });
+      toast.success(`Viagem ${res.tripNumber} gerada com dossiê, embarque e ficha financeira!`);
+      queryClient.invalidateQueries({ queryKey: ["tourism-trips-list"] });
+      queryClient.invalidateQueries({ queryKey: ["tourism-departures-list"] });
+      queryClient.invalidateQueries({ queryKey: ["tourism-financial-sheets"] });
+      queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
+      queryClient.invalidateQueries({ queryKey: ["customer-360-profile"] });
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível converter a proposta em viagem.");
+    }
+  };
+
   // Movimentação de Estágio no Funil
   const handleMoveStage = async (leadId: string, nextStatus: string) => {
     const prevLeads = queryClient.getQueryData<any[]>(["tourism-cockpit-leads"]) || leads;
@@ -405,6 +421,22 @@ export default function WorkspaceTurismoCockpitPage() {
       await updateLeadStatus({ data: { leadId, status: nextStatus as any } });
       const stageName = TOURISM_STAGES.find((s) => s.id === nextStatus)?.title || nextStatus;
       toast.success(`Lead movido para "${stageName}"`);
+
+      if (nextStatus === "won") {
+        const linkedProposal = proposals.find(
+          (p: any) =>
+            p.lead_id === leadId ||
+            p.quote_id === leadId ||
+            (selectedLead?.full_name && p.customer_name === selectedLead.full_name),
+        );
+        if (linkedProposal?.id) {
+          await convertProposalToTrip({ data: { proposalId: linkedProposal.id } }).catch(() => null);
+          queryClient.invalidateQueries({ queryKey: ["tourism-trips-list"] });
+          queryClient.invalidateQueries({ queryKey: ["tourism-departures-list"] });
+          queryClient.invalidateQueries({ queryKey: ["tourism-financial-sheets"] });
+        }
+      }
+
       await refetchLeads();
       queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
     } catch (err: any) {
@@ -472,7 +504,7 @@ export default function WorkspaceTurismoCockpitPage() {
           estimatedValueCents: newLeadForm.estimatedValueCents || 0,
           source: newLeadForm.source,
           leadSourceDetail: newLeadForm.leadSourceDetail.trim() || null,
-          status: newLeadTargetStage,
+          status: newLeadTargetStage as any,
           assignedTo: newLeadForm.assignedTo || null,
           tags: newLeadForm.tags,
           checklist: newLeadForm.customChecklist,
@@ -1023,8 +1055,53 @@ export default function WorkspaceTurismoCockpitPage() {
             onClick={() => router.navigate({ to: "/workspace/turismo/oportunidades" })}
             className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 text-primary hover:bg-primary/10 border border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Sparkles className="size-3.5" />
-            <span>Radar</span>
+            <TrendingUp className="size-3.5" />
+            <span>Oportunidades</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.navigate({ to: "/workspace/turismo/cotacoes" })}
+            className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Plane className="size-3.5" />
+            <span>Cotações</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.navigate({ to: "/workspace/turismo/embarques" })}
+            className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Calendar className="size-3.5" />
+            <span>Embarques</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.navigate({ to: "/workspace/turismo/corporativo" })}
+            className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Building2 className="size-3.5" />
+            <span>Empresas B2B</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.navigate({ to: "/workspace/turismo/fornecedores" })}
+            className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ShieldCheck className="size-3.5" />
+            <span>Operadoras</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.navigate({ to: "/workspace/turismo/comissoes" })}
+            className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <DollarSign className="size-3.5" />
+            <span>Comissões</span>
           </button>
         </div>
 
@@ -1573,22 +1650,35 @@ export default function WorkspaceTurismoCockpitPage() {
                     Passageiro: <strong className="text-foreground">{prop.customer_name}</strong>
                   </p>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                  <div className="flex items-center justify-between pt-2 border-t border-border/30 gap-2 flex-wrap">
                     <span className="font-mono font-bold text-primary">
                       {formatMoney(prop.pricing?.total_price_cents || 0)}
                     </span>
 
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <Link to="/workspace/turismo/propostas/$id" params={{ id: prop.id }}>
-                        <Eye className="size-3" />
-                        <span>Abrir Studio</span>
-                      </Link>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleConvertProposalToTrip(prop.id)}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-1.5 text-emerald-600 hover:text-emerald-700 focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <CheckCircle2 className="size-3.5" />
+                        <span>Gerar Viagem</span>
+                      </Button>
+
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Link to="/workspace/turismo/propostas/$id" params={{ id: prop.id }}>
+                          <Eye className="size-3" />
+                          <span>Abrir Studio</span>
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1600,7 +1690,7 @@ export default function WorkspaceTurismoCockpitPage() {
       {/* ── DRAWER DO LEAD (FICHA 360° E DISPARO DE PROPOSTA) ── */}
       {selectedLead && (
         <Sheet open={Boolean(selectedLead)} onOpenChange={() => setSelectedLead(null)}>
-          <SheetContent side="right" className="w-full sm:max-w-2xl p-4 sm:p-6 overflow-y-auto space-y-4 [scrollbar-width:thin]">
+          <SheetContent side="right" className="w-full sm:max-w-2xl p-4 sm:p-6 overflow-y-auto space-y-4 no-scrollbar">
             <SheetHeader className="border-b border-border/30 pb-3">
               <div className="flex items-center justify-between">
                 <SheetTitle className="text-base font-bold text-foreground">
@@ -1744,8 +1834,8 @@ export default function WorkspaceTurismoCockpitPage() {
                     <div className="space-y-1">
                       <Label className="text-2xs text-muted-foreground font-semibold">Orçamento Estimado (R$)</Label>
                       <CurrencyField
-                        valueCents={editLeadForm.estimated_value_cents}
-                        onChangeCents={(val) => setEditLeadForm((prev: any) => ({ ...prev, estimated_value_cents: val }))}
+                        value={editLeadForm.estimated_value_cents}
+                        onChange={(val: any) => setEditLeadForm((prev: any) => ({ ...prev, estimated_value_cents: val || 0 }))}
                         className="h-10 text-xs rounded-lg font-mono"
                       />
                     </div>
@@ -1895,6 +1985,103 @@ export default function WorkspaceTurismoCockpitPage() {
                     {isUpdatingLead ? "Salvando..." : "Salvar Alterações da Ficha"}
                   </Button>
                 </div>
+
+                {/* Bloco 5: Múltiplas Propostas & Cenários vinculados a este Lead */}
+                {(() => {
+                  const leadProposals = proposals.filter(
+                    (p: any) =>
+                      p.lead_id === selectedLead.id ||
+                      p.quote_id === selectedLead.id ||
+                      (selectedLead.full_name &&
+                        p.customer_name &&
+                        p.customer_name.toLowerCase() === selectedLead.full_name.toLowerCase()),
+                  );
+                  return (
+                    <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-bold text-foreground flex items-center gap-2">
+                          <FileText className="size-3.5 text-primary" />
+                          <span>Propostas & Cenários Enviados ({leadProposals.length})</span>
+                        </h4>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const leadData = {
+                              id: selectedLead.id,
+                              fullName: editLeadForm.name || selectedLead.full_name,
+                              phone: editLeadForm.phone || selectedLead.phone,
+                              email: editLeadForm.email || selectedLead.email,
+                              destination: editLeadForm.destination || selectedLead.destination,
+                              estimated_value_cents:
+                                editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
+                              passenger_count:
+                                (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
+                            };
+                            setProposalLead(leadData);
+                          }}
+                          className="h-11 min-h-11 px-3 text-xs font-semibold gap-1.5 focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Plus className="size-3.5" />
+                          <span>Nova Proposta</span>
+                        </Button>
+                      </div>
+
+                      {leadProposals.length === 0 ? (
+                        <p className="text-2xs text-muted-foreground">
+                          Nenhuma proposta gerada ainda. Você pode criar e enviar quantos cenários de proposta forem necessários para este atendimento.
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {leadProposals.map((lp: any, idx: number) => (
+                            <div
+                              key={lp.id}
+                              className="p-3 rounded-lg border border-border/50 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                            >
+                              <div className="space-y-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="text-2xs font-mono">
+                                    Cenário #{idx + 1}
+                                  </Badge>
+                                  <span className="font-bold text-foreground truncate">
+                                    {lp.title || lp.destination_city || "Proposta"}
+                                  </span>
+                                </div>
+                                <div className="text-2xs text-muted-foreground font-mono">
+                                  {formatMoney(lp.pricing?.total_price_cents || 0)} · Status: {lp.status}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleConvertProposalToTrip(lp.id)}
+                                  className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 text-emerald-600 hover:text-emerald-700 focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                  <CheckCircle2 className="size-3.5" />
+                                  <span>Confirmar Viagem</span>
+                                </Button>
+                                <Button
+                                  asChild
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                  <Link to="/workspace/turismo/propostas/$id" params={{ id: lp.id }}>
+                                    <Eye className="size-3.5" />
+                                    <span>Studio</span>
+                                  </Link>
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
@@ -1910,22 +2097,87 @@ export default function WorkspaceTurismoCockpitPage() {
                     <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-foreground text-sm">
-                          {customer360Data.customer.full_name || customer360Data.customer.legal_name}
+                          {customer360Data.customer.full_name || customer360Data.customer.legal_name || customer360Data.customer.name}
                         </span>
                         <Badge variant="outline" className="font-mono text-xs">
                           Score: {customer360Data.customer.score || 100}
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-2xs text-muted-foreground">
-                        <div>CPF/CNPJ: {customer360Data.customer.document || "Não cadastrado"}</div>
+                        <div>CPF/CNPJ: {customer360Data.customer.document || customer360Data.customer.cpf_cnpj || "Não cadastrado"}</div>
                         <div>Cidade: {customer360Data.customer.city || "Não informada"}</div>
-                        <div>Viagens Realizadas: {customer360Data.otherLeads?.length || 0}</div>
-                        <div>Contratos Ativos: {customer360Data.contracts?.length || 0}</div>
+                        <div>Atendimentos no Funil: {(customer360Data.otherLeads?.length || 0) + 1}</div>
+                        <div>Viagens Confirmadas: {customer360Data.trips?.length || 0}</div>
+                        <div>Contratos Emitidos: {customer360Data.contracts?.length || 0}</div>
+                        <div>Chamados / Suporte: {customer360Data.incidents?.length || 0}</div>
                       </div>
                     </div>
 
+                    {/* Viagens Confirmadas do Cliente */}
+                    {Array.isArray(customer360Data.trips) && customer360Data.trips.length > 0 && (
+                      <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
+                        <span className="font-bold text-foreground block">Viagens Confirmadas & Histórico</span>
+                        {customer360Data.trips.map((tr: any) => (
+                          <div
+                            key={tr.id}
+                            className="p-2.5 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-between gap-2"
+                          >
+                            <div>
+                              <span className="font-semibold text-foreground block">{tr.title || tr.destination}</span>
+                              <span className="text-2xs text-muted-foreground font-mono">
+                                Embarque: {tr.departure_date || "A definir"} · {formatMoney(tr.total_price_cents || 0)}
+                              </span>
+                            </div>
+                            <Button
+                              asChild
+                              variant="outline"
+                              size="sm"
+                              className="h-11 min-h-11 px-3 text-xs font-semibold gap-1.5"
+                            >
+                              <Link to="/workspace/turismo/viagens/$id" params={{ id: tr.id }}>
+                                <ExternalLink className="size-3.5" />
+                                <span>Dossiê</span>
+                              </Link>
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Chamados de Suporte / Incidentes do Cliente */}
+                    {Array.isArray(customer360Data.incidents) && customer360Data.incidents.length > 0 && (
+                      <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
+                        <span className="font-bold text-foreground block">Tickets de Suporte / SOS Viagem</span>
+                        {customer360Data.incidents.map((inc: any) => (
+                          <div
+                            key={inc.id}
+                            className="p-2.5 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-between gap-2"
+                          >
+                            <div>
+                              <span className="font-semibold text-foreground block">{inc.title}</span>
+                              <span className="text-2xs text-muted-foreground font-mono">
+                                Severidade: {inc.severity} · Status: {inc.status}
+                              </span>
+                            </div>
+                            <Badge variant="outline" className="text-2xs font-mono">
+                              {inc.category}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {/* Dossiê Imprimível */}
-                    <Customer360PrintableDossier data={customer360Data} />
+                    <Customer360PrintableDossier
+                      customer={{
+                        id: customer360Data.customer.id,
+                        fullName: customer360Data.customer.full_name || customer360Data.customer.name || "Cliente",
+                        taxId: customer360Data.customer.document || customer360Data.customer.cpf_cnpj || null,
+                        email: customer360Data.customer.email || null,
+                        phone: customer360Data.customer.phone || null,
+                        city: customer360Data.customer.city || null,
+                      }}
+                    />
                   </div>
                 ) : (
                   <div className="p-6 text-center text-xs text-muted-foreground border border-dashed border-border/60 rounded-lg space-y-2">
@@ -1976,8 +2228,8 @@ export default function WorkspaceTurismoCockpitPage() {
                     <div className="space-y-1">
                       <Label className="text-2xs text-muted-foreground font-semibold">Valor Total Contratado (R$)</Label>
                       <CurrencyField
-                        valueCents={contractForm.totalValueCents}
-                        onChangeCents={(val) => setContractForm((prev) => ({ ...prev, totalValueCents: val }))}
+                        value={contractForm.totalValueCents}
+                        onChange={(val: any) => setContractForm((prev) => ({ ...prev, totalValueCents: val || 0 }))}
                         className="h-10 text-xs rounded-lg font-mono"
                       />
                     </div>
@@ -2545,8 +2797,8 @@ export default function WorkspaceTurismoCockpitPage() {
                   <div className="space-y-1">
                     <Label className="text-2xs text-muted-foreground font-semibold">Orçamento Estimado (R$)</Label>
                     <CurrencyField
-                      valueCents={newLeadForm.estimatedValueCents}
-                      onChangeCents={(val) => setNewLeadForm((prev) => ({ ...prev, estimatedValueCents: val }))}
+                      value={newLeadForm.estimatedValueCents}
+                      onChange={(val: any) => setNewLeadForm((prev) => ({ ...prev, estimatedValueCents: val || 0 }))}
                       className="h-10 text-xs rounded-lg font-mono"
                     />
                   </div>
@@ -2685,7 +2937,7 @@ export default function WorkspaceTurismoCockpitPage() {
         <LeadImportModal
           isOpen={isImportModalOpen}
           onClose={() => setIsImportModalOpen(false)}
-          onImportSuccess={() => {
+          onSuccess={() => {
             refetchLeads();
             queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
           }}
@@ -2694,9 +2946,11 @@ export default function WorkspaceTurismoCockpitPage() {
 
       {isCustomizerOpen && (
         <KanbanColumnCustomizerModal
-          isOpen={isCustomizerOpen}
-          onClose={() => setIsCustomizerOpen(false)}
-          onSave={() => {
+          open={isCustomizerOpen}
+          onOpenChange={setIsCustomizerOpen}
+          storeId={storeId}
+          module="turismo"
+          onStagesUpdated={() => {
             refetchLeads();
           }}
         />
@@ -2704,21 +2958,18 @@ export default function WorkspaceTurismoCockpitPage() {
 
       {calculatorLead && (
         <LeadCommissionCalculatorSheet
-          open={Boolean(calculatorLead)}
-          onOpenChange={(open) => {
-            if (!open) setCalculatorLead(null);
-          }}
+          isOpen={Boolean(calculatorLead)}
+          onClose={() => setCalculatorLead(null)}
           lead={calculatorLead}
         />
       )}
 
       {flightLead && (
         <LeadFlightGridSheet
-          open={Boolean(flightLead)}
-          onOpenChange={(open) => {
-            if (!open) setFlightLead(null);
-          }}
+          isOpen={Boolean(flightLead)}
+          onClose={() => setFlightLead(null)}
           lead={flightLead}
+          storeId={storeId}
         />
       )}
 

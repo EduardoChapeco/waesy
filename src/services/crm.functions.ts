@@ -2208,6 +2208,8 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
     let customer: any = null;
     let otherLeads: any[] = [];
     let contracts: any[] = [];
+    let trips: any[] = [];
+    let incidents: any[] = [];
 
     if (lead.customer_id) {
       const { data: cData } = await supabase
@@ -2236,8 +2238,30 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
         .or(`customer_id.eq.${lead.customer_id},lead_id.eq.${lead.id}`)
         .order("created_at", { ascending: false });
       contracts = ctrData || [];
+
+      // Busca todas as viagens confirmadas/históricas deste cliente ou de seus leads
+      const leadIdsForCustomer = [lead.id, ...otherLeads.map((l: any) => l.id)];
+      const { data: tripsData } = await supabase
+        .from("tourism_trips")
+        .select("id, title, destination, departure_date, return_date, status, total_price_cents, lead_id, created_at")
+        .eq("store_id", identity.store_id)
+        .in("lead_id", leadIdsForCustomer)
+        .order("departure_date", { ascending: false });
+      trips = tripsData || [];
+
+      // Busca chamados de suporte/incidentes vinculados ao cliente ou às suas viagens
+      const tripIds = trips.map((t: any) => t.id);
+      if (tripIds.length > 0) {
+        const { data: incData } = await supabase
+          .from("tourism_incident_tickets")
+          .select("id, title, category, severity, status, trip_id, passenger_name, created_at")
+          .eq("store_id", identity.store_id)
+          .in("trip_id", tripIds)
+          .order("created_at", { ascending: false });
+        incidents = incData || [];
+      }
     } else {
-      // Se ainda não tem customer_id, busca contratos só pelo lead_id
+      // Se ainda não tem customer_id, busca contratos e viagens só pelo lead_id
       const { data: ctrData } = await supabase
         .from("travel_contracts")
         .select("id, contract_title, public_token, status, total_value_cents, destination, signed_at, created_at")
@@ -2245,6 +2269,14 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
         .eq("store_id", identity.store_id)
         .order("created_at", { ascending: false });
       contracts = ctrData || [];
+
+      const { data: tripsData } = await supabase
+        .from("tourism_trips")
+        .select("id, title, destination, departure_date, return_date, status, total_price_cents, lead_id, created_at")
+        .eq("store_id", identity.store_id)
+        .eq("lead_id", lead.id)
+        .order("departure_date", { ascending: false });
+      trips = tripsData || [];
     }
 
     // 3. Busca atividades da timeline isoladas por store_id
@@ -2261,6 +2293,8 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
       customer,
       otherLeads,
       contracts,
+      trips,
+      incidents,
       activities: activities || [],
     };
   });

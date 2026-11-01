@@ -77,6 +77,11 @@ import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media
 import { formatMoney } from "@/lib/money";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
+import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
+import {
+  publishExtractedTravelPackageToCatalogAndMatchRadar,
+  type ExtractedTravelAdDTO,
+} from "@/services/travel-ai-extractor.functions";
 
 export interface TravelPackageFormProps {
   value: Partial<TravelPackageData>;
@@ -139,6 +144,7 @@ export function TravelPackageForm({
   categoriesList = [],
   onOpenQuickCategory,
   onPriceChange,
+  setValue,
   storeName = "Agência Parceira",
   storePhone = "",
 }: TravelPackageFormProps) {
@@ -665,9 +671,138 @@ export function TravelPackageForm({
 
   // Modal de Transporte Ativo
   const currentTransportType = value.transport_type || "aereo";
+  const [lastExtractedOcrAd, setLastExtractedOcrAd] = useState<ExtractedTravelAdDTO | null>(null);
+  const [isAutoPublishingOcr, setIsAutoPublishingOcr] = useState(false);
+
+  const handleOcrPackageExtracted = (extracted: ExtractedTravelAdDTO) => {
+    setLastExtractedOcrAd(extracted);
+
+    if (extracted.title && setValue) {
+      setValue("title", extracted.title, { shouldDirty: true });
+    }
+
+    if (extracted.price_cents && extracted.price_cents > 0 && onPriceChange) {
+      onPriceChange(extracted.price_cents);
+    }
+
+    const matchedBankHotel = hotelsBankList.find(
+      (h: HotelBankDTO) =>
+        (extracted.matched_hotel_id && h.id === extracted.matched_hotel_id) ||
+        (extracted.hotel_name && h.name.toLowerCase().includes(extracted.hotel_name.toLowerCase())),
+    );
+
+    const nextDepartureOptions = [...departureOptions];
+    if (extracted.departure_date) {
+      nextDepartureOptions.unshift({
+        id: `dep_ocr_${Date.now()}`,
+        label: extracted.dates_text || "Saída Extraída via OCR",
+        departure_date: extracted.departure_date,
+        return_date: extracted.return_date || "",
+        status: "confirmed",
+        available_seats: 20,
+      });
+    }
+
+    onChange({
+      ...value,
+      transport_type:
+        extracted.transport_type === "bus"
+          ? "terrestre"
+          : extracted.transport_type === "cruise"
+            ? "cruzeiro"
+            : "aereo",
+      destination: {
+        ...destination,
+        name: extracted.destination_city || destination.name,
+        region: extracted.destination_state || destination.region,
+        country: extracted.destination_country || destination.country || "Brasil",
+      },
+      resort: {
+        ...resort,
+        name: matchedBankHotel?.name || extracted.hotel_name || resort.name,
+        meal_plan:
+          extracted.meal_plan ||
+          matchedBankHotel?.regime_options?.[0] ||
+          resort.meal_plan ||
+          "Café da Manhã",
+        cover_image_url:
+          matchedBankHotel?.cover_photo_url ||
+          extracted.suggested_background_url ||
+          resort.cover_image_url,
+        photos:
+          matchedBankHotel?.photos && matchedBankHotel.photos.length > 0
+            ? matchedBankHotel.photos
+            : resort.photos,
+        badges:
+          matchedBankHotel?.badges && matchedBankHotel.badges.length > 0
+            ? matchedBankHotel.badges
+            : resort.badges,
+        bio_bullets:
+          extracted.highlights && extracted.highlights.length > 0
+            ? extracted.highlights
+            : matchedBankHotel?.bio_bullets || resort.bio_bullets,
+      },
+      inclusions:
+        extracted.inclusions && extracted.inclusions.length > 0
+          ? Array.from(new Set([...(value.inclusions || []), ...extracted.inclusions]))
+          : value.inclusions,
+      departure_options: nextDepartureOptions,
+    });
+  };
+
+  const handleAutoPublishOcrToCatalogAndRadar = async () => {
+    if (!lastExtractedOcrAd) return;
+    setIsAutoPublishingOcr(true);
+    try {
+      const res = await publishExtractedTravelPackageToCatalogAndMatchRadar({
+        data: lastExtractedOcrAd,
+      });
+      toast.success(
+        `Publicado no catálogo! ${res.radarMatchesFound} match(es) no Radar e ${res.matchedCrmLeadsCount} lead(s) compatíveis.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["opportunity-matches"] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-crm-leads"] });
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao autopublicar pacote no catálogo.");
+    } finally {
+      setIsAutoPublishingOcr(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      {/* ─────────────────────────────────────────────────────────────
+          0. IMPORTADOR OCR DE PRINT / FOLDER + AUTOPUBLICAÇÃO NO RADAR
+      ───────────────────────────────────────────────────────────── */}
+      {showRoteiro && (
+        <div className="space-y-3">
+          <TravelAiImporterBanner onExtracted={handleOcrPackageExtracted} />
+          {lastExtractedOcrAd && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+              <div className="text-xs text-foreground">
+                <span className="font-bold">Pacote pronto para Catálogo & Radar:</span>{" "}
+                {lastExtractedOcrAd.title} ({lastExtractedOcrAd.destination_city})
+                {lastExtractedOcrAd.hotel_name ? ` · Hotel: ${lastExtractedOcrAd.hotel_name}` : ""}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAutoPublishOcrToCatalogAndRadar}
+                disabled={isAutoPublishingOcr}
+                className="h-11 min-h-11 px-4 text-xs font-bold gap-2 shrink-0 focus-visible:ring-2"
+              >
+                {isAutoPublishingOcr ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="size-3.5" />
+                )}
+                <span>Autopublicar & Cruzar Oportunidades</span>
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ─────────────────────────────────────────────────────────────
           1. ABA ROTEIRO & DESTINO
       ───────────────────────────────────────────────────────────── */}

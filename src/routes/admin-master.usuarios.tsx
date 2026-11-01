@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -1491,7 +1492,7 @@ function AdminUsuariosPage() {
                         handleSaveVerification(
                           verificationModalUser,
                           true,
-                          customBadgeUrlInput.trim() || null
+                          customBadgeUrlInput.trim() || undefined
                         )
                       }
                       disabled={isSavingVerification}
@@ -1507,7 +1508,7 @@ function AdminUsuariosPage() {
                       handleSaveVerification(
                         verificationModalUser,
                         true,
-                        customBadgeUrlInput.trim() || null
+                        customBadgeUrlInput.trim() || undefined
                       )
                     }
                     disabled={isSavingVerification}

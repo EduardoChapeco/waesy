@@ -1,39 +1,39 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-10-31T13:35:34.568Z",
-  "totalViolations": 3082,
-  "filesInspected": 2585,
-  "filesWithViolations": 697,
+  "timestamp": "2026-11-01T00:44:03.692Z",
+  "totalViolations": 3163,
+  "filesInspected": 2589,
+  "filesWithViolations": 703,
   "bySeverity": {
     "P0": 0,
-    "P1": 2374,
-    "P2": 423,
-    "P3": 285
+    "P1": 2443,
+    "P2": 425,
+    "P3": 295
   },
   "byRule": {
-    "DL-30": 272,
-    "DL-07": 412,
-    "DL-03": 99,
-    "DL-18": 47,
-    "DL-29": 4,
-    "DL-14": 1097,
+    "DL-30": 273,
+    "DL-07": 410,
+    "DL-03": 159,
+    "DL-18": 51,
+    "DL-29": 8,
+    "DL-14": 1102,
     "DL-02": 572,
     "DL-12": 29,
-    "DL-01": 448,
+    "DL-01": 449,
     "DL-05": 56,
     "DL-13": 9,
-    "DL-11": 17,
-    "DL-27": 13,
+    "DL-11": 16,
+    "DL-27": 22,
     "DL-24": 1,
     "DL-08": 6
   },
   "byModule": {
     "components/app": {
-      "total": 1276,
+      "total": 1317,
       "P0": 0,
-      "P1": 894,
-      "P2": 283,
-      "P3": 99
+      "P1": 929,
+      "P2": 282,
+      "P3": 106
     },
     "components/builder": {
       "total": 12,
@@ -50,18 +50,18 @@
       "P3": 6
     },
     "components/tourism": {
-      "total": 202,
+      "total": 201,
       "P0": 0,
-      "P1": 175,
+      "P1": 174,
       "P2": 21,
       "P3": 6
     },
     "components/ui": {
-      "total": 129,
+      "total": 133,
       "P0": 0,
-      "P1": 108,
+      "P1": 111,
       "P2": 5,
-      "P3": 16
+      "P3": 17
     },
     "hooks": {
       "total": 7,
@@ -78,9 +78,9 @@
       "P3": 0
     },
     "routes/admin": {
-      "total": 197,
+      "total": 201,
       "P0": 0,
-      "P1": 136,
+      "P1": 140,
       "P2": 14,
       "P3": 47
     },
@@ -99,18 +99,18 @@
       "P3": 1
     },
     "routes/workspace": {
-      "total": 593,
+      "total": 622,
       "P0": 0,
-      "P1": 501,
-      "P2": 30,
-      "P3": 62
+      "P1": 527,
+      "P2": 32,
+      "P3": 63
     },
     "routes/store": {
-      "total": 348,
+      "total": 352,
       "P0": 0,
-      "P1": 257,
-      "P2": 48,
-      "P3": 43
+      "P1": 259,
+      "P2": 49,
+      "P3": 44
     },
     "services": {
       "total": 174,

@@ -14,6 +14,7 @@ import { listTravelSuppliers, deleteTravelSupplier } from '@/services/travel-sup
 import { SUPPLIER_KIND_LABELS, type SupplierKind } from '@/types/travel-suppliers';
 import { NewSupplierWizard } from '@/components/tourism/suppliers/new-supplier-wizard';
 import { SupplierAutocomplete } from '@/components/tourism/suppliers/supplier-autocomplete';
+import { InfotravelIntegrationPanel } from '@/components/admin/infotravel-integration-panel';
 
 export const Route = createFileRoute('/workspace/turismo/fornecedores')({
  head: () => ({ meta: [{ title: 'Fornecedores & Tarifários de DMCs | Workspace' }] }),
@@ -98,6 +99,7 @@ function WorkspaceSuppliersPage() {
       id: k,
       label: label.split('/')[0].trim(),
     })),
+    { id: 'infotravel_sync', label: 'Sincronização InfoTravel', icon: Globe },
   ], [suppliers]);
 
   return (
@@ -125,8 +127,9 @@ function WorkspaceSuppliersPage() {
         items={dashboardMetrics}
       />
 
- {/* Grid de Fornecedores */}
- {isLoading ? (
+      {selectedKind === 'infotravel_sync' ? (
+        <InfotravelIntegrationPanel />
+      ) : isLoading ? (
  <div className="py-12 text-center text-xs text-muted-foreground">Carregando catálogo de fornecedores...</div>
  ) : filtered.length === 0 ? (
  <div className="p-12 text-center rounded-lg border border-dashed border-border bg-card space-y-3">
