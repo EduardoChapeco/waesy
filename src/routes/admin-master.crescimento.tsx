@@ -586,7 +586,7 @@ function GrowthValuationDashboard() {
                 <div className="text-2xl font-bold font-mono text-foreground">
                   {codebase.componentsCount || 452}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Design System canônico e tipado.</p>
+                <p className="text-xs text-muted-foreground mt-1">Identidade visual unificada e padronizada.</p>
               </CardContent>
             </Card>
           </div>

@@ -611,7 +611,7 @@ function ProfileCivilPage() {
 
                 {/* Diretriz Canônica de Perfil e Brand Kit */}
                 <div className="flex-1 min-w-0 rounded-xl bg-muted/20 border border-border/40 p-4 space-y-2 text-xs">
-                  <p className="font-bold text-foreground">Padrão Canônico de Identidade (1:1)</p>
+                  <p className="font-bold text-foreground">Formato Quadrado Recomendado (1:1)</p>
                   <p className="text-muted-foreground leading-relaxed">
                     Sua foto de perfil é a representação oficial em toda a rede. Perfis de membros, criadores e lojas seguem o formato unificado sem capas panorâmicas no cabeçalho.
                   </p>

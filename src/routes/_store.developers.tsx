@@ -137,7 +137,7 @@ function DevelopersPortalPage() {
 
       <section aria-labelledby="dev-endpoints-heading" className="space-y-4">
         <h2 id="dev-endpoints-heading" className="text-xl font-semibold">
-          Endpoints e Artefatos Canonicos
+          Endpoints e Recursos Oficiais
         </h2>
         <div className="overflow-hidden rounded-2xl border border-border">
           <table className="w-full text-left text-sm">

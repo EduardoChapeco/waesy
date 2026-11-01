@@ -1445,7 +1445,7 @@ function WorkspaceHotelsPage() {
  onChange={handleSelectGlobalHotel}
  disabled={createMut.isPending || updateMut.isPending}
  />
- <p className="text-xs text-muted-foreground">Selecione um registro verificado para evitar duplicatas. A criação e fusão de registros canônicos permanece sob governança Master.</p>
+ <p className="text-xs text-muted-foreground">Selecione um hotel parceiro homologado para autopreenchimento rápido e sem duplicidades.</p>
  </div>
  <div className="space-y-2">
  <Label htmlFor="hotel-name" className="font-semibold text-foreground">Nome do Hotel / Resort *</Label>

@@ -97,7 +97,7 @@ function WorkspaceProposalStudioPage() {
    if (!proposal) return;
    const validUntil = proposal.valid_until ? Date.parse(proposal.valid_until) : Number.NaN;
    if (!proposal.snapshot_hash) {
-     toast.error("A proposta ainda não possui fingerprint canônico. Salve as alterações e tente novamente.");
+     toast.error("Identificador único da proposta não encontrado. Salve as alterações e tente novamente.");
      return;
    }
    if (!Number.isFinite(validUntil) || validUntil <= Date.now()) {

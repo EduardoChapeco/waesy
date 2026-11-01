@@ -80,7 +80,7 @@ function DocumentVerificationPage() {
           <h1 className="text-lg font-bold text-foreground">Documento Não Reconhecido</h1>
           <p className="text-xs text-muted-foreground leading-relaxed">
             O código ou hash informado não corresponde a nenhum documento selado ou emitido na
-            infraestrutura canônica da Waesy.
+            plataforma oficial e segura da Waesy.
           </p>
           <Button asChild variant="outline" size="sm" className="rounded-lg mt-2">
             <Link to="/">
@@ -118,7 +118,7 @@ function DocumentVerificationPage() {
     : !isAuthentic
       ? "O registo foi localizado, mas ainda não há uma versão selada com hash válido. A verificação permanece pendente, não falhada."
       : result.pendingReason === "legacy"
-        ? "O hash e o registo legado foram localizados; a conclusão das assinaturas aguarda reconciliação com envelopes canónicos."
+        ? "O documento foi localizado com sucesso; a finalização aguarda confirmação com o servidor de assinaturas."
         : result.pendingReason === "completion"
           ? "As assinaturas estão registadas, mas a conclusão do contrato ainda não foi confirmada."
           : "O registo e a versão selada são autênticos; pelo menos uma assinatura continua pendente.";

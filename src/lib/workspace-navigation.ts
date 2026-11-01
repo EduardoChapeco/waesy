@@ -28,7 +28,6 @@ const GROUP_OVERVIEW: NavGroup = {
   section: "master",
   items: [
     { path: "/workspace", label: "Visão Geral", icon: LayoutDashboard },
-    { path: "/workspace/empresa/viagens", label: "Viagens B2B", icon: Plane },
     { path: "/workspace/onboarding", label: "Ativação", icon: Layers },
   ],
 };

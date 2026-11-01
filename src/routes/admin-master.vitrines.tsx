@@ -49,7 +49,7 @@ const SECTION_TYPE_OPTIONS: Array<{ id: SurfaceSectionType; label: string; icon:
   { id: "social_posts_rail", label: "Trilho de Publicações Sociais", icon: Layers },
   { id: "vitrine_vertical_carousel", label: "Cards Verticais Carrossel (Reels / Stories)", icon: Layout },
   { id: "media_gallery_mosaic", label: "Galeria Mosaico Editorial", icon: Grid },
-  { id: "video_section", label: "Player de Vídeo Canônico", icon: Eye },
+  { id: "video_section", label: "Vídeo em Destaque", icon: Eye },
   { id: "tourism_car_rental_rail", label: "Aluguel de Carros (3 Diárias)", icon: Tag },
 ];
 
@@ -64,7 +64,7 @@ const DATA_SOURCE_OPTIONS: Array<{ id: SurfaceDataSource; label: string }> = [
   { id: "category", label: "Categoria Específica" },
   { id: "hotpage", label: "Hotpage / Campanha" },
   { id: "car_rentals", label: "Locação de Veículos (3 Diárias)" },
-  { id: "videos", label: "Vídeos Canônicos" },
+  { id: "videos", label: "Galeria de Vídeos" },
 ];
 
 const RANKING_OPTIONS: Array<{ id: SurfaceRankingStrategy; label: string; desc: string }> = [

@@ -1,5 +1,29 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-414: Sanitização Global de Termos Técnicos em UI e Deconflito Semântico entre Nichos
+- **Data:** 2026-11-01
+- **Contexto:**
+  1. Termos de engenharia e jargões internos ("canônico", "editor canônico", "fingerprint canônico", "pipeline DTO", "preset canônico", "injeção canônica") estavam vazando para textos de interface, diálogos, toasts e botões do Turismo, Home Editor, Vitrines e Workspace.
+  2. No `GROUP_OVERVIEW` da barra lateral de navegação (`src/lib/workspace-navigation.ts`), o item "Viagens B2B" estava declarado de forma estática para todos os nichos da plataforma, fazendo com que estabelecimentos de gastronomia, serviços, pet shops e varejo exibissem opções de viagens no topo do seu painel.
+- **Decisão:**
+  1. Sanitizados 30 pontos de interface em 19 arquivos chave, convertendo todos os jargões para linguagem comercial clara e amigável:
+     - "Autopreenchimento Canônico Oficial" → "Autopreenchimento por Destino Homologado"
+     - "aplicar modelo canônico" → "aplicar modelo pronto"
+     - "fingerprint canônico" → "identificador da proposta"
+     - "Banco de Hotéis e Resorts Renomados (Preset Canônico)" → "Rede de Hotéis e Resorts Homologados"
+     - "A criação e fusão de registros canônicos permanece sob governança Master" → "Selecione um hotel parceiro homologado para autopreenchimento rápido e sem duplicidades"
+     - "Player de Vídeo Canônico" → "Vídeo em Destaque"
+     - "Vídeos Canônicos" → "Galeria de Vídeos"
+     - "Fontes Canônicas" → "Fontes Oficiais de Dados" / "Importação Oficial"
+     - "Design System canônico e tipado" → "Identidade visual unificada e padronizada"
+     - "Perfil Canônico" → "Ficha Completa do Cliente"
+     - "Padrão Canônico" → "Padrão Recomendado"
+     - "Horários Canônicos" → "Horários de Check-in e Check-out"
+     - "Registro Oficial Canônico" → "Estabelecimento Homologado"
+  2. Em `src/lib/workspace-navigation.ts`, purgado o item "Viagens B2B" do `GROUP_OVERVIEW` universal, garantindo que o módulo corporativo de viagens permaneça estritamente restrito à semântica de Turismo (`GROUP_TURISMO_COMMERCIAL`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.6, B.8, B.12, B.50; HIG / Niche Semantics Adaptation; Apple/Stripe Clear Microcopy.
+- **Consequências:** Interface 100% humanizada e comercial, sem vocabulário técnico de desenvolvedor e com isolamento semântico estrito entre verticais de negócio.
+
 ## DEC-413: Erradicação do Layout Quebrado no Kanban de Turismo: Trilho Horizontal com Rolagem Fluida e Colunas de 320px
 - **Data:** 2026-11-01
 - **Contexto:**

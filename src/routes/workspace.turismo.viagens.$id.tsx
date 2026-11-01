@@ -2117,7 +2117,7 @@ function WorkspaceTripDetailPage() {
                 <div className="space-y-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
                   <Label className="text-xs text-muted-foreground/75 font-bold text-primary flex items-center gap-1">
                     <Compass className="size-3" />
-                    <span>Banco de Hotéis e Resorts Renomados (Preset Canônico)</span>
+                    <span>Rede de Hotéis e Resorts Homologados</span>
                   </Label>
                   <Select
                     onValueChange={(presetId) => {

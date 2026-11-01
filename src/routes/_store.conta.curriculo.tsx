@@ -1385,7 +1385,7 @@ export default function MeuCurriculoPage() {
                 {/* 1. Escolha de Template */}
                 <div className="p-4 rounded-lg bg-card border border-border/60 shadow-2xs space-y-4">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                    Modelos de Apresentação (Templates Canônicos)
+                    Modelos de Apresentação Profissional
                   </h3>
                   <div className="grid grid-cols-1 gap-2">
                     {[

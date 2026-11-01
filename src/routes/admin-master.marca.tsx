@@ -475,7 +475,7 @@ function AdminMasterMarcaPage() {
  <div className="p-4 rounded-lg bg-muted/20 space-y-4">
  <div className="space-y-1">
  <Label htmlFor="accent-color-input" className="text-xs font-bold text-foreground flex items-center gap-2">
- <span>Azul Intermediário Canônico (Cor de Acento / Secundário)</span>
+ <span>Azul Institucional Waesy (Cor de Destaque)</span>
  <span className="size-3.5 rounded-full shrink-0" /* design-lint-ignore DL-05 reason:"Amostra dinamica de cor de acento customizada" expiry:"2027-12-31" */ style={{ backgroundColor: accentColor }} />
  </Label>
  <p className="text-2xs text-muted-foreground">

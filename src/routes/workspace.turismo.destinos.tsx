@@ -857,14 +857,14 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  <div className="flex-1 overflow-y-auto no-scrollbar p-5 text-xs space-y-6">
- {/* ── ABA 1: IDENTIFICAÇÃO CANÔNICA & LOCALIZAÇÃO PADRONIZADA ── */}
+ {/* ── ABA 1: IDENTIFICAÇÃO DO DESTINO & LOCALIZAÇÃO ── */}
  <TabsContent value="identificacao" className="m-0 space-y-5">
- {/* Seletor Canônico em Cascata Oficial */}
+ {/* Seletor de Destinos Homologados */}
  <div className="p-4 rounded-lg bg-muted/40 border border-border/70 space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-xs text-muted-foreground/75 font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Compass className="size-3.5 text-primary" />
- Autopreenchimento Canônico Oficial (Garante Mensuração Sem Duplicidade)
+ Autopreenchimento por Destino Homologado
  </span>
  </div>
  <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
@@ -888,7 +888,7 @@ export default function WorkspaceDestinationsPage() {
  </select>
  </div>
 
- {/* 2. Selecionar Destino Canônico daquele Estado */}
+ {/* 2. Selecionar Destino daquele Estado */}
  <div className="space-y-1">
  <Label className="text-xs font-bold text-foreground">2. Destino Oficial Pré-Cadastrado</Label>
  <select
@@ -1191,7 +1191,7 @@ export default function WorkspaceDestinationsPage() {
  <Layers className="size-8 mx-auto text-muted-foreground/40" />
  <p className="text-xs font-bold text-foreground">Nenhuma seção personalizada adicionada ainda</p>
  <p className="text-xs text-muted-foreground/75 text-muted-foreground max-w-md mx-auto">
- Clique em um dos botões acima para adicionar seções de Foto + Texto, Atrações, Gastronomia ou FAQ, ou aplique um modelo canônico na aba 1.
+ Clique em um dos botões acima para adicionar seções de Foto + Texto, Atrações, Gastronomia ou FAQ, ou aplique um modelo pronto na aba 1.
  </p>
  </div>
  ) : (

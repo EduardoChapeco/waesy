@@ -579,7 +579,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div className="flex items-center justify-between">
  <Label className="text-xs font-bold text-foreground">Identidade do Perfil (1:1 Squircle + Capa 21:9)</Label>
  <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
- Padrão Canônico
+ Padrão Recomendado
  </Badge>
  </div>
 

@@ -241,7 +241,7 @@ export default function AgencyQuotesPage() {
  <NicheOperationalGuard
  targetNiche="tourism"
  toolTitle="Cotações de Viagem"
- toolDescription="O pipeline de cotações, orçamentos e captação de passageiros para pacotes aéreos, cruzeiros e hotéis foi projetado especificamente para agências de viagens e turismo."
+ toolDescription="Gestão de cotações, orçamentos e captação de viajantes para pacotes aéreos, cruzeiros e hotelaria para agências de turismo."
  store={store}
  >
       <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-screen pb-20">
@@ -783,7 +783,7 @@ export default function AgencyQuotesPage() {
              Gerenciar Cotação / Lead: {managingQuote?.contact_name}
            </SheetTitle>
            <SheetDescription className="text-xs text-muted-foreground">
-             Atualize a fase do pipeline comercial, proposta financeira e histórico de atendimento.
+             Atualize o estágio da cotação, valores do pacote e histórico de atendimento.
            </SheetDescription>
          </div>
          {managingQuote?.contact_whatsapp && (

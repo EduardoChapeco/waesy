@@ -1676,7 +1676,7 @@ function WorkspaceComercialPage() {
                               {customer360Data.customer.full_name || "Cliente Oficial"}
                             </span>
                             <Badge variant="outline" className="text-xs font-mono border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
-                              Perfil Canônico
+                              Ficha Completa do Cliente
                             </Badge>
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground/75 text-muted-foreground">

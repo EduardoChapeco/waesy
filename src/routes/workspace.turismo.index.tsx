@@ -891,7 +891,7 @@ export default function WorkspaceTurismoCockpitPage() {
   const dashboardMetricCards: MetricCardItem[] = [
     {
       id: "pipeline_val",
-      label: "Pipeline em Negociação",
+      label: "Negociações Ativas",
       value: formatMoney(pipelineMetrics.totalPipelineCents),
       icon: DollarSign,
       description: "Valor total das oportunidades em aberto",
@@ -3002,7 +3002,7 @@ export default function WorkspaceTurismoCockpitPage() {
         open={isDashboardOpen}
         onOpenChange={setIsDashboardOpen}
         title="Painel de Desempenho do Turismo"
-        description="Indicadores comerciais de conversão, pipeline e emissões da agência"
+        description="Indicadores comerciais de conversão, atendimentos e viagens da agência"
         metrics={dashboardMetricCards}
       />
     </div>
