@@ -1,5 +1,18 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-411: Resolução de Renderização de Posts: Marca-Texto Cromático, Padronização de Vídeo Único sem Containeritis e Desbloqueio do Feed Global
+- **Data:** 2026-11-01
+- **Contexto:**
+  1. No componente `RichPostContent` (`rich-post-content.tsx`), o fundo colorido do marca-texto (`==destaque==`) possuía classe `-z-10` sem stacking context isolado, fazendo a cor de fundo afundar para trás do `bg-card`. Como a cor do texto era `text-neutral-950`, no Dark Mode o texto ficava escuro sobre fundo preto, tornando-se ilegível.
+  2. No componente de vitrine social (`HomePostsShowcase.tsx`), posts com mídia única de vídeo renderizavam um contêiner duplo com borda cinza (`bg-muted/80 border`), efeito de blur redundante e `object-contain mx-auto`, gerando faixas pretas e "card dentro de card" (DL-31), destoando do carrossel uniforme adjacente.
+  3. No feed global (`_store.feed.tsx`), as requisições para `getMuralFeed` falhavam silenciosamente com status 400 (`column posts.aspect_ratio does not exist`), fazendo com que nenhuma publicação fosse renderizada nas abas do feed.
+- **Decisão:**
+  1. Em `src/components/community/rich-post-content.tsx`: aplicado `isolate` no contêiner do marcador, substituído `-z-10` por `z-0`, envolvido o texto formatado em `relative z-10` e definidas paletas sólidas (`bg-amber-300 dark:bg-amber-300 text-neutral-950`), garantindo contraste AA superior (>12:1) em ambos os temas.
+  2. Em `src/components/home/HomePostsShowcase.tsx` e `src/components/community/post-card.tsx`: eliminada a caixa interna cinza com blur e `object-contain`, padronizando o contêiner de vídeo único para `size-full object-cover` com altura canônica idêntica aos cards de carrossel.
+  3. No Supabase e migrations: criada a migration `supabase/migrations/20270314000000_posts_aspect_ratio_column.sql` e executado `ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS aspect_ratio TEXT DEFAULT 'auto'`, desbloqueando 100% das consultas do `getMuralFeed`.
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8 (DL-31), B.30, B.33; docs/design/DESIGN.md; WCAG 2.2 AA.
+- **Consequências:** Posts no feed e na home renderizam imediatamente com vídeo preenchendo a área de mídia de forma canônica e marcadores de texto visíveis com alto contraste.
+
 ## DEC-392: Conexão End-to-End de Módulos de Turismo, Autopublicação OCR com Matching de Hotéis/Oportunidades, Reconciliação InfoTravel e Regra Pétrea Anti-Duplicação (B.50)
 - **Data:** 2026-10-31
 - **Contexto:**

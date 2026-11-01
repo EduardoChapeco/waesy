@@ -10,13 +10,13 @@ export interface RichPostContentProps {
 }
 
 const HIGHLIGHTER_PALETTES: Record<string, { bg: string; text: string }> = {
-  yellow: { bg: "bg-amber-300/90 dark:bg-amber-300/90", text: "text-neutral-950" },
-  cyan: { bg: "bg-cyan-300/90 dark:bg-cyan-300/90", text: "text-neutral-950" },
-  blue: { bg: "bg-sky-300/90 dark:bg-sky-300/90", text: "text-neutral-950" },
-  pink: { bg: "bg-pink-300/90 dark:bg-pink-300/90", text: "text-neutral-950" },
-  green: { bg: "bg-emerald-300/90 dark:bg-emerald-300/90", text: "text-neutral-950" },
-  purple: { bg: "bg-purple-300/90 dark:bg-purple-300/90", text: "text-neutral-950" },
-  orange: { bg: "bg-orange-300/90 dark:bg-orange-300/90", text: "text-neutral-950" },
+  yellow: { bg: "bg-amber-300 dark:bg-amber-300", text: "text-neutral-950" },
+  cyan: { bg: "bg-cyan-300 dark:bg-cyan-300", text: "text-neutral-950" },
+  blue: { bg: "bg-sky-300 dark:bg-sky-300", text: "text-neutral-950" },
+  pink: { bg: "bg-pink-300 dark:bg-pink-300", text: "text-neutral-950" },
+  green: { bg: "bg-emerald-300 dark:bg-emerald-300", text: "text-neutral-950" },
+  purple: { bg: "bg-purple-300 dark:bg-purple-300", text: "text-neutral-950" },
+  orange: { bg: "bg-orange-300 dark:bg-orange-300", text: "text-neutral-950" },
 };
 
 /**
@@ -32,7 +32,7 @@ function renderInlineFormatting(text: string, baseKey: string): React.ReactNode 
   return parts.map((part, i) => {
     const key = `${baseKey}-fmt-${i}`;
     if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
-      return <strong key={key} className="font-bold text-foreground">{part.slice(1, -1)}</strong>;
+      return <strong key={key} className="font-bold text-inherit">{part.slice(1, -1)}</strong>;
     }
     if (part.startsWith("_") && part.endsWith("_") && part.length > 2) {
       return <em key={key} className="italic">{part.slice(1, -1)}</em>;
@@ -96,13 +96,21 @@ export function RichPostContent({
           return (
             <span
               key={index}
-              className={cn("relative inline-block px-2 py-1 mx-1 font-bold leading-tight select-text rounded-xs", palette.text)}
+              className={cn(
+                "relative inline-block isolate px-2 py-1 mx-1 font-bold leading-tight select-text rounded-xs",
+                palette.text
+              )}
             >
               <span
-                className={cn("absolute inset-x-0 inset-y-0 -rotate-1 rounded-xs -z-10 shadow-2xs transition-transform", palette.bg)}
+                className={cn(
+                  "absolute inset-0 -rotate-1 rounded-xs z-0 pointer-events-none shadow-2xs transition-transform",
+                  palette.bg
+                )}
                 aria-hidden="true"
               />
-              {renderInlineFormatting(highlightedText, `hl-${index}`)}
+              <span className="relative z-10">
+                {renderInlineFormatting(highlightedText, `hl-${index}`)}
+              </span>
             </span>
           );
         }

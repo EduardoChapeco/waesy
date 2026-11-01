@@ -503,7 +503,7 @@ export function PostCard(props: PostCardProps) {
 
           if (item.post_type === "moment" || postRatio === "9:16") {
             containerAspectClass = "aspect-post-moment max-w-xs mx-auto max-h-[580px]";
-            objectFitClass = isVideo ? "object-contain bg-foreground/95" : "object-cover";
+            objectFitClass = "object-cover";
           } else if (postRatio === "1:1") {
             containerAspectClass = "aspect-square max-h-[540px]";
           } else if (postRatio === "4:5") {
@@ -512,7 +512,7 @@ export function PostCard(props: PostCardProps) {
             containerAspectClass = "aspect-video max-h-[500px]";
           } else if (isVideo) {
             containerAspectClass = "aspect-post-vertical max-h-[580px]";
-            objectFitClass = "object-contain bg-foreground/95";
+            objectFitClass = "object-cover";
           }
 
           return (
