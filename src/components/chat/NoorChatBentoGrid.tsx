@@ -8,7 +8,7 @@ import {
   Car,
   Store,
   ArrowRight,
-  Sparkles,
+  Compass, Utensils,
   MapPin,
 } from "lucide-react";
 import {
@@ -144,13 +144,13 @@ function NoorBentoCard({
 
   const targetUrl = item?.target_url || getDefaultTargetUrl(defaultIndex);
   const title = item?.title || getDefaultTitle(defaultIndex);
-  const FallbackIcon = DEFAULT_FALLBACK_ICONS[defaultIndex] || Sparkles;
+  const FallbackIcon = DEFAULT_FALLBACK_ICONS[defaultIndex] || Compass;
 
   const content = (
     <div
       className={cn(
         "group relative w-full overflow-hidden rounded-2xl sm:rounded-3xl",
-        "bg-card hover:bg-muted/40 border border-border/50 hover:border-primary/40",
+        "bg-muted/30 hover:bg-muted/50 border border-transparent",
         "flex items-center justify-center transition-colors duration-200 active:scale-95",
         aspectClass,
       )}
@@ -175,12 +175,7 @@ function NoorBentoCard({
         </div>
       )}
 
-      {/* Badge opcional do CMS (ex: "Novo", "Rápido") - Omitido quando há imagem limpa do admin */}
-      {item?.badge_text && (!hasValidImage || showText) && (
-        <span className="absolute top-2 left-2 px-2 py-1 rounded-full text-2xs font-black uppercase tracking-wider bg-primary text-primary-foreground shadow-xs select-none">
-          {item.badge_text}
-        </span>
-      )}
+      
 
       {/* Legenda opcional sob demanda (se marcada no CMS) */}
       {showText && hasValidImage && (

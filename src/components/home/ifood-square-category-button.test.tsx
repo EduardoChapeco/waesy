@@ -47,7 +47,7 @@ describe("IFoodSquareCategoryButton — Fallback Vetorial & Apple HIG", () => {
     expect(html).toContain("svg"); // Ícone Utensils do Lucide
   });
 
-  it("renderiza badge promocional no canto do squircle", () => {
+  it("renderiza squircle com borda invisível e sem badges decorativas (Apple HIG / iFood)", () => {
     const html = renderToStaticMarkup(
       <IFoodSquareCategoryButton
         id="btn-3"
@@ -56,8 +56,9 @@ describe("IFoodSquareCategoryButton — Fallback Vetorial & Apple HIG", () => {
       />
     );
 
-    expect(html).toContain("Novo");
+    expect(html).toContain("border-transparent");
     expect(html).toContain("Lojas de Conveniência");
+    expect(html).not.toContain("Novo");
   });
 
   it("omite estritamente o botão quando não há nem imagem nem título/badge", () => {

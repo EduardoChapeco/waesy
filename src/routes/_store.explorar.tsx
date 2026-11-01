@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, Buildings, Star, CheckCircle, Storefront, ArrowRight, Ticket, UserCircle, Target, Rss, ChatCircleDots } from "@phosphor-icons/react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
+import { IFoodSquareCategoryButton } from "@/components/home/IFoodSquareCategoryButton";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { NewsCard } from "@/components/news/news-card";
@@ -210,6 +211,19 @@ export const Route = createFileRoute("/_store/explorar")({
   },
   component: CommunityHomePage,
 });
+
+const CANONICAL_EXPLORAR_SHORTCUTS = [
+  { id: "exp-restaurantes", title: "Restaurantes", targetUrl: "/gastronomia" },
+  { id: "exp-mercados", title: "Mercados", targetUrl: "/mercado" },
+  { id: "exp-farmacias", title: "Farmácias", targetUrl: "/farmacia" },
+  { id: "exp-explorar", title: "Explorar", targetUrl: "/explorar" },
+  { id: "exp-marketplace", title: "Marketplace", targetUrl: "/marketplace" },
+  { id: "exp-classificados", title: "Classificados", targetUrl: "/classificados" },
+  { id: "exp-viagens", title: "Viagens", targetUrl: "/turismo" },
+  { id: "exp-corridas", title: "Corridas", targetUrl: "/mobilidade" },
+  { id: "exp-servicos", title: "Serviços", targetUrl: "/diretorio" },
+  { id: "exp-mais", title: "Mais", targetUrl: "/explorar" },
+];
 
 function CommunityHomePage() {
   const {
@@ -559,65 +573,20 @@ function CommunityHomePage() {
 
   return (
     <div className="w-full space-y-4 sm:space-y-4 pb-14">
-      {/* ── 1. CARDS COM IMAGENS DO TOPO (Carrossel Horizontal de Categorias Master) ── */}
-      <section aria-label="Categorias Principais">
-        <HorizontalRail title="Categorias Principais" hideHeader={true}>
-          {displayHeroCards.map((card) => (
-            <Link
-              key={card.slug}
-              to={card.to as any}
-              className={`min-w-48 sm:min-w-56 md:min-w-60 max-w-64 shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card aspect-video sm:aspect-video border border-border/60 hover:border-foreground/30 transition-colors duration-200 duration-300 active:active:scale-95 ${(card as any).showShadow ? " hover:shadow-xs" : "shadow-none"}`}
-            >
-              {(card as any).coverUrl ? (
-                <img
-                  src={(card as any).coverUrl}
-                  alt={card.title}
-                  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-200"
-                  loading="eager"
-                />
-              ) : (
-                <div className="absolute inset-0 size-full bg-muted/40 border border-border/40 flex items-center justify-center">
-                  <span className="text-xs font-bold text-muted-foreground/60">{card.title}</span>
-                </div>
-              )}
-
-              {/* Overlay configurável — Zero por padrão, somente se ativado no Admin com opacidade > 0 */}
-              {(card as any).showOverlay && ((card as any).bgOverlayOpacity ?? 30) > 0 && (
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: `linear-gradient(to top, ${
-                      (card as any).bgColor || "#000000"
-                    }${Math.round(((card as any).bgOverlayOpacity ?? 30) * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
-                  }}
-                />
-              )}
-
-              {/* Identificação do Card — visível somente se show_title não está desativado */}
-              {(card as any).showTitle !== false && (
-                <div className="relative z-10 p-3 sm:p-3 w-full">
-                  {(card as any).isPlacesBadge ? (
-                    <PlacesHighlightBadge
-                      className={`text-xs font-bold drop- ${
-                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-foreground" : "text-foreground"
-                      }`}
-                      style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
-                    />
-                  ) : (
-                    <h2
-                      className={`text-xs font-bold leading-tight drop- truncate backdrop-blur-xs ${
-                        (card as any).textColor ? "" : (card as any).showOverlay ? "text-foreground" : "text-foreground"
-                      }`}
-                      style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
-                    >
-                      {card.title}
-                    </h2>
-                  )}
-                </div>
-              )}
-            </Link>
+      {/* ── 1. NAVEGAÇÃO CANÔNICA DE CATEGORIAS (Grid 5x2 Mobile / TetrisGrid Desktop) ── */}
+      <section aria-label="Categorias Principais" className="w-full">
+        {/* design-lint-ignore DL-29 reason:"Grade iFood canonica 5 colunas movel" expiry:"2027-12-31" */}
+        <div className="grid grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-y-3 gap-x-2 sm:gap-3">
+          {CANONICAL_EXPLORAR_SHORTCUTS.map((cat) => (
+            <IFoodSquareCategoryButton
+              key={cat.id}
+              id={cat.id}
+              title={cat.title}
+              targetUrl={cat.targetUrl}
+              showText={true}
+            />
           ))}
-        </HorizontalRail>
+        </div>
       </section>
 
       {/* ── 2. CARROSSEL DE BANNERS HERO (Se cadastrados) ── */}

@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { MessageCircle, Sparkles, Users, ShoppingBag, User } from "lucide-react";
+import { MessageCircle, Flame, Compass, Users, ShoppingBag, User } from "lucide-react";
 import { useAccountSwitcherDrawer } from "@/lib/drawer-store";
 import { AccountSwitcherDrawer } from "@/components/shell/AccountSwitcherDrawer";
 import { GlobalQuickCreateModal, openQuickCreateModal } from "@/components/shell/GlobalQuickCreateModal";
@@ -114,6 +114,8 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
     pathname.startsWith("/conta/conversas") || pathname.startsWith("/chat");
   const isFeedActive =
     pathname.startsWith("/feed") || pathname.startsWith("/mural");
+  const isExploreActive =
+    pathname.startsWith("/explorar");
   const isCommunitiesActive =
     pathname.startsWith("/comunidades") || pathname.startsWith("/c/");
   const isPurchasesActive =
@@ -320,23 +322,23 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Sparkles className="size-5" strokeWidth={isFeedActive ? 2.5 : 1.75} />
+                <Flame className="size-5" strokeWidth={isFeedActive ? 2.5 : 1.75} />
                 <span className="text-2xs font-semibold tracking-tight leading-none">Feed</span>
               </Link>
 
-              {/* TAB 3: COMUNIDADES */}
+              {/* TAB 3: EXPLORAR */}
               <Link
-                to="/comunidades"
-                aria-label="Comunidades"
+                to="/explorar"
+                aria-label="Explorar"
                 className={cn(
                   "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  isCommunitiesActive
+                  isExploreActive
                     ? "text-foreground font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Users className="size-5" strokeWidth={isCommunitiesActive ? 2.5 : 1.75} />
-                <span className="text-2xs font-semibold tracking-tight leading-none">Comunidades</span>
+                <Compass className="size-5" strokeWidth={isExploreActive ? 2.5 : 1.75} />
+                <span className="text-2xs font-semibold tracking-tight leading-none">Explorar</span>
               </Link>
 
               {/* TAB 4: COMPRAS */}

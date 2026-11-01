@@ -90,28 +90,37 @@ function FeedPage() {
       <div className="max-w-2xl mx-auto px-0 sm:px-4 py-2 sm:py-5 space-y-3 sm:space-y-4">
         {/* ── 1. Menu de Abas Discreto no Topo (Padrão TikTok / Threads) ── */}
         <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/40">
-          <div className="flex items-center justify-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar px-4 h-11 min-h-11">
-            {FEED_TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={cn(
-                    "h-11 min-h-11 px-1 flex items-center justify-center relative font-semibold text-xs sm:text-sm whitespace-nowrap transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    isActive
-                      ? "text-foreground font-bold"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                  onClick={() => setActiveTab(tab.id)}
-                >
-                  <span>{tab.label}</span>
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground rounded-full" />
-                  )}
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-between px-3 sm:px-4 h-11 min-h-11 gap-2">
+            <div className="flex items-center gap-5 sm:gap-8 overflow-x-auto no-scrollbar">
+              {FEED_TABS.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={cn(
+                      "h-11 min-h-11 px-1 flex items-center justify-center relative font-semibold text-xs sm:text-sm whitespace-nowrap transition-colors cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      isActive
+                        ? "text-foreground font-bold"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                    onClick={() => setActiveTab(tab.id)}
+                  >
+                    <span>{tab.label}</span>
+                    {isActive && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <Link
+              to="/comunidades"
+              className="h-11 min-h-11 px-3 rounded-full bg-muted/60 hover:bg-muted text-xs font-semibold text-foreground flex items-center gap-2 shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer select-none"
+            >
+              <Users className="size-3.5 text-primary" />
+              <span>Comunidades</span>
+            </Link>
           </div>
         </div>
 

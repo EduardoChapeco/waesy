@@ -180,7 +180,8 @@ export function HomeDesktopWebApp({
     if (count === 4) return "md:grid-cols-4";
     if (count <= 5) return "md:grid-cols-5";
     if (count <= 6) return "md:grid-cols-3 lg:grid-cols-6";
-    return "md:grid-cols-4 lg:grid-cols-8";
+    if (count <= 8) return "md:grid-cols-4 lg:grid-cols-8";
+    return "md:grid-cols-5 lg:grid-cols-10";
   };
 
   const hasActiveCoupons = React.useMemo(() => {

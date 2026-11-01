@@ -1,5 +1,23 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-412: Unificação do Dock Canônico iFood 5x2, Borda Invisível, Integração Explorar no Menu Inferior e Acesso a Comunidades no Feed
+- **Data:** 2026-11-01
+- **Contexto:**
+  1. A grade de categorias rápidas na Home mobile e na rota `_store.explorar.tsx` divergia do padrão de design iFood nativo (possuía bordas visíveis pesadas, badges decorativos, proporções 2x2 ou retângulos com vídeos antigos e ausência dos pilares centrais da plataforma).
+  2. A rota `_store.explorar.tsx` não compartilhava o mesmo dock canônico de atalhos e verticais da Home, gerando descontinuidade visual e quebra do ecossistema omni-channel.
+  3. No menu inferior móvel (`MobileNav`), a aba "Comunidades" ocupava uma das 5 posições nobres, enquanto o pilar "Explorar" estava ausente; o usuário instruiu posicionar "Explorar" na barra inferior e mover o acesso a "Comunidades" para dentro do próprio Feed social.
+  4. O menu estilo Noor (`NoorChatBentoGrid`) no Chat não incluía atalho para Explorar e exibia bordas visíveis e badges.
+- **Decisão:**
+  1. Em `IFoodSquareCategoryButton.tsx`: removidos badges e bordas visíveis (`border border-transparent bg-muted/40`), padronizando o ícone centralizado no squircle e o rótulo textual honesto abaixo do squircle. Atualizado `resolveCategoryIcon` com suporte a `Compass` (Explorar), `Store` (Marketplace), `Tag` (Classificados), `Plane` (Viagens), `Car` (Corridas), `Briefcase` (Serviços) e `LayoutGrid` (Mais), com erradicação total do ícone Sparkles.
+  2. Em `admin-home-cms.functions.ts` e Supabase: unificadas as 10 categorias canônicas oficiais (Restaurantes, Mercados, Farmácias, Explorar, Marketplace, Classificados, Viagens, Corridas, Serviços, Mais) e persistidas em `home_section_items` sob a seção `quick_categories_ifood` com `layout_variant = 'grid_2d'` e `image_url DROP NOT NULL` via migration `20270315000000_home_section_items_image_url_nullable.sql`.
+  3. Em `HomeMobileNativeApp.tsx` e `HomeDesktopWebApp.tsx`: padronizada a grade mobile para 5 colunas (`grid-cols-5 gap-y-3 gap-x-2`) e desktop para TetrisGrid/BentoGrid widescreen (`md:grid-cols-5 lg:grid-cols-10`).
+  4. Em `_store.explorar.tsx`: substituído o antigo carrossel de retângulos escuros pelo dock canônico das 10 categorias iFood com alinhamento bidirecional.
+  5. Em `mobile-nav.tsx`: substituída a aba Comunidades por **Explorar** (`/explorar` com ícone `Compass`) e substituído o ícone Sparkles do Feed por `Flame`.
+  6. Em `_store.feed.tsx`: adicionado atalho tátil de fácil acesso para "Comunidades" no cabeçalho do Feed (`h-11 min-h-11 px-3 rounded-full`).
+  7. Em `NoorChatBentoGrid.tsx`: integrado o botão Explorar (`/explorar`), borda invisível e remoção de badges.
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8 (proibição de badges, bordas duras, sparkles), B.20, B.26, B.32; HIG / iFood Design Pattern.
+- **Consequências:** Navegação móvel e desktop 100% harmonizada, sem badges ou bordas redundantes, com fluxo contínuo entre Home, Explorar, Feed e Chat.
+
 ## DEC-411: Resolução de Renderização de Posts: Marca-Texto Cromático, Padronização de Vídeo Único sem Containeritis e Desbloqueio do Feed Global
 - **Data:** 2026-11-01
 - **Contexto:**

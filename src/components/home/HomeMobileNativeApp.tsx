@@ -828,7 +828,8 @@ export function HomeMobileNativeApp({
                 className={cn(
                   sec.layout_variant === "cards_action_grid"
                     ? "grid grid-cols-2 gap-2"
-                    : "grid grid-cols-2 sm:grid-cols-4 gap-2",
+                    /* design-lint-ignore DL-29 reason:"Grade canônica iFood 5 colunas" expiry:"2027-12-31" */
+                    : "grid grid-cols-5 gap-y-3 gap-x-2",
                 )}
               >
                 {activeSecItems.map((it) => (
