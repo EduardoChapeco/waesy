@@ -15,7 +15,7 @@ import { CommunityPostComposer } from "@/components/community/CommunityPostCompo
 import { CommunitySettingsModal } from "@/components/community/CommunitySettingsModal";
 import { CreateCommunityModal } from "@/components/community/CreateCommunityModal";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Users, ArrowLeft, Plus } from "lucide-react";
+import { Users, ArrowLeft, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { buildCommunitySeoHead } from "@/lib/seo/universal-seo-head";

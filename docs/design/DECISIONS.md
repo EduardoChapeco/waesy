@@ -7477,3 +7477,34 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
 - **Consequências:** Zero violações P0/DL-31 nas superfícies tratadas, eliminação do espaço ocioso no mobile, alinhamento rigoroso entre módulos e cabeçalhos uniformemente limpos e minimalistas.
 
 
+
+
+---
+
+### DEC-410 (2026-10-31): Remediação Integral do Ecossistema de Comunidades & Grupos Locais (Threads Pattern & Sheet Apple HIG)
+- **Data:** 2026-10-31
+- **ID da Decisão:** DEC-410
+- **Contexto:** A tela de diretório de comunidades (`_store.comunidades.index.tsx`) e o modal de criação (`CreateCommunityModal.tsx`) apresentavam desvios severos de design e arquitetura: (1) cabeçalho móvel despadronizado com subtítulo que explicava a própria tela e pílulas azuis fluorescentes fora dos tokens de design; (2) violação da regra de ação primária única (dois botões idênticos "Criar Comunidade"); (3) empty state com texto prolixo / AI-smell; (4) quebra silenciosa na criação de comunidade devido a `z.string().datetime()` estrito no schema Zod rejeitando timestamps Postgres com offset (`+00:00`), ausência de barreira de login preventiva (`ActionAuthGuardModal`) e risco de foreign key constraint violada na tabela `public.profiles`.
+- **Decisão Adotada:**
+  1. **Remediação do Schema e BFF (`src/types/community.ts` & `src/services/community.functions.ts`):**
+     - Remoção da restrição rígida de datetime Zod sem offset nos campos `created_at`, `updated_at` e `joined_at`, adotando `z.string().optional()` compatível com retornos PostgREST/Supabase.
+     - Suporte a strings vazias ou nulas em `cover_image_url` e `avatar_url` via `z.string().url().or(z.literal("")).nullable().optional()`.
+     - Sanitização e garantia automática de perfil em `public.profiles` antes da inserção na tabela `communities`, evitando falhas de integridade referencial `communities_owner_id_fkey`.
+     - `createMutation` e `listCommunities` protegidos com parsing defensivo e resiliência total a divergências de schema.
+  2. **Refatoração do Modal de Criação (`CreateCommunityModal.tsx`):**
+     - Bifurcação adaptativa: no mobile (<600px), opera como Bottom Sheet soberano via `Sheet` (`side="bottom"` com `rounded-t-3xl border-t bg-card text-foreground pb-safe max-h-screen`); no desktop, opera como `Dialog` centralizado (`sm:max-w-lg rounded-2xl`).
+     - Integração transparente com `getUserSession()` e `ActionAuthGuardModal` para orientar usuários anônimos ao login de forma elegante antes do preenchimento.
+     - Alvos de toque estritamente nivelados a `h-11 min-h-11` e inputs com fonte mínima de 16px (`text-base sm:text-sm`) para evitar zoom forçado no Safari/iOS.
+     - Presets de capas e seletores de categoria estilizados com tokens neutros e sóbrios, sem gradientes fluorescentes artificiais.
+  3. **Purificação da Rota de Diretório (`_store.comunidades.index.tsx`):**
+     - Cabeçalho minimalista com título "Comunidades", contador discreto e botão primário único de ação no topo.
+     - Trilho de categorias no padrão Threads/TikTok (Segmented Pills com `bg-foreground text-background` para a aba ativa e `bg-muted/50 text-muted-foreground` para inativas).
+     - Empty state honesto e minimalista com botão secundário (`variant="outline"`), sem prolixidade.
+     - Cards de comunidade com casca soberana única (zero containeritis, proporção harmônica de 2 colunas no desktop e lista corrida tátil no mobile).
+  4. **Aprovação nos Gates de CI:**
+     - Aprovação com Exit Code 0 na catraca mecânica de CI (`node scripts/design-lint.mjs --ratchet`), reduzindo o débito visual histórico em 3 violações (de 3.163 para 3.160).
+     - Compilação TypeScript com 0 erros (`npm run typecheck` Exit Code 0).
+     - Build de produção Cloudflare Pages gerado com sucesso (`dist/_worker.js/index.js` e `dist/_routes.json`).
+     - Deploy executado via Wrangler para `https://7929d80a.usewaesy.pages.dev`, `https://usewaesy.pages.dev` e `https://waesy.com.br` (todos respondendo HTTP 200).
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.26, B.34, DL-01 a DL-30, DEC-380, DEC-390 e Apple HIG.
+- **Consequências:** Eliminação do AI-smell e botões azuis fluorescentes na vitrine de comunidades; criação de comunidades 100% funcional, segura e integrada ao guard de autenticação; experiência responsiva idêntica ao Threads/Apple HIG.

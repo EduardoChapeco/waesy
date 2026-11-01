@@ -291,16 +291,16 @@ export const communitySchema = z.object({
   community_type: communityTypeSchema.default("general"),
   cover_mode: communityCoverModeSchema.default("gradient"),
   cover_gradient_preset: communityGradientPresetSchema.default("blue-lime"),
-  cover_image_url: z.string().url().nullable().optional(),
-  avatar_url: z.string().url().nullable().optional(),
+  cover_image_url: z.string().url().or(z.literal("")).nullable().optional(),
+  avatar_url: z.string().url().or(z.literal("")).nullable().optional(),
   privacy: communityPrivacySchema.default("public"),
   rules: z.array(communityRuleSchema).default([]),
   owner_id: z.string().uuid(),
   member_count: z.number().int().min(0).default(1),
   online_count: z.number().int().min(0).default(1),
   status: z.enum(["active", "suspended", "archived"]).default("active"),
-  created_at: z.string().datetime().optional(),
-  updated_at: z.string().datetime().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
 });
 export type Community = z.infer<typeof communitySchema>;
 
@@ -316,8 +316,8 @@ export const upsertCommunitySchema = z.object({
   community_type: communityTypeSchema.default("general"),
   cover_mode: communityCoverModeSchema.default("gradient"),
   cover_gradient_preset: communityGradientPresetSchema.default("blue-lime"),
-  cover_image_url: z.string().url().nullable().optional(),
-  avatar_url: z.string().url().nullable().optional(),
+  cover_image_url: z.string().url().or(z.literal("")).nullable().optional(),
+  avatar_url: z.string().url().or(z.literal("")).nullable().optional(),
   privacy: communityPrivacySchema.default("public"),
   rules: z.array(communityRuleSchema).optional().default([]),
 });
@@ -331,7 +331,7 @@ export const communityMemberSchema = z.object({
   profile_id: z.string().uuid(),
   role: communityMemberRoleSchema.default("member"),
   status: z.enum(["active", "pending", "banned"]).default("active"),
-  joined_at: z.string().datetime(),
+  joined_at: z.string(),
   profile: z
     .object({
       id: z.string().uuid(),

@@ -1,26 +1,26 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-11-01T00:44:10.701Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-11-01T01:48:23.980Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
 | **Total de Arquivos** | 2589 | 2589 | Estável |
-| **Arquivos com Débito** | 703 | 703 | Monitorado |
-| **Total de Violações** | **3163** | **3163** | PASS (<= Baseline) |
+| **Arquivos com Débito** | 701 | 703 | Monitorado |
+| **Total de Violações** | **3160** | **3163** | PASS (<= Baseline) |
 | **P0 (Bloqueia Entrega)** | **0** | 0 | PASS |
-| **P1 (Bloqueia Merge)** | **2443** | 2443 | PASS |
+| **P1 (Bloqueia Merge)** | **2441** | 2443 | PASS |
 | **P2 (Fila de Correção)** | 425 | 425 | Acompanhamento |
-| **P3 (Polimento)** | 295 | 295 | Acompanhamento |
+| **P3 (Polimento)** | 294 | 295 | Acompanhamento |
 
 ## 2. Débito Visual por Módulo
 
 | Módulo | Total | P0 | P1 | P2 | P3 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `components/app` | 1317 | 0 | 929 | 282 | 106 |
+| `components/app` | 1315 | 0 | 927 | 282 | 106 |
 | `routes/workspace` | 622 | 0 | 527 | 32 | 63 |
-| `routes/store` | 352 | 0 | 259 | 49 | 44 |
+| `routes/store` | 351 | 0 | 259 | 49 | 43 |
 | `components/tourism` | 201 | 0 | 174 | 21 | 6 |
 | `routes/admin` | 201 | 0 | 140 | 14 | 47 |
 | `services` | 174 | 0 | 170 | 2 | 2 |
@@ -38,11 +38,11 @@
 
 | Regra | Descrição Sumária | Severidade | Ocorrências |
 | :--- | :--- | :--- | :--- |
-| **DL-14** | Diretriz do Catálogo | `P1` | 1102 |
+| **DL-14** | Diretriz do Catálogo | `P1` | 1100 |
 | **DL-02** | Diretriz do Catálogo | `P1` | 572 |
 | **DL-01** | Diretriz do Catálogo | `P1` | 449 |
 | **DL-07** | Diretriz do Catálogo | `P2` | 410 |
-| **DL-30** | Diretriz do Catálogo | `P3` | 273 |
+| **DL-30** | Diretriz do Catálogo | `P3` | 272 |
 | **DL-03** | Diretriz do Catálogo | `P1` | 159 |
 | **DL-05** | Diretriz do Catálogo | `P1` | 56 |
 | **DL-18** | Diretriz do Catálogo | `P1` | 51 |
