@@ -26,9 +26,15 @@ export interface IFoodSquareCategoryButtonProps {
   id?: string;
   title?: string | null;
   imageUrl?: string | null;
+  iconName?: string | null;
   targetUrl?: string;
   showText?: boolean;
   badgeText?: string | null;
+  bgColor?: string | null;
+  textColor?: string | null;
+  buttonShape?: string | null;
+  gradient?: string | null;
+  shadowMode?: string | null;
   className?: string;
 }
 
@@ -90,19 +96,34 @@ export function IFoodSquareCategoryButton({
   id,
   title,
   imageUrl,
+  iconName,
   targetUrl = "/",
   showText = true,
+  badgeText,
+  bgColor,
+  textColor,
+  buttonShape,
+  gradient,
+  shadowMode,
   className,
 }: IFoodSquareCategoryButtonProps) {
   const [imageError, setImageError] = useState(false);
-  const hasValidImage = Boolean(imageUrl && !imageError && isHealthyImageUrl(imageUrl));
+  const customIconUrl = isHealthyImageUrl(iconName) ? String(iconName).trim() : null;
+  const resolvedImg = imageUrl || customIconUrl;
+  const hasValidImage = Boolean(resolvedImg && !imageError && isHealthyImageUrl(resolvedImg));
 
   // Se não tem imagem válida nem título, omite
-  if (!hasValidImage && !title) {
+  if (!hasValidImage && !title && !iconName) {
     return null;
   }
 
-  const IconComponent = resolveCategoryIcon(title);
+  const IconComponent = resolveCategoryIcon(iconName || title);
+  const shapeClass =
+    buttonShape === "rounded-full"
+      ? "rounded-full"
+      : buttonShape === "rounded-lg"
+        ? "rounded-lg"
+        : "rounded-2xl";
 
   return (
     <Link
@@ -116,10 +137,25 @@ export function IFoodSquareCategoryButton({
       aria-label={title || "Categoria"}
     >
       {/* Squircle com Borda Invisível (Apple HIG / iFood Native Standard) */}
-      <div className="relative aspect-square w-full min-h-11 min-w-11 overflow-hidden rounded-2xl bg-muted/40 group-hover:bg-muted/60 transition-colors flex items-center justify-center border border-transparent p-2">
+      <div
+        style={{
+          ...(bgColor ? { backgroundColor: bgColor } : {}),
+          ...(gradient ? { backgroundImage: gradient } : {}),
+          ...(shadowMode === "md"
+            ? { boxShadow: "0 4px 12px color-mix(in srgb, var(--foreground) 10%, transparent)" }
+            : shadowMode === "lg"
+              ? { boxShadow: "0 10px 24px color-mix(in srgb, var(--foreground) 18%, transparent)" }
+              : {}),
+        }}
+        className={cn(
+          "relative aspect-square w-full min-h-11 min-w-11 overflow-hidden transition-colors flex items-center justify-center border border-transparent p-2",
+          shapeClass,
+          !bgColor && !gradient && "bg-muted/40 group-hover:bg-muted/60",
+        )}
+      >
         {hasValidImage ? (
           <img
-            src={imageUrl!}
+            src={resolvedImg!}
             alt=""
             loading="lazy"
             className="size-full object-contain rounded-xl group-hover:scale-105 transition-transform duration-200 motion-reduce:transition-none"
@@ -127,14 +163,26 @@ export function IFoodSquareCategoryButton({
           />
         ) : (
           <div className="flex items-center justify-center size-full">
-            <IconComponent className="size-6 sm:size-7 text-primary shrink-0 transition-transform group-hover:scale-110 duration-200" />
+            <IconComponent
+              style={textColor ? { color: textColor } : undefined}
+              className="size-6 sm:size-7 text-primary shrink-0 transition-transform group-hover:scale-110 duration-200"
+            />
           </div>
         )}
       </div>
 
+      {badgeText && (
+        <span className="absolute -top-1 -right-1 z-10 px-2 py-1 rounded-full bg-destructive text-destructive-foreground text-3xs font-black uppercase tracking-wider leading-none pointer-events-none">
+          {badgeText}
+        </span>
+      )}
+
       {/* Rótulo Textual Honesto Abaixo do Squircle */}
       {title && showText !== false && (
-        <span className="w-full text-center text-3xs sm:text-2xs font-semibold text-foreground line-clamp-1 px-1 tracking-tight leading-tight">
+        <span
+          style={textColor ? { color: textColor } : undefined}
+          className="w-full text-center text-3xs sm:text-2xs font-semibold text-foreground line-clamp-1 px-1 tracking-tight leading-tight"
+        >
           {title}
         </span>
       )}

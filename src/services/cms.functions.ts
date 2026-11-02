@@ -369,6 +369,45 @@ export const updateThemeSettings = createServerFn({ method: "POST" })
 // Navigation Menus
 // ---------------------------------------------------------------------------
 
+export const CANONICAL_PLATFORM_MENUS = [
+  {
+    id: "canonical-menu-bottom_nav",
+    handle: "bottom_nav",
+    name: "Menu Mobile Inferior (5 Abas Principais)",
+    items: [
+      { id: "nav-mob-1", label: "Chat", url: "/conta/conversas", icon: "MessageCircle", image_url: "", badge_text: "", bg_color: "", text_color: "", is_active: true },
+      { id: "nav-mob-2", label: "Feed", url: "/feed", icon: "Flame", image_url: "", badge_text: "", bg_color: "", text_color: "", is_active: true },
+      { id: "nav-mob-3", label: "Explorar", url: "/explorar", icon: "Compass", image_url: "", badge_text: "", bg_color: "", text_color: "", is_active: true },
+      { id: "nav-mob-4", label: "Compras", url: "/conta/pedidos", icon: "ShoppingBag", image_url: "", badge_text: "", bg_color: "", text_color: "", is_active: true },
+      { id: "nav-mob-5", label: "Perfil", url: "/conta/perfil", action: "profile", icon: "User", image_url: "", badge_text: "", bg_color: "", text_color: "", is_active: true },
+    ],
+  },
+  {
+    id: "canonical-menu-header_nav",
+    handle: "header_nav",
+    name: "Menu Cabeçalho Global (Topo & Sub-Header)",
+    items: [
+      { id: "nav-hdr-1", label: "Início", url: "/", icon: "Home", image_url: "", badge_text: "", is_active: true },
+      { id: "nav-hdr-2", label: "Gastronomia", url: "/gastronomia", icon: "Utensils", image_url: "", badge_text: "", is_active: true },
+      { id: "nav-hdr-3", label: "Mercados", url: "/mercado", icon: "ShoppingCart", image_url: "", badge_text: "", is_active: true },
+      { id: "nav-hdr-4", label: "Turismo", url: "/turismo", icon: "Plane", image_url: "", badge_text: "", is_active: true },
+      { id: "nav-hdr-5", label: "Classificados", url: "/classificados", icon: "Tag", image_url: "", badge_text: "", is_active: true },
+      { id: "nav-hdr-6", label: "Lugares", url: "/diretorio", icon: "MapPin", image_url: "", badge_text: "", is_active: true },
+    ],
+  },
+  {
+    id: "canonical-menu-explore_menu",
+    handle: "explore_menu",
+    name: "Menu de Atalhos da Página Explorar (/explorar)",
+    items: [
+      { id: "nav-exp-1", label: "Ofertas Relâmpago", url: "/ofertas", icon: "Zap", image_url: "", badge_text: "OFERTAS", is_active: true },
+      { id: "nav-exp-2", label: "Mobilidade MotoLink", url: "/mobilidade", icon: "Car", image_url: "", badge_text: "R$ 0,99", is_active: true },
+      { id: "nav-exp-3", label: "Eventos & Ingressos", url: "/eventos", icon: "Calendar", image_url: "", badge_text: "", is_active: true },
+      { id: "nav-exp-4", label: "Vagas de Emprego", url: "/empregos", icon: "Briefcase", image_url: "", badge_text: "", is_active: true },
+    ],
+  },
+];
+
 export const getNavigationMenus = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const db = getServerClient();
@@ -382,7 +421,7 @@ export const getNavigationMenus = createServerFn({ method: "GET" }).handler(asyn
       storeId = rootStore?.id || null;
     }
 
-    if (!storeId) return [];
+    if (!storeId) return CANONICAL_PLATFORM_MENUS;
 
     const { data, error } = await db
       .from("navigation_menus")
@@ -392,21 +431,31 @@ export const getNavigationMenus = createServerFn({ method: "GET" }).handler(asyn
 
     if (error) {
       console.warn("[cms.functions] getNavigationMenus query error:", error);
-      return [];
+      return CANONICAL_PLATFORM_MENUS;
     }
-    return data || [];
+
+    const dbMenus = Array.isArray(data) ? [...data] : [];
+    for (const canonical of CANONICAL_PLATFORM_MENUS) {
+      if (!dbMenus.some((m: any) => m.handle === canonical.handle)) {
+        dbMenus.push({
+          ...canonical,
+          store_id: storeId,
+        });
+      }
+    }
+    return dbMenus;
   } catch (e) {
-    if (e instanceof SupabaseUnconfiguredError) return [];
+    if (e instanceof SupabaseUnconfiguredError) return CANONICAL_PLATFORM_MENUS;
     console.warn("[cms.functions] getNavigationMenus fallback:", e instanceof Error ? e.message : e);
-    return [];
+    return CANONICAL_PLATFORM_MENUS;
   }
 });
 
 export const upsertNavigationMenu = createServerFn({ method: "POST" })
  .validator(
  z.object({
- id: z.string().uuid().optional(),
- handle: z.string().regex(/^[a-z0-9-]+$/),
+ id: z.string().optional(),
+ handle: z.string().regex(/^[a-z0-9_-]+$/i),
  name: z.string().min(1),
  items: z.array(z.any()), // array of link objects
  }),
@@ -416,14 +465,28 @@ export const upsertNavigationMenu = createServerFn({ method: "POST" })
  const db = getServerClient();
 
  const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("No store found");
- const storeData = { id: store_id };
- if (!storeData) throw new Error("No store found");
+ const identity = await getServerIdentity().catch(() => ({ store_id: null }));
+ let storeId = identity?.store_id || null;
+ if (!storeId) {
+  const { resolvePlatformRootStore } = await import("@/services/master.functions");
+  const rootStore = await resolvePlatformRootStore(db);
+  storeId = rootStore?.id || null;
+ }
+ if (!storeId) {
+  const { data: fallbackStore } = await db
+   .from("stores")
+   .select("id")
+   .order("created_at", { ascending: true })
+   .limit(1)
+   .maybeSingle();
+  storeId = fallbackStore?.id || null;
+ }
+ if (!storeId) throw new Error("Nenhuma loja base encontrada para salvar o menu.");
 
+ const normalizedHandle = input.handle.trim().toLowerCase();
  const payload = {
- store_id: storeData.id,
- handle: input.handle,
+ store_id: storeId,
+ handle: normalizedHandle,
  name: input.name,
  items: input.items,
  };
@@ -431,10 +494,21 @@ export const upsertNavigationMenu = createServerFn({ method: "POST" })
  const query = db.from("navigation_menus");
  let result;
 
- if (input.id) {
+ if (input.id && !input.id.startsWith("canonical-")) {
  result = await query.update(payload).eq("id", input.id).select().single();
  } else {
- result = await query.insert(payload).select().single();
+ const { data: existingMenu } = await db
+  .from("navigation_menus")
+  .select("id")
+  .eq("store_id", storeId)
+  .eq("handle", normalizedHandle)
+  .maybeSingle();
+
+ if (existingMenu?.id) {
+  result = await query.update(payload).eq("id", existingMenu.id).select().single();
+ } else {
+  result = await query.insert(payload).select().single();
+ }
  }
 
  if (result.error) throw result.error;

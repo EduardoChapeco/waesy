@@ -41,8 +41,11 @@ export interface HomeSectionItemDTO {
   text_color?: string | null;
   icon_name?: string | null;
   button_shape?: string | null;
+  city_filter?: string | null;
   starts_at?: string | null;
   ends_at?: string | null;
+  auto_archive_at?: string | null;
+  metadata?: Record<string, any> | null;
   is_active: boolean;
   sort_order: number;
   created_at?: string;
@@ -383,7 +386,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: "Clube >",
-        bg_color: "#7c3aed",
+        bg_color: "var(--primary)",
         is_active: true,
         sort_order: 1,
       },
@@ -398,7 +401,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: "Gourmet >",
-        bg_color: "#171717",
+        bg_color: "var(--foreground)",
         is_active: true,
         sort_order: 2,
       },
@@ -413,7 +416,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: "Corridas >",
-        bg_color: "#dc2626",
+        bg_color: "var(--destructive)",
         is_active: true,
         sort_order: 3,
       },
@@ -428,7 +431,7 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         grid_span_x: 1,
         grid_span_y: 1,
         badge_text: "Pedir agora",
-        bg_color: "#ea580c",
+        bg_color: "var(--accent-foreground)",
         is_active: true,
         sort_order: 4,
       },
@@ -879,6 +882,260 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
       },
     ],
   },
+  {
+    id: "canonical-explore-pillars",
+    section_key: "explore_pillars",
+    title: "Pilares da Página Explorar (4 Cartões Principais)",
+    subtitle: "Blocos principais exibidos no topo da página Explorar (/explorar)",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "cards_action_grid",
+    aspect_ratio: "16:9",
+    is_active: true,
+    sort_order: 24,
+    metadata: { category: "explore_core", page: "explorar" },
+    items: [
+      {
+        id: "item-exp-pil-1",
+        section_id: "canonical-explore-pillars",
+        title: "Delivery & Comércio",
+        subtitle: "Restaurantes, supermercados, farmácias e lojas oficiais da cidade.",
+        image_url: null,
+        target_url: "/gastronomia",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Entrega Rápida",
+        icon_name: "Storefront",
+        is_active: true,
+        sort_order: 1,
+      },
+      {
+        id: "item-exp-pil-2",
+        section_id: "canonical-explore-pillars",
+        title: "Classificados",
+        subtitle: "Veículos, imóveis, aluguéis, eletrônicos e desapegos locais.",
+        image_url: null,
+        target_url: "/classificados",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Negócios Locais",
+        icon_name: "Tag",
+        is_active: true,
+        sort_order: 2,
+      },
+      {
+        id: "item-exp-pil-3",
+        section_id: "canonical-explore-pillars",
+        title: "Serviços & Vagas",
+        subtitle: "Autônomos verificados, orçamentos rápidos e mural de empregos.",
+        image_url: null,
+        target_url: "/servicos",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Profissionais",
+        icon_name: "Wrench",
+        is_active: true,
+        sort_order: 3,
+      },
+      {
+        id: "item-exp-pil-4",
+        section_id: "canonical-explore-pillars",
+        title: "Comunidade & Eventos",
+        subtitle: "Feed da cidade, notícias locais, turismo e ingressos oficiais.",
+        image_url: null,
+        target_url: "/feed",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Vida Urbana",
+        icon_name: "Sparkle",
+        is_active: true,
+        sort_order: 4,
+      },
+    ],
+  },
+  {
+    id: "canonical-explore-categories",
+    section_key: "explore_categories",
+    title: "Categorias de Descoberta (Página Explorar)",
+    subtitle: "Atalhos de categorias exibidos na página Explorar (/explorar)",
+    show_title: true,
+    show_subtitle: false,
+    layout_variant: "grid_2d",
+    aspect_ratio: "1:1",
+    is_active: true,
+    sort_order: 25,
+    metadata: { category: "explore_core", page: "explorar" },
+    items: [
+      {
+        id: "item-exp-cat-1",
+        section_id: "canonical-explore-categories",
+        title: "Gastronomia",
+        subtitle: "Restaurantes, lanches e doces",
+        image_url: null,
+        target_url: "/gastronomia",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Popular",
+        icon_name: "ForkKnife",
+        is_active: true,
+        sort_order: 1,
+      },
+      {
+        id: "item-exp-cat-2",
+        section_id: "canonical-explore-categories",
+        title: "Supermercados",
+        subtitle: "Compras do mês e conveniência",
+        image_url: null,
+        target_url: "/mercado",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "ShoppingCart",
+        is_active: true,
+        sort_order: 2,
+      },
+      {
+        id: "item-exp-cat-3",
+        section_id: "canonical-explore-categories",
+        title: "Farmácias",
+        subtitle: "Medicamentos e perfumaria",
+        image_url: null,
+        target_url: "/farmacia",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "FirstAid",
+        is_active: true,
+        sort_order: 3,
+      },
+      {
+        id: "item-exp-cat-4",
+        section_id: "canonical-explore-categories",
+        title: "Veículos",
+        subtitle: "Carros, motos e utilitários",
+        image_url: null,
+        target_url: "/classificados?category=veiculos",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Car",
+        is_active: true,
+        sort_order: 4,
+      },
+      {
+        id: "item-exp-cat-5",
+        section_id: "canonical-explore-categories",
+        title: "Imóveis",
+        subtitle: "Casas, apartamentos e terrenos",
+        image_url: null,
+        target_url: "/classificados?category=imoveis",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Buildings",
+        is_active: true,
+        sort_order: 5,
+      },
+      {
+        id: "item-exp-cat-6",
+        section_id: "canonical-explore-categories",
+        title: "Turismo & Viagens",
+        subtitle: "Excursões, pacotes e lazer",
+        image_url: null,
+        target_url: "/turismo",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "AirplaneTilt",
+        is_active: true,
+        sort_order: 6,
+      },
+      {
+        id: "item-exp-cat-7",
+        section_id: "canonical-explore-categories",
+        title: "Serviços Locais",
+        subtitle: "Manutenção, reformas e aulas",
+        image_url: null,
+        target_url: "/servicos",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Wrench",
+        is_active: true,
+        sort_order: 7,
+      },
+      {
+        id: "item-exp-cat-8",
+        section_id: "canonical-explore-categories",
+        title: "Eventos & Shows",
+        subtitle: "Ingressos e agenda cultural",
+        image_url: null,
+        target_url: "/eventos",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Ticket",
+        is_active: true,
+        sort_order: 8,
+      },
+      {
+        id: "item-exp-cat-9",
+        section_id: "canonical-explore-categories",
+        title: "Vagas de Emprego",
+        subtitle: "Oportunidades na região",
+        image_url: null,
+        target_url: "/empregos",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Briefcase",
+        is_active: true,
+        sort_order: 9,
+      },
+      {
+        id: "item-exp-cat-10",
+        section_id: "canonical-explore-categories",
+        title: "Guia Comercial",
+        subtitle: "Empresas e contatos verificados",
+        image_url: null,
+        target_url: "/diretorio",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Compass",
+        is_active: true,
+        sort_order: 10,
+      },
+    ],
+  },
+  {
+    id: "canonical-promo-strip-timer",
+    section_key: "promo_strip_timer",
+    title: "Faixa com Cronômetro (Black Friday / Oferta Relâmpago)",
+    subtitle: "Faixa promocional com contagem regressiva automática e auto-ocultação",
+    show_title: true,
+    show_subtitle: true,
+    layout_variant: "slim_slider",
+    aspect_ratio: "auto",
+    is_active: false,
+    sort_order: 0,
+    metadata: { category: "ifood_core", timer_enabled: true },
+    items: [],
+  },
 ];
 
 // Chaves canônicas ativas por padrão no novo design SuperApp / iFood
@@ -893,6 +1150,8 @@ const CANONICAL_DEFAULT_ACTIVE_KEYS = new Set([
   "filter_chips_bar",
   "stores_feed_list",
   "chat_noor_bento",
+  "explore_pillars",
+  "explore_categories",
 ]);
 
 function mergeCanonicalWithDbSections(
@@ -912,7 +1171,12 @@ function mergeCanonicalWithDbSections(
     const canonical = byKey.get(sec.section_key);
     const dbItemsForSec = itemsMap.get(sec.id) || [];
     const resolvedItems =
-      dbItemsForSec.length > 0 ? dbItemsForSec : canonical?.items || [];
+      dbItemsForSec.length > 0
+        ? dbItemsForSec
+        : (canonical?.items || []).map((it) => ({
+            ...it,
+            section_id: sec.id,
+          }));
 
     byKey.set(sec.section_key, {
       id: sec.id,
@@ -974,7 +1238,9 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
       const itemsMap = new Map<string, HomeSectionItemDTO[]>();
       (dbItems || []).forEach((item: any) => {
         if (item.ends_at && item.ends_at < now) return;
+        if (item.auto_archive_at && item.auto_archive_at < now) return;
         if (item.starts_at && item.starts_at > now) return;
+        if (item.city_filter && city && item.city_filter !== "all" && item.city_filter !== city) return;
         const hasVisualOrText =
           Boolean(item.title?.trim()) ||
           Boolean(item.icon_name?.trim()) ||
@@ -1001,8 +1267,11 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
           text_color: item.text_color || null,
           icon_name: item.icon_name || null,
           button_shape: item.button_shape || "squircle",
+          city_filter: item.city_filter || null,
           starts_at: item.starts_at || null,
           ends_at: item.ends_at || null,
+          auto_archive_at: item.auto_archive_at || null,
+          metadata: item.metadata || null,
           is_active: item.is_active !== false,
           sort_order: item.sort_order ?? 0,
           created_at: item.created_at,
@@ -1016,6 +1285,7 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
       return merged.filter((sec) => {
         if (!sec.is_active) return false;
         if (sec.ends_at && sec.ends_at < now) return false;
+        if (sec.auto_archive_at && sec.auto_archive_at < now) return false;
         if (sec.starts_at && sec.starts_at > now) return false;
         if (sec.city_filter && city && sec.city_filter !== "all" && sec.city_filter !== city) return false;
         return true;
@@ -1069,8 +1339,11 @@ export const listAdminHomePageSections = createServerFn({ method: "GET" })
           text_color: item.text_color || null,
           icon_name: item.icon_name || null,
           button_shape: item.button_shape || "squircle",
+          city_filter: item.city_filter || null,
           starts_at: item.starts_at || null,
           ends_at: item.ends_at || null,
+          auto_archive_at: item.auto_archive_at || null,
+          metadata: item.metadata || null,
           is_active: item.is_active !== false,
           sort_order: item.sort_order ?? 0,
           created_at: item.created_at,
@@ -1085,6 +1358,133 @@ export const listAdminHomePageSections = createServerFn({ method: "GET" })
       return CANONICAL_DEFAULT_HOME_SECTIONS;
     }
   });
+
+export function ensureCanonicalHomeSections(rawSections: any[]): HomePageSectionDTO[] {
+  const itemsMap = new Map<string, HomeSectionItemDTO[]>();
+  for (const sec of rawSections || []) {
+    if (Array.isArray(sec?.items) && sec.items.length > 0) {
+      itemsMap.set(sec.id, sec.items);
+    }
+  }
+  return mergeCanonicalWithDbSections(rawSections || [], itemsMap);
+}
+
+// ── HELPER: MATERIALIZAÇÃO ATÔMICA DE SEÇÃO E ITENS CANÔNICOS SEM PERDA DE IRMÃOS (AGENTS.md B.51) ──
+export async function ensureCanonicalHomeSectionMaterialized(
+  supabase: any,
+  sectionIdOrKey: string,
+  targetCanonicalItemId?: string,
+): Promise<{ realSectionId: string; resolvedItemId?: string }> {
+  let canonicalSection = CANONICAL_DEFAULT_HOME_SECTIONS.find(
+    (s) => s.id === sectionIdOrKey || s.section_key === sectionIdOrKey,
+  );
+
+  if (!canonicalSection && targetCanonicalItemId?.startsWith("item-")) {
+    canonicalSection = CANONICAL_DEFAULT_HOME_SECTIONS.find((s) =>
+      s.items.some((it) => it.id === targetCanonicalItemId),
+    );
+  }
+
+  let realSectionId = sectionIdOrKey;
+
+  if (sectionIdOrKey.startsWith("canonical-") || canonicalSection) {
+    const sectionKeyToFind = canonicalSection?.section_key || sectionIdOrKey.replace(/^canonical-/, "").replace(/-/g, "_");
+    const { data: existingSec } = !sectionIdOrKey.startsWith("canonical-")
+      ? await supabase.from("home_page_sections").select("id, section_key").eq("id", sectionIdOrKey).maybeSingle()
+      : await supabase.from("home_page_sections").select("id, section_key").eq("section_key", sectionKeyToFind).maybeSingle();
+
+    if (existingSec?.id) {
+      realSectionId = existingSec.id;
+      if (!canonicalSection) {
+        canonicalSection = CANONICAL_DEFAULT_HOME_SECTIONS.find((s) => s.section_key === existingSec.section_key);
+      }
+    } else if (canonicalSection) {
+      const { data: createdSec, error: createSecErr } = await supabase
+        .from("home_page_sections")
+        .insert({
+          section_key: canonicalSection.section_key,
+          title: canonicalSection.title || null,
+          subtitle: canonicalSection.subtitle || null,
+          show_title: Boolean(canonicalSection.show_title),
+          show_subtitle: Boolean(canonicalSection.show_subtitle),
+          layout_variant: canonicalSection.layout_variant,
+          aspect_ratio: canonicalSection.aspect_ratio,
+          is_active: canonicalSection.is_active !== false,
+          sort_order: canonicalSection.sort_order ?? 0,
+          city_filter: canonicalSection.city_filter || null,
+          metadata: { ...(canonicalSection.metadata || {}), materialized_from_canonical: true },
+          updated_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+      if (createSecErr) throw createSecErr;
+      realSectionId = createdSec.id;
+    }
+  } else {
+    const { data: dbSec } = await supabase
+      .from("home_page_sections")
+      .select("id, section_key")
+      .eq("id", sectionIdOrKey)
+      .maybeSingle();
+    if (dbSec?.section_key) {
+      canonicalSection = CANONICAL_DEFAULT_HOME_SECTIONS.find((s) => s.section_key === dbSec.section_key);
+    }
+  }
+
+  let resolvedItemId = targetCanonicalItemId && !targetCanonicalItemId.startsWith("item-") ? targetCanonicalItemId : undefined;
+
+  if (canonicalSection && canonicalSection.items.length > 0 && !realSectionId.startsWith("canonical-")) {
+    const { data: existingItems } = await supabase
+      .from("home_section_items")
+      .select("id, title, sort_order")
+      .eq("section_id", realSectionId)
+      .order("sort_order", { ascending: true });
+
+    if (!existingItems || existingItems.length === 0) {
+      for (const cItem of canonicalSection.items) {
+        const { data: insertedItem, error: itemErr } = await supabase
+          .from("home_section_items")
+          .insert({
+            section_id: realSectionId,
+            title: cItem.title || null,
+            subtitle: cItem.subtitle || null,
+            image_url: cItem.image_url || "",
+            image_mobile_url: cItem.image_mobile_url || null,
+            image_desktop_url: cItem.image_desktop_url || null,
+            target_url: cItem.target_url || "/",
+            show_text: Boolean(cItem.show_text),
+            grid_span_x: cItem.grid_span_x || 1,
+            grid_span_y: cItem.grid_span_y || 1,
+            badge_text: cItem.badge_text || null,
+            bg_color: cItem.bg_color || null,
+            text_color: cItem.text_color || null,
+            icon_name: cItem.icon_name || null,
+            button_shape: cItem.button_shape || "squircle",
+            is_active: cItem.is_active !== false,
+            sort_order: cItem.sort_order ?? 0,
+            updated_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+        if (!itemErr && insertedItem?.id && cItem.id === targetCanonicalItemId) {
+          resolvedItemId = insertedItem.id;
+        }
+      }
+    } else if (targetCanonicalItemId?.startsWith("item-")) {
+      const targetCanonical = canonicalSection.items.find((it) => it.id === targetCanonicalItemId);
+      if (targetCanonical) {
+        const match = existingItems.find(
+          (dbIt: any) => dbIt.sort_order === targetCanonical.sort_order || dbIt.title === targetCanonical.title,
+        );
+        if (match?.id) {
+          resolvedItemId = match.id;
+        }
+      }
+    }
+  }
+
+  return { realSectionId, resolvedItemId };
+}
 
 // ── 3. UPSERT DE SEÇÃO DA HOME ──
 const UpsertSectionSchema = z.object({
@@ -1217,6 +1617,15 @@ export const deleteHomePageSection = createServerFn({ method: "POST" })
     const session = await getUserSession();
     if (!session) throw new Error("Não autenticado.");
 
+    if (id.startsWith("canonical-")) {
+      const { realSectionId } = await ensureCanonicalHomeSectionMaterialized(supabase, id);
+      await supabase
+        .from("home_page_sections")
+        .update({ is_active: false, updated_at: new Date().toISOString() })
+        .eq("id", realSectionId);
+      return { success: true };
+    }
+
     const { error } = await supabase.from("home_page_sections").delete().eq("id", id);
     if (error) throw error;
     return { success: true };
@@ -1228,7 +1637,7 @@ const UpsertItemSchema = z.object({
   section_id: z.string().min(1),
   title: z.string().optional().nullable(),
   subtitle: z.string().optional().nullable(),
-  image_url: z.string().min(1, "URL da imagem é obrigatória"),
+  image_url: z.string().optional().nullable(),
   image_mobile_url: z.string().optional().nullable(),
   image_desktop_url: z.string().optional().nullable(),
   target_url: z.string().default("/"),
@@ -1240,8 +1649,11 @@ const UpsertItemSchema = z.object({
   text_color: z.string().optional().nullable(),
   icon_name: z.string().optional().nullable(),
   button_shape: z.string().optional().nullable(),
+  city_filter: z.string().optional().nullable(),
   starts_at: z.string().optional().nullable(),
   ends_at: z.string().optional().nullable(),
+  auto_archive_at: z.string().optional().nullable(),
+  metadata: z.record(z.any()).optional().nullable(),
   is_active: z.boolean().default(true),
   sort_order: z.number().int().default(0),
 });
@@ -1270,17 +1682,26 @@ export const upsertHomeSectionItem = createServerFn({ method: "POST" })
       text_color,
       icon_name,
       button_shape,
+      city_filter,
       starts_at,
       ends_at,
+      auto_archive_at,
+      metadata,
       is_active,
       sort_order,
     } = payload;
 
-    const row: any = {
+    const { realSectionId, resolvedItemId } = await ensureCanonicalHomeSectionMaterialized(
+      supabase,
       section_id,
+      id,
+    );
+
+    const row: any = {
+      section_id: realSectionId,
       title: title || null,
       subtitle: subtitle || null,
-      image_url,
+      image_url: image_url || image_desktop_url || image_mobile_url || "",
       image_mobile_url: image_mobile_url || null,
       image_desktop_url: image_desktop_url || null,
       target_url: target_url || "/",
@@ -1292,18 +1713,21 @@ export const upsertHomeSectionItem = createServerFn({ method: "POST" })
       text_color: text_color || null,
       icon_name: icon_name || null,
       button_shape: button_shape || "squircle",
+      city_filter: city_filter || null,
       starts_at: starts_at ? new Date(starts_at).toISOString() : null,
       ends_at: ends_at ? new Date(ends_at).toISOString() : null,
+      auto_archive_at: auto_archive_at ? new Date(auto_archive_at).toISOString() : null,
+      metadata: metadata || {},
       is_active: Boolean(is_active),
       sort_order: Number(sort_order) || 0,
       updated_at: new Date().toISOString(),
     };
 
-    if (id) {
+    if (resolvedItemId) {
       const { data, error } = await supabase
         .from("home_section_items")
         .update(row)
-        .eq("id", id)
+        .eq("id", resolvedItemId)
         .select()
         .single();
       if (error) throw error;
@@ -1327,6 +1751,24 @@ export const deleteHomeSectionItem = createServerFn({ method: "POST" })
     const session = await getUserSession();
     if (!session) throw new Error("Não autenticado.");
 
+    if (id.startsWith("item-")) {
+      const canonicalSec = CANONICAL_DEFAULT_HOME_SECTIONS.find((s) =>
+        s.items.some((it) => it.id === id),
+      );
+      if (canonicalSec) {
+        const { resolvedItemId } = await ensureCanonicalHomeSectionMaterialized(
+          supabase,
+          canonicalSec.id,
+          id,
+        );
+        if (resolvedItemId) {
+          const { error } = await supabase.from("home_section_items").delete().eq("id", resolvedItemId);
+          if (error) throw error;
+        }
+      }
+      return { success: true };
+    }
+
     const { error } = await supabase.from("home_section_items").delete().eq("id", id);
     if (error) throw error;
     return { success: true };
@@ -1341,10 +1783,12 @@ export const reorderHomeSections = createServerFn({ method: "POST" })
     if (!session) throw new Error("Não autenticado.");
 
     for (let index = 0; index < sectionIds.length; index++) {
+      const rawId = sectionIds[index];
+      const { realSectionId } = await ensureCanonicalHomeSectionMaterialized(supabase, rawId);
       await supabase
         .from("home_page_sections")
         .update({ sort_order: index, updated_at: new Date().toISOString() })
-        .eq("id", sectionIds[index]);
+        .eq("id", realSectionId);
     }
     return { success: true };
   });
@@ -1358,10 +1802,27 @@ export const reorderHomeSectionItems = createServerFn({ method: "POST" })
     if (!session) throw new Error("Não autenticado.");
 
     for (let index = 0; index < itemIds.length; index++) {
-      await supabase
-        .from("home_section_items")
-        .update({ sort_order: index, updated_at: new Date().toISOString() })
-        .eq("id", itemIds[index]);
+      const rawItemId = itemIds[index];
+      let targetId = rawItemId;
+      if (rawItemId.startsWith("item-")) {
+        const canonicalSec = CANONICAL_DEFAULT_HOME_SECTIONS.find((s) =>
+          s.items.some((it) => it.id === rawItemId),
+        );
+        if (canonicalSec) {
+          const { resolvedItemId } = await ensureCanonicalHomeSectionMaterialized(
+            supabase,
+            canonicalSec.id,
+            rawItemId,
+          );
+          if (resolvedItemId) targetId = resolvedItemId;
+        }
+      }
+      if (!targetId.startsWith("item-")) {
+        await supabase
+          .from("home_section_items")
+          .update({ sort_order: index, updated_at: new Date().toISOString() })
+          .eq("id", targetId);
+      }
     }
     return { success: true };
   });

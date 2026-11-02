@@ -188,9 +188,13 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
   });
 
   const bottomNavMenu = (navMenus || []).find((m: any) => m.handle === "bottom_nav");
-  const cmsItems: any[] = (bottomNavMenu?.items || []).filter(
-    (item: any) => item && item.is_active !== false && item.url
-  );
+  const nowMs = Date.now();
+  const cmsItems: any[] = (bottomNavMenu?.items || []).filter((item: any) => {
+    if (!item || item.is_active === false || !item.url) return false;
+    if (item.starts_at && new Date(item.starts_at).getTime() > nowMs) return false;
+    if (item.ends_at && new Date(item.ends_at).getTime() < nowMs) return false;
+    return true;
+  });
 
   // ── Scroll-Aware Auto-Hide / Reveal ──────────────────────────────────────
   const [isNavHiddenByScroll, setIsNavHiddenByScroll] = useState(false);
@@ -434,25 +438,50 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     );
                   }
 
-                  const badgeVal = isPurchasesItem ? purchasesBadgeCount : item.badge;
+                  const badgeVal = isPurchasesItem
+                    ? purchasesBadgeCount
+                    : item.badge_text || item.badge;
+                  const customIconUrl =
+                    typeof item.image_url === "string" &&
+                    (item.image_url.startsWith("http") || item.image_url.startsWith("/"))
+                      ? item.image_url.trim()
+                      : typeof item.icon === "string" &&
+                          (item.icon.startsWith("http") || item.icon.startsWith("/"))
+                        ? item.icon.trim()
+                        : null;
+                  const resolvedUrl =
+                    isPurchasesItem && !isAuthenticated ? "/entrar" : item.url;
 
                   return (
                     <Link
                       key={item.id || item.url || idx}
-                      to={item.url}
+                      to={resolvedUrl}
                       target={item.open_in_new_tab ? "_blank" : undefined}
                       rel={item.open_in_new_tab ? "noopener noreferrer" : undefined}
                       aria-label={item.label}
+                      style={{
+                        ...(item.bg_color ? { backgroundColor: item.bg_color } : {}),
+                        ...(item.text_color ? { color: item.text_color } : {}),
+                      }}
                       className={cn(
-                        "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        "h-12 min-h-11 px-2 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                         isItemActive
                           ? "text-foreground font-bold"
                           : "text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <div className="relative">
-                        <ResolvedIcon className="size-5" strokeWidth={isItemActive ? 2.5 : 1.75} />
-                        {Boolean(badgeVal && Number(badgeVal) > 0) && (
+                      <div className="relative flex items-center justify-center">
+                        {customIconUrl ? (
+                          <img
+                            src={customIconUrl}
+                            alt=""
+                            className="size-5 object-contain"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <ResolvedIcon className="size-5" strokeWidth={isItemActive ? 2.5 : 1.75} />
+                        )}
+                        {Boolean(badgeVal && String(badgeVal) !== "0") && (
                           <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-black flex items-center justify-center">
                             {badgeVal}
                           </span>

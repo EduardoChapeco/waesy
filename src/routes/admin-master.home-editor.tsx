@@ -47,25 +47,32 @@ import {
   deleteHomeSectionItem,
   reorderHomeSections,
   reorderHomeSectionItems,
+  isHealthyImageUrl,
   type HomePageSectionDTO,
   type HomeSectionItemDTO,
   type HomeLayoutVariant,
   type HomeAspectRatio,
 } from "@/services/admin-home-cms.functions";
+import { getNavigationMenus, upsertNavigationMenu } from "@/services/cms.functions";
+import { openOrCreatePageExperienceDocument } from "@/services/surface-cms.functions";
+import { CANONICAL_CITIES } from "@/lib/constants/cities";
 import { MetamorphicBannerSlider } from "@/components/home/MetamorphicBannerSlider";
 import { NoorNativeCategoryDock } from "@/components/home/NoorNativeCategoryDock";
 import { BentoGridTetris } from "@/components/home/BentoGridTetris";
 import { IFoodSquareCategoryButton } from "@/components/home/IFoodSquareCategoryButton";
 
 export const Route = createFileRoute("/admin-master/home-editor")({
-  head: () => ({ meta: [{ title: "Home Page Builder (CMS) | Admin Master" }] }),
+  head: () => ({ meta: [{ title: "CMS Página por Página & Home Builder | Admin Master" }] }),
   loader: async () => {
     try {
-      const sections = await listAdminHomePageSections().catch(() => []);
-      return { sections };
+      const [sections, menus] = await Promise.all([
+        listAdminHomePageSections().catch(() => []),
+        getNavigationMenus().catch(() => []),
+      ]);
+      return { sections, menus };
     } catch (err) {
       console.error("[loader:admin-master.home-editor] Erro:", err);
-      return { sections: [] };
+      return { sections: [], menus: [] };
     }
   },
   component: AdminMasterHomeEditorPage,
@@ -96,6 +103,9 @@ const ASPECT_RATIOS: Array<{ id: HomeAspectRatio; label: string; ratioDesc: stri
 
 export const CANONICAL_PRESETS = [
   { key: "chat_noor_bento", title: "Menu Noor Chat (Tetris Bento Grid)", layout: "bento_grid", aspect: "auto", desc: "Grade modular de 3 linhas do chat (3 botões em cima, 2 embaixo sendo 1 duplo, chamada de mobilidade)" },
+  { key: "explore_pillars", title: "Pilares da Página Explorar (4 Cartões)", layout: "cards_action_grid", aspect: "16:9", desc: "Os 4 cartões principais do topo da página Explorar (/explorar)" },
+  { key: "explore_categories", title: "Categorias da Página Explorar (Grade 5x2)", layout: "grid_2d", aspect: "1:1", desc: "Atalhos de categorias exibidos na página Explorar (/explorar)" },
+  { key: "promo_strip_timer", title: "Faixa com Cronômetro (Black Friday / Ofertas)", layout: "slim_slider", aspect: "auto", desc: "Faixa promocional com contagem regressiva e auto-ocultação" },
   { key: "hero_banners", title: "Destaques Principais", layout: "carousel", aspect: "ifood", desc: "Carrossel panorâmico principal com paginação em traços" },
   { key: "quick_categories_ifood", title: "Categorias Principais", layout: "horizontal_scroll", aspect: "1:1", desc: "Dock 5x2 de categorias com 10 atalhos" },
   { key: "feature_mini_banners", title: "No Waesy também tem", layout: "carousel", aspect: "4:5", desc: "Mini-banners verticais de vantagens e serviços" },
@@ -115,12 +125,21 @@ export const CANONICAL_PRESETS = [
 function AdminMasterHomeEditorPage() {
   const loaderData = (Route.useLoaderData?.() as any) || {};
   const [sections, setSections] = useState<HomePageSectionDTO[]>(loaderData.sections || []);
+  const [menus, setMenus] = useState<any[]>(loaderData.menus || []);
+  const [activePageContext, setActivePageContext] = useState<
+    "all" | "home" | "explorar" | "chat_noor" | "menus_globais"
+  >("all");
+  const [selectedMenuHandle, setSelectedMenuHandle] = useState<string>("bottom_nav");
+  const [isSavingMenu, setIsSavingMenu] = useState(false);
+  const [isOpeningOmniBuilder, setIsOpeningOmniBuilder] = useState(false);
+
   const [isSectionDialogOpen, setIsSectionDialogOpen] = useState(false);
   const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [showLivePreview, setShowLivePreview] = useState(false);
   const [filterQuery, setFilterQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [sectionViewMode, setSectionViewMode] = useState<"cards" | "sheet">("cards");
 
 
   // Estados de edição de Seção
@@ -133,6 +152,10 @@ function AdminMasterHomeEditorPage() {
   const [secLayout, setSecLayout] = useState<HomeLayoutVariant>("carousel");
   const [secAspect, setSecAspect] = useState<HomeAspectRatio>("ifood");
   const [secIsActive, setSecIsActive] = useState(true);
+  const [secCityFilter, setSecCityFilter] = useState("all");
+  const [secStartsAt, setSecStartsAt] = useState("");
+  const [secEndsAt, setSecEndsAt] = useState("");
+  const [secAutoArchiveAt, setSecAutoArchiveAt] = useState("");
 
   // Estados de edição de Item
   const [selectedSectionForNewItem, setSelectedSectionForNewItem] = useState<string | null>(null);
@@ -143,6 +166,11 @@ function AdminMasterHomeEditorPage() {
   const [itemImageDesktopUrl, setItemImageDesktopUrl] = useState("");
   const [itemImageMobileUrl, setItemImageMobileUrl] = useState("");
   const [itemBgColor, setItemBgColor] = useState("");
+  const [itemTextColor, setItemTextColor] = useState("");
+  const [itemButtonShape, setItemButtonShape] = useState("squircle");
+  const [itemGradient, setItemGradient] = useState("");
+  const [itemShadowMode, setItemShadowMode] = useState("none");
+  const [itemCityFilter, setItemCityFilter] = useState("all");
   const [itemIconName, setItemIconName] = useState("");
   const [itemTargetUrl, setItemTargetUrl] = useState("/");
   const [itemShowText, setItemShowText] = useState(false);
@@ -151,16 +179,76 @@ function AdminMasterHomeEditorPage() {
   const [itemSpanY, setItemSpanY] = useState(1);
   const [itemStartsAt, setItemStartsAt] = useState("");
   const [itemEndsAt, setItemEndsAt] = useState("");
+  const [itemAutoArchiveAt, setItemAutoArchiveAt] = useState("");
   const [itemIsActive, setItemIsActive] = useState(true);
 
   const [isSaving, setIsSaving] = useState(false);
 
   const refreshSections = async () => {
     try {
-      const data = await listAdminHomePageSections();
+      const [data, navData] = await Promise.all([
+        listAdminHomePageSections(),
+        getNavigationMenus().catch(() => []),
+      ]);
       setSections(data || []);
+      if (navData && navData.length > 0) setMenus(navData);
     } catch (e: any) {
       toast.error("Erro ao sincronizar seções: " + e.message);
+    }
+  };
+
+  const activeMenuObj = menus.find((m) => m.handle === selectedMenuHandle) || {
+    handle: selectedMenuHandle,
+    name:
+      selectedMenuHandle === "bottom_nav"
+        ? "Menu Mobile Inferior (5 Abas Principais)"
+        : selectedMenuHandle === "header_nav"
+          ? "Menu Cabeçalho Global (Topo)"
+          : "Menu de Atalhos da Página Explorar",
+    items: [],
+  };
+
+  const updateActiveMenuItems = (newItems: any[]) => {
+    setMenus((prev) => {
+      const exists = prev.some((m) => m.handle === selectedMenuHandle);
+      if (exists) {
+        return prev.map((m) => (m.handle === selectedMenuHandle ? { ...m, items: newItems } : m));
+      }
+      return [...prev, { ...activeMenuObj, items: newItems }];
+    });
+  };
+
+  const handleSaveActiveMenu = async () => {
+    setIsSavingMenu(true);
+    try {
+      await upsertNavigationMenu({
+        data: {
+          id: activeMenuObj.id,
+          handle: activeMenuObj.handle,
+          name: activeMenuObj.name || activeMenuObj.handle,
+          items: activeMenuObj.items || [],
+        },
+      });
+      toast.success(`Menu "${activeMenuObj.name}" salvo e publicado!`);
+      await refreshSections();
+    } catch (e: any) {
+      toast.error("Falha ao salvar menu: " + e.message);
+    } finally {
+      setIsSavingMenu(false);
+    }
+  };
+
+  const handleOpenOmniBuilderForPage = async (pageSlug: string, pageTitle: string) => {
+    setIsOpeningOmniBuilder(true);
+    try {
+      const res = await openOrCreatePageExperienceDocument({
+        data: { pageSlug, pageTitle },
+      });
+      window.location.href = `/workspace/builder/${res.documentId}/editor`;
+    } catch (e: any) {
+      toast.error(e.message || "Falha ao abrir Omni Builder.");
+    } finally {
+      setIsOpeningOmniBuilder(false);
     }
   };
 
@@ -175,6 +263,10 @@ function AdminMasterHomeEditorPage() {
     setSecLayout("carousel");
     setSecAspect("ifood");
     setSecIsActive(true);
+    setSecCityFilter("all");
+    setSecStartsAt("");
+    setSecEndsAt("");
+    setSecAutoArchiveAt("");
     setIsSectionDialogOpen(true);
   };
 
@@ -188,6 +280,10 @@ function AdminMasterHomeEditorPage() {
     setSecLayout(sec.layout_variant);
     setSecAspect(sec.aspect_ratio);
     setSecIsActive(sec.is_active);
+    setSecCityFilter(sec.city_filter || "all");
+    setSecStartsAt(sec.starts_at ? sec.starts_at.slice(0, 16) : "");
+    setSecEndsAt(sec.ends_at ? sec.ends_at.slice(0, 16) : "");
+    setSecAutoArchiveAt(sec.auto_archive_at ? sec.auto_archive_at.slice(0, 16) : "");
     setIsSectionDialogOpen(true);
   };
 
@@ -210,6 +306,10 @@ function AdminMasterHomeEditorPage() {
           aspect_ratio: secAspect,
           is_active: secIsActive,
           sort_order: editingSection?.sort_order ?? sections.length,
+          city_filter: secCityFilter === "all" ? null : secCityFilter,
+          starts_at: secStartsAt ? new Date(secStartsAt).toISOString() : null,
+          ends_at: secEndsAt ? new Date(secEndsAt).toISOString() : null,
+          auto_archive_at: secAutoArchiveAt ? new Date(secAutoArchiveAt).toISOString() : null,
         },
       });
       toast.success(editingSection ? "Seção atualizada!" : "Seção criada com sucesso!");
@@ -242,14 +342,20 @@ function AdminMasterHomeEditorPage() {
     setItemImageDesktopUrl("");
     setItemImageMobileUrl("");
     setItemBgColor("");
+    setItemTextColor("");
+    setItemButtonShape("squircle");
+    setItemGradient("");
+    setItemShadowMode("none");
+    setItemCityFilter("all");
     setItemIconName("");
     setItemTargetUrl("/");
-    setItemShowText(false);
+    setItemShowText(true);
     setItemBadgeText("");
     setItemSpanX(1);
     setItemSpanY(1);
     setItemStartsAt("");
     setItemEndsAt("");
+    setItemAutoArchiveAt("");
     setItemIsActive(true);
     setIsItemDialogOpen(true);
   };
@@ -263,6 +369,11 @@ function AdminMasterHomeEditorPage() {
     setItemImageDesktopUrl(item.image_desktop_url || "");
     setItemImageMobileUrl(item.image_mobile_url || "");
     setItemBgColor(item.bg_color || "");
+    setItemTextColor(item.text_color || "");
+    setItemButtonShape(item.button_shape || "squircle");
+    setItemGradient(item.metadata?.gradient || "");
+    setItemShadowMode(item.metadata?.shadow_mode || "none");
+    setItemCityFilter(item.city_filter || "all");
     setItemIconName(item.icon_name || "");
     setItemTargetUrl(item.target_url);
     setItemShowText(item.show_text);
@@ -271,14 +382,16 @@ function AdminMasterHomeEditorPage() {
     setItemSpanY(item.grid_span_y || 1);
     setItemStartsAt(item.starts_at ? item.starts_at.slice(0, 16) : "");
     setItemEndsAt(item.ends_at ? item.ends_at.slice(0, 16) : "");
+    setItemAutoArchiveAt(item.auto_archive_at ? item.auto_archive_at.slice(0, 16) : "");
     setItemIsActive(item.is_active);
     setIsItemDialogOpen(true);
   };
 
   const handleSaveItem = async () => {
     if (!selectedSectionForNewItem) return;
-    if (!itemImageUrl.trim()) {
-      toast.error("Selecione ou envie uma imagem válida.");
+    const resolvedImg = itemImageUrl.trim() || itemImageDesktopUrl.trim() || itemImageMobileUrl.trim();
+    if (!resolvedImg && !itemTitle.trim() && !itemIconName.trim()) {
+      toast.error("Informe pelo menos um título, ícone ou imagem para o card/botão.");
       return;
     }
     setIsSaving(true);
@@ -292,13 +405,23 @@ function AdminMasterHomeEditorPage() {
           section_id: selectedSectionForNewItem,
           title: itemTitle.trim() || null,
           subtitle: itemSubtitle.trim() || null,
-          image_url: itemImageUrl.trim(),
+          image_url: resolvedImg || "",
           image_desktop_url: itemImageDesktopUrl.trim() || null,
           image_mobile_url: itemImageMobileUrl.trim() || null,
           bg_color: itemBgColor.trim() || null,
+          text_color: itemTextColor.trim() || null,
+          button_shape: itemButtonShape || "squircle",
+          city_filter: itemCityFilter === "all" ? null : itemCityFilter,
           icon_name: itemIconName.trim() || null,
           starts_at: itemStartsAt ? new Date(itemStartsAt).toISOString() : null,
           ends_at: itemEndsAt ? new Date(itemEndsAt).toISOString() : null,
+          auto_archive_at: itemAutoArchiveAt ? new Date(itemAutoArchiveAt).toISOString() : null,
+          metadata: {
+            ...(editingItem?.metadata || {}),
+            gradient: itemGradient.trim() || null,
+            shadow_mode: itemShadowMode === "none" ? null : itemShadowMode,
+            timer_expires_at: itemEndsAt ? new Date(itemEndsAt).toISOString() : null,
+          },
           target_url: itemTargetUrl.trim() || "/",
           show_text: itemShowText,
           grid_span_x: itemSpanX,
@@ -308,7 +431,7 @@ function AdminMasterHomeEditorPage() {
           sort_order: editingItem?.sort_order ?? currentItemsCount,
         },
       });
-      toast.success(editingItem ? "Card atualizado!" : "Novo card cadastrado!");
+      toast.success(editingItem ? "Card/Botão atualizado!" : "Novo card/botão cadastrado!");
       setIsItemDialogOpen(false);
       await refreshSections();
     } catch (e: any) {
@@ -374,6 +497,25 @@ function AdminMasterHomeEditorPage() {
 
 
   const filteredSections = sections.filter((s) => {
+    if (activePageContext === "chat_noor") {
+      if (s.section_key !== "chat_noor_bento" && s.metadata?.page !== "chat_noor") return false;
+    } else if (activePageContext === "explorar") {
+      if (
+        s.section_key !== "explore_pillars" &&
+        s.section_key !== "explore_categories" &&
+        s.metadata?.page !== "explorar"
+      ) {
+        return false;
+      }
+    } else if (activePageContext === "home") {
+      if (
+        s.section_key === "chat_noor_bento" ||
+        s.section_key === "explore_pillars" ||
+        s.section_key === "explore_categories"
+      ) {
+        return false;
+      }
+    }
     if (statusFilter === "active" && !s.is_active) return false;
     if (statusFilter === "inactive" && s.is_active) return false;
     if (filterQuery.trim()) {
@@ -392,29 +534,42 @@ function AdminMasterHomeEditorPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              Home Page Builder (CMS)
+              CMS Página por Página & Home Builder
             </h1>
             <Badge variant="outline" className="text-3xs uppercase tracking-wider font-bold">
               Omni-Builder 3.0
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Edição visual ponta a ponta da página inicial: controle cards limpos para upload de mídia,
-            menus horizontais nativos estilo Noor, botões quadrados estilo iFood e grades Bento Grid.
+            Edite qualquer página, menu mobile, seção, banner ou botão da plataforma com upload de mídia,
+            ícones, cores, gradientes, sombras, cronômetro e filtro por cidade.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            asChild
+            type="button"
             variant="outline"
             size="sm"
+            disabled={isOpeningOmniBuilder}
+            onClick={() =>
+              handleOpenOmniBuilderForPage(
+                activePageContext === "explorar"
+                  ? "explorar"
+                  : activePageContext === "chat_noor"
+                    ? "chat_noor"
+                    : "home",
+                activePageContext === "explorar"
+                  ? "Página Explorar"
+                  : activePageContext === "chat_noor"
+                    ? "Página Chat Noor"
+                    : "Página Início (Home)",
+              )
+            }
             className="gap-2 h-11 min-h-11"
           >
-            <Link to="/workspace/marketing/vitrine">
-              <Sparkles size={16} />
-              <span>Abrir Omni Studio (Modo Wix)</span>
-            </Link>
+            <Sparkles size={16} />
+            <span>{isOpeningOmniBuilder ? "Abrindo..." : "Abrir Página no Omni Builder"}</span>
           </Button>
 
           <Button
@@ -453,51 +608,318 @@ function AdminMasterHomeEditorPage() {
         </div>
       </div>
 
-      {/* ── Régua de Navegação Rápida entre Vitrines no Admin ── */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-border/40">
-        <Link
-          to="/admin-master/home-editor"
-          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors bg-primary text-primary-foreground flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <Layout size={14} />
-          <span>Home Principal</span>
-        </Link>
-        <Link
-          to="/admin-master/vitrines"
-          search={{ surface: "gastronomia" }}
-          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <span>Gastronomia</span>
-        </Link>
-        <Link
-          to="/admin-master/vitrines"
-          search={{ surface: "mercado" }}
-          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <span>Supermercado</span>
-        </Link>
-        <Link
-          to="/admin-master/vitrines"
-          search={{ surface: "farmacia" }}
-          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <span>Farmácia</span>
-        </Link>
-        <Link
-          to="/admin-master/banners"
-          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <ImageIcon size={14} />
-          <span>Banners & Criativos</span>
-        </Link>
-        <Link
-          to="/admin-master/botoes"
-          className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <Sliders size={14} />
-          <span>Hotpages & Hubs</span>
-        </Link>
+      {/* ── Seletor Estruturado Página por Página + Subeditores Rápidos ── */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 scroll-area-carousel pb-1">
+          <button
+            type="button"
+            onClick={() => setActivePageContext("all")}
+            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              activePageContext === "all"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
+            }`}
+          >
+            <Layout size={14} />
+            <span>Todas as Seções ({sections.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActivePageContext("home")}
+            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              activePageContext === "home"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
+            }`}
+          >
+            <span>Página Início (Home)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActivePageContext("explorar");
+              setSelectedMenuHandle("explore_menu");
+            }}
+            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              activePageContext === "explorar"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
+            }`}
+          >
+            <span>Página Explorar (/explorar)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActivePageContext("chat_noor")}
+            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              activePageContext === "chat_noor"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
+            }`}
+          >
+            <span>Página Chat Noor (/chat)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActivePageContext("menus_globais");
+              setSelectedMenuHandle("bottom_nav");
+            }}
+            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              activePageContext === "menus_globais"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
+            }`}
+          >
+            <Grid size={14} />
+            <span>Menus Mobile (5 Abas) & Header</span>
+          </button>
+
+          <Link
+            to="/admin-master/vitrines"
+            search={{ surface: "turismo" }}
+            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span>Turismo</span>
+          </Link>
+          <Link
+            to="/admin-master/vitrines"
+            search={{ surface: "gastronomia" }}
+            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span>Gastronomia</span>
+          </Link>
+          <Link
+            to="/admin-master/vitrines"
+            search={{ surface: "mercado" }}
+            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span>Supermercado</span>
+          </Link>
+          <Link
+            to="/admin-master/vitrines"
+            search={{ surface: "farmacia" }}
+            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span>Farmácia</span>
+          </Link>
+          <Link
+            to="/admin-master/vitrines"
+            search={{ surface: "classificados" }}
+            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span>Classificados</span>
+          </Link>
+          <Link
+            to="/admin-master/vitrines"
+            search={{ surface: "feed" }}
+            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span>Feed & Comunidades</span>
+          </Link>
+          <Link
+            to="/admin-master/banners"
+            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <ImageIcon size={14} />
+            <span>Banners Globais</span>
+          </Link>
+          <Link
+            to="/admin-master/botoes"
+            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Sliders size={14} />
+            <span>Botões & Hotpages</span>
+          </Link>
+        </div>
       </div>
+
+      {/* ── SUB-EDITOR INTERATIVO DE MENUS MOBILE & CABEÇALHO (bottom_nav, header_nav, explore_menu) ── */}
+      {(activePageContext === "menus_globais" || activePageContext === "explorar") && (
+        <div className="p-4 sm:p-5 rounded-lg border border-border/80 bg-card space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-3">
+            <div>
+              <h2 className="text-base font-bold text-foreground">
+                Editor de Menus Mobile & Navegação Global
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Personalize ícones (upload via bucket ou nome), rótulos, badges, cores, links e agendamento das abas.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {(
+                [
+                  { handle: "bottom_nav", label: "Menu Mobile Inferior (5 Abas)" },
+                  { handle: "header_nav", label: "Menu Cabeçalho Global" },
+                  { handle: "explore_menu", label: "Menu Rápido Explorar" },
+                ] as const
+              ).map((mTab) => (
+                <button
+                  key={mTab.handle}
+                  type="button"
+                  onClick={() => setSelectedMenuHandle(mTab.handle)}
+                  className={`h-11 min-h-11 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    selectedMenuHandle === mTab.handle
+                      ? "bg-primary text-primary-foreground font-bold"
+                      : "bg-muted/40 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {mTab.label}
+                </button>
+              ))}
+
+              <Button
+                type="button"
+                size="sm"
+                disabled={isSavingMenu}
+                onClick={handleSaveActiveMenu}
+                className="h-11 min-h-11 font-bold"
+              >
+                {isSavingMenu ? "Salvando Menu..." : "Salvar Menu"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {(activeMenuObj.items || []).map((navItem: any, nIdx: number) => (
+              <div
+                key={navItem.id || nIdx}
+                className="p-3 rounded-lg border border-border/60 bg-muted/20 grid grid-cols-1 md:grid-cols-6 gap-2 items-center"
+              >
+                <Input
+                  value={navItem.label || ""}
+                  onChange={(e) => {
+                    const next = [...(activeMenuObj.items || [])];
+                    next[nIdx] = { ...next[nIdx], label: e.target.value };
+                    updateActiveMenuItems(next);
+                  }}
+                  placeholder="Rótulo (ex: Explorar)"
+                  className="h-9 text-xs font-semibold"
+                />
+                <Input
+                  value={navItem.url || ""}
+                  onChange={(e) => {
+                    const next = [...(activeMenuObj.items || [])];
+                    next[nIdx] = { ...next[nIdx], url: e.target.value };
+                    updateActiveMenuItems(next);
+                  }}
+                  placeholder="Rota (ex: /explorar)"
+                  className="h-9 text-xs font-mono"
+                />
+                <Input
+                  value={navItem.icon || ""}
+                  onChange={(e) => {
+                    const next = [...(activeMenuObj.items || [])];
+                    next[nIdx] = { ...next[nIdx], icon: e.target.value };
+                    updateActiveMenuItems(next);
+                  }}
+                  placeholder="Ícone (ex: Compass, MessageCircle)"
+                  className="h-9 text-xs font-mono"
+                />
+                <Input
+                  value={navItem.image_url || ""}
+                  onChange={(e) => {
+                    const next = [...(activeMenuObj.items || [])];
+                    next[nIdx] = { ...next[nIdx], image_url: e.target.value };
+                    updateActiveMenuItems(next);
+                  }}
+                  placeholder="URL Ícone Upload (opcional)"
+                  className="h-9 text-xs font-mono"
+                />
+                <Input
+                  value={navItem.badge_text || ""}
+                  onChange={(e) => {
+                    const next = [...(activeMenuObj.items || [])];
+                    next[nIdx] = { ...next[nIdx], badge_text: e.target.value };
+                    updateActiveMenuItems(next);
+                  }}
+                  placeholder="Badge (ex: IA, NOVO)"
+                  className="h-9 text-xs"
+                />
+                <div className="flex items-center justify-between gap-2">
+                  <MediaUploader
+                    value={navItem.image_url ? [navItem.image_url] : []}
+                    onChange={(urls) => {
+                      const next = [...(activeMenuObj.items || [])];
+                      next[nIdx] = {
+                        ...next[nIdx],
+                        image_url: Array.isArray(urls) ? urls[0] || "" : String(urls || ""),
+                      };
+                      updateActiveMenuItems(next);
+                    }}
+                    maxFiles={1}
+                    bucket="home-banners"
+                    folder="menu-icons"
+                    label="Ícone"
+                    aspect={1}
+                    enableCrop={true}
+                  />
+                  <Switch
+                    checked={navItem.is_active !== false}
+                    onCheckedChange={(checked) => {
+                      const next = [...(activeMenuObj.items || [])];
+                      next[nIdx] = { ...next[nIdx], is_active: checked };
+                      updateActiveMenuItems(next);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = (activeMenuObj.items || []).filter((_: any, i: number) => i !== nIdx);
+                      updateActiveMenuItems(next);
+                    }}
+                    className="p-2 text-destructive hover:bg-destructive/10 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    title="Remover item do menu"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex items-center justify-between pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const next = [
+                    ...(activeMenuObj.items || []),
+                    {
+                      id: `nav-${Date.now()}`,
+                      label: "Novo Item",
+                      url: "/",
+                      icon: "Compass",
+                      image_url: "",
+                      badge_text: "",
+                      is_active: true,
+                    },
+                  ];
+                  updateActiveMenuItems(next);
+                }}
+                className="h-11 min-h-11 text-xs font-bold"
+              >
+                + Adicionar Item ao Menu
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isSavingMenu}
+                onClick={handleSaveActiveMenu}
+                className="h-11 min-h-11 text-xs font-bold"
+              >
+                {isSavingMenu ? "Salvando..." : "Salvar Alterações do Menu"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Barra de Filtros e Adição Rápida de Presets ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/20 p-3 rounded-lg border border-border/50">
@@ -782,13 +1204,39 @@ function AdminMasterHomeEditorPage() {
 
             {/* Itens / Cards de Mídia da Seção */}
             <div className="pt-4">
-              <div className="text-xs font-bold text-muted-foreground mb-3 flex items-center justify-between">
-                <span>Cards de Mídia ({section.items?.length || 0})</span>
-                <span className="text-3xs font-normal">
-                  {section.items?.every((i) => !i.show_text)
-                    ? "Modo Mídia Pura (sem textos excessivos)"
-                    : "Misto (alguns cards exibem texto)"}
-                </span>
+              <div className="text-xs font-bold text-muted-foreground mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span>Cards de Mídia ({section.items?.length || 0})</span>
+                  <span className="text-3xs font-normal">
+                    {section.items?.every((i) => !i.show_text)
+                      ? "Modo Mídia Pura (sem textos excessivos)"
+                      : "Misto (alguns cards exibem texto)"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setSectionViewMode("cards")}
+                    className={`h-11 min-h-11 px-3 rounded-md text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      sectionViewMode === "cards"
+                        ? "bg-background text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Grade de Cards
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSectionViewMode("sheet")}
+                    className={`h-11 min-h-11 px-3 rounded-md text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      sectionViewMode === "sheet"
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Modo Planilha (Sheet Editável)
+                  </button>
+                </div>
               </div>
 
               {(!section.items || section.items.length === 0) ? (
@@ -798,6 +1246,226 @@ function AdminMasterHomeEditorPage() {
                     Nenhum card cadastrado nesta seção. Clique em "Novo Card" para fazer upload de mídia.
                   </p>
                 </div>
+              ) : sectionViewMode === "sheet" ? (
+                <div className="rounded-xl border border-border/60 bg-background scroll-area-carousel">
+                  <table className="w-full text-left border-collapse min-w-max">
+                    <thead>
+                      <tr className="bg-muted/40 border-b border-border/60 text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+                        <th className="py-3 px-3 w-10">#</th>
+                        <th className="py-3 px-3 min-w-44">Mídia / Upload</th>
+                        <th className="py-3 px-3 min-w-44">Título & Subtítulo</th>
+                        <th className="py-3 px-3 min-w-24 text-center">Texto</th>
+                        <th className="py-3 px-3 min-w-40">Ícone / Upload</th>
+                        <th className="py-3 px-3 min-w-36">Cores & Badge</th>
+                        <th className="py-3 px-3 min-w-40">Rota & Cidade</th>
+                        <th className="py-3 px-3 min-w-36">Prazo / Timer</th>
+                        <th className="py-3 px-3 w-28 text-right">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/40 text-xs">
+                      {section.items.map((item, itIdx) => {
+                        const updateLocalItem = (patch: Partial<HomeSectionItemDTO>) => {
+                          setSections((prev) =>
+                            prev.map((s) =>
+                              s.id === section.id
+                                ? {
+                                    ...s,
+                                    items: s.items.map((it) =>
+                                      it.id === item.id ? { ...it, ...patch } : it,
+                                    ),
+                                  }
+                                : s,
+                            ),
+                          );
+                        };
+                        const saveInlineRow = async () => {
+                          try {
+                            await upsertHomeSectionItem({
+                              data: {
+                                id: item.id,
+                                section_id: section.id,
+                                title: item.title || null,
+                                subtitle: item.subtitle || null,
+                                image_url: item.image_url || item.image_desktop_url || item.image_mobile_url || "",
+                                image_desktop_url: item.image_desktop_url || null,
+                                image_mobile_url: item.image_mobile_url || null,
+                                bg_color: item.bg_color || null,
+                                text_color: item.text_color || null,
+                                button_shape: item.button_shape || "squircle",
+                                city_filter: !item.city_filter || item.city_filter === "all" ? null : item.city_filter,
+                                icon_name: item.icon_name || null,
+                                starts_at: item.starts_at || null,
+                                ends_at: item.ends_at || null,
+                                auto_archive_at: item.auto_archive_at || null,
+                                metadata: item.metadata || {},
+                                target_url: item.target_url || "/",
+                                show_text: item.show_text,
+                                grid_span_x: item.grid_span_x || 1,
+                                grid_span_y: item.grid_span_y || 1,
+                                badge_text: item.badge_text || null,
+                                is_active: item.is_active,
+                                sort_order: item.sort_order ?? itIdx,
+                              },
+                            });
+                            toast.success(`Linha #${itIdx + 1} salva!`);
+                            await refreshSections();
+                          } catch (err: any) {
+                            toast.error("Erro ao salvar linha: " + err.message);
+                          }
+                        };
+                        return (
+                          <tr key={item.id} className="hover:bg-muted/20 transition-colors align-top">
+                            <td className="py-3 px-3 font-mono text-2xs text-muted-foreground font-bold">
+                              {itIdx + 1}
+                            </td>
+                            <td className="py-3 px-3 space-y-2">
+                              <div className="flex items-center gap-2">
+                                {isHealthyImageUrl(item.image_url || item.image_desktop_url || item.image_mobile_url) ? (
+                                  <img
+                                    src={(item.image_url || item.image_desktop_url || item.image_mobile_url) || undefined}
+                                    alt={item.title || ""}
+                                    className="size-10 rounded-lg object-cover border border-border/60 shrink-0"
+                                  />
+                                ) : (
+                                  <div className="size-10 rounded-lg bg-muted flex items-center justify-center border border-border/60 shrink-0 text-3xs font-mono text-muted-foreground">
+                                    IMG
+                                  </div>
+                                )}
+                                <MediaUploader
+                                  value={item.image_url ? [item.image_url] : []}
+                                  onChange={(urls) => {
+                                    const next = Array.isArray(urls) ? urls[0] || "" : String(urls || "");
+                                    updateLocalItem({ image_url: next, image_mobile_url: next });
+                                  }}
+                                  maxFiles={1}
+                                  bucket="home-banners"
+                                  folder="home-cms"
+                                  label="Upload"
+                                />
+                              </div>
+                            </td>
+                            <td className="py-3 px-3 space-y-2">
+                              <Input
+                                value={item.title || ""}
+                                onChange={(e) => updateLocalItem({ title: e.target.value })}
+                                placeholder="Título"
+                                className="h-9 text-xs font-semibold"
+                              />
+                              <Input
+                                value={item.subtitle || ""}
+                                onChange={(e) => updateLocalItem({ subtitle: e.target.value })}
+                                placeholder="Subtítulo"
+                                className="h-9 text-2xs"
+                              />
+                            </td>
+                            <td className="py-3 px-3 text-center">
+                              <Switch
+                                checked={Boolean(item.show_text)}
+                                onCheckedChange={(val) => updateLocalItem({ show_text: val })}
+                              />
+                            </td>
+                            <td className="py-3 px-3 space-y-2">
+                              <Input
+                                value={item.icon_name || ""}
+                                onChange={(e) => updateLocalItem({ icon_name: e.target.value })}
+                                placeholder="Ícone ou URL"
+                                className="h-9 text-2xs font-mono"
+                              />
+                              <MediaUploader
+                                value={item.icon_name && (item.icon_name.startsWith("http") || item.icon_name.startsWith("/")) ? [item.icon_name] : []}
+                                onChange={(urls) => {
+                                  const next = Array.isArray(urls) ? urls[0] || "" : String(urls || "");
+                                  updateLocalItem({ icon_name: next });
+                                }}
+                                maxFiles={1}
+                                bucket="home-banners"
+                                folder="home-icons"
+                                label="Upload Ícone"
+                              />
+                            </td>
+                            <td className="py-3 px-3 space-y-2">
+                              <Input
+                                value={item.badge_text || ""}
+                                onChange={(e) => updateLocalItem({ badge_text: e.target.value })}
+                                placeholder="Badge (ex: NOVO)"
+                                className="h-9 text-2xs"
+                              />
+                              <div className="grid grid-cols-2 gap-1">
+                                <Input
+                                  value={item.bg_color || ""}
+                                  onChange={(e) => updateLocalItem({ bg_color: e.target.value })}
+                                  placeholder="Fundo"
+                                  className="h-9 text-2xs font-mono"
+                                />
+                                <Input
+                                  value={item.text_color || ""}
+                                  onChange={(e) => updateLocalItem({ text_color: e.target.value })}
+                                  placeholder="Texto"
+                                  className="h-9 text-2xs font-mono"
+                                />
+                              </div>
+                            </td>
+                            <td className="py-3 px-3 space-y-2">
+                              <Input
+                                value={item.target_url || "/"}
+                                onChange={(e) => updateLocalItem({ target_url: e.target.value })}
+                                placeholder="/rota"
+                                className="h-9 text-2xs font-mono"
+                              />
+                              <Input
+                                value={item.city_filter || ""}
+                                onChange={(e) => updateLocalItem({ city_filter: e.target.value })}
+                                placeholder="Cidade (vazio=todas)"
+                                className="h-9 text-2xs"
+                              />
+                            </td>
+                            <td className="py-3 px-3 space-y-2">
+                              <Input
+                                type="datetime-local"
+                                value={item.ends_at ? item.ends_at.slice(0, 16) : ""}
+                                onChange={(e) =>
+                                  updateLocalItem({
+                                    ends_at: e.target.value ? new Date(e.target.value).toISOString() : null,
+                                  })
+                                }
+                                className="h-9 text-2xs"
+                              />
+                            </td>
+                            <td className="py-3 px-3 text-right space-y-1">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={saveInlineRow}
+                                className="h-11 min-h-11 w-full text-2xs font-bold"
+                              >
+                                Salvar
+                              </Button>
+                              <div className="flex items-center justify-end gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditItemDialog(section.id, item)}
+                                  className="p-2 text-primary hover:bg-primary/10 rounded focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-ring"
+                                  title="Abrir modal completo"
+                                >
+                                  <Pencil size={12} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  className="p-2 text-destructive hover:bg-destructive/10 rounded focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-ring"
+                                  title="Excluir"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   {section.items.map((item, itIdx) => (
@@ -805,12 +1473,32 @@ function AdminMasterHomeEditorPage() {
                       key={item.id}
                       className="group relative rounded-lg border border-border/60 bg-muted/20 overflow-hidden flex flex-col justify-between"
                     >
-                      <div className="relative aspect-video w-full bg-muted/50 overflow-hidden">
-                        <img
-                          src={item.image_url || undefined}
-                          alt={item.title || ""}
-                          className="size-full object-cover"
-                        />
+                      <div
+                        style={{
+                          ...(item.bg_color ? { backgroundColor: item.bg_color } : {}),
+                          ...(item.metadata?.gradient ? { backgroundImage: item.metadata.gradient } : {}),
+                        }}
+                        className="relative aspect-video w-full bg-muted/50 overflow-hidden flex items-center justify-center"
+                      >
+                        {isHealthyImageUrl(item.image_url || item.image_desktop_url || item.image_mobile_url) ? (
+                          <img
+                            src={(item.image_url || item.image_desktop_url || item.image_mobile_url) || undefined}
+                            alt={item.title || ""}
+                            className="size-full object-cover"
+                          />
+                        ) : isHealthyImageUrl(item.icon_name) ? (
+                          <img
+                            src={item.icon_name!}
+                            alt={item.title || ""}
+                            className="size-12 object-contain"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center gap-1 p-2 text-center">
+                            <span className="text-2xs font-mono font-bold text-primary">
+                              {item.icon_name ? `Ícone: ${item.icon_name}` : "Botão / Card"}
+                            </span>
+                          </div>
+                        )}
                         <div className="absolute top-1 left-1 flex items-center gap-1">
                           {item.badge_text && (
                             <Badge className="text-3xs px-1 py-0">{item.badge_text}</Badge>
@@ -884,7 +1572,7 @@ function AdminMasterHomeEditorPage() {
 
       {/* ── Dialog de Edição de Seção ── */}
       <Dialog open={isSectionDialogOpen} onOpenChange={setIsSectionDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-5xl w-full max-h-sheet overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingSection ? "Editar Seção da Home" : "Nova Seção da Home"}
@@ -963,6 +1651,53 @@ function AdminMasterHomeEditorPage() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">Localidade / Cidade Alvo</Label>
+              <Select value={secCityFilter} onValueChange={setSecCityFilter}>
+                <SelectTrigger className="min-h-11 text-xs">
+                  <SelectValue placeholder="Todas as Cidades (Global)" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <SelectItem value="all">Todas as Cidades (Global)</SelectItem>
+                  {CANONICAL_CITIES.map((c) => (
+                    <SelectItem key={c.id} value={c.name} className="text-xs">
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-lg bg-muted/20 border border-border/40">
+              <div className="space-y-1">
+                <Label className="text-2xs font-semibold">Agendar Início</Label>
+                <Input
+                  type="datetime-local"
+                  value={secStartsAt}
+                  onChange={(e) => setSecStartsAt(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-2xs font-semibold">Prazo Final (Fim)</Label>
+                <Input
+                  type="datetime-local"
+                  value={secEndsAt}
+                  onChange={(e) => setSecEndsAt(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-2xs font-semibold">Auto-Arquivar em</Label>
+                <Input
+                  type="datetime-local"
+                  value={secAutoArchiveAt}
+                  onChange={(e) => setSecAutoArchiveAt(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+            </div>
+
             <div className="space-y-3 pt-2 border-t border-border/40">
               <div className="flex items-center justify-between">
                 <div>
@@ -1019,7 +1754,7 @@ function AdminMasterHomeEditorPage() {
 
       {/* ── Dialog de Edição de Card / Item de Mídia ── */}
       <Dialog open={isItemDialogOpen} onOpenChange={setIsItemDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-5xl w-full">
           <DialogHeader>
             <DialogTitle>
               {editingItem ? "Editar Card de Mídia" : "Novo Card de Mídia"}
@@ -1029,7 +1764,29 @@ function AdminMasterHomeEditorPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 max-h-sheet overflow-y-auto pr-1">
+            {/* Rótulo e Subtítulo Sempre Visíveis */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Título do Botão / Card</Label>
+                <Input
+                  value={itemTitle}
+                  onChange={(e) => setItemTitle(e.target.value)}
+                  placeholder="ex: Restaurantes, Marketplace, Corridas"
+                  className="text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Subtítulo / Descrição Curta</Label>
+                <Input
+                  value={itemSubtitle}
+                  onChange={(e) => setItemSubtitle(e.target.value)}
+                  placeholder="ex: Entrega rápida na sua cidade"
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
             {/* Upload de Mídia com MediaUploader Canônico */}
             <BidirectionalMediaUploader
                 mobileUrl={itemImageMobileUrl || itemImageUrl}
@@ -1048,25 +1805,72 @@ function AdminMasterHomeEditorPage() {
                 desktopAspect={28 / 9}
               />
 
-            {/* Configurações de Botão / Card Customizado */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Configurações Visuais: Cor de Fundo, Cor do Texto, Badge, Formato, Gradiente e Sombra */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs font-bold">Cor de Fundo / Estilo (Opcional)</Label>
+                <Label className="text-xs font-bold">Cor de Fundo (Hex/Token)</Label>
                 <Input
                   value={itemBgColor}
                   onChange={(e) => setItemBgColor(e.target.value)}
-                  placeholder="ex: bg-primary/10 ou bg-purple-600"
+                  placeholder="Token ou cor (ex: bg-primary)"
                   className="font-mono text-xs"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs font-bold">Rótulo da Minifaixa / Badge</Label>
+                <Label className="text-xs font-bold">Cor do Texto / Ícone</Label>
+                <Input
+                  value={itemTextColor}
+                  onChange={(e) => setItemTextColor(e.target.value)}
+                  placeholder="Token ou cor (ex: text-primary-foreground)"
+                  className="font-mono text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Rótulo de Badge</Label>
                 <Input
                   value={itemBadgeText}
                   onChange={(e) => setItemBadgeText(e.target.value)}
-                  placeholder="ex: Clube, Gourmet, Corridas, NOVO"
+                  placeholder="ex: NOVO, R$ 0,99, HOT"
                   className="text-xs"
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Formato do Botão</Label>
+                <Select value={itemButtonShape} onValueChange={setItemButtonShape}>
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="squircle">Squircle Apple/iFood (Padrão)</SelectItem>
+                    <SelectItem value="rounded-lg">Retangular Suave (rounded-lg)</SelectItem>
+                    <SelectItem value="rounded-full">Pílula / Circular (rounded-full)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Gradiente CSS (Opcional)</Label>
+                <Input
+                  value={itemGradient}
+                  onChange={(e) => setItemGradient(e.target.value)}
+                  placeholder="linear-gradient(135deg, ...)"
+                  className="font-mono text-xs h-9"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Elevação / Sombra</Label>
+                <Select value={itemShadowMode} onValueChange={setItemShadowMode}>
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sem Sombra (Flat Clean)</SelectItem>
+                    <SelectItem value="md">Sombra Média (Destaque)</SelectItem>
+                    <SelectItem value="lg">Sombra Profunda (Flutuante)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -1074,9 +1878,9 @@ function AdminMasterHomeEditorPage() {
             <div className="space-y-2 p-3 rounded-lg bg-muted/20 border border-border/40">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-xs font-bold">Ícone / Mídia da Minifaixa Inferior (Opcional)</Label>
+                  <Label className="text-xs font-bold">Ícone do Botão / Card (Upload ou Nome)</Label>
                   <p className="text-3xs text-muted-foreground">
-                    Faça upload do ícone ou digite o nome Phosphor (Ticket, CookingPot, Car, Hamburger).
+                    Faça upload do ícone via bucket ou informe o nome (Hamburger, Storefront, Pill, Car, Tag, Compass, Ticket).
                   </p>
                 </div>
               </div>
@@ -1100,8 +1904,26 @@ function AdminMasterHomeEditorPage() {
               </div>
             </div>
 
-            {/* Agendamento Temporal do Item */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted/20 border border-border/40">
+            {/* Localidade / Cidade Alvo do Item */}
+            <div className="space-y-1">
+              <Label className="text-xs font-bold">Localidade / Cidade Alvo deste Card</Label>
+              <Select value={itemCityFilter} onValueChange={setItemCityFilter}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Todas as Cidades (Global)" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <SelectItem value="all">Todas as Cidades (Global)</SelectItem>
+                  {CANONICAL_CITIES.map((c) => (
+                    <SelectItem key={c.id} value={c.name} className="text-xs">
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Agendamento Temporal, Expiração & Cronômetro */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-muted/20 border border-border/40">
               <div className="space-y-1">
                 <Label className="text-2xs font-semibold">Agendar Início</Label>
                 <Input
@@ -1112,11 +1934,20 @@ function AdminMasterHomeEditorPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-2xs font-semibold">Expiração Silenciosa</Label>
+                <Label className="text-2xs font-semibold">Prazo / Timer Regressivo</Label>
                 <Input
                   type="datetime-local"
                   value={itemEndsAt}
                   onChange={(e) => setItemEndsAt(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-2xs font-semibold">Auto-Ocultar em</Label>
+                <Input
+                  type="datetime-local"
+                  value={itemAutoArchiveAt}
+                  onChange={(e) => setItemAutoArchiveAt(e.target.value)}
                   className="text-xs h-9"
                 />
               </div>
@@ -1135,35 +1966,13 @@ function AdminMasterHomeEditorPage() {
             <div className="space-y-3 pt-2 border-t border-border/40">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-xs font-bold">Exibir Texto Sobreposto</Label>
+                  <Label className="text-xs font-bold">Exibir Rótulo de Texto na Vitrine</Label>
                   <p className="text-3xs text-muted-foreground">
-                    Desative para manter o card 100% limpo com foco apenas na imagem enviada.
+                    Desative se a imagem enviada já possuir texto próprio embutido.
                   </p>
                 </div>
                 <Switch checked={itemShowText} onCheckedChange={setItemShowText} />
               </div>
-
-              {itemShowText && (
-                <div className="space-y-3 p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <div className="space-y-1">
-                    <Label className="text-xs font-bold">Título do Card</Label>
-                    <Input
-                      value={itemTitle}
-                      onChange={(e) => setItemTitle(e.target.value)}
-                      placeholder="ex: Gastronomia Local"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="text-xs font-bold">Subtítulo do Card</Label>
-                    <Input
-                      value={itemSubtitle}
-                      onChange={(e) => setItemSubtitle(e.target.value)}
-                      placeholder="ex: Os melhores lanches e refeições"
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* Spans para Bento Grid */}
               <div className="grid grid-cols-2 gap-3 pt-1">

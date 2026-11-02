@@ -1,5 +1,26 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-425: Arquitetura Unificada Página por Página no Omni Builder (Paridade Wix Studio / Editor X), Subestados de Menus e Edição em Planilha In-Page (Modo Sheet)
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. Necessidade de convergir os editores do Admin Master (`admin-master.home-editor.tsx`, `admin-master.vitrines.tsx`, `admin-master.banners.tsx`, `admin-master.botoes.tsx`) com o `OmniEditor` (`/workspace/builder/$documentId/editor`), permitindo que qualquer página da plataforma (`home`, `explorar`, `chat_noor`, `feed`, `comunidades`, `turismo`, `gastronomia`, `mercado`, `farmacia`, `classificados`, `diretorio`, `mobilidade`, `ofertas`, `servicos`, `eventos`, `noticias`, `empregos`) seja aberta pré-hidratada e editada dentro do próprio `OmniEditor` com sincronização bidirecional.
+  2. Necessidade de editar subestados e subfluxos (ex: Header `vitrine_ifood_header`, Menu Hambúrguer Lateral `vitrine_lateral_drawer` em estado aberto/fechado, e Barra Mobile de 5 Abas `bottom_nav`), além de controles de vídeo (`autoPlay`, `loop`, `muted`, `controls`), cronômetro regressivo (`timerExpiresAt`/`ends_at`), agendamento (`starts_at`/`ends_at`/`auto_archive_at`), segmentação por cidade (`city_filter`), cores, gradientes, sombras, formatos e upload de ícones customizados via bucket.
+  3. Necessidade de edição em planilha (Modo Sheet / Tabela Editável estilo Wix CMS Collections) tanto dentro do `OmniEditor` (`WixCmsCollectionManagerModal`) quanto diretamente em `admin-master.home-editor.tsx`, sem comprimir conteúdo em modais estreitos.
+- **Decisão:**
+  1. **Convergência Bidirecional no `OmniEditor` (`surface-cms.functions.ts` & `omni-builder.functions.ts`):**
+     - `openOrCreatePageExperienceDocument` hidrata o documento `OmniPageDocument` com as seções reais de `home_page_sections`, `marketplace_sections` e `navigation_menus` da página selecionada.
+     - `syncOmniDocumentToPlatformCms` persiste alterações de blocos do `OmniEditor` de volta em `home_page_sections`, `home_section_items`, `marketplace_sections` e `navigation_menus` ao salvar rascunho ou publicar.
+  2. **Inspetor Completo de 16 Blocos Vitrine, Subestados e Controles de Mídia (`vitrine-block-inspector.tsx` & `vitrine-app-blocks.tsx`):**
+     - Registrados os 16 blocos `VITRINE_APP_BLOCK_TYPES` com toggle de subestado aberto/fechado (`previewOpen`) para o Drawer Lateral, upload de ícone via `MediaUploader`, controles de vídeo `.mp4`, timer regressivo, agendamento temporal e filtro municipal.
+  3. **Edição em Planilha In-Page (Modo Sheet) e Menus Amplos (`BuilderWixStudioPanels.tsx`, `OmniEditor.tsx`, `admin-master.home-editor.tsx`, `admin-master.vitrines.tsx`):**
+     - `WixCmsCollectionManagerModal` (`max-w-7xl w-full max-h-sheet`) conectado ao bloco selecionado e a todos os blocos da página no `OmniEditor`, além de alternador `Grade de Cards ⇄ Modo Planilha (Sheet Editável)` em `admin-master.home-editor.tsx`.
+     - `WixMenuManagerDrawer` (`sm:max-w-3xl w-full`) conectado a `getNavigationMenus` e `upsertNavigationMenu`, acionável pela Topbar ou clicando diretamente na barra de 5 abas no Canvas Mobile.
+     - Modais de edição ampliados para `sm:max-w-5xl w-full max-h-sheet`.
+  4. **Aprovação na Catraca de Design Lint:**
+     - Zero violações P0 e redução líquida de 6 violações em relação à baseline congelada (2.939 -> 2.933).
+- **Fundamentação:** AGENTS.md Regras B.4, B.8, B.9, B.20, B.29, B.32 e B.51 (`SPEC-CMS-PAGE-BUILDER-UNIFIED-ARCHITECTURE.md`).
+- **Consequências:** Plataforma 100% auto-editável página por página e módulo por módulo dentro do `OmniEditor` e em Modo Planilha (Sheet), preservando integralmente todos os recursos existentes.
+
 ## DEC-424: Unificação Total de Menus com o CMS (MobileNav & ContextSidebar), Governança Autônoma de Posts e Congelamento de Baseline em 2.939
 - **Data:** 2026-11-02
 - **Contexto:**

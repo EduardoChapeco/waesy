@@ -59,6 +59,9 @@ import {
 } from "@/services/ai-builder-squad";
 import { evaluateAgenticReadiness } from "@/lib/agentic/agentic-readiness-engine";
 import { SeoGeoOptimizationPanel } from "@/components/seo";
+import { MediaUploader } from "@/components/ui/media-uploader";
+import { VITRINE_BUTTON_ICON_OPTIONS } from "@/design-system/vitrine";
+import { getNavigationMenus, upsertNavigationMenu } from "@/services/cms.functions";
 
 // ── 1. VISUAL SITEMAP & SEO / GEO (GENERATIVE ENGINE OPTIMIZATION) MODAL ──
 
@@ -663,35 +666,97 @@ export function WixVisualSitemapModal({
   );
 }
 
-// ── 2. WIX MENU MANAGER DRAWER (GERENCIADOR DE MENUS E NAVEGAÇÃO) ──
+// ── 2. WIX MENU MANAGER DRAWER (GERENCIADOR DE MENUS E NAVEGAÇÃO — AMPLO & CONECTADO AO BANCO) ──
 
 export interface WixMenuItem {
   id: string;
   label: string;
   href: string;
   badge?: string;
+  icon?: string;
+  image_url?: string;
+  bg_color?: string;
+  text_color?: string;
+  show_text?: boolean;
+  city_filter?: string;
+  starts_at?: string;
+  ends_at?: string;
 }
 
 export interface WixMenuManagerDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  initialMenuType?: string;
   onApplyMenuToBlock?: (items: WixMenuItem[], menuType: string) => void;
 }
+
+const MENU_LOCATIONS = [
+  { id: "bottom_nav", label: "Barra Inferior Mobile (5 Abas Principais)" },
+  { id: "explore_menu", label: "Menu Lateral Hambúrguer (Drawer & Explorar)" },
+  { id: "header_nav", label: "Menu Principal do Topo Desktop" },
+  { id: "noor_dock", label: "Bloco de Botões / Dock Selecionado no Canvas" },
+];
 
 export function WixMenuManagerDrawer({
   isOpen,
   onClose,
+  initialMenuType,
   onApplyMenuToBlock,
 }: WixMenuManagerDrawerProps) {
-  const [selectedMenuType, setSelectedMenuType] = useState("header_main");
+  const [selectedMenuType, setSelectedMenuType] = useState(initialMenuType || "bottom_nav");
+  const [dbMenus, setDbMenus] = useState<any[]>([]);
+  const [isLoadingMenus, setIsLoadingMenus] = useState(false);
+  const [isSavingMenu, setIsSavingMenu] = useState(false);
   const [menuItems, setMenuItems] = useState<WixMenuItem[]>([
-    { id: "m1", label: "Início", href: "/" },
-    { id: "m2", label: "Loja & Catálogo", href: "#produtos" },
-    { id: "m3", label: "Ofertas Relâmpago", href: "#ofertas", badge: "HOT" },
-    { id: "m4", label: "Turismo & Carros", href: "#turismo" },
-    { id: "m5", label: "Sobre Nós", href: "#sobre" },
-    { id: "m6", label: "Contato WhatsApp", href: "#contato" },
+    { id: "m1", label: "Início", href: "/", icon: "Home", show_text: true },
+    { id: "m2", label: "Explorar", href: "/explorar", icon: "Compass", show_text: true },
+    { id: "m3", label: "Noor IA", href: "/chats", icon: "Sparkles", badge: "IA", show_text: true },
+    { id: "m4", label: "Feed", href: "/feed", icon: "LayoutGrid", show_text: true },
+    { id: "m5", label: "Comunidades", href: "/comunidades", icon: "Users", show_text: true },
   ]);
+
+  React.useEffect(() => {
+    if (initialMenuType) {
+      setSelectedMenuType(initialMenuType);
+    }
+  }, [initialMenuType]);
+
+  const loadMenusFromDb = React.useCallback(async (targetLoc: string) => {
+    setIsLoadingMenus(true);
+    try {
+      const menus = await getNavigationMenus();
+      setDbMenus(menus || []);
+      const found = (menus || []).find((m: any) => (m.handle || m.location) === targetLoc);
+      if (found && Array.isArray(found.items) && found.items.length > 0) {
+        setMenuItems(
+          found.items.map((it: any, idx: number) => ({
+            id: it.id || `nav_${idx}`,
+            label: it.label || "Item",
+            href: it.url || it.href || "/",
+            badge: it.badge_text || it.badge || "",
+            icon: it.icon || "Compass",
+            image_url: it.image_url || "",
+            bg_color: it.bg_color || "",
+            text_color: it.text_color || "",
+            show_text: it.show_text !== false,
+            city_filter: it.city_filter || "",
+            starts_at: it.starts_at || "",
+            ends_at: it.ends_at || "",
+          })),
+        );
+      }
+    } catch {
+      // Preserva itens locais se offline
+    } finally {
+      setIsLoadingMenus(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (isOpen && selectedMenuType !== "noor_dock") {
+      loadMenusFromDb(selectedMenuType);
+    }
+  }, [isOpen, selectedMenuType, loadMenusFromDb]);
 
   const moveItem = (idx: number, dir: "up" | "down") => {
     const target = dir === "up" ? idx - 1 : idx + 1;
@@ -703,138 +768,291 @@ export function WixMenuManagerDrawer({
     setMenuItems(copy);
   };
 
+  const handleSaveAndApply = async () => {
+    setIsSavingMenu(true);
+    try {
+      if (selectedMenuType !== "noor_dock") {
+        const currentMenuObj = dbMenus.find((m: any) => (m.handle || m.location) === selectedMenuType);
+        const locLabel =
+          MENU_LOCATIONS.find((l) => l.id === selectedMenuType)?.label || "Menu Global";
+        await upsertNavigationMenu({
+          data: {
+            id: currentMenuObj?.id && !String(currentMenuObj.id).startsWith("canonical-")
+              ? currentMenuObj.id
+              : undefined,
+            name: currentMenuObj?.name || currentMenuObj?.title || locLabel,
+            handle: selectedMenuType,
+            items: menuItems.map((it, idx) => ({
+              id: it.id,
+              label: it.label || "Item",
+              url: it.href || "/",
+              type: "internal" as const,
+              icon: it.icon || "Compass",
+              image_url: it.image_url || undefined,
+              badge_text: it.badge || undefined,
+              bg_color: it.bg_color || undefined,
+              text_color: it.text_color || undefined,
+              show_text: it.show_text !== false,
+              city_filter: it.city_filter || undefined,
+              starts_at: it.starts_at || undefined,
+              ends_at: it.ends_at || undefined,
+              order: idx,
+            })),
+          },
+        });
+      }
+      onApplyMenuToBlock?.(menuItems, selectedMenuType);
+      toast.success("Menu salvo no banco e sincronizado em tempo real com a vitrine!");
+      onClose();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar menu.");
+    } finally {
+      setIsSavingMenu(false);
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-96 p-0 flex flex-col bg-background">
-        <SheetHeader className="p-4 border-b border-border bg-muted/20">
-          <SheetTitle className="text-sm font-bold flex items-center gap-2">
-            <MenuIcon className="size-4 text-primary" />
-            <span>Gerenciar Menu (Manage Menu)</span>
-          </SheetTitle>
+      <SheetContent side="right" className="sm:max-w-3xl w-full p-0 flex flex-col bg-background">
+        <SheetHeader className="p-5 border-b border-border bg-muted/20">
+          <div className="flex items-center justify-between gap-3">
+            <SheetTitle className="text-base font-bold flex items-center gap-2">
+              <MenuIcon className="size-5 text-primary" />
+              <span>Gerenciador Avançado de Menus (Mobile 5 Abas, Hambúrguer & Header)</span>
+            </SheetTitle>
+            <Badge variant="outline" className="text-xs font-mono">
+              {isLoadingMenus ? "Sincronizando..." : `${menuItems.length} itens`}
+            </Badge>
+          </div>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
-            <div>
-              <Label className="text-xs font-bold block mb-1">
-                Qual menu está sendo exibido?
-              </Label>
-              <select
-                value={selectedMenuType}
-                onChange={(e) => setSelectedMenuType(e.target.value)}
-                className="w-full h-11 min-h-11 rounded-lg border border-border bg-card px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="header_main">Menu Principal do Topo</option>
-                <option value="noor_dock">Dock Squircle Noor (Mobile)</option>
-                <option value="departments">Menu de Departamentos</option>
-                <option value="footer_links">Menu do Rodapé</option>
-              </select>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-foreground">
-                Itens do Menu ({menuItems.length})
-              </span>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setMenuItems((prev) => [
-                    ...prev,
-                    {
-                      id: `m_${Date.now()}`,
-                      label: `Novo Item ${prev.length + 1}`,
-                      href: "#secao",
-                    },
-                  ]);
-                }}
-                className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Plus className="size-3.5" />
-                <span>Adicionar Item</span>
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              {menuItems.map((item, idx) => (
-                <div
-                  key={item.id}
-                  className="p-3 rounded-lg border border-border bg-muted/20 space-y-2"
+        <ScrollArea className="flex-1 p-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end p-4 rounded-xl border border-border bg-card">
+              <div className="md:col-span-8">
+                <Label className="text-xs font-bold block mb-2">
+                  Selecione a Estrutura de Navegação para Editar
+                </Label>
+                <select
+                  value={selectedMenuType}
+                  onChange={(e) => setSelectedMenuType(e.target.value)}
+                  className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-mono text-muted-foreground">#{idx + 1}</span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        disabled={idx === 0}
-                        onClick={() => moveItem(idx, "up")}
-                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        title="Subir"
-                      >
-                        <ArrowUp className="size-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={idx === menuItems.length - 1}
-                        onClick={() => moveItem(idx, "down")}
-                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        title="Descer"
-                      >
-                        <ArrowDown className="size-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setMenuItems((prev) => prev.filter((_, i) => i !== idx))
-                        }
-                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        title="Remover"
-                      >
-                        <X className="size-3.5" />
-                      </button>
+                  {MENU_LOCATIONS.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-4 flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setMenuItems((prev) => [
+                      ...prev,
+                      {
+                        id: `m_${Date.now()}`,
+                        label: `Novo Atalho ${prev.length + 1}`,
+                        href: "/explorar",
+                        icon: "Sparkles",
+                        show_text: true,
+                      },
+                    ]);
+                  }}
+                  className="w-full h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Plus className="size-4" />
+                  <span>Adicionar Botão ao Menu</span>
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {menuItems.map((item, idx) => {
+                const updateMenuItem = (patch: Partial<WixMenuItem>) => {
+                  const next = [...menuItems];
+                  next[idx] = { ...item, ...patch };
+                  setMenuItems(next);
+                };
+
+                return (
+                  <div
+                    key={item.id}
+                    className="p-4 rounded-xl border border-border bg-card space-y-4"
+                  >
+                    <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/60">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="font-mono text-xs">
+                          #{idx + 1}
+                        </Badge>
+                        <span className="text-sm font-bold text-foreground">
+                          {item.label || `Item ${idx + 1}`}
+                        </span>
+                        {item.badge ? (
+                          <Badge variant="outline" className="text-2xs">
+                            {item.badge}
+                          </Badge>
+                        ) : null}
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => moveItem(idx, "up")}
+                          className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          title="Subir"
+                        >
+                          <ArrowUp className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === menuItems.length - 1}
+                          onClick={() => moveItem(idx, "down")}
+                          className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          title="Descer"
+                        >
+                          <ArrowDown className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setMenuItems((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                          className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          title="Remover"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                      <div className="md:col-span-4">
+                        <MediaUploader
+                          label="Ícone Customizado (Upload Bucket)"
+                          bucket="banners"
+                          folder="menus"
+                          maxFiles={1}
+                          aspect={1}
+                          value={item.image_url ? [item.image_url] : []}
+                          onChange={(urls) => updateMenuItem({ image_url: urls[0] || "" })}
+                        />
+                      </div>
+
+                      <div className="md:col-span-8 space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <div>
+                            <Label className="text-2xs font-semibold text-muted-foreground block mb-1">
+                              Rótulo do Botão
+                            </Label>
+                            <Input
+                              value={item.label}
+                              onChange={(e) => updateMenuItem({ label: e.target.value })}
+                              placeholder="Ex: Explorar"
+                              className="h-11 min-h-11 text-xs bg-background"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-2xs font-semibold text-muted-foreground block mb-1">
+                              Rota / Link Destino
+                            </Label>
+                            <Input
+                              value={item.href}
+                              onChange={(e) => updateMenuItem({ href: e.target.value })}
+                              placeholder="/explorar"
+                              className="h-11 min-h-11 text-xs font-mono bg-background"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-2xs font-semibold text-muted-foreground block mb-1">
+                              Badge / Selo
+                            </Label>
+                            <Input
+                              value={item.badge || ""}
+                              onChange={(e) => updateMenuItem({ badge: e.target.value })}
+                              placeholder="Ex: NOVO, IA"
+                              className="h-11 min-h-11 text-xs bg-background"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                          <div>
+                            <Label className="text-2xs font-semibold text-muted-foreground block mb-1">
+                              Ícone Vetorial
+                            </Label>
+                            <select
+                              value={item.icon || "Compass"}
+                              onChange={(e) => updateMenuItem({ icon: e.target.value })}
+                              className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              {VITRINE_BUTTON_ICON_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <Label className="text-2xs font-semibold text-muted-foreground block mb-1">
+                              Cor de Fundo
+                            </Label>
+                            <Input
+                              value={item.bg_color || ""}
+                              onChange={(e) => updateMenuItem({ bg_color: e.target.value })}
+                              placeholder="Cor fundo"
+                              className="h-11 min-h-11 text-xs bg-background"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-2xs font-semibold text-muted-foreground block mb-1">
+                              Cor do Texto
+                            </Label>
+                            <Input
+                              value={item.text_color || ""}
+                              onChange={(e) => updateMenuItem({ text_color: e.target.value })}
+                              placeholder="Cor texto"
+                              className="h-11 min-h-11 text-xs bg-background"
+                            />
+                          </div>
+                          <label className="h-11 min-h-11 mt-5 px-3 rounded-lg border border-border bg-muted/20 flex items-center justify-between text-xs font-semibold text-foreground cursor-pointer">
+                            <span>Exibir Texto</span>
+                            <input
+                              type="checkbox"
+                              checked={item.show_text !== false}
+                              onChange={(e) => updateMenuItem({ show_text: e.target.checked })}
+                              className="size-4 accent-primary"
+                            />
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      value={item.label}
-                      onChange={(e) => {
-                        const next = [...menuItems];
-                        next[idx] = { ...item, label: e.target.value };
-                        setMenuItems(next);
-                      }}
-                      placeholder="Rótulo"
-                      className="h-11 min-h-11 text-xs bg-background"
-                    />
-                    <Input
-                      value={item.href}
-                      onChange={(e) => {
-                        const next = [...menuItems];
-                        next[idx] = { ...item, href: e.target.value };
-                        setMenuItems(next);
-                      }}
-                      placeholder="Link (/ ou #)"
-                      className="h-11 min-h-11 text-xs font-mono bg-background"
-                    />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </ScrollArea>
 
-        <div className="p-4 border-t border-border bg-card">
+        <div className="p-4 border-t border-border bg-card flex items-center justify-end gap-3">
           <Button
             type="button"
-            onClick={() => {
-              onApplyMenuToBlock?.(menuItems, selectedMenuType);
-              toast.success("Menu sincronizado com a navegação da vitrine!");
-              onClose();
-            }}
-            className="w-full h-11 min-h-11 rounded-lg bg-primary text-primary-foreground text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            variant="outline"
+            onClick={onClose}
+            className="h-11 min-h-11 px-5 rounded-lg text-xs font-semibold"
           >
-            Aplicar Menu na Página
+            Fechar
+          </Button>
+          <Button
+            type="button"
+            disabled={isSavingMenu}
+            onClick={handleSaveAndApply}
+            className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {isSavingMenu ? "Salvando..." : "Salvar no Banco & Aplicar na Página"}
           </Button>
         </div>
       </SheetContent>
@@ -842,13 +1060,36 @@ export function WixMenuManagerDrawer({
   );
 }
 
-// ── 3. WIX CMS COLLECTION TABLE MANAGER MODAL (PLANILHA RELACIONAL & MANAGE FIELDS) ──
+// ── 3. WIX CMS COLLECTION & IN-PAGE EDITABLE SHEET MODAL (PLANILHA RELACIONAL VIVA) ──
 
 export interface WixCmsCollectionManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   productsCount?: number;
   onInsertCollectionBlock?: (blockType: string, collectionName: string) => void;
+  selectedBlock?: OmniBlockInstance | null;
+  allBlocks?: OmniBlockInstance[];
+  onSelectBlock?: (blockId: string) => void;
+  onUpdateBlockConfig?: (key: string, value: any) => void;
+}
+
+function resolveEditableArrayForBlock(block?: OmniBlockInstance | null): {
+  arrayKey: "items" | "tiles" | "slides" | "sections_flat";
+  items: any[];
+} {
+  if (!block) return { arrayKey: "items", items: [] };
+  const cfg = (block.config || {}) as Record<string, any>;
+  if (block.type === "vitrine_bento_tetris" || Array.isArray(cfg.tiles)) {
+    return { arrayKey: "tiles", items: Array.isArray(cfg.tiles) ? cfg.tiles : [] };
+  }
+  if (block.type === "vitrine_metamorphic_banner" || Array.isArray(cfg.slides)) {
+    return { arrayKey: "slides", items: Array.isArray(cfg.slides) ? cfg.slides : [] };
+  }
+  if (block.type === "vitrine_lateral_drawer" && Array.isArray(cfg.sections)) {
+    const flat = cfg.sections.flatMap((s: any) => (Array.isArray(s.items) ? s.items : []));
+    return { arrayKey: "sections_flat", items: flat };
+  }
+  return { arrayKey: "items", items: Array.isArray(cfg.items) ? cfg.items : [] };
 }
 
 export function WixCmsCollectionManagerModal({
@@ -856,16 +1097,30 @@ export function WixCmsCollectionManagerModal({
   onClose,
   productsCount = 0,
   onInsertCollectionBlock,
+  selectedBlock,
+  allBlocks = [],
+  onSelectBlock,
+  onUpdateBlockConfig,
 }: WixCmsCollectionManagerModalProps) {
+  const [sheetScope, setSheetScope] = useState<"active_block" | "cms_collections">(
+    selectedBlock ? "active_block" : "cms_collections",
+  );
   const [selectedCollection, setSelectedCollection] = useState("catalog_products");
-  const [showManageFields, setShowManageFields] = useState(true);
+  const [showManageFields, setShowManageFields] = useState(false);
+
+  React.useEffect(() => {
+    if (selectedBlock) {
+      setSheetScope("active_block");
+    }
+  }, [selectedBlock?.id]);
+
   const [fields, setFields] = useState([
     { id: "f_title", name: "Title (PRIMARY)", type: "Text", enabled: true },
-    { id: "f_price", name: "Preço / Tarifa (R$)", type: "Number", enabled: true },
-    { id: "f_min_days", name: "Mínimo de Diárias", type: "Number", enabled: true },
-    { id: "f_location", name: "Localização / Cidade", type: "Map Location", enabled: true },
-    { id: "f_gallery", name: "Galeria de Fotos", type: "Media Gallery", enabled: true },
-    { id: "f_category", name: "Categoria", type: "Tag", enabled: true },
+    { id: "f_media", name: "Mídia / Ícone (Bucket)", type: "Image / Video", enabled: true },
+    { id: "f_badge", name: "Badge / Selo", type: "Tag", enabled: true },
+    { id: "f_colors", name: "Cores & Formato", type: "Style Token", enabled: true },
+    { id: "f_route", name: "Destino / Rota", type: "URL", enabled: true },
+    { id: "f_schedule", name: "Cidade & Agendamento", type: "Datetime / Geo", enabled: true },
   ]);
 
   const [rows, setRows] = useState([
@@ -903,28 +1158,121 @@ export function WixCmsCollectionManagerModal({
     },
   ]);
 
+  const { arrayKey, items: blockRows } = resolveEditableArrayForBlock(selectedBlock);
+
+  const commitBlockRows = (nextRows: any[]) => {
+    if (!selectedBlock || !onUpdateBlockConfig) return;
+    if (arrayKey === "sections_flat") {
+      const cfg = (selectedBlock.config || {}) as Record<string, any>;
+      const firstSec = Array.isArray(cfg.sections) && cfg.sections[0]
+        ? cfg.sections[0]
+        : { id: "sec_global", title: "Atalhos Principais" };
+      onUpdateBlockConfig("sections", [{ ...firstSec, items: nextRows }]);
+      onUpdateBlockConfig("items", nextRows);
+      return;
+    }
+    onUpdateBlockConfig(arrayKey, nextRows);
+  };
+
+  const handleAddBlockRow = () => {
+    if (!selectedBlock) return;
+    const newId = `item_${Date.now()}`;
+    if (arrayKey === "slides") {
+      commitBlockRows([
+        ...blockRows,
+        {
+          id: newId,
+          title: "Novo Banner Promocional",
+          subtitle: "Subtítulo editável na planilha",
+          badge: "DESTAQUE",
+          href: "/ofertas",
+          showOverlay: true,
+        },
+      ]);
+    } else if (arrayKey === "tiles") {
+      commitBlockRows([
+        ...blockRows,
+        {
+          id: newId,
+          title: "Novo Bloco Bento",
+          subtitle: "Subtítulo",
+          tag: "NOVO",
+          href: "/explorar",
+          spanX: 1,
+          spanY: 1,
+          mobileSpanX: 1,
+        },
+      ]);
+    } else {
+      commitBlockRows([
+        ...blockRows,
+        {
+          id: newId,
+          label: "Novo Botão",
+          title: "Novo Botão",
+          subtitle: "",
+          badge: "",
+          iconName: "Sparkles",
+          shape: "squircle",
+          showLabel: true,
+          href: "/ofertas",
+        },
+      ]);
+    }
+    toast.success("Nova linha adicionada ao bloco na Planilha!");
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-6xl max-h-screen p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border">
-        <DialogHeader className="h-14 px-6 border-b border-border flex flex-row items-center justify-between flex-none bg-muted/20">
+      <DialogContent className="max-w-7xl w-full max-h-sheet p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border">
+        <DialogHeader className="h-16 px-6 border-b border-border flex flex-row items-center justify-between flex-none bg-muted/20">
           <div className="flex items-center gap-3">
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-              <Database className="size-4" />
+            <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <TableIcon className="size-5" />
             </div>
             <div>
               <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>CMS — Gerenciador de Coleções e Campos Relacionais</span>
+                <span>Planilha Editável In-Page (Wix Sheet Mode) & Coleções CMS</span>
                 <Badge variant="outline" className="text-xs font-mono">
-                  {productsCount + rows.length} registros
+                  {sheetScope === "active_block"
+                    ? `${blockRows.length} itens na seção`
+                    : `${productsCount + rows.length} registros`}
                 </Badge>
               </DialogTitle>
               <p className="text-xs text-muted-foreground">
-                Edite dados em planilha, gerencie colunas e conecte coleções dinâmicas à página
+                Edite títulos, faça upload de ícones/banners no bucket, ajuste cores, rotas, cidades e timers em grade ampla
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="flex items-center rounded-lg border border-border bg-background p-1">
+              <button
+                type="button"
+                onClick={() => setSheetScope("active_block")}
+                className={cn(
+                  "h-11 min-h-11 px-3 rounded-md text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  sheetScope === "active_block"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Seção / Bloco da Página ({blockRows.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setSheetScope("cms_collections")}
+                className={cn(
+                  "h-11 min-h-11 px-3 rounded-md text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  sheetScope === "cms_collections"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Coleções Globais
+              </button>
+            </div>
+
             <Button
               type="button"
               size="sm"
@@ -933,20 +1281,9 @@ export function WixCmsCollectionManagerModal({
               className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Sliders className="size-3.5" />
-              <span>Gerenciar Campos (Manage Fields)</span>
+              <span>Colunas</span>
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => {
-                onInsertCollectionBlock?.("product_grid", selectedCollection);
-                onClose();
-              }}
-              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Plus className="size-3.5" />
-              <span>Inserir Coleção na Página</span>
-            </Button>
+
             <Button
               type="button"
               variant="ghost"
@@ -960,121 +1297,415 @@ export function WixCmsCollectionManagerModal({
         </DialogHeader>
 
         {/* Barra de Ferramentas da Planilha */}
-        <div className="px-6 py-2 border-b border-border bg-card flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <select
-              value={selectedCollection}
-              onChange={(e) => setSelectedCollection(e.target.value)}
-              className="h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <option value="catalog_products">Coleção: Catálogo de Produtos & Ofertas</option>
-              <option value="car_rental_3days">Coleção: Locadora & Carros (Mín. 3 Diárias)</option>
-              <option value="real_estate_properties">Coleção: Imóveis & Propriedades</option>
-              <option value="supermarket_club">Coleção: Supermercado & Clube</option>
-              <option value="news_articles">Coleção: Artigos & Notícias</option>
-            </select>
-
-            <Badge variant="secondary" className="text-xs">
-              Default View
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setRows((prev) => [
-                  ...prev,
-                  {
-                    id: `row_${Date.now()}`,
-                    title: `Novo Item da Coleção #${prev.length + 1}`,
-                    price: "R$ 199,00",
-                    rule: "Disponível",
-                    location: "Online / Loja",
-                    category: "Destaque",
-                  },
-                ]);
-                toast.success("Nova linha adicionada à coleção CMS!");
-              }}
-              className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Plus className="size-3.5" />
-              <span>Adicionar Linha</span>
-            </Button>
-          </div>
+        <div className="px-6 py-3 border-b border-border bg-card flex flex-wrap items-center justify-between gap-3">
+          {sheetScope === "active_block" ? (
+            <>
+              <div className="flex items-center gap-3 flex-wrap">
+                <Label className="text-xs font-bold text-muted-foreground">
+                  Seção da Página em Edição:
+                </Label>
+                <select
+                  value={selectedBlock?.id || ""}
+                  onChange={(e) => onSelectBlock?.(e.target.value)}
+                  className="h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {allBlocks.map((b, i) => {
+                    const bCfg = (b.config || {}) as Record<string, any>;
+                    const bTitle =
+                      bCfg.sectionTitle || bCfg.title || bCfg.greetingTitle || b.type;
+                    return (
+                      <option key={b.id} value={b.id}>
+                        {i + 1}. {bTitle} ({b.type})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAddBlockRow}
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plus className="size-4" />
+                <span>Adicionar Item nesta Seção</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <select
+                  value={selectedCollection}
+                  onChange={(e) => setSelectedCollection(e.target.value)}
+                  className="h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="catalog_products">Coleção: Catálogo de Produtos & Ofertas</option>
+                  <option value="car_rental_3days">Coleção: Locadora & Carros (Mín. 3 Diárias)</option>
+                  <option value="real_estate_properties">Coleção: Imóveis & Propriedades</option>
+                  <option value="supermarket_club">Coleção: Supermercado & Clube</option>
+                  <option value="news_articles">Coleção: Artigos & Notícias</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setRows((prev) => [
+                      ...prev,
+                      {
+                        id: `row_${Date.now()}`,
+                        title: `Novo Item da Coleção #${prev.length + 1}`,
+                        price: "R$ 199,00",
+                        rule: "Disponível",
+                        location: "Online / Loja",
+                        category: "Destaque",
+                      },
+                    ]);
+                    toast.success("Nova linha adicionada à coleção CMS!");
+                  }}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Adicionar Linha</span>
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    onInsertCollectionBlock?.("product_grid", selectedCollection);
+                    onClose();
+                  }}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Inserir Coleção na Página</span>
+                </Button>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
-          {/* Tabela Relacional */}
           <ScrollArea
             className={cn(
-              "p-6 max-h-96 lg:max-h-full",
-              showManageFields ? "lg:col-span-8 border-r border-border" : "lg:col-span-12",
+              "p-6 max-h-full",
+              showManageFields ? "lg:col-span-9 border-r border-border" : "lg:col-span-12",
             )}
           >
-            <div className="rounded-xl border border-border overflow-hidden">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-muted/50 border-b border-border text-muted-foreground font-bold">
-                    <th className="p-3">T Title (PRIMARY)</th>
-                    <th className="p-3"># Preço / Diária</th>
-                    <th className="p-3">Regra / Condição</th>
-                    <th className="p-3">Localização</th>
-                    <th className="p-3">Categoria</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {rows.map((row, idx) => (
-                    <tr key={row.id} className="hover:bg-muted/20">
-                      <td className="p-2">
-                        <Input
-                          value={row.title}
-                          onChange={(e) => {
-                            const next = [...rows];
-                            next[idx] = { ...row, title: e.target.value };
-                            setRows(next);
-                          }}
-                          className="h-11 min-h-11 text-xs font-semibold bg-background"
-                        />
-                      </td>
-                      <td className="p-2">
-                        <Input
-                          value={row.price}
-                          onChange={(e) => {
-                            const next = [...rows];
-                            next[idx] = { ...row, price: e.target.value };
-                            setRows(next);
-                          }}
-                          className="h-11 min-h-11 text-xs font-mono bg-background"
-                        />
-                      </td>
-                      <td className="p-2">
-                        <Badge variant="outline" className="text-xs">
-                          {row.rule}
-                        </Badge>
-                      </td>
-                      <td className="p-2 text-muted-foreground">{row.location}</td>
-                      <td className="p-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {row.category}
-                        </Badge>
-                      </td>
+            {sheetScope === "active_block" ? (
+              blockRows.length === 0 ? (
+                <div className="p-12 rounded-2xl border border-dashed border-border text-center space-y-3">
+                  <p className="text-sm font-bold text-foreground">
+                    Esta seção ainda não possui itens manuais cadastrados
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Clique em &ldquo;Adicionar Item nesta Seção&rdquo; para criar botões, banners ou cards diretamente na planilha.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={handleAddBlockRow}
+                    className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold gap-2"
+                  >
+                    <Plus className="size-4" />
+                    <span>Criar Primeiro Item</span>
+                  </Button>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-border scroll-area-carousel bg-card">
+                  <table className="w-full text-left border-collapse text-xs min-w-4xl">
+                    <thead>
+                      <tr className="bg-muted/50 border-b border-border text-muted-foreground font-bold">
+                        <th className="p-3 w-24"># Ordem</th>
+                        <th className="p-3 w-56">Mídia / Ícone (Upload Bucket)</th>
+                        <th className="p-3 min-w-52">Título & Subtítulo</th>
+                        <th className="p-3 w-28">Texto Visível</th>
+                        <th className="p-3 w-36">Badge / Selo</th>
+                        <th className="p-3 w-48">Cores & Formato</th>
+                        <th className="p-3 min-w-44">Destino / Rota</th>
+                        <th className="p-3 w-56">Cidade & Agendamento</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border align-top">
+                      {blockRows.map((row: any, idx: number) => {
+                        const updateRow = (patch: Record<string, any>) => {
+                          const next = [...blockRows];
+                          next[idx] = { ...row, ...patch };
+                          commitBlockRows(next);
+                        };
+                        const mediaUrl =
+                          row.imageUrl || row.imageDesktopUrl || row.imageMobileUrl || "";
+                        const titleVal = row.label ?? row.title ?? "";
+                        const badgeVal = row.badge ?? row.tag ?? "";
+
+                        return (
+                          <tr key={row.id || idx} className="hover:bg-muted/10">
+                            <td className="p-3">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-mono font-bold text-muted-foreground">
+                                  #{idx + 1}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    disabled={idx === 0}
+                                    onClick={() => {
+                                      const next = [...blockRows];
+                                      const tmp = next[idx - 1];
+                                      next[idx - 1] = next[idx];
+                                      next[idx] = tmp;
+                                      commitBlockRows(next);
+                                    }}
+                                    className="size-11 min-h-11 min-w-11 rounded-lg border border-border flex items-center justify-center hover:bg-muted disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    title="Subir"
+                                  >
+                                    <ArrowUp className="size-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={idx === blockRows.length - 1}
+                                    onClick={() => {
+                                      const next = [...blockRows];
+                                      const tmp = next[idx + 1];
+                                      next[idx + 1] = next[idx];
+                                      next[idx] = tmp;
+                                      commitBlockRows(next);
+                                    }}
+                                    className="size-11 min-h-11 min-w-11 rounded-lg border border-border flex items-center justify-center hover:bg-muted disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    title="Descer"
+                                  >
+                                    <ArrowDown className="size-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      commitBlockRows(blockRows.filter((_, i) => i !== idx))
+                                    }
+                                    className="size-11 min-h-11 min-w-11 rounded-lg border border-border text-destructive flex items-center justify-center hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    title="Remover"
+                                  >
+                                    <X className="size-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="p-3 space-y-2">
+                              <MediaUploader
+                                label="Upload Mídia"
+                                bucket="banners"
+                                folder="sheet"
+                                maxFiles={1}
+                                aspect={arrayKey === "slides" ? 16 / 9 : 1}
+                                value={mediaUrl ? [mediaUrl] : []}
+                                onChange={(urls) => {
+                                  const u = urls[0] || "";
+                                  updateRow({
+                                    imageUrl: u,
+                                    imageDesktopUrl: u,
+                                    imageMobileUrl: u,
+                                  });
+                                }}
+                              />
+                              <select
+                                value={row.iconName || row.icon || "Tag"}
+                                onChange={(e) =>
+                                  updateRow({ iconName: e.target.value, icon: e.target.value })
+                                }
+                                className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-2xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                {VITRINE_BUTTON_ICON_OPTIONS.map((opt) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    Ícone: {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+
+                            <td className="p-3 space-y-2">
+                              <Input
+                                value={titleVal}
+                                onChange={(e) =>
+                                  updateRow({ label: e.target.value, title: e.target.value })
+                                }
+                                placeholder="Título / Rótulo"
+                                className="h-11 min-h-11 text-xs font-bold bg-background"
+                              />
+                              <Input
+                                value={row.subtitle || ""}
+                                onChange={(e) => updateRow({ subtitle: e.target.value })}
+                                placeholder="Subtítulo opcional"
+                                className="h-11 min-h-11 text-2xs bg-background"
+                              />
+                            </td>
+
+                            <td className="p-3">
+                              <label className="h-11 min-h-11 px-3 rounded-lg border border-border bg-background flex items-center justify-between gap-2 cursor-pointer">
+                                <span className="text-2xs font-semibold">Exibir</span>
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    row.showLabel !== false && row.showOverlay !== false
+                                  }
+                                  onChange={(e) =>
+                                    updateRow({
+                                      showLabel: e.target.checked,
+                                      showOverlay: e.target.checked,
+                                    })
+                                  }
+                                  className="size-4 accent-primary"
+                                />
+                              </label>
+                            </td>
+
+                            <td className="p-3">
+                              <Input
+                                value={badgeVal}
+                                onChange={(e) =>
+                                  updateRow({ badge: e.target.value, tag: e.target.value })
+                                }
+                                placeholder="Ex: NOVO, IA"
+                                className="h-11 min-h-11 text-xs bg-background"
+                              />
+                            </td>
+
+                            <td className="p-3 space-y-2">
+                              <div className="grid grid-cols-2 gap-2">
+                                <Input
+                                  value={row.bgColor || ""}
+                                  onChange={(e) => updateRow({ bgColor: e.target.value })}
+                                  placeholder="Cor fundo"
+                                  className="h-11 min-h-11 text-2xs bg-background"
+                                />
+                                <Input
+                                  value={row.textColor || ""}
+                                  onChange={(e) => updateRow({ textColor: e.target.value })}
+                                  placeholder="Cor texto"
+                                  className="h-11 min-h-11 text-2xs bg-background"
+                                />
+                              </div>
+                              <select
+                                value={row.shape || row.cardVariant || "squircle"}
+                                onChange={(e) =>
+                                  updateRow({
+                                    shape: e.target.value,
+                                    cardVariant: e.target.value,
+                                  })
+                                }
+                                className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-2xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                <option value="squircle">Squircle</option>
+                                <option value="circle">Circular</option>
+                                <option value="pill">Pílula</option>
+                                <option value="wide">Card Amplo</option>
+                              </select>
+                            </td>
+
+                            <td className="p-3 space-y-2">
+                              <Input
+                                value={row.href || row.to || ""}
+                                onChange={(e) =>
+                                  updateRow({ href: e.target.value, to: e.target.value })
+                                }
+                                placeholder="/explorar"
+                                className="h-11 min-h-11 text-xs font-mono bg-background"
+                              />
+                              {arrayKey === "slides" ? (
+                                <Input
+                                  value={row.videoUrl || ""}
+                                  onChange={(e) => updateRow({ videoUrl: e.target.value })}
+                                  placeholder="URL Vídeo .mp4 opcional"
+                                  className="h-11 min-h-11 text-2xs bg-background"
+                                />
+                              ) : null}
+                            </td>
+
+                            <td className="p-3 space-y-2">
+                              <Input
+                                value={row.cityFilter || ""}
+                                onChange={(e) => updateRow({ cityFilter: e.target.value })}
+                                placeholder="Cidade (vazio = Global)"
+                                className="h-11 min-h-11 text-2xs bg-background"
+                              />
+                              <Input
+                                type="datetime-local"
+                                value={row.endsAt ? String(row.endsAt).slice(0, 16) : ""}
+                                onChange={(e) => updateRow({ endsAt: e.target.value })}
+                                title="Prazo / Auto-Ocultar Em"
+                                className="h-11 min-h-11 text-2xs bg-background"
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )
+            ) : (
+              <div className="rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-muted/50 border-b border-border text-muted-foreground font-bold">
+                      <th className="p-3">T Title (PRIMARY)</th>
+                      <th className="p-3"># Preço / Diária</th>
+                      <th className="p-3">Regra / Condição</th>
+                      <th className="p-3">Localização</th>
+                      <th className="p-3">Categoria</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {rows.map((row, idx) => (
+                      <tr key={row.id} className="hover:bg-muted/20">
+                        <td className="p-2">
+                          <Input
+                            value={row.title}
+                            onChange={(e) => {
+                              const next = [...rows];
+                              next[idx] = { ...row, title: e.target.value };
+                              setRows(next);
+                            }}
+                            className="h-11 min-h-11 text-xs font-semibold bg-background"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <Input
+                            value={row.price}
+                            onChange={(e) => {
+                              const next = [...rows];
+                              next[idx] = { ...row, price: e.target.value };
+                              setRows(next);
+                            }}
+                            className="h-11 min-h-11 text-xs font-mono bg-background"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <Badge variant="outline" className="text-xs">
+                            {row.rule}
+                          </Badge>
+                        </td>
+                        <td className="p-2 text-muted-foreground">{row.location}</td>
+                        <td className="p-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {row.category}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </ScrollArea>
 
           {/* Painel Lateral Manage Fields */}
           {showManageFields && (
-            <ScrollArea className="lg:col-span-4 p-6 bg-muted/10 max-h-96 lg:max-h-full">
+            <ScrollArea className="lg:col-span-3 p-6 bg-muted/10 max-h-full">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                    Manage Fields (Esquema)
+                    Colunas da Planilha
                   </h4>
                   <Button
                     type="button"

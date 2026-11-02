@@ -239,15 +239,23 @@ export function HomeMobileNativeApp({
     };
     return cmsItems.map((it, idx) => {
       const fallback = CANONICAL_5X2_CATEGORIES[idx] || CANONICAL_5X2_CATEGORIES[0];
+      const rawImg =
+        it.image_mobile_url ||
+        it.image_url ||
+        it.image_desktop_url ||
+        (isHealthyImageUrl(it.icon_name) ? it.icon_name : null);
       return {
         id: it.id || fallback.id,
         label: it.title || fallback.label,
         to: it.target_url || fallback.to,
         icon: (it.icon_name && iconByKey[it.icon_name]) || fallback.icon,
         badge: it.badge_text || undefined,
-        imageUrl: isHealthyImageUrl(it.image_mobile_url || it.image_url)
-          ? (it.image_mobile_url || it.image_url)
-          : null,
+        bgColor: it.bg_color || null,
+        textColor: it.text_color || null,
+        buttonShape: it.button_shape || null,
+        gradient: it.metadata?.gradient || null,
+        shadowMode: it.metadata?.shadow_mode || null,
+        imageUrl: isHealthyImageUrl(rawImg) ? rawImg : null,
         isAction: it.target_url === "#categorias" || it.icon_name === "SquaresFour",
       };
     });
@@ -506,6 +514,57 @@ export function HomeMobileNativeApp({
         </div>
       </div>
 
+      {/* ── 0.9 FAIXA PROMOCIONAL COM CRONÔMETRO REGRESSIVO (Black Friday / Oferta Relâmpago) ── */}
+      {isSectionActive("promo_strip_timer", false) && (() => {
+        const timerSec = getSection("promo_strip_timer");
+        const firstItem = timerSec?.items?.find((it) => it.is_active !== false);
+        const expiresAt =
+          firstItem?.ends_at ||
+          firstItem?.metadata?.timer_expires_at ||
+          timerSec?.ends_at ||
+          null;
+        if (expiresAt && new Date(expiresAt).getTime() <= Date.now()) return null;
+        const stripTitle = firstItem?.title || timerSec?.title || "Oferta por Tempo Limitado";
+        const stripSubtitle = firstItem?.subtitle || timerSec?.subtitle || null;
+        const stripTarget = firstItem?.target_url || "/ofertas";
+        const stripBg = firstItem?.bg_color || null;
+        const stripText = firstItem?.text_color || null;
+        const stripBadge = firstItem?.badge_text || "AO VIVO";
+        return (
+          <div className="px-3 sm:px-4">
+            <Link
+              to={stripTarget as any}
+              style={{
+                ...(stripBg ? { backgroundColor: stripBg } : {}),
+                ...(stripText ? { color: stripText } : {}),
+                ...(firstItem?.metadata?.gradient ? { backgroundImage: firstItem.metadata.gradient } : {}),
+              }}
+              className={cn(
+                "w-full min-h-12 px-4 py-2 rounded-2xl flex items-center justify-between gap-3 transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                !stripBg && !firstItem?.metadata?.gradient && "bg-primary text-primary-foreground",
+              )}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="px-2 py-1 rounded-md bg-background/20 text-3xs font-black uppercase tracking-wider shrink-0">
+                  {stripBadge}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-extrabold leading-tight truncate">{stripTitle}</p>
+                  {stripSubtitle && (
+                    <p className="text-2xs opacity-85 leading-tight truncate">{stripSubtitle}</p>
+                  )}
+                </div>
+              </div>
+              {expiresAt && (
+                <span className="px-2 py-1 rounded-lg bg-background/20 font-mono text-2xs font-black tabular-nums shrink-0">
+                  Até {new Date(expiresAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                </span>
+              )}
+            </Link>
+          </div>
+        );
+      })()}
+
       {/* ── 1. ALERTA / FAIXA ROXA DE CUPOM iFOOD (Pílula Sem Borda - Apenas se existirem cupons reais) ── */}
       {isSectionActive("promo_coupon_banner", true) && hasActiveCoupons && (
         <div className="px-3 sm:px-4">
@@ -593,11 +652,35 @@ export function HomeMobileNativeApp({
                     className="flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl select-none relative"
                   >
                     <div className="relative">
-                      <div className="size-12 sm:size-14 rounded-2xl bg-card hover:bg-muted/60 border border-border/50 flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden">
+                      <div
+                        style={{
+                          ...(cat.bgColor ? { backgroundColor: cat.bgColor } : {}),
+                          ...(cat.gradient ? { backgroundImage: cat.gradient } : {}),
+                          ...(cat.shadowMode === "md"
+                            ? { boxShadow: "0 4px 12px color-mix(in srgb, var(--foreground) 10%, transparent)" }
+                            : cat.shadowMode === "lg"
+                              ? { boxShadow: "0 10px 24px color-mix(in srgb, var(--foreground) 18%, transparent)" }
+                              : {}),
+                        }}
+                        className={cn(
+                          "size-12 sm:size-14 border border-border/50 flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden",
+                          cat.buttonShape === "rounded-full"
+                            ? "rounded-full"
+                            : cat.buttonShape === "rounded-lg"
+                              ? "rounded-lg"
+                              : "rounded-2xl",
+                          !cat.bgColor && !cat.gradient && "bg-card hover:bg-muted/60",
+                        )}
+                      >
                         {cat.imageUrl ? (
                           <img src={cat.imageUrl} alt={cat.label} className="size-10 object-contain" loading="lazy" />
                         ) : (
-                          <Icon size={26} weight="bold" className="text-primary" />
+                          <Icon
+                            size={26}
+                            weight="bold"
+                            style={cat.textColor ? { color: cat.textColor } : undefined}
+                            className="text-primary"
+                          />
                         )}
                       </div>
                       {cat.badge && (
@@ -606,7 +689,10 @@ export function HomeMobileNativeApp({
                         </span>
                       )}
                     </div>
-                    <span className="text-2xs font-semibold text-foreground text-center leading-tight break-words text-wrap">
+                    <span
+                      style={cat.textColor ? { color: cat.textColor } : undefined}
+                      className="text-2xs font-semibold text-foreground text-center leading-tight break-words text-wrap"
+                    >
                       {cat.label}
                     </span>
                   </Link>
@@ -792,7 +878,10 @@ export function HomeMobileNativeApp({
       {customSections.map((sec: HomePageSectionDTO) => {
         const activeSecItems = (sec.items || []).filter(
           (it) =>
-            it.is_active !== false && (Boolean(it.title?.trim()) || isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url)),
+            it.is_active !== false &&
+            (Boolean(it.title?.trim()) ||
+              Boolean(it.icon_name?.trim()) ||
+              isHealthyImageUrl(it.image_desktop_url || it.image_mobile_url || it.image_url)),
         );
         if (activeSecItems.length === 0) return null;
 
@@ -838,9 +927,15 @@ export function HomeMobileNativeApp({
                     id={it.id}
                     title={it.title}
                     imageUrl={it.image_desktop_url || it.image_url || it.image_mobile_url}
+                    iconName={it.icon_name}
                     targetUrl={it.target_url}
                     showText={it.show_text === true}
                     badgeText={it.badge_text}
+                    bgColor={it.bg_color}
+                    textColor={it.text_color}
+                    buttonShape={it.button_shape}
+                    gradient={it.metadata?.gradient}
+                    shadowMode={it.metadata?.shadow_mode}
                   />
                 ))}
               </div>

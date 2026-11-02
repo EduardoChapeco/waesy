@@ -640,10 +640,10 @@ export function VitrineLateralMenuSheet({
             <div className="pt-2 border-t border-border/40">
               <button
                 type="button"
-                onClick={() => handleNavigate("/admin-master/botoes?tab=drawer_module")}
+                onClick={() => handleNavigate("/admin-master/home-editor")}
                 className="w-full h-11 min-h-11 px-3 rounded-xl border border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors text-xs font-bold text-primary flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
               >
-                <span>Editar Menu no Admin Master</span>
+                <span>Editar Menu Lateral no OmniBuilder</span>
                 <ChevronRight className="size-3.5" />
               </button>
             </div>

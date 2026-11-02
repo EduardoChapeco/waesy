@@ -1,8 +1,8 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { getPlatformMetrics, getPlatformStoresList, getPlatformInvoicesList, toggleStoreStatus } from "@/services/master.functions";
 import { listPlatformDomainTaxonomies, upsertPlatformDomainTaxonomy } from "@/services/deep-core.functions";
 import { formatMoney } from "@/lib/money";
-import { DollarSign, Store, Activity, AlertTriangle, Users, UserCheck, Layers, Plus } from "lucide-react";
+import { DollarSign, Store, Activity, AlertTriangle, Users, UserCheck, Layers, Plus, ShieldCheck, Truck, Lock, Layout, ArrowRight, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -141,8 +141,117 @@ function AdminMasterDashboard() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="pb-4 border-b border-border/40">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Painel Master</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Painel Master</h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Visão unificada da governança, liquidação financeira, moderação e motor operacional da plataforma.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            size="sm"
+            variant="default"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Link to="/admin-master/home-editor">
+              <Sparkles className="size-4" />
+              <span>Abrir Omni Builder</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* Cockpit de Fila Zero e Missões Prioritárias */}
+      <div className="rounded-xl border border-border/70 bg-card p-4 space-y-3 shadow-2xs">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="size-2 rounded-full bg-primary" />
+            <h2 className="text-xs font-bold text-foreground tracking-wide uppercase font-mono">
+              Cockpit de Operação Diária · Fila Zero
+            </h2>
+          </div>
+          <span className="text-3xs text-muted-foreground font-mono">
+            Triagem prioritária para o gestor
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          <Link
+            to="/admin-master/kyc"
+            className="h-14 min-h-14 px-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors flex items-center justify-between gap-3 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <UserCheck className="size-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">Fila de KYC</p>
+                <p className="text-3xs text-muted-foreground truncate">Validação de identidade</p>
+              </div>
+            </div>
+            <Badge
+              variant={metrics.pendingKyc > 0 ? "default" : "secondary"}
+              className="text-2xs font-bold px-2 py-1 shrink-0"
+            >
+              {metrics.pendingKyc}
+            </Badge>
+          </Link>
+
+          <Link
+            to="/admin-master/entregadores/auditoria"
+            className="h-14 min-h-14 px-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors flex items-center justify-between gap-3 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="size-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">Entregadores Waesy Go</p>
+                <p className="text-3xs text-muted-foreground truncate">Auditoria de CNH e frotas</p>
+              </div>
+            </div>
+            <ArrowRight className="size-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform shrink-0" />
+          </Link>
+
+          <Link
+            to="/admin-master/denuncias"
+            className="h-14 min-h-14 px-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors flex items-center justify-between gap-3 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="size-8 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
+                <AlertTriangle className="size-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">Denúncias & Fraudes</p>
+                <p className="text-3xs text-muted-foreground truncate">Moderação e segurança</p>
+              </div>
+            </div>
+            <Badge
+              variant={metrics.pendingReports > 0 ? "destructive" : "secondary"}
+              className="text-2xs font-bold px-2 py-1 shrink-0"
+            >
+              {metrics.pendingReports}
+            </Badge>
+          </Link>
+
+          <Link
+            to="/admin-master/auditoria-forense"
+            className="h-14 min-h-14 px-3 rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors flex items-center justify-between gap-3 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="size-8 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
+                <Lock className="size-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">Ledger Bacen</p>
+                <p className="text-3xs text-muted-foreground truncate">Conformidade e hash auditável</p>
+              </div>
+            </div>
+            <ArrowRight className="size-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform shrink-0" />
+          </Link>
+        </div>
       </div>
 
       {/* Metrics Grid */}

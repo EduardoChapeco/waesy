@@ -21,6 +21,7 @@ import { resolveActiveCity } from "@/lib/city-helper";
 // BFF Functions — 100% Real no Supabase | Zero Mocks
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
 import { listHomeHeroCards, type HotpageDTO } from "@/services/hotpage.functions";
+import { listPublicHomePageSections, type HomePageSectionDTO } from "@/services/admin-home-cms.functions";
 import { getPublicDirectory, type DirectoryListingDTO } from "@/services/directory.functions";
 import { getPublicClassifieds } from "@/services/classifieds.functions";
 import { listPublicJobs, type JobItemDTO } from "@/services/jobs.functions";
@@ -130,6 +131,7 @@ export const Route = createFileRoute("/_store/explorar")({
         concursos,
         marketplaceFeed,
         workspaceListings,
+        cmsSections,
       ] = await Promise.all([
         listActiveBanners({ data: { placement: "home", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
@@ -144,6 +146,7 @@ export const Route = createFileRoute("/_store/explorar")({
         getAllPublicConcursos({ data: { filter: "all" } }).catch(() => []),
         getMarketplaceFeed().catch(() => ({ sections: [], allProducts: [] })),
         listUnifiedListings({ data: { origin: "workspace", limit: 36 } }).catch(() => []),
+        listPublicHomePageSections({ data: { city: filteredCity } }).catch(() => []),
       ]);
 
       const directWorkspaceProducts = (workspaceListings || []).map((item: UnifiedListing) => {
@@ -188,6 +191,7 @@ export const Route = createFileRoute("/_store/explorar")({
         feedPosts: (feedResponse as MuralFeedResponse)?.items || [],
         concursos: concursos || [],
         marketplaceProducts: Array.from(combinedMap.values()),
+        cmsSections: cmsSections || [],
         activeCity: filteredCity,
       };
     } catch (err) {
@@ -205,6 +209,7 @@ export const Route = createFileRoute("/_store/explorar")({
         feedPosts: [],
         concursos: [],
         marketplaceProducts: [],
+        cmsSections: [],
         activeCity: undefined,
       };
     }
@@ -239,7 +244,43 @@ function CommunityHomePage() {
     feedPosts = [],
     concursos = [],
     marketplaceProducts = [],
+    cmsSections = [],
   } = ((Route.useLoaderData?.() as any) || {});
+
+  const resolvedExploreShortcuts = useMemo(() => {
+    const expCatSection = (cmsSections as HomePageSectionDTO[]).find(
+      (s) => s.section_key === "explore_categories" && s.is_active !== false,
+    );
+    const activeItems = (expCatSection?.items || []).filter((it) => it.is_active !== false);
+    if (activeItems.length > 0) {
+      return activeItems.map((it) => ({
+        id: it.id,
+        title: it.title || "Categoria",
+        targetUrl: it.target_url || "/explorar",
+        imageUrl: it.image_desktop_url || it.image_url || it.image_mobile_url || null,
+        iconName: it.icon_name || null,
+        badgeText: it.badge_text || null,
+        bgColor: it.bg_color || null,
+        textColor: it.text_color || null,
+        buttonShape: it.button_shape || null,
+        gradient: it.metadata?.gradient || null,
+        shadowMode: it.metadata?.shadow_mode || null,
+        showText: it.show_text !== false,
+      }));
+    }
+    return CANONICAL_EXPLORAR_SHORTCUTS.map((c) => ({
+      ...c,
+      imageUrl: null,
+      iconName: null,
+      badgeText: null,
+      bgColor: null,
+      textColor: null,
+      buttonShape: null,
+      gradient: null,
+      shadowMode: null,
+      showText: true,
+    }));
+  }, [cmsSections]);
 
   // Estado dos 3 Modos Canônicos de Visualização (Feed, Grid, List) e Filtros
   const [search, setSearch] = useState("");
@@ -577,13 +618,21 @@ function CommunityHomePage() {
       <section aria-label="Categorias Principais" className="w-full">
         {/* design-lint-ignore DL-29 reason:"Grade iFood canonica 5 colunas movel" expiry:"2027-12-31" */}
         <div className="grid grid-cols-5 md:grid-cols-5 lg:grid-cols-10 gap-y-3 gap-x-2 sm:gap-3">
-          {CANONICAL_EXPLORAR_SHORTCUTS.map((cat) => (
+          {resolvedExploreShortcuts.map((cat) => (
             <IFoodSquareCategoryButton
               key={cat.id}
               id={cat.id}
               title={cat.title}
+              imageUrl={cat.imageUrl}
+              iconName={cat.iconName}
               targetUrl={cat.targetUrl}
-              showText={true}
+              showText={cat.showText}
+              badgeText={cat.badgeText}
+              bgColor={cat.bgColor}
+              textColor={cat.textColor}
+              buttonShape={cat.buttonShape}
+              gradient={cat.gradient}
+              shadowMode={cat.shadowMode}
             />
           ))}
         </div>
