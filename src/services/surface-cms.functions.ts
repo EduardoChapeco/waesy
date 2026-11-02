@@ -1626,10 +1626,11 @@ export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST
   z.object({
    pageSlug: z.string().min(1),
    pageTitle: z.string().optional(),
+   citySlug: z.string().nullable().optional(),
    forceRehydrate: z.boolean().optional(),
   }),
  )
- .handler(async ({ data: { pageSlug, pageTitle, forceRehydrate } }) => {
+ .handler(async ({ data: { pageSlug, pageTitle, citySlug, forceRehydrate } }) => {
   const supabase = getServerClient();
   const { getServerIdentity } = await import("@/lib/server-access");
   const identity = await getServerIdentity().catch(() => ({ store_id: null }));
