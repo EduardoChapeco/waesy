@@ -837,7 +837,7 @@ export function WorkspaceViabilityPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
+                    <div className="p-3 rounded-xl bg-muted/30">
                       <span className="text-xs text-muted-foreground block">
                         Aprovação Preço Base
                       </span>
@@ -846,7 +846,7 @@ export function WorkspaceViabilityPage() {
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
+                    <div className="p-3 rounded-xl bg-muted/30">
                       <span className="text-xs text-muted-foreground block">
                         Aprovação Preço Sugerido
                       </span>
@@ -855,7 +855,7 @@ export function WorkspaceViabilityPage() {
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
+                    <div className="p-3 rounded-xl bg-muted/30">
                       <span className="text-xs text-muted-foreground block">
                         Ponto de Equilíbrio
                       </span>
@@ -864,7 +864,7 @@ export function WorkspaceViabilityPage() {
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
+                    <div className="p-3 rounded-xl bg-muted/30">
                       <span className="text-xs text-muted-foreground block">
                         Peso do Aluguel / Receita
                       </span>

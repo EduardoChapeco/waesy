@@ -103,7 +103,7 @@ function WorkspaceSuppliersPage() {
   ], [suppliers]);
 
   return (
-    <div className="px-0 sm:px-6 lg:px-8 py-2 sm:py-6 max-w-7xl mx-auto space-y-6">
+    <div className="px-0 sm:px-6 lg:px-8 py-2 sm:py-6 w-full space-y-6">
       <WorkspaceCanonicalToolbar
         tabs={supplierTabs}
         activeTab={selectedKind}
@@ -145,7 +145,7 @@ function WorkspaceSuppliersPage() {
  {filtered.map((s) => (
  <div
  key={s.id}
- className="p-5 rounded-lg bg-card border border-border hover:border-primary/40 transition-colors duration-200 shadow-sm flex flex-col justify-between space-y-4"
+ className="p-5 rounded-2xl bg-card border border-border hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between space-y-4"
  >
  <div className="space-y-2">
  <div className="flex items-start justify-between gap-2">

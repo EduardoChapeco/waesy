@@ -1810,7 +1810,7 @@ export const deleteCustomerAddress = createServerFn({ method: "POST" })
  }
  });
 
-// ─── CRM LEAD 360° DRAWER & MEETINGS (TRAVELAGENCIAS ENTERPRISE STANDARD) ──
+// ─── CRM LEAD 360° DRAWER & MEETINGS (ENTERPRISE STANDARD) ──
 
 export const getLeadById = createServerFn({ method: "GET" })
   .validator(z.object({ leadId: z.string().uuid() }))

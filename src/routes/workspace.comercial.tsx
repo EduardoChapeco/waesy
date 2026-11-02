@@ -288,7 +288,7 @@ function WorkspaceComercialPage() {
     }
   };
 
-  // Formulário Avançado de Novo Lead (Padrão TravelAgências Enterprise)
+  // Formulário Avançado de Novo Lead (Padrão Enterprise)
   const initialNewLeadState = {
     name: "",
     email: "",
@@ -942,14 +942,14 @@ function WorkspaceComercialPage() {
         })}
       </div>
 
-      {/* ── MODAL / SHEET LATERAL DE NOVA OPORTUNIDADE (TRAVELAGÊNCIAS STANDARD) ── */}
+      {/* ── MODAL / SHEET LATERAL DE NOVA OPORTUNIDADE (PADRÃO ENTERPRISE) ── */}
       <Sheet open={isNewLeadOpen} onOpenChange={setIsNewLeadOpen}>
         <SheetContent side="right" className="w-full sm:max-w-2xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           <div className="space-y-6">
             <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-md">
-                  TravelAgências Standard
+                  Cockpit Comercial Enterprise
                 </span>
                 <span className="text-xs text-muted-foreground">Etapa: {STAGES.find((s) => s.id === newLeadTargetStage)?.title}</span>
               </div>
@@ -1236,9 +1236,9 @@ function WorkspaceComercialPage() {
         </SheetContent>
       </Sheet>
 
-      {/* ── FICHA 360° DO LEAD (TRAVELAGÊNCIAS ENTERPRISE STANDARD) ── */}
+      {/* ── FICHA 360° DO LEAD (DOSSIÊ ENTERPRISE STANDARD) ── */}
       <Sheet open={!!selectedLead} onOpenChange={(open) => !open && setSelectedLead(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
+        <SheetContent side="right" size="dossier" className="p-4 sm:p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           {selectedLead && (
             <>
               <div className="space-y-5">
@@ -1955,7 +1955,7 @@ function WorkspaceComercialPage() {
                       ) : (
                         <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                           {customer360Data.activities.map((act: any) => (
-                            <div key={act.id} className="p-2 rounded-lg border border-border/40 bg-card text-xs text-muted-foreground/75 flex items-center justify-between">
+                            <div key={act.id} className="p-3 rounded-xl bg-muted/30 text-xs text-muted-foreground flex items-center justify-between">
                               <div>
                                 <span className="font-medium text-foreground">{act.content}</span>
                                 <span className="text-xs text-muted-foreground block">

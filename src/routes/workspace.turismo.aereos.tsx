@@ -298,7 +298,7 @@ export default function FlightsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200 overflow-x-hidden">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200 overflow-x-hidden">
       <WorkspaceCanonicalToolbar
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
@@ -388,7 +388,7 @@ export default function FlightsPage() {
                 <div className="space-y-2 md:col-span-1">
                   <Label className="text-xs font-semibold">Nome Completo do Passageiro</Label>
                   <Input
-                    placeholder="Ex: João da Silva Sauro"
+                    placeholder="Nome completo do passageiro (conforme documento)"
                     value={activePassengerDisplay}
                     onChange={(e) => setPassengerName(e.target.value)}
                     disabled={Boolean(selectedCustomerId)}
@@ -690,7 +690,7 @@ export default function FlightsPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => deleteMutation.mutate(it.id)}
-                      className="size-11 sm:size-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                      className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer"
                     >
                       <Trash2 className="size-4" />
                     </Button>

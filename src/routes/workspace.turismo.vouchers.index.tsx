@@ -226,7 +226,7 @@ export default function WorkspaceVouchersPage() {
   ];
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}
       <WorkspaceCanonicalToolbar
         tabs={TABS}
@@ -480,7 +480,7 @@ export default function WorkspaceVouchersPage() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-lg border border-border/40">
+                <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-xl">
                   <Button
                     type="button"
                     size="sm"
@@ -562,7 +562,7 @@ export default function WorkspaceVouchersPage() {
                       <span>Baixar PDF (A4)</span>
                     </Button>
                   </div>
-                  <div className="waesy-document-preview-strip w-full p-4 bg-muted/30 rounded-lg border border-border/40 flex justify-center">
+                  <div className="waesy-document-preview-strip w-full p-4 bg-muted/20 rounded-2xl flex justify-center">
                     <div className="scale-75 sm:scale-85 md:scale-90 origin-top shadow-xs">
                       <TemplateVoucherA4
                         voucher={companionModalVoucher}

@@ -14,7 +14,7 @@ export const Route = createFileRoute('/viajante/$token')({
       {
         title: loaderData?.context?.agencyName
           ? `Ficha Cadastral | ${loaderData.context.agencyName}`
-          : 'Ficha Cadastral do Passageiro | TravelOS',
+          : 'Ficha Cadastral do Passageiro | Agência de Turismo',
       },
     ],
   }),

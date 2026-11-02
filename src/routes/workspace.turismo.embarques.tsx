@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { WorkspaceCanonicalToolbar } from '@/components/workspace/workspace-canonical-toolbar';
 import { EmptyState } from '@/components/state/states';
+import { cn } from '@/lib/utils';
 import { FileAttachmentUpload } from '@/components/ui/file-attachment-upload';
 import { toast } from 'sonner';
 import { humanizeErrorMessage } from '@/lib/humanize-error';
@@ -80,6 +81,14 @@ const CATEGORY_COLORS: Record<ChecklistCategory, string> = {
   airline: 'text-primary bg-indigo-500/10',
   hotel: 'text-pink-600 bg-pink-500/10',
   custom: 'text-muted-foreground bg-muted',
+};
+
+const STAGE_BAR_COLORS: Record<string, string> = {
+  booked: 'bg-blue-500',
+  vouchers_ready: 'bg-indigo-500',
+  checkin_48h: 'bg-amber-500',
+  traveling: 'bg-emerald-500',
+  post_trip: 'bg-purple-500',
 };
 
 const DOC_TYPE_LABELS: Record<DocumentType, string> = {
@@ -493,7 +502,7 @@ function WorkspaceBoardingPage() {
     : null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 flex flex-col min-h-dvh pb-12 overflow-x-hidden">
+    <div className="w-full px-0 sm:px-4 flex flex-col min-h-dvh pb-12 overflow-x-hidden">
       {/* ── Canonical Toolbar ── */}
       {/* design-lint-ignore DL-15 reason:"Toolbar canônica encapsula foco e alvos em suas primitivas" expiry:"2026-12-31" */}
       <WorkspaceCanonicalToolbar
@@ -719,8 +728,9 @@ function WorkspaceBoardingPage() {
                 return (
                   <div
                     key={col.id}
-                    className="flex-none w-80 bg-muted/20 border border-border rounded-lg flex flex-col"
+                    className="flex-none w-80 bg-muted/40 border border-border/60 rounded-3xl flex flex-col overflow-hidden"
                   >
+                    <div className={cn("h-1.5 w-full shrink-0", STAGE_BAR_COLORS[col.id] || "bg-primary/40")} />
                     <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0">
                       <div>
                         <h3 className="text-xs font-bold text-foreground">{col.label}</h3>
@@ -1019,7 +1029,7 @@ function WorkspaceBoardingPage() {
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 text-xs space-y-2">
+              <div className="p-4 rounded-xl bg-muted/30 text-xs space-y-2">
                 <span className="text-xs font-mono font-bold uppercase text-muted-foreground">Dados do Roteiro</span>
                 <div className="flex justify-between items-center text-sm font-bold text-foreground">
                   <span>{exportingGuiaObj.destination}</span>
@@ -1030,7 +1040,7 @@ function WorkspaceBoardingPage() {
               </div>
 
               {exportingGuiaObj.airline_code && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/40 text-xs space-y-1">
+                <div className="p-4 rounded-xl bg-muted/30 text-xs space-y-1">
                   <span className="text-xs font-mono font-bold uppercase text-muted-foreground">Voo e Companhia Aérea</span>
                   <p className="font-bold text-foreground">
                     {exportingGuiaObj.airline_code} {exportingGuiaObj.flight_number || ""}
@@ -1039,7 +1049,7 @@ function WorkspaceBoardingPage() {
               )}
 
               {exportingGuiaObj.hotel_name && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/40 text-xs space-y-1">
+                <div className="p-4 rounded-xl bg-muted/30 text-xs space-y-1">
                   <span className="text-xs font-mono font-bold uppercase text-muted-foreground">Hospedagem Confirmada</span>
                   <p className="font-bold text-foreground">{exportingGuiaObj.hotel_name}</p>
                 </div>
@@ -1097,7 +1107,7 @@ function DepartureCard({
           onOpen();
         }
       }}
-      className={`p-4 rounded-lg border cursor-pointer hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${urgencyClass}`}
+      className={`p-4 rounded-2xl border bg-card cursor-pointer hover:border-foreground/25 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none ${urgencyClass}`}
     >
       <div className="flex items-start justify-between gap-1 mb-2">
         <div className="min-w-0 flex-1">

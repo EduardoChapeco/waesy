@@ -100,8 +100,6 @@ export const listPublicTourism = createServerFn({ method: "GET" })
  .from("tourism_experiences")
  .select("*")
  .eq("status", "active")
- .not("id", "like", "b0000000-%")
- 
  .order("is_featured", { ascending: false })
  .order("created_at", { ascending: false })
  .limit(limit);
@@ -624,7 +622,7 @@ export const createTourismExperience = createServerFn({ method: "POST" })
  return { success: true, experience_id: newRow.id };
  });
 
-// ─── ESTRUTURAS CANÔNICAS DE COTAÇÃO DE VIAGEM & HOSPEDAGEM (PADRÃO CVC / TRAVELAGENCIAS) ───
+// ─── ESTRUTURAS CANÔNICAS DE COTAÇÃO DE VIAGEM & HOSPEDAGEM (PADRÃO ENTERPRISE) ───
 export type TravelTripType = "air_package" | "hotel_only" | "cruise" | "bus" | "visa_assistance";
 
 export interface TravelQuoteRequestDTO {

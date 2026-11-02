@@ -213,7 +213,7 @@ function WorkspaceProposalsIndexPage() {
  toolDescription="O criador de lâminas e propostas interativas foi desenvolvido especificamente para agências de turismo e consultores de viagem apresentarem roteiros visuais aos passageiros."
  store={store}
  >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-dvh overflow-x-hidden">
+      <div className="w-full px-0 sm:px-4 flex flex-col gap-4 animate-in fade-in duration-200 min-h-dvh overflow-x-hidden">
         {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
         <WorkspaceCanonicalToolbar
           tabs={[

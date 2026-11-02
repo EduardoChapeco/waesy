@@ -58,6 +58,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { TravelerVerificationFlow } from "@/components/tourism/checkout/TravelerVerificationFlow";
 import { toast } from "sonner";
 import {
   listLeads,
@@ -264,6 +265,8 @@ export default function WorkspaceTurismoCockpitPage() {
   const [search, setSearch] = useState("");
   const [ownerFilter, setOwnerFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [temperatureFilter, setTemperatureFilter] = useState("all");
+  const [mobileActiveStage, setMobileActiveStage] = useState<TourismLeadStage>("new");
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [proposalLead, setProposalLead] = useState<UnifiedProposalWorkspaceLead | null>(null);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
@@ -819,9 +822,18 @@ export default function WorkspaceTurismoCockpitPage() {
         l.acquisition_channel !== sourceFilter
       )
         return false;
+      if (temperatureFilter !== "all") {
+        const rawTemp = String(l.temperature || l.custom_fields?.temperature || "").toLowerCase();
+        const lastDate = l.last_contacted_at || l.created_at;
+        const daysInactive = lastDate ? Math.floor(Math.abs(Date.now() - new Date(lastDate).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+        const isCold = rawTemp === "cold" || rawTemp === "frio" || daysInactive >= 10;
+        const isHot = rawTemp === "hot" || rawTemp === "quente" || ((l.estimated_value_cents || 0) >= 1200000 && !isCold);
+        const resolvedTemp = isHot ? "hot" : isCold ? "cold" : "warm";
+        if (resolvedTemp !== temperatureFilter) return false;
+      }
       return true;
     });
-  }, [leads, search, ownerFilter, sourceFilter]);
+  }, [leads, search, ownerFilter, sourceFilter, temperatureFilter]);
 
   // Agrupamento por Estágio
   const leadsByStage = useMemo(() => {
@@ -968,205 +980,240 @@ export default function WorkspaceTurismoCockpitPage() {
   ];
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
-      {/* ── Barra Superior Canônica ── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
-            <Compass className="size-5" />
-          </span>
-          <div>
+    <div
+      className={cn(
+        "w-full flex-1 flex flex-col min-h-0 px-0 animate-in fade-in duration-200",
+        activeViewTab === "kanban"
+          ? "h-full min-h-0 overflow-hidden space-y-2 pb-0"
+          : "space-y-3 pb-16 lg:pb-2"
+      )}
+    >
+      {/* ── Sub-Header Unificado do Funil de Atendimento ── */}
+      <div className="flex flex-col gap-3 rounded-2xl bg-card border border-border/60 p-3 sm:p-4">
+        {/* Linha 1: Título do Funil + KPIs em Pílulas Tabulares + Ações Operacionais */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-xl font-bold tracking-tight text-foreground truncate">
-                Turismo & Viagens
-              </h1>
-              <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
-                {pipelineMetrics.totalLeads} oportunidades
-              </Badge>
+              <span className="size-9 rounded-xl bg-muted flex items-center justify-center text-foreground shrink-0">
+                <Compass className="size-4" />
+              </span>
+              <div>
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
+                  Qualificação & Funil de Turismo
+                </h1>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Cockpit comercial unificado: Atendimento, montagem de propostas e viagens confirmadas
-            </p>
-          </div>
-        </div>
 
-        {/* Ações Primárias */}
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsImportModalOpen(true)}
-            className="h-11 min-h-11 px-3 text-xs font-medium gap-2 focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Upload className="size-3.5 text-muted-foreground" />
-            <span className="hidden sm:inline">Importar Leads</span>
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsDashboardOpen(true)}
-            className="h-11 min-h-11 px-3 text-xs font-medium gap-2 focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <TrendingUp className="size-3.5 text-primary" />
-            <span>Métricas</span>
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() =>
-              setProposalLead({
-                id: "",
-                fullName: "",
-                destination: "",
-                passenger_count: 2,
-              })
-            }
-            className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <FileText className="size-3.5 text-primary" />
-            <span>Nova Proposta</span>
-          </Button>
-
-          <Button
-            type="button"
-            onClick={() => {
-              setNewLeadTargetStage("new");
-              setIsNewLeadOpen(true);
-            }}
-            className="h-11 min-h-11 px-4 text-xs font-bold gap-2 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-          >
-            <Plus className="size-3.5" />
-            <span>Nova Oportunidade</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* ── Barra Pipefy: Visões do Funil Separadas dos Módulos Secundários ── */}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 border-b border-border/40 pb-3">
-          {/* Visões Principais do Pipe (Kanban | Painel Geral | Propostas | Viagens) */}
-          <div className="tab-list flex items-center gap-2 overflow-x-auto max-w-full no-scrollbar">
-            <button
-              type="button"
-              onClick={() => setActiveViewTab("kanban")}
-              className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                activeViewTab === "kanban"
-                  ? "bg-primary text-primary-foreground font-bold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <Kanban className="size-3.5" />
-              <span>Kanban ({filteredLeads.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveViewTab("dashboard")}
-              className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                activeViewTab === "dashboard"
-                  ? "bg-primary text-primary-foreground font-bold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <Compass className="size-3.5" />
-              <span>Painel & Alertas</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveViewTab("propostas")}
-              className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                activeViewTab === "propostas"
-                  ? "bg-primary text-primary-foreground font-bold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <FileText className="size-3.5" />
-              <span>Propostas ({proposals.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveViewTab("viagens")}
-              className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                activeViewTab === "viagens"
-                  ? "bg-primary text-primary-foreground font-bold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <Plane className="size-3.5" />
-              <span>Viagens ({trips.length})</span>
-            </button>
+            {/* KPIs Ultra-Resumidos em Pílulas Tabulares */}
+            <div className="hidden sm:flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/60 border border-border/50 text-xs">
+                <span className="text-muted-foreground">Aberto:</span>
+                <strong className="font-mono tabular-nums text-foreground">
+                  {formatMoney(pipelineMetrics.totalPipelineCents)}
+                </strong>
+              </span>
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                <span className="text-emerald-700 dark:text-emerald-400">Fechados:</span>
+                <strong className="font-mono tabular-nums text-emerald-700 dark:text-emerald-400">
+                  {pipelineMetrics.wonCount}
+                </strong>
+              </span>
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/60 border border-border/50 text-xs">
+                <span className="text-muted-foreground">Leads:</span>
+                <strong className="font-mono tabular-nums text-foreground">
+                  {pipelineMetrics.totalLeads}
+                </strong>
+              </span>
+            </div>
           </div>
 
-          {/* Módulos Secundários e Especializados Separados do Kanban */}
-          <div className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <span className="text-2xs font-mono uppercase text-muted-foreground px-2 shrink-0">
-              Módulos:
-            </span>
-            <button
+          {/* Ações Primárias e Secundárias */}
+          <div className="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap">
+            <Button
               type="button"
-              onClick={() => router.navigate({ to: "/workspace/turismo/oportunidades" })}
-              className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              variant="outline"
+              onClick={() => setIsImportModalOpen(true)}
+              className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Upload className="size-3.5 text-muted-foreground" />
+              <span className="hidden sm:inline">Importar Leads</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDashboardOpen(true)}
+              className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium gap-2 focus-visible:ring-2 focus-visible:ring-ring"
             >
               <TrendingUp className="size-3.5 text-primary" />
-              <span>Oportunidades</span>
-            </button>
+              <span>Métricas</span>
+            </Button>
 
-            <button
+            <Button
               type="button"
-              onClick={() => router.navigate({ to: "/workspace/turismo/cotacoes" })}
-              className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              variant="outline"
+              onClick={() =>
+                setProposalLead({
+                  id: "",
+                  fullName: "",
+                  destination: "",
+                  passenger_count: 2,
+                })
+              }
+              className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Plane className="size-3.5 text-muted-foreground" />
-              <span>Cotações</span>
-            </button>
+              <FileText className="size-3.5 text-primary" />
+              <span>Nova Proposta</span>
+            </Button>
 
-            <button
+            <Button
               type="button"
-              onClick={() => router.navigate({ to: "/workspace/turismo/embarques" })}
-              className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              onClick={() => {
+                setNewLeadTargetStage("new");
+                setIsNewLeadOpen(true);
+              }}
+              className="h-11 min-h-11 px-4 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
             >
-              <Calendar className="size-3.5 text-muted-foreground" />
-              <span>Embarques</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => router.navigate({ to: "/workspace/turismo/corporativo" })}
-              className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Building2 className="size-3.5 text-muted-foreground" />
-              <span>Empresas B2B</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => router.navigate({ to: "/workspace/turismo/fornecedores" })}
-              className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <ShieldCheck className="size-3.5 text-muted-foreground" />
-              <span>Operadoras</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => router.navigate({ to: "/workspace/turismo/comissoes" })}
-              className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <DollarSign className="size-3.5 text-muted-foreground" />
-              <span>Comissões</span>
-            </button>
+              <Plus className="size-3.5" />
+              <span>Nova Oportunidade</span>
+            </Button>
           </div>
         </div>
 
-        {/* Controles de Filtro & Busca do Pipe */}
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2 flex-wrap">
+        {/* Linha 2: Visões de Trabalho + Atalhos de Sub-Módulos + Filtros e Busca */}
+        <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-2 pt-2 border-t border-border/40">
+          {/* Visões Principais + Sub-Módulos */}
+          <div className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <div className="tab-list flex items-center gap-1 p-1 rounded-xl bg-muted/60 shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveViewTab("kanban")}
+                className={`h-11 min-h-11 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  activeViewTab === "kanban"
+                    ? "bg-card text-foreground font-bold shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Kanban className="size-3.5" />
+                <span>Kanban ({filteredLeads.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveViewTab("dashboard")}
+                className={`h-11 min-h-11 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  activeViewTab === "dashboard"
+                    ? "bg-card text-foreground font-bold shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Compass className="size-3.5" />
+                <span>Painel & Alertas</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveViewTab("propostas")}
+                className={`h-11 min-h-11 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  activeViewTab === "propostas"
+                    ? "bg-card text-foreground font-bold shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <FileText className="size-3.5" />
+                <span>Propostas ({proposals.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveViewTab("viagens")}
+                className={`h-11 min-h-11 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  activeViewTab === "viagens"
+                    ? "bg-card text-foreground font-bold shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Plane className="size-3.5" />
+                <span>Viagens ({trips.length})</span>
+              </button>
+            </div>
+
+            <div className="h-5 w-px bg-border/60 shrink-0 hidden sm:block" />
+
+            {/* Atalhos Rápidos dos Sub-Módulos Especializados */}
+            <div className="tab-list flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => router.navigate({ to: "/workspace/turismo/oportunidades" })}
+                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <TrendingUp className="size-3.5 text-primary" />
+                <span>Oportunidades</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.navigate({ to: "/workspace/turismo/cotacoes" })}
+                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Plane className="size-3.5 text-muted-foreground" />
+                <span>Cotações</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.navigate({ to: "/workspace/turismo/embarques" })}
+                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Calendar className="size-3.5 text-muted-foreground" />
+                <span>Embarques</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.navigate({ to: "/workspace/turismo/corporativo" })}
+                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Building2 className="size-3.5 text-muted-foreground" />
+                <span>Empresas B2B</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.navigate({ to: "/workspace/turismo/fornecedores" })}
+                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ShieldCheck className="size-3.5 text-muted-foreground" />
+                <span>Operadoras</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.navigate({ to: "/workspace/turismo/comissoes" })}
+                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <DollarSign className="size-3.5 text-emerald-600" />
+                <span>Comissões</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Controles de Filtro (Temperatura, Responsável, Origem) & Busca */}
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <Select value={temperatureFilter} onValueChange={setTemperatureFilter}>
+              <SelectTrigger className="h-11 min-h-11 text-xs rounded-xl w-36 focus-visible:ring-2 focus-visible:ring-ring">
+                <SelectValue placeholder="Temperatura" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas Temperaturas</SelectItem>
+                <SelectItem value="hot">Quente</SelectItem>
+                <SelectItem value="warm">Morno</SelectItem>
+                <SelectItem value="cold">Frio</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Select value={ownerFilter} onValueChange={setOwnerFilter}>
-              <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg w-40 focus-visible:ring-2 focus-visible:ring-ring">
+              <SelectTrigger className="h-11 min-h-11 text-xs rounded-xl w-40 focus-visible:ring-2 focus-visible:ring-ring">
                 <SelectValue placeholder="Responsável" />
               </SelectTrigger>
               <SelectContent>
@@ -1180,7 +1227,7 @@ export default function WorkspaceTurismoCockpitPage() {
             </Select>
 
             <Select value={sourceFilter} onValueChange={setSourceFilter}>
-              <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg w-36 focus-visible:ring-2 focus-visible:ring-ring">
+              <SelectTrigger className="h-11 min-h-11 text-xs rounded-xl w-36 focus-visible:ring-2 focus-visible:ring-ring">
                 <SelectValue placeholder="Origens" />
               </SelectTrigger>
               <SelectContent>
@@ -1198,22 +1245,21 @@ export default function WorkspaceTurismoCockpitPage() {
               variant="outline"
               size="icon"
               onClick={() => setIsCustomizerOpen(true)}
-              className="h-11 w-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               title="Personalizar Colunas do Funil"
             >
               <SlidersHorizontal className="size-4" />
             </Button>
-          </div>
 
-          {/* Campo de Busca Rápida */}
-          <div className="relative w-full sm:w-72">
-            <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar cliente, destino, voo..."
-              className="h-11 min-h-11 pl-9 text-xs rounded-lg"
-            />
+            <div className="relative w-full sm:w-64">
+              <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Procurar cards..."
+                className="h-11 min-h-11 pl-9 text-xs rounded-xl"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -1223,61 +1269,63 @@ export default function WorkspaceTurismoCockpitPage() {
       {/* 0. PAINEL EXECUTIVO DO PROPRIETÁRIO / GERENTE (DASHBOARD GERAL) */}
       {activeViewTab === "dashboard" && (
         <div className="space-y-6">
-          {/* Grade Superior de KPIs (Estilo PassHub / Linear Minimalista) */}
+          {/* Grade Superior de KPIs em Superfícies Squircle */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+            <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Voos no Dia</span>
                 <Plane className="size-3.5 text-primary" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+              <div className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground">
                 {todayDepartures.length}
               </div>
               <p className="text-xs text-muted-foreground">Partidas programadas hoje</p>
             </div>
 
-            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+            <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Viajantes em Viagem</span>
                 <Luggage className="size-3.5 text-emerald-600" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+              <div className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground">
                 {activeInTransit.length}
               </div>
               <p className="text-xs text-muted-foreground">Passageiros no destino</p>
             </div>
 
-            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+            <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Embarques Próximos</span>
                 <Calendar className="size-3.5 text-indigo-600" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+              <div className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground">
                 {upcomingWeekDepartures.length}
               </div>
               <p className="text-xs text-muted-foreground">Nos próximos 7 dias</p>
             </div>
 
-            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
+            <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Atenção Check-in</span>
                 <AlertTriangle className="size-3.5 text-amber-600" />
               </div>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+              <div className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground">
                 {documentationAlerts.length}
               </div>
               <p className="text-xs text-muted-foreground">Pendências críticas</p>
             </div>
 
-            <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1 col-span-2 sm:col-span-1">
-              <div className="flex items-center justify-between text-muted-foreground">
+            <div className="p-4 rounded-2xl border border-foreground/15 bg-foreground text-background space-y-1 col-span-2 sm:col-span-1">
+              <div className="flex items-center justify-between text-background/75">
                 <span className="text-xs font-semibold">Recebíveis da Semana</span>
-                <DollarSign className="size-3.5 text-primary" />
+                <span className="text-2xs font-mono font-bold px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400">
+                  Comissões
+                </span>
               </div>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-primary truncate">
+              <div className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-background break-words">
                 {formatMoney(totalPendingReceivablesCents)}
               </div>
-              <p className="text-xs text-muted-foreground">Comissões a faturar</p>
+              <p className="text-xs text-background/70">Aéreo + hotel + pacotes</p>
             </div>
           </div>
 
@@ -1286,7 +1334,7 @@ export default function WorkspaceTurismoCockpitPage() {
             {/* Coluna 1: Voos do Dia & Próximas 48h */}
             <div className="space-y-4">
               {/* Voos no Dia */}
-              <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
+              <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-border/40 pb-2">
                   <div className="flex items-center gap-2">
                     <Plane className="size-4 text-primary" />
@@ -1522,114 +1570,157 @@ export default function WorkspaceTurismoCockpitPage() {
         </div>
       )}
 
-      {/* 1. FUNIL DE VENDAS (KANBAN COM LEADCARD CANÔNICO) */}
+      {/* 1. FUNIL DE VENDAS (FULL-CANVAS KANBAN WIDESCREEN) */}
       {activeViewTab === "kanban" && (
-        /* design-lint-ignore DL-27 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */
-        /* design-lint-ignore DL-30 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */
-        <div className="flex gap-4 overflow-x-auto pb-8 pt-1 items-start snap-x snap-mandatory scroll-smooth w-full no-scrollbar select-none waesy-kanban-strip">
-          {TOURISM_STAGES.map((stage, stageIndex) => {
-            const stageLeads = leadsByStage[stage.id] || [];
-            const stageTotalCents = stageLeads.reduce(
-              (sum: number, l: any) => sum + (l.estimated_value_cents || 0),
-              0
-            );
-            const prevStage = stageIndex > 0 ? TOURISM_STAGES[stageIndex - 1] : null;
-            const nextStage = stageIndex < TOURISM_STAGES.length - 1 ? TOURISM_STAGES[stageIndex + 1] : null;
+        <div className="flex-1 flex flex-col min-h-0 gap-3">
+          {/* Seletor de Fase Mobile Nativo (< 600px) */}
+          <div className="tab-list flex sm:hidden items-center gap-2 overflow-x-auto no-scrollbar p-1 rounded-xl bg-muted/60 border border-border/50">
+            {TOURISM_STAGES.map((stage) => {
+              const count = (leadsByStage[stage.id] || []).length;
+              const isSelected = mobileActiveStage === stage.id;
+              return (
+                <button
+                  key={stage.id}
+                  type="button"
+                  onClick={() => setMobileActiveStage(stage.id)}
+                  className={cn(
+                    "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isSelected
+                      ? "bg-card text-foreground font-bold shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <span className={cn("size-2 rounded-full shrink-0", stage.dotColor)} />
+                  <span>{stage.title}</span>
+                  <span className="font-mono tabular-nums text-2xs px-2 py-1 rounded bg-muted">
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-            return (
-              <div
-                key={stage.id}
-                className="flex-none w-80 snap-start bg-card/90 border border-border/60 rounded-xl flex flex-col shadow-xs min-h-96 h-144 overflow-hidden"
-              >
-                {/* Cabeçalho da Coluna com Somatório e Ação Rápida */}
-                <div className="p-3 border-b border-border/50 bg-muted/30 rounded-t-xl flex items-center justify-between shrink-0 gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className={cn("size-2 rounded-full shrink-0", stage.dotColor)} />
-                    <span className="text-xs font-bold text-foreground truncate" title={stage.title}>{stage.title}</span>
-                    <Badge variant="outline" className="text-2xs font-mono px-2 h-5 shrink-0 bg-background/50">
-                      {stageLeads.length}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {stageTotalCents > 0 && (
-                      <span className="text-2xs font-mono font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
-                        {formatMoney(stageTotalCents)}
+          {/* Trilho Horizontal Widescreen Desktop + Coluna Ativa Mobile */}
+          {/* design-lint-ignore DL-27 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */}
+          {/* design-lint-ignore DL-30 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */}
+          <div className="flex gap-4 overflow-x-auto pb-4 pt-1 items-stretch snap-x snap-mandatory scroll-smooth w-full flex-1 min-h-0 select-none waesy-kanban-strip">
+            {TOURISM_STAGES.map((stage, stageIndex) => {
+              const stageLeads = leadsByStage[stage.id] || [];
+              const stageTotalCents = stageLeads.reduce(
+                (sum: number, l: any) => sum + (l.estimated_value_cents || 0),
+                0
+              );
+              const prevStage = stageIndex > 0 ? TOURISM_STAGES[stageIndex - 1] : null;
+              const nextStage = stageIndex < TOURISM_STAGES.length - 1 ? TOURISM_STAGES[stageIndex + 1] : null;
+              const isMobileHidden = mobileActiveStage !== stage.id;
+
+              return (
+                <div
+                  key={stage.id}
+                  className={cn(
+                    "flex-none w-full sm:w-80 snap-start bg-muted/40 border border-border/60 rounded-3xl flex flex-col min-h-96 sm:h-full overflow-hidden",
+                    isMobileHidden && "hidden sm:flex"
+                  )}
+                >
+                  {/* Barra Superior Colorida de Fase */}
+                  <div className={cn("h-1.5 w-full shrink-0", stage.dotColor)} />
+
+                  {/* Cabeçalho da Coluna com Somatório Tabular e Ação Rápida */}
+                  <div className="p-3 border-b border-border/50 bg-card/60 flex items-center justify-between shrink-0 gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xs font-bold tracking-tight text-foreground truncate" title={stage.title}>
+                        {stage.title}
                       </span>
-                    )}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setNewLeadTargetStage(stage.id);
-                        setIsNewLeadOpen(true);
-                      }}
-                      /* design-lint-ignore DL-14 reason:"Gatilho compacto de adicao rapida no header de coluna desktop" expiry:"2027-12-31" */
-                      className="size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                      title={`Novo lead em ${stage.title}`}
-                    >
-                      <Plus className="size-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Cards da Coluna via LeadCard Canônico */}
-                <div className="p-2 space-y-2 overflow-y-auto flex-1 [scrollbar-width:thin] min-h-64">
-                  {stageLeads.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-muted-foreground border border-dashed border-border/50 rounded-xl space-y-3 bg-muted/10 my-auto">
-                      <div className="size-8 rounded-full bg-muted/40 flex items-center justify-center mx-auto text-muted-foreground/60">
-                        <Users className="size-4" />
-                      </div>
-                      <p className="font-medium text-2xs">Nenhum contato nesta etapa</p>
+                      <span className="text-2xs font-mono tabular-nums font-semibold px-2 py-1 rounded-full bg-muted text-muted-foreground shrink-0">
+                        {stageLeads.length}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {stageTotalCents > 0 && (
+                        <span className="text-2xs font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
+                          {formatMoney(stageTotalCents)}
+                        </span>
+                      )}
                       <Button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => {
                           setNewLeadTargetStage(stage.id);
                           setIsNewLeadOpen(true);
                         }}
-                        /* design-lint-ignore DL-14 reason:"Botao de acao secundaria compacta no interior de card vazio" expiry:"2027-12-31" */
-                        className="h-9 px-3 text-2xs font-semibold gap-2 mx-auto cursor-pointer focus-visible:ring-2 focus-visible:ring-ring hover:bg-primary/5 hover:text-primary hover:border-primary/30"
+                        /* design-lint-ignore DL-14 reason:"Gatilho compacto de adicao rapida no header de coluna desktop" expiry:"2027-12-31" */
+                        className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        title={`Novo lead em ${stage.title}`}
                       >
-                        <Plus className="size-3" />
-                        <span>Adicionar Lead</span>
+                        <Plus className="size-4" />
                       </Button>
                     </div>
-                  ) : (
-                    stageLeads.map((lead: any) => (
-                      <LeadCard
-                        key={lead.id}
-                        lead={lead}
-                        currentStageId={stage.id}
-                        stages={TOURISM_STAGES.map((s) => ({ id: s.id, title: s.title }))}
-                        team={team}
-                        onOpenDetails={openLeadDetails}
-                        onGenerateProposal={(lead) => {
-                          setProposalLead({
-                            id: lead.id,
-                            fullName: lead.full_name,
-                            phone: lead.phone,
-                            email: lead.email,
-                            destination: lead.destination,
-                            estimated_value_cents: lead.estimated_value_cents,
-                            passenger_count: (lead.pax_adults || 2) + (lead.pax_children || 0),
-                          });
-                        }}
-                        onCalculateCommission={setCalculatorLead}
-                        onOpenFlightGrid={setFlightLead}
-                        onStageChange={(leadId, newStage) => handleMoveStage(leadId, newStage)}
-                        onPromote={handlePromoteToCustomer}
-                        onDelete={handleDeleteLead}
-                        prevStageId={prevStage?.id}
-                        nextStageId={nextStage?.id}
-                      />
-                    ))
-                  )}
+                  </div>
+
+                  {/* Área de Rolagem Isolada dos Cards */}
+                  <div className="p-3 space-y-2 overflow-y-auto flex-1 min-h-0 [scrollbar-width:thin]">
+                    {stageLeads.length === 0 ? (
+                      <div className="p-6 text-center text-xs text-muted-foreground border border-dashed border-border/50 rounded-2xl space-y-3 bg-card/40 my-auto">
+                        <div className="size-8 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+                          <Users className="size-4" />
+                        </div>
+                        <p className="font-medium text-2xs">Nenhum contato nesta fase</p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setNewLeadTargetStage(stage.id);
+                            setIsNewLeadOpen(true);
+                          }}
+                          /* design-lint-ignore DL-14 reason:"Botao de acao secundaria compacta no interior de card vazio" expiry:"2027-12-31" */
+                          className="h-9 px-3 rounded-xl text-2xs font-semibold gap-2 mx-auto cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Plus className="size-3" />
+                          <span>Adicionar Lead</span>
+                        </Button>
+                      </div>
+                    ) : (
+                      stageLeads.map((lead: any) => (
+                        <LeadCard
+                          key={lead.id}
+                          lead={lead}
+                          currentStageId={stage.id}
+                          stages={TOURISM_STAGES.map((s) => ({ id: s.id, title: s.title }))}
+                          team={team}
+                          onOpenDetails={openLeadDetails}
+                          onGenerateProposal={(lead) => {
+                            setProposalLead({
+                              id: lead.id,
+                              fullName: lead.full_name,
+                              phone: lead.phone,
+                              email: lead.email,
+                              destination: lead.destination,
+                              estimated_value_cents: lead.estimated_value_cents,
+                              passenger_count: (lead.pax_adults || 2) + (lead.pax_children || 0),
+                            });
+                          }}
+                          onCalculateCommission={setCalculatorLead}
+                          onOpenFlightGrid={setFlightLead}
+                          onStageChange={(leadId, newStage) => handleMoveStage(leadId, newStage)}
+                          onPromote={handlePromoteToCustomer}
+                          onDelete={handleDeleteLead}
+                          prevStageId={prevStage?.id}
+                          nextStageId={nextStage?.id}
+                        />
+                      ))
+                    )}
+
+                    {/* Instrução Operacional da Fase */}
+                    <p className="text-center text-2xs text-muted-foreground/80 px-3 py-2 leading-relaxed">
+                      {stage.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -1650,7 +1741,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   key={trip.id}
                   to="/workspace/turismo/viagens/$id"
                   params={{ id: trip.id }}
-                  className="p-4 rounded-lg border border-border/60 bg-card hover:border-primary/50 transition-colors block text-xs space-y-3"
+                  className="p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/25 transition-colors block text-xs space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-foreground text-sm truncate">
@@ -1668,7 +1759,7 @@ export default function WorkspaceTurismoCockpitPage() {
 
                   <div className="flex items-center justify-between pt-2 border-t border-border/30 text-muted-foreground">
                     <span>{trip.customer_name || "Passageiro Principal"}</span>
-                    <span className="font-mono font-bold text-foreground">
+                    <span className="font-mono tabular-nums font-bold text-foreground">
                       {formatMoney(trip.total_amount_cents || 0)}
                     </span>
                   </div>
@@ -1701,7 +1792,7 @@ export default function WorkspaceTurismoCockpitPage() {
               {proposals.map((prop: any) => (
                 <div
                   key={prop.id}
-                  className="p-4 rounded-lg border border-border/60 bg-card space-y-3 text-xs"
+                  className="p-4 rounded-2xl border border-border/60 bg-card space-y-3 text-xs"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-foreground truncate block">
@@ -1717,7 +1808,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   </p>
 
                   <div className="flex items-center justify-between pt-2 border-t border-border/30 gap-2 flex-wrap">
-                    <span className="font-mono font-bold text-primary">
+                    <span className="font-mono tabular-nums font-bold text-foreground">
                       {formatMoney(prop.pricing?.total_price_cents || 0)}
                     </span>
 
@@ -1727,7 +1818,7 @@ export default function WorkspaceTurismoCockpitPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleConvertProposalToTrip(prop.id)}
-                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-1.5 text-emerald-600 hover:text-emerald-700 focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold gap-2 text-emerald-600 hover:text-emerald-700 focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <CheckCircle2 className="size-3.5" />
                         <span>Gerar Viagem</span>
@@ -1737,7 +1828,7 @@ export default function WorkspaceTurismoCockpitPage() {
                         asChild
                         variant="outline"
                         size="sm"
-                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <Link to="/workspace/turismo/propostas/$id" params={{ id: prop.id }}>
                           <Eye className="size-3" />
@@ -1753,38 +1844,38 @@ export default function WorkspaceTurismoCockpitPage() {
         </div>
       )}
 
-      {/* ── DRAWER DO LEAD (PADRÃO PIPEFY LEXCORP 3 COLUNAS + 9 ABAS) ── */}
+      {/* ── FICHA COMPLETA DO LEAD (DOSSIÊ 360° 3 COLUNAS + 9 ABAS) ── */}
       {selectedLead && (
         <Sheet open={Boolean(selectedLead)} onOpenChange={() => setSelectedLead(null)}>
-          <SheetContent side="right" className="w-full sm:max-w-5xl p-4 sm:p-6 overflow-y-auto space-y-4 no-scrollbar">
-            <SheetHeader className="border-b border-border/40 pb-3 space-y-2">
+          <SheetContent side="right" size="dossier" className="p-4 sm:p-6 overflow-y-auto space-y-4 no-scrollbar">
+            <SheetHeader className="border-b border-border/50 pb-4 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <SheetTitle className="text-lg font-bold text-foreground">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <SheetTitle className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
                       {editLeadForm.name || selectedLead.full_name || "Oportunidade Comercial"}
                     </SheetTitle>
-                    <Badge variant="outline" className="font-mono text-xs">
+                    <Badge variant="outline" className="font-mono text-xs bg-muted/50">
                       Fase atual: {TOURISM_STAGES.find((s) => s.id === (editLeadForm.status || selectedLead.status))?.title || (editLeadForm.status || selectedLead.status)}
                     </Badge>
                   </div>
                   <SheetDescription className="text-xs text-muted-foreground">
-                    Ficha 360° Pipefy: Formulário Inicial fixo à esquerda, Fase & Módulos ao centro e Transição de Fase à direita
+                    Dossiê 360° do Lead: Dados Principais à esquerda, Módulos da Fase ao centro e Transição de Fase à direita
                   </SheetDescription>
                 </div>
 
-                {/* Metadados Rápidos estilo Pipefy (Responsável, Datas, Valor) */}
+                {/* Metadados Rápidos do Lead */}
                 <div className="flex items-center gap-2 flex-wrap text-2xs">
-                  <Badge variant="secondary" className="font-mono">
+                  <Badge variant="secondary" className="font-mono px-3 py-1 rounded-lg">
                     {editLeadForm.destination || "Destino a definir"}
                   </Badge>
-                  <Badge variant="outline" className="font-mono text-emerald-600 border-emerald-500/30">
+                  <Badge variant="outline" className="font-mono tabular-nums font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10 px-3 py-1 rounded-lg">
                     {formatMoney(editLeadForm.estimated_value_cents || 0)}
                   </Badge>
                 </div>
               </div>
 
-              {/* Barra de Pílulas Pipefy (9 Abas Preservadas e Incrementadas) */}
+              {/* Navegação por Abas Especializadas */}
               <div className="tab-list flex items-center gap-2 pt-1 overflow-x-auto no-scrollbar">
                 {[
                   { id: "viagem", label: "Visão Geral & Cotações" },
@@ -1801,10 +1892,10 @@ export default function WorkspaceTurismoCockpitPage() {
                     key={t.id}
                     type="button"
                     onClick={() => setLeadDrawerTab(t.id as any)}
-                    className={`h-11 min-h-11 px-3 text-xs font-semibold rounded-lg border transition-colors cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-xl border transition-colors cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                       leadDrawerTab === t.id
-                        ? "bg-primary text-primary-foreground border-primary font-bold"
-                        : "bg-card border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                        ? "bg-foreground text-background border-foreground font-bold"
+                        : "bg-card border-border/60 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                     }`}
                   >
                     {t.label}
@@ -1813,10 +1904,10 @@ export default function WorkspaceTurismoCockpitPage() {
               </div>
             </SheetHeader>
 
-            {/* Layout Pipefy LexCorp em 3 Colunas no Desktop */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-              {/* COLUNA ESQUERDA (FIXA): Formulário Inicial & Histórico de Fases */}
-              <div className="lg:col-span-4 p-4 rounded-xl border border-border/60 bg-muted/10 space-y-3 text-xs">
+            {/* Layout Balanceado em 3 Colunas (3 + 6 + 3 = 12) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+              {/* COLUNA ESQUERDA (3/12): Formulário Inicial & Histórico de Fases */}
+              <div className="lg:col-span-3 p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3 text-xs">
                 <div className="flex items-center justify-between border-b border-border/40 pb-2">
                   <span className="font-bold text-foreground">Formulário Inicial</span>
                   <span className="text-2xs font-mono text-muted-foreground">
@@ -1857,7 +1948,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   </div>
                 </div>
 
-                {/* Histórico de Fases (Estilo Pipefy LexCorp) */}
+                {/* Histórico de Transição de Fases */}
                 <div className="pt-2 border-t border-border/40 space-y-2">
                   <span className="font-bold text-foreground block">Histórico no Funil</span>
                   <div className="space-y-1">
@@ -1881,13 +1972,13 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
               </div>
 
-              {/* COLUNA CENTRAL: Conteúdo da Aba Selecionada */}
-              <div className="lg:col-span-5 space-y-4">
+              {/* COLUNA CENTRAL (6/12): Conteúdo da Aba Selecionada com Respiro Generoso */}
+              <div className="lg:col-span-6 space-y-4">
 
             {/* 1. ABA VIAGEM & COTAÇÃO COM EDIÇÃO PLENA */}
             {leadDrawerTab === "viagem" && (
               <div className="space-y-4 text-xs">
-                {/* Topo Pipefy: Status de Consentimento LGPD + Origem */}
+                {/* Status de Consentimento LGPD + Origem */}
                 <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
@@ -2018,7 +2109,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     <Plane className="size-3.5 text-primary" />
                     <span>Composição de Passageiros</span>
                   </h4>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <Label className="text-2xs text-muted-foreground font-semibold">Adultos (ADT)</Label>
                       <Input
@@ -2570,7 +2661,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     <Button
                       type="button"
                       onClick={handleSendOnboardingFormWhatsApp}
-                      className="h-11 min-h-11 text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-11 min-h-11 text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <MessageSquare className="size-3.5" />
                       <span>Enviar via WhatsApp (1 Clique)</span>
@@ -2604,6 +2695,19 @@ export default function WorkspaceTurismoCockpitPage() {
                     <span>Copiar Link Mágico do Lead</span>
                   </Button>
                 </div>
+
+                {/* Validação Documental ANAC & Biometria Facial (KYC Fast-Track) */}
+                <TravelerVerificationFlow
+                  tripId={selectedLead.id}
+                  initialFullName={editLeadForm.full_name || selectedLead.full_name || ""}
+                  initialDocumentNumber={editLeadForm.cpf || selectedLead.cpf || ""}
+                  onVerificationComplete={(res) => {
+                    if (res.correctedName) {
+                      setEditLeadForm((prev: any) => ({ ...prev, full_name: res.correctedName! }));
+                    }
+                    toast.success("Conferência documental ANAC e biometria registradas no dossiê!");
+                  }}
+                />
 
                 {/* Pastas Hierárquicas por Passageiro (Documentação & Passaportes) */}
                 <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
@@ -3217,8 +3321,8 @@ export default function WorkspaceTurismoCockpitPage() {
 
               </div>
 
-              {/* COLUNA DIREITA (PADRÃO PIPEFY LEXCORP): Mover para Fase & Ferramentas Rápidas */}
-              <div className="lg:col-span-3 p-4 rounded-xl border border-border/60 bg-muted/10 space-y-4 text-xs">
+              {/* COLUNA DIREITA (3/12): Mover para Fase & Ações Rápidas */}
+              <div className="lg:col-span-3 p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-4 text-xs">
                 <div className="space-y-2">
                   <span className="font-bold text-foreground block">Mover para fase</span>
                   <div className="space-y-2">
@@ -3230,13 +3334,16 @@ export default function WorkspaceTurismoCockpitPage() {
                           type="button"
                           disabled={isCurrent}
                           onClick={() => handleMoveStage(selectedLead.id, st.id)}
-                          className={`w-full h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          className={`w-full h-11 min-h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                             isCurrent
                               ? "bg-primary/10 border-primary text-primary font-bold cursor-default"
-                              : "bg-card border-border/60 text-foreground hover:border-primary/50 hover:bg-muted/40"
+                              : "bg-card border-border/60 text-foreground hover:border-foreground/30 hover:bg-muted/50"
                           }`}
                         >
-                          <span className="truncate">{st.title}</span>
+                          <span className="flex items-center gap-2 min-w-0">
+                            <span className={cn("size-2 rounded-full shrink-0", st.dotColor)} />
+                            <span className="truncate">{st.title}</span>
+                          </span>
                           <ArrowRight className="size-3.5 shrink-0" />
                         </button>
                       );
@@ -3300,7 +3407,7 @@ export default function WorkspaceTurismoCockpitPage() {
             <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-md">
-                  TravelAgências Standard
+                  Cockpit Operacional Enterprise
                 </span>
                 <span className="text-xs text-muted-foreground">
                   Etapa: {TOURISM_STAGES.find((s) => s.id === newLeadTargetStage)?.title}
@@ -3448,7 +3555,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   <Plane className="size-3.5 text-primary" />
                   <span>Passageiros & Faixa Etária</span>
                 </h4>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
                     <Label className="text-2xs text-muted-foreground font-semibold">Adultos (ADT)</Label>
                     <Input

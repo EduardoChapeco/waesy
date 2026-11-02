@@ -209,10 +209,20 @@ export function PostCard(props: PostCardProps) {
           <ContentActionsMenu
             entityType="post"
             entityId={item.id}
-            isOwner={props.session?.user?.id === item.author.id || props.session?.id === item.author.id}
+            isOwner={Boolean(
+              (props.session?.user?.id || props.session?.id) &&
+                ((props.session?.user?.id || props.session?.id) === item.author.id ||
+                  (props.session?.user?.id || props.session?.id) === (item as any)?.author_profile_id ||
+                  (props.session?.user?.id || props.session?.id) === (item.author as any)?.profile_id ||
+                  (props.session?.user?.id || props.session?.id) === (item as any)?.author_user_id)
+            )}
             canonicalUrl={typeof window !== "undefined" ? `${window.location.origin}/publicacao/${item.id}` : ""}
             title={item.content_text ? item.content_text.slice(0, 40) + "..." : "Publicação"}
+            description={item.content_text || ""}
             mediaUrl={item.media_urls?.[0]}
+            postData={item}
+            status={(item as any)?.status || "active"}
+            authorUsername={(item.author as any)?.username}
           />
         </div>
       </div>

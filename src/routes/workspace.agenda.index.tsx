@@ -391,7 +391,7 @@ function AdminAppointmentsPage() {
  type="button"
  onClick={() => setSelectedDate(d)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex flex-col items-center justify-center min-w-14 sm:min-w-16 min-h-[50px] py-2 px-1 rounded-lg transition-colors duration-200 cursor-pointer",
+ "flex flex-col items-center justify-center min-w-14 sm:min-w-16 min-h-12 py-2 px-1 rounded-xl transition-colors duration-200 cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground font-bold "
  : "hover:bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -529,7 +529,7 @@ function AdminAppointmentsPage() {
  </div>
 
  <div className="pt-2 flex items-center justify-between text-xs">
- <span className="font-semibold text-foreground truncate max-w-[130px]">
+ <span className="font-semibold text-foreground truncate max-w-32">
  {appt.guest_name || "Cliente"}
  </span>
  <div className="flex items-center gap-1">
@@ -540,7 +540,7 @@ function AdminAppointmentsPage() {
  )}`}
  target="_blank"
  rel="noopener noreferrer"
- className="min-h-[38px] min-w-[38px] rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer transition-colors"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Enviar Lembrete"
  >
  <MessageCircle className="size-3.5" />
@@ -549,7 +549,7 @@ function AdminAppointmentsPage() {
  <Button
  variant="ghost"
  size="icon"
- className="min-h-[38px] min-w-[38px] rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Abrir Cartão Digital 9:16 (WhatsApp)"
  onClick={() => handleOpenCompanion(appt, resourceName)}
  >
@@ -558,7 +558,7 @@ function AdminAppointmentsPage() {
  <Button
  variant="ghost"
  size="icon"
- className="min-h-[38px] min-w-[38px] rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Ver Prontuário / Evolução"
  onClick={() =>
  setSelectedAppt({ id: appt.id, name: appt.guest_name || "Cliente" })
@@ -659,7 +659,7 @@ function AdminAppointmentsPage() {
  Cartão Digital de Atendimento 9:16 (WhatsApp)
  </DialogTitle>
  </DialogHeader>
- <div className="p-4 max-h-[85vh] overflow-y-auto no-scrollbar flex justify-center">
+ <div className="p-4 max-h-full overflow-y-auto no-scrollbar flex justify-center">
  {companionData && (
  <DigitalCompanionCard {...companionData} />
  )}

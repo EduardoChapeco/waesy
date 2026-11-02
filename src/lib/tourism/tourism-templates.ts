@@ -1,6 +1,6 @@
 /**
  * tourism-templates.ts — Biblioteca Canônica de Pacotes & Roteiros de Viagem Prontos
- * Inspirado nas melhores práticas dos ecossistemas turisagencias / travelos / travelagencias
+ * Modelos canônicos de propostas e roteiros para agências de turismo e operadoras de viagens
  */
 
 import type {

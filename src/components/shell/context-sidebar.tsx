@@ -1,6 +1,8 @@
 import React from "react";
 import { Tag, Newspaper, Gift, Target, Rss, Car, Plane, MapPin, Wallet, RefreshCw, FileText } from "lucide-react";
 import { Link, useLocation } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { listAllSurfaces } from "@/services/surface-cms.functions";
 import { type ContextConfig } from "@/lib/navigation-registry";
 import { PublishSheet } from "@/components/commerce/publish-sheet";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
@@ -94,10 +96,31 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
 
   const { isCompact, isExpanded } = useWindowSizeClass();
 
+  // Superfícies e Vitrines ativas sincronizadas com o Admin Master CMS (/admin-master/vitrines)
+  const { data: remoteSurfaces, isLoading: isSurfacesLoading } = useQuery({
+    queryKey: ["all-marketplace-surfaces"],
+    queryFn: () => listAllSurfaces().catch(() => []),
+    staleTime: 60000,
+  });
+
+  const activeSurfaces = React.useMemo(() => {
+    if (!remoteSurfaces || remoteSurfaces.length === 0) {
+      return SUB_MARKETPLACES;
+    }
+    return remoteSurfaces.map((s) => {
+      const match = SUB_MARKETPLACES.find((sm) => sm.to === `/${s.slug}`);
+      return {
+        to: s.slug === "turismo" ? "/turismo" : `/${s.slug}`,
+        label: s.title || (match?.label ?? s.slug),
+        icon: match?.icon || Storefront,
+      };
+    });
+  }, [remoteSurfaces]);
+
   const isInsideMarketplace = React.useMemo(() => {
     if (currentPath === "/marketplace") return true;
-    return SUB_MARKETPLACES.some((sub) => currentPath.startsWith(sub.to));
-  }, [currentPath]);
+    return activeSurfaces.some((sub) => currentPath.startsWith(sub.to));
+  }, [currentPath, activeSurfaces]);
 
   const [isMarketplacesOpen, setIsMarketplacesOpen] = React.useState(isInsideMarketplace);
 
@@ -187,16 +210,16 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                           aria-label={isMarketplacesOpen ? "Recolher categorias" : "Expandir categorias"}
                           className="flex items-center gap-1 px-2 py-1 rounded-md text-2xs font-mono font-bold bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                          <span>14</span>
+                          <span>{activeSurfaces.length}</span>
                           {isMarketplacesOpen ? <CaretDown size={11} /> : <CaretRight size={11} />}
                         </button>
                       )}
                     </div>
 
-                    {/* Sub-Marketplaces Colapsáveis em Lista Vertical */}
+                    {/* Sub-Marketplaces Colapsáveis em Lista Vertical (Sincronizados com Admin Master CMS) */}
                     {isExpanded && isMarketplacesOpen && (
                       <div className="flex flex-col space-y-1 p-1 rounded-lg bg-muted/40 border border-border/40 animate-in fade-in slide-in-from-top-1 duration-150 motion-reduce:animate-none">
-                        {SUB_MARKETPLACES.map((sub) => {
+                        {activeSurfaces.map((sub) => {
                           const SubIcon = sub.icon;
                           const isSubActive = currentPath.startsWith(sub.to);
 

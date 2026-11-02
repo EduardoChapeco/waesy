@@ -582,7 +582,7 @@ export default function WorkspaceDestinationsPage() {
       toolDescription="Catálogo estruturado com base canônica de cidades, estados, aeroportos IATA, seções ricas, galerias de mídia e avaliações de viajantes."
       store={store}
     >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
         <WorkspaceCanonicalToolbar
           tabs={[
             { id: "all", label: "Todos os Destinos", icon: Compass, count: destinations.length },
@@ -642,7 +642,7 @@ export default function WorkspaceDestinationsPage() {
  {filtered.map((dest: DestinationDTO) => (
  <Card
  key={dest.id}
- className="rounded-lg border border-border/70 bg-card overflow-hidden hover:border-primary/50 transition-colors duration-200 flex flex-col justify-between shadow-2xs group"
+ className="rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card overflow-hidden hover:border-black/[0.12] dark:hover:border-white/[0.16] transition-colors duration-200 flex flex-col justify-between group shadow-none"
  >
  {/* Capa do Destino */}
  <div className="h-44 w-full relative bg-muted overflow-hidden">

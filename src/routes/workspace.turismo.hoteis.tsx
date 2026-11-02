@@ -746,7 +746,7 @@ function WorkspaceHotelsPage() {
  toolDescription="Catálogo de hospedagens, redes hoteleiras e resorts com acomodações estruturadas, fotos, comodidades, políticas e tarifas base para pacotes e propostas."
  store={store}
  >
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
         <WorkspaceCanonicalToolbar
           viewModes={[
             { id: "grid", label: "Cards", icon: LayoutGrid },
@@ -1361,7 +1361,7 @@ function WorkspaceHotelsPage() {
  <span>{editingHotel ? "Editar Hotel / Resort" : "Novo Hotel no Banco de Hospedagens"}</span>
  </SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground mt-1">
- Cadastre com acomodações estruturadas, fotos, políticas e comodidades para auto-preenchimento instantâneo em propostas TravelOS.
+ Cadastre com acomodações estruturadas, fotos, políticas e comodidades para auto-preenchimento instantâneo em propostas e roteiros.
  </SheetDescription>
  </div>
  </div>

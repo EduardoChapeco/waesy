@@ -215,7 +215,7 @@ function GroupTourBoardingPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. Top Bar & Ações ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
         <div className="flex items-center gap-3">
@@ -312,7 +312,7 @@ function GroupTourBoardingPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+        <div className="tab-list flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1 sm:pb-0">
           <Button
             type="button"
             variant={statusFilter === "all" ? "default" : "outline"}
@@ -449,7 +449,7 @@ function GroupTourBoardingPage() {
  )
  }
  title={isNoShow ? "Cancelar ausência" : "Marcar como ausente"}
- className="size-11 sm:size-10 rounded-lg cursor-pointer text-muted-foreground hover:text-rose-600 shrink-0"
+ className="size-11 min-h-11 min-w-11 rounded-xl cursor-pointer text-muted-foreground hover:text-rose-600 shrink-0"
  >
  <UserX className="size-4" />
  </Button>
@@ -505,7 +505,7 @@ function GroupTourBoardingPage() {
                    variant="ghost"
                    size="icon"
                    onClick={() => handleDeletePoint(p.id)}
-                   className="size-6 text-muted-foreground hover:text-rose-600 rounded cursor-pointer"
+                   className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-rose-600 rounded-xl cursor-pointer"
                  >
                    <Trash2 className="size-3" />
                  </Button>

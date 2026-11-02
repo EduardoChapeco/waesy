@@ -137,7 +137,7 @@ export default function WorkspaceTripsListPage() {
   ];
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
       <div className="flex items-center justify-between px-1 flex-wrap gap-2">
         <div className="flex items-center gap-2 flex-wrap">
           <Link
@@ -235,7 +235,7 @@ export default function WorkspaceTripsListPage() {
             return (
               <div
                 key={trip.id}
-                className="group relative rounded-lg border border-border/70 bg-card hover:border-foreground/20 hover:shadow-sm transition-colors duration-200 flex flex-col justify-between overflow-hidden shadow-2xs"
+                className="group relative rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card hover:border-black/[0.12] dark:hover:border-white/[0.16] transition-colors duration-200 flex flex-col justify-between overflow-hidden"
               >
                 <div className="p-4 space-y-3">
                   {/* Topo do Card */}
@@ -278,19 +278,19 @@ export default function WorkspaceTripsListPage() {
                   {/* Resumo de Serviços Inclusos */}
                   <div className="flex flex-wrap items-center gap-2 pt-1">
                     {trip.flights?.length > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 text-xs text-muted-foreground font-medium">
                         <Plane className="size-3 text-sky-500" />
                         {trip.flights.length} voo(s)
                       </span>
                     )}
                     {trip.hotels?.length > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 text-xs text-muted-foreground font-medium">
                         <Building2 className="size-3 text-amber-500" />
                         {trip.hotels.length} hotel(s)
                       </span>
                     )}
                     {trip.transfers?.length > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground font-medium border border-border/40">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 text-xs text-muted-foreground font-medium">
                         <Luggage className="size-3 text-emerald-500" />
                         Transfer
                       </span>

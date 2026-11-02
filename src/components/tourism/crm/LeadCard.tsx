@@ -59,7 +59,7 @@ export function LeadCard({
       .toUpperCase();
   }, [lead?.full_name]);
 
-  // Tempo na etapa (SLA Pipefy style) calculado com base em updated_at ou created_at
+  // Tempo de permanência na etapa calculado com base em updated_at ou created_at
   const stageTimer = useMemo(() => {
     const refDate = lead.updated_at || lead.created_at;
     if (!refDate) return 'há 1h';
@@ -173,6 +173,34 @@ export function LeadCard({
       .toUpperCase();
   }, [assignedMember, initials]);
 
+  const temperatureMeta = useMemo(() => {
+    const rawTemp = String(lead.temperature || lead.custom_fields?.temperature || '').toLowerCase();
+    if (rawTemp === 'hot' || rawTemp === 'quente' || ((lead.estimated_value_cents || 0) >= 1200000 && !staleness.isCold)) {
+      return {
+        label: 'Quente',
+        className: 'bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/25',
+      };
+    }
+    if (rawTemp === 'cold' || rawTemp === 'frio' || staleness.isCold) {
+      return {
+        label: 'Frio',
+        className: 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/25',
+      };
+    }
+    return {
+      label: 'Morno',
+      className: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25',
+    };
+  }, [lead.temperature, lead.custom_fields, lead.estimated_value_cents, staleness.isCold]);
+
+  const estimatedCommissionCents = useMemo(() => {
+    if (typeof lead.commission_cents === 'number' && lead.commission_cents > 0) {
+      return lead.commission_cents;
+    }
+    const val = lead.estimated_value_cents || 0;
+    return val > 0 ? Math.round(val * 0.1) : 0;
+  }, [lead.commission_cents, lead.estimated_value_cents]);
+
   return (
     <div
       role="button"
@@ -185,22 +213,30 @@ export function LeadCard({
       }}
       onClick={() => onOpenDetails?.(lead)}
       className={cn(
-        'p-3 rounded-xl border bg-card hover:border-primary/50 transition-colors duration-200 space-y-3 text-xs group cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+        'p-4 rounded-2xl border bg-card hover:border-foreground/25 transition-colors duration-150 space-y-3 text-xs group cursor-pointer relative select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
         staleness.isCold
-          ? 'border-rose-500/40 bg-rose-500/[0.02]'
+          ? 'border-rose-500/30'
           : staleness.isStale
-          ? 'border-amber-500/40 bg-amber-500/[0.02]'
+          ? 'border-amber-500/30'
           : 'border-border/60'
       )}
     >
-      {/* Topo Pipefy: Pill de Categoria + Badge SLA Temporal + Ações Rápidas */}
+      {/* Topo do Card: Chip de Temperatura + Categoria + SLA Temporal + Ações Rápidas */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1 min-w-0 flex-wrap">
-          <Badge variant="secondary" className="px-2 py-0.5 text-2xs font-semibold rounded-md bg-primary/10 text-primary border-primary/20">
+          <span
+            className={cn(
+              'inline-flex items-center px-2 py-1 rounded-md text-2xs font-bold border',
+              temperatureMeta.className
+            )}
+          >
+            {temperatureMeta.label}
+          </span>
+          <Badge variant="secondary" className="px-2 py-1 text-2xs font-medium rounded-md bg-muted text-muted-foreground border-border/50">
             {categoryLabel}
           </Badge>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-mono text-2xs">
-            <Clock className="size-3 shrink-0 text-amber-500" />
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 text-muted-foreground font-mono tabular-nums text-2xs">
+            <Clock className="size-3 shrink-0" />
             <span>{stageTimer}</span>
           </span>
         </div>
@@ -231,7 +267,7 @@ export function LeadCard({
                 <MoreVertical className="size-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="text-xs w-52 p-2 rounded-lg">
+            <DropdownMenuContent align="end" className="text-xs w-52 p-2 rounded-xl">
               <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onOpenDetails?.(lead)} className="cursor-pointer font-medium">
                 <Edit3 className="size-3.5 mr-2" />
                 Abrir Ficha 360°
@@ -302,70 +338,78 @@ export function LeadCard({
         </div>
       </div>
 
-      {/* Corpo do Card: Nome em destaque + Destino, Pax e Valor Orçado */}
+      {/* Corpo Estruturado: Título Sólido + Metadados sem Containeritis */}
       <div className="space-y-2">
         <div>
-          <h4 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+          <h4 className="font-semibold text-sm text-foreground tracking-tight leading-snug break-words group-hover:text-primary transition-colors">
             {lead.full_name}
           </h4>
           {lead.phone && (
-            <p className="text-2xs text-muted-foreground font-mono truncate">
+            <p className="text-2xs text-muted-foreground font-mono tabular-nums mt-1">
               {lead.phone}
             </p>
           )}
         </div>
 
-        {/* Destino, Passageiros e Valor em BRL */}
-        <div className="p-2 rounded-lg bg-muted/30 border border-border/40 space-y-1 text-2xs">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1 text-foreground font-semibold truncate">
-              <MapPin className="size-3.5 text-primary shrink-0" />
-              <span className="truncate">{lead.destination || 'Destino a definir'}</span>
-            </div>
-            {lead.estimated_value_cents > 0 && (
-              <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400 shrink-0">
-                {formatMoney(lead.estimated_value_cents)}
-              </span>
-            )}
+        {/* Metadados Diretos do Contato */}
+        <div className="space-y-1 pt-1 text-2xs">
+          <div className="flex items-center gap-2 text-foreground font-medium">
+            <MapPin className="size-3.5 text-muted-foreground shrink-0" />
+            <span className="break-words">{lead.destination || 'Destino a definir'}</span>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-2xs text-muted-foreground">
+
+          <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
             <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
               <Users className="size-3 text-muted-foreground shrink-0" />
-              {paxBreakdown.total}
+              <span>{paxBreakdown.total}</span>
             </span>
             {travelPeriod && (
               <span className="inline-flex items-center gap-1">
                 <Calendar className="size-3 text-muted-foreground shrink-0" />
-                {travelPeriod}
+                <span>{travelPeriod}</span>
               </span>
             )}
           </div>
         </div>
+
+        {/* Faixa Financeira: Preço em Tabular-Nums + Comissão Estimada em Verde Esmeralda */}
+        {lead.estimated_value_cents > 0 && (
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <span className="font-mono tabular-nums font-bold text-sm text-foreground">
+              {formatMoney(lead.estimated_value_cents)}
+            </span>
+            {estimatedCommissionCents > 0 && (
+              <span className="font-mono tabular-nums font-semibold text-2xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
+                +{formatMoney(estimatedCommissionCents)} com.
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Alerta de Inatividade / Staleness */}
       {staleness.isStale && (
         <div
           className={cn(
-            'text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-md inline-flex items-center gap-1 border',
+            'text-3xs font-bold uppercase tracking-wider px-2 py-1 rounded-md inline-flex items-center gap-1 border',
             staleness.isCold
-              ? 'bg-rose-500/10 text-rose-600 border-rose-500/30'
-              : 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+              ? 'bg-rose-500/10 text-rose-600 border-rose-500/25'
+              : 'bg-amber-500/10 text-amber-600 border-amber-500/25'
           )}
         >
           <AlertTriangle className="size-3 shrink-0" />
           <span>
-            {staleness.isCold ? 'Inativo há' : 'Sem Resposta há'} {staleness.days} dias
+            {staleness.isCold ? 'Inativo há' : 'Sem Resposta há'} {staleness.days}d
           </span>
         </div>
       )}
 
-      {/* Rodapé Pipefy: Status LGPD, Contadores (Comentários/Anexos/Checklist), Avatar Responsável e Avanço 44px */}
+      {/* Rodapé Operacional: Status LGPD, Contadores, Avatar Responsável e Avanço 44px */}
       <div className="flex items-center justify-between gap-2 pt-2 text-2xs border-t border-border/40">
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           <span
             className={cn(
-              'inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium border text-3xs',
+              'inline-flex items-center gap-1 px-2 py-1 rounded-md font-medium border text-3xs',
               isLgpdActive
                 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                 : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
@@ -373,15 +417,15 @@ export function LeadCard({
             title={isLgpdActive ? 'Consentimento LGPD Ativo' : 'Consentimento LGPD Pendente'}
           >
             <ShieldCheck className="size-3 shrink-0" />
-            <span>{isLgpdActive ? 'Consentimento Ativo' : 'Pendente'}</span>
+            <span>{isLgpdActive ? 'LGPD' : 'Pendente'}</span>
           </span>
 
-          <span className="inline-flex items-center gap-1 text-muted-foreground font-mono" title="Observações e interações">
+          <span className="inline-flex items-center gap-1 text-muted-foreground font-mono tabular-nums" title="Observações e interações">
             <MessageSquare className="size-3" />
             <span>{counters.comments}</span>
           </span>
 
-          <span className="inline-flex items-center gap-1 text-muted-foreground font-mono" title="Documentos e passageiros vinculados">
+          <span className="inline-flex items-center gap-1 text-muted-foreground font-mono tabular-nums" title="Documentos e passageiros vinculados">
             <Paperclip className="size-3" />
             <span>{counters.attachments}</span>
           </span>
@@ -389,7 +433,7 @@ export function LeadCard({
           {checklistStats.total > 0 && (
             <span
               className={cn(
-                'font-mono inline-flex items-center gap-1',
+                'font-mono tabular-nums inline-flex items-center gap-1',
                 checklistStats.done === checklistStats.total ? 'text-emerald-600 font-bold' : 'text-muted-foreground'
               )}
               title="Checklist operacional"
@@ -403,7 +447,7 @@ export function LeadCard({
         {/* Avatar do Responsável + Botões de Avanço Rápido 44px */}
         <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
           <Avatar className="size-6 rounded-full border border-border/60" title={assignedMember?.full_name || assignedMember?.name || lead.full_name}>
-            <AvatarFallback className="text-3xs font-bold bg-primary/10 text-primary">
+            <AvatarFallback className="text-3xs font-bold bg-muted text-foreground">
               {assignedInitials}
             </AvatarFallback>
           </Avatar>

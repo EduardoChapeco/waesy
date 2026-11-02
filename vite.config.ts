@@ -7,6 +7,10 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { fileURLToPath } from "node:url";
 
+const serverBrowserOnlyShim = fileURLToPath(
+  new URL("./src/lib/server-browser-only-shim.ts", import.meta.url),
+);
+
 const clientServerCoreShim = fileURLToPath(
   new URL("./src/lib/client-start-server-core-shim.ts", import.meta.url),
 );
@@ -17,6 +21,9 @@ const clientOnlyServerCoreGuard = {
   resolveId(source: string, _importer: string | undefined, options?: { ssr?: boolean }) {
     if (source === "@tanstack/start-server-core" && options?.ssr !== true) {
       return clientServerCoreShim;
+    }
+    if (options?.ssr === true && ["jspdf", "html2canvas", "maplibre-gl", "xlsx"].includes(source)) {
+      return serverBrowserOnlyShim;
     }
     return null;
   },

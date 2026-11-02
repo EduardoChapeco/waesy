@@ -112,10 +112,10 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
     <Sheet open={isOpen} onOpenChange={setOpen}>
       <SheetContent
         side="bottom"
-        className="h-[88dvh] max-h-[88dvh] p-0 flex flex-col rounded-t-3xl border-t border-border bg-background z-50 overflow-hidden"
+        className="h-full max-h-sheet p-0 flex flex-col rounded-t-3xl border-t border-border bg-background z-50 overflow-hidden"
       >
         {/* Top Header */}
-        <SheetHeader className="px-5 py-3.5 border-b border-border/40 flex flex-row items-center justify-between space-y-0">
+        <SheetHeader className="px-5 py-3 border-b border-border/40 flex flex-row items-center justify-between space-y-0">
           <SheetTitle className="text-base font-bold text-foreground tracking-tight">
             Minha Conta e Perfis
           </SheetTitle>
@@ -126,7 +126,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
           {isAuthenticated ? (
             <>
               {/* Identidade do Usuário (Clean & Borderless) */}
-              <div className="flex items-center gap-3.5 px-1 py-1">
+              <div className="flex items-center gap-4 px-1 py-1">
                 <div className="size-14 min-w-14 min-h-14 rounded-full bg-muted flex items-center justify-center font-bold text-base shrink-0 overflow-hidden ring-1 ring-border/40">
                   {userAvatar ? (
                     <img
@@ -142,7 +142,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-base text-foreground break-words leading-tight">
                       {userFullName}
                     </h3>
@@ -152,7 +152,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                       size="sm"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                  <p className="text-xs text-muted-foreground font-medium mt-1">
                     {username ? `@${username}` : user?.email}
                   </p>
                 </div>
@@ -164,13 +164,13 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                   Alternar Identidade
                 </span>
 
-                <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-muted/40">
+                <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-muted/40">
                   {/* Perfil Civil */}
                   <button
                     type="button"
                     onClick={() => handleSwitchContext("civil")}
                     className={cn(
-                      "h-12 min-h-11 px-3 rounded-xl flex items-center gap-2.5 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "h-12 min-h-11 px-3 rounded-xl flex items-center gap-2 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       currentContext === "civil"
                         ? "bg-background text-foreground font-bold shadow-xs"
                         : "text-muted-foreground hover:text-foreground hover:bg-background/40"
@@ -185,7 +185,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     type="button"
                     onClick={() => handleSwitchContext("store")}
                     className={cn(
-                      "h-12 min-h-11 px-3 rounded-xl flex items-center gap-2.5 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "h-12 min-h-11 px-3 rounded-xl flex items-center gap-2 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       currentContext === "store"
                         ? "bg-background text-foreground font-bold shadow-xs"
                         : "text-muted-foreground hover:text-foreground hover:bg-background/40"
@@ -200,7 +200,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     type="button"
                     onClick={() => handleSwitchContext("courier")}
                     className={cn(
-                      "h-12 min-h-11 px-3 rounded-xl flex items-center gap-2.5 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "h-12 min-h-11 px-3 rounded-xl flex items-center gap-2 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       currentContext === "courier"
                         ? "bg-background text-foreground font-bold shadow-xs"
                         : "text-muted-foreground hover:text-foreground hover:bg-background/40"
@@ -215,7 +215,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     type="button"
                     onClick={() => handleSwitchContext("creator")}
                     className={cn(
-                      "h-12 min-h-11 px-3 rounded-xl flex items-center gap-2.5 text-left transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "h-12 min-h-11 px-3 rounded-xl flex items-center gap-2 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       currentContext === "creator"
                         ? "bg-background text-foreground font-bold shadow-xs"
                         : "text-muted-foreground hover:text-foreground hover:bg-background/40"
@@ -230,7 +230,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
               {/* Serviços Pessoais — Apple Inset Grouped Architecture */}
               <div className="space-y-4 pt-1">
                 {/* Grupo 1: Transacional & Atividades */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
                     Transações &amp; Finanças
                   </span>
@@ -238,7 +238,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/financas")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -252,7 +252,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/pedidos")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -266,7 +266,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/creditos")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -280,7 +280,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/conversas")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -294,7 +294,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                 </div>
 
                 {/* Grupo 2: Minha Conta & Coleções */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
                     Serviços Pessoais
                   </span>
@@ -302,7 +302,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/salvos")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -316,7 +316,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/enderecos")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -330,7 +330,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/classificados")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -344,7 +344,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/ingressos")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -358,7 +358,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/viagens")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -372,7 +372,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/agendamentos")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -386,7 +386,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/mobilidade")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -400,7 +400,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/curriculo")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -414,7 +414,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/tokens")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -428,7 +428,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/carnes")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -442,7 +442,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/gift-cards")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -456,7 +456,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/negociacoes")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -470,7 +470,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                 </div>
 
                 {/* Grupo 3: Governança & Ajuda */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
                     Governança &amp; Suporte
                   </span>
@@ -478,7 +478,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/seguranca")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -492,7 +492,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/verificacao")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">
@@ -506,7 +506,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                     <button
                       type="button"
                       onClick={() => handleNavigate("/conta/suporte")}
-                      className="w-full min-h-12 px-3.5 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="w-full min-h-12 px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="size-8 rounded-lg bg-background/80 flex items-center justify-center shrink-0 text-foreground">

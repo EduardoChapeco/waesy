@@ -1342,13 +1342,11 @@ export function ProfileInPageEditor({
         open={cropperOpen}
         onOpenChange={setCropperOpen}
         imageSrc={cropperSrc}
-        aspect={cropperType === "avatar" ? 1 : cropperType === "cover" ? 21 / 9 : 16 / 9}
+        aspect={cropperType === "avatar" ? 1 : 16 / 9}
         cropShape={cropperType === "avatar" ? "round" : "rect"}
         title={
           cropperType === "avatar"
             ? "Enquadrar Foto de Perfil (1:1)"
-            : cropperType === "cover"
-            ? "Enquadrar Capa Panorâmica (21:9)"
             : "Enquadrar Banner Promocional (16:9)"
         }
         onCropComplete={handleCropComplete}

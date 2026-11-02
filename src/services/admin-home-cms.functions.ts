@@ -1524,7 +1524,7 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
       if (normalizedList.length < limit) {
         const { data: rawArticlesData } = await supabase
           .from("news_articles")
-          .select("id, slug, title, subtitle, summary, cover_media_url, category, published_at, city")
+          .select("id, slug, title, subtitle, ai_summary, cover_media_url, category, published_at, city")
           .eq("status", "published")
           .order("published_at", { ascending: false })
           .limit(Math.max(limit, 8));

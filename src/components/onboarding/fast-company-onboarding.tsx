@@ -862,27 +862,26 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="space-y-2">
-                <label className="text-2xs font-medium text-muted-foreground">Logotipo (1:1)</label>
-                <ImageUpload
-                  value={logoUrl}
-                  onChange={setLogoUrl}
-                  bucket="avatars"
-                  aspectPreset="square"
-                  helperText="Upload da logo quadrada (1:1)"
-                />
+                <label className="text-2xs font-medium text-muted-foreground">Logotipo Oficial (1:1 Squircle)</label>
+                <div className="size-24 sm:size-28">
+                  <ImageUpload
+                    value={logoUrl}
+                    onChange={setLogoUrl}
+                    bucket="avatars"
+                    aspectPreset="square"
+                    variant="avatar"
+                    className="size-full"
+                    helperText="Upload da logo quadrada (1:1)"
+                  />
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-2xs font-medium text-muted-foreground">Capa do Perfil (21:9)</label>
-                <ImageUpload
-                  value={bannerUrl}
-                  onChange={setBannerUrl}
-                  bucket="store-assets"
-                  aspectPreset="banner"
-                  helperText="Upload da capa panorâmica (21:9)"
-                />
+              <div className="space-y-1 flex-1">
+                <p className="text-xs font-semibold text-foreground">Identidade Padrão Threads</p>
+                <p className="text-xs text-muted-foreground">
+                  A identidade visual do perfil público opera sem capa superior decorativa, destacando a sua marca através do logotipo squircle e catálogo.
+                </p>
               </div>
             </div>
           </div>
@@ -922,10 +921,10 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           </Badge>
         </div>
 
-        {/* Card do Perfil Público Canônico */}
+        {/* Card do Perfil Público Canônico (Padrão Threads / Instagram — Sem Capa Decorativa) */}
         <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-2xs space-y-0">
-          <div className="p-4 bg-card border-b border-border/40">
-            <div className="flex items-center gap-3 w-full">
+          <div className="p-4 sm:p-5 bg-card border-b border-border/40">
+            <div className="flex items-center justify-between gap-4">
               {/* Logo Squircle 1:1 */}
               <div className="size-16 sm:size-20 rounded-lg border-2 border-border/60 bg-background overflow-hidden flex items-center justify-center shadow-2xs shrink-0">
                 {logoUrl ? (
@@ -937,21 +936,12 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 )}
               </div>
 
-              {/* Capa Panorâmica Canônica 21:9 ao lado */}
-              <div className="flex-1 min-w-0 aspect-[21/9] rounded-lg bg-muted relative overflow-hidden flex items-center border border-border/40">
-                {bannerUrl ? (
-                  <img src={bannerUrl} alt="Capa da empresa" className="size-full object-cover select-none" />
-                ) : (
-                  <div className="size-full bg-muted/40 flex items-center justify-center p-2 text-center">
-                    <Store className="size-6 text-primary/30" />
-                  </div>
-                )}
-                <div className="absolute bottom-2 left-2">
-                  <Badge className="bg-foreground/75 backdrop-blur-md text-foreground border-white/20 text-3xs font-bold gap-1">
-                    <CatIcon className="size-2.5" />
-                    <span>{selectedCat.label}</span>
-                  </Badge>
-                </div>
+              {/* Badges de Categoria e Modalidade */}
+              <div className="flex items-center gap-2">
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-2xs font-bold gap-1">
+                  <CatIcon className="size-3" />
+                  <span>{selectedCat.label}</span>
+                </Badge>
               </div>
             </div>
           </div>

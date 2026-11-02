@@ -215,7 +215,7 @@ export async function _updateShipmentTracking(input: {
  if (input.status === "in_transit") {
  await db
  .from("orders")
- .update({ status: "shipped", shipped_at: new Date().toISOString(), tracking_code })
+ .update({ status: "shipped", shipped_at: new Date().toISOString() })
  .eq("id", shipment.order_id)
  .eq("store_id", store_id)
  .in("status", ["processing", "ready_for_pickup", "paid"]);

@@ -22,6 +22,7 @@ import { NicheId } from "@/lib/niche-manifest";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { EmptyState } from "@/components/state/states";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/crm")({
   head: () => ({
@@ -151,7 +152,14 @@ export default function WorkspaceCrmPage() {
   const activeFiltersCount = (statusFilter !== "all" ? 1 : 0) + (channelFilter !== "all" ? 1 : 0);
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+    <div
+      className={cn(
+        "w-full flex-1 flex flex-col min-h-0 px-0 animate-in fade-in duration-200",
+        activeTab === "funil"
+          ? "h-full min-h-0 overflow-hidden space-y-2 pb-0"
+          : "max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0"
+      )}
+    >
       {/* ── 1. TopBar Direta (Linha 1 no Mobile: Título + Badge + Menu Kebab) ── */}
       <div className="flex flex-row items-center justify-between gap-2 border-b border-border/40 pb-3 pt-1">
         <div className="flex items-center gap-2 min-w-0">
@@ -282,7 +290,7 @@ export default function WorkspaceCrmPage() {
       </div>
 
       {activeTab === "funil" ? (
-        <div className="pt-2">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden pt-2">
           <NicheKanbanBoard
             nicheId={(nicheId as NicheId) || "generic"}
             entity="lead"
@@ -657,7 +665,7 @@ export default function WorkspaceCrmPage() {
 
       {/* ── Sheet Lateral de Inspeção e Timeline 360 (P36 / P47) ── */}
       <Sheet open={!!selectedEntity} onOpenChange={(open) => !open && setSelectedEntity(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col">
+        <SheetContent side="right" size="wide" className="w-full sm:max-w-2xl p-0 flex flex-col">
           <SheetHeader className="p-6 border-b border-border/40">
             <div className="flex items-center justify-between">
               <SheetTitle className="text-base font-bold text-foreground">

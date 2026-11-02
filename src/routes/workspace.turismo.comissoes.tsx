@@ -611,7 +611,7 @@ function TravelSalesFinancialCompositionPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 w-full space-y-6">
       {/* ── Cabeçalho Executivo do Módulo Interno ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div className="space-y-1">
@@ -643,27 +643,27 @@ function TravelSalesFinancialCompositionPage() {
       {/* ── Painel de Indicadores Contábeis Separados (Sem Confundir Venda com Receita) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Volume Bruto vs Venda Líquida */}
-        <div className="p-4 rounded-lg border border-border/70 bg-card space-y-2">
+        <div className="p-4 rounded-2xl border border-foreground/15 bg-foreground text-background space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>1. Venda Bruta vs. Líquida</span>
             <DollarSign className="size-4 text-primary" />
           </div>
-          <p className="text-xl font-black text-foreground font-mono">
+          <p className="text-xl font-black text-background font-mono tabular-nums">
             {formatMoney(totals.grossSale)}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
             <span>Venda Líquida (s/ taxas):</span>
-            <strong className="text-foreground font-mono">{formatMoney(totals.netSale)}</strong>
+            <strong className="text-background font-mono tabular-nums">{formatMoney(totals.netSale)}</strong>
           </div>
         </div>
 
         {/* Card 2: Receita da Agência (Comissão + Over Líquido) */}
-        <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
+        <div className="p-4 rounded-2xl border border-primary/30 bg-primary/5 space-y-2">
           <div className="flex items-center justify-between text-xs text-primary font-bold">
             <span>2. Receita da Agência (Comissão + Over)</span>
             <TrendingUp className="size-4 text-primary" />
           </div>
-          <p className="text-xl font-black text-primary font-mono">
+          <p className="text-xl font-black text-primary font-mono tabular-nums">
             {formatMoney(totals.agencyRevenue)}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-primary/20">
@@ -673,12 +673,12 @@ function TravelSalesFinancialCompositionPage() {
         </div>
 
         {/* Card 3: Resultado Líquido da Agência (Receita - Custos Internos) */}
-        <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+        <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
           <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 font-bold">
             <span>3. Resultado Final (Lucro Real)</span>
             <Wallet className="size-4 text-emerald-600" />
           </div>
-          <p className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
+          <p className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono tabular-nums">
             {formatMoney(totals.netResult)}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-emerald-500/20">
@@ -692,12 +692,12 @@ function TravelSalesFinancialCompositionPage() {
         </div>
 
         {/* Card 4: Conciliação de Recebimento & Operadoras */}
-        <div className="p-4 rounded-lg border border-border/70 bg-card space-y-2">
+        <div className="p-4 rounded-2xl border border-foreground/15 bg-foreground text-background space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>4. A Receber das Operadoras</span>
             <Clock className="size-4 text-amber-500" />
           </div>
-          <p className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono">
+          <p className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono tabular-nums">
             {formatMoney(Math.max(0, totals.expectedReceipt - totals.received))}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">

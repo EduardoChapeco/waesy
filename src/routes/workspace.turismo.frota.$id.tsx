@@ -354,7 +354,7 @@ function VehicleLayoutEditorPage() {
  size="icon"
  onClick={handleUndo}
  disabled={historyIndex <= 0}
- className="size-9 rounded-lg cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-xl cursor-pointer"
  title="Desfazer"
  >
  <Undo className="size-3.5" />
@@ -365,7 +365,7 @@ function VehicleLayoutEditorPage() {
  size="icon"
  onClick={handleRedo}
  disabled={historyIndex >= history.length - 1}
- className="size-9 rounded-lg cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-xl cursor-pointer"
  title="Refazer"
  >
  <Redo className="size-3.5" />
@@ -377,7 +377,7 @@ function VehicleLayoutEditorPage() {
  variant="outline"
  size="sm"
  onClick={() => setPresetModalOpen(true)}
- className="h-9 px-3 rounded-lg text-xs gap-2 cursor-pointer"
+ className="h-11 min-h-11 px-3 rounded-xl text-xs gap-2 cursor-pointer"
  >
  <BookmarkPlus className="size-3.5 text-primary" /> Modelos Prontos
  </Button>
@@ -388,7 +388,7 @@ function VehicleLayoutEditorPage() {
  variant="outline"
  size="sm"
  onClick={handleAutoRenumber}
- className="h-9 px-3 rounded-lg text-xs gap-2 cursor-pointer"
+ className="h-11 min-h-11 px-3 rounded-xl text-xs gap-2 cursor-pointer"
  >
  <ListOrdered className="size-3.5 text-primary" /> Renumerar
  </Button>
@@ -398,7 +398,7 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={handleSave}
  disabled={saving}
- className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer bg-primary text-primary-foreground shadow-xs"
+ className="h-11 min-h-11 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-primary text-primary-foreground shadow-xs"
  >
  <Save className="size-3.5" /> {saving ? "Salvando..." : "Salvar Mapa"}
  </Button>
@@ -508,7 +508,7 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* ── 3. Chassi Virtual do Veículo 2D (Apple Grade) ── */}
- <div className="flex flex-col items-center justify-center p-6 sm:p-10 rounded-lg bg-muted/20 border border-border/70 overflow-x-auto no-scrollbar">
+ <div className="tab-list flex flex-col items-center justify-center p-6 sm:p-10 rounded-2xl bg-muted/20 border border-border/70 overflow-x-auto no-scrollbar">
  <div className="text-xs font-mono text-muted-foreground mb-4 flex items-center gap-2">
  <Info className="size-3.5" />
  <span>
@@ -519,7 +519,7 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* Carroceria do Ônibus */}
- <div className="relative w-fit rounded-lg border-4 border-foreground/30 bg-card p-6 sm:p-8 shadow-sm flex flex-col items-center space-y-4 min-w-72 sm:min-w-80">
+ <div className="relative w-fit rounded-2xl border-4 border-foreground/30 bg-card p-6 sm:p-8 flex flex-col items-center space-y-4 min-w-72 sm:min-w-80">
  {/* Para-brisa Dianteiro */}
  <div className="w-full h-9 rounded-t-lg bg-sky-500/10 border-2 border-sky-500/30 flex items-center justify-center text-xs font-mono font-bold text-sky-600 uppercase tracking-widest">
  Frente / Para-brisa {isDoubleDecker ? `(Piso ${activeDeck})` : ""}

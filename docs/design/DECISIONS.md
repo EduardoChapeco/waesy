@@ -1,5 +1,213 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-424: Unificação Total de Menus com o CMS (MobileNav & ContextSidebar), Governança Autônoma de Posts e Congelamento de Baseline em 2.939
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. Necessidade de vincular a barra de navegação móvel (`MobileNav`) ao gerenciador de menus do CMS (`navigation_menus` com handle `bottom_nav`), permitindo controle bilateral pelo Admin Master de rótulos, ícones, rotas e visibilidade de abas, mantendo fallback de 5 abas canônicas.
+  2. Necessidade de conectar a barra lateral desktop (`ContextSidebar`) às superfícies ativas de vitrines cadastradas via `listAllSurfaces()` no CMS (`marketplace_surfaces`), eliminando contagens e listas fixas.
+  3. Resolução autônoma e defensiva de propriedade em `ContentActionsMenu`: criadores de postagens no feed agora têm acesso determinístico à suíte completa de CRUD (Editar via `EditPostModal`, Fixar, Comentários, Arquivar, Excluir) mesmo sem drilling de props de sessão através dos cartões, enquanto visitantes dispõem de ferramentas de audiência (Ocultar com Desfazer, Silenciar, Denunciar, Favoritar, Compartilhar, Copiar link).
+  4. Saneamento de violações DL-27 (`transition-all`) e conformidade com os estados DL-11/DL-12.
+- **Decisão:**
+  1. **MobileNav Conectado ao CMS (`src/components/shell/mobile-nav.tsx`):**
+     - Leitura dinâmica de `navigation_menus` (handle `bottom_nav`) via TanStack Query.
+     - Suporte a mapa de ícones dinâmicos (`ICON_LOOKUP`), badges reativos de sacola/compras e acionamento nativo do `AccountSwitcherDrawer` em itens com link de perfil.
+     - Fallback integral para as 5 abas canônicas (`Chat`, `Feed`, `Explorar`, `Compras`, `Perfil`).
+  2. **ContextSidebar Dinâmico com CMS (`src/components/shell/context-sidebar.tsx`):**
+     - Consumo reativo de `listAllSurfaces()` sincronizado com `/admin-master/vitrines`.
+     - Contagem e listagem dinâmica de vitrines ativas sem valores mágicos hardcoded.
+  3. **Resolução de Autoria em `ContentActionsMenu` (`src/components/common/content-actions-menu.tsx`):**
+     - Cálculo de `effectiveIsOwner` comparando sessão ativa (`getUserSession`) com múltiplos IDs de autor (`author.id`, `author_profile_id`, `author_user_id`).
+     - Cabeçalho semântico dinâmico ("Gerenciar Publicação" para posts, "Gerenciar Conteúdo" por padrão).
+     - Propagação das propriedades e status nos cartões (`FeedThreadPostCard`, `ThreadsCommunityFeed`, `post-card`, `_store.publicacao.$id`).
+  4. **Congelamento da Baseline de Design Lint:**
+     - Teto permanente rebaixado de 2.943 para **2.939 violações** (-4 violações líquidas eliminadas; -2 violações P1).
+     - Severidade P0 mantida estritamente em **0**.
+  5. **Testes Normativos Automatizados (`src/services/__tests__/cms-navigation-and-post-crud.test.ts`):**
+     - 4 novos testes unitários cobrindo autoria efetiva, CRUD de post, binding CMS no MobileNav e no ContextSidebar (100% aprovados).
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.20 (Invariante de Bilateralidade do CMS).
+- **Consequências:** Paridade bilateral total entre o painel Admin Master e os componentes de casca e vitrine, com governança de conteúdo de nível de produção e build unificado gerado sem erros.
+
+## DEC-422: Auditoria Holística de Design Lint e Abaixamento da Catraca para 2.943 Violações (-111 Violações Líquidas)
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. Varredura determinística identificou débitos acumulados de espaçamentos fora da grade de 4px (DL-03), touch targets < 44px (DL-14), dimensões arbitrárias entre colchetes (DL-02) e classes de transição genéricas (DL-30) em componentes centrais da aplicação.
+  2. Concentração de violações em `AccountSwitcherDrawer.tsx` (37 violações), `flyer-interactive-viewer-modal.tsx` (19 violações), `professional-resume-editor.tsx` (19 violações), `workspace.marketing.brand-kit.tsx` (19 violações) e `workspace.marketing.stories.tsx` (17 violações).
+- **Decisão:**
+  1. **Remediação de `AccountSwitcherDrawer.tsx` (37 -> 0 violações):**
+     - Normalização de 15 instâncias de `px-3.5` e `py-3.5` para múltiplos exatos de 4px (`px-4`, `py-3`, `gap-4`).
+     - Substituição de `h-[88dvh] max-h-[88dvh]` pelo token canônico `h-full max-h-sheet`.
+     - Substituição de `transition-all` por `transition-colors`.
+  2. **Remediação de `flyer-interactive-viewer-modal.tsx` (19 -> 0 violações):**
+     - Elevação de botões de controle e navegação para dimensão mínima canônica de 44px (`size-11 min-h-11 min-w-11` / `h-11 min-h-11`).
+     - Remoção de sombras decorativas em superfícies utilitárias de aplicação e substituição de colchetes arbitrários por `max-h-modal`.
+  3. **Remediação de `professional-resume-editor.tsx` (19 -> 0 violações):**
+     - Elevação de 11 botões de ação e adição para o piso de 44px (`h-11 min-h-11 px-4`).
+     - Substituição de `overflow-x-auto` em mídias de projetos pelo utilitário canônico `scroll-area-carousel`.
+  4. **Remediação de `workspace.marketing.brand-kit.tsx` (19 -> 0 violações) e `workspace.marketing.stories.tsx` (17 -> 0 violações):**
+     - Elevação de inputs e botões para `h-11 min-h-11`, tokenização de dimensões de stories (`w-72 aspect-post-moment`, `w-80 aspect-square`, `w-96 aspect-video`) e erradicação de cores literais.
+  5. **Congelamento da Catraca de CI:**
+     - Teto permanente rebaixado de 3.054 para **2.943 violações** (-111 violações líquidas eliminadas; -96 violações P1).
+     - Severidade P0 mantida em **0**.
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.26.
+- **Consequências:** Rompimento da marca histórica de 3.000 violações, aprovação plena em typecheck (0 erros), build de produção e deploy Cloudflare Pages (`https://4febc4ec.usewaesy.pages.dev`).
+
+## DEC-421: Erradicação Completa de Capas Panorâmicas de Cabeçalho e Padronização Estrita Threads / Instagram
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. A rota `workspace.configuracoes.index.tsx` ("Identidade Visual") ainda exibia um container de upload com proporção 21:9 ("Capa Panorâmica (21:9) — Banner de Loja"), em contradição com o padrão canônico adotado (Threads / Instagram / Apple HIG sem capas decorativas em cabeçalhos de perfil).
+  2. Fluxos auxiliares de onboarding e cadastro (`fast-company-onboarding.tsx`, `_store.criar-negocio.tsx`, `_store.criar-negocio.avancado.tsx`, `_store.places.$placeSlug.tsx`) ainda possuíam campos ou prévias com capas 21:9 e fallbacks sintéticos.
+- **Decisão:**
+  1. **Supressão Integral de Capas em Configurações de Empresa:**
+     - `src/routes/workspace.configuracoes.index.tsx`: Removido o campo e o container de upload da Capa Panorâmica 21:9. O cabeçalho foi padronizado para "Identidade do Perfil (1:1 Squircle)", orientando os usuários sobre o padrão Threads/Instagram onde a empresa é apresentada pelo logotipo e catálogo oficial.
+  2. **Alinhamento dos Fluxos de Onboarding e Criação:**
+     - `src/components/onboarding/fast-company-onboarding.tsx`: Removido o campo de upload de capa 21:9 e atualizada a prévia em tempo real para o cabeçalho limpo Threads/Instagram (avatar squircle + badges).
+     - `src/routes/_store.criar-negocio.tsx` e `src/routes/_store.criar-negocio.avancado.tsx`: Removido o upload de banner 21:9 da Etapa 3 e substituída a prévia com sobreposição negativa `-mt-8` por layout canônico limpo.
+     - `src/routes/_store.places.$placeSlug.tsx`: Eliminado contêiner de fachada 21:9 e o fallback sintético "Espaço para fachada do estabelecimento", unificando com o padrão de perfil canônico sem capa.
+  3. **Validação Mecânica Automatizada:**
+     - `src/services/__tests__/profile-unification-and-brandkit-cover.test.ts`: Expandida a suíte de testes normativos (11 testes, 100% aprovados).
+     - `node scripts/design-lint.mjs --ratchet`: Aprovado com redução de débito (-7 violações), teto da catraca atualizado e congelado.
+     - `npm run typecheck`: Exit Code 0 (0 erros de compilação em todo o repositório).
+     - `npm run build` e deploy no Cloudflare Pages: Concluído com sucesso (`https://76dbd26d.usewaesy.pages.dev`).
+- **Fundamentação:** AGENTS.md Regras B.4, B.8, B.9, B.11, B.33 (Invariante Anti-Fake Estrita e Padrão Threads).
+- **Consequências:** Eliminação definitiva de qualquer upload de capa panorâmica em perfis públicos e painéis de identidade visual, garantindo integridade visual flat, honesta e sem distorções.
+
+## DEC-420: Restauração Global dos Controles do Criador de Post (CRUD Avançado) e Controles de Audiência no Feed
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. Usuários proprietários de postagens no Feed Comunitário (`/feed`) visualizavam o menu de opções (`...`) com cabeçalho incorreto "GERENCIAR ANÚNCIO" seguido de espaço vazio sem opções de edição, exclusão, arquivamento ou governança do post.
+  2. A causa raiz residia em `ContentActionsMenu`: o cabeçalho era estático para qualquer tipo de entidade, e as opções de autor dependiam estritamente de callbacks externos (`onEdit`, `onDelete`, `onStatusChange`) que não eram repassados pelos cartões de feed (`FeedThreadPostCard`, `ThreadsCommunityFeed`, `post-card`).
+  3. Ausência de modal de edição de postagem e de controles essenciais de criador (ativar/desativar comentários, fixar no perfil, arquivar, excluir) e de visualizador (ocultar/não tenho interesse, silenciar autor, denunciar).
+- **Decisão:**
+  1. **Criação de `EditPostModal.tsx`:** Modal canônico padrão Apple HIG com textarea de conteúdo, gestor de tags com chips removíveis, input de localização, toggle de comentários e ações salvas via Server Function.
+  2. **Refatoração Cirúrgica de `ContentActionsMenu.tsx`:**
+     - Cabeçalho dinâmico contextual: "Gerenciar Publicação" para posts, "Gerenciar Evento" para eventos, "Gerenciar Produto" para produtos e "Gerenciar Anúncio" para classificados.
+     - Auto-suficiência operacional para posts: quando `entityType === "post"`, renderiza nativamente "Editar Publicação" (abrindo `EditPostModal`), "Fixar/Desafixar do Perfil", "Desativar/Ativar Comentários", "Arquivar/Reativar Publicação" e "Excluir Publicação" com diálogo de confirmação.
+     - Controles de Audiência para Não-Proprietários: "Salvar nos Favoritos", "Não tenho interesse / Ocultar" (com toast de desfazer) e "Silenciar @autor", além de "Denunciar Publicação".
+  3. **Propagação Transversal:**
+     - Conectado em `FeedThreadPostCard.tsx`, `ThreadsCommunityFeed.tsx`, `post-card.tsx` e `_store.publicacao.$id.tsx` com validação de identidade e repasse do post completo.
+  4. **Verificação & Deploy:**
+     - Design Lint Ratchet aprovado com 0 violações P0 e 0 regressões em 2.591 arquivos.
+     - Vitest aprovado (100%).
+     - Build de produção Cloudflare Pages gerado e deploy publicado com sucesso (`https://dbd9b853.usewaesy.pages.dev`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.8, B.9, B.11, B.30, B.33.
+- **Consequências:** Governança total e imediata concedida a proprietários de postagens em qualquer superfície do feed e visualização de post, com eliminação de espaços vazios no menu.
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. Conclusão de 100% das fases planejadas na modernização arquitetural dos módulos operacionais e verticais de CRM, Turismo e Workspace (Padrão Clean Tech: Threads × PassHub × Pipefy).
+  2. Execução transversal para erradicação de Containeritis (DL-31) e bordas aninhadas em cartões operacionais nos submódulos restantes (`reacomodacao`, `contratos`, `cotacoes`, `embarques`, `viagens`, `vouchers`, `destinos`, `comercial`, `viabilidade`).
+- **Decisão:**
+  1. **Remoção de Bordas Aninhadas e Adoção de Superfícies Squircle:**
+     - `workspace.turismo.reacomodacao.tsx`: Casca soberana elevada para `rounded-2xl border border-black/[0.06] dark:border-white/[0.08]` e blocos de anotações internas/direitos ANAC convertidos para `rounded-xl bg-muted/30` e `rounded-xl bg-background/80` (sem bordas aninhadas).
+     - `workspace.turismo.contratos.index.tsx`: Cards de contratos elevados para `rounded-2xl border border-black/[0.06] dark:border-white/[0.08]` e selo de assinatura digital transformado em `rounded-xl bg-muted/30`.
+     - `workspace.turismo.cotacoes.tsx`: Resumo de cotação convertido para superfície tonal `rounded-2xl bg-muted/30` desprovida de borda duplicada.
+     - `workspace.turismo.embarques.tsx`: Blocos de roteiro, voo e hospedagem no modal de exportação desprovidos de bordas aninhadas redundantes.
+     - `workspace.turismo.viagens.index.tsx`: Cards externos elevados para `rounded-2xl border border-black/[0.06] dark:border-white/[0.08]` e chips de serviços inclusos para `rounded-full bg-muted/60 px-3 py-1` (em conformidade com a grade de 4px DL-03).
+     - `workspace.turismo.vouchers.index.tsx`: Contêiner de alternância de formatos elevado para `rounded-xl bg-muted/40` e visualizador para `rounded-2xl bg-muted/20`.
+     - `workspace.turismo.destinos.tsx`: Cards do catálogo de destinos elevados para `rounded-2xl border border-black/[0.06] dark:border-white/[0.08]`.
+     - `workspace.comercial.tsx`: Rastro de atividades na Ficha do Cliente convertido para `rounded-xl bg-muted/30`.
+     - `workspace.viabilidade.tsx`: Pílulas de equilíbrio econômico SimLabs convertidas para `rounded-xl bg-muted/30`.
+  2. **Verificação Mecânica Conclusiva:**
+     - Catraca do Design Lint (`node scripts/design-lint.mjs --ratchet`): **Aprovado com 0 violações P0 e 0 regressões**.
+     - Suíte de testes automatizados (`vitest run`): **20 testes aprovados (100%)**.
+     - Build de produção (`npm run build`): Gerou assets e worker SSR íntegros com Exit Code 0.
+     - Deploy publicado no Cloudflare Pages: `https://6523f193.usewaesy.pages.dev` e `https://usewaesy.pages.dev`.
+     - Validação de rotas de produção: HTTP 200 OK em `/`, `/turismo`, `/explorar`.
+     - Telemetria Supabase ClickHouse: **0 erros** nos fluxos transacionais.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.8, B.9, B.11, B.31 e B.33.
+- **Consequências:** Todas as fases da modernização visual e estrutural concluídas em completude máxima, com zero containeritis, zero mocks e estabilidade total em produção.
+
+## DEC-418: Erradicação Estrita de Dados Sintéticos, Elevação Clean Tech Squircle nos Submódulos de Turismo e Validação E2E
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. Continuidade do refinamento visual de CRM e Turismo (Clean Tech / Threads × PassHub × Pipefy) com auditoria determinística de soberania White-Label, dados fakes e ergonomia visual.
+  2. Identificação de resíduos sintéticos:
+     - `workspace.turismo.vistos.tsx`: Estados iniciais continham passageiro fake "Passageiro Titular", strings MRZ mockadas com nome "CARLOS EDUARDO SILVA" e avaliação DS-160 pré-calculada.
+     - `workspace.turismo.aereos.tsx`: Placeholder continha `Ex: João da Silva Sauro`.
+     - `contract-editor-sheet.tsx`: `useState('João da Silva')` e valores fictícios pré-carregados no formulário de minuta.
+     - Submódulos de Turismo (`incidentes`, `radar`, `corporativo`): Presença de `p-2 rounded-lg bg-muted/20 border border-border/40` configurando Containeritis (DL-31) e cards aninhados.
+- **Decisão:**
+  1. **Higienização de Mocks:**
+     - `workspace.turismo.vistos.tsx`: Estados inicializados como vazios (`""`, `null`), renderizando empty states honestos de auditoria consular DS-160 e conferência MRZ ICAO 9303 até que o operador insira os dados do passageiro.
+     - `contract-editor-sheet.tsx`: Estados padrão inicializados como `""`, permitindo passagem de props dinâmicas ou preenchimento limpo.
+     - `workspace.turismo.aereos.tsx`: Substituído placeholder por rótulo profissional neutro ("Nome completo do passageiro (conforme documento)").
+  2. **Elevação Clean Tech Squircle (Anti-Containeritis DL-31):**
+     - `workspace.turismo.radar.tsx`: Pílulas de métricas internas convertidas para superfícies limpas sem borda aninhada (`rounded-xl bg-muted/30 p-3`), eliminando o card-in-card.
+     - `workspace.turismo.incidentes.tsx`: Cards externos elevados para `rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card hover:bg-muted/20` com `transition-colors duration-200` e Sheet ampliado para `size="dossier"`.
+     - `workspace.turismo.corporativo.tsx`: Contêineres de tabelas e métricas elevados para `rounded-2xl border border-black/[0.06] dark:border-white/[0.08]`.
+  3. **Verificação Mecânica e Deploy:**
+     - Testes unitários de Turismo (`travel-wooba-and-vault`, `travel-contract-public-access`, `travel-proposal-conversion-flow`, `travel-operator-sync`): **20 testes aprovados (100%)**.
+     - Catraca do Design Lint (`node scripts/design-lint.mjs --ratchet`): **Aprovado com 0 violações P0 e 0 regressões**.
+     - Build de produção gerando worker e assets compilados com Exit Code 0.
+     - Deploy publicado no Cloudflare Pages: `https://097ae82c.usewaesy.pages.dev` e `https://usewaesy.pages.dev` com resposta HTTP 200 OK.
+     - Telemetria de logs Supabase ClickHouse: **0 erros** em `postgres_logs`, `postgrest_logs` e `edge_logs`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.31 e B.33.
+- **Consequências:** Fim completo de dados sintéticos em formulários, interface descompactada com superfícies squircle limpas e estabilidade plena em produção.
+
+## DEC-417: Auditoria de Logs Supabase, Correção de Discrepâncias de Esquema e Erradicação de Erros 400
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. A auditoria forense nos logs unificados do Supabase (`postgres_logs` e `edge_logs` via MCP `query_logs`) revelou 16 erros recorrentes de colunas inexistentes que disparavam status HTTP 400 Bad Request em queries de produção:
+     - `column news_articles.summary does not exist` (coluna real é `ai_summary`).
+     - `column classified_applications.previous_company_rating does not exist` e `job_applications.previous_company_rating` (migration de ATS pendente no Postgres).
+     - `operator does not exist: uuid ~~ unknown` (busca `not.like.b0000000-%` em coluna UUID).
+     - `column product_media_1.is_cover does not exist` (`product_media` utiliza `sort_order`).
+     - `column stores.is_verified`, `stores.category`, `stores.segment`, `stores.cover_url` (atributos residem em `stores.settings` e `banner_url`).
+     - `column products.stock`, `products.stock_quantity`, `products.cover_url`, `products.name`, `products.is_active` (`products` adota `title`, `compare_at_cents`, `status = 'published'`, e estoque nas variantes).
+     - `column affiliate_partners.pending_commission_cents does not exist` (computado como `total_commission_cents - paid_commission_cents`).
+     - `column events.price_cents does not exist` (`events` utiliza `price_min_cents` e `price_max_cents`).
+     - `column creator_profiles.stage_name does not exist` (coluna real é `name`).
+     - `column orders.tracking_code does not exist` (`orders` armazena em `shipments` ou `custom_fields`).
+     - `column directory_listings.slug` e `directory_listings.name` (`directory_listings` utiliza `id` e `business_name`).
+     - `column experience_documents.status does not exist` (`experience_documents` utiliza `is_active: boolean`).
+- **Decisão:**
+  1. **Aplicação de Migrações de Esquema no Supabase (`ALTER TABLE`):** Adicionadas as colunas `previous_company_rating`, `previous_company_feedback`, `previous_company_name`, `reason_for_leaving`, `last_salary_cents`, `salary_expectation_cents` nas tabelas `classified_applications`, `job_applications` e `profiles`.
+  2. **Adequação de Queries BFF:**
+     - `src/services/admin-home-cms.functions.ts`: `.select("summary")` → `.select("ai_summary")`.
+     - `src/services/tourism.functions.ts`: Removido filtro inválido `.not("id", "like", "b0000000-%")`.
+     - `src/services/events.functions.ts`: Corrigido join de `classifieds` com `profiles:author_profile_id` e alinhada consulta em `directory_listings` para `business_name` e `avatar_url`.
+     - `src/services/surface-cms.functions.ts` & `marketplace.functions.ts`: Removido `stores.is_verified` de queries diretas em `stores`; removidos `stock` e `is_unlimited_stock` de queries em `products`.
+     - `src/services/builder.functions.ts`: Corrigido select em `stores` para `settings, banner_url`.
+     - `src/services/faceted-search.functions.ts` & `search.functions.ts`: Corrigido `product_media` para `sort_order === 0`.
+     - `src/services/affiliates.functions.ts`: Corrigido select de produtos para `title, compare_at_cents`, remoção de `stage_name`, e cálculo defensivo de `pending_commission_cents`.
+     - `src/services/order.functions.ts` & `fulfillment.functions.ts`: Removido `tracking_code` direto de `orders`.
+     - `src/routes/sitemap[.]xml.ts`: Corrigida query de `directory_listings` (somente `id`) e `experience_documents` (`is_active: true`).
+     - `src/services/copilot-internal-search.ts`: Alinhada query de produtos para `status = 'published'`.
+  3. **Build e Deploy de Produção Homologados:**
+     - Build SSR aprovado gerando worker de 22.75 MB.
+     - Deploy executado no Cloudflare Pages (`https://03caf8e3.usewaesy.pages.dev` e `https://usewaesy.pages.dev`).
+     - Verificação por telemetria ClickHouse comprovando **0 novos erros** após entrada do deploy em produção.
+- **Fundamentação:** Regras B.4, B.7, B.8, B.9, B.11 e B.25 do AGENTS.md.
+- **Consequências:** Zero chamadas com HTTP 400 Bad Request, integridade relacional total e queries 100% aderentes ao esquema ativo no Postgres.
+
+## DEC-416: Padronização Universal de CRM & Kanbans, Descarte de Bundles Client-Only no SSR e Deploy Cloudflare Pages
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. Aprofundamento do design clean tech e minimalista nos módulos comerciais e operacionais (Kanbans em widescreen full-canvas, Dossiê 360° em split 3 colunas, agenda e agendamentos padrão Transom, e cartões táteis mobile padrão PassHub).
+  2. Cumprimento rigoroso da política white-label, erradicando todas as menções residuais a plataformas de terceiros em rotas, DTOs e funções.
+  3. O bundle do worker excedia ligeiramente o teto de 25 MiB da Cloudflare Pages devido ao vazamento de bibliotecas pesadas exclusivas do navegador (`jspdf`, `html2canvas`, `maplibre-gl`, `xlsx`) para o build SSR.
+- **Decisão:**
+  1. **Shimming de Dependências Client-Only no SSR (`vite.config.ts`, `server-browser-only-shim.ts`):** Instalado guard no Vite para desviar imports de `jspdf`, `html2canvas`, `maplibre-gl` e `xlsx` para um shim vazio durante o SSR, reduzindo o worker de 25.75 MB para 22.75 MB (23.851.809 bytes).
+  2. **Faixas Superiores Coloridas Semânticas (`full-viewport-kanban.tsx`, `niche-kanban-board.tsx`, `workspace.turismo.embarques.tsx`):** Adicionado helper `getColumnColorClass` e faixas `h-1.5` nas colunas de todos os Kanbans do sistema.
+  3. **Desbloqueio de Viewport no CRM Geral (`workspace.crm.tsx`):** Implementada bifurcação de layout para aba funil (`activeTab === 'funil' ? 'h-full min-h-0 overflow-hidden space-y-2 pb-0' : 'max-w-7xl mx-auto'`), eliminando barreiras de scroll.
+  4. **Padronização da Agenda (`workspace.agenda.index.tsx`):** Removidas classes com colchetes arbitrários (`min-h-[50px]`, `min-h-[38px]`, `max-w-[130px]`, `max-h-[85vh]`), alvos de toque elevados para 44px (`size-11 min-h-11 min-w-11`), e grade de dias e métricas `tabular-nums` refinadas no padrão Transom.
+  5. **Deploy Cloudflare Pages Homologado:** Executado deploy via `wrangler pages deploy dist --project-name usewaesy --no-bundle --commit-dirty=true`, servindo em `https://f30cd73b.usewaesy.pages.dev` e em produção com HTTP 200 OK.
+- **Fundamentação:** Regras B.4, B.7, B.8, B.9 do AGENTS.md.
+- **Consequências:** Catraca de Design Lint com -75 violações (teto abaixado para 3061, 0 P0), 100% dos testes unitários passando, zero regressões funcionais.
+
+## DEC-415: Refatoração Arquitetural Widescreen no Ecossistema de Turismo (Full-Canvas Kanban, LeadCard Squircle, Ficha 360° Dossier 3-Colunas e Sub-Módulos)
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. O Kanban de Turismo (`src/routes/workspace.turismo.index.tsx`) sofria de duplo estrangulamento horizontal (`max-w-7xl mx-auto` no `WorkspaceShell` e na própria rota), além de 3 barras superiores empilhadas que consumiam mais de 260px verticais antes da primeira coluna.
+  2. A Ficha 360° do Lead (Sheet de 3 colunas e 9 abas) abria espremida em `768px` (`lg:max-w-3xl`) porque a variante `size="default"` do `SheetContent` em `src/components/ui/sheet.tsx` sobrescrevia `sm:max-w-5xl` no breakpoint `lg:`.
+  3. Os cartões `LeadCard` continham caixas aninhadas e careciam de chip explícito de temperatura (`Quente` / `Morno` / `Frio`) e pílula de comissão estimada ao lado do valor.
+- **Decisão:**
+  1. **Desbloqueio Full-Canvas (`workspace-shell.tsx` e `workspace.turismo.index.tsx`):** Desbloqueado `max-w-none` para `/workspace/turismo`, `/workspace/crm` e `/workspace/pdv`; unificado o topo em Sub-Header compacto com KPIs em pílulas `tabular-nums`, filtro de Temperatura (`Quente`/`Morno`/`Frio`), seletor nativo mobile (`< 600px`) por fase ativa, barra superior colorida por coluna (`h-1`) e instrução de fase no rodapé.
+  2. **LeadCard Squircle (`LeadCard.tsx`):** Geometria `rounded-2xl`, chip semântico de Temperatura, remoção de sub-caixas aninhadas e rodapé financeiro com preço em `tabular-nums` + comissão estimada em esmeralda (`+R$ ... com.`).
+  3. **Ficha do Lead Dossiê (`sheet.tsx` e `workspace.turismo.index.tsx`):** Criadas as variantes `size="2xl"` e `size="dossier"` (`sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl` e `max-sm:h-dvh max-sm:w-screen` no mobile), balanceando a grade de 3 colunas (`3 + 6 + 3 = 12`) e preservando 100% das 9 abas e regras de negócio.
+  4. **Sub-Módulos & Motor Kanban (`full-viewport-kanban.tsx`, `niche-kanban-board.tsx`, `workspace.turismo.comissoes.tsx`, `workspace.turismo.embarques.tsx`, `bus-seat-map.tsx`):** Padronizados com superfícies `rounded-2xl`, card Hero invertido e `tabular-nums`. Catraca de Design Lint aprovada com redução de 58 violações (`3136 -> 3078`, `P0: 0`).
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.26; `docs/specs/SPEC-TURISMO-FULL-CANVAS-DOSSIER-REFACTOR.md`.
+- **Consequências:** Experiência de trabalho fluida e individualizada em tela cheia no desktop e nativa por coluna no mobile, zero perda funcional e redução líquida do débito visual.
+
 ## DEC-414: Sanitização Global de Termos Técnicos em UI e Deconflito Semântico entre Nichos
 - **Data:** 2026-11-01
 - **Contexto:**
@@ -7584,10 +7792,10 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
 
 ---
 
-### DEC-415 (2026-11-01): Refatoração End-to-End do Card de Lead e Gaveta 360° no Padrão Pipefy (Módulo de Turismo)
+### DEC-415 (2026-11-01): Refatoração End-to-End do Card de Lead e Gaveta 360° no Padrão Dossiê Comercial (Módulo de Turismo)
 - **Data:** 2026-11-01
 - **ID da Decisão:** DEC-415
-- **Contexto:** O card do lead no Kanban de Turismo (`LeadCard.tsx`) e a gaveta lateral 360° (`workspace.turismo.index.tsx`) necessitavam da ergonomia funcional do Pipefy (referência LexCorp), preservando integralmente as 8 abas existentes (`viagem`, `cliente360`, `contratos`, `onboarding`, `checklist`, `anamnese`, `reuniao`, `lgpd`) sem deletar nenhuma funcionalidade, enriquecendo cada aba com fluxos operacionais completos e adicionando a 9ª aba de planejamento financeiro (`pagamento`).
+- **Contexto:** O card do lead no Kanban de Turismo (`LeadCard.tsx`) e a gaveta lateral 360° (`workspace.turismo.index.tsx`) necessitavam da ergonomia funcional de alta densidade e visão unificada, preservando integralmente as 8 abas existentes (`viagem`, `cliente360`, `contratos`, `onboarding`, `checklist`, `anamnese`, `reuniao`, `lgpd`) sem deletar nenhuma funcionalidade, enriquecendo cada aba com fluxos operacionais completos e adicionando a 9ª aba de planejamento financeiro (`pagamento`).
 - **Decisão Adotada:**
   1. **Card do Lead (`LeadCard.tsx`):** Estruturado com topo exibindo pill discreto de categoria da viagem + badge SLA temporal (`⏱ há Xh` / `Xd` calculado sobre `updated_at`/`created_at`); corpo com nome em destaque (`font-semibold text-sm`), destino, número de passageiros (`Pax`) e valor em `BRL`; rodapé com badge de status LGPD (`Consentimento Ativo` / `Pendente`), contadores de comentários e documentos/anexos, avatar do consultor e botões de avanço de etapa com 44px (`h-11 min-h-11`).
   2. **Gaveta 360° (`workspace.turismo.index.tsx`):**
@@ -7598,4 +7806,4 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - **Aba 9 (`pagamento`):** Nova aba com decomposição de custos (Aéreo, Hotelaria, Seguro Viagem, Taxas de Embarque, Markup/Comissão), seleção de modalidade (PIX à Vista, Cartão em até 10x, Boleto Faturado Operadora), link de aprovação para o cliente e persistência em `leads_crm.custom_fields.payment_plan`.
   3. **Qualidade Visual:** Redução de 18 violações no Design Lint Ratchet (de 3.154 para **3.136**, com 0 P0).
 - **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.25, B.26, DL-01 a DL-32 e WCAG 2.2 AA.
-- **Consequências:** Kanban e Gaveta 360° operando com ergonomia Pipefy de alta densidade, zero deleções, zero mocks estáticos e 100% de integração com o BFF.
+- **Consequências:** Kanban e Gaveta 360° operando com ergonomia comercial de alta densidade, zero deleções, zero mocks estáticos e 100% de integração com o BFF.

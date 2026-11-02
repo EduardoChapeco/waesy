@@ -412,7 +412,7 @@ function AdminOrdersPage() {
         />
       </div>
 
-      {/* ── MODO 1: KANBAN DE EMISSÕES & VIAGENS (TURISMO & TRAVELOS) ── */}
+      {/* ── MODO 1: KANBAN DE EMISSÕES & VIAGENS (TURISMO) ── */}
  {viewMode === "emissions" && isTourism ? (
  <div className="space-y-4">
  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

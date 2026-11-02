@@ -49,6 +49,8 @@ const sheetVariants = cva(
         md: "w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl",
         lg: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl",
         xl: "w-full sm:max-w-4xl md:max-w-5xl lg:max-w-6xl",
+        "2xl": "w-full max-sm:inset-0 max-sm:h-dvh max-sm:w-screen max-sm:rounded-none sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl",
+        dossier: "w-full max-sm:inset-0 max-sm:h-dvh max-sm:w-screen max-sm:rounded-none sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl",
         "70": "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl",
         wide: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl",
         full: "w-full max-w-full",

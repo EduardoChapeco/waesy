@@ -372,7 +372,7 @@ function WorkspaceTripDetailPage() {
   const cleanWhatsapp = (trip.client_whatsapp || "").replace(/\D/g, "");
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200 motion-reduce:transition-none">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200 motion-reduce:transition-none">
       {/* ── 1. CABEÇALHO DA VIAGEM ── */}
       <div className="flex flex-col gap-4 p-4 sm:p-5 rounded-lg bg-card border border-border/80">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1901,7 +1901,7 @@ function WorkspaceTripDetailPage() {
                     setIsAddInstallmentOpen(false);
                     toast.success("Parcela adicionada!");
                   }}
-                  className="rounded-lg h-9 text-xs font-bold"
+                  className="rounded-xl h-11 min-h-11 text-xs font-bold"
                 >
                   Adicionar
                 </Button>

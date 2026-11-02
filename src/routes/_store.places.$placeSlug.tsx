@@ -195,10 +195,10 @@ function PlaceDetailPage() {
         </Link>
       </nav>
 
-      {/* ── Cabeçalho Canônico do Estabelecimento (Foto 1:1 Squircle + Capa Panorâmica 21:9 ao lado) ── */}
+      {/* ── Cabeçalho Canônico do Estabelecimento (Padrão Threads / Instagram — Sem Capa Decorativa) ── */}
       <section aria-label="Identidade do Estabelecimento" className="flex flex-col gap-6">
         <div className="rounded-lg bg-card border border-border/40 p-4 sm:p-6 space-y-4">
-          <div className="flex items-center gap-3 sm:gap-4 w-full">
+          <div className="flex items-center justify-between gap-4 w-full">
             {/* Foto do Estabelecimento em Squircle 1:1 */}
             <div className="relative group shrink-0">
               <div className="size-20 sm:size-24 md:size-28 lg:size-32 rounded-lg bg-card border-2 border-border/50 ring-1 ring-border/20 overflow-hidden flex items-center justify-center shadow-xs">
@@ -216,44 +216,28 @@ function PlaceDetailPage() {
               </div>
             </div>
 
-            {/* Capa Panorâmica Canônica 21:9 ao Lado */}
-            <div className="flex-1 min-w-0 h-20 sm:h-24 md:h-28 lg:h-32 rounded-lg border border-border/40 bg-muted/20 relative overflow-hidden flex items-center">
-              {place.bannerUrl ? (
-                <img
-                  src={place.bannerUrl}
-                  alt={`Fachada de ${place.name}`}
-                  className="size-full object-cover select-none rounded-lg"
-                  loading="eager"
-                />
-              ) : (
-                <div className="size-full flex items-center justify-center text-muted-foreground/60 gap-2 text-xs font-medium">
-                  <Buildings className="size-6 text-primary/30" aria-hidden="true" />
-                  <span>Espaço para fachada do estabelecimento</span>
-                </div>
-              )}
-
-              <div className="absolute right-2 top-2 z-10">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleShare}
-                  className="h-9 sm:h-10 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 rounded-lg border border-border/60 text-xs font-semibold focus-visible:ring-2"
-                  aria-label="Compartilhar link deste local"
-                >
-                  {copiedShare ? (
-                    <>
-                      <Check className="mr-2 size-4 text-primary" aria-hidden="true" />
-                      Copiado
-                    </>
-                  ) : (
-                    <>
-                      <ShareNetwork className="mr-2 size-4" aria-hidden="true" />
-                      Compartilhar
-                    </>
-                  )}
-                </Button>
-              </div>
+            {/* Ações Rápidas de Compartilhamento */}
+            <div className="shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                className="h-9 sm:h-10 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 rounded-lg border border-border/60 text-xs font-semibold focus-visible:ring-2"
+                aria-label="Compartilhar link deste local"
+              >
+                {copiedShare ? (
+                  <>
+                    <Check className="mr-2 size-4 text-primary" aria-hidden="true" />
+                    Copiado
+                  </>
+                ) : (
+                  <>
+                    <ShareNetwork className="mr-2 size-4" aria-hidden="true" />
+                    Compartilhar
+                  </>
+                )}
+              </Button>
             </div>
           </div>
 

@@ -92,7 +92,7 @@ export const adminToggleStoreVerification = createServerFn({ method: "POST" })
       .from("stores")
       .update(updatePayload)
       .eq("id", storeId)
-      .select("id, name, is_verified, verified_badge_url")
+      .select("id, name, settings")
       .single();
 
     if (error) {

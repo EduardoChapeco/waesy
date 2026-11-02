@@ -574,19 +574,24 @@ export default function WorkspaceConfiguracoesPage() {
  </p>
  </div>
 
- {/* Topo Canônico: Logotipo 1:1 Squircle ao lado da Capa 21:9 Panorâmica */}
- <div className="space-y-3 pb-4 border-b border-border/40">
+ {/* Topo Canônico: Logotipo / Avatar 1:1 Squircle (Padrão Threads / Instagram — Sem Capa Decorativa) */}
+ <div className="space-y-4 pb-4 border-b border-border/40">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground">Identidade do Perfil (1:1 Squircle + Capa 21:9)</Label>
+ <div className="space-y-1">
+ <Label className="text-sm font-bold text-foreground">Identidade do Perfil (1:1 Squircle)</Label>
+ <p className="text-xs text-muted-foreground">
+ Padrão Threads e Instagram: sua empresa é apresentada pelo logotipo oficial em squircle e biografia limpa.
+ </p>
+ </div>
  <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
- Padrão Recomendado
+ Padrão Threads
  </Badge>
  </div>
 
  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
  {/* Logotipo 1:1 Squircle */}
  <div className="w-full sm:w-auto shrink-0 space-y-2">
- <span className="text-xs font-medium text-muted-foreground block">Logotipo (1:1)</span>
+ <span className="text-xs font-medium text-muted-foreground block">Logotipo Oficial (1:1)</span>
  <div className="size-24 sm:size-28">
  <ImageUpload
  value={logoUrl}
@@ -596,23 +601,17 @@ export default function WorkspaceConfiguracoesPage() {
  aspectPreset="square"
  variant="avatar"
  className="size-full"
+ helperText="Upload do logotipo quadrado (1:1)"
  />
  </div>
  </div>
 
- {/* Capa Panorâmica 21:9 ao lado */}
- <div className="flex-1 min-w-0 w-full space-y-2">
- <span className="text-xs font-medium text-muted-foreground block">Capa Panorâmica (21:9)</span>
- <div className="w-full aspect-video rounded-lg overflow-hidden">
- <ImageUpload
- value={bannerUrl}
- onChange={(url) => setBannerUrl(url)}
- onRemove={() => setBannerUrl("")}
- bucket="cms-media"
- aspectPreset="banner"
- className="w-full h-full"
- helperText="Formato panorâmico (21:9). Arraste ou ajuste para enquadrar o perfil da loja."
- />
+ <div className="space-y-2 flex-1">
+ <div className="rounded-lg bg-muted/30 border border-border/50 p-3 space-y-1">
+ <p className="text-xs font-semibold text-foreground">Exibição Canônica Sem Capa</p>
+ <p className="text-xs text-muted-foreground">
+ A capa de cabeçalho foi descontinuada na plataforma em prol do design minimalista sem distorção. As fotos dos seus produtos, serviços e vitrines aparecem nos cards de catálogo e nos feeds.
+ </p>
  </div>
  </div>
  </div>

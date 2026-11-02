@@ -377,7 +377,7 @@ export const listCustomerOrders = createServerFn({ method: "GET" }).handler(asyn
       .select(
         `
         id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents,
-        shipping_method, custom_fields, created_at, store_id, tracking_code,
+        shipping_method, custom_fields, created_at, store_id,
         stores:store_id ( id, name, slug, logo_url ),
         order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, image_url, selected_options )
         `,
@@ -429,7 +429,7 @@ export const getCustomerOrder = createServerFn({ method: "GET" })
       .select(
         `
         id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents,
-        customer_snapshot, shipping_method, shipping_address, store_id, tracking_code,
+        customer_snapshot, shipping_method, shipping_address, store_id,
         cancelled_at, cancellation_reason, created_at, updated_at,
         stores:store_id ( id, name, slug, logo_url, phone ),
         order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, image_url, selected_options, notes, metadata ),

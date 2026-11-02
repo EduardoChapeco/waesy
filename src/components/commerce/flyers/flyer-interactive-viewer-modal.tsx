@@ -150,7 +150,7 @@ export function FlyerInteractiveViewerModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-w-4xl p-0 border-0 overflow-hidden shadow-2xl bg-foreground/95 text-foreground sm:rounded-lg flex flex-col h-[92vh] sm:h-[88vh]",
+          "max-w-4xl p-0 border-0 overflow-hidden  bg-foreground/95 text-foreground sm:rounded-lg flex flex-col h-full max-h-modal",
           isRetro && "ring-4 ring-amber-400/80"
         )}
       >
@@ -220,7 +220,7 @@ export function FlyerInteractiveViewerModal({
               onClick={handleDownload}
               title="Baixar Encarte em Alta Resolução"
               className={cn(
-                "size-8 rounded-full cursor-pointer",
+                "size-11 min-h-11 min-w-11 rounded-full cursor-pointer",
                 isRetro ? "hover:bg-amber-300 text-red-950" : "hover:bg-accent text-foreground"
               )}
             >
@@ -233,7 +233,7 @@ export function FlyerInteractiveViewerModal({
               onClick={handleShare}
               title="Compartilhar Encarte"
               className={cn(
-                "size-8 rounded-full cursor-pointer",
+                "size-11 min-h-11 min-w-11 rounded-full cursor-pointer",
                 isRetro ? "hover:bg-amber-300 text-red-950" : "hover:bg-accent text-foreground"
               )}
             >
@@ -245,7 +245,7 @@ export function FlyerInteractiveViewerModal({
               variant="ghost"
               onClick={() => onOpenChange(false)}
               className={cn(
-                "size-8 rounded-full cursor-pointer ml-1",
+                "size-11 min-h-11 min-w-11 rounded-full cursor-pointer ml-1",
                 isRetro ? "hover:bg-red-600 hover:text-foreground text-red-950" : "hover:bg-accent text-foreground"
               )}
             >
@@ -263,7 +263,7 @@ export function FlyerInteractiveViewerModal({
                 type="button"
                 onClick={handlePrev}
                 aria-label="Encarte anterior"
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 size-10 rounded-full bg-foreground/60 backdrop-blur-md text-foreground border border-white/20 flex items-center justify-center hover:bg-foreground/80 hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 size-11 min-h-11 min-w-11 rounded-full bg-foreground/60 backdrop-blur-md text-foreground border border-white/20 flex items-center justify-center hover:bg-foreground/80 hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ChevronLeft className="size-6" />
               </button>
@@ -272,7 +272,7 @@ export function FlyerInteractiveViewerModal({
                 type="button"
                 onClick={handleNext}
                 aria-label="Próximo encarte"
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 size-10 rounded-full bg-foreground/60 backdrop-blur-md text-foreground border border-white/20 flex items-center justify-center hover:bg-foreground/80 hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 size-11 min-h-11 min-w-11 rounded-full bg-foreground/60 backdrop-blur-md text-foreground border border-white/20 flex items-center justify-center hover:bg-foreground/80 hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ChevronRight className="size-6" />
               </button>
@@ -281,11 +281,11 @@ export function FlyerInteractiveViewerModal({
 
           {/* Container do Encarte (Preserva Proporção e Alinha Pins) */}
           <div className="relative max-h-full max-w-full flex items-center justify-center p-2 sm:p-4">
-            <div className="relative inline-block overflow-hidden shadow-2xl rounded-lg">
+            <div className="relative inline-block overflow-hidden  rounded-lg">
               <img
                 src={currentFlyer.image_url}
                 alt={currentFlyer.title}
-                className="max-h-[75vh] sm:max-h-[78vh] w-auto object-contain rounded-lg select-none"
+                className="max-h-modal w-auto object-contain rounded-lg select-none"
               />
 
               {/* Botões Redondos Interativos (Hotspots de Destaque) */}
@@ -320,7 +320,7 @@ export function FlyerInteractiveViewerModal({
                     {/* Botão Redondo com Ícone ou Preço */}
                     <div
                       className={cn(
-                        "relative flex items-center justify-center size-8 sm:size-9 rounded-full shadow-lg font-black text-xs border-2 transition-colors duration-200",
+                        "relative flex items-center justify-center size-8 sm:size-9 rounded-full  font-black text-xs border-2 transition-colors duration-200",
                         isRetro
                           ? "bg-red-600 text-amber-300 border-amber-300 shadow-red-950/80 hover:bg-red-700"
                           : "bg-card text-zinc-900 border-primary shadow-black/40 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-foreground"
@@ -342,7 +342,7 @@ export function FlyerInteractiveViewerModal({
 
           {/* ─── Mini-Card Flutuante do Produto Selecionado (Bottom-Right) ─── */}
           {activeHotspot && (
-            <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-84 z-40 bg-background/95 backdrop-blur-xl p-4 rounded-lg border border-border/80 shadow-2xl text-foreground animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-84 z-40 bg-background/95 backdrop-blur-xl p-4 rounded-lg border border-border/80  text-foreground animate-in fade-in slide-in-from-bottom-3 duration-200">
               <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   <Tag className="size-3.5 text-primary" />
@@ -390,7 +390,7 @@ export function FlyerInteractiveViewerModal({
                   <Button
                     onClick={() => handleAddToCart(activeHotspot)}
                     disabled={isAddingToCart}
-                    className="w-full h-10 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-md bg-emerald-600 hover:bg-emerald-700 text-foreground"
+                    className="w-full h-11 min-h-11 rounded-lg font-bold text-xs gap-2 cursor-pointer  bg-emerald-600 hover:bg-emerald-700 text-foreground"
                   >
                     <ShoppingBag className="size-4" />
                     <span>Adicionar à Sacola</span>
@@ -401,7 +401,7 @@ export function FlyerInteractiveViewerModal({
                   <Button
                     asChild
                     variant="outline"
-                    className="w-full h-8 rounded-lg font-semibold text-xs gap-2 cursor-pointer border-border/60"
+                    className="w-full h-11 min-h-11 rounded-lg font-semibold text-xs gap-2 cursor-pointer border-border/60"
                   >
                     <Link className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       to="/produto/$slug"
@@ -459,7 +459,7 @@ export function FlyerInteractiveViewerModal({
                     <Button
                       size="sm"
                       onClick={() => handleAddToCart(spot)}
-                      className="h-7 px-3 rounded-lg text-2xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground shrink-0"
+                      className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground shrink-0"
                     >
                       + Sacola
                     </Button>

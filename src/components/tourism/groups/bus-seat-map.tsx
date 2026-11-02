@@ -86,7 +86,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  return (
  <div className="space-y-4">
  {/* Resumo de Ocupação */}
- <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border/80 text-xs">
+ <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border/80 text-xs">
  <div className="flex items-center gap-2">
  <Users className="size-4 text-primary" />
  <span className="font-bold text-foreground">
@@ -105,7 +105,7 @@ export function BusSeatMap({ seats, onSeatsChange, readOnly = false }: BusSeatMa
  </div>
 
  {/* Carcaça Visual do Ônibus */}
- <div className="p-5 rounded-lg bg-slate-100 border-2 border-slate-300 max-w-sm mx-auto space-y-3 shadow-inner">
+ <div className="p-5 rounded-3xl bg-muted/60 border border-border max-w-sm mx-auto space-y-3">
  {/* Cabine do Motorista & Entrada */}
  <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-slate-300 text-2xs font-mono font-bold text-slate-500 uppercase">
  <div className="flex items-center gap-1">

@@ -14,7 +14,24 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { MessageCircle, Flame, Compass, Users, ShoppingBag, User } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  MessageCircle,
+  Flame,
+  Compass,
+  Users,
+  ShoppingBag,
+  User,
+  Sparkles,
+  Store,
+  Tag,
+  Newspaper,
+  Calendar,
+  Briefcase,
+  Heart,
+  Search,
+} from "lucide-react";
+import { getNavigationMenus } from "@/services/cms.functions";
 import { useAccountSwitcherDrawer } from "@/lib/drawer-store";
 import { AccountSwitcherDrawer } from "@/components/shell/AccountSwitcherDrawer";
 import { GlobalQuickCreateModal, openQuickCreateModal } from "@/components/shell/GlobalQuickCreateModal";
@@ -23,6 +40,39 @@ import { useCartContext } from "@/lib/cart-context";
 import { listCustomerOrders } from "@/services/order.functions";
 import { formatCents } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+
+const ICON_LOOKUP: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
+  messagecircle: MessageCircle,
+  chat: MessageCircle,
+  message: MessageCircle,
+  flame: Flame,
+  feed: Flame,
+  fire: Flame,
+  compass: Compass,
+  explorar: Compass,
+  explore: Compass,
+  users: Users,
+  comunidades: Users,
+  shoppingbag: ShoppingBag,
+  compras: ShoppingBag,
+  bag: ShoppingBag,
+  user: User,
+  perfil: User,
+  sparkles: Sparkles,
+  destaque: Sparkles,
+  store: Store,
+  loja: Store,
+  tag: Tag,
+  oferta: Tag,
+  newspaper: Newspaper,
+  noticias: Newspaper,
+  calendar: Calendar,
+  agenda: Calendar,
+  briefcase: Briefcase,
+  servicos: Briefcase,
+  heart: Heart,
+  search: Search,
+};
 
 export interface MobileNavProps {
   session?: any;
@@ -128,6 +178,19 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
     pathname.startsWith("/conta/financas");
 
   const purchasesBadgeCount = totalCartItems > 0 ? totalCartItems : activeOrdersCount;
+
+  // ── Sincronização Dinâmica com CMS (/admin-master/cms & navigation_menus handle: bottom_nav) ──
+  // empty: fallback para as 5 tabs fixas quando vazio
+  const { data: navMenus, isLoading: isNavMenusLoading } = useQuery({
+    queryKey: ["navigation-menus", "bottom_nav"],
+    queryFn: () => getNavigationMenus().catch(() => []),
+    staleTime: 60000,
+  });
+
+  const bottomNavMenu = (navMenus || []).find((m: any) => m.handle === "bottom_nav");
+  const cmsItems: any[] = (bottomNavMenu?.items || []).filter(
+    (item: any) => item && item.is_active !== false && item.url
+  );
 
   // ── Scroll-Aware Auto-Hide / Reveal ──────────────────────────────────────
   const [isNavHiddenByScroll, setIsNavHiddenByScroll] = useState(false);
@@ -291,128 +354,238 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
               </div>
             )}
 
-            {/* ── 2. NAVEGAÇÃO 5 ABAS CANÔNICAS: CHAT | FEED | COMUNIDADES | COMPRAS | PERFIL ── */}
+            {/* ── 2. NAVEGAÇÃO MOBILE (CONECTADA AO CMS OU 5 TABS CANÔNICAS DE FALLBACK) ── */}
             <nav
               aria-label="Navegação principal móvel"
               className="flex items-stretch justify-around px-1 py-1 bg-background"
             >
-              {/* TAB 1: CHAT */}
-              <Link
-                to="/conta/conversas"
-                aria-label="Chat"
-                className={cn(
-                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  isChatActive
-                    ? "text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <MessageCircle className="size-5" strokeWidth={isChatActive ? 2.5 : 1.75} />
-                <span className="text-2xs font-semibold tracking-tight leading-none">Chat</span>
-              </Link>
+              {cmsItems.length > 0 ? (
+                cmsItems.map((item: any, idx: number) => {
+                  const isProfileItem =
+                    item.action === "profile" ||
+                    item.url === "/conta/perfil" ||
+                    item.url === "/perfil" ||
+                    item.url === "/conta";
+                  const isPurchasesItem =
+                    item.url === "/conta/pedidos" ||
+                    item.url === "/compras" ||
+                    item.url === "/carrinho";
+                  const isItemActive =
+                    item.url === "/"
+                      ? pathname === "/"
+                      : pathname.startsWith(item.url);
+                  const iconKey = (item.icon || "").toLowerCase().replace(/[^a-z]/g, "");
+                  const ResolvedIcon = ICON_LOOKUP[iconKey] || Compass;
 
-              {/* TAB 2: FEED */}
-              <Link
-                to="/feed"
-                aria-label="Feed"
-                className={cn(
-                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  isFeedActive
-                    ? "text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Flame className="size-5" strokeWidth={isFeedActive ? 2.5 : 1.75} />
-                <span className="text-2xs font-semibold tracking-tight leading-none">Feed</span>
-              </Link>
-
-              {/* TAB 3: EXPLORAR */}
-              <Link
-                to="/explorar"
-                aria-label="Explorar"
-                className={cn(
-                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  isExploreActive
-                    ? "text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Compass className="size-5" strokeWidth={isExploreActive ? 2.5 : 1.75} />
-                <span className="text-2xs font-semibold tracking-tight leading-none">Explorar</span>
-              </Link>
-
-              {/* TAB 4: COMPRAS */}
-              <Link
-                to={isAuthenticated ? "/conta/pedidos" : "/entrar"}
-                aria-label="Compras"
-                className={cn(
-                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  isPurchasesActive
-                    ? "text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <div className="relative">
-                  <ShoppingBag className="size-5" strokeWidth={isPurchasesActive ? 2.5 : 1.75} />
-                  {purchasesBadgeCount > 0 && (
-                    <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-black flex items-center justify-center">
-                      {purchasesBadgeCount}
-                    </span>
-                  )}
-                </div>
-                <span className="text-2xs font-semibold tracking-tight leading-none">Compras</span>
-              </Link>
-
-              {/* TAB 5: PERFIL */}
-              <button
-                type="button"
-                onClick={toggleAccountSwitcher}
-                aria-label="Perfil"
-                className={cn(
-                  "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  isProfileActive
-                    ? "text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <div className="relative flex items-center justify-center">
-                  {isAuthenticated ? (
-                    userAvatar ? (
-                      <div
+                  if (isProfileItem) {
+                    return (
+                      <button
+                        key={item.id || item.url || idx}
+                        type="button"
+                        onClick={toggleAccountSwitcher}
+                        aria-label={item.label || "Perfil"}
                         className={cn(
-                          "size-6 rounded-full overflow-hidden transition-all duration-200 flex items-center justify-center bg-muted",
-                          isProfileActive
-                            ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                            : "ring-1 ring-border/60 hover:ring-foreground/40"
+                          "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                          isProfileActive || isItemActive
+                            ? "text-foreground font-bold"
+                            : "text-muted-foreground hover:text-foreground"
                         )}
                       >
-                        <img
-                          src={userAvatar}
-                          alt="Perfil"
-                          className="size-full object-cover"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLElement).style.display = "none";
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div
-                        className={cn(
-                          "size-6 rounded-full bg-muted text-foreground text-3xs font-bold flex items-center justify-center transition-all duration-200",
-                          isProfileActive
-                            ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                            : "ring-1 ring-border/60"
+                        <div className="relative flex items-center justify-center">
+                          {isAuthenticated ? (
+                            userAvatar ? (
+                              <div
+                                className={cn(
+                                  "size-6 rounded-full overflow-hidden transition-colors duration-200 flex items-center justify-center bg-muted",
+                                  isProfileActive || isItemActive
+                                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                                    : "ring-1 ring-border/60 hover:ring-foreground/40"
+                                )}
+                              >
+                                <img
+                                  src={userAvatar}
+                                  alt={item.label || "Perfil"}
+                                  className="size-full object-cover"
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLElement).style.display = "none";
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <div
+                                className={cn(
+                                  "size-6 rounded-full bg-muted text-foreground text-3xs font-bold flex items-center justify-center transition-colors duration-200",
+                                  isProfileActive || isItemActive
+                                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                                    : "ring-1 ring-border/60"
+                                )}
+                              >
+                                {userInitials}
+                              </div>
+                            )
+                          ) : (
+                            <User className="size-5" strokeWidth={isProfileActive || isItemActive ? 2.5 : 1.75} />
+                          )}
+                        </div>
+                        <span className="text-2xs font-semibold tracking-tight leading-none">
+                          {item.label || "Perfil"}
+                        </span>
+                      </button>
+                    );
+                  }
+
+                  const badgeVal = isPurchasesItem ? purchasesBadgeCount : item.badge;
+
+                  return (
+                    <Link
+                      key={item.id || item.url || idx}
+                      to={item.url}
+                      target={item.open_in_new_tab ? "_blank" : undefined}
+                      rel={item.open_in_new_tab ? "noopener noreferrer" : undefined}
+                      aria-label={item.label}
+                      className={cn(
+                        "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        isItemActive
+                          ? "text-foreground font-bold"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <div className="relative">
+                        <ResolvedIcon className="size-5" strokeWidth={isItemActive ? 2.5 : 1.75} />
+                        {Boolean(badgeVal && Number(badgeVal) > 0) && (
+                          <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-black flex items-center justify-center">
+                            {badgeVal}
+                          </span>
                         )}
-                      >
-                        {userInitials}
                       </div>
-                    )
-                  ) : (
-                    <User className="size-5" strokeWidth={isProfileActive ? 2.5 : 1.75} />
-                  )}
-                </div>
-                <span className="text-2xs font-semibold tracking-tight leading-none">Perfil</span>
-              </button>
+                      <span className="text-2xs font-semibold tracking-tight leading-none">
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })
+              ) : (
+                /* Fallback Canônico: 5 Tabs Fixas */
+                <>
+                  {/* TAB 1: CHAT */}
+                  <Link
+                    to="/conta/conversas"
+                    aria-label="Chat"
+                    className={cn(
+                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      isChatActive
+                        ? "text-foreground font-bold"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <MessageCircle className="size-5" strokeWidth={isChatActive ? 2.5 : 1.75} />
+                    <span className="text-2xs font-semibold tracking-tight leading-none">Chat</span>
+                  </Link>
+
+                  {/* TAB 2: FEED */}
+                  <Link
+                    to="/feed"
+                    aria-label="Feed"
+                    className={cn(
+                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      isFeedActive
+                        ? "text-foreground font-bold"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Flame className="size-5" strokeWidth={isFeedActive ? 2.5 : 1.75} />
+                    <span className="text-2xs font-semibold tracking-tight leading-none">Feed</span>
+                  </Link>
+
+                  {/* TAB 3: EXPLORAR */}
+                  <Link
+                    to="/explorar"
+                    aria-label="Explorar"
+                    className={cn(
+                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      isExploreActive
+                        ? "text-foreground font-bold"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Compass className="size-5" strokeWidth={isExploreActive ? 2.5 : 1.75} />
+                    <span className="text-2xs font-semibold tracking-tight leading-none">Explorar</span>
+                  </Link>
+
+                  {/* TAB 4: COMPRAS */}
+                  <Link
+                    to={isAuthenticated ? "/conta/pedidos" : "/entrar"}
+                    aria-label="Compras"
+                    className={cn(
+                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      isPurchasesActive
+                        ? "text-foreground font-bold"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <div className="relative">
+                      <ShoppingBag className="size-5" strokeWidth={isPurchasesActive ? 2.5 : 1.75} />
+                      {purchasesBadgeCount > 0 && (
+                        <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-black flex items-center justify-center">
+                          {purchasesBadgeCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-2xs font-semibold tracking-tight leading-none">Compras</span>
+                  </Link>
+
+                  {/* TAB 5: PERFIL */}
+                  <button
+                    type="button"
+                    onClick={toggleAccountSwitcher}
+                    aria-label="Perfil"
+                    className={cn(
+                      "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      isProfileActive
+                        ? "text-foreground font-bold"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <div className="relative flex items-center justify-center">
+                      {isAuthenticated ? (
+                        userAvatar ? (
+                          <div
+                            className={cn(
+                              "size-6 rounded-full overflow-hidden transition-colors duration-200 flex items-center justify-center bg-muted",
+                              isProfileActive
+                                ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                                : "ring-1 ring-border/60 hover:ring-foreground/40"
+                            )}
+                          >
+                            <img
+                              src={userAvatar}
+                              alt="Perfil"
+                              className="size-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className={cn(
+                              "size-6 rounded-full bg-muted text-foreground text-3xs font-bold flex items-center justify-center transition-colors duration-200",
+                              isProfileActive
+                                ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                                : "ring-1 ring-border/60"
+                            )}
+                          >
+                            {userInitials}
+                          </div>
+                        )
+                      ) : (
+                        <User className="size-5" strokeWidth={isProfileActive ? 2.5 : 1.75} />
+                      )}
+                    </div>
+                    <span className="text-2xs font-semibold tracking-tight leading-none">Perfil</span>
+                  </button>
+                </>
+              )}
             </nav>
           </div>
         </div>

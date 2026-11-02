@@ -215,7 +215,7 @@ export const getMyAffiliateTokensOverview = createServerFn({ method: "GET" }).ha
     const { data: rules } = await supabase
       .from("affiliate_reward_rules")
       .select("*")
-      .eq("is_active", true)
+      .eq("status", "published")
       .order("tokens_amount", { ascending: false });
 
     // 4. Se parceiro existe mas creator não, auto-cura sub-perfil de criador
@@ -740,7 +740,7 @@ export const getAffiliateShowcaseProducts = createServerFn({ method: "GET" }).ha
           city
         )
       `)
-      .eq("is_active", true)
+      .eq("status", "published")
       .limit(16);
 
     if (error) {
@@ -750,7 +750,7 @@ export const getAffiliateShowcaseProducts = createServerFn({ method: "GET" }).ha
 
     return (products || []).map((p: any) => ({
       id: p.id,
-      name: p.name,
+      name: p.title,
       slug: p.slug,
       priceCents: p.price_cents || 0,
       originalPriceCents: p.original_price_cents || null,
@@ -926,7 +926,7 @@ export const getMyCommissionProfile = createServerFn({ method: "GET" }).handler(
   try {
     const { data: partner } = await supabase
       .from("affiliate_partners")
-      .select("commission_rate_percent, pending_commission_cents, paid_commission_cents")
+      .select("commission_rate_percent, total_commission_cents, paid_commission_cents")
       .eq("user_id", identity.id)
       .maybeSingle();
 
@@ -940,7 +940,7 @@ export const getMyCommissionProfile = createServerFn({ method: "GET" }).handler(
 
     return {
       commissionRate: Number(partner.commission_rate_percent) || 0,
-      pendingCents: partner.pending_commission_cents || 0,
+      pendingCents: Math.max(0, (partner.total_commission_cents || 0) - (partner.paid_commission_cents || 0)),
       paidCents: partner.paid_commission_cents || 0,
     };
   } catch (err) {
@@ -1262,7 +1262,7 @@ export const getCreatorAnalytics = createServerFn({ method: "GET" })
     const { data: partner } = await supabase
       .from("affiliate_partners")
       .select(
-        "id, handle, display_name, total_clicks, total_orders, total_gmv_cents, pending_commission_cents, paid_commission_cents"
+        "id, handle, display_name, total_clicks, total_orders, total_gmv_cents, total_commission_cents, paid_commission_cents"
       )
       .eq("user_id", effectiveUserId)
       .order("updated_at", { ascending: false })
@@ -1310,7 +1310,7 @@ export const getCreatorAnalytics = createServerFn({ method: "GET" })
         totalClicks,
         totalOrders,
         totalGmvCents: partner?.total_gmv_cents || 0,
-        pendingCommissionCents: partner?.pending_commission_cents || 0,
+        pendingCommissionCents: Math.max(0, (partner?.total_commission_cents || 0) - (partner?.paid_commission_cents || 0)),
         paidCommissionCents: partner?.paid_commission_cents || 0,
         conversionRate: totalClicks > 0 ? Number(((totalOrders / totalClicks) * 100).toFixed(1)) : 0,
       },
@@ -1640,7 +1640,7 @@ export const getCreatorEvents = createServerFn({ method: "GET" })
       .eq("handle", cleanHandle)
       .maybeSingle();
 
-    const stageName = creator?.stage_name || creator?.name || cleanHandle;
+    const stageName = (creator as any)?.stage_name || creator?.name || cleanHandle;
 
     try {
       let query = supabase

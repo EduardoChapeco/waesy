@@ -145,7 +145,7 @@ export default function WorkspaceMarketingStoriesPage() {
           <div className="flex items-center gap-2">
             <Link
               to="/workspace/marketing/pixels"
-              className="inline-flex size-8 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex size-11 min-h-11 min-w-11 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ArrowLeft className="size-4" />
             </Link>
@@ -434,10 +434,10 @@ export default function WorkspaceMarketingStoriesPage() {
                   className={cn(
                     "overflow-hidden rounded-lg shadow-xs border border-border/60 bg-foreground flex items-center justify-center transition-colors duration-200",
                     format === "story_9_16"
-                      ? "w-[270px] h-[480px]"
+                      ? "w-72 aspect-post-moment"
                       : format === "feed_1_1"
-                        ? "w-[340px] h-[340px]"
-                        : "w-[440px] h-[247px]",
+                        ? "w-80 aspect-square"
+                        : "w-96 aspect-video",
                   )}
                   dangerouslySetInnerHTML={{ __html: generatedCard.svgMarkup }}
                 />
@@ -446,10 +446,10 @@ export default function WorkspaceMarketingStoriesPage() {
                   className={cn(
                     "flex flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-muted/20 text-center p-6 transition-colors duration-200",
                     format === "story_9_16"
-                      ? "w-[270px] h-[480px]"
+                      ? "w-72 aspect-post-moment"
                       : format === "feed_1_1"
-                        ? "w-[340px] h-[340px]"
-                        : "w-[440px] h-[247px]",
+                        ? "w-80 aspect-square"
+                        : "w-96 aspect-video",
                   )}
                 >
                   <ImageIcon className="size-10 text-muted-foreground/50 mb-3" />
@@ -490,7 +490,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     type="button"
                     variant="default"
                     onClick={handleShareWhatsApp}
-                    className="h-11 rounded-lg text-xs font-bold gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-foreground"
+                    className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground"
                   >
                     <WhatsappLogo className="size-4" weight="bold" />
                     <span>WhatsApp</span>

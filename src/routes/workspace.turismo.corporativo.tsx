@@ -295,7 +295,7 @@ export default function AgencyCorporateCockpitPage() {
         </div>
       </WorkspaceCanonicalToolbar>
 
-      <div className="p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-6">
+      <div className="p-4 sm:p-6 w-full space-y-6">
         {/* Régua de Navegação Multimodal da Agência (Submódulos de Turismo) */}
         <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar border-b border-border/60 pb-3 tab-list">
           <Link
@@ -336,7 +336,7 @@ export default function AgencyCorporateCockpitPage() {
 
         {/* Métricas Principais (Tufte Data-Ink / Sem Card Soup) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-lg border border-border bg-card space-y-1">
+          <div className="p-4 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card space-y-1">
             <span className="text-xs text-muted-foreground">Empresas Clientes</span>
             <p className="text-2xl font-bold text-foreground">{accounts.length}</p>
           </div>
@@ -406,7 +406,7 @@ export default function AgencyCorporateCockpitPage() {
                 <p>Empresas podem solicitar vinculação a partir do portal corporativo.</p>
               </div>
             ) : (
-              <div className="border border-border rounded-lg overflow-hidden bg-card">
+              <div className="border border-black/[0.06] dark:border-white/[0.08] rounded-2xl overflow-hidden bg-card">
                 <table className="w-full text-xs text-left">
                   <thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold">
                     <tr>
@@ -473,7 +473,7 @@ export default function AgencyCorporateCockpitPage() {
         {/* ABA 2: FILA "PRECISA DE VOCÊ" */}
         {activeTab === "pendencias" && (
           <div className="space-y-4">
-            <div className="p-5 rounded-lg border border-border bg-card space-y-2">
+            <div className="p-5 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card space-y-2">
               <h3 className="font-bold text-sm text-foreground">Itens Requerendo Intervenção da Agência</h3>
               <p className="text-xs text-muted-foreground">
                 Solicitações de aprovação com prazo de expiração de tarifa, alterações involuntárias de malha aérea e análise de limites de faturamento.
@@ -515,7 +515,7 @@ export default function AgencyCorporateCockpitPage() {
         {/* ABA 3: FATURAMENTO */}
         {activeTab === "faturamento" && (
           <div className="space-y-4">
-            <div className="p-5 rounded-lg border border-border bg-card space-y-1">
+            <div className="p-5 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card space-y-1">
               <h3 className="font-bold text-sm text-foreground">Faturas Corporativas Consolidadas</h3>
               <p className="text-xs text-muted-foreground">
                 Fechamento por centro de custo, período e projeto. Prazos contratuais de pagamento conforme acordo comercial.

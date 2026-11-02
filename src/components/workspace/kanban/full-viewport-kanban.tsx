@@ -1,6 +1,20 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
+function getColumnColorClass(color?: string): string {
+  if (!color) return "bg-primary/40";
+  if (color.startsWith("bg-")) return color;
+  const normalized = color.toLowerCase();
+  if (normalized.includes("blue") || normalized.includes("info")) return "bg-blue-500";
+  if (normalized.includes("amber") || normalized.includes("yellow") || normalized.includes("warning")) return "bg-amber-500";
+  if (normalized.includes("green") || normalized.includes("emerald") || normalized.includes("success")) return "bg-emerald-500";
+  if (normalized.includes("purple") || normalized.includes("indigo")) return "bg-indigo-500";
+  if (normalized.includes("orange")) return "bg-orange-500";
+  if (normalized.includes("rose") || normalized.includes("red") || normalized.includes("destructive")) return "bg-rose-500";
+  if (normalized.includes("teal")) return "bg-teal-500";
+  return "bg-primary/40";
+}
+
 export interface KanbanColumnDefinition<T = any> {
   id: string;
   title: string;
@@ -27,7 +41,7 @@ export function FullViewportKanban<T = any>({
   return (
     <div
       className={cn(
-        "flex gap-4 sm:gap-4 items-stretch flex-1 pb-4 overflow-x-auto no-scrollbar select-none",
+        "tab-list flex gap-4 sm:gap-4 items-stretch flex-1 pb-4 overflow-x-auto no-scrollbar select-none",
         className
       )}
     >
@@ -35,23 +49,24 @@ export function FullViewportKanban<T = any>({
         <div
           key={col.id}
           className={cn(
-            "flex flex-col h-full shrink-0 rounded-lg border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs overflow-hidden",
+            "flex flex-col h-full shrink-0 rounded-3xl border border-border/60 bg-muted/40 overflow-hidden",
             columnWidthClass
           )}
         >
           {/* ── Header da Coluna (Fixo no topo da coluna) ── */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-muted/20 shrink-0">
+          <div className={cn("h-1.5 w-full shrink-0", getColumnColorClass(col.color))} />
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-card/60 shrink-0">
             <div className="flex items-center gap-2 min-w-0">
               {col.color && (
                 <span
-                  className="size-2 rounded-full shrink-0"
-                  style={{ backgroundColor: col.color }}
+
+                  className={cn("size-2 rounded-full shrink-0", getColumnColorClass(col.color))}
                 />
               )}
               <h3 className="text-xs font-bold text-foreground truncate">
                 {col.title}
               </h3>
-              <span className="text-2xs font-mono font-bold text-muted-foreground bg-background px-2 py-1 rounded-md border border-border/50 shrink-0">
+              <span className="text-2xs font-mono tabular-nums font-semibold text-muted-foreground bg-muted px-2 py-1 rounded-full shrink-0">
                 {col.count ?? col.items.length}
               </span>
             </div>

@@ -121,4 +121,50 @@ describe("SPEC-20261028: Unificação de Perfis e Centralização da Capa no Bra
     // Anti-hijacking de perfil desconhecido
     expect(socialFunctions).toContain('(decodedId === "eu" || decodedId === "me" || decodedId === "minha-conta") && currentUserId');
   });
+
+  it("não deve conter opção de upload de capa nem cabeçalho 21:9 em configurações da empresa", () => {
+    const file = fs.readFileSync(
+      path.resolve("src/routes/workspace.configuracoes.index.tsx"),
+      "utf8"
+    );
+
+    expect(file).not.toContain("Identidade do Perfil (1:1 Squircle + Capa 21:9)");
+    expect(file).not.toContain("Capa Panorâmica (21:9)");
+    expect(file).toContain("Identidade do Perfil (1:1 Squircle)");
+  });
+
+  it("não deve conter upload de capa nos fluxos de onboarding e criação de negócio", () => {
+    const onboarding = fs.readFileSync(
+      path.resolve("src/components/onboarding/fast-company-onboarding.tsx"),
+      "utf8"
+    );
+    const criarNegocio = fs.readFileSync(
+      path.resolve("src/routes/_store.criar-negocio.tsx"),
+      "utf8"
+    );
+    const criarAvancado = fs.readFileSync(
+      path.resolve("src/routes/_store.criar-negocio.avancado.tsx"),
+      "utf8"
+    );
+
+    expect(onboarding).not.toContain("Capa do Perfil (21:9)");
+    expect(onboarding).not.toContain("Capa Panorâmica Canônica 21:9 ao lado");
+
+    expect(criarNegocio).not.toContain("Capa de Cabeçalho (Banner da Loja)");
+    expect(criarNegocio).not.toContain("Capa Panorâmica 21:9 ao lado");
+
+    expect(criarAvancado).not.toContain("Capa de Cabeçalho (Banner da Loja)");
+    expect(criarAvancado).not.toContain("Capa Panorâmica da Loja");
+  });
+
+  it("não deve conter capa panorâmica nem fallback sintético em estabelecimentos do guia", () => {
+    const file = fs.readFileSync(
+      path.resolve("src/routes/_store.places.$placeSlug.tsx"),
+      "utf8"
+    );
+
+    expect(file).not.toContain("Capa Panorâmica Canônica 21:9 ao Lado");
+    expect(file).not.toContain("Espaço para fachada do estabelecimento");
+    expect(file).toContain("Padrão Threads / Instagram — Sem Capa Decorativa");
+  });
 });

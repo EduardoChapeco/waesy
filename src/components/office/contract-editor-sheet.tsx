@@ -20,10 +20,10 @@ export function ContractEditorSheet({
  onClose,
 }: ContractEditorSheetProps) {
  const [title, setTitle] = useState(initialTitle);
- const [clientName, setClientName] = useState('João da Silva');
- const [clientCpf, setClientCpf] = useState('123.456.789-00');
- const [totalValue, setTotalValue] = useState('R$ 2.450,00');
- const [dueDate, setDueDate] = useState('15/10/2026');
+ const [clientName, setClientName] = useState('');
+ const [clientCpf, setClientCpf] = useState('');
+ const [totalValue, setTotalValue] = useState('');
+ const [dueDate, setDueDate] = useState('');
  
  const [content, setContent] = useState<string>(
  DEFAULT_CLAUSES.map((c, i) => `${i + 1}. ${c.title}\n${c.content}`).join('\n\n')

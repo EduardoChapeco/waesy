@@ -428,7 +428,7 @@ export function MemberPublicProfileView({
         </div>
       ) : (
         <>
-          {/* ── CABEÇALHO DO PERFIL CANÔNICO (INSTAGRAM / THREADS / APPLE HIG — SUPERFÍCIE UNIFICADA) ── */}
+          {/* ── CABEÇALHO DO PERFIL CANÔNICO (INSTAGRAM / THREADS / APPLE HIG — SEM CAPA) ── */}
           <div className="w-full space-y-4 px-1 sm:px-0">
             {/* Top Row: Avatar Squircle 1:1 e Stats em Linha Horizontal */}
             <div className="flex items-center justify-between gap-4">

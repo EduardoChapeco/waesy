@@ -383,7 +383,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "stage" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("stage")}
-                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-11 min-h-11 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Columns className="size-3.5 mr-1" />
                 Funil
@@ -392,7 +392,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "month" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("month")}
-                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-11 min-h-11 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Calendar className="size-3.5 mr-1" />
                 Mês
@@ -401,7 +401,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "destination" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("destination")}
-                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-11 min-h-11 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <MapPin className="size-3.5 mr-1" />
                 Destino
@@ -410,7 +410,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "temperature" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("temperature")}
-                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-11 min-h-11 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <TrendingUp className="size-3.5 mr-1" />
                 Score
@@ -419,7 +419,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 variant={boardGrouping === "grid" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setBoardGrouping("grid")}
-                className="h-9 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-11 min-h-11 px-3 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <LayoutGrid className="size-3.5 mr-1" />
                 Grade
@@ -444,7 +444,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
       </div>
 
       {/* Conteúdo Principal */}
-      <main className="flex-1 p-4 max-w-7xl mx-auto w-full space-y-4">
+      <main className="flex-1 p-4 w-full space-y-4">
         {isOcrScannerOpen && (
           <TravelAiImporterBanner onExtracted={handleOcrOfferExtractedAndMatch} />
         )}
@@ -479,7 +479,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
                 </div>
               </Card>
             ) : boardColumns ? (
-              <div className="flex items-start gap-4 overflow-x-auto pb-6 no-scrollbar">
+              <div className="tab-list flex items-start gap-4 overflow-x-auto pb-6 no-scrollbar">
                 {boardColumns.map((col) => {
                   const Icon = col.icon;
                   return (
@@ -1314,7 +1314,7 @@ function BulkImportSheet({ open, onOpenChange, onSuccess }: BulkImportSheetProps
                     "Mariana Souza, 49999112233, Punta Cana/Caribe, 2026-07, 800, 2, 2, Resort all inclusive\nCarlos Eduardo, 49988223344, Cancún, 2026-09, 750, 2, 0, Lua de mel\nLuciana Prado, 49991556677, Maceió/Nordeste, 2026-10, 500, 2, 1, Férias em família"
                   )
                 }
-                className="h-8 px-2 text-xs text-primary"
+                className="h-11 min-h-11 px-3 text-xs text-primary"
               >
                 Inserir Exemplo
               </Button>

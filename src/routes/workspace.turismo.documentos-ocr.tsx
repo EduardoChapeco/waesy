@@ -111,7 +111,7 @@ export default function TravelDocumentReviewPage() {
   const isQuote = selected?.source_kind === "operator_quote";
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-6">
+    <main className="flex w-full flex-col gap-5 px-4 py-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
             <p className="text-xs font-bold uppercase tracking-wide text-primary">Turismo · Governança documental</p>
