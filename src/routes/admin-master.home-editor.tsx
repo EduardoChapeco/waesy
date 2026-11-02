@@ -62,7 +62,7 @@ import { BentoGridTetris } from "@/components/home/BentoGridTetris";
 import { IFoodSquareCategoryButton } from "@/components/home/IFoodSquareCategoryButton";
 
 export const Route = createFileRoute("/admin-master/home-editor")({
-  head: () => ({ meta: [{ title: "CMS Página por Página & Home Builder | Admin Master" }] }),
+  head: () => ({ meta: [{ title: "Páginas & Seções | Admin Master" }] }),
   loader: async () => {
     try {
       const [sections, menus] = await Promise.all([
@@ -532,24 +532,18 @@ function AdminMasterHomeEditorPage() {
       {/* ── Top Header Canônico ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              CMS Página por Página & Home Builder
-            </h1>
-            <Badge variant="outline" className="text-3xs uppercase tracking-wider font-bold">
-              Omni-Builder 3.0
-            </Badge>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+            Páginas & Seções da Plataforma
+          </h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Edite qualquer página, menu mobile, seção, banner ou botão da plataforma com upload de mídia,
-            ícones, cores, gradientes, sombras, cronômetro e filtro por cidade.
+            Gerencie os blocos, trilhos e menus do portal ou personalize o layout visual no Omni Builder.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="default"
             size="sm"
             disabled={isOpeningOmniBuilder}
             onClick={() =>
@@ -563,47 +557,35 @@ function AdminMasterHomeEditorPage() {
                   ? "Página Explorar"
                   : activePageContext === "chat_noor"
                     ? "Página Chat Noor"
-                    : "Página Início (Home)",
+                    : "Página Início",
               )
             }
-            className="gap-2 h-11 min-h-11"
+            className="gap-2 h-11 min-h-11 font-semibold"
           >
             <Sparkles size={16} />
-            <span>{isOpeningOmniBuilder ? "Abrindo..." : "Abrir Página no Omni Builder"}</span>
-          </Button>
-
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="gap-2 h-11 min-h-11"
-          >
-            <Link to="/admin-master/hubs">
-              <Layers size={16} />
-              <span>Editar Hotpages & Categorias</span>
-            </Link>
+            <span>{isOpeningOmniBuilder ? "Abrindo..." : "Editar no Omni Builder"}</span>
           </Button>
 
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            onClick={() => setShowLivePreview(!showLivePreview)}
-            className="gap-2 min-h-11"
-          >
-            <Eye size={16} />
-            <span>{showLivePreview ? "Ocultar Preview" : "Ver Preview em Tempo Real"}</span>
-          </Button>
-
-          <Button
-            type="button"
-            variant="default"
             size="sm"
             onClick={openNewSectionDialog}
-            className="gap-2 min-h-11 font-bold"
+            className="gap-2 h-11 min-h-11 font-medium"
           >
             <Plus size={16} />
-            <span>Adicionar Seção</span>
+            <span>Nova Seção</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowLivePreview(!showLivePreview)}
+            className="gap-2 h-11 min-h-11 text-muted-foreground hover:text-foreground"
+          >
+            <Eye size={16} />
+            <span>{showLivePreview ? "Ocultar Preview" : "Preview"}</span>
           </Button>
         </div>
       </div>
@@ -679,62 +661,8 @@ function AdminMasterHomeEditorPage() {
             <span>Menus Mobile (5 Abas) & Header</span>
           </button>
 
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "turismo" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Turismo</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "gastronomia" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Gastronomia</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "mercado" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Supermercado</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "farmacia" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Farmácia</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "classificados" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Classificados</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "feed" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Feed & Comunidades</span>
-          </Link>
-          <Link
-            to="/admin-master/banners"
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <ImageIcon size={14} />
-            <span>Banners Globais</span>
-          </Link>
-          <Link
-            to="/admin-master/botoes"
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <Sliders size={14} />
-            <span>Botões & Hotpages</span>
-          </Link>
+          
+          
         </div>
       </div>
 

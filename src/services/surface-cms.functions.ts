@@ -1655,7 +1655,7 @@ export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST
 
   const { data: existingDoc } = await supabase
    .from("experience_documents")
-   .select("id, slug, name, settings")
+   .select("id, slug, title, settings")
    .eq("store_id", targetStoreId)
    .eq("slug", normalizedSlug)
    .maybeSingle();
@@ -1670,7 +1670,7 @@ export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST
      supabase,
      normalizedSlug,
      existingDoc.id,
-     existingDoc.name || docName,
+     existingDoc.title || docName,
      targetStoreId,
     );
     await supabase
@@ -1710,7 +1710,7 @@ export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST
    .insert({
     id: tempId,
     store_id: targetStoreId,
-    name: docName,
+    title: docName,
     slug: normalizedSlug,
     document_type: normalizedSlug === "home" ? "storefront" : "landing_page",
     is_active: true,

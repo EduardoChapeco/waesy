@@ -505,7 +505,11 @@ export async function resolveStoreContext(
   targetStoreId?: string | null,
   documentId?: string | null,
 ): Promise<string> {
-  const isGlobalAdmin = identity.role === "platform_admin" || identity.role === "master";
+  const isGlobalAdmin =
+    identity.role === "platform_admin" ||
+    identity.role === "master" ||
+    identity.role === "superadmin" ||
+    Boolean((identity as any).isPlatformAdmin);
 
   // 1. Se targetStoreId foi passado explicitamente
   if (targetStoreId) {

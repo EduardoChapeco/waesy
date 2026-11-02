@@ -113,12 +113,12 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: "Omni Studio & Vitrines CMS",
+    title: "Vitrines & Páginas CMS",
     items: [
-      { to: "/admin-master/home-editor", label: "Editor Visual de Páginas (Omni)", icon: Layout },
-      { to: "/admin-master/vitrines", label: "Vitrines e Superfícies (Omni)", icon: Layout },
-      { to: "/admin-master/banners", label: "Banners e Criativos (Omni)", icon: ImageIcon },
-      { to: "/admin-master/botoes", label: "Menus e Hotpages (Omni)", icon: Layers },
+      { to: "/admin-master/home-editor", label: "Páginas & Seções", icon: Layout },
+      { to: "/admin-master/vitrines", label: "Vitrines Verticais", icon: Store },
+      { to: "/admin-master/banners", label: "Banners & Destaques", icon: ImageIcon },
+      { to: "/admin-master/botoes", label: "Categorias & Hotpages", icon: Layers },
       { to: "/admin-master/hubs", label: "Hubs e Cidades", icon: Globe },
       { to: "/admin-master/marca", label: "Identidade e Marca", icon: Palette },
       { to: "/admin-master/portal-completo", label: "Portal Completo", icon: Building2 },
