@@ -72,7 +72,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
       if (res?.documentId) {
         navigate({
           to: "/workspace/builder/$documentId/editor",
-          params: { documentId: res.documentId },
+          params: { documentId: res.documentId } as any,
         });
       }
     } catch (err: any) {
