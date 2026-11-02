@@ -31,6 +31,19 @@ const DEFAULT_FALLBACK_ICONS: Record<number, any> = {
   5: MapPin,
 };
 
+const NAMED_ICON_MAP: Record<string, any> = {
+  shoppingbag: ShoppingBag,
+  pill: Pill,
+  tag: Tag,
+  car: Car,
+  store: Store,
+  storefront: Store,
+  compass: Compass,
+  utensils: Utensils,
+  hamburger: Utensils,
+  mappin: MapPin,
+};
+
 /**
  * <NoorChatBentoGrid> — Menu Modular Estilo Noor (Tetris / Bento Grid)
  * Estrutura exata de 3 Linhas:
@@ -48,8 +61,8 @@ export function NoorChatBentoGrid({
   className,
   onItemClick,
 }: NoorChatBentoGridProps) {
-  // Ordena os itens por sort_order
-  const sortedItems = [...(items || [])].sort((a, b) => a.sort_order - b.sort_order);
+  // Ordena os itens por sort_order (inclui fallback quando sortedItems.length === 0)
+  const sortedItems = !items || items.length === 0 ? [] : [...items].sort((a, b) => a.sort_order - b.sort_order);
 
   // Divide nas 3 linhas canônicas
   const row1 = sortedItems.slice(0, 3);
@@ -115,6 +128,32 @@ export function NoorChatBentoGrid({
 
       {/* ── LINHA 3: Barra de Ação Rápida de Mobilidade / Uber / MotoLink ── */}
       <NoorMobilityActionBar item={row3Item} onClick={() => row3Item && onItemClick?.(row3Item)} />
+
+      {/* ── LINHAS EXTRAS: Se o Admin Master adicionar mais botões ao Chat Noor ── */}
+      {sortedItems.length > 6 && (
+        /* design-lint-ignore DL-29 reason:"Grade canônica de 3 colunas do Bento Grid Noor" expiry:"2027-12-31" */
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
+          {sortedItems.slice(6).map((extraItem, eIdx) => (
+            <div
+              key={extraItem.id || `extra-${eIdx}`}
+              className={
+                extraItem.grid_span_x >= 3
+                  ? "col-span-3"
+                  : extraItem.grid_span_x === 2
+                    ? "col-span-2"
+                    : "col-span-1"
+              }
+            >
+              <NoorBentoCard
+                item={extraItem}
+                defaultIndex={0}
+                aspectClass={extraItem.grid_span_x >= 2 ? "h-24 sm:h-28" : "aspect-square"}
+                onClick={() => onItemClick?.(extraItem)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -138,23 +177,52 @@ function NoorBentoCard({
   const imageUrl = item?.image_desktop_url || item?.image_url || item?.image_mobile_url;
   const hasValidImage = Boolean(imageUrl && !imageError && isHealthyImageUrl(imageUrl));
 
-  // Regra Estrita: Se houver imagem, o texto e o ícone são OMITIDOS por padrão,
-  // a menos que o admin tenha explicitamente marcado show_text: true no CMS.
   const showText = item?.show_text === true && Boolean(item?.title?.trim());
 
   const targetUrl = item?.target_url || getDefaultTargetUrl(defaultIndex);
   const title = item?.title || getDefaultTitle(defaultIndex);
-  const FallbackIcon = DEFAULT_FALLBACK_ICONS[defaultIndex] || Compass;
+  const subtitle = item?.subtitle;
+  const badgeText = item?.badge_text;
+  const customIconUrl = isHealthyImageUrl(item?.icon_name) ? String(item?.icon_name).trim() : null;
+  const iconKey = (item?.icon_name || "").toLowerCase().replace(/[^a-z]/g, "");
+  const FallbackIcon = NAMED_ICON_MAP[iconKey] || DEFAULT_FALLBACK_ICONS[defaultIndex] || Compass;
+
+  const shapeClass =
+    item?.button_shape === "rounded-full"
+      ? "rounded-full"
+      : item?.button_shape === "rounded-lg"
+        ? "rounded-lg"
+        : "rounded-2xl sm:rounded-3xl";
+
+  const customStyle: React.CSSProperties = {
+    ...(item?.bg_color ? { backgroundColor: item.bg_color } : {}),
+    ...(item?.text_color ? { color: item.text_color } : {}),
+    ...(item?.metadata?.gradient ? { backgroundImage: item.metadata.gradient } : {}),
+    ...(item?.metadata?.shadow_mode === "md"
+      ? { boxShadow: "0 4px 12px color-mix(in srgb, var(--foreground) 10%, transparent)" }
+      : item?.metadata?.shadow_mode === "lg"
+        ? { boxShadow: "0 10px 24px color-mix(in srgb, var(--foreground) 18%, transparent)" }
+        : {}),
+  };
 
   const content = (
     <div
+      style={customStyle}
       className={cn(
-        "group relative w-full overflow-hidden rounded-2xl sm:rounded-3xl",
-        "bg-muted/30 hover:bg-muted/50 border border-transparent",
+        "group relative w-full overflow-hidden",
+        shapeClass,
+        !item?.bg_color && !item?.metadata?.gradient && "bg-muted/30 hover:bg-muted/50",
+        "border border-transparent",
         "flex items-center justify-center transition-colors duration-200 active:scale-95",
         aspectClass,
       )}
     >
+      {badgeText && (
+        <span className="absolute top-2 right-2 z-10 px-2 py-1 rounded-full bg-primary text-primary-foreground text-3xs font-black uppercase tracking-wider leading-none pointer-events-none">
+          {badgeText}
+        </span>
+      )}
+
       {hasValidImage ? (
         <img
           src={imageUrl!}
@@ -164,23 +232,42 @@ function NoorBentoCard({
           onError={() => setImageError(true)}
         />
       ) : (
-        <div className="size-full flex flex-col items-center justify-center p-3 text-center gap-1">
-          <div className="size-10 sm:size-12 rounded-2xl bg-muted/60 flex items-center justify-center text-foreground group-hover:text-primary transition-colors">
-            <FallbackIcon className="size-5 sm:size-6" />
+        <div
+          className={cn(
+            "size-full flex items-center justify-center p-3 gap-2",
+            isWide ? "flex-row justify-start px-4 text-left" : "flex-col text-center gap-1",
+          )}
+        >
+          <div className="size-10 sm:size-12 rounded-2xl bg-muted/60 flex items-center justify-center text-foreground group-hover:text-primary transition-colors shrink-0 overflow-hidden">
+            {customIconUrl ? (
+              <img src={customIconUrl} alt="" className="size-7 object-contain" loading="lazy" />
+            ) : (
+              <FallbackIcon className="size-5 sm:size-6" />
+            )}
           </div>
-          {/* Se não houver imagem, exibe o rótulo limpo do nicho como fallback neutro */}
-          <span className="text-2xs font-semibold text-muted-foreground group-hover:text-foreground truncate max-w-full">
-            {title}
-          </span>
+          <div className="min-w-0">
+            <span
+              style={item?.text_color ? { color: item.text_color } : undefined}
+              className="text-2xs sm:text-xs font-semibold text-foreground group-hover:text-foreground block leading-tight break-words text-wrap"
+            >
+              {title}
+            </span>
+            {subtitle && (
+              <span className="text-2xs text-muted-foreground block leading-tight mt-1 line-clamp-1">
+                {subtitle}
+              </span>
+            )}
+          </div>
         </div>
       )}
-
-      
 
       {/* Legenda opcional sob demanda (se marcada no CMS) */}
       {showText && hasValidImage && (
         <div className="absolute inset-x-0 bottom-0 bg-background/80 backdrop-blur-xs p-2 text-center">
-          <span className="text-2xs font-semibold text-foreground truncate block">
+          <span
+            style={item?.text_color ? { color: item.text_color } : undefined}
+            className="text-2xs font-semibold text-foreground truncate block"
+          >
             {title}
           </span>
         </div>
@@ -192,7 +279,10 @@ function NoorBentoCard({
     <Link
       to={targetUrl as any}
       onClick={onClick}
-      className="block w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl sm:rounded-3xl"
+      className={cn(
+        "block w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+        shapeClass,
+      )}
       aria-label={title}
     >
       {content}
@@ -210,18 +300,28 @@ function NoorMobilityActionBar({
   const [imageError, setImageError] = useState(false);
   const imageUrl = item?.image_desktop_url || item?.image_url || item?.image_mobile_url;
   const hasValidImage = Boolean(imageUrl && !imageError && isHealthyImageUrl(imageUrl));
+  const customIconUrl = isHealthyImageUrl(item?.icon_name) ? String(item?.icon_name).trim() : null;
 
   const targetUrl = item?.target_url || "/mobilidade";
   const title = item?.title || "Chamar Moto ou Corrida";
   const subtitle = item?.subtitle || "Para onde vamos? Peça com taxa fixa de R$ 0,99";
+  const badgeText = item?.badge_text || "R$ 0,99";
+
+  const customStyle: React.CSSProperties = {
+    ...(item?.bg_color ? { backgroundColor: item.bg_color } : {}),
+    ...(item?.text_color ? { color: item.text_color } : {}),
+    ...(item?.metadata?.gradient ? { backgroundImage: item.metadata.gradient } : {}),
+  };
 
   return (
     <Link
       to={targetUrl as any}
       onClick={onClick}
+      style={customStyle}
       className={cn(
         "group relative w-full overflow-hidden rounded-2xl sm:rounded-3xl",
-        "bg-card hover:bg-muted/40 border border-border/50 hover:border-primary/40",
+        !item?.bg_color && !item?.metadata?.gradient && "bg-card hover:bg-muted/40",
+        "border border-border/50 hover:border-primary/40",
         "flex items-center justify-between transition-colors duration-200 active:scale-95",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         hasValidImage ? "h-14 sm:h-16 p-0" : "p-3 sm:p-4 min-h-14 gap-3",
@@ -239,17 +339,26 @@ function NoorMobilityActionBar({
       ) : (
         <>
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-11 min-h-11 min-w-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
-              <Car className="size-5" />
+            <div className="size-11 min-h-11 min-w-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform overflow-hidden">
+              {customIconUrl ? (
+                <img src={customIconUrl} alt="" className="size-6 object-contain" loading="lazy" />
+              ) : (
+                <Car className="size-5" />
+              )}
             </div>
             <div className="flex flex-col min-w-0 text-left">
               <div className="flex items-center gap-2">
-                <span className="text-xs sm:text-sm font-bold text-foreground leading-tight truncate">
+                <span
+                  style={item?.text_color ? { color: item.text_color } : undefined}
+                  className="text-xs sm:text-sm font-bold text-foreground leading-tight truncate"
+                >
                   {title}
                 </span>
-                <span className="px-2 py-1 rounded-md text-2xs font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                  R$ 0,99
-                </span>
+                {badgeText && (
+                  <span className="px-2 py-1 rounded-md text-2xs font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                    {badgeText}
+                  </span>
+                )}
               </div>
               <span className="text-2xs text-muted-foreground truncate leading-tight mt-1">
                 {subtitle}

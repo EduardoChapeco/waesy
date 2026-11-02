@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { z } from "zod";
 import { Plus, Trash2, Pencil, Sliders, Image as ImageIcon, Eye, EyeOff, SlidersHorizontal, Tag, CheckCircle2, LayoutGrid, Layers, ArrowUpRight, ExternalLink } from 'lucide-react';
@@ -420,7 +420,22 @@ function AdminMasterHotpagesPage() {
  </h1>
  </div>
 
- <div className="flex items-center gap-2">
+ <div className="flex items-center gap-2 flex-wrap">
+ <Button
+ asChild
+ variant="outline"
+ size="sm"
+ className="h-11 px-4 rounded-lg font-semibold text-xs gap-2 shrink-0 border-border/80 bg-card hover:bg-muted shadow-xs"
+ >
+ <Link
+ to="/admin-master/home-editor"
+ search={{ page: selectedModuleTab !== "all" ? selectedModuleTab : "home" }}
+ >
+ <Layers className="size-4 text-primary" />
+ <span>Editar no Omni Builder</span>
+ </Link>
+ </Button>
+
  <Button
  onClick={handleSyncDefaults}
  disabled={isSubmitting}

@@ -270,9 +270,39 @@ export function VitrineLateralDrawerBlock({
   styling,
   className,
 }: OmniVitrineRuntimeContextProps & { data: any }) {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(Boolean(data?.previewOpen));
 
-  const sections = data?.sections || [];
+  React.useEffect(() => {
+    if (typeof data?.previewOpen === "boolean") {
+      setIsOpen(data.previewOpen);
+    }
+  }, [data?.previewOpen]);
+
+  const sections = React.useMemo(() => {
+    if (Array.isArray(data?.sections) && data.sections.length > 0) {
+      return data.sections;
+    }
+    if (Array.isArray(data?.items) && data.items.length > 0) {
+      return [
+        {
+          id: "sec_global",
+          title: data?.drawerTitle || "Atalhos Principais",
+          items: data.items.map((it: any) => ({
+            id: it.id,
+            label: it.label || it.title,
+            href: it.href || it.url || "/",
+            badge: it.badge || it.badge_text,
+            icon: it.icon || it.iconName || "Compass",
+            imageUrl: it.imageUrl || it.image_url,
+            cardVariant: it.cardVariant || "squircle",
+            isActive: it.isActive !== false,
+          })),
+        },
+      ];
+    }
+    return [];
+  }, [data?.sections, data?.items, data?.drawerTitle]);
+
   const itemsCount = sections.reduce((acc: number, s: any) => acc + (s.items?.length || 0), 0);
 
   const mappedItems = React.useMemo(() => {
@@ -285,7 +315,7 @@ export function VitrineLateralDrawerBlock({
           target_route: it.href,
           badge_label: it.badge,
           badge_color: it.badgeColor,
-          icon_name: it.icon,
+          icon_name: it.icon || it.iconName,
           custom_icon_url: it.imageUrl,
           is_active: it.isActive !== false,
           filter_rules: {
@@ -314,10 +344,10 @@ export function VitrineLateralDrawerBlock({
             </button>
             <div>
               <p className="text-xs font-bold text-foreground">
-                {data?.greetingTitle || "Menu Lateral Mobile Deslizante"}
+                {data?.greetingTitle || data?.drawerTitle || "Menu Lateral Hambúrguer (Subestado Drawer)"}
               </p>
               <p className="text-2xs text-muted-foreground">
-                {sections.length} seções • {itemsCount} atalhos configurados
+                {sections.length} seções • {itemsCount} atalhos configurados (clique para inspecionar o subestado aberto)
               </p>
             </div>
           </div>
@@ -325,16 +355,16 @@ export function VitrineLateralDrawerBlock({
           <button
             type="button"
             onClick={() => setIsOpen((prev) => !prev)}
-            className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold bg-muted hover:bg-muted/80 text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            {isOpen ? "Fechar Menu" : "Abrir Menu"}
+            {isOpen ? "Fechar Subestado Drawer" : "Inspecionar Menu Aberto"}
           </button>
         </div>
 
         <VitrineLateralMenuSheet
           open={isOpen}
           onClose={() => setIsOpen(false)}
-          greetingTitle={data?.greetingTitle || "Aproveite o nosso App!"}
+          greetingTitle={data?.greetingTitle || data?.drawerTitle || "Aproveite o nosso App!"}
           greetingSubtitle={data?.greetingSubtitle}
           showViewModeToggle={data?.showViewModeToggle !== false}
           defaultViewMode={data?.defaultViewMode || "grid"}

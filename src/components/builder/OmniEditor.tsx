@@ -62,6 +62,7 @@ import {
 import { listStudioTemplateDrafts } from "@/services/studio-template-library.functions";
 import { listPublicArticles } from "@/services/news.functions";
 import { listExperienceDocuments } from "@/services/builder.functions";
+import { CANONICAL_PLATFORM_SURFACES, openOrCreatePageExperienceDocument } from "@/services/surface-cms.functions";
 
 import {
   Plus,
@@ -2876,6 +2877,38 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             </div>
           )}
 
+          {/* Seletor Rápido de Página / Vitrine da Plataforma (Wix Studio Page Switcher) */}
+          <div className="hidden md:flex items-center pl-2 border-l border-border/60">
+            <select
+              aria-label="Alternar Página da Plataforma"
+              value={document.slug || "home"}
+              onChange={async (e) => {
+                const nextSlug = e.target.value;
+                if (!nextSlug || nextSlug === document.slug) return;
+                const surf = CANONICAL_PLATFORM_SURFACES.find((s) => s.slug === nextSlug);
+                try {
+                  toast.info(`Abrindo página ${surf?.title || nextSlug} no Omni Builder...`);
+                  const res = await openOrCreatePageExperienceDocument({
+                    data: { pageSlug: nextSlug, pageTitle: surf?.title || nextSlug },
+                  });
+                  if (res?.documentId && typeof window !== "undefined") {
+                    window.location.href = `/workspace/builder/${res.documentId}/editor`;
+                  }
+                } catch (err: any) {
+                  toast.error(err?.message || "Erro ao alternar página.");
+                }
+              }}
+              className="h-11 min-h-11 rounded-lg border border-border bg-muted/40 px-3 text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary max-w-52"
+              title="Trocar de Página / Vitrine da Plataforma"
+            >
+              {CANONICAL_PLATFORM_SURFACES.filter((s) => s.slug !== "store_private").map((s) => (
+                <option key={s.slug} value={s.slug}>
+                  Página: {s.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Controles Transacionais Undo / Redo + Autosave Badge */}
           <div className="hidden xl:flex items-center gap-1 pl-2 border-l border-border/60">
             <button
@@ -2976,8 +3009,28 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           </div>
         </div>
 
-        {/* Cluster de Ações: Sitemap + Menu + Apps + Código + Domínio + Preview + Salvar + Publicar */}
+        {/* Cluster de Ações: Planilha Sheet + Menus + Sitemap + Apps + Código + Domínio + Preview + Salvar + Publicar */}
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCmsTableModalOpen(true)}
+            className="h-11 min-h-11 px-3 rounded-lg border-primary/40 text-primary hover:bg-primary/10 text-xs font-bold focus-visible:ring-2 focus-visible:ring-primary"
+            title="Planilha Editável In-Page (Modo Sheet Wix)"
+          >
+            <Database className="size-4 sm:mr-2" />
+            <span className="hidden sm:inline">Planilha (Sheet)</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsMenuManagerOpen(true)}
+            className="hidden lg:inline-flex h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            title="Gerenciar Menus (5 Abas Mobile, Hambúrguer & Header)"
+          >
+            <MenuIcon className="size-4 mr-2" />
+            <span>Menus & Abas</span>
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -3489,12 +3542,25 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                             {def.name}
                           </span>
                           <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedBlockId(block.id);
+                              setIsCmsTableModalOpen(true);
+                            }}
+                            className="h-11 min-h-11 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-2xs font-bold flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            title="Editar itens desta seção em Planilha (Modo Sheet)"
+                          >
+                            <Database className="size-3.5" />
+                            <span>Planilha</span>
+                          </button>
+                          <button
                             disabled={index === 0}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleMove(index, "up");
                             }}
-                            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             title="Subir"
                           >
                             <ChevronUp className="size-3.5" />
@@ -3505,7 +3571,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                               e.stopPropagation();
                               handleMove(index, "down");
                             }}
-                            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             title="Descer"
                           >
                             <ChevronDown className="size-3.5" />
@@ -3515,7 +3581,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                               e.stopPropagation();
                               handleDuplicate(block.id);
                             }}
-                            className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             title="Duplicar"
                           >
                             <Copy className="size-3.5" />
@@ -3525,7 +3591,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                               e.stopPropagation();
                               handleRemove(block.id);
                             }}
-                            className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             title="Excluir"
                           >
                             <Trash2 className="size-3.5" />
@@ -3558,7 +3624,19 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
             {/* Bottom Tab Bar do App Nativo (quando viewport === "native_app" e barPosition === "bottom") */}
             {viewport === "native_app" && appNavConfig.barPosition === "bottom" && (
-              <div className="bg-card border-t border-border px-3 py-2 flex items-center justify-around gap-1 shrink-0">
+              <div
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setIsMenuManagerOpen(true);
+                  }
+                }}
+                onClick={() => setIsMenuManagerOpen(true)}
+                title="Clique para editar as 5 Abas da Barra Inferior Mobile"
+                className="bg-card border-t border-border px-3 py-2 flex items-center justify-around gap-1 shrink-0 cursor-pointer hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
                 {appNavConfig.tabs.map((tab, idx) => (
                   <div
                     key={tab}
@@ -4316,6 +4394,48 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         isOpen={isMenuManagerOpen}
         onClose={() => setIsMenuManagerOpen(false)}
         onApplyMenuToBlock={(items, menuType) => {
+          if (menuType === "bottom_nav") {
+            setAppNavConfig((prev) => ({
+              ...prev,
+              tabs: items.map((it) => it.label || "Aba"),
+            }));
+          }
+          if (menuType === "explore_menu") {
+            const updatedBlocks = document.blocks.map((blk) => {
+              if (blk.type !== "vitrine_lateral_drawer") return blk;
+              const mappedDrawerItems = items.map((it, idx) => ({
+                id: it.id || `nav_${idx}`,
+                label: it.label || "Atalho",
+                href: it.href || "/",
+                badge: it.badge || "",
+                icon: it.icon || "Compass",
+                imageUrl: it.image_url || "",
+                bgColor: it.bg_color || "",
+                textColor: it.text_color || "",
+                cardVariant: idx < 2 ? "wide" : "squircle",
+                isActive: true,
+              }));
+              return {
+                ...blk,
+                config: {
+                  ...blk.config,
+                  items: mappedDrawerItems,
+                  sections: [
+                    {
+                      id: "sec-menu-global",
+                      title: "Menu Principal & Verticais",
+                      items: mappedDrawerItems,
+                    },
+                  ],
+                },
+              };
+            });
+            commitDocumentChange({
+              ...document,
+              blocks: updatedBlocks,
+              updated_at: new Date().toISOString(),
+            });
+          }
           if (selectedBlock) {
             handleUpdateConfig("menuItems", items);
             handleUpdateConfig("menuType", menuType);
@@ -4330,6 +4450,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           onClose={() => setIsCmsTableModalOpen(false)}
           productsCount={products.length}
           onInsertCollectionBlock={(blockType) => handleAddBlock(blockType)}
+          selectedBlock={selectedBlock}
+          allBlocks={document.blocks}
+          onSelectBlock={(id) => setSelectedBlockId(id)}
+          onUpdateBlockConfig={handleUpdateConfig}
         />
       )}
     </div>

@@ -19,6 +19,18 @@ import { DestinationPicker } from "@/components/ui/destination-picker";
 import { VITRINE_BUTTON_ICON_OPTIONS } from "@/design-system/vitrine";
 import type { OmniBlockInstance, OmniBlockStyling } from "./types";
 
+const INSPECTOR_CITIES = [
+  { value: "", label: "Todas as Cidades (Global)" },
+  { value: "São Miguel do Oeste", label: "São Miguel do Oeste — SC" },
+  { value: "Chapecó", label: "Chapecó — SC" },
+  { value: "Maravilha", label: "Maravilha — SC" },
+  { value: "Pinhalzinho", label: "Pinhalzinho — SC" },
+  { value: "Itapiranga", label: "Itapiranga — SC" },
+  { value: "Dionísio Cerqueira", label: "Dionísio Cerqueira — SC" },
+  { value: "Guaraciaba", label: "Guaraciaba — SC" },
+  { value: "Descanso", label: "Descanso — SC" },
+];
+
 export const VITRINE_APP_BLOCK_TYPES = new Set<string>([
   "vitrine_metamorphic_banner",
   "vitrine_bento_tetris",
@@ -30,6 +42,12 @@ export const VITRINE_APP_BLOCK_TYPES = new Set<string>([
   "vitrine_social_stream",
   "vitrine_ecosystem_rail",
   "vitrine_lateral_drawer",
+  "vitrine_visual_spotlight_rail",
+  "vitrine_ifood_header",
+  "vitrine_subcategory_pills",
+  "vitrine_recent_stores_rail",
+  "vitrine_feature_mini_banners",
+  "vitrine_stores_feed_list",
 ]);
 
 export function isVitrineAppBlock(type: string): boolean {
@@ -972,6 +990,23 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                   className="size-4 accent-primary"
                 />
               </label>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Estratégia de Exibição e Ordem (Shuffle)
+                </label>
+                <select
+                  value={config.rankingStrategy || "random_shuffle"}
+                  onChange={(e) => onUpdateConfig("rankingStrategy", e.target.value)}
+                  className={SELECT_CLASS}
+                >
+                  <option value="random_shuffle">Randomização Rotativa (Shuffle Justo)</option>
+                  <option value="discount">Maior Desconto Percentual</option>
+                  <option value="popularity">Mais Vendidos e Avaliados</option>
+                  <option value="recency">Mais Recentes / Novidades</option>
+                  <option value="curated_fixed">Ordem Fixa Manual</option>
+                </select>
+              </div>
             </>
           ) : null}
 
@@ -982,13 +1017,62 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
             <Input
               type="number"
               min={1}
-              max={24}
+              max={40}
               value={config.maxItems ?? 8}
               onChange={(e) =>
-                onUpdateConfig("maxItems", Math.max(1, Math.min(24, Number(e.target.value) || 8)))
+                onUpdateConfig("maxItems", Math.max(1, Math.min(40, Number(e.target.value) || 8)))
               }
               className={INPUT_CLASS}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50">
+            <div>
+              <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                Agendar Início
+              </label>
+              <Input
+                type="datetime-local"
+                value={config.startsAt ? String(config.startsAt).slice(0, 16) : ""}
+                onChange={(e) => onUpdateConfig("startsAt", e.target.value)}
+                className={INPUT_CLASS}
+              />
+            </div>
+            <div>
+              <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                Auto-Arquivar Em
+              </label>
+              <Input
+                type="datetime-local"
+                value={
+                  (config.autoArchiveAt || config.endsAt)
+                    ? String(config.autoArchiveAt || config.endsAt).slice(0, 16)
+                    : ""
+                }
+                onChange={(e) => {
+                  onUpdateConfig("autoArchiveAt", e.target.value);
+                  onUpdateConfig("endsAt", e.target.value);
+                }}
+                className={INPUT_CLASS}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+              Segmentação por Cidade
+            </label>
+            <select
+              value={config.cityFilter || ""}
+              onChange={(e) => onUpdateConfig("cityFilter", e.target.value)}
+              className={SELECT_CLASS}
+            >
+              {INSPECTOR_CITIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       ) : null}
@@ -1289,6 +1373,83 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
             />
           ) : null}
 
+          <div className="pt-2 border-t border-border/50 space-y-2">
+            <label className="block text-xs font-bold text-foreground">
+              Timer Regressivo & Agendamento
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                  Início da Campanha
+                </label>
+                <Input
+                  type="datetime-local"
+                  value={config.startsAt ? String(config.startsAt).slice(0, 16) : ""}
+                  onChange={(e) => onUpdateConfig("startsAt", e.target.value)}
+                  className={INPUT_CLASS}
+                />
+              </div>
+              <div>
+                <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                  Fim / Timer Regressivo
+                </label>
+                <Input
+                  type="datetime-local"
+                  value={
+                    (config.timerExpiresAt || config.endsAt)
+                      ? String(config.timerExpiresAt || config.endsAt).slice(0, 16)
+                      : ""
+                  }
+                  onChange={(e) => {
+                    onUpdateConfig("timerExpiresAt", e.target.value);
+                    onUpdateConfig("endsAt", e.target.value);
+                  }}
+                  className={INPUT_CLASS}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                  Cor de Fundo
+                </label>
+                <Input
+                  value={config.bgColor || ""}
+                  onChange={(e) => onUpdateConfig("bgColor", e.target.value)}
+                  placeholder="Cor ou token"
+                  className={INPUT_CLASS}
+                />
+              </div>
+              <div>
+                <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                  Cor do Texto
+                </label>
+                <Input
+                  value={config.textColor || ""}
+                  onChange={(e) => onUpdateConfig("textColor", e.target.value)}
+                  placeholder="Cor do texto"
+                  className={INPUT_CLASS}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                Segmentação por Cidade
+              </label>
+              <select
+                value={config.cityFilter || ""}
+                onChange={(e) => onUpdateConfig("cityFilter", e.target.value)}
+                className={SELECT_CLASS}
+              >
+                {INSPECTOR_CITIES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <label className="h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between text-xs font-medium text-foreground cursor-pointer">
             <span>Permitir fechar a faixa</span>
             <input
@@ -1321,7 +1482,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                     title: "Novo Slide Promocional",
                     subtitle: "Configure arte mobile e desktop independentes.",
                     ctaLabel: "Saiba Mais",
-                    href: "#ofertas",
+                    href: "/ofertas",
                     showOverlay: true,
                   },
                 ]);
@@ -1369,7 +1530,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
 
                 <div>
                   <label className="block text-xs font-semibold text-foreground mb-1">
-                    Vídeo MP4 / Loop (opcional)
+                    Vídeo MP4 / Stream (opcional)
                   </label>
                   <Input
                     value={slide.videoUrl || ""}
@@ -1383,6 +1544,47 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                     className={INPUT_CLASS}
                   />
                 </div>
+
+                {slide.videoUrl ? (
+                  <div className="grid grid-cols-2 gap-2 p-3 rounded-lg border border-border/60 bg-muted/20">
+                    <label className="flex items-center justify-between text-2xs font-medium text-foreground cursor-pointer">
+                      <span>Autoplay</span>
+                      <input
+                        type="checkbox"
+                        checked={slide.autoPlay !== false}
+                        onChange={(e) => updateSlide({ autoPlay: e.target.checked })}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between text-2xs font-medium text-foreground cursor-pointer">
+                      <span>Loop contínuo</span>
+                      <input
+                        type="checkbox"
+                        checked={slide.loop !== false}
+                        onChange={(e) => updateSlide({ loop: e.target.checked })}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between text-2xs font-medium text-foreground cursor-pointer">
+                      <span>Áudio Mudo</span>
+                      <input
+                        type="checkbox"
+                        checked={slide.muted !== false}
+                        onChange={(e) => updateSlide({ muted: e.target.checked })}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between text-2xs font-medium text-foreground cursor-pointer">
+                      <span>Controles Player</span>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(slide.controls)}
+                        onChange={(e) => updateSlide({ controls: e.target.checked })}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                  </div>
+                ) : null}
 
                 <div className="grid grid-cols-2 gap-2">
                   <Input
@@ -1427,8 +1629,62 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                   onChange={(url) => updateSlide({ href: url })}
                 />
 
+                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/40">
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Agendar Início
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={slide.startsAt ? String(slide.startsAt).slice(0, 16) : ""}
+                      onChange={(e) => updateSlide({ startsAt: e.target.value })}
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Expiração (Ends At)
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={slide.endsAt ? String(slide.endsAt).slice(0, 16) : ""}
+                      onChange={(e) => updateSlide({ endsAt: e.target.value })}
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                    Auto-Arquivamento Definitivo (Opcional)
+                  </label>
+                  <Input
+                    type="datetime-local"
+                    value={slide.autoArchiveAt ? String(slide.autoArchiveAt).slice(0, 16) : ""}
+                    onChange={(e) => updateSlide({ autoArchiveAt: e.target.value })}
+                    className={INPUT_CLASS}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                    Segmentação por Cidade
+                  </label>
+                  <select
+                    value={slide.cityFilter || ""}
+                    onChange={(e) => updateSlide({ cityFilter: e.target.value })}
+                    className={SELECT_CLASS}
+                  >
+                    {INSPECTOR_CITIES.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <label className="h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between text-xs font-medium text-foreground cursor-pointer">
-                  <span>Exibir textos sobre a imagem</span>
+                  <span>Exibir textos e máscara sobre a imagem</span>
                   <input
                     type="checkbox"
                     checked={slide.showOverlay !== false}
@@ -1436,6 +1692,47 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                     className="size-4 accent-primary"
                   />
                 </label>
+
+                {slide.showOverlay !== false ? (
+                  <div className="grid grid-cols-2 gap-2 p-2 rounded-lg border border-border/50 bg-muted/15">
+                    <label className="flex items-center justify-between text-2xs font-medium text-foreground cursor-pointer">
+                      <span>Exibir Título</span>
+                      <input
+                        type="checkbox"
+                        checked={slide.showTitle !== false}
+                        onChange={(e) => updateSlide({ showTitle: e.target.checked })}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between text-2xs font-medium text-foreground cursor-pointer">
+                      <span>Exibir Subtítulo</span>
+                      <input
+                        type="checkbox"
+                        checked={slide.showDescription !== false}
+                        onChange={(e) => updateSlide({ showDescription: e.target.checked })}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between text-2xs font-medium text-foreground cursor-pointer">
+                      <span>Exibir Badge</span>
+                      <input
+                        type="checkbox"
+                        checked={slide.showBadge !== false}
+                        onChange={(e) => updateSlide({ showBadge: e.target.checked })}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between text-2xs font-medium text-foreground cursor-pointer">
+                      <span>Exibir Botão CTA</span>
+                      <input
+                        type="checkbox"
+                        checked={slide.showCta !== false}
+                        onChange={(e) => updateSlide({ showCta: e.target.checked })}
+                        className="size-4 accent-primary"
+                      />
+                    </label>
+                  </div>
+                ) : null}
               </ArrayItemCard>
             );
           })}
@@ -1585,51 +1882,171 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                   onDesktopChange={(url) => updateTile({ imageDesktopUrl: url })}
                 />
 
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Ícone Vetorial
+                    </label>
+                    <select
+                      value={tile.iconName || "Sparkles"}
+                      onChange={(e) => updateTile({ iconName: e.target.value })}
+                      className={SELECT_CLASS}
+                    >
+                      {VITRINE_BUTTON_ICON_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Sombra / Elevação
+                    </label>
+                    <select
+                      value={tile.shadowMode || "none"}
+                      onChange={(e) => updateTile({ shadowMode: e.target.value })}
+                      className={SELECT_CLASS}
+                    >
+                      <option value="none">Sem Sombra</option>
+                      <option value="sm">Sutil (SM)</option>
+                      <option value="md">Média (MD)</option>
+                      <option value="lg">Profunda (LG)</option>
+                      <option value="glow">Brilho (Glow)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    value={tile.bgColor || ""}
+                    onChange={(e) => updateTile({ bgColor: e.target.value })}
+                    placeholder="Cor de fundo"
+                    className={INPUT_CLASS}
+                  />
+                  <Input
+                    value={tile.textColor || ""}
+                    onChange={(e) => updateTile({ textColor: e.target.value })}
+                    placeholder="Cor do texto"
+                    className={INPUT_CLASS}
+                  />
+                </div>
+
+                <Input
+                  value={tile.gradient || ""}
+                  onChange={(e) => updateTile({ gradient: e.target.value })}
+                  placeholder="Gradiente CSS opcional"
+                  className={INPUT_CLASS}
+                />
+
                 <DestinationPicker
                   label="Link do Bloco"
                   value={tile.href || ""}
                   onChange={(url) => updateTile({ href: url })}
                 />
+
+                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/40">
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Agendar Início
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={tile.startsAt ? String(tile.startsAt).slice(0, 16) : ""}
+                      onChange={(e) => updateTile({ startsAt: e.target.value })}
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Auto-Ocultar Em
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={tile.endsAt ? String(tile.endsAt).slice(0, 16) : ""}
+                      onChange={(e) => updateTile({ endsAt: e.target.value })}
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                    Segmentação por Cidade
+                  </label>
+                  <select
+                    value={tile.cityFilter || ""}
+                    onChange={(e) => updateTile({ cityFilter: e.target.value })}
+                    className={SELECT_CLASS}
+                  >
+                    {INSPECTOR_CITIES.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </ArrayItemCard>
             );
           })}
         </div>
       ) : null}
 
-      
-
       {/* 8. EDITOR DE BOTÕES 100% EDITÁVEIS (CARROSSEL / DOCK / GRADE) */}
       {type === "vitrine_buttons_dock" && config.dataSource !== "store_categories" ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <span className="text-xs font-bold text-foreground">
               Botões Editáveis ({Array.isArray(config.items) ? config.items.length : 0})
             </span>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                const items = Array.isArray(config.items) ? config.items : [];
-                onUpdateConfig("items", [
-                  ...items,
-                  {
-                    id: makeItemId("btn"),
-                    label: "Novo Atalho",
-                    subtitle: "",
-                    badge: "",
-                    iconName: "Tag",
-                    shape: config.defaultShape || "squircle",
-                    tone: "default",
-                    showLabel: true,
-                    href: "#ofertas",
-                  },
-                ]);
-              }}
-              className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1"
-            >
-              <Plus className="size-4" />
-              <span>Botão</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  onUpdateConfig("items", [
+                    { id: "cvc-1", label: "Pacotes", iconName: "Briefcase", href: "/turismo?tab=pacotes", badge: "Oferta", shape: "squircle", showLabel: true },
+                    { id: "cvc-2", label: "Passagens", iconName: "Plane", href: "/turismo?tab=passagens", badge: "", shape: "squircle", showLabel: true },
+                    { id: "cvc-3", label: "Hotéis", iconName: "Building2", href: "/turismo?tab=hoteis", badge: "-30%", shape: "squircle", showLabel: true },
+                    { id: "cvc-4", label: "Cruzeiros", iconName: "Compass", href: "/turismo?tab=cruzeiros", badge: "", shape: "squircle", showLabel: true },
+                    { id: "cvc-5", label: "Carros", iconName: "Car", href: "/turismo?tab=carros", badge: "Novo", shape: "squircle", showLabel: true },
+                    { id: "cvc-6", label: "Seguros", iconName: "ShieldCheck", href: "/turismo?tab=seguros", badge: "", shape: "squircle", showLabel: true },
+                    { id: "cvc-7", label: "Ingressos", iconName: "Ticket", href: "/turismo?tab=passeios", badge: "", shape: "squircle", showLabel: true },
+                    { id: "cvc-8", label: "Ônibus", iconName: "Bus", href: "/turismo?tab=onibus", badge: "Fretamento", shape: "squircle", showLabel: true },
+                    { id: "cvc-9", label: "Corporativo", iconName: "Sparkles", href: "/turismo?tab=corporativo", badge: "VOLL", shape: "squircle", showLabel: true },
+                  ]);
+                }}
+                className="h-11 min-h-11 px-3 rounded-lg text-2xs font-bold gap-1"
+                title="Carregar preset completo CVC Turismo (9 botões)"
+              >
+                <span>Preset CVC</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const items = Array.isArray(config.items) ? config.items : [];
+                  onUpdateConfig("items", [
+                    ...items,
+                    {
+                      id: makeItemId("btn"),
+                      label: "Novo Atalho",
+                      subtitle: "",
+                      badge: "",
+                      iconName: "Tag",
+                      shape: config.defaultShape || "squircle",
+                      tone: "default",
+                      showLabel: true,
+                      href: "/ofertas",
+                    },
+                  ]);
+                }}
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1"
+              >
+                <Plus className="size-4" />
+                <span>Botão</span>
+              </Button>
+            </div>
           </div>
 
           {(Array.isArray(config.items) ? config.items : []).map((btn: any, idx: number, arr: any[]) => {
@@ -1747,8 +2164,74 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                   </label>
                 </div>
 
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Cor de Fundo
+                    </label>
+                    <Input
+                      value={btn.bgColor || ""}
+                      onChange={(e) => updateBtn({ bgColor: e.target.value })}
+                      placeholder="Cor ou token"
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Cor do Texto
+                    </label>
+                    <Input
+                      value={btn.textColor || ""}
+                      onChange={(e) => updateBtn({ textColor: e.target.value })}
+                      placeholder="Cor do texto"
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Sombra
+                    </label>
+                    <select
+                      value={btn.shadowMode || "none"}
+                      onChange={(e) => updateBtn({ shadowMode: e.target.value })}
+                      className={SELECT_CLASS}
+                    >
+                      <option value="none">Sem Sombra</option>
+                      <option value="sm">Sutil (SM)</option>
+                      <option value="md">Média (MD)</option>
+                      <option value="lg">Profunda (LG)</option>
+                      <option value="glow">Brilho (Glow)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Animação Hover
+                    </label>
+                    <select
+                      value={btn.hoverEffect || "scale"}
+                      onChange={(e) => updateBtn({ hoverEffect: e.target.value })}
+                      className={SELECT_CLASS}
+                    >
+                      <option value="scale">Escala Tátil</option>
+                      <option value="lift">Elevação Suave</option>
+                      <option value="glow">Destaque Luminoso</option>
+                      <option value="none">Sem Animação</option>
+                    </select>
+                  </div>
+                </div>
+
+                <Input
+                  value={btn.gradient || ""}
+                  onChange={(e) => updateBtn({ gradient: e.target.value })}
+                  placeholder="Gradiente CSS opcional"
+                  className={INPUT_CLASS}
+                />
+
                 <BidirectionalMediaUploader
-                  label="Arte / Ícone Ilustrado Customizado (Opcional)"
+                  label="Arte / Ícone Ilustrado Customizado (Upload Bucket)"
                   description="Se enviada, substitui o ícone vetorial por imagem mobile/desktop dedicada."
                   bucket="banners"
                   folder="botoes"
@@ -1756,8 +2239,8 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                   desktopUrl={btn.imageDesktopUrl || btn.imageUrl || ""}
                   mobileAspect={1}
                   desktopAspect={1}
-                  onMobileChange={(url) => updateBtn({ imageMobileUrl: url })}
-                  onDesktopChange={(url) => updateBtn({ imageDesktopUrl: url })}
+                  onMobileChange={(url) => updateBtn({ imageMobileUrl: url, imageUrl: url })}
+                  onDesktopChange={(url) => updateBtn({ imageDesktopUrl: url, imageUrl: url })}
                 />
 
                 <DestinationPicker
@@ -1765,17 +2248,76 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                   value={btn.href || ""}
                   onChange={(url) => updateBtn({ href: url })}
                 />
+
+                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/40">
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Agendar Início
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={btn.startsAt ? String(btn.startsAt).slice(0, 16) : ""}
+                      onChange={(e) => updateBtn({ startsAt: e.target.value })}
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                      Auto-Ocultar Em
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      value={btn.endsAt ? String(btn.endsAt).slice(0, 16) : ""}
+                      onChange={(e) => updateBtn({ endsAt: e.target.value })}
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                    Segmentação por Cidade
+                  </label>
+                  <select
+                    value={btn.cityFilter || ""}
+                    onChange={(e) => updateBtn({ cityFilter: e.target.value })}
+                    className={SELECT_CLASS}
+                  >
+                    {INSPECTOR_CITIES.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </ArrayItemCard>
             );
           })}
         </div>
       ) : null}
 
-      
-
-            {/* 8.1 EDITOR DE SEÇÕES E BOTÕES DO MENU LATERAL */}
+      {/* 8.1 EDITOR DE SEÇÕES E BOTÕES DO MENU LATERAL (SUBESTADO DRAWER HAMBÚRGUER) */}
       {type === "vitrine_lateral_drawer" ? (
         <div className="space-y-4">
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-bold text-foreground">Subestado: Menu Lateral Aberto</p>
+                <p className="text-2xs text-muted-foreground">
+                  Alterne para inspecionar e editar o interior do Drawer no Canvas
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant={config.previewOpen ? "default" : "outline"}
+                onClick={() => onUpdateConfig("previewOpen", !config.previewOpen)}
+                className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold"
+              >
+                {config.previewOpen ? "Fechar Drawer" : "Abrir no Canvas"}
+              </Button>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-foreground">
               Seções Temáticas ({Array.isArray(config.sections) ? config.sections.length : 0})
@@ -1819,7 +2361,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
               };
 
               return (
-                <div key={sec.id || secIdx} className="rounded-xl border border-border/70 bg-card p-3 space-y-3 shadow-xs">
+                <div key={sec.id || secIdx} className="rounded-xl border border-border/70 bg-card p-3 space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <Input
                       value={sec.title || ""}
@@ -1924,7 +2466,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                               </div>
                               <div>
                                 <label className="block text-3xs font-semibold text-muted-foreground mb-1">
-                                  Ícone
+                                  Ícone Vetorial
                                 </label>
                                 <select
                                   value={item.icon || "Tag"}
@@ -1938,6 +2480,31 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                                   ))}
                                 </select>
                               </div>
+                            </div>
+
+                            <MediaUploader
+                              label="Ícone / Mídia Customizada (Upload Bucket)"
+                              bucket="banners"
+                              folder="menus"
+                              maxFiles={1}
+                              aspect={1}
+                              value={item.imageUrl ? [item.imageUrl] : []}
+                              onChange={(urls) => updateItem({ imageUrl: urls[0] || "" })}
+                            />
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                value={item.bgColor || ""}
+                                onChange={(e) => updateItem({ bgColor: e.target.value })}
+                                placeholder="Cor fundo"
+                                className={INPUT_CLASS}
+                              />
+                              <Input
+                                value={item.textColor || ""}
+                                onChange={(e) => updateItem({ textColor: e.target.value })}
+                                placeholder="Cor texto"
+                                className={INPUT_CLASS}
+                              />
                             </div>
 
                             <DestinationPicker
@@ -1975,6 +2542,273 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                 </div>
               );
             }
+          )}
+        </div>
+      ) : null}
+
+      {/* 8.2 INSPETOR DO HEADER IFOOD & SUBCATEGORIAS / MINI BANNERS */}
+      {type === "vitrine_ifood_header" ? (
+        <div className="rounded-xl border border-border/60 bg-card p-3 space-y-3">
+          <span className="text-xs font-bold text-foreground block">
+            Cabeçalho Global & Barra de Busca
+          </span>
+          <label className="h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between text-xs font-medium text-foreground cursor-pointer">
+            <span>Exibir Barra de Busca</span>
+            <input
+              type="checkbox"
+              checked={config.showSearch !== false}
+              onChange={(e) => onUpdateConfig("showSearch", e.target.checked)}
+              className="size-4 accent-primary"
+            />
+          </label>
+          <div>
+            <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+              Placeholder da Busca
+            </label>
+            <Input
+              value={config.searchPlaceholder || ""}
+              onChange={(e) => onUpdateConfig("searchPlaceholder", e.target.value)}
+              placeholder="Buscar lojas, pratos ou produtos..."
+              className={INPUT_CLASS}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {type === "vitrine_subcategory_pills" ? (
+        <div className="space-y-3">
+          <div className="rounded-xl border border-border/60 bg-card p-3 space-y-2">
+            <label className="h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between text-xs font-medium text-foreground cursor-pointer">
+              <span>Exibir Rótulo de Texto</span>
+              <input
+                type="checkbox"
+                checked={config.showText !== false}
+                onChange={(e) => onUpdateConfig("showText", e.target.checked)}
+                className="size-4 accent-primary"
+              />
+            </label>
+            <div>
+              <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                Posição do Texto
+              </label>
+              <select
+                value={config.textPosition || "below"}
+                onChange={(e) => onUpdateConfig("textPosition", e.target.value)}
+                className={SELECT_CLASS}
+              >
+                <option value="below">Abaixo da Arte</option>
+                <option value="inside">Ao Lado (Pílula Horizontal)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">
+              Pílulas de Subcategoria ({Array.isArray(config.items) ? config.items.length : 0})
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const items = Array.isArray(config.items) ? config.items : [];
+                onUpdateConfig("items", [
+                  ...items,
+                  { id: makeItemId("sub"), label: "Nova Subcategoria", badge: "", imageUrl: "", href: "/ofertas" },
+                ]);
+              }}
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1"
+            >
+              <Plus className="size-4" />
+              <span>Pílula</span>
+            </Button>
+          </div>
+
+          {(Array.isArray(config.items) ? config.items : []).map((it: any, idx: number, arr: any[]) => {
+            const updateSub = (patch: Record<string, any>) => {
+              const next = [...arr];
+              next[idx] = { ...it, ...patch };
+              onUpdateConfig("items", next);
+            };
+            return (
+              <ArrayItemCard
+                key={it.id || idx}
+                index={idx}
+                total={arr.length}
+                defaultOpen={idx === 0}
+                title={it.label}
+                subtitle={it.badge}
+                onMoveUp={() => onUpdateConfig("items", moveArrayElement(arr, idx, "up"))}
+                onMoveDown={() => onUpdateConfig("items", moveArrayElement(arr, idx, "down"))}
+                onDuplicate={() => {
+                  const next = [...arr];
+                  next.splice(idx + 1, 0, { ...it, id: makeItemId("sub") });
+                  onUpdateConfig("items", next);
+                }}
+                onRemove={() => onUpdateConfig("items", arr.filter((_, i) => i !== idx))}
+              >
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    value={it.label || ""}
+                    onChange={(e) => updateSub({ label: e.target.value })}
+                    placeholder="Nome"
+                    className={INPUT_CLASS}
+                  />
+                  <Input
+                    value={it.badge || ""}
+                    onChange={(e) => updateSub({ badge: e.target.value })}
+                    placeholder="Selo opcional"
+                    className={INPUT_CLASS}
+                  />
+                </div>
+                <MediaUploader
+                  label="Arte / Foto da Subcategoria"
+                  bucket="banners"
+                  folder="subcategorias"
+                  maxFiles={1}
+                  aspect={1}
+                  value={it.imageUrl ? [it.imageUrl] : []}
+                  onChange={(urls) => updateSub({ imageUrl: urls[0] || "" })}
+                />
+                <DestinationPicker
+                  label="Destino"
+                  value={it.href || ""}
+                  onChange={(url) => updateSub({ href: url })}
+                />
+              </ArrayItemCard>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {type === "vitrine_feature_mini_banners" ? (
+        <div className="space-y-3">
+          <Input
+            value={config.title || ""}
+            onChange={(e) => onUpdateConfig("title", e.target.value)}
+            placeholder="Título da Seção (ex: No Waesy também tem)"
+            className={INPUT_CLASS}
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">
+              Mini Banners ({Array.isArray(config.items) ? config.items.length : 0})
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const items = Array.isArray(config.items) ? config.items : [];
+                onUpdateConfig("items", [
+                  ...items,
+                  { id: makeItemId("mini"), title: "Novo Destaque", badge: "Novo", imageUrl: "", to: "/ofertas" },
+                ]);
+              }}
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1"
+            >
+              <Plus className="size-4" />
+              <span>Mini Banner</span>
+            </Button>
+          </div>
+          {(Array.isArray(config.items) ? config.items : []).map((it: any, idx: number, arr: any[]) => {
+            const updateMini = (patch: Record<string, any>) => {
+              const next = [...arr];
+              next[idx] = { ...it, ...patch };
+              onUpdateConfig("items", next);
+            };
+            return (
+              <ArrayItemCard
+                key={it.id || idx}
+                index={idx}
+                total={arr.length}
+                defaultOpen={idx === 0}
+                title={it.title}
+                subtitle={it.to}
+                onMoveUp={() => onUpdateConfig("items", moveArrayElement(arr, idx, "up"))}
+                onMoveDown={() => onUpdateConfig("items", moveArrayElement(arr, idx, "down"))}
+                onDuplicate={() => {
+                  const next = [...arr];
+                  next.splice(idx + 1, 0, { ...it, id: makeItemId("mini") });
+                  onUpdateConfig("items", next);
+                }}
+                onRemove={() => onUpdateConfig("items", arr.filter((_, i) => i !== idx))}
+              >
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    value={it.title || ""}
+                    onChange={(e) => updateMini({ title: e.target.value })}
+                    placeholder="Título"
+                    className={INPUT_CLASS}
+                  />
+                  <Input
+                    value={it.badge || ""}
+                    onChange={(e) => updateMini({ badge: e.target.value })}
+                    placeholder="Badge"
+                    className={INPUT_CLASS}
+                  />
+                </div>
+                <MediaUploader
+                  label="Imagem Ilustrada"
+                  bucket="banners"
+                  folder="minibanners"
+                  maxFiles={1}
+                  aspect={1}
+                  value={it.imageUrl ? [it.imageUrl] : []}
+                  onChange={(urls) => updateMini({ imageUrl: urls[0] || "" })}
+                />
+                <DestinationPicker
+                  label="Destino"
+                  value={it.to || ""}
+                  onChange={(url) => updateMini({ to: url })}
+                />
+              </ArrayItemCard>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {(type === "vitrine_visual_spotlight_rail" ||
+        type === "vitrine_recent_stores_rail" ||
+        type === "vitrine_stores_feed_list") ? (
+        <div className="rounded-xl border border-border/60 bg-card p-3 space-y-3">
+          <div>
+            <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+              Título da Seção
+            </label>
+            <Input
+              value={config.title || ""}
+              onChange={(e) => onUpdateConfig("title", e.target.value)}
+              placeholder="Título da seção"
+              className={INPUT_CLASS}
+            />
+          </div>
+          {type === "vitrine_visual_spotlight_rail" ? (
+            <div>
+              <label className="block text-2xs font-semibold text-muted-foreground mb-1">
+                Subtítulo
+              </label>
+              <Input
+                value={config.subtitle || ""}
+                onChange={(e) => onUpdateConfig("subtitle", e.target.value)}
+                placeholder="Subtítulo opcional"
+                className={INPUT_CLASS}
+              />
+            </div>
+          ) : null}
+          {type !== "vitrine_stores_feed_list" ? (
+            <DestinationPicker
+              label="Link Ver Mais"
+              value={config.viewMoreTo || "/diretorio"}
+              onChange={(url) => onUpdateConfig("viewMoreTo", url)}
+            />
+          ) : (
+            <label className="h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between text-xs font-medium text-foreground cursor-pointer">
+              <span>Exibir Pílulas de Filtro Rápido</span>
+              <input
+                type="checkbox"
+                checked={config.showFilterChips !== false}
+                onChange={(e) => onUpdateConfig("showFilterChips", e.target.checked)}
+                className="size-4 accent-primary"
+              />
+            </label>
           )}
         </div>
       ) : null}
