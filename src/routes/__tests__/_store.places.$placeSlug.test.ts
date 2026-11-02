@@ -107,7 +107,7 @@ describe("F09: Rota _store.places.$placeSlug", () => {
     });
 
     const titleMeta = headResult.meta?.find((m: any) => m.title);
-    expect(titleMeta?.title).toContain("Farmácia Popular — Guia de Lugares e Empresas | Waesy Places");
+    expect(titleMeta?.title).toContain("Farmácia Popular — Guia de Lugares, CNPJ e Endereço | Waesy Local Marketplace");
 
     const descMeta = headResult.meta?.find((m: any) => m.name === "description");
     expect(descMeta?.content).toContain("Farmácia Popular em São Miguel do Oeste - SC");
