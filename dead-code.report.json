@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-10-30T19:20:17.556Z",
-  "totalFiles": 2574,
-  "totalImported": 2004,
-  "discoveredUnreferencedCount": 71,
-  "intentionalUnreferencedCount": 71,
+  "timestamp": "2026-11-02T14:26:20.689Z",
+  "totalFiles": 2591,
+  "totalImported": 2012,
+  "discoveredUnreferencedCount": 69,
+  "intentionalUnreferencedCount": 69,
   "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
     "src/components/admin/builder/builder-canvas.tsx",
@@ -35,8 +35,6 @@
     "src/components/proposals/ProposalStudio.tsx",
     "src/components/studio/StudioToolbar.tsx",
     "src/components/studio/StudioUnsplashPicker.tsx",
-    "src/components/tourism/checkout/TravelerVerificationFlow.tsx",
-    "src/components/tourism/traveler/GlobalTripCompanionWidget.tsx",
     "src/components/ui/aspect-ratio.tsx",
     "src/components/ui/breadcrumb.tsx",
     "src/components/ui/chart.tsx",

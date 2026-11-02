@@ -13,7 +13,7 @@ describe("crypto-vault.server (AES-256-GCM)", () => {
   });
 
   it("encrypts and decrypts secret correctly with AES-256-GCM", () => {
-    const secret = "sk-test-live-key-1234567890abcdef";
+    const secret = "mock-vault-secret-key-1234567890abcdef";
     const encrypted = encryptSecret(secret);
 
     expect(encrypted).not.toBe(secret);
