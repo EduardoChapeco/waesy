@@ -141,7 +141,7 @@ function WorkspaceGroupTourDetailPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* â”€â”€ 1. TOP HEADER DA VIAGEM â”€â”€ */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/80">
  <div className="flex items-center gap-3">

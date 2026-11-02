@@ -302,7 +302,7 @@ export function NewTravelContractSheet({
  return (
  <Sheet open={effectiveOpen} onOpenChange={onOpenChange}>
  <SheetContent
- side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border shadow-2xl"
+ side="right" size="dossier" className="w-full flex flex-col p-0 gap-0 overflow-hidden overscroll-contain bg-card border-l border-border"
  >
  {/* Header Premium do Contrato */}
  <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20">
@@ -615,7 +615,7 @@ export function NewTravelContractSheet({
  });
  }}
  disabled={quickCreateMutation.isPending}
- className="w-full h-8 text-xs rounded-lg font-bold"
+ className="w-full h-11 min-h-11 text-xs rounded-xl font-bold"
  >
  {quickCreateMutation.isPending ? (
  <Loader2 className="mr-2 size-3.5 animate-spin motion-reduce:animate-none" />
@@ -723,7 +723,7 @@ export function NewTravelContractSheet({
  variant="outline"
  size="sm"
  onClick={handleAddPassenger}
- className="h-7 text-xs font-bold rounded-lg gap-1"
+ className="h-11 min-h-11 px-3 text-xs font-bold rounded-xl gap-1"
  >
  <Plus className="size-3.5" />
  Adicionar Passageiro
@@ -760,7 +760,7 @@ export function NewTravelContractSheet({
  variant="ghost"
  size="icon"
  onClick={() => handleRemovePassenger(idx)}
- className="size-8 text-muted-foreground hover:text-destructive shrink-0"
+ className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive shrink-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -948,7 +948,7 @@ export function NewTravelContractSheet({
  type="submit"
  form="new-contract-form"
  disabled={isSubmitting}
- className="h-10 px-6 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2"
+ className="h-11 min-h-11 px-6 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
  >
  {isSubmitting ? (
  <>
@@ -966,7 +966,7 @@ export function NewTravelContractSheet({
  <Button
  type="button"
  onClick={() => setActiveTab("manual")}
- className="h-10 px-6 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2"
+ className="h-11 min-h-11 px-6 rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-2"
  >
  <span>Avançar para Preenchimento</span>
  <ChevronRight className="size-4" />

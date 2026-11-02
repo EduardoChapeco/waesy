@@ -180,7 +180,7 @@ function PublicHotelDetailPage() {
             {hotel.is_verified_canonical && (
               <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
                 <ShieldCheck className="size-3 mr-1" />
-                Registro Oficial Canônico
+                Estabelecimento Homologado
               </Badge>
             )}
           </div>
@@ -416,7 +416,7 @@ function PublicHotelDetailPage() {
               <div className="rounded-lg border border-border/70 bg-card p-4 space-y-2">
                 <span className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                   <Clock className="size-3.5 text-primary" />
-                  Horários Canônicos
+                  Horários de Check-in e Check-out
                 </span>
                 <p className="text-sm font-semibold text-foreground">
                   Check-in: {hotel.policies?.check_in_time || "15:00"}

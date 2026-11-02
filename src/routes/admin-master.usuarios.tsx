@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -55,6 +56,16 @@ import { Badge } from "@/components/ui/badge";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { adminToggleUserVerification } from "@/services/verification.functions";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 import {
   Select,
   SelectContent,
@@ -233,6 +244,37 @@ function AdminUsuariosPage() {
       toast.error(err?.message || "Erro ao alterar nível do usuário.");
     } finally {
       setUpdatingRoleId(null);
+    }
+  };
+
+  // Verificação Soberana & Selos Personalizados (Admin Master)
+  const [verificationModalUser, setVerificationModalUser] = useState<any | null>(null);
+  const [customBadgeUrlInput, setCustomBadgeUrlInput] = useState<string>("");
+  const [isSavingVerification, setIsSavingVerification] = useState(false);
+
+  const handleSaveVerification = async (targetUser: any, isVerified: boolean, badgeUrl?: string) => {
+    setIsSavingVerification(true);
+    try {
+      const res = await adminToggleUserVerification({
+        data: {
+          userId: targetUser.id,
+          isVerified,
+          badgeUrl: badgeUrl !== undefined ? (badgeUrl.trim() || null) : targetUser.verified_badge_url,
+        },
+      });
+      if (res?.success) {
+        toast.success(
+          isVerified
+            ? `Usuário ${targetUser.full_name || targetUser.email} verificado pelo Admin Master com sucesso!`
+            : `Selo de verificação de ${targetUser.full_name || targetUser.email} revogado.`
+        );
+        router.invalidate();
+        setVerificationModalUser(null);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao alterar verificação do usuário.");
+    } finally {
+      setIsSavingVerification(false);
     }
   };
 
@@ -594,10 +636,12 @@ function AdminUsuariosPage() {
                         {u.role}
                       </Badge>
                       {u.is_verified && (
-                        <Badge className="bg-primary/10 text-primary text-xs font-semibold gap-1">
-                          <Check className="size-3" />
-                          <span>Verificado</span>
-                        </Badge>
+                        <span className="inline-flex items-center gap-1">
+                          <VerifiedBadge isVerified={true} badgeUrl={u.verified_badge_url} size="sm" />
+                          <Badge className="bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20 text-xs font-semibold gap-1">
+                            <span>Verificado Oficial</span>
+                          </Badge>
+                        </span>
                       )}
                       {activeSanctions.length > 0 && (
                         <Badge variant="destructive" className="text-xs">
@@ -631,6 +675,25 @@ function AdminUsuariosPage() {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    <Button
+                      variant={u.is_verified ? "outline" : "default"}
+                      size="sm"
+                      className={cn(
+                        "h-11 min-h-11 px-3 text-xs font-bold gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-primary",
+                        u.is_verified
+                          ? "border-sky-500/40 text-sky-600 hover:bg-sky-500/10"
+                          : "bg-sky-600 hover:bg-sky-700 text-white"
+                      )}
+                      onClick={() => {
+                        setVerificationModalUser(u);
+                        setCustomBadgeUrlInput(u.verified_badge_url || "");
+                      }}
+                      title="Gestão Soberana de Verificação e Selo Oficial"
+                    >
+                      <ShieldCheck className="size-4" />
+                      {u.is_verified ? "Gerenciar Selo" : "Verificar"}
+                    </Button>
 
                     <Button
                       variant="outline"
@@ -1327,6 +1390,137 @@ function AdminUsuariosPage() {
           </div>
         </div>
       </SheetPage>
+
+      {/* Diálogo Soberano de Verificação & Selos Oficiais */}
+      <Dialog
+        open={Boolean(verificationModalUser)}
+        onOpenChange={(open) => {
+          if (!open) setVerificationModalUser(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <ShieldCheck className="size-5 text-sky-500" />
+              <span>Verificação Soberana de Conta</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Lei Pétrea: Apenas o Admin Master tem o poder de autenticar contas e fazer upload de selos oficiais.
+            </DialogDescription>
+          </DialogHeader>
+
+          {verificationModalUser && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-xl bg-muted/40 p-3 flex items-center gap-3">
+                <div className="size-11 rounded-full bg-muted flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden ring-1 ring-border/40">
+                  {verificationModalUser.avatar_url ? (
+                    <img
+                      src={verificationModalUser.avatar_url}
+                      alt={verificationModalUser.full_name || "Avatar"}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <span>{(verificationModalUser.full_name || "U").slice(0, 2).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-sm text-foreground truncate">
+                      {verificationModalUser.full_name || "Sem Nome"}
+                    </span>
+                    <VerifiedBadge
+                      isVerified={verificationModalUser.is_verified}
+                      badgeUrl={customBadgeUrlInput.trim() || verificationModalUser.verified_badge_url}
+                      size="sm"
+                    />
+                  </div>
+                  <span className="text-xs text-muted-foreground block truncate">
+                    {verificationModalUser.email}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="custom-seal-url" className="text-xs font-bold text-foreground">
+                  URL do Selo Personalizado (PNG / WebP / SVG)
+                </Label>
+                <Input
+                  id="custom-seal-url"
+                  placeholder="https://.../selo-oficial.png"
+                  value={customBadgeUrlInput}
+                  onChange={(e) => setCustomBadgeUrlInput(e.target.value)}
+                  className="h-11 min-h-11 text-xs font-mono"
+                />
+                <p className="text-2xs text-muted-foreground">
+                  Deixe em branco para utilizar a roseta geométrica oficial do sistema.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-border/60 p-3 bg-background flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold block text-foreground">Prévia do Selo Ativo:</span>
+                  <span className="text-2xs text-muted-foreground">Como o selo será visto pelos cidadãos</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <VerifiedBadge
+                    isVerified={true}
+                    badgeUrl={customBadgeUrlInput.trim() || null}
+                    size="lg"
+                  />
+                  <span className="text-xs font-semibold text-foreground">
+                    {customBadgeUrlInput.trim() ? "Selo Customizado" : "Selo Oficial Roseta"}
+                  </span>
+                </div>
+              </div>
+
+              <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
+                {verificationModalUser.is_verified ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11 min-h-11 text-xs font-bold text-destructive hover:bg-destructive/10 border-destructive/30"
+                      onClick={() => handleSaveVerification(verificationModalUser, false)}
+                      disabled={isSavingVerification}
+                    >
+                      Revogar Verificação
+                    </Button>
+                    <Button
+                      type="button"
+                      className="h-11 min-h-11 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white"
+                      onClick={() =>
+                        handleSaveVerification(
+                          verificationModalUser,
+                          true,
+                          customBadgeUrlInput.trim() || undefined
+                        )
+                      }
+                      disabled={isSavingVerification}
+                    >
+                      {isSavingVerification ? "Salvando..." : "Salvar Alterações do Selo"}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    type="button"
+                    className="w-full h-11 min-h-11 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white"
+                    onClick={() =>
+                      handleSaveVerification(
+                        verificationModalUser,
+                        true,
+                        customBadgeUrlInput.trim() || undefined
+                      )
+                    }
+                    disabled={isSavingVerification}
+                  >
+                    {isSavingVerification ? "Ativando..." : "Autenticar & Ativar Verificação"}
+                  </Button>
+                )}
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

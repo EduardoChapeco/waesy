@@ -23,6 +23,12 @@ import { uploadComposerAttachments } from "@/lib/copilot-attachments";
 import type { AIChatAction } from "@/components/chat/structured-message-view";
 import { getUserSession } from "@/services/auth.functions";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { ManusComputerDrawer } from "@/components/chat/manus-computer-drawer";
+import { ManusTaskTelemetrySheet } from "@/components/chat/manus-task-telemetry-sheet";
+import { CopilotBackgroundTasksDrawer } from "@/components/chat/copilot-background-tasks-drawer";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Monitor, Info, Layers, Globe2, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -94,6 +100,9 @@ function CopilotPage() {
   const effectiveUserId = session?.id || session?.user?.id || null;
   const navigate = useNavigate();
   const [userCoords, setUserCoords] = useState<{ lat?: number; lng?: number }>({});
+  const [isComputerOpen, setIsComputerOpen] = useState(false);
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
+  const [isBackgroundTasksOpen, setIsBackgroundTasksOpen] = useState(false);
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "geolocation" in navigator) {
@@ -505,26 +514,109 @@ function CopilotPage() {
 
   return (
     <div className="h-full flex-1 w-full flex flex-col min-h-0 overflow-hidden bg-background">
-      <AIChatShell
-        threads={threads}
-        activeThreadId={activeThreadId}
-        messages={messages}
-        mobileTitle="Waesy Copilot"
-        mobileSubtitle="Assistente Central Inteligente"
-        mobileFallbackHref="/"
-        onSelectThread={handleSelectThread}
-        onSendMessage={handleSendMessage}
-        onRetryMessage={handleRetryMessage}
-        onCancelActiveRun={handleCancelActiveRun}
-        onCreateThread={handleCreateThread}
-        onDeleteThread={handleDeleteThread}
-        onTogglePinThread={handleTogglePinThread}
-        onToggleArchiveThread={handleToggleArchiveThread}
-        onStructuredAction={handleStructuredAction}
-        isSending={isSending}
-        isStreaming={isSending}
-        currentUserProfileId={effectiveUserId || undefined}
-        className="h-full min-h-0 border-none rounded-none"
+      {/* Barra Superior Manus 2.0 Lite (Storefront) */}
+      <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border/60 bg-card/60 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Badge variant="outline" className="font-mono text-2xs font-bold gap-1 border-primary/40 text-primary bg-primary/5">
+            <Globe2 className="size-3" />
+            <span>Waesy 2.0 Lite</span>
+          </Badge>
+          <span className="text-xs font-semibold text-muted-foreground truncate hidden sm:inline">
+            Concierge Urbano · Mobilidade · Aéreo · Catálogo Local
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsComputerOpen(true)}
+            className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 border-primary/30 text-foreground hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Monitor className="size-4 text-primary" />
+            <span className="hidden sm:inline">Computador do Waesy</span>
+            <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-none text-3xs font-mono px-2 py-0">
+              LIVE
+            </Badge>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsBackgroundTasksOpen(true)}
+            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+            title="Tarefas em Segundo Plano"
+          >
+            <Layers className="size-4 text-muted-foreground" />
+            <span className="hidden md:inline">Processos</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsTelemetryOpen(true)}
+            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+            title="Informações da Tarefa e Créditos"
+          >
+            <Info className="size-4 text-muted-foreground" />
+            <span className="hidden md:inline">Telemetria</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              if (typeof navigator !== "undefined" && navigator.clipboard) {
+                navigator.clipboard.writeText(window.location.href);
+                toast.success("Link de replay copiado para a área de transferência.");
+              }
+            }}
+            className="size-11 min-h-11 rounded-lg p-0 focus-visible:ring-2 focus-visible:ring-ring"
+            title="Compartilhar Replay da Sessão"
+          >
+            <Share2 className="size-4 text-muted-foreground" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <AIChatShell
+          threads={threads}
+          activeThreadId={activeThreadId}
+          messages={messages}
+          mobileTitle="Waesy Copilot"
+          mobileSubtitle="Assistente Central Inteligente"
+          mobileFallbackHref="/"
+          onSelectThread={handleSelectThread}
+          onSendMessage={handleSendMessage}
+          onRetryMessage={handleRetryMessage}
+          onCancelActiveRun={handleCancelActiveRun}
+          onCreateThread={handleCreateThread}
+          onDeleteThread={handleDeleteThread}
+          onTogglePinThread={handleTogglePinThread}
+          onToggleArchiveThread={handleToggleArchiveThread}
+          onStructuredAction={handleStructuredAction}
+          isSending={isSending}
+          isStreaming={isSending}
+          currentUserProfileId={effectiveUserId || undefined}
+          className="h-full min-h-0 border-none rounded-none"
+        />
+      </div>
+
+      <ManusComputerDrawer
+        open={isComputerOpen}
+        onOpenChange={setIsComputerOpen}
+        taskTitle={threads.find((t) => t.id === activeThreadId)?.title || "Sessão Ativa do Concierge"}
+      />
+
+      <ManusTaskTelemetrySheet
+        open={isTelemetryOpen}
+        onOpenChange={setIsTelemetryOpen}
+      />
+
+      <CopilotBackgroundTasksDrawer
+        open={isBackgroundTasksOpen}
+        onOpenChange={setIsBackgroundTasksOpen}
       />
     </div>
   );

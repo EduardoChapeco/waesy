@@ -2262,7 +2262,7 @@ export const replicateCatalogToStores = createServerFn({ method: "POST" })
  // Fetch products to replicate
  let prodQuery = db
  .from("products")
- .select("id, name, slug, description, price_cents, compare_at_price_cents, category_id, sku, is_active, status, image_url")
+ .select("id, title, slug, description, price_cents, compare_at_cents, status")
  .eq("store_id", store_id);
 
  if (input.product_ids && input.product_ids.length > 0) {
@@ -2275,7 +2275,7 @@ export const replicateCatalogToStores = createServerFn({ method: "POST" })
  let replicatedCount = 0;
 
  for (const target of targetStores) {
- for (const prod of sourceProducts || []) {
+ for (const prod of (sourceProducts as any[]) || []) {
  // Check if product with same slug exists in target store
  const { data: existingProd } = await db
  .from("products")
@@ -2289,30 +2289,26 @@ export const replicateCatalogToStores = createServerFn({ method: "POST" })
  await db
  .from("products")
  .update({
- name: prod.name,
+ title: prod.title || prod.name,
  description: prod.description,
  price_cents: prod.price_cents,
- compare_at_price_cents: prod.compare_at_price_cents,
- image_url: prod.image_url,
+ compare_at_cents: prod.compare_at_cents ?? prod.compare_at_price_cents,
  status: prod.status,
- is_active: prod.is_active,
  updated_at: new Date().toISOString(),
- })
+ } as any)
  .eq("id", existingProd.id);
  } else {
  // Insert product in target store
  await db.from("products").insert({
  organization_id: sourceStore.organization_id,
  store_id: target.id,
- name: prod.name,
+ title: prod.title || prod.name,
  slug: prod.slug,
  description: prod.description,
  price_cents: prod.price_cents,
- compare_at_price_cents: prod.compare_at_price_cents,
- image_url: prod.image_url,
+ compare_at_cents: prod.compare_at_cents ?? prod.compare_at_price_cents,
  status: prod.status,
- is_active: prod.is_active,
- });
+ } as any);
  }
  replicatedCount++;
  }

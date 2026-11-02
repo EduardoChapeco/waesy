@@ -15,6 +15,7 @@ import { GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, Or
 import { NicheSpecificationsDisplay } from "@/components/common/niche-specifications-display";
 import { resolveClassifiedDetailedSpecs } from "@/lib/classifieds/canonical-specs-resolver";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 
 export interface ConveniencePreviewData {
   title: string;
@@ -313,7 +314,7 @@ export function ConvenienceShowcaseView({
       supports_fresh_pricing: isFreshPricingActive,
       default_pricing_mode: "unit",
       avg_piece_weight_grams: Number(attrs.avg_piece_weight_grams) || 0,
-      price_per_kg_cents: Number(attrs.price_per_kg_cents) || (priceCents > 0 ? priceCents * 2 : 990),
+      price_per_kg_cents: Number(attrs.price_per_kg_cents) || (priceCents > 0 ? priceCents * 2 : 0),
       price_per_unit_cents: priceCents,
     };
 
@@ -356,7 +357,7 @@ export function ConvenienceShowcaseView({
   // Preço unitário base conforme o modo de precificação (Unidade vs Peso Fracionado)
   const baseUnitPriceCents =
     isFreshPricingActive && pricingMode === "weight"
-      ? Math.round(((freshPricingConfig.price_per_kg_cents || priceCents * 2 || 990) * weightGrams) / 1000)
+      ? Math.round(((freshPricingConfig.price_per_kg_cents || (priceCents > 0 ? priceCents * 2 : 0)) * weightGrams) / 1000)
       : priceCents;
 
   // Cálculo de desconto progressivo (gamificação em tempo real com checkmark animado)
@@ -555,17 +556,14 @@ export function ConvenienceShowcaseView({
             )}
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
               <p className="text-xs font-bold text-foreground break-words text-wrap">{advertiserName}</p>
-              {isCompany ? (
-                <span title="Loja Oficial Verificada" className="inline-flex shrink-0">
-                  <CheckCircle2 className="size-3.5 text-blue-500" />
-                </span>
-              ) : (
-                <span title="Anunciante Verificado" className="inline-flex shrink-0">
-                  <ShieldCheck className="size-3.5 text-emerald-500" />
-                </span>
-              )}
+              <VerifiedBadge
+                isVerified={Boolean((classified as any)?.store?.is_verified || (classified as any)?.author?.is_verified || (classified as any)?.is_verified)}
+                badgeUrl={(classified as any)?.store?.verified_badge_url || (classified as any)?.author?.verified_badge_url || null}
+                size="sm"
+                title={isCompany ? "Loja Verificada pelo Admin Master" : "Anunciante Verificado pelo Admin Master"}
+              />
             </div>
             <p className="text-xs text-muted-foreground break-words text-wrap">
               {isCompany ? "Loja Oficial" : "Vendedor Particular"} • {locationName}
@@ -1012,6 +1010,40 @@ export function ConvenienceShowcaseView({
                 className="relative aspect-square w-full max-h-128 rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm:shadow-2xs group cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 onClick={() => images.length > 0 && setFullscreenImage(images[activePhotoIdx] || images[0])}
               >
+                {/* Badges Flutuantes Dinâmicas e Contextuais */}
+                <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 pointer-events-none select-none">
+                  {(temperature === "gelada" || temperature === "gelado") && (
+                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-sky-600 text-white shadow-xs">
+                      Gelado
+                    </span>
+                  )}
+                  {Boolean(attrs.is_featured || attrs.is_boosted || classified?.is_featured) && (
+                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-primary text-primary-foreground shadow-xs">
+                      Destaque
+                    </span>
+                  )}
+                  {Boolean(attrs.is_club_exclusive || attrs.club_price_cents) && (
+                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-blue-600 text-white shadow-xs">
+                      Exclusivo Clube
+                    </span>
+                  )}
+                  {progressiveDiscountTiers.length > 0 && (
+                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-amber-600 text-white shadow-xs">
+                      Leve Mais Por Menos
+                    </span>
+                  )}
+                  {readyDelivery && (
+                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-600 text-white shadow-xs">
+                      Pronta Entrega
+                    </span>
+                  )}
+                  {isOrganic && (
+                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-700 text-white shadow-xs">
+                      Orgânico
+                    </span>
+                  )}
+                </div>
+
                 {images.length > 0 ? (
                   <img
                     src={images[activePhotoIdx] || images[0]}
@@ -1026,7 +1058,7 @@ export function ConvenienceShowcaseView({
                 )}
                 {images.length > 0 && (
                   <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-xs font-semibold text-foreground border border-border/50 flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-lg bg-background text-xs font-semibold text-foreground border border-border/50 flex items-center gap-2">
                       <Maximize2 className="size-3.5" />
                       Expandir
                     </span>

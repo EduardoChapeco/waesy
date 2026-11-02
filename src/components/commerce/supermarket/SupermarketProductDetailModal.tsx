@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   ShareNetwork,
@@ -8,7 +8,7 @@ import {
   CurrencyCircleDollar,
   Users,
   Lightning,
-  Sparkle,
+  IdentificationCard,
   Minus,
   Plus,
 } from "@phosphor-icons/react";
@@ -45,19 +45,32 @@ export function SupermarketProductDetailModal({
   onAddToCart,
   isMember = false,
 }: SupermarketProductDetailModalProps) {
-  if (!product) return null;
-
   const [quantity, setQuantity] = useState(1);
   const [unitMode, setUnitMode] = useState<"un" | "kg">(
-    product.freshFoodSpecs?.pricing_unit === "kg" ? "kg" : "un",
+    product?.freshFoodSpecs?.pricing_unit === "kg" ? "kg" : "un",
   );
   const [ripeness, setRipeness] = useState<"menos_maduro" | "maduro" | "mais_maduro">("maduro");
   const [selectedPrep, setSelectedPrep] = useState<string>(
-    product.freshFoodSpecs?.prep_options?.[0] || "",
+    product?.freshFoodSpecs?.prep_options?.[0] || "",
   );
   const [instructions, setInstructions] = useState("");
   const [isEditingInstructions, setIsEditingInstructions] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const productPricingUnit = product?.freshFoodSpecs?.pricing_unit;
+  const productDefaultPrep = product?.freshFoodSpecs?.prep_options?.[0] || "";
+
+  useEffect(() => {
+    if (!product?.id) return;
+    setQuantity(1);
+    setUnitMode(productPricingUnit === "kg" ? "kg" : "un");
+    setRipeness("maduro");
+    setSelectedPrep(productDefaultPrep);
+    setInstructions("");
+    setIsEditingInstructions(false);
+    setIsFavorite(false);
+  }, [product?.id, productDefaultPrep, productPricingUnit]);
+
+  if (!product) return null;
 
   // Preço efetivo
   const effectivePriceCents =
@@ -92,7 +105,7 @@ export function SupermarketProductDetailModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg p-0 rounded-3xl overflow-hidden gap-0 max-h-[92vh] flex flex-col">
         {/* ── Top Bar Flutuante com Fechar, Favorito e Compartilhar ── */}
-        <div className="flex items-center justify-between p-4 border-b border-border/40 shrink-0 bg-background/95 backdrop-blur-md z-20">
+        <div className="flex items-center justify-between p-4 border-b border-border/40 shrink-0 bg-background z-20">
           <button
             type="button"
             onClick={onClose}
@@ -160,8 +173,14 @@ export function SupermarketProductDetailModal({
             ) : null}
           </div>
 
-          {/* Fitas do Clube K / Ofertas */}
-          <SupermarketClubRibbonBadge rule={product.promotionalRule} />
+          {/* Fitas do Clube / Ofertas */}
+          <SupermarketClubRibbonBadge
+            rule={product.promotionalRule}
+            freshFoodSpecs={product.freshFoodSpecs}
+            badges={product.badges}
+            clubPriceCents={product.clubPriceCents}
+            isMember={isMember}
+          />
 
           {/* Informações Básicas: Nome e SKU */}
           <div className="space-y-1">
@@ -294,7 +313,7 @@ export function SupermarketProductDetailModal({
 
             {isMember && product.clubPriceCents ? (
               <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
-                <Sparkle size={14} weight="fill" />
+                <IdentificationCard size={15} weight="fill" />
                 Preço exclusivo para membros do Clube
               </span>
             ) : null}

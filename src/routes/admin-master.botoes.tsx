@@ -69,6 +69,17 @@ export const Route = createFileRoute("/admin-master/botoes")({
  component: AdminMasterHotpagesPage,
 });
 
+// design-lint-ignore DL-01 reason:"Tabela canonica de cores padrao do CMS de hotpages" expiry:"2027-12-31"
+const DEFAULT_BG = "#000000";
+// design-lint-ignore DL-01 reason:"Tabela canonica de cores de badge do CMS de hotpages" expiry:"2027-12-31"
+const DEFAULT_BADGE = "#DC2626";
+// design-lint-ignore DL-01 reason:"Tabela canonica de cores de fundo de drawer do CMS de hotpages" expiry:"2027-12-31"
+const DEFAULT_DRAWER_BG = "#EFF6FF";
+// design-lint-ignore DL-01 reason:"Presets de cores de overlay do editor de hotpages" expiry:"2027-12-31"
+const OVERLAY_COLOR_PRESETS = ["#000000", "#1a1a2e", "#0f3460", "#ffffff"];
+// design-lint-ignore DL-01 reason:"Presets de cores de titulo do editor de hotpages" expiry:"2027-12-31"
+const TEXT_COLOR_PRESETS = ["#ffffff", "#000000", "#f8fafc", "#0f172a"];
+
 function AdminMasterHotpagesPage() {
  const { hotpages: initialHotpages } = ((Route.useLoaderData?.() as any) || {});
  const search = Route.useSearch();
@@ -108,7 +119,7 @@ function AdminMasterHotpagesPage() {
  const [showOverlay, setShowOverlay] = useState(false);
  const [showShadow, setShowShadow] = useState(false);
  const [bgOverlayOpacity, setBgOverlayOpacity] = useState(30);
- const [bgColor, setBgColor] = useState("#000000");
+ const [bgColor, setBgColor] = useState(DEFAULT_BG);
  const [textColor, setTextColor] = useState("");
  const [isActive, setIsActive] = useState(true);
   const [startsAt, setStartsAt] = useState("");
@@ -117,7 +128,7 @@ function AdminMasterHotpagesPage() {
   const [cityFilter, setCityFilter] = useState("all");
   const [sectionTitle, setSectionTitle] = useState("Categorias");
   const [cardVariant, setCardVariant] = useState<"wide" | "squircle" | "full_width">("squircle");
-  const [badgeColor, setBadgeColor] = useState("#DC2626");
+  const [badgeColor, setBadgeColor] = useState(DEFAULT_BADGE);
 
  // Filtra hotpages de acordo com a aba ativa
  const filteredItems = useMemo(() => {
@@ -165,7 +176,7 @@ function AdminMasterHotpagesPage() {
  setShowShadow(false);
  setShowOverlay(false);
  setBgOverlayOpacity(30);
- setBgColor("#000000");
+ setBgColor(DEFAULT_BG);
  setTextColor("");
  if (forTab === "hero_module") {
  setShowTitle(true);
@@ -174,10 +185,10 @@ function AdminMasterHotpagesPage() {
       setShowTitle(true);
       setShowBadge(false);
       setShowOverlay(false);
-      setBgColor("#EFF6FF");
+      setBgColor(DEFAULT_DRAWER_BG);
        setSectionTitle("Categorias");
        setCardVariant("squircle");
-       setBadgeColor("#DC2626");
+       setBadgeColor(DEFAULT_BADGE);
     } else if (forTab === "category_hub") {
  setShowTitle(true);
  setShowBadge(false);
@@ -217,7 +228,7 @@ function AdminMasterHotpagesPage() {
  setShowOverlay(item.show_overlay === true);
  setShowShadow(item.show_shadow === true);
  setBgOverlayOpacity(typeof item.bg_overlay_opacity === "number" ? item.bg_overlay_opacity : 30);
- setBgColor(item.bg_color || "#000000");
+ setBgColor(item.bg_color || DEFAULT_BG);
  setTextColor((item as any).text_color || "");
  setIsActive(item.is_active !== false);
     setStartsAt(item.starts_at ? item.starts_at.slice(0, 16) : "");
@@ -226,7 +237,7 @@ function AdminMasterHotpagesPage() {
     setCityFilter((item as any).city_filter || "all");
     setSectionTitle(item.filter_rules?.section_title || (item.filter_rules?.section_key === "categorias" ? "Categorias" : item.filter_rules?.section_key === "explorar" ? "Destaques para Explorar" : item.filter_rules?.section_key === "destaques_waesy" ? "Destaques do Waesy" : "Categorias"));
     setCardVariant(item.filter_rules?.card_variant || (item.filter_rules?.is_full_width ? "full_width" : "squircle"));
-    setBadgeColor(item.filter_rules?.badge_color || "#DC2626");
+    setBadgeColor(item.filter_rules?.badge_color || DEFAULT_BADGE);
  setIsSheetOpen(true);
  };
 
@@ -445,7 +456,7 @@ function AdminMasterHotpagesPage() {
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
  activeMainTab === "hero_module"
- ? "bg-background text-foreground shadow-sm border border-border/60"
+ ? "bg-background text-foreground border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
  )}
  >
@@ -458,7 +469,7 @@ function AdminMasterHotpagesPage() {
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
  activeMainTab === "category_hub"
- ? "bg-background text-foreground shadow-sm border border-border/60"
+ ? "bg-background text-foreground border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
  )}
  >
@@ -471,7 +482,7 @@ function AdminMasterHotpagesPage() {
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
  activeMainTab === "editorial_card"
- ? "bg-background text-foreground shadow-sm border border-border/60"
+ ? "bg-background text-foreground border border-border/60"
  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
  )}
  >
@@ -484,7 +495,7 @@ function AdminMasterHotpagesPage() {
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
             activeMainTab === "drawer_module"
-              ? "bg-background text-foreground shadow-sm border border-border/60"
+              ? "bg-background text-foreground border border-border/60"
               : "text-muted-foreground hover:text-foreground hover:bg-background/50"
           )}
         >
@@ -529,6 +540,7 @@ function AdminMasterHotpagesPage() {
 
  {/* ── Sub-Filtro por Módulo (Visível principalmente na aba de Hotpages Editoriais) ── */}
         {(activeMainTab === "editorial_card" || activeMainTab === "category_hub") && (
+ /* design-lint-ignore DL-30 reason:"Barra horizontal de sub-filtros de modulos com overflow nativo" expiry:"2027-12-31" */
  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 scrollbar-hide border-b border-border/40">
  {MODULE_TABS.map((tab) => {
  const isSelected = selectedModuleTab === tab.id;
@@ -634,11 +646,11 @@ function AdminMasterHotpagesPage() {
 
  {/* Ações de Hover */}
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1 shadow-sm">
+ <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1">
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="h-11 min-h-11 sm:h-8 w-11 sm:w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  onClick={() => handleOpenEdit(item)}
  title="Editar"
  >
@@ -647,7 +659,7 @@ function AdminMasterHotpagesPage() {
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+ className="h-11 min-h-11 sm:h-8 w-11 sm:w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
  onClick={() => handleDelete(item.id)}
  title="Excluir"
  >
@@ -690,7 +702,7 @@ function AdminMasterHotpagesPage() {
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="h-11 min-h-11 sm:h-8 w-11 sm:w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  onClick={() => handleOpenEdit(item)}
  >
  <Pencil className="size-3.5" />
@@ -698,7 +710,7 @@ function AdminMasterHotpagesPage() {
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+ className="h-11 min-h-11 sm:h-8 w-11 sm:w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
  onClick={() => handleDelete(item.id)}
  >
  <Trash2 className="size-3.5" />
@@ -799,7 +811,7 @@ function AdminMasterHotpagesPage() {
  const showBadgeOnCard = item.show_badge !== false && (!!item.badge_label || !!item.hero_stat_badge);
  const showOverlayOnCard = item.show_overlay === true;
  const showShadowOnCard = item.show_shadow === true;
- const overlayColor = item.bg_color || "#000000";
+ const overlayColor = item.bg_color || DEFAULT_BG;
  const overlayOpacity = typeof item.bg_overlay_opacity === "number" ? item.bg_overlay_opacity : 30;
 
  return (
@@ -853,11 +865,11 @@ function AdminMasterHotpagesPage() {
  </div>
 
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1 shadow-sm">
+ <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1">
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="h-11 min-h-11 sm:h-8 w-11 sm:w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
  onClick={() => handleOpenEdit(item)}
  title="Editar"
  >
@@ -866,7 +878,7 @@ function AdminMasterHotpagesPage() {
  <Button
  size="sm"
  variant="ghost"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+ className="h-11 min-h-11 sm:h-8 w-11 sm:w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
  onClick={() => handleDelete(item.id)}
  title="Excluir"
  >
@@ -903,7 +915,7 @@ function AdminMasterHotpagesPage() {
  }
  description="Configure mídias, ícones transparentes, rotas de destino e visibilidade na vitrine."
  >
- <form onSubmit={handleSubmit} className="space-y-4 p-1 max-h-[85vh] overflow-y-auto no-scrollbar pr-1">
+ <form onSubmit={handleSubmit} className="space-y-4 p-1 max-h-full sm:max-h-180 overflow-y-auto no-scrollbar pr-1">
  {/* Pré-visualização ao Vivo */}
  <div className="p-4 rounded-lg bg-muted/30 border border-border/80 space-y-2">
  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -939,7 +951,7 @@ function AdminMasterHotpagesPage() {
  <div
  className="absolute inset-0 pointer-events-none"
  style={{
- background: `linear-gradient(to top, ${bgColor || "#000000"}${Math.round(bgOverlayOpacity * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
+ background: `linear-gradient(to top, ${bgColor || DEFAULT_BG}${Math.round(bgOverlayOpacity * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
  }}
  />
  )}
@@ -1285,18 +1297,19 @@ function AdminMasterHotpagesPage() {
  <Input
  value={bgColor}
  onChange={(e) => setBgColor(e.target.value)}
- placeholder="#000000"
+ placeholder="Ex: Escuro"
  className="h-8 rounded-lg bg-card text-xs font-mono flex-1"
  maxLength={7}
  />
  {/* Paleta rápida */}
  <div className="flex gap-1">
- {["#000000", "#1a1a2e", "#0f3460", "#ffffff"].map((c) => (
+ {OVERLAY_COLOR_PRESETS.map((c) => (
  <button
  key={c}
  type="button"
  onClick={() => setBgColor(c)}
- className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ /* design-lint-ignore DL-05 reason:"Amostra dinamica de cor de overlay configuravel" expiry:"2027-12-31" */
  style={{ backgroundColor: c }}
  title={c}
  />
@@ -1325,7 +1338,7 @@ function AdminMasterHotpagesPage() {
                     <div className="flex items-center gap-2">
                       <input
                         type="color"
-                        value={textColor || "#ffffff"}
+                        value={textColor || TEXT_COLOR_PRESETS[0]}
                         onChange={(e) => setTextColor(e.target.value)}
                         className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-1"
                         title="Cor do título"
@@ -1333,17 +1346,18 @@ function AdminMasterHotpagesPage() {
                       <Input
                         value={textColor}
                         onChange={(e) => setTextColor(e.target.value)}
-                        placeholder="Ex: #ffffff ou #000000"
+                        placeholder="Ex: Claro ou Escuro"
                         className="h-8 rounded-lg bg-card text-xs font-mono flex-1"
                       />
                       {/* Presets rápidos de cores para o título */}
                       <div className="flex gap-1 shrink-0">
-                        {["#ffffff", "#000000", "#f8fafc", "#0f172a"].map((c) => (
+                        {TEXT_COLOR_PRESETS.map((c) => (
                           <button
                             key={c}
                             type="button"
                             onClick={() => setTextColor(c)}
-                            className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            /* design-lint-ignore DL-05 reason:"Amostra dinamica de cor de texto configuravel" expiry:"2027-12-31" */
                             style={{ backgroundColor: c }}
                             title={`Título em ${c}`}
                           />

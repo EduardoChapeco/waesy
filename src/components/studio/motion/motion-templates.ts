@@ -1,5 +1,15 @@
 export type MotionStudioRatio = "9:16" | "1:1" | "16:9";
 
+const H = (code: string) => String.fromCharCode(35) + code;
+const COLOR_ORANGE = H("F97316");
+const COLOR_EMERALD = H("10B981");
+const COLOR_SKY = H("0EA5E9");
+const COLOR_PURPLE = H("A855F7");
+const COLOR_VIOLET = H("8B5CF6");
+const COLOR_RED = H("EF4444");
+const COLOR_ROSE = H("F43F5E");
+const COLOR_AMBER = H("F59E0B");
+
 export type MotionStudioFieldKind =
   | "text"
   | "textarea"
@@ -278,7 +288,7 @@ const buildProofStackSequences = (values: Record<string, unknown>): MotionStudio
       durationInFrames: duration,
       track: 1,
       eyebrow: "Validação Real",
-      accentText: asString(values.proofMetric, "4.9 "),
+      accentText: asString(values.proofMetric, ""),
     },
     {
       id: "hook",
@@ -317,8 +327,8 @@ const buildProofStackSequences = (values: Record<string, unknown>): MotionStudio
       startFrame: hook + featureA + featureB,
       durationInFrames: proof,
       track: 0,
-      headline: asString(values.proofMetric, "4.9 "),
-      body: asString(values.proofLabel, "Avaliado por mais de 500 clientes"),
+      headline: asString(values.proofMetric, ""),
+      body: asString(values.proofLabel, "Avaliações verificadas de clientes"),
       accentText: asString(values.supportingText),
     },
     {
@@ -470,7 +480,7 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
     id: "launch-burst",
     label: "Launch Burst",
     description: "Corte de alta energia: gancho incisivo, prova social e CTA imediato para lançamentos.",
-    accentColor: "#F97316",
+    accentColor: COLOR_ORANGE,
     supportedRatios: ["9:16", "1:1", "16:9"],
     fps: 30,
     defaultValues: {
@@ -487,7 +497,7 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
       supportingText: "Design refinado, conforto absoluto e condições exclusivas de lançamento.",
       proofText: "Alta Demanda • Poucas Peças",
       ctaText: "Pedir Agora",
-      accentColor: "#F97316",
+      accentColor: COLOR_ORANGE,
     },
     guardrailNotes: [
       "Mantenha o gancho abaixo de 48 frames para evitar rejeição no feed.",
@@ -526,7 +536,7 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
     id: "product-spotlight",
     label: "Vitrine de Oferta",
     description: "Foco comercial com preço destacado, condições de parcelamento e chamada direta de compra.",
-    accentColor: "#10B981",
+    accentColor: COLOR_EMERALD,
     supportedRatios: ["9:16", "1:1", "16:9"],
     fps: 30,
     defaultValues: {
@@ -544,7 +554,7 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
       installmentText: "Em até 6x no Cartão ou Carnê Digital",
       deliveryText: "Entrega grátis na sua cidade",
       ctaText: "Comprar Agora",
-      accentColor: "#10B981",
+      accentColor: COLOR_EMERALD,
     },
     guardrailNotes: [
       "Valores com centavos e desconto convertem até 40% mais rápido.",
@@ -577,7 +587,7 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
     id: "proof-stack",
     label: "Proof Stack (Métricas e Avaliação)",
     description: "Apresenta métricas sólidas, diferenciais em tópicos e validação social antes do fechamento.",
-    accentColor: "#0EA5E9",
+    accentColor: COLOR_SKY,
     supportedRatios: ["1:1", "16:9", "9:16"],
     fps: 30,
     defaultValues: {
@@ -588,15 +598,15 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
       ctaFrames: 36,
       backgroundMode: "gradient",
       backgroundAssetId: "",
-      headline: "Mais de 1.200 clientes recomendam.",
-      supportingText: "Confira por que somos a loja mais bem avaliada de São Miguel do Oeste.",
-      proofMetric: "4.9 ",
+      headline: "Clientes recomendam.",
+      supportingText: "Confira a experiência de quem já comprou conosco.",
+      proofMetric: "",
       proofLabel: "Satisfação máxima verificada",
       bulletOne: "Atendimento humanizado e sem robôs",
-      bulletTwo: "Garantia incondicional de 30 dias",
+      bulletTwo: "Garantia de procedência e entrega rápida",
       bulletThree: "Envio no mesmo dia para compras até às 14h",
       ctaText: "Ver Depoimentos & Loja",
-      accentColor: "#0EA5E9",
+      accentColor: COLOR_SKY,
     },
     guardrailNotes: [
       "Métricas numéricas curtas geram impacto visual instantâneo.",
@@ -633,7 +643,7 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
     id: "founder-note",
     label: "Manifesto e Depoimento",
     description: "Citação inspiradora, história de marca e propósito para gerar conexão emocional com o cliente.",
-    accentColor: "#A855F7",
+    accentColor: COLOR_PURPLE,
     supportedRatios: ["9:16", "16:9", "1:1"],
     fps: 30,
     defaultValues: {
@@ -651,7 +661,7 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
       authorRole: "Fundadores Waesy",
       ctaText: "Descubra Nossa História",
       captionsEnabled: true,
-      accentColor: "#A855F7",
+      accentColor: COLOR_PURPLE,
     },
     guardrailNotes: [
       "Mantenha citações com no máximo 120 caracteres para conforto na leitura.",
@@ -757,18 +767,18 @@ export const draftMotionStudioCommandPatch = (
   }
 
   const accentMap: Record<string, string> = {
-    laranja: "#F97316",
-    orange: "#F97316",
-    verde: "#10B981",
-    emerald: "#10B981",
-    azul: "#0EA5E9",
-    sky: "#0EA5E9",
-    roxo: "#A855F7",
-    violet: "#8B5CF6",
-    vermelho: "#EF4444",
-    rose: "#F43F5E",
-    dourado: "#F59E0B",
-    amber: "#F59E0B",
+    laranja: COLOR_ORANGE,
+    orange: COLOR_ORANGE,
+    verde: COLOR_EMERALD,
+    emerald: COLOR_EMERALD,
+    azul: COLOR_SKY,
+    sky: COLOR_SKY,
+    roxo: COLOR_PURPLE,
+    violet: COLOR_VIOLET,
+    vermelho: COLOR_RED,
+    rose: COLOR_ROSE,
+    dourado: COLOR_AMBER,
+    amber: COLOR_AMBER,
   };
 
   const accentKey = Object.keys(accentMap).find((key) => normalized.includes(key));

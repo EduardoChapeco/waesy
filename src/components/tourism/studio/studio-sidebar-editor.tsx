@@ -487,7 +487,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <div>
  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
  <Compass className="size-3.5 text-primary" />
- <span>Editor TravelOS</span>
+ <span>Editor de Roteiro</span>
  </h3>
  <p className="text-xs text-muted-foreground">
  Alterações sincronizadas com o canvas em tempo real

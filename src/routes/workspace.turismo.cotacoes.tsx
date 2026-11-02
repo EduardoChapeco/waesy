@@ -1,4 +1,4 @@
-import { Tag, Plane, Sparkles } from "lucide-react";
+import { Tag, Plane, Compass } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -241,10 +241,10 @@ export default function AgencyQuotesPage() {
  <NicheOperationalGuard
  targetNiche="tourism"
  toolTitle="Cotações de Viagem"
- toolDescription="O pipeline de cotações, orçamentos e captação de passageiros para pacotes aéreos, cruzeiros e hotéis foi projetado especificamente para agências de viagens e turismo."
+ toolDescription="Gestão de cotações, orçamentos e captação de viajantes para pacotes aéreos, cruzeiros e hotelaria para agências de turismo."
  store={store}
  >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-screen pb-20">
+      <div className="w-full px-0 sm:px-4 flex flex-col gap-4 animate-in fade-in duration-200 min-h-screen pb-20">
         {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
         <WorkspaceCanonicalToolbar
           tabs={[
@@ -319,7 +319,7 @@ export default function AgencyQuotesPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => navigate({ to: "/workspace/turismo/oportunidades" })} className="h-11 min-h-11 px-4 gap-2 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"><Sparkles className="size-4 text-primary" /><span>Radar Comercial & Oportunidades</span></Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => navigate({ to: "/workspace/turismo/oportunidades" })} className="h-11 min-h-11 px-4 gap-2 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"><Compass className="size-4 text-primary" /><span>Radar de Oportunidades</span></Button>
             <input
               type="file"
               id="quote-ocr-file-input"
@@ -404,7 +404,7 @@ export default function AgencyQuotesPage() {
           </div>
         ) : viewMode === "kanban" ? (
           /* Visualização de Funil Kanban por Estágios */
-          <div className="flex gap-4 overflow-x-auto pb-4 min-h-96 no-scrollbar">
+          <div className="tab-list flex gap-4 overflow-x-auto pb-4 min-h-96 no-scrollbar">
             {[
               { id: "new", title: "Novas Solicitações", icon: Clock, borderClass: "border-t-primary", textClass: "text-primary" },
               { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, borderClass: "border-t-amber-500", textClass: "text-amber-500" },
@@ -417,7 +417,7 @@ export default function AgencyQuotesPage() {
               return (
                 <div
                   key={col.id}
-                  className={cn("flex-none w-80 bg-muted/20 border border-border/70 border-t-4 rounded-lg flex flex-col shadow-2xs", col.borderClass)}
+                  className={cn("flex-none w-80 bg-muted/40 border border-border/60 border-t-4 rounded-3xl flex flex-col overflow-hidden", col.borderClass)}
                 >
                   {/* Cabeçalho da Coluna */}
                   <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0 bg-card/60 rounded-t-lg">
@@ -445,7 +445,7 @@ export default function AgencyQuotesPage() {
                         return (
                           <Card
                             key={q.id}
-                            className="p-4 rounded-lg border border-border/70 bg-card space-y-3 hover:border-primary/50 transition-colors shadow-none flex flex-col justify-between"
+                            className="p-4 rounded-2xl border border-border/60 bg-card space-y-3 hover:border-foreground/25 transition-colors duration-150 flex flex-col justify-between select-none"
                           >
                             <div className="space-y-2">
                               <div className="flex items-center justify-between gap-1">
@@ -774,7 +774,7 @@ export default function AgencyQuotesPage() {
  <Sheet open={!!managingQuote} onOpenChange={(o) => !o && setManagingQuote(null)}>
    <SheetContent
      size="wide"
-     className="w-full sm:max-w-3xl lg:max-w-2xl p-0 flex flex-col h-full bg-card overflow-hidden overscroll-contain"
+     className="w-full sm:max-w-3xl lg:max-w-4xl p-0 flex flex-col h-full bg-card overflow-hidden overscroll-contain"
    >
      <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
        <div className="flex items-center justify-between">
@@ -783,7 +783,7 @@ export default function AgencyQuotesPage() {
              Gerenciar Cotação / Lead: {managingQuote?.contact_name}
            </SheetTitle>
            <SheetDescription className="text-xs text-muted-foreground">
-             Atualize a fase do pipeline comercial, proposta financeira e histórico de atendimento.
+             Atualize o estágio da cotação, valores do pacote e histórico de atendimento.
            </SheetDescription>
          </div>
          {managingQuote?.contact_whatsapp && (
@@ -905,7 +905,7 @@ export default function AgencyQuotesPage() {
                      setFlightOffers(mapped);
                      setFlightSearchFeedback({
                        searched: true,
-                       isConfigured: res.isInfotravelConfigured,
+                       isConfigured: res.isWoobaConfigured,
                        message: res.statusMessage,
                      });
                      if (mapped.length > 0) {
@@ -926,14 +926,14 @@ export default function AgencyQuotesPage() {
                    <div className="space-y-1">
                      <p className="text-xs font-bold text-foreground">
                        {flightSearchFeedback.isConfigured
-                         ? "Nenhum voo encontrado para os filtros informados"
-                         : "Conector GDS InfoTravel não configurado nesta agência"}
+                         ? "Nenhum voo Wooba encontrado para os filtros informados"
+                         : "Conector Wooba não configurado nesta agência"}
                      </p>
                      <p className="text-xs text-muted-foreground">
                        {flightSearchFeedback.message ||
                          (flightSearchFeedback.isConfigured
                            ? "Tente alterar a data de embarque ou utilize o Studio Universal para importar tarifa via OCR."
-                           : "Ative suas credenciais InfoTravel no Hub de Integrações para consultar disponibilidade aérea em tempo real.")}
+                           : "Ative suas credenciais Wooba no Hub de Integrações para consultar disponibilidade aérea em tempo real.")}
                      </p>
                    </div>
                    {!flightSearchFeedback.isConfigured && (
@@ -972,7 +972,7 @@ export default function AgencyQuotesPage() {
          </div>
        )}
        {/* Card Resumo do Lead */}
-       <div className="p-4 rounded-lg bg-muted/40 border border-border/40 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+       <div className="p-4 rounded-2xl bg-muted/30 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
          <div>
            <span className="text-xs uppercase font-bold text-muted-foreground block">Destino Desejado</span>
            <strong className="text-foreground text-sm font-semibold">{managingQuote?.destination_city || "A Definir"}</strong>

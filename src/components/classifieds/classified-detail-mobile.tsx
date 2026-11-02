@@ -149,6 +149,25 @@ export function ClassifiedDetailMobile({
     );
   }, [niche, templateStyle, attrs]);
 
+  const isDirectLodging = useMemo(() => {
+    return (
+      niche.id === "hospitality_stay" ||
+      attrs.vertical === "hospitality" ||
+      Boolean(attrs.hospitality_type) ||
+      attrs.rental_period === "daily" ||
+      Boolean(attrs.accommodation_type)
+    );
+  }, [niche.id, attrs]);
+
+  const isTravelPackage = useMemo(() => {
+    if (isDirectLodging) return false;
+    return (
+      niche.id === "travel" ||
+      templateStyle === "turismo" ||
+      attrs.vertical === "tourism"
+    );
+  }, [isDirectLodging, niche.id, templateStyle, attrs.vertical]);
+
   const nicheTabLabels = useMemo(() => getNicheTabLabels(niche.id), [niche.id]);
 
   const tabs = useMemo(() => {
@@ -293,15 +312,6 @@ export function ClassifiedDetailMobile({
         },
       };
     }
-    if (false) {
-      return {
-        label: "Candidatar-se à Vaga",
-        action: () => {
-          if (onOpenApplyModal) onOpenApplyModal();
-          else if (cleanPhone) handleWhatsApp();
-        },
-      };
-    }
     if (isConversational) {
       return {
         label: isStartingChat ? "Iniciando..." : "Enviar Mensagem",
@@ -347,28 +357,21 @@ export function ClassifiedDetailMobile({
         ? classified.content.length > 180
           ? `${classified.content.slice(0, 180)}...`
           : classified.content
-        : "Destino turístico completo com excelente infraestrutura de lazer, gastronomia e passeios.");
+        : "");
 
-    const hotelName =
-      firstLodging.name ||
-      attrs.hotel_name ||
-      "Hotel & Resort Selecionado";
+    const hasExplicitHotel = Boolean(
+      (firstLodging.name && String(firstLodging.name).trim()) ||
+      (attrs.hotel_name && String(attrs.hotel_name).trim()) ||
+      lodgings.length > 0
+    );
 
-    const hotelSummary =
-      firstLodging.description ||
-      attrs.hotel_description ||
-      "Acomodação confortável com infraestrutura completa e excelente localização para sua estadia.";
-
-    const hotelStars = Number(firstLodging.stars || attrs.hotel_stars || 4);
+    const hotelName = firstLodging.name || attrs.hotel_name || "";
+    const hotelSummary = firstLodging.description || attrs.hotel_description || "";
+    const hotelStars = Number(firstLodging.stars || attrs.hotel_stars || 0);
 
     const lodgingPhotos: string[] = [];
     if (Array.isArray(firstLodging.images)) lodgingPhotos.push(...firstLodging.images);
     if (firstLodging.photo_url) lodgingPhotos.push(firstLodging.photo_url);
-    if (lodgingPhotos.length === 0 && images.length > 1) {
-      lodgingPhotos.push(...images.slice(1, 5));
-    } else if (lodgingPhotos.length === 0 && images.length === 1) {
-      lodgingPhotos.push(images[0]);
-    }
 
     const hotelAmenities: string[] = (
       (Array.isArray(firstLodging.amenities) && firstLodging.amenities.length > 0
@@ -380,33 +383,34 @@ export function ClassifiedDetailMobile({
       (Array.isArray(attrs.amenities) && attrs.amenities.length > 0
         ? attrs.amenities
         : null) ||
-      ["Wi-Fi Grátis", "Ar-Condicionado", "Café da Manhã", "Piscina", "Estacionamento"]
+      []
     );
 
-    const hotelCheckin = attrs.checkin_time || firstLodging.checkin_time || "A partir das 14:00";
-    const hotelCheckout = attrs.checkout_time || firstLodging.checkout_time || "Até as 12:00";
+    const hotelCheckin = attrs.checkin_time || firstLodging.checkin_time || null;
+    const hotelCheckout = attrs.checkout_time || firstLodging.checkout_time || null;
     const hotelAddress = firstLodging.address || attrs.hotel_address || locationText;
 
     const packageMealPlan =
       attrs.meal_plan ||
       firstLodging.regime ||
-      "Café da manhã incluso diariamente no restaurante do hotel.";
+      "";
 
     const packageTransfer =
       attrs.has_transfer
         ? (attrs.transfer_vehicle ? `Traslado ${attrs.transfer_vehicle} in/out incluso aeroporto-hotel` : "Traslado in/out aeroporto incluso no pacote")
         : attrs.transfer_from
         ? `Traslado programado: ${attrs.transfer_from} para ${attrs.transfer_to || "destino"}`
-        : "Traslado aeroporto / hotel incluso com motorista credenciado.";
+        : "";
 
     const packageTours =
       attrs.included_tours ||
       attrs.package_includes ||
-      "Passeios aos principais pontos turísticos da região com guia credenciado.";
+      "";
 
     return {
       destinationTitle,
       destinationDescription,
+      hasExplicitHotel,
       hotelName,
       hotelSummary,
       hotelStars,
@@ -721,7 +725,7 @@ export function ClassifiedDetailMobile({
                 <div className="space-y-1 min-w-0">
                   <span className="text-xs font-bold text-foreground block break-words text-wrap">Negociação & Troca</span>
                   <p className="text-xs text-muted-foreground break-words text-wrap">
-                    {attrs.accepts_trade ? "Aceita veículo na troca como parte do pagamento." : "Propostas comerciais e financiamento sob consulta."}
+                    {attrs.accepts_trade ? "Aceita veículo na troca como parte do pagamento." : "Propostas comerciais e financiamento disponíveis."}
                   </p>
                 </div>
                 {onOpenProposalModal && (
@@ -756,7 +760,7 @@ export function ClassifiedDetailMobile({
               </div>
             )}
 
-            {isTravelOrHospitality && (
+            {isTravelPackage && (
               <div className="space-y-4">
                 {/* ── CARD 1: Destino & Localização ── */}
                 <div className="border-t border-border/40 pt-4 space-y-3">
@@ -768,9 +772,11 @@ export function ClassifiedDetailMobile({
                     <h3 className="text-sm sm:text-base font-bold text-foreground">
                       {travelDetails.destinationTitle}
                     </h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                      {travelDetails.destinationDescription}
-                    </p>
+                    {travelDetails.destinationDescription && (
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                        {travelDetails.destinationDescription}
+                      </p>
+                    )}
                   </div>
                   {/* Mapa Integrado */}
                   {classified.location_lat && classified.location_lng && !classified.hide_location && !attrs.hide_location ? (
@@ -794,86 +800,96 @@ export function ClassifiedDetailMobile({
                   )}
                 </div>
 
-                {/* ── CARD 2: Hospedagem & Hotel ── */}
-                <div className="border-t border-border/40 pt-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                      <Hotel className="size-4 text-primary shrink-0" />
-                      <span className="uppercase tracking-wider">Hospedagem & Hotel</span>
+                {/* ── CARD 2: Hospedagem & Hotel (apenas se houver hotel cadastrado no pacote) ── */}
+                {travelDetails.hasExplicitHotel && travelDetails.hotelName && (
+                  <div className="border-t border-border/40 pt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                        <Hotel className="size-4 text-primary shrink-0" />
+                        <span className="uppercase tracking-wider">Hospedagem & Hotel</span>
+                      </div>
+                      {travelDetails.hotelStars > 0 && (
+                        <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
+                          <Star className="size-3.5 fill-amber-500" />
+                          <span>{travelDetails.hotelStars} estrelas</span>
+                        </div>
+                      )}
                     </div>
-                    {travelDetails.hotelStars > 0 && (
-                      <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
-                        <Star className="size-3.5 fill-amber-500" />
-                        <span>{travelDetails.hotelStars} estrelas</span>
+
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">{travelDetails.hotelName}</h4>
+                      {travelDetails.hotelSummary && (
+                        <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                          {travelDetails.hotelSummary}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Carrossel Limpo de Fotos da Hospedagem */}
+                    {travelDetails.hotelPhotos.length > 0 && (
+                      <div className="space-y-1">
+                        <span className="text-xs text-muted-foreground block font-medium">Fotos da Acomodação</span>
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 snap-x">
+                          {travelDetails.hotelPhotos.map((photo, pIdx) => (
+                            <button
+                              key={pIdx}
+                              type="button"
+                              onClick={() => setFullscreenImage(photo)}
+                              className="w-40 aspect-video shrink-0 snap-start rounded-lg overflow-hidden bg-muted/30 border border-border/40 relative cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                              aria-label={`Ver foto do hotel ${pIdx + 1}`}
+                            >
+                              <img src={photo} alt="" className="size-full object-cover group-hover:scale-105 transition-transform" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Comodidades do Hotel */}
+                    {travelDetails.hotelAmenities.length > 0 && (
+                      <div className="space-y-2 pt-1">
+                        <span className="text-xs font-semibold text-muted-foreground block">
+                          Comodidades Principais
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {travelDetails.hotelAmenities.map((amenity: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                            >
+                              <Check className="size-3 text-primary shrink-0" />
+                              <span>{amenity}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Endereço & Check-in (apenas se preenchidos) */}
+                    {(travelDetails.hotelCheckin || travelDetails.hotelCheckout || travelDetails.hotelAddress) && (
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40 text-xs">
+                        {travelDetails.hotelCheckin && (
+                          <div>
+                            <span className="text-muted-foreground block">Check-in</span>
+                            <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckin}</span>
+                          </div>
+                        )}
+                        {travelDetails.hotelCheckout && (
+                          <div>
+                            <span className="text-muted-foreground block">Check-out</span>
+                            <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckout}</span>
+                          </div>
+                        )}
+                        {travelDetails.hotelAddress && (
+                          <div className="col-span-2 pt-1 text-muted-foreground flex items-center gap-2">
+                            <MapPin className="size-3 text-primary shrink-0" />
+                            <span className="break-words text-wrap">{travelDetails.hotelAddress}</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-
-                  <div>
-                    <h4 className="text-sm font-bold text-foreground">{travelDetails.hotelName}</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                      {travelDetails.hotelSummary}
-                    </p>
-                  </div>
-
-                  {/* Carrossel Limpo de Fotos da Hospedagem */}
-                  {travelDetails.hotelPhotos.length > 0 && (
-                    <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground block font-medium">Fotos da Acomodação</span>
-                      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 snap-x">
-                        {travelDetails.hotelPhotos.map((photo, pIdx) => (
-                          <button
-                            key={pIdx}
-                            type="button"
-                            onClick={() => setFullscreenImage(photo)}
-                            className="w-40 aspect-video shrink-0 snap-start rounded-lg overflow-hidden bg-muted/30 border border-border/40 relative cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            aria-label={`Ver foto do hotel ${pIdx + 1}`}
-                          >
-                            <img src={photo} alt="" className="size-full object-cover group-hover:scale-105 transition-transform" />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Comodidades do Hotel */}
-                  {travelDetails.hotelAmenities.length > 0 && (
-                    <div className="space-y-2 pt-1">
-                      <span className="text-xs font-semibold text-muted-foreground block">
-                        Comodidades Principais
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {travelDetails.hotelAmenities.map((amenity: string, idx: number) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
-                          >
-                            <Check className="size-3 text-primary shrink-0" />
-                            <span>{amenity}</span>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Endereço & Check-in */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/40 text-xs">
-                    <div>
-                      <span className="text-muted-foreground block">Check-in</span>
-                      <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckin}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block">Check-out</span>
-                      <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckout}</span>
-                    </div>
-                    {travelDetails.hotelAddress && (
-                      <div className="col-span-2 pt-1 text-muted-foreground flex items-center gap-2">
-                        <MapPin className="size-3 text-primary shrink-0" />
-                        <span className="break-words text-wrap">{travelDetails.hotelAddress}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                )}
 
                 {/* ── CARD 3: O que inclui o pacote ── */}
                 <div className="border-t border-border/40 pt-4 space-y-3">
@@ -936,7 +952,13 @@ export function ClassifiedDetailMobile({
               <div className="space-y-4">
                 <NicheSpecificationsDisplay
                   items={featureList}
-                  title={isTravelOrHospitality ? "Destaques & Especificações do Pacote" : "Ficha Técnica & Especificações"}
+                  title={
+                    niche.id === "travel"
+                      ? "Destaques do Pacote"
+                      : isTravelOrHospitality
+                      ? "Especificações da Acomodação"
+                      : "Ficha Técnica"
+                  }
                 />
               </div>
             )}

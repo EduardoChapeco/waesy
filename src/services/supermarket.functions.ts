@@ -70,6 +70,16 @@ export interface SupermarketClubMemberDTO {
   storeCardName?: string;
 }
 
+export interface SupermarketClubStatementEntryDTO {
+  id: string;
+  amountCents: number;
+  transactionType: "credit" | "debit" | string;
+  description: string | null;
+  referenceType: string | null;
+  referenceId: string | null;
+  createdAt: string;
+}
+
 export interface SupermarketProductCardDTO {
   id: string;
   title: string;
@@ -213,11 +223,12 @@ export const getSupermarketClubMemberData = createServerFn({ method: "GET" })
         .maybeSingle();
 
       // Buscar vínculo com o clube
-      const { data: membership } = await supabase
+      let membershipQuery = supabase
         .from("store_memberships" as any)
         .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+        .eq("user_id", user.id);
+      if (data.storeId) membershipQuery = membershipQuery.eq("store_id", data.storeId);
+      const { data: membership } = await membershipQuery.maybeSingle();
 
       // Buscar saldo de cashback
       const { data: cashbackRows } = await supabase
@@ -241,14 +252,14 @@ export const getSupermarketClubMemberData = createServerFn({ method: "GET" })
       return {
         storeId: data.storeId || "",
         storeName: "Supermercado Parceiro",
-        isMember: Boolean(membership?.id || user),
+        isMember: Boolean(membership?.id),
         userName: profile?.full_name?.split(" ")[0] || "Cliente",
         memberTier: (membership as any)?.tier || "Clube Ouro",
         totalSavedCents: (membership as any)?.total_saved_cents || 0,
         cashbackBalanceCents: Math.max(0, netCashback),
         activeCouponsCount: coupons?.length || 0,
-        cardAvailable: true,
-        storeCardName: "Cartão da Loja",
+        cardAvailable: Boolean(membership?.id),
+        storeCardName: membership?.id ? "Cartão da Loja" : undefined,
       };
     } catch (err: any) {
       logSystemError({ operation: "getSupermarketClubMemberData", error: err });
@@ -262,6 +273,43 @@ export const getSupermarketClubMemberData = createServerFn({ method: "GET" })
         cardAvailable: false,
       };
     }
+  });
+
+/**
+ * Consulta o extrato persistido do cashback do membro autenticado.
+ * A UI nunca calcula ou inventa lançamentos: o ledger é a fonte de verdade.
+ */
+export const getSupermarketClubStatement = createServerFn({ method: "GET" })
+  .validator((d: { storeId?: string }) => d)
+  .handler(async ({ data }): Promise<SupermarketClubStatementEntryDTO[]> => {
+    const supabase = await getServerClient();
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return [];
+
+    let query = supabase
+      .from("store_cashback_ledger" as any)
+      .select("id, amount_cents, transaction_type, description, reference_type, reference_id, created_at")
+      .eq("user_id", auth.user.id)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (data.storeId) query = query.eq("store_id", data.storeId);
+
+    const { data: rows, error } = await query;
+    if (error) {
+      logSystemError({ operation: "getSupermarketClubStatement", error });
+      throw new Error("Não foi possível carregar o extrato do clube.");
+    }
+
+    return (rows || []).map((row: any) => ({
+      id: row.id,
+      amountCents: Number(row.amount_cents || 0),
+      transactionType: row.transaction_type || "credit",
+      description: row.description || null,
+      referenceType: row.reference_type || null,
+      referenceId: row.reference_id || null,
+      createdAt: row.created_at,
+    }));
   });
 
 /**

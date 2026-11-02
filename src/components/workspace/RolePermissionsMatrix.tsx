@@ -138,10 +138,12 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
   const [permissions, setPermissions] = useState<Record<string, Record<string, boolean>>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
+    setLoadError(null);
 
     getRolePermissionsMatrix({ data: { roleKey } })
       .then((data) => {
@@ -150,7 +152,11 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
         }
       })
       .catch((err) => {
-        console.error("Erro ao carregar permissões:", err);
+        const message = err instanceof Error ? err.message : "Não foi possível carregar as permissões.";
+        if (isMounted) {
+          setLoadError(message);
+          toast.error(message);
+        }
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -196,6 +202,16 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
     return (
       <div className="flex h-48 items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex min-h-48 flex-col items-center justify-center gap-3 text-center">
+        <AlertCircle className="size-6 text-destructive" aria-hidden="true" />
+        <p className="text-sm font-medium text-foreground">Não foi possível carregar a matriz.</p>
+        <p className="max-w-md text-xs text-muted-foreground">{loadError}</p>
       </div>
     );
   }

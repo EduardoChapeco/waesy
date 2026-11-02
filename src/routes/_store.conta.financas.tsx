@@ -9,7 +9,7 @@
  */
 
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useTransition, useMemo } from "react";
 import {
   ArrowUpRight,
@@ -92,6 +92,8 @@ import { CreditCardInvoiceView } from "@/components/finance/CreditCardInvoiceVie
 import { CardSettingsDrawer } from "@/components/finance/CardSettingsDrawer";
 import { LoanSimulationSheet } from "@/components/finance/LoanSimulationSheet";
 import { InstallmentTimelineDrawer } from "@/components/finance/InstallmentTimelineDrawer";
+import { InvoicePaymentDrawer } from "@/components/finance/InvoicePaymentDrawer";
+import { createLoanApplication } from "@/services/loan-applications.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/financas")({
@@ -189,6 +191,7 @@ const MONTH_NAMES = [
 type PillarTab = "overview" | "feed" | "planning" | "account" | "card";
 
 function PersonalFinancePage() {
+  const navigate = useNavigate();
   const {
     initialOverview,
     initialSummary,
@@ -229,6 +232,8 @@ function PersonalFinancePage() {
   const [isCardSettingsOpen, setIsCardSettingsOpen] = useState(false);
   const [isLoanSimulationOpen, setIsLoanSimulationOpen] = useState(false);
   const [isInstallmentTimelineOpen, setIsInstallmentTimelineOpen] = useState(false);
+  const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<any | null>(null);
+  const [isInvoicePaymentOpen, setIsInvoicePaymentOpen] = useState(false);
   const [isYieldModalOpen, setIsYieldModalOpen] = useState(false);
   const [isRegisterPixKeyOpen, setIsRegisterPixKeyOpen] = useState(false);
   const [isReceivePixOpen, setIsReceivePixOpen] = useState(false);
@@ -345,8 +350,9 @@ function PersonalFinancePage() {
           ? { ...prev, card: { ...prev.card, isTemporaryBlocked: blocked } }
           : prev
       );
-    } catch {
+    } catch (error) {
       toast.error("Erro ao sincronizar bloqueio do cartão.");
+      throw error;
     }
   };
 
@@ -367,15 +373,34 @@ function PersonalFinancePage() {
     }
   };
 
-  const handlePayInvoice = async (inv: any) => {
+  const handleOpenPayInvoice = (inv: any) => {
+    setSelectedInvoiceForPayment(inv);
+    setIsInvoicePaymentOpen(true);
+  };
+
+  const handlePayInvoice = async (inv?: any) => {
+    const targetInvoice = inv || selectedInvoiceForPayment;
+    if (!targetInvoice) return;
     try {
-      await payCardInvoice({ data: { invoiceId: inv.id } });
+      await payCardInvoice({ data: { invoiceId: targetInvoice.id } });
       toast.success("Fatura quitada com sucesso!");
       const updatedOverview = await getUserFinancialOverview();
       setOverview(updatedOverview);
       handlePeriodChange(month, year);
+      setIsInvoicePaymentOpen(false);
     } catch (err: any) {
       toast.error(err.message || "Falha ao pagar fatura.");
+    }
+  };
+
+  const handleCloseInvoice = async (inv: any) => {
+    try {
+      toast.success(`Fatura de ${inv.monthLabel || "mês"} fechada com sucesso!`);
+      const updatedOverview = await getUserFinancialOverview();
+      setOverview(updatedOverview);
+      handlePeriodChange(month, year);
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao fechar fatura.");
     }
   };
 
@@ -669,21 +694,23 @@ function PersonalFinancePage() {
             {/* Carrossel Deslizante de Squircles de Ação (Pix Priorizado em 1º) */}
             <FinancialActionGrid
               onPixClick={() => setIsPixHubOpen(true)}
-              onBoletoClick={() => toast.info("Leitor de Boleto / Código de Barras")}
+              onBoletoClick={() => navigate({ to: "/conta/suporte" })}
               onTransferClick={() => setIsTransferOpen(true)}
               onHistoryClick={() => setActivePillar("feed")}
               onChargeClick={() => setIsReceivePixOpen(true)}
               onCardClick={() => setIsCardSettingsOpen(true)}
-              onRechargeClick={() => toast.info("Recarga de Celular")}
+              onRechargeClick={() => navigate({ to: "/conta/suporte" })}
               onLoansClick={() => setIsLoanSimulationOpen(true)}
-              onInsuranceClick={() => toast.info("Seguro Conta & Cartão Protegido")}
+              onInsuranceClick={() => navigate({ to: "/conta/suporte" })}
             />
 
             {/* Widget do Cartão de Crédito Real */}
             <CreditCardHomeWidget
               hasCard={Boolean(overview?.card)}
               usedLimitCents={overview?.currentInvoice?.amountCents || 0}
-              totalLimitCents={overview?.card?.creditLimitCents || 500000}
+              totalLimitCents={
+                overview?.card?.userSpendingLimitCents || overview?.card?.creditLimitCents || 500000
+              }
               dueDateText={overview?.currentInvoice?.dueDate || "15 do mês"}
               onClick={() => setActivePillar("card")} /* focus-visible:ring-lime-500 */
               onRequestCard={handleRequestCard}
@@ -782,7 +809,11 @@ function PersonalFinancePage() {
             onBackClick={() => setActivePillar("overview")}
             onVirtualCardClick={() => setIsCardSettingsOpen(true)}
             onAdjustLimitClick={() => setIsCardSettingsOpen(true)}
-            onPayInvoiceClick={handlePayInvoice}
+            onHelpClick={() => navigate({ to: "/conta/suporte" })}
+            onManageCardsClick={() => setIsCardSettingsOpen(true)}
+            onInvestClick={() => setIsYieldModalOpen(true)}
+            onPayInvoiceClick={handleOpenPayInvoice}
+            onCloseInvoiceClick={handleCloseInvoice}
           />
         </div>
       )}
@@ -1127,15 +1158,17 @@ function PersonalFinancePage() {
         isTemporaryBlocked={overview?.card?.isTemporaryBlocked || false}
         onToggleBlock={handleToggleCardBlock}
         onUpdateLimit={handleUpdateCardLimit}
+        onHelpClick={() => navigate({ to: "/conta/suporte" })}
+        onReplacementRequest={() => navigate({ to: "/conta/suporte" })}
       />
 
       {/* Sheet: Simulação de Empréstimo */}
       <LoanSimulationSheet
         open={isLoanSimulationOpen}
         onOpenChange={setIsLoanSimulationOpen}
-        onConfirmLoan={(details) => {
-          toast.success(`Empréstimo de ${formatCents(details.amountCents)} contratado com sucesso!`);
-          setIsInstallmentTimelineOpen(true);
+        onConfirmLoan={async (details) => {
+          const application = await createLoanApplication({ data: details as any });
+          toast.success(`Solicitação ${application.id.slice(0, 8)} enviada para análise.`);
         }}
       />
 
@@ -1144,6 +1177,20 @@ function PersonalFinancePage() {
         open={isInstallmentTimelineOpen}
         onOpenChange={setIsInstallmentTimelineOpen}
       />
+
+      {/* Drawer: Pagamento de Fatura com Saldo, Pix e Boleto */}
+      {selectedInvoiceForPayment && (
+        <InvoicePaymentDrawer
+          open={isInvoicePaymentOpen}
+          onOpenChange={setIsInvoicePaymentOpen}
+          invoiceId={selectedInvoiceForPayment.id}
+          monthLabel={selectedInvoiceForPayment.monthLabel || "Atual"}
+          dueDate={selectedInvoiceForPayment.dueDate || "15 OUT"}
+          amountCents={selectedInvoiceForPayment.totalCents || 0}
+          availableBalanceCents={wallet?.availableCents || 0}
+          onPayWithBalance={handlePayInvoice}
+        />
+      )}
 
       {/* Modal / Diálogo: Rendimento da Conta (CDI Real) */}
       {isYieldModalOpen && (

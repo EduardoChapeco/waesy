@@ -143,13 +143,11 @@
 .squircle-card {
   border-radius: var(--radius-2xl);
   background-color: var(--card);
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
 }
 
 .squircle-card-lg {
   border-radius: var(--radius-3xl);
   background-color: var(--card);
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
 }
 
 .text-anti-truncate {
@@ -167,7 +165,6 @@
 
 .surface-level-1 {
   background-color: var(--card);
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   border-radius: var(--radius-2xl);
 }
 
@@ -175,55 +172,11 @@
   background-color: color-mix(in srgb, var(--background) 95%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
 }
 
 .surface-level-3 {
   background-color: var(--background);
   border-radius: var(--radius-2xl);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-}
-
-/* ── Canonical Intermediate Blue Gradient & Tactile Noise Texture ── */
-.bg-waesy-gradient-blue {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--magic-accent-primary) 75%, #001845) 0%, var(--magic-accent-primary) 50%, color-mix(in srgb, var(--magic-accent-primary) 70%, #7dd3fc) 100%);
-}
-
-.texture-noise,
-.waesy-surface-grain {
-  position: relative;
-  isolation: isolate;
-}
-
-.texture-noise::after,
-.waesy-surface-grain::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 140px 140px;
-  mix-blend-mode: overlay;
-  border-radius: inherit;
-  z-index: 1;
-}
-
-.bg-noise {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 140px 140px;
-}
-
-.waesy-hero-glow {
-  background: radial-gradient(ellipse 80% 60% at 50% -20%, color-mix(in srgb, var(--magic-accent-primary) 22%, transparent), transparent);
-}
-
-.waesy-frosted-glass {
-  background: color-mix(in srgb, var(--card) 65%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid color-mix(in srgb, #ffffff 25%, transparent);
 }
 
 @theme inline {
@@ -1086,6 +1039,10 @@
   max-height: 85dvh;
 }
 
+@utility max-h-preview {
+  max-height: 40dvh;
+}
+
 @utility scroll-area-carousel {
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
@@ -1175,19 +1132,6 @@
   max-width: 210mm;
 }
 
-/* ── Vidro Fosco & Spatial UI Canônica ─────────────────── */
-@utility frosted-glass {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background-color: color-mix(in oklch, var(--color-card) 80%, transparent);
-}
-
-@utility frosted-surface {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  background-color: color-mix(in oklch, var(--color-background) 85%, transparent);
-}
-
 /* ── Física Anti-Esmagamento de Botões Duplos (Apple HIG) ── */
 @utility anti-crush-grid {
   display: grid;
@@ -1261,24 +1205,19 @@
   font-weight: 800;
   font-size: 0.75rem;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #f97316, #ef4444);
-  color: #ffffff;
+  background: var(--destructive);
+  color: var(--destructive-foreground);
   box-shadow: none;
 }
 
 @utility squircle-card {
   border-radius: 24px 24px 24px 24px / 26px 26px 26px 26px;
-  transition:
-    transform var(--duration-fast) cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow var(--duration-fast) cubic-bezier(0.16, 1, 0.3, 1),
-    border-color var(--duration-fast) ease;
+  transition: transform var(--duration-fast) cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Hover Elevate (Sutil) ──────────────────── */
 @utility hover-elevate {
-  transition:
-    transform var(--duration-fast) var(--ease-out-expo),
-    box-shadow var(--duration-fast) var(--ease-out-expo);
+  transition: transform var(--duration-fast) var(--ease-out-expo);
   &:hover {
     transform: translateY(-1px);
     box-shadow: none;
@@ -1378,13 +1317,12 @@
 }
 
 @utility squircle-selected {
-  border-color: var(--color-primary);
-  background-color: var(--color-card);
+  background-color: var(--accent-soft);
   box-shadow: none;
 }
 
-/* ── SHADOW SUPPRESSION (mantém bordas mas suprime sombras) ── */
-/* As bordas são permitidas via CSS vars (var(--color-border)) */
+/* ── SHADOW SUPPRESSION ── */
+/* Sombras decorativas são suprimidas pelo design flat; overlays preservam sua própria elevação. */
 /* Sombras são suprimidas pelo design flat, exceto overlays e modais */
 .shadow-2xs,
 .shadow-xs,

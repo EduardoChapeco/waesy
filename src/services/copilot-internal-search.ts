@@ -258,7 +258,7 @@ async function searchTable(
   kind: InternalSearchKind,
 ): Promise<{ cards: InternalSearchCard[]; unavailable: boolean }> {
   let request = db.from(table).select("*");
-  if (table === "products") request = request.eq("is_active", true);
+  if (table === "products") request = request.eq("status", "published");
   if (table === "news_articles") request = request.eq("status", "published");
   request = request.limit(24);
 

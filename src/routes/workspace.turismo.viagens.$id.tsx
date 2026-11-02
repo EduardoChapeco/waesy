@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, RefreshCw, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode } from "lucide-react";
+import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, RefreshCw, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode, Calculator } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -19,6 +19,7 @@ import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operat
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
 import { FAMOUS_HOTEL_PRESETS } from "@/lib/hotel-presets";
+import { CancellationPenaltyCalculatorDialog } from "@/components/turismo/cancellation-penalty-calculator-dialog";
 
 export const Route = createFileRoute("/workspace/turismo/viagens/$id")({
   head: ({ loaderData }: any) => ({
@@ -41,7 +42,7 @@ export const Route = createFileRoute("/workspace/turismo/viagens/$id")({
   component: WorkspaceTripDetailPage,
 });
 
-type ActiveTab = "overview" | "passengers" | "locators" | "contract" | "vouchers" | "financial";
+type ActiveTab = "overview" | "passengers" | "services" | "locators" | "contract" | "vouchers" | "financial";
 
 function checkDocumentValidity(
   expiryDateStr?: string | null,
@@ -87,6 +88,7 @@ function WorkspaceTripDetailPage() {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isImportVoucherOpen, setIsImportVoucherOpen] = useState(false);
   const [isInfotravelBusy, setIsInfotravelBusy] = useState(false);
+  const [isPenaltyCalculatorOpen, setIsPenaltyCalculatorOpen] = useState(false);
 
   // ── Estados Financeiros & Boletos 3-em-1 ──
   const tripFinancialDetails = (aggregate?.trip?.financial_details || {}) as any;
@@ -370,7 +372,7 @@ function WorkspaceTripDetailPage() {
   const cleanWhatsapp = (trip.client_whatsapp || "").replace(/\D/g, "");
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200 motion-reduce:transition-none">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200 motion-reduce:transition-none">
       {/* ── 1. CABEÇALHO DA VIAGEM ── */}
       <div className="flex flex-col gap-4 p-4 sm:p-5 rounded-lg bg-card border border-border/80">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -467,6 +469,16 @@ function WorkspaceTripDetailPage() {
 
             <Button
               type="button"
+              variant="outline"
+              onClick={() => setIsPenaltyCalculatorOpen(true)}
+              className="rounded-lg text-xs font-bold gap-2 h-11 px-4 sm:px-3 cursor-pointer"
+            >
+              <Calculator className="size-4 sm:size-3.5 text-primary" />
+              <span>Simular Multa ANAC</span>
+            </Button>
+
+            <Button
+              type="button"
               onClick={() => { /* focus-visible:ring-2 */
                 const rawPhone = (trip.client_whatsapp || "").replace(/\D/g, "");
                 if (!rawPhone) {
@@ -547,6 +559,18 @@ function WorkspaceTripDetailPage() {
         >
           <Users className="size-3.5" />
           <span>Viajantes & Validades ({aggregate.passengers.length})</span>
+        </button>
+
+        <button /* focus-visible:ring-2 */
+          onClick={() => setActiveTab("services")} /* focus-visible:ring-2 */
+          className={`h-11 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/20 outline-none rounded-t ${
+            activeTab === "services"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Compass className="size-3.5" />
+          <span>Serviços & Ingressos</span>
         </button>
 
         <button /* focus-visible:ring-2 */
@@ -1128,6 +1152,67 @@ function WorkspaceTripDetailPage() {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ABA 2.5: SERVIÇOS & INGRESSOS CONTRATADOS */}
+      {activeTab === "services" && (
+        <div className="p-4 rounded-lg bg-card border border-border/80 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
+            <div>
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                <Compass className="size-4 text-primary" />
+                <span>Passeios, Ingressos, Traslados e Serviços Adicionais</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Gestão e acréscimo de serviços na viagem com incremento no valor contratado e comissão apurada.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Traslados Contratados */}
+            <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+              <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
+                <Car className="size-4 text-primary" />
+                <span>Traslados e Transfers</span>
+              </div>
+              {Array.isArray(trip.transfers) && trip.transfers.length > 0 ? (
+                <div className="space-y-2">
+                  {trip.transfers.map((tr: any, idx: number) => (
+                    <div key={idx} className="p-3 rounded border border-border/50 bg-background text-xs space-y-1">
+                      <span className="font-bold text-foreground">{tr.title || tr.description || `Transfer #${idx + 1}`}</span>
+                      <p className="text-muted-foreground">{tr.pickup_location || "Origem"} → {tr.dropoff_location || "Destino"}</p>
+                      {tr.service_date && <span className="text-xs text-muted-foreground block font-mono">Data: {tr.service_date}</span>}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">Nenhum transfer privativo ou regular vinculado a esta reserva.</p>
+              )}
+            </div>
+
+            {/* Passeios & Ingressos */}
+            <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
+              <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
+                <Ticket className="size-4 text-primary" />
+                <span>Ingressos e Tours Locais</span>
+              </div>
+              {Array.isArray(trip.tours) && trip.tours.length > 0 ? (
+                <div className="space-y-2">
+                  {trip.tours.map((tour: any, idx: number) => (
+                    <div key={idx} className="p-3 rounded border border-border/50 bg-background text-xs space-y-1">
+                      <span className="font-bold text-foreground">{tour.title || tour.name || `Passeio #${idx + 1}`}</span>
+                      <p className="text-muted-foreground">{tour.description || "Ingresso oficial de atração"}</p>
+                      {tour.tour_date && <span className="text-xs text-muted-foreground block font-mono">Data: {tour.tour_date}</span>}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">Nenhum passeio ou ingresso registrado nesta viagem.</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -1816,7 +1901,7 @@ function WorkspaceTripDetailPage() {
                     setIsAddInstallmentOpen(false);
                     toast.success("Parcela adicionada!");
                   }}
-                  className="rounded-lg h-9 text-xs font-bold"
+                  className="rounded-xl h-11 min-h-11 text-xs font-bold"
                 >
                   Adicionar
                 </Button>
@@ -2032,7 +2117,7 @@ function WorkspaceTripDetailPage() {
                 <div className="space-y-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
                   <Label className="text-xs text-muted-foreground/75 font-bold text-primary flex items-center gap-1">
                     <Compass className="size-3" />
-                    <span>Banco de Hotéis e Resorts Renomados (Preset Canônico)</span>
+                    <span>Rede de Hotéis e Resorts Homologados</span>
                   </Label>
                   <Select
                     onValueChange={(presetId) => {
@@ -2125,6 +2210,14 @@ function WorkspaceTripDetailPage() {
           const updated = await getTripAggregate({ data: { tripId: trip.id } }).catch(() => null);
           if (updated) setAggregate(updated);
         }}
+      />
+
+      {/* ── SIMULADOR & CALCULADORA DE MULTAS CONTRATUAIS ANAC ── */}
+      <CancellationPenaltyCalculatorDialog
+        open={isPenaltyCalculatorOpen}
+        onOpenChange={setIsPenaltyCalculatorOpen}
+        defaultTripTotalCents={trip.total_cents || 100000}
+        departureDate={trip.travel_start_date || undefined}
       />
     </div>
   );

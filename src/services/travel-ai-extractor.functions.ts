@@ -12,6 +12,7 @@ import { enforceRateLimit } from "@/lib/rate-limiter";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { getDefaultCity } from "@/lib/brand.config";
 import { getHotelByNameOrSlug, normalizeHotelName } from "@/lib/data/hotels-resorts-catalog";
+import { internalEvaluateOfferMatches } from "./travel-commercial-intelligence.functions";
 
 // ============================================================
 // Schemas e Contratos de Dados
@@ -408,4 +409,167 @@ export const getTravelPriceHistory = createServerFn({ method: "GET" })
     }
 
     return rows || [];
+  });
+
+/**
+ * 5. Auto-Publicação de Pacote Extraído por OCR no Catálogo de Viagens & Disparo do Radar de Oportunidades
+ * Recebe os dados estruturados do OCR, cruza com o Banco Soberano de Hotéis/Resorts,
+ * publica o pacote ativo em `classifieds` e executa `internalEvaluateOfferMatches`
+ * para destacar automaticamente clientes/leads que aguardam oportunidades compatíveis.
+ */
+export const publishExtractedTravelPackageToCatalogAndMatchRadar = createServerFn({ method: "POST" })
+  .validator(ExtractedTravelAdSchema)
+  .handler(async ({ data }) => {
+    const identity = await requireStaff();
+    const supabase = getServerClient();
+
+    const {
+      title,
+      destination_city,
+      destination_state = null,
+      destination_country = "Brasil",
+      departure_city = null,
+      departure_iata = null,
+      arrival_iata = null,
+      dates_text = null,
+      departure_date = null,
+      return_date = null,
+      duration_text = null,
+      hotel_name = null,
+      meal_plan = null,
+      transport_type = "airplane",
+      inclusions = [],
+      highlights = [],
+      price_cents = null,
+      max_installments = 12,
+      installment_cents = null,
+      pricing_mode = "per_person",
+      visibility = "public",
+      suggested_background_url = null,
+      matched_hotel_id = null,
+      matched_destination_id = null,
+      raw_notes = null,
+    } = data ?? {};
+
+    // 1. Enriquece fotos e dados da hospedagem no banco soberano
+    let hotelRecord: any = null;
+    if (matched_hotel_id) {
+      const { data: hRow } = await supabase
+        .from("hotels_bank")
+        .select("*")
+        .eq("id", matched_hotel_id)
+        .maybeSingle();
+      hotelRecord = hRow;
+    } else if (hotel_name) {
+      const { data: hRow } = await supabase
+        .from("hotels_bank")
+        .select("*")
+        .ilike("name", `%${hotel_name.trim()}%`)
+        .limit(1)
+        .maybeSingle();
+      hotelRecord = hRow;
+    }
+
+    const staticHotel = hotel_name ? getHotelByNameOrSlug(hotel_name) : undefined;
+    const resolvedPhotos: string[] = [
+      ...(Array.isArray(hotelRecord?.photos) ? hotelRecord.photos : []),
+      ...(staticHotel?.photos || []),
+      ...(suggested_background_url ? [suggested_background_url] : []),
+    ].filter((u, idx, arr) => Boolean(u) && arr.indexOf(u) === idx);
+
+    const priceInReais = price_cents && price_cents > 0 ? Number((price_cents / 100).toFixed(2)) : 0;
+    const baseSlug = `${title || destination_city}-${Date.now().toString(36)}`
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const descriptionParts = [
+      hotel_name ? `Hospedagem: ${hotel_name}${meal_plan ? ` (${meal_plan})` : ""}` : null,
+      dates_text ? `Período: ${dates_text}` : null,
+      inclusions.length > 0 ? `Incluso: ${inclusions.join(", ")}` : null,
+      raw_notes || null,
+    ].filter(Boolean);
+
+    const dynamicFields = {
+      package_type: transport_type === "bus" ? "rodoviario" : transport_type === "cruise" ? "cruzeiro" : "aereo",
+      destination: destination_state ? `${destination_city}, ${destination_state}` : destination_city,
+      destination_country,
+      origin_city: departure_city || getDefaultCity(),
+      departure_iata,
+      arrival_iata,
+      departure_date,
+      return_date,
+      duration_days: duration_text || "Sob consulta",
+      hotel_id: hotelRecord?.id || matched_hotel_id || null,
+      hotel_name: hotelRecord?.name || staticHotel?.name || hotel_name || "",
+      hotel_stars: hotelRecord?.stars || staticHotel?.stars || 4,
+      meal_plan: meal_plan || hotelRecord?.regime_default || staticHotel?.regime_options?.[0] || "Café da Manhã",
+      inclusions,
+      highlights,
+      pricing_mode,
+      max_installments,
+      installment_cents,
+      visibility,
+      matched_destination_id,
+      extracted_via_ocr: true,
+    };
+
+    const { data: createdOffer, error: insertError } = await supabase
+      .from("classifieds")
+      .insert({
+        store_id: identity.store_id,
+        user_id: identity.id,
+        title: title || `Pacote ${destination_city}`,
+        slug: baseSlug,
+        description: descriptionParts.join("\n\n") || `Pacote completo para ${destination_city}.`,
+        category_slug: "turismo",
+        subcategory_slug: "pacotes-viagens",
+        price: priceInReais,
+        price_cents: price_cents || 0,
+        city_name: destination_city || getDefaultCity(),
+        images: resolvedPhotos,
+        status: "active",
+        dynamic_fields: dynamicFields,
+      })
+      .select("id, title, slug, city_name, price_cents")
+      .single();
+
+    if (insertError || !createdOffer) {
+      throw new Error(`Falha ao autopublicar pacote no catálogo: ${insertError?.message}`);
+    }
+
+    // 2. Dispara o motor de cruzamento de oportunidades (Travel Interests Radar)
+    const matchStats = await internalEvaluateOfferMatches(
+      identity.store_id,
+      createdOffer.id,
+      supabase,
+    );
+
+    // 3. Verifica também leads abertos no Kanban Comercial com mesmo destino para alerta imediato
+    const normalizedDest = (destination_city || "").trim();
+    let matchedLeads: Array<{ id: string; name: string; phone: string | null; destination: string | null; status: string }> = [];
+    if (normalizedDest.length >= 3) {
+      const { data: crmLeads } = await supabase
+        .from("leads_crm")
+        .select("id, name, phone, destination, status")
+        .eq("store_id", identity.store_id)
+        .in("status", ["new", "contacted", "qualified", "proposal"])
+        .ilike("destination", `%${normalizedDest}%`)
+        .limit(20);
+      matchedLeads = crmLeads || [];
+    }
+
+    return {
+      success: true,
+      offer: createdOffer,
+      hotelMatched: Boolean(hotelRecord || staticHotel),
+      hotelName: hotelRecord?.name || staticHotel?.name || hotel_name || null,
+      photosCount: resolvedPhotos.length,
+      radarMatchesFound: matchStats.matchesFound,
+      newOpportunitiesCreated: matchStats.newOpportunitiesCreated,
+      matchedCrmLeadsCount: matchedLeads.length,
+      matchedCrmLeads: matchedLeads,
+    };
   });

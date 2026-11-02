@@ -8,7 +8,7 @@ import {
   MessageCircle,
   Send,
   Share2,
-  Sparkles,
+  FileText,
 } from "lucide-react";
 import type {
   BaseSiteBlockProps,
@@ -260,7 +260,7 @@ export function PrometheeNewsArticleReaderBlock({
         {data?.showExecutiveSummary !== false && showSummary && (
           <div className="rounded-3xl border border-border bg-muted/30 p-5 space-y-3">
             <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-foreground">
-              <Sparkles className="size-4" />
+              <FileText className="size-4" />
               <span>Síntese Editorial</span>
             </div>
             <ul className="space-y-2">
@@ -403,7 +403,7 @@ export function PrometheeNewsArticleReaderBlock({
                   : "text-foreground hover:bg-muted"
               }`}
             >
-              <Sparkles className="size-4" />
+              <FileText className="size-4" />
               <span>Síntese</span>
             </button>
           )}

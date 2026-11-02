@@ -25,6 +25,7 @@ import { EmptyState } from "@/components/state/states";
 import { formatMoney } from "@/lib/money";
 import { listPriceTables } from "@/services/price-tables.functions";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
+import { RequestQuoteModal } from "@/components/commerce/request-quote-modal";
 
 export const Route = createFileRoute("/workspace/b2b/")({
   head: () => ({
@@ -68,6 +69,7 @@ function WorkspaceB2BShowcasePage() {
   const { feed, priceTables } = Route.useLoaderData() as any;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [quoteProduct, setQuoteProduct] = useState<any | null>(null);
 
   // Localiza tabela B2B / Atacado ativa cadastrada no ecossistema
   const b2bTable = useMemo(() => {
@@ -174,6 +176,7 @@ function WorkspaceB2BShowcasePage() {
         </div>
 
         {/* Chips de Categorias B2B */}
+        {/* design-lint-ignore DL-30 reason:"Carrossel horizontal de filtros de categorias B2B para rolagem tátil no mobile" expiry:"2027-10-30" */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           {B2B_CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
@@ -297,24 +300,40 @@ function WorkspaceB2BShowcasePage() {
                   </div>
                 </div>
 
-                {/* Ação: Solicitar Faturamento B2B */}
                 <div className="pt-2">
                   <Button
+                    type="button"
                     size="sm"
+                    disabled={!prod.store_id && !prod.storeId}
                     className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     onClick={() => {
-                      toast.success(`Cotação B2B para "${prod.title}" gerada com sucesso! O fornecedor receberá os dados do seu CNPJ.`);
+                      if (!prod.store_id && !prod.storeId) {
+                        toast.error("Este fornecedor ainda não possui uma loja válida para cotação.");
+                        return;
+                      }
+                      setQuoteProduct(prod);
                     }}
                   >
                     <span>Comprar no Atacado (CNPJ)</span>
                     <ArrowRight className="size-3.5" />
                   </Button>
                 </div>
+
               </div>
             );
           })}
         </div>
       )}
+
+      {quoteProduct?.store_id ? (
+        <RequestQuoteModal
+          isOpen={Boolean(quoteProduct)}
+          onClose={() => setQuoteProduct(null)}
+          storeId={quoteProduct.store_id || quoteProduct.storeId}
+          storeName={quoteProduct.store_name || "Fornecedor Parceiro Waesy"}
+          defaultCategory={quoteProduct.title}
+        />
+      ) : null}
     </div>
   );
 }

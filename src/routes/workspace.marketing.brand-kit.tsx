@@ -201,11 +201,13 @@ function ColorSwatch({
     <div className="flex items-center gap-3 p-3 rounded-lg border border-border/40 bg-card/30 hover:bg-card/60 transition-colors">
       <div className="relative flex-shrink-0">
         <div
-          className="w-10 h-10 rounded-lg border border-border/40 shadow-sm cursor-pointer"
+          className="w-10 h-10 rounded-lg border border-border/40 cursor-pointer"
+          // design-lint-ignore DL-05 reason:"Preview dinâmico de amostras de cores do Brand Kit" expiry:"2027-12-31"
           style={{ backgroundColor: value }}
         />
         <input
           type="color"
+          // design-lint-ignore DL-01 reason:"Cor preta fallback para seletor nativo de cor" expiry:"2027-12-31"
           value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : "#000000"}
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full rounded-lg"
@@ -389,7 +391,7 @@ export function BrandKitPage() {
     .bk-bg { background-color: ${form.color_bg_dark}; color: ${form.color_text_light}; }
     .bk-card {
       background-color: ${form.color_bg_light};
-      border: 1px solid rgba(0,0,0,0.1);
+      border: 1px solid var(--border);
       border-radius: ${
         form.border_radius_scale === "small"
           ? "4px"
@@ -503,7 +505,7 @@ export function BrandKitPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowExtractInput((v) => !v)}
-                className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 <Globe className="w-3.5 h-3.5" />
                 Extrair de URL
@@ -513,7 +515,7 @@ export function BrandKitPage() {
                 size="sm"
                 onClick={handleAIMagic}
                 disabled={isGenerating}
-                className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isGenerating ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
@@ -526,7 +528,7 @@ export function BrandKitPage() {
                 size="sm"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isSaving ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
@@ -544,7 +546,7 @@ export function BrandKitPage() {
                 placeholder="https://exemplo.com.br (website ou landing page da marca)"
                 value={extractUrl}
                 onChange={(e) => setExtractUrl(e.target.value)}
-                className="h-9 text-xs flex-1 bg-background"
+                className="h-11 min-h-11 text-xs flex-1 bg-background"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleExtractFromUrl();
                 }}
@@ -553,7 +555,7 @@ export function BrandKitPage() {
                 size="sm"
                 onClick={handleExtractFromUrl}
                 disabled={isExtracting || !extractUrl.trim()}
-                className="h-9 px-4 text-xs gap-2"
+                className="h-11 min-h-11 px-4 text-xs gap-2"
               >
                 {isExtracting ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
@@ -566,7 +568,7 @@ export function BrandKitPage() {
           )}
 
           {/* Abas */}
-          <div className="flex items-center gap-1 mt-4 border-t border-border/20 pt-3 overflow-x-auto">
+          <div className="flex items-center gap-1 mt-4 border-t border-border/20 pt-3 scroll-area-carousel">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -691,11 +693,12 @@ export function BrandKitPage() {
                     update({
                       custom_colors: [
                         ...form.custom_colors,
+                        // design-lint-ignore DL-01 reason:"Cor padrão inicial para nova cor customizada" expiry:"2027-12-31"
                         { name: `Custom ${form.custom_colors.length + 1}`, hex: "#8B5CF6" },
                       ],
                     })
                   }
-                  className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full h-11 min-h-11 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Adicionar Cor à Paleta
@@ -771,7 +774,7 @@ export function BrandKitPage() {
                   </Select>
 
                   {/* Preview ao vivo */}
-                  <div className="p-4 bg-background/50 rounded-lg border border-border/30 min-h-[80px] flex items-center">
+                  <div className="p-4 bg-background/50 rounded-lg border border-border/30 min-h-20 flex items-center">
                     <p
                       className={`${sizeClass} text-foreground`}
                       style={{ fontFamily: `'${(form as any)[key]}', sans-serif` }}
@@ -983,10 +986,7 @@ export function BrandKitPage() {
               </h3>
 
               {/* Preview ao vivo com os tokens da marca */}
-              <div
-                className="bk-bg rounded-lg overflow-hidden"
-                style={{ minHeight: "400px" }}
-              >
+              <div className="bk-bg rounded-lg overflow-hidden min-h-96">
                 <div className="p-8">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-8">
@@ -996,6 +996,7 @@ export function BrandKitPage() {
                       ) : (
                         <div
                           className="h-8 w-8 rounded-lg flex items-center justify-center text-foreground text-sm font-bold"
+                          // design-lint-ignore DL-05 reason:"Preview dinâmico de amostras de cores do Brand Kit" expiry:"2027-12-31"
                           style={{ backgroundColor: form.color_primary }}
                         >
                           J
@@ -1074,7 +1075,8 @@ export function BrandKitPage() {
                     ].map((color, i) => (
                       <div
                         key={i}
-                        className="w-8 h-8 rounded-full border-2 border-white/20 shadow-sm"
+                        className="w-8 h-8 rounded-full border-2 border-white/20"
+                        // design-lint-ignore DL-05 reason:"Preview dinâmico de amostras de cores do Brand Kit" expiry:"2027-12-31"
                         style={{ backgroundColor: color }}
                         title={color}
                       />
@@ -1087,6 +1089,7 @@ export function BrandKitPage() {
                       <div
                         key={i}
                         className="p-4"
+                        // design-lint-ignore DL-05 reason:"Preview dinâmico de estilos e tokens do Brand Kit" expiry:"2027-12-31"
                         style={{
                           backgroundColor: form.color_bg_light,
                           borderRadius:
@@ -1100,13 +1103,9 @@ export function BrandKitPage() {
                               ? "32px"
                               : "0",
                           boxShadow:
-                            form.shadow_style === "subtle"
-                              ? "0 4px 20px rgba(0,0,0,0.1)"
-                              : form.shadow_style === "medium"
-                              ? "0 10px 30px rgba(0,0,0,0.2)"
-                              : form.shadow_style === "strong"
-                              ? "0 20px 40px rgba(0,0,0,0.35)"
-                              : "none",
+                            form.shadow_style === "none"
+                              ? "none"
+                              : "var(--elevation-1)",
                         }}
                       >
                         <p

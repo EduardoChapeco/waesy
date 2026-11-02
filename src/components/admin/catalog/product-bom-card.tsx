@@ -318,7 +318,7 @@ export function ProductBomCard({
  variant="ghost"
  size="icon"
  onClick={() => handleRemoveItem(item.id)}
- className="size-10 sm:size-9 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+  className="size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
  <Trash2 className="size-3.5" />
  </Button>

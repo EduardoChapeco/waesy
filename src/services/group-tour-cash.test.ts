@@ -28,6 +28,7 @@ vi.mock("@tanstack/react-start", () => ({
 
 const mockSingle = vi.fn();
 const mockMaybeSingle = vi.fn();
+const mockRpc = vi.fn();
 
 const createQueryBuilder = () => {
   const builder: any = {
@@ -40,6 +41,7 @@ const createQueryBuilder = () => {
     limit: vi.fn(() => builder),
     single: mockSingle,
     maybeSingle: mockMaybeSingle,
+    rpc: mockRpc,
   };
   return builder;
 };
@@ -65,6 +67,7 @@ vi.mock("@/lib/server-access", () => ({
 
 import {
   createTourCashEntry,
+  deleteTourCashEntry,
   getTourCashSummary,
 } from "./group-tour-cash.functions";
 
@@ -77,23 +80,21 @@ describe("Gestão Financeira & Conciliação do Caixa da Excursão (Waesy)", () 
   });
 
   it("deve criar lançamento de saída no caixa da excursão e sincronizar com caixa central", async () => {
-    mockSingle.mockResolvedValueOnce({
+    mockRpc.mockResolvedValueOnce({
       data: {
-        id: "entry-1",
-        tour_id: "11111111-2222-3333-4444-555555555555",
-        store_id: validStoreUuid,
-        entry_type: "outflow",
-        category: "toll",
-        description: "Pedágio Rodovia BR-101",
-        amount_cents: 4500,
-        payment_method: "cash",
+        success: true,
+        replayed: false,
+        entry: {
+          id: "entry-1",
+          tour_id: "11111111-2222-3333-4444-555555555555",
+          store_id: validStoreUuid,
+          entry_type: "outflow",
+          category: "toll",
+          description: "Pedágio Rodovia BR-101",
+          amount_cents: 4500,
+          payment_method: "cash",
+        },
       },
-      error: null,
-    });
-
-    // Mock do caixa central aberto
-    mockMaybeSingle.mockResolvedValueOnce({
-      data: { id: "open-register-uuid" },
       error: null,
     });
 
@@ -107,12 +108,75 @@ describe("Gestão Financeira & Conciliação do Caixa da Excursão (Waesy)", () 
         amount_cents: 4500,
         payment_method: "cash",
         sync_with_central_cash: true,
+        idempotency_key: "550e8400-e29b-41d4-a716-446655440000",
       },
     });
 
     expect(res.id).toBe("entry-1");
     expect(res.amount_cents).toBe(4500);
-    expect(mockDb.insert).toHaveBeenCalled();
+    expect(mockDb.rpc).toHaveBeenCalledWith("record_group_tour_cash_entry", expect.objectContaining({
+      p_sync_with_central_cash: true,
+      p_idempotency_key: "550e8400-e29b-41d4-a716-446655440000",
+    }));
+  });
+
+  it("deve estornar por compensação e nunca excluir o lançamento original", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: { success: true, replayed: false, entry: { id: "reversal-1" } },
+      error: null,
+    });
+
+    const result = await deleteTourCashEntry({
+      data: {
+        store_id: validStoreUuid,
+        entry_id: "11111111-2222-3333-4444-555555555555",
+        reason: "Correção operacional",
+        idempotency_key: "660e8400-e29b-41d4-a716-446655440000",
+      },
+    });
+
+    expect(result.success).toBe(true);
+    expect(mockDb.rpc).toHaveBeenCalledWith("reverse_group_tour_cash_entry", expect.objectContaining({
+      p_reason: "Correção operacional",
+      p_idempotency_key: "660e8400-e29b-41d4-a716-446655440000",
+    }));
+    expect(mockDb.delete).not.toHaveBeenCalled();
+  });
+
+  it("deve falhar sem confirmar quando o RPC financeiro falha", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: null,
+      error: { message: "ledger indisponível" },
+    });
+
+    await expect(createTourCashEntry({
+      data: {
+        store_id: validStoreUuid,
+        tour_id: "11111111-2222-3333-4444-555555555555",
+        entry_type: "outflow",
+        category: "toll",
+        description: "Pedágio Rodovia BR-101",
+        amount_cents: 4500,
+        payment_method: "cash",
+        idempotency_key: "770e8400-e29b-41d4-a716-446655440000",
+      },
+    })).rejects.toThrow("ledger indisponível");
+  });
+
+  it("deve bloquear tenant divergente antes de chamar o RPC", async () => {
+    await expect(createTourCashEntry({
+      data: {
+        store_id: "660e8400-e29b-41d4-a716-446655440000",
+        tour_id: "11111111-2222-3333-4444-555555555555",
+        entry_type: "outflow",
+        category: "toll",
+        description: "Pedágio Rodovia BR-101",
+        amount_cents: 4500,
+        payment_method: "cash",
+        idempotency_key: "880e8400-e29b-41d4-a716-446655440000",
+      },
+    })).rejects.toThrow("Acesso não autorizado");
+    expect(mockDb.rpc).not.toHaveBeenCalled();
   });
 
   it("deve calcular o resumo financeiro e DRE de lucratividade da excursão", async () => {

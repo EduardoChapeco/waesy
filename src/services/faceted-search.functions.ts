@@ -210,7 +210,7 @@ export const searchFacetedCatalog = createServerFn({ method: "POST" })
         created_at,
         category:categories(id, name, slug),
         store:stores(id, name, slug, logo_url, city, state, niche),
-        product_media(url, is_cover, sort_order)
+        product_media(url, sort_order)
       `)
       .in("status", ["published", "active"]);
 
@@ -242,7 +242,7 @@ export const searchFacetedCatalog = createServerFn({ method: "POST" })
     // Helper para extrair imagem de capa
     const extractCover = (mediaList: any[] = []) => {
       if (!mediaList || mediaList.length === 0) return null;
-      const cover = mediaList.find((m) => m.is_cover);
+      const cover = mediaList.find((m) => m.sort_order === 0) || mediaList[0];
       return cover?.url || mediaList[0]?.url || null;
     };
 

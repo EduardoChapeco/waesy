@@ -50,7 +50,7 @@ export function GuidedSectionPicker({
       />
 
       {/* Painel Lateral Deslizante (Wix Studio / Framer Add Elements Panel) */}
-      <div className="relative z-50 w-full max-w-xl bg-card border-r border-border shadow-2xl flex flex-col h-full overflow-hidden animate-in slide-in-from-left duration-300">
+       <div className="relative z-50 w-full max-w-xl bg-card border-r border-border flex flex-col h-full overflow-hidden animate-in slide-in-from-left duration-300">
         {/* Cabeçalho do Drawer */}
         <div className="p-4 sm:p-5 border-b border-border/70 flex items-center justify-between bg-muted/20">
           <div className="flex items-center gap-3">
@@ -69,7 +69,7 @@ export function GuidedSectionPicker({
             size="icon"
             onClick={onClose}
             aria-label="Fechar catálogo de seções"
-            className="size-11 sm:size-10 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+             className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
           >
             <X className="size-5" />
           </Button>
@@ -94,7 +94,7 @@ export function GuidedSectionPicker({
                 type="button"
                 onClick={() => setActiveCategory(cat.id)}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "px-4 py-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer min-h-11 sm:min-h-[38px] flex items-center justify-center",
+                   "px-4 py-3 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer min-h-11 flex items-center justify-center",
                   activeCategory === cat.id
                     ? "bg-primary text-primary-foreground font-bold shadow-2xs"
                     : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted"

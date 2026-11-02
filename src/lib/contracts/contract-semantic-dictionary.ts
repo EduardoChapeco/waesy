@@ -1,6 +1,6 @@
 /**
  * contract-semantic-dictionary.ts — Catálogo Semântico de Variáveis por Nicho & Gerais
- * Plataforma Waesy (Padrão DocuSign / Pipefy / Autentique / PandaDoc)
+ * Plataforma Waesy (Padrão de Assinatura Eletrônica Homologada)
  *
  * Variáveis inteligentes dinâmicas para contratos, propostas e termos jurídicos.
  * Formatação automática de moeda (BRL), datas por extenso, tabelas estruturadas
@@ -216,7 +216,7 @@ export function interpolateContractVariables(
 }
 
 /**
- * AUTO-POSICIONAMENTO INTELIGENTE DE TAGS DE ASSINATURA (DocuSign / Autentique Pattern)
+ * AUTO-POSICIONAMENTO INTELIGENTE DE TAGS DE ASSINATURA (Padrão de Assinatura Eletrônica)
  * 
  * Analisa o conteúdo do contrato e gera automaticamente as caixas de assinatura,
  * rubrica, nome, CPF e data nas coordenadas exatas onde o cliente e a empresa assinam.

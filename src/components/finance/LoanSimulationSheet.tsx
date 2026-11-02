@@ -43,33 +43,34 @@ export interface LoanSimulationSheetProps {
     monthlyCents: number;
     totalPayableCents: number;
     firstDueDate: string;
-  }) => void;
+  }) => void | Promise<void>;
   className?: string;
 }
 
-const INSTALLMENT_OPTIONS = [6, 12, 18, 24, 36];
+const INSTALLMENT_OPTIONS = [6, 12, 18, 24, 36] as const;
 const QUICK_AMOUNTS = [50000, 100000, 250000, 500000]; // R$ 500, R$ 1.000, R$ 2.500, R$ 5.000
 
 export function LoanSimulationSheet({
   open,
   onOpenChange,
-  preApprovedLimitCents = 2500000, // R$ 25.000,00
+  preApprovedLimitCents,
   monthlyInterestRate = 0.0189, // 1.89% a.m.
   onConfirmLoan,
   className,
 }: LoanSimulationSheetProps) {
   const [amountCents, setAmountCents] = useState<number>(200000); // Default R$ 2.000,00
-  const [selectedInstallments, setSelectedInstallments] = useState<number>(12);
+  const [selectedInstallments, setSelectedInstallments] = useState<(typeof INSTALLMENT_OPTIONS)[number]>(12);
   const [showKeypad, setShowKeypad] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Manipulação de centavos pelo teclado in-app
   const handleDigit = (digit: string) => {
     const str = amountCents.toString();
     if (str.length >= 8) return; // Limite defensivo
     const next = parseInt(str + digit, 10);
-    if (next <= preApprovedLimitCents) {
+    if (!preApprovedLimitCents || next <= preApprovedLimitCents) {
       setAmountCents(next);
-    } else {
+    } else if (preApprovedLimitCents) {
       setAmountCents(preApprovedLimitCents);
       toast.info("Limite máximo pré-aprovado atingido.");
     }
@@ -117,26 +118,41 @@ export function LoanSimulationSheet({
   }, [amountCents, selectedInstallments, monthlyInterestRate]);
 
   // Primeira data de vencimento: 30 dias após hoje
-  const firstDueDateStr = useMemo(() => {
+  const firstDueDate = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + 30);
-    return d.toLocaleDateString("pt-BR");
+    return {
+      iso: d.toISOString().slice(0, 10),
+      label: d.toLocaleDateString("pt-BR"),
+    };
   }, []);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (amountCents < 10000) {
       toast.error("O valor mínimo para simulação é de R$ 100,00.");
       return;
     }
-    onConfirmLoan?.({
-      amountCents,
-      installments: selectedInstallments,
-      monthlyCents: simulation.monthlyCents,
-      totalPayableCents: simulation.totalPayableCents,
-      firstDueDate: firstDueDateStr,
-    });
-    toast.success("Proposta de crédito gerada com sucesso!");
-    onOpenChange(false);
+    if (!onConfirmLoan) {
+      toast.error("A solicitação de crédito ainda não está conectada.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onConfirmLoan({
+        amountCents,
+        installments: selectedInstallments,
+        monthlyCents: simulation.monthlyCents,
+        totalPayableCents: simulation.totalPayableCents,
+        firstDueDate: firstDueDate.iso,
+      });
+      onOpenChange(false);
+    } catch (error) {
+      console.error("[LoanSimulationSheet] Falha ao enviar solicitação:", error);
+      toast.error(error instanceof Error ? error.message : "Não foi possível enviar a solicitação.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -164,8 +180,8 @@ export function LoanSimulationSheet({
         </SheetHeader>
 
         <div className="space-y-4 pt-3">
-          {/* ── Banner de Limite Pré-Aprovado ── */}
-          <div className="p-4 rounded-xl bg-card border border-border flex items-center justify-between">
+          {/* ── Oferta somente quando fornecida pelo backend ── */}
+          {preApprovedLimitCents ? <div className="p-4 rounded-xl bg-card border border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
@@ -177,10 +193,12 @@ export function LoanSimulationSheet({
                 </span>
               </div>
             </div>
-            <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
-              Taxa especial 1,89% a.m.
+              <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-muted text-muted-foreground">
+              Limite informado pelo Waesy
             </span>
-          </div>
+          </div> : <div className="p-4 rounded-xl bg-muted/40 text-xs text-muted-foreground">
+            Simulação sujeita à análise de crédito.
+          </div>}
 
           {/* ── Display de Valor a Emprestar ── */}
           <div className="bg-card border border-border/80 rounded-2xl p-4 text-center space-y-2">
@@ -271,15 +289,13 @@ export function LoanSimulationSheet({
 
               <div className="text-right text-xs text-muted-foreground space-y-1">
                 <div>1ª parcela em</div>
-                <strong className="text-foreground">{firstDueDateStr}</strong>
+                <strong className="text-foreground">{firstDueDate.label}</strong>
               </div>
             </div>
 
-            {/* Pílula de Cashback da 1ª Parcela */}
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300">
-              <Sparkles className="size-4 shrink-0" />
-              <span>Receba <strong>R$ 50,00 de volta</strong> na 1ª parcela paga em dia.</span>
-            </div>
+            <p className="text-3xs text-muted-foreground">
+              Os valores são uma estimativa. Taxa, aprovação e condições finais dependem da análise do Waesy.
+            </p>
 
             {/* Detalhes de Encargos */}
             <div className="divide-y divide-border/20 text-2xs text-muted-foreground pt-1 space-y-1">
@@ -305,16 +321,17 @@ export function LoanSimulationSheet({
           {/* ── Botão de Confirmação ── */}
           <Button
             type="button"
-            onClick={handleConfirm}
+            onClick={() => void handleConfirm()}
+            disabled={isSubmitting}
             className="w-full rounded-xl h-11 min-h-11 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
-            <span>Confirmar e Sacar via Pix</span>
+            <span>{isSubmitting ? "Enviando solicitação..." : "Solicitar análise"}</span>
             <ArrowRight className="size-4" />
           </Button>
 
           <div className="text-center">
             <span className="text-3xs text-muted-foreground">
-              Crédito sujeito à análise. Liberação em conta em até 2 minutos após aprovação.
+              A solicitação será registrada para análise. Esta etapa não representa aprovação ou liberação de valores.
             </span>
           </div>
         </div>

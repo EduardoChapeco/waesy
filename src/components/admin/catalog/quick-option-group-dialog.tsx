@@ -349,7 +349,7 @@ export function QuickOptionGroupDialog({
  ? "Ex: Selecione o Tamanho da Peça"
  : "Ex: Escolha o Ponto da Carne"
  }
- className="h-10 text-xs rounded-lg"
+  className="h-11 min-h-11 text-xs rounded-lg"
  {...form.register("display_name", {
  onChange: (e) => {
  if (!form.getValues("internal_name") || form.getValues("internal_name") === "") {
@@ -387,7 +387,7 @@ export function QuickOptionGroupDialog({
  ? "Ex: tamanho-peca"
  : "Ex: ponto-carne"
  }
- className="h-10 text-xs font-mono rounded-lg"
+  className="h-11 min-h-11 text-xs font-mono rounded-lg"
  {...form.register("internal_name")}
  />
  </div>
@@ -480,7 +480,7 @@ export function QuickOptionGroupDialog({
  <Input
  type="number"
  min={0}
- className="h-8.5 text-xs rounded-lg"
+  className="h-11 min-h-11 text-xs rounded-lg"
  {...form.register("min_selections", { valueAsNumber: true })}
  />
  </div>
@@ -489,7 +489,7 @@ export function QuickOptionGroupDialog({
  <Input
  type="number"
  min={1}
- className="h-8.5 text-xs rounded-lg"
+  className="h-11 min-h-11 text-xs rounded-lg"
  {...form.register("max_selections", { valueAsNumber: true })}
  />
  </div>
@@ -517,7 +517,7 @@ export function QuickOptionGroupDialog({
  is_active: true,
  })
  }
- className="h-7 text-xs gap-1 border-dashed rounded-lg"
+  className="h-11 min-h-11 text-xs gap-2 border-dashed rounded-lg"
  >
  <Plus className="size-3.5 text-primary" />
  Adicionar Opção
@@ -594,7 +594,7 @@ export function QuickOptionGroupDialog({
  size="icon"
  disabled={fields.length === 1}
  onClick={() => remove(index)}
- className="size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+  className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -604,7 +604,7 @@ export function QuickOptionGroupDialog({
  <div className="pl-14">
  <Input
  placeholder="Descrição curta (ex: 2 fatias de bacon defumado crocante)"
- className="h-7 text-2xs rounded-lg bg-muted/20 border-border/50 text-muted-foreground"
+  className="h-11 min-h-11 text-2xs rounded-lg bg-muted/20 border-border/50 text-muted-foreground"
  {...form.register(`values.${index}.description` as const)}
  />
  </div>
@@ -628,7 +628,7 @@ export function QuickOptionGroupDialog({
  variant="outline"
  onClick={() => onOpenChange(false)}
  disabled={isSubmitting}
- className="h-10 text-xs rounded-lg"
+  className="h-11 min-h-11 text-xs rounded-lg"
  >
  Cancelar
  </Button>
@@ -636,7 +636,7 @@ export function QuickOptionGroupDialog({
  type="button"
  onClick={form.handleSubmit(onSubmit)}
  disabled={isSubmitting}
- className="h-10 text-xs gap-2 font-bold rounded-lg bg-primary text-primary-foreground"
+  className="h-11 min-h-11 text-xs gap-2 font-bold rounded-lg bg-primary text-primary-foreground"
  >
  {isSubmitting ? (
  <>

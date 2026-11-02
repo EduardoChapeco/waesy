@@ -22,7 +22,6 @@ import {
   Battery,
   BatteryCharging,
   Wifi,
-  Sparkles,
   ArrowUpRight,
   ShieldCheck,
   Check,
@@ -51,9 +50,9 @@ export interface CourierDashboardHeaderProps {
 export function CourierDashboardHeader({
   courierName = "CONDUTOR WAESY",
   vehicleType = "moto",
-  rating = 4.98,
-  totalDeliveries = 348,
-  todayEarningsCents = 18450, // R$ 184,50
+  rating,
+  totalDeliveries,
+  todayEarningsCents = 0,
   isOnline = true,
   onToggleOnline,
   onInstantPayoutClick,
@@ -66,11 +65,7 @@ export function CourierDashboardHeader({
     name: string;
     batteryLevel: number;
     status: "connected" | "disconnected";
-  } | null>({
-    name: "Pax D190 Bluetooth",
-    batteryLevel: 85,
-    status: "connected",
-  });
+  } | null>(null);
 
   const handleToggle = () => {
     const next = !onlineState;
@@ -113,14 +108,24 @@ export function CourierDashboardHeader({
                 <span className="text-sm font-bold tracking-tight text-foreground truncate max-w-35 sm:max-w-none">
                   {courierName}
                 </span>
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-3xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  <ShieldCheck className="size-3" />
-                  {rating.toFixed(2)} 
-                </span>
+                {typeof rating === "number" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-3xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    <ShieldCheck className="size-3" />
+                    {rating.toFixed(2)}
+                  </span>
+                )}
               </div>
-              <span className="text-2xs text-muted-foreground uppercase tracking-wider block">
-                {totalDeliveries} entregas concluídas
-              </span>
+              {typeof totalDeliveries === "number" ? (
+                <span className="text-2xs text-muted-foreground uppercase tracking-wider block">
+                  {totalDeliveries === 0
+                    ? "Nenhuma entrega concluída"
+                    : `${totalDeliveries} entrega${totalDeliveries > 1 ? "s" : ""} concluída${totalDeliveries > 1 ? "s" : ""}`}
+                </span>
+              ) : (
+                <span className="text-2xs text-muted-foreground uppercase tracking-wider block">
+                  Condutor Verificado
+                </span>
+              )}
             </div>
           </div>
 

@@ -337,7 +337,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  onClick={handlePublish}
  disabled={isSubmitting || isUploading || (!content.trim() && mediaUrls.length === 0 && !newsTitle.trim())}
  size="sm"
- className="bg-primary text-primary-foreground font-bold rounded-lg h-11 min-h-11 px-4 text-xs hover:scale-102 active:scale-98 transition-transform duration-200 cursor-pointer shadow-xs"
+ className="bg-primary text-primary-foreground font-bold rounded-lg h-11 min-h-11 px-4 text-xs hover:scale-102 active:scale-98 transition-transform duration-200 cursor-pointer"
  >
  {isSubmitting ? (
  <>
@@ -358,7 +358,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <Button
  asChild
  size="icon"
- className="size-11 sm:size-12 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted shadow-lg hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer"
+ className="size-11 sm:size-12 rounded-lg bg-card border border-border/80 text-foreground hover:bg-muted hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer"
  title="Abrir Conversas e Mensagens"
  >
  <Link to="/conta/conversas/$id" params={{ id: "novo" }}>
@@ -370,7 +370,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <Button
  onClick={() => setIsExpanded(!isExpanded)}
  className={cn(
- "h-11 sm:h-12 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs shadow-lg hover:scale-105 active:scale-95 transition-transform duration-200 flex items-center gap-2 cursor-pointer",
+ "h-11 sm:h-12 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs hover:scale-105 active:scale-95 transition-transform duration-200 flex items-center gap-2 cursor-pointer",
  isExpanded ? "ring-2 ring-primary/40 bg-foreground text-background" : ""
  )}
  >

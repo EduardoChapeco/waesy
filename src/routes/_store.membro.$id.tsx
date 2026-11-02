@@ -207,7 +207,7 @@ export function MemberPublicProfileView({
   const [isSavingResume, setIsSavingResume] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [socialTab, setSocialTab] = useState<"posts" | "media" | "saved" | "liked" | "events">("posts");
-  const [postViewMode, setPostViewMode] = useState<"feed" | "grid">("grid");
+  const [postViewMode, setPostViewMode] = useState<"feed" | "grid">("feed");
 
   // Lightbox Modal para fotos individuais
   const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
@@ -429,7 +429,7 @@ export function MemberPublicProfileView({
       ) : (
         <>
           {/* ── CABEÇALHO DO PERFIL CANÔNICO (INSTAGRAM / THREADS / APPLE HIG — SEM CAPA) ── */}
-          <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-4 shadow-xs">
+          <div className="w-full space-y-4 px-1 sm:px-0">
             {/* Top Row: Avatar Squircle 1:1 e Stats em Linha Horizontal */}
             <div className="flex items-center justify-between gap-4">
               {/* Avatar 1:1 Squircle */}
@@ -744,9 +744,9 @@ export function MemberPublicProfileView({
  </div>
  )}
 
- {/* ── Seletor de Tipo de Perfil / Modos: Vitrine / Publicações / Sobre & Currículo (Logo depois das infos da bio e links, antes das abas do perfil) ── */}
- <div className="flex items-center justify-between gap-2 pt-2 pb-1 border-t border-border/40">
- <div className="flex flex-nowrap overflow-x-auto no-scrollbar tab-list items-center gap-1 p-1 rounded-lg bg-muted/40 text-xs font-semibold">
+ {/* ── Seletor de Tipo de Perfil / Modos: Segmented Control 100% de Largura (Padrão Threads / Apple HIG) ── */}
+ <div className="w-full pt-2 pb-1 border-t border-border/40">
+ <div className="w-full flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar text-xs sm:text-sm font-semibold">
  {isBrandPersonaView ? (
  <>
  <Link
@@ -754,10 +754,10 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "comercial" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "comercial"
- ? "bg-background text-foreground font-bold shadow-xs"
- : "text-muted-foreground hover:text-foreground"
+ ? "text-foreground font-bold border-b-2 border-foreground rounded-none"
+ : "text-muted-foreground hover:text-foreground border-b-2 border-transparent rounded-none"
  )}
  >
  Vitrine
@@ -767,10 +767,10 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "social" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "social"
- ? "bg-background text-foreground font-bold shadow-xs"
- : "text-muted-foreground hover:text-foreground"
+ ? "text-foreground font-bold border-b-2 border-foreground rounded-none"
+ : "text-muted-foreground hover:text-foreground border-b-2 border-transparent rounded-none"
  )}
  >
  Publicações
@@ -780,10 +780,10 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "profissional" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "profissional"
- ? "bg-background text-foreground font-bold shadow-xs"
- : "text-muted-foreground hover:text-foreground"
+ ? "text-foreground font-bold border-b-2 border-foreground rounded-none"
+ : "text-muted-foreground hover:text-foreground border-b-2 border-transparent rounded-none"
  )}
  >
  Sobre
@@ -796,10 +796,10 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "social" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "social"
- ? "bg-background text-foreground font-bold shadow-xs"
- : "text-muted-foreground hover:text-foreground"
+ ? "text-foreground font-bold border-b-2 border-foreground rounded-none"
+ : "text-muted-foreground hover:text-foreground border-b-2 border-transparent rounded-none"
  )}
  >
  Publicações
@@ -809,10 +809,10 @@ export function MemberPublicProfileView({
  params={{ id: profile.username || profile.id }}
  search={{ modo: "profissional" }}
  className={cn(
- "h-11 min-h-11 px-4 inline-flex items-center justify-center shrink-0 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ "flex-1 h-11 min-h-11 px-2 inline-flex items-center justify-center text-center rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  activeMode === "profissional"
- ? "bg-background text-foreground font-bold shadow-xs"
- : "text-muted-foreground hover:text-foreground"
+ ? "text-foreground font-bold border-b-2 border-foreground rounded-none"
+ : "text-muted-foreground hover:text-foreground border-b-2 border-transparent rounded-none"
  )}
  >
  Sobre & Currículo
@@ -826,7 +826,7 @@ export function MemberPublicProfileView({
  {activeMode === "profissional" && (
  <div className="rounded-lg bg-card p-6 sm:p-8 space-y-8 divide-y divide-border/40">
  {/* ── 1. Seção Sobre ── */}
- <div className="space-y-4">
+ <div className="divide-y divide-border/40">
  <div className="flex items-center justify-between">
  <h2 className="text-lg font-bold text-foreground tracking-tight">Sobre</h2>
  {isOwner && (
@@ -1554,7 +1554,7 @@ export function MemberPublicProfileView({
  "pb-3 text-xs sm:text-sm font-bold transition-colors motion-reduce:transition-none relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap",
  socialTab === "posts"
  ? "text-foreground border-b-2 border-primary"
- : "text-muted-foreground hover:text-foreground"
+ : "text-muted-foreground hover:text-foreground border-b-2 border-transparent rounded-none"
  )}
  >
  Publicações ({posts.length})
@@ -1567,7 +1567,7 @@ export function MemberPublicProfileView({
  "pb-3 text-xs sm:text-sm font-bold transition-colors motion-reduce:transition-none relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap",
  socialTab === "media"
  ? "text-foreground border-b-2 border-primary"
- : "text-muted-foreground hover:text-foreground"
+ : "text-muted-foreground hover:text-foreground border-b-2 border-transparent rounded-none"
  )}
  >
  Fotos e Mídias
@@ -1582,7 +1582,7 @@ export function MemberPublicProfileView({
  "pb-3 text-xs sm:text-sm font-bold transition-colors motion-reduce:transition-none relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap",
  socialTab === "saved"
  ? "text-foreground border-b-2 border-primary"
- : "text-muted-foreground hover:text-foreground"
+ : "text-muted-foreground hover:text-foreground border-b-2 border-transparent rounded-none"
  )}
  >
  Salvos
@@ -1595,7 +1595,7 @@ export function MemberPublicProfileView({
  "pb-3 text-xs sm:text-sm font-bold transition-colors motion-reduce:transition-none relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap",
  socialTab === "liked"
  ? "text-foreground border-b-2 border-primary"
- : "text-muted-foreground hover:text-foreground"
+ : "text-muted-foreground hover:text-foreground border-b-2 border-transparent rounded-none"
  )}
  >
  Curtidos
@@ -1633,7 +1633,7 @@ export function MemberPublicProfileView({
  {socialTab === "posts" && (
  <div className="space-y-6">
  {posts.length === 0 ? (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3">
  <MessageSquare className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Nenhuma publicação compartilhada ainda.</p>
  </div>
@@ -1687,9 +1687,9 @@ export function MemberPublicProfileView({
  </div>
  ) : (
  /* Modo Feed Linear Flat — Zero Grid-in-Grid */
- <div className="space-y-4">
+ <div className="divide-y divide-border/40">
  {posts.map((p: any) => (
- <div key={p.id} className="rounded-lg bg-card border border-border/60 p-4 sm:p-5">
+ <div key={p.id} className="py-4">
  <UnifiedFeedCard
  post={{
  id: p.id,
@@ -1719,7 +1719,7 @@ export function MemberPublicProfileView({
  {socialTab === "media" && (
  <div className="space-y-6">
  {posts.filter((p: any) => !!p.media_url).length === 0 ? (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3">
  <Grid className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Nenhuma foto ou vídeo compartilhado ainda.</p>
  </div>
@@ -1741,7 +1741,7 @@ export function MemberPublicProfileView({
 
  {/* Conteúdo da Aba: Salvos (Apenas Proprietário) */}
  {isOwner && socialTab === "saved" && (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3">
  <Tag className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Seus itens salvos aparecerão aqui de forma privada.</p>
  </div>
@@ -1749,7 +1749,7 @@ export function MemberPublicProfileView({
 
  {/* Conteúdo da Aba: Curtidos (Apenas Proprietário) */}
  {isOwner && socialTab === "liked" && (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3">
  <Layers className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Publicações que você curtiu na Comunidade Waesy.</p>
  </div>
@@ -1757,9 +1757,9 @@ export function MemberPublicProfileView({
 
  {/* Conteúdo da Aba: Eventos da Marca/Artista */}
  {socialTab === "events" && (
- <div className="space-y-4">
+ <div className="divide-y divide-border/40">
  {creatorEvents.length === 0 ? (
- <div className="py-16 text-center text-muted-foreground space-y-3 rounded-lg bg-card border border-border/40">
+ <div className="py-16 text-center text-muted-foreground space-y-3">
  <Calendar className="size-10 mx-auto text-muted-foreground/30" />
  <p className="text-sm font-medium">Nenhum evento público agendado no momento.</p>
  </div>

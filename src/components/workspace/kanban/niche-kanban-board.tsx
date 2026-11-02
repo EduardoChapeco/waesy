@@ -74,7 +74,7 @@ export function NicheKanbanBoard({
     }}
     onClick={() => onCardClick?.(item)}
     className={cn(
-      "group relative flex flex-col gap-2 p-3 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:shadow-xs transition-colors duration-200 duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+      "group relative flex flex-col gap-2 p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/25 transition-colors duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               item.status === "won" && "border-success/30 bg-success/5",
               item.status === "lost" && "opacity-70 border-destructive/20 bg-destructive/5"
             )}
@@ -85,7 +85,7 @@ export function NicheKanbanBoard({
                 {item.title}
               </h4>
               {item.value !== undefined && item.value > 0 && (
-                <span className="shrink-0 text-xs font-mono font-bold text-primary">
+                <span className="shrink-0 text-xs font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
                   {new Intl.NumberFormat("pt-BR", {
                     style: "currency",
                     currency: "BRL",
@@ -166,7 +166,7 @@ export function NicheKanbanBoard({
     <FullViewportKanban
       columns={columns}
       className={className}
-      columnWidthClass="w-72 sm:w-[310px]"
+      columnWidthClass="w-72 sm:w-80"
     />
   );
 }

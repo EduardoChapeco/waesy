@@ -155,7 +155,7 @@ export interface HotelBankDTO {
  cover_photo_url?: string | null;
  website?: string | null;
  phone?: string | null;
- internal_rating: number;
+ internal_rating?: number | null;
  address?: string | null;
  airport_distance?: string | null;
  google_maps_url?: string | null;
@@ -565,7 +565,7 @@ export const createHotel = createServerFn({ method: "POST" })
  cover_photo_url: z.string().optional().nullable(),
  website: z.string().optional().nullable(),
  phone: z.string().optional().nullable(),
- internal_rating: z.number().default(4.8),
+ internal_rating: z.number().nullable().optional(),
  address: z.string().optional().nullable(),
  airport_distance: z.string().optional().nullable(),
  google_maps_url: z.string().optional().nullable(),
@@ -603,7 +603,7 @@ export const createHotel = createServerFn({ method: "POST" })
  cover_photo_url: data.cover_photo_url || (data.photos && data.photos[0]) || null,
  website: data.website?.trim() || null,
  phone: data.phone?.trim() || null,
- internal_rating: data.internal_rating,
+ internal_rating: data.internal_rating ?? null,
  address: data.address?.trim() || null,
  airport_distance: data.airport_distance?.trim() || null,
  google_maps_url: data.google_maps_url?.trim() || null,
@@ -1005,10 +1005,10 @@ export const getPublicHotelBySlug = createServerFn({ method: "GET" })
           city: gh.city,
           state: gh.state,
           country: gh.country,
-          stars: gh.stars || 4,
+          stars: gh.stars || null,
           regime_options: ["All Inclusive"],
           description: "Resort de excelência cadastrado no catálogo central canônico.",
-          internal_rating: 4.9,
+          internal_rating: null,
           is_active: true,
           cover_photo_url: null,
           photos: [],

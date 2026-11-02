@@ -645,32 +645,16 @@ function CriarNegocioPage() {
  <div className="space-y-1 pb-2 border-b border-border/60">
  <h2 className="text-lg font-bold text-foreground">Identidade Visual da Loja</h2>
  <p className="text-xs text-muted-foreground">
- Personalize a capa panorâmica e o logotipo oficial. Use o controle de corte e zoom interativo.
+ Padrão Threads e Instagram: sua empresa é representada pelo logotipo oficial em squircle, sem capas superiores.
  </p>
  </div>
 
  <div className="space-y-6">
- {/* Banner de Capa Panorâmico */}
- <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Capa de Cabeçalho (Banner da Loja)</Label>
- <ImageUpload
- value={bannerUrl}
- onChange={(url) => {
- setBannerUrl(url);
- toast.success("Capa da loja configurada!");
- }}
- onRemove={() => setBannerUrl("")}
- bucket="cms-media"
- variant="banner"
- aspectPreset="banner"
- helperText="Formato panorâmico (21:9). Aparece no topo do seu catálogo e vitrine."
- />
- </div>
-
  {/* Logotipo Oficial */}
- <div className="space-y-2 pt-2 border-t border-border/40">
- <Label className="text-xs font-bold text-foreground">Logotipo Oficial da Loja</Label>
- <div className="flex items-center gap-5 p-4 rounded-lg bg-muted/20 border border-border/60">
+ <div className="space-y-2">
+ <Label className="text-xs font-bold text-foreground">Logotipo Oficial da Loja (1:1 Squircle)</Label>
+ <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-lg bg-muted/20 border border-border/60">
+ <div className="size-24 sm:size-28 shrink-0">
  <ImageUpload
  value={logoUrl}
  onChange={(url) => {
@@ -681,12 +665,13 @@ function CriarNegocioPage() {
  bucket="cms-media"
  variant="avatar"
  aspectPreset="square"
- className="w-24 h-24 sm:w-28 sm:h-28"
+ className="size-full"
  />
- <div className="space-y-1 text-left">
+ </div>
+ <div className="space-y-1 text-left flex-1">
  <p className="text-xs font-bold text-foreground">Ícone / Avatar Quadrado (1:1)</p>
  <p className="text-2xs text-muted-foreground leading-relaxed">
- Recomendado: 512x512px. Exibido na busca, no topo do cardápio e nos comprovantes de pedido.
+ Recomendado: 512x512px. Exibido no topo do catálogo, na busca local, no feed e nos comprovantes de pedido.
  </p>
  </div>
  </div>
@@ -1121,33 +1106,11 @@ function CriarNegocioPage() {
  </Badge>
  </div>
 
- {/* Capa Panorâmica da Loja */}
- <div className="relative aspect-[21/9] sm:aspect-[16/7] w-full bg-muted overflow-hidden">
- {bannerUrl ? (
- <img src={bannerUrl} alt="Capa da Loja" className="size-full object-cover" />
- ) : (
- <img
- src={selectedSegment.coverImage}
- alt={selectedSegment.title}
- className="size-full object-cover opacity-80"
- />
- )}
- <div className="absolute inset-0 bg-black/60" />
-
- {/* Badge de Nicho sobre a Foto */}
- <div className="absolute top-3 left-3">
- <Badge className="bg-foreground/60 backdrop-blur-md text-foreground border-white/20 text-2xs font-bold gap-1">
- <selectedSegment.icon className="size-3" />
- <span>{selectedSegment.badge}</span>
- </Badge>
- </div>
- </div>
-
- {/* Corpo da Loja com Logo Sobreposto */}
- <div className="p-5 pt-0 relative space-y-4">
- <div className="flex items-end justify-between -mt-8 mb-2">
+ {/* Cabeçalho da Loja Canônico (Padrão Threads — Sem Capa Decorativa) */}
+ <div className="p-5 border-b border-border/40 bg-card">
+ <div className="flex items-center justify-between gap-3">
  {/* Logotipo Redondo/Squircle */}
- <div className="size-16 sm:size-20 rounded-lg overflow-hidden border-[3px] border-card bg-background flex items-center justify-center shrink-0">
+ <div className="size-16 sm:size-20 rounded-lg overflow-hidden border-2 border-border/60 bg-background flex items-center justify-center shrink-0 shadow-2xs">
  {logoUrl ? (
  <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover" />
  ) : (
@@ -1156,6 +1119,17 @@ function CriarNegocioPage() {
  </div>
  )}
  </div>
+
+ <Badge className="bg-primary/10 text-primary border-primary/20 text-2xs font-bold gap-1">
+ <selectedSegment.icon className="size-3" />
+ <span>{selectedSegment.badge}</span>
+ </Badge>
+ </div>
+ </div>
+
+ {/* Corpo da Loja */}
+ <div className="p-5 space-y-4">
+ <div className="flex items-end justify-between mb-2">
 
  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-2xs font-bold gap-1">
  <ShieldCheck className="size-3" />

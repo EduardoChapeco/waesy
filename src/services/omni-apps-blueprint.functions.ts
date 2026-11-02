@@ -41,14 +41,22 @@ export const OMNI_APP_BLUEPRINTS: Record<OmniAppId, OmniAppBlueprint> = {
         seo: { title: "Supermercado Online | Ofertas e Entregas Rápidas", description: "Faça suas compras de mercado com entrega rápida ou retirada na loja.", allowIndexing: true },
       },
       {
-        slug: "clube",
-        title: "Clube de Fidelidade",
-        pageType: "dashboard",
-        requiredRoles: ["member"],
+        slug: "departamento",
+        title: "Departamentos & Corredores",
+        pageType: "list",
         initialBlocks: [
-          { type: "supermarket_club_dashboard", props: { showEconomizometro: true, showCashback: true, showCoupons: true } },
+          { type: "supermarket_aisle_browser", props: { showSubcategories: true } },
         ],
-        seo: { title: "Meu Clube | Descontos Exclusivos", description: "Consulte seu saldo de cashback e ofertas exclusivas.", allowIndexing: false },
+        seo: { title: "Departamentos do Mercado | Ofertas por Seção", description: "Navegue pelos corredores de mercearia, açougue, hortifrúti e bebidas.", allowIndexing: true },
+      },
+      {
+        slug: "produto",
+        title: "Ficha do Produto com Balança",
+        pageType: "detail",
+        initialBlocks: [
+          { type: "supermarket_product_weighing", props: { showRipenessOption: true, showClubPricing: true } },
+        ],
+        seo: { title: "Produto de Supermercado | Preços e Pesagem", description: "Detalhes do item, tabela nutricional e condições por quilo ou unidade.", allowIndexing: true },
       },
       {
         slug: "carrinho",
@@ -57,7 +65,26 @@ export const OMNI_APP_BLUEPRINTS: Record<OmniAppId, OmniAppBlueprint> = {
         initialBlocks: [
           { type: "supermarket_cart_sheet", props: { enableOrderBump: true, freeShippingGoalCents: 15000 } },
         ],
-        seo: { title: "Sacola | Revisão do Pedido", description: "Revise seus itens e agende a entrega.", allowIndexing: false },
+        seo: { title: "Sacola de Mercado | Revisão do Pedido", description: "Revise seus itens, agende a entrega e finalize seu pedido com segurança.", allowIndexing: false },
+      },
+      {
+        slug: "pedidos",
+        title: "Histórico de Compras",
+        pageType: "dashboard",
+        initialBlocks: [
+          { type: "supermarket_order_history", props: { allowReorder: true } },
+        ],
+        seo: { title: "Minhas Compras | Repetir Pedido", description: "Consulte seus pedidos anteriores e compre novamente em um toque.", allowIndexing: false },
+      },
+      {
+        slug: "clube",
+        title: "Clube de Fidelidade",
+        pageType: "dashboard",
+        requiredRoles: ["member"],
+        initialBlocks: [
+          { type: "supermarket_club_dashboard", props: { showEconomizometro: true, showCashback: true, showCoupons: true } },
+        ],
+        seo: { title: "Meu Clube | Descontos Exclusivos", description: "Consulte seu saldo de cashback e ofertas exclusivas.", allowIndexing: false },
       },
     ],
     navItems: [
@@ -93,6 +120,33 @@ export const OMNI_APP_BLUEPRINTS: Record<OmniAppId, OmniAppBlueprint> = {
         seo: { title: "Cardápio Online | Faça seu Pedido", description: "Peça refeições deliciosas com entrega rápida.", allowIndexing: true },
       },
       {
+        slug: "produto",
+        title: "Detalhe do Prato & Adicionais",
+        pageType: "detail",
+        initialBlocks: [
+          { type: "food_item_customizer", props: { showModifiers: true, allowSpecialNotes: true } },
+        ],
+        seo: { title: "Item do Cardápio | Personalização de Ingredientes", description: "Escolha complementos, adicionais e o ponto da sua refeição.", allowIndexing: true },
+      },
+      {
+        slug: "carrinho",
+        title: "Sacola de Pedidos",
+        pageType: "cart",
+        initialBlocks: [
+          { type: "delivery_cart_summary", props: { showKmEstimate: true, allowCoupons: true } },
+        ],
+        seo: { title: "Sacola de Delivery | Revisão do Pedido", description: "Revise seus pratos selecionados, taxa de entrega e endereço de entrega.", allowIndexing: false },
+      },
+      {
+        slug: "pedidos",
+        title: "Meus Pedidos & Acompanhamento",
+        pageType: "dashboard",
+        initialBlocks: [
+          { type: "delivery_tracking_live", props: { showDriverMap: true } },
+        ],
+        seo: { title: "Meus Pedidos | Rastreio em Tempo Real", description: "Acompanhe o preparo na cozinha e o trajeto da entrega em tempo real.", allowIndexing: false },
+      },
+      {
         slug: "acompanhar",
         title: "Acompanhar Pedido",
         pageType: "dashboard",
@@ -104,7 +158,8 @@ export const OMNI_APP_BLUEPRINTS: Record<OmniAppId, OmniAppBlueprint> = {
     ],
     navItems: [
       { id: "menu", label: "Cardápio", icon: "Utensils", targetSlug: "cardapio" },
-      { id: "orders", label: "Meus Pedidos", icon: "Clock", targetSlug: "acompanhar" },
+      { id: "cart", label: "Sacola", icon: "ShoppingBag", targetSlug: "carrinho", isPrimaryAction: true },
+      { id: "orders", label: "Meus Pedidos", icon: "Clock", targetSlug: "pedidos" },
       { id: "contact", label: "Contato", icon: "MessageCircle", targetSlug: "contato" },
     ],
     dataRequirements: { entity: "products", tableManagement: true },
@@ -131,6 +186,34 @@ export const OMNI_APP_BLUEPRINTS: Record<OmniAppId, OmniAppBlueprint> = {
           { type: "events_list_grid", props: { itemsPerPage: 12 } },
         ],
         seo: { title: "Ingressos e Shows | Agenda Cultural", description: "Garanta seu ingresso nominal para os melhores eventos.", allowIndexing: true },
+      },
+      {
+        slug: "evento",
+        title: "Detalhe do Evento & Lotes",
+        pageType: "detail",
+        initialBlocks: [
+          { type: "events_attraction_sheet", props: { showLineup: true, showLocationMap: true } },
+        ],
+        seo: { title: "Atração | Lotes e Horários", description: "Confira o lineup completo, setores e regras do evento.", allowIndexing: true },
+      },
+      {
+        slug: "ingressos",
+        title: "Seleção de Ingressos & Lotes",
+        pageType: "cart",
+        initialBlocks: [
+          { type: "events_ticket_selector", props: { allowHalfPrice: true } },
+        ],
+        seo: { title: "Comprar Ingressos | Seleção de Lote", description: "Escolha seus ingressos nominais com segurança.", allowIndexing: false },
+      },
+      {
+        slug: "pedidos",
+        title: "Histórico de Ingressos",
+        pageType: "dashboard",
+        requiredRoles: ["member"],
+        initialBlocks: [
+          { type: "events_ticket_wallet", props: { showQrCode: true, allowPdfExport: true } },
+        ],
+        seo: { title: "Meus Ingressos e Pedidos", description: "Consulte suas compras de ingressos e vouchers.", allowIndexing: false },
       },
       {
         slug: "meus-ingressos",
@@ -172,11 +255,40 @@ export const OMNI_APP_BLUEPRINTS: Record<OmniAppId, OmniAppBlueprint> = {
         ],
         seo: { title: "Agendamento Online | Escolha seu Horário", description: "Reserve seu atendimento com nossos especialistas.", allowIndexing: true },
       },
+      {
+        slug: "procedimento",
+        title: "Detalhes do Procedimento",
+        pageType: "detail",
+        initialBlocks: [
+          { type: "service_detail_sheet", props: { showPrepNotes: true } },
+        ],
+        seo: { title: "Procedimento Especializado | Informações", description: "Duração, cuidados pré e pós-atendimento.", allowIndexing: true },
+      },
+      {
+        slug: "profissionais",
+        title: "Corpo Clínico & Especialistas",
+        pageType: "list",
+        initialBlocks: [
+          { type: "specialist_team_grid", props: { showRatings: true } },
+        ],
+        seo: { title: "Especialistas e Profissionais", description: "Conheça nossa equipe de atendimento.", allowIndexing: true },
+      },
+      {
+        slug: "pedidos",
+        title: "Meus Agendamentos",
+        pageType: "dashboard",
+        requiredRoles: ["member"],
+        initialBlocks: [
+          { type: "booking_history_list", props: { allowReschedule: true } },
+        ],
+        seo: { title: "Consultas Agendadas", description: "Gerencie seus horários agendados e confirmações.", allowIndexing: false },
+      },
     ],
     navItems: [
       { id: "schedule", label: "Agendar", icon: "Calendar", targetSlug: "agendamento" },
-      { id: "team", label: "Profissionais", icon: "Users", targetSlug: "agendamento#equipe" },
-      { id: "services", label: "Procedimentos", icon: "Sparkles", targetSlug: "agendamento#servicos" },
+      { id: "team", label: "Profissionais", icon: "Users", targetSlug: "profissionais" },
+      { id: "services", label: "Procedimentos", icon: "Tag", targetSlug: "agendamento#servicos" },
+      { id: "my_bookings", label: "Minhas Reservas", icon: "CalendarCheck", targetSlug: "pedidos" },
     ],
     dataRequirements: { entity: "services", bookingCalendar: true },
   },
@@ -202,10 +314,39 @@ export const OMNI_APP_BLUEPRINTS: Record<OmniAppId, OmniAppBlueprint> = {
         ],
         seo: { title: "Loja Virtual Oficial | Melhores Ofertas", description: "Compre produtos direto do fabricante com frete para todo o Brasil.", allowIndexing: true },
       },
+      {
+        slug: "produto",
+        title: "Ficha do Produto",
+        pageType: "detail",
+        initialBlocks: [
+          { type: "product_detail_view", props: { showFreightCalculator: true, showGallery: true } },
+        ],
+        seo: { title: "Produto Oficial | Especificações e Frete", description: "Tamanhos, cores, cálculo de frete e garantia.", allowIndexing: true },
+      },
+      {
+        slug: "carrinho",
+        title: "Carrinho de Compras",
+        pageType: "cart",
+        initialBlocks: [
+          { type: "ecommerce_cart_sheet", props: { showFreightEstimate: true, showCouponInput: true } },
+        ],
+        seo: { title: "Carrinho | Finalizar Compra", description: "Revise seus produtos e prossiga para o checkout seguro.", allowIndexing: false },
+      },
+      {
+        slug: "pedidos",
+        title: "Meus Pedidos",
+        pageType: "dashboard",
+        requiredRoles: ["member"],
+        initialBlocks: [
+          { type: "ecommerce_order_tracker", props: { showTrackingCode: true } },
+        ],
+        seo: { title: "Meus Pedidos | Rastreamento", description: "Acompanhe suas compras e código de rastreamento dos Correios.", allowIndexing: false },
+      },
     ],
     navItems: [
       { id: "shop", label: "Produtos", icon: "ShoppingBag", targetSlug: "loja" },
       { id: "cart", label: "Carrinho", icon: "ShoppingCart", targetSlug: "carrinho" },
+      { id: "orders", label: "Meus Pedidos", icon: "Package", targetSlug: "pedidos" },
     ],
     dataRequirements: { entity: "products" },
   },
@@ -323,11 +464,13 @@ export const listOmniAppBlueprints = createServerFn({ method: "GET" })
 // ── 2. INSTALAR / ATIVAR UM OMNI APP ATOMICAMENTE ──
 
 export const installOmniApp = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      appId: OmniAppIdSchema,
-      storeId: z.string().uuid().optional(),
-    })
+  .validator((data: { appId: OmniAppId; storeId?: string }) =>
+    z
+      .object({
+        appId: OmniAppIdSchema,
+        storeId: z.string().uuid().optional(),
+      })
+      .parse(data)
   )
   .handler(async ({ data }): Promise<{
     status: "ok";

@@ -6,6 +6,7 @@ import { decodeHtmlEntities } from "@/lib/utils";
 import { getArticleDetail, type NewsArticleDTO, type SponsorDTO } from "@/services/news.functions";
 import { NewsSponsorBanner } from "@/components/news/news-sponsor-banner";
 import { NewsCommentsSection } from "@/components/news/news-comments-section";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { recordAdTelemetry } from "@/services/telemetry.functions";
 import { toast } from "sonner";
 
@@ -231,6 +232,24 @@ function NoticiaDetailPage() {
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
+
+      {/* Header Padronizado Canônico com Botão de Retorno e Ações Minimalistas */}
+      <NativeMobileHeader
+        title="Notícia"
+        showBack={true}
+        fallbackHref="/noticias"
+        mobileOnly={false}
+        rightActions={
+          <button
+            type="button"
+            onClick={handleShare}
+            aria-label="Compartilhar notícia"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Share2 className="size-5" />
+          </button>
+        }
+      />
 
       <article className="max-w-3xl mx-auto px-1 sm:px-6 space-y-6 pb-20 pt-3">
         {/* Breadcrumb Apple HIG */}

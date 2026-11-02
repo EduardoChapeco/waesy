@@ -112,16 +112,55 @@ export const DEFAULT_CHECKLIST_TEMPLATES: Record<string, Array<{ label: string; 
 // Airline check-in links
 export const AIRLINE_CHECKIN_LINKS: Record<string, string> = {
   LA: 'https://www.latam.com/pt_br/fale-conosco/check-in/',
+  JJ: 'https://www.latam.com/pt_br/fale-conosco/check-in/',
+  LATAM: 'https://www.latam.com/pt_br/fale-conosco/check-in/',
   G3: 'https://www.gol.com.br/voos/checkin',
+  GL: 'https://www.gol.com.br/voos/checkin',
+  GOL: 'https://www.gol.com.br/voos/checkin',
   AD: 'https://www.azul.com.br/checkin',
+  AZU: 'https://www.azul.com.br/checkin',
+  AZUL: 'https://www.azul.com.br/checkin',
   AA: 'https://www.aa.com/reservation/webCheckInViewReservationsAccess.do',
+  AMERICAN: 'https://www.aa.com/reservation/webCheckInViewReservationsAccess.do',
   UA: 'https://www.united.com/en/us/checkin',
+  UNITED: 'https://www.united.com/en/us/checkin',
   DL: 'https://www.delta.com/us/en/check-in/overview',
+  DELTA: 'https://www.delta.com/us/en/check-in/overview',
   IB: 'https://www.iberia.com/en/check-in/',
+  IBERIA: 'https://www.iberia.com/en/check-in/',
   TP: 'https://www.tapair.com/pt/check-in',
+  TAP: 'https://www.tapair.com/pt/check-in',
   AF: 'https://wwws.airfrance.com/en/check-in',
+  AIRFRANCE: 'https://wwws.airfrance.com/en/check-in',
   KL: 'https://www.klm.com/travel/pt_pt/fly/check_in/index.htm',
+  KLM: 'https://www.klm.com/travel/pt_pt/fly/check_in/index.htm',
+  CM: 'https://checkin.si.amadeus.net/static/PRD/CM/',
+  COPA: 'https://checkin.si.amadeus.net/static/PRD/CM/',
+  EK: 'https://www.emirates.com/br/portuguese/manage-booking/online-check-in/',
+  EMIRATES: 'https://www.emirates.com/br/portuguese/manage-booking/online-check-in/',
+  QR: 'https://www.qatarairways.com/pt-br/check-in.html',
+  QATAR: 'https://www.qatarairways.com/pt-br/check-in.html',
+  AV: 'https://www.avianca.com/br/pt/experiencia-de-viagem/check-in-online/',
+  AVIANCA: 'https://www.avianca.com/br/pt/experiencia-de-viagem/check-in-online/',
+  AR: 'https://www.aerolineas.com.ar/check-in',
+  UX: 'https://www.aireuropa.com/br/pt/aea/check-in-online.html',
+  BA: 'https://www.britishairways.com/travel/olcilandingpage/public/en_br',
+  LH: 'https://www.lufthansa.com/br/pt/online-check-in',
 };
+
+export function resolveAirlineCheckinUrl(input?: string | null): string | null {
+  if (!input || !input.trim()) return null;
+  const raw = input.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (AIRLINE_CHECKIN_LINKS[raw]) {
+    return AIRLINE_CHECKIN_LINKS[raw];
+  }
+  for (const [key, url] of Object.entries(AIRLINE_CHECKIN_LINKS)) {
+    if (raw.includes(key) || key.includes(raw)) {
+      return url;
+    }
+  }
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // Server Functions

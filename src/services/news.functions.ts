@@ -2,47 +2,48 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { decryptSecret } from "@/lib/crypto-vault.server";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
 
 export interface NewsSectionDTO {
- type: "paragraph" | "heading" | "quote" | "gallery" | "video";
- content: string | string[];
- caption?: string;
+  type: "paragraph" | "heading" | "quote" | "gallery" | "video";
+  content: string | string[];
+  caption?: string;
 }
 
 export interface NewsArticleDTO {
- id: string;
- store_id: string;
- store_name?: string;
- store_avatar?: string;
- author_profile_id?: string | null;
- author_name?: string;
- title: string;
- slug: string;
- kicker?: string | null;
- subtitle?: string | null;
- content_sections: NewsSectionDTO[];
- cover_media_url?: string | null;
- cover_media_type: "image" | "video" | "gif";
- category: string;
- tags: string[];
+  id: string;
+  store_id: string;
+  store_name?: string;
+  store_avatar?: string;
+  author_profile_id?: string | null;
+  author_name?: string;
+  title: string;
+  slug: string;
+  kicker?: string | null;
+  subtitle?: string | null;
+  content_sections: NewsSectionDTO[];
+  cover_media_url?: string | null;
+  cover_media_type: "image" | "video" | "gif";
+  category: string;
+  tags: string[];
   city?: string;
   state?: string;
   source_url?: string | null;
   ai_summary?: string | null;
- reading_time_minutes: number;
- views_count: number;
- unique_views_count: number;
- status: "draft" | "published" | "archived";
- published_at?: string | null;
- created_at: string;
- editorial_stage?: "em_apuracao" | "apurado" | "publicado" | "oculto";
- is_members_only?: boolean;
- source_credibility?: string | null;
- ad_policy?: ArticleAdPolicy;
- exclusive_sponsor_ids?: string[];
- placement_overrides?: Record<string, string>;
+  reading_time_minutes: number;
+  views_count: number;
+  unique_views_count: number;
+  status: "draft" | "published" | "archived";
+  published_at?: string | null;
+  created_at: string;
+  editorial_stage?: "em_apuracao" | "apurado" | "publicado" | "oculto";
+  is_members_only?: boolean;
+  source_credibility?: string | null;
+  ad_policy?: ArticleAdPolicy;
+  exclusive_sponsor_ids?: string[];
+  placement_overrides?: Record<string, string>;
 }
 
 export const CANONICAL_EDITORIAL_PLACEMENT_ZONES = [
@@ -114,39 +115,39 @@ export interface EditorialAdSlotResolution {
 }
 
 export interface NewsCommentDTO {
- id: string;
- article_id: string;
- user_id: string;
- author_name: string;
- author_avatar?: string | null;
- content_text: string;
- created_at: string;
+  id: string;
+  article_id: string;
+  user_id: string;
+  author_name: string;
+  author_avatar?: string | null;
+  content_text: string;
+  created_at: string;
 }
 
 // ── 1. Leitura Pública de Notícias (100% Real no Supabase) ───────────────────
 
 export const listPublicArticles = createServerFn({ method: "GET" })
- .validator(
- z
- .object({
- category: z.string().optional(),
- storeId: z.string().uuid().optional(),
- limit: z.number().int().min(1).max(50).default(20),
- query: z.string().optional(),
-      city: z.string().optional(),
-      regionHint: z.enum(["vale_do_paraiba", "santa_catarina", "all"]).optional(),
- })
- .optional(),
- )
- .handler(async ({ data }): Promise<NewsArticleDTO[]> => {
- const supabase = getAnonServerClient();
- const limit = data?.limit ?? 20;
+  .validator(
+    z
+      .object({
+        category: z.string().optional(),
+        storeId: z.string().uuid().optional(),
+        limit: z.number().int().min(1).max(50).default(20),
+        query: z.string().optional(),
+        city: z.string().optional(),
+        regionHint: z.enum(["vale_do_paraiba", "santa_catarina", "all"]).optional(),
+      })
+      .optional(),
+  )
+  .handler(async ({ data }): Promise<NewsArticleDTO[]> => {
+    const supabase = getAnonServerClient();
+    const limit = data?.limit ?? 20;
 
- try {
- let q = supabase
- .from("news_articles")
- .select(
- `
+    try {
+      let q = supabase
+        .from("news_articles")
+        .select(
+          `
  id, store_id, author_profile_id, author_name, source_url, ai_summary, quality_score,
  title, slug, kicker, subtitle, content_sections,
  cover_media_url, cover_media_type, category, tags, city, state, reading_time_minutes,
@@ -154,166 +155,185 @@ export const listPublicArticles = createServerFn({ method: "GET" })
  stores ( name, logo_url, avatar_url, slug ),
  profiles ( full_name, avatar_url )
  `,
- )
- .eq("status", "published")
- .order("published_at", { ascending: false })
- .limit(Math.max(limit * 3, 60));
+        )
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(Math.max(limit * 3, 60));
 
- if (data?.category && data.category !== "todas") {
- q = q.eq("category", data.category);
- }
+      if (data?.category && data.category !== "todas") {
+        q = q.eq("category", data.category);
+      }
 
- if (data?.storeId) {
- q = q.eq("store_id", data.storeId);
- }
+      if (data?.storeId) {
+        q = q.eq("store_id", data.storeId);
+      }
 
- if (data?.query) {
- q = q.ilike("title", `%${data.query}%`);
- }
+      if (data?.query) {
+        q = q.ilike("title", `%${data.query}%`);
+      }
 
- const { data: rawArticles, error } = await q;
- if (error) {
- console.warn("[news] Erro ao buscar artigos no banco:", error);
- return [];
- }
+      const { data: rawArticles, error } = await q;
+      if (error) {
+        console.warn("[news] Erro ao buscar artigos no banco:", error);
+        return [];
+      }
 
- let articlesList = Array.isArray(rawArticles) ? [...rawArticles] : [];
+      let articlesList = Array.isArray(rawArticles) ? [...rawArticles] : [];
 
- // Priorização por proximidade geográfica:
- // Se houver matérias da cidade ativa, elas lideram o feed.
- // Se a cidade não tiver notícias próprias locais cadastradas,
- // as notícias estaduais/regionais/nacionais mais recentes são exibidas normalmente,
- // evitando a tela vazia de "Nenhuma notícia encontrada".
- const cleanCity =
-   data?.city &&
-   data.city !== "todas" &&
-   data.city !== "Todas" &&
-   data.city !== "Global" &&
-   data.city !== "all"
-     ? data.city.trim().toLowerCase()
-     : null;
+      // Priorização por proximidade geográfica:
+      // Se houver matérias da cidade ativa, elas lideram o feed.
+      // Se a cidade não tiver notícias próprias locais cadastradas,
+      // as notícias estaduais/regionais/nacionais mais recentes são exibidas normalmente,
+      // evitando a tela vazia de "Nenhuma notícia encontrada".
+      const cleanCity =
+        data?.city &&
+        data.city !== "todas" &&
+        data.city !== "Todas" &&
+        data.city !== "Global" &&
+        data.city !== "all"
+          ? data.city.trim().toLowerCase()
+          : null;
 
- if (cleanCity && articlesList.length > 1) {
-   articlesList.sort((a: any, b: any) => {
-     const aCity = (a.city || "").toLowerCase();
-     const bCity = (b.city || "").toLowerCase();
-     const aTags = Array.isArray(a.tags) ? a.tags.map((t: string) => String(t).toLowerCase()) : [];
-     const bTags = Array.isArray(b.tags) ? b.tags.map((t: string) => String(t).toLowerCase()) : [];
+      if (cleanCity && articlesList.length > 1) {
+        articlesList.sort((a: any, b: any) => {
+          const aCity = (a.city || "").toLowerCase();
+          const bCity = (b.city || "").toLowerCase();
+          const aTags = Array.isArray(a.tags)
+            ? a.tags.map((t: string) => String(t).toLowerCase())
+            : [];
+          const bTags = Array.isArray(b.tags)
+            ? b.tags.map((t: string) => String(t).toLowerCase())
+            : [];
 
-     const aMatch = aCity.includes(cleanCity) || aTags.some((t: string) => t.includes(cleanCity));
-     const bMatch = bCity.includes(cleanCity) || bTags.some((t: string) => t.includes(cleanCity));
+          const aMatch =
+            aCity.includes(cleanCity) || aTags.some((t: string) => t.includes(cleanCity));
+          const bMatch =
+            bCity.includes(cleanCity) || bTags.some((t: string) => t.includes(cleanCity));
 
-     if (aMatch && !bMatch) return -1;
-     if (!aMatch && bMatch) return 1;
-     return 0;
-   });
- } else if (data?.regionHint === "vale_do_paraiba" && articlesList.length > 1) {
-   const valeKeywords = [
-     "são josé dos campos",
-     "sao jose dos campos",
-     "taubaté",
-     "taubate",
-     "jacareí",
-     "jacarei",
-     "pindamonhangaba",
-     "guaratinguetá",
-     "guaratingueta",
-     "caçapava",
-     "cacapava",
-     "lorena",
-     "aparecida",
-     "cruzeiro",
-     "caraguatatuba",
-     "ubatuba",
-     "são sebastião",
-     "sao sebastiao",
-     "ilhabela",
-     "campos do jordão",
-     "campos do jordao",
-     "vale do paraíba",
-     "vale do paraiba",
-   ];
-   articlesList.sort((a: any, b: any) => {
-     const aBlob = `${a.city || ""} ${a.state || ""} ${a.title || ""}`.toLowerCase();
-     const bBlob = `${b.city || ""} ${b.state || ""} ${b.title || ""}`.toLowerCase();
-     const aScore = (a.state === "SP" ? 2 : 0) + (valeKeywords.some((k) => aBlob.includes(k)) ? 3 : 0) + (a.cover_media_url ? 1 : 0);
-     const bScore = (b.state === "SP" ? 2 : 0) + (valeKeywords.some((k) => bBlob.includes(k)) ? 3 : 0) + (b.cover_media_url ? 1 : 0);
-     return bScore - aScore;
-   });
- }
+          if (aMatch && !bMatch) return -1;
+          if (!aMatch && bMatch) return 1;
+          return 0;
+        });
+      } else if (data?.regionHint === "vale_do_paraiba" && articlesList.length > 1) {
+        const valeKeywords = [
+          "são josé dos campos",
+          "sao jose dos campos",
+          "taubaté",
+          "taubate",
+          "jacareí",
+          "jacarei",
+          "pindamonhangaba",
+          "guaratinguetá",
+          "guaratingueta",
+          "caçapava",
+          "cacapava",
+          "lorena",
+          "aparecida",
+          "cruzeiro",
+          "caraguatatuba",
+          "ubatuba",
+          "são sebastião",
+          "sao sebastiao",
+          "ilhabela",
+          "campos do jordão",
+          "campos do jordao",
+          "vale do paraíba",
+          "vale do paraiba",
+        ];
+        articlesList.sort((a: any, b: any) => {
+          const aBlob = `${a.city || ""} ${a.state || ""} ${a.title || ""}`.toLowerCase();
+          const bBlob = `${b.city || ""} ${b.state || ""} ${b.title || ""}`.toLowerCase();
+          const aScore =
+            (a.state === "SP" ? 2 : 0) +
+            (valeKeywords.some((k) => aBlob.includes(k)) ? 3 : 0) +
+            (a.cover_media_url ? 1 : 0);
+          const bScore =
+            (b.state === "SP" ? 2 : 0) +
+            (valeKeywords.some((k) => bBlob.includes(k)) ? 3 : 0) +
+            (b.cover_media_url ? 1 : 0);
+          return bScore - aScore;
+        });
+      }
 
- // Validação de integridade: preserva notícias que possuem título válido.
- // Imagens sintéticas de Unsplash são sanitizadas para null para renderização honesta em texto (Invariante B.33).
- const qualifiedArticles = articlesList.filter((a: any) => {
-   if (!a.title || String(a.title).trim().length === 0) return false;
-   return true;
- });
+      // Validação de integridade: preserva notícias que possuem título válido.
+      // Imagens sintéticas de Unsplash são sanitizadas para null para renderização honesta em texto (Invariante B.33).
+      const qualifiedArticles = articlesList.filter((a: any) => {
+        if (!a.title || String(a.title).trim().length === 0) return false;
+        return true;
+      });
 
- return qualifiedArticles.slice(0, limit).map((a: any) => {
-    const effectiveCover = resolveCityNewsCover({
-      coverUrl: a.cover_media_url,
-      city: a.city,
-      state: a.state,
-      category: a.category,
-      tags: a.tags,
-      title: a.title,
-    });
+      return qualifiedArticles.slice(0, limit).map((a: any) => {
+        const effectiveCover = resolveCityNewsCover({
+          coverUrl: a.cover_media_url,
+          city: a.city,
+          state: a.state,
+          category: a.category,
+          tags: a.tags,
+          title: a.title,
+        });
 
-   const isWaesy = Boolean((a.stores?.name && /waesy/i.test(a.stores.name)) || (a.author_name && /waesy/i.test(a.author_name)));
-   const resolvedStoreAvatar = a.stores?.logo_url || a.stores?.avatar_url || a.profiles?.avatar_url || (isWaesy ? "/brand-logo.png" : null);
+        const isWaesy = Boolean(
+          (a.stores?.name && /waesy/i.test(a.stores.name)) ||
+          (a.author_name && /waesy/i.test(a.author_name)),
+        );
+        const resolvedStoreAvatar =
+          a.stores?.logo_url ||
+          a.stores?.avatar_url ||
+          a.profiles?.avatar_url ||
+          (isWaesy ? "/brand-logo.png" : null);
 
-   return {
-     id: a.id,
-     store_id: a.store_id,
-     store_name: a.stores?.name || (isWaesy ? "Waesy" : "Portal de Notícias"),
-     store_avatar: resolvedStoreAvatar,
-     author_profile_id: a.author_profile_id,
-     author_name: a.author_name || a.profiles?.full_name || "Redação",
-     title: a.title,
-     slug: a.slug,
-     kicker: a.kicker,
-     subtitle: a.subtitle,
-     content_sections: a.content_sections || [],
-      cover_media_url: effectiveCover,
-     cover_media_type: a.cover_media_type || "image",
-     category: a.category,
-     tags: a.tags || [],
-     city: a.city || "Santa Catarina",
-     state: a.state || "SC",
-     source_url: a.source_url || null,
-     ai_summary: a.ai_summary || null,
-     reading_time_minutes: a.reading_time_minutes || 3,
-     views_count: a.views_count || 0,
-     unique_views_count: a.unique_views_count || 0,
-     status: a.status,
-     published_at: a.published_at,
-     created_at: a.created_at,
-   };
- });
- } catch (err) {
- console.warn("[news] Erro ao buscar artigos no banco:", err);
- return [];
- }
- });
+        return {
+          id: a.id,
+          store_id: a.store_id,
+          store_name: a.stores?.name || (isWaesy ? "Waesy" : "Portal de Notícias"),
+          store_avatar: resolvedStoreAvatar,
+          author_profile_id: a.author_profile_id,
+          author_name: a.author_name || a.profiles?.full_name || "Redação",
+          title: a.title,
+          slug: a.slug,
+          kicker: a.kicker,
+          subtitle: a.subtitle,
+          content_sections: a.content_sections || [],
+          cover_media_url: effectiveCover,
+          cover_media_type: a.cover_media_type || "image",
+          category: a.category,
+          tags: a.tags || [],
+          city: a.city || "Santa Catarina",
+          state: a.state || "SC",
+          source_url: a.source_url || null,
+          ai_summary: a.ai_summary || null,
+          reading_time_minutes: a.reading_time_minutes || 3,
+          views_count: a.views_count || 0,
+          unique_views_count: a.unique_views_count || 0,
+          status: a.status,
+          published_at: a.published_at,
+          created_at: a.created_at,
+        };
+      });
+    } catch (err) {
+      console.warn("[news] Erro ao buscar artigos no banco:", err);
+      return [];
+    }
+  });
 
 export const getArticleDetail = createServerFn({ method: "GET" })
- .validator(z.object({ slug: z.string(), storeSlug: z.string().optional() }))
- .handler(
- async ({
- data: { slug },
- }): Promise<{
- article: NewsArticleDTO | null;
- sponsors: SponsorDTO[];
- related: NewsArticleDTO[];
- linkedEvent?: any;
- }> => {
- const supabase = getAnonServerClient();
+  .validator(z.object({ slug: z.string(), storeSlug: z.string().optional() }))
+  .handler(
+    async ({
+      data: { slug },
+    }): Promise<{
+      article: NewsArticleDTO | null;
+      sponsors: SponsorDTO[];
+      related: NewsArticleDTO[];
+      linkedEvent?: any;
+    }> => {
+      const supabase = getAnonServerClient();
 
- try {
- const { data: articleData, error } = await supabase
- .from("news_articles")
- .select(
- `
+      try {
+        const { data: articleData, error } = await supabase
+          .from("news_articles")
+          .select(
+            `
  id, store_id, author_profile_id, author_name, source_url, ai_summary, quality_score,
  title, slug, kicker, subtitle, content_sections,
  cover_media_url, cover_media_type, category, tags, reading_time_minutes,
@@ -321,119 +341,133 @@ export const getArticleDetail = createServerFn({ method: "GET" })
  stores ( name, logo_url, avatar_url, slug ),
  profiles ( full_name, avatar_url )
  `,
- )
- .eq("slug", slug)
- .eq("status", "published")
- .limit(1)
- .maybeSingle();
+          )
+          .eq("slug", slug)
+          .eq("status", "published")
+          .limit(1)
+          .maybeSingle();
 
- if (!error && articleData) {
- const [sponsorsRes, relatedRes, eventRelRes] = await Promise.all([
- supabase
- .from("sponsors")
- .select("*")
- .eq("store_id", articleData.store_id)
- .eq("active", true)
- .limit(6),
- supabase
- .from("news_articles")
- .select("id, title, slug, kicker, cover_media_url, category, published_at, created_at")
- .eq("status", "published")
- .eq("category", articleData.category)
- .neq("id", articleData.id)
- .order("published_at", { ascending: false })
- .limit(4),
- supabase
- .from("event_news_relations")
- .select(
- "events(id, title, event_date, location, venue, cover_image, is_external, external_ticket_url, price_min_cents, rsvp_going_count)",
- )
- .eq("news_article_id", articleData.id)
- .limit(1),
- ]);
+        if (!error && articleData) {
+          const [sponsorsRes, relatedRes, eventRelRes] = await Promise.all([
+            supabase
+              .from("sponsors")
+              .select("*")
+              .eq("store_id", articleData.store_id)
+              .eq("active", true)
+              .limit(6),
+            supabase
+              .from("news_articles")
+              .select(
+                "id, title, slug, kicker, cover_media_url, category, published_at, created_at",
+              )
+              .eq("status", "published")
+              .eq("category", articleData.category)
+              .neq("id", articleData.id)
+              .order("published_at", { ascending: false })
+              .limit(4),
+            supabase
+              .from("event_news_relations")
+              .select(
+                "events(id, title, event_date, location, venue, cover_image, is_external, external_ticket_url, price_min_cents, rsvp_going_count)",
+              )
+              .eq("news_article_id", articleData.id)
+              .limit(1),
+          ]);
 
- const linkedEvent = (eventRelRes?.data?.[0] as any)?.events || null;
+          const linkedEvent = (eventRelRes?.data?.[0] as any)?.events || null;
 
- const isWaesyArticle = Boolean(((articleData as any).stores?.name && /waesy/i.test((articleData as any).stores.name)) || ((articleData as any).author_name && /waesy/i.test((articleData as any).author_name)));
- const resolvedDetailAvatar = (articleData as any).stores?.logo_url || (articleData as any).stores?.avatar_url || (articleData as any).profiles?.avatar_url || (isWaesyArticle ? "/brand-logo.png" : null);
+          const isWaesyArticle = Boolean(
+            ((articleData as any).stores?.name &&
+              /waesy/i.test((articleData as any).stores.name)) ||
+            ((articleData as any).author_name && /waesy/i.test((articleData as any).author_name)),
+          );
+          const resolvedDetailAvatar =
+            (articleData as any).stores?.logo_url ||
+            (articleData as any).stores?.avatar_url ||
+            (articleData as any).profiles?.avatar_url ||
+            (isWaesyArticle ? "/brand-logo.png" : null);
 
- return {
-        article: {
-          ...articleData,
-          store_name: (articleData as any).stores?.name || (isWaesyArticle ? "Waesy" : "Portal de Notícias"),
-          store_avatar: resolvedDetailAvatar,
-          cover_media_url: resolveCityNewsCover({
-            coverUrl: articleData.cover_media_url,
-            city: (articleData as any).city,
-            category: (articleData as any).category,
-            tags: (articleData as any).tags,
-            title: (articleData as any).title,
-          }),
-        } as any,
- sponsors: (sponsorsRes.data || []) as SponsorDTO[],
-        related: ((relatedRes.data || []) as any[]).map((rel) => ({
-          ...rel,
-          cover_media_url: resolveCityNewsCover({
-            coverUrl: rel.cover_media_url,
-            category: rel.category,
-            title: rel.title,
-          }),
-        })) as NewsArticleDTO[],
- linkedEvent,
- };
- }
- } catch (err) {
- console.warn("[news] Erro ao buscar detalhe do artigo no banco:", err);
- }
+          return {
+            article: {
+              ...articleData,
+              store_name:
+                (articleData as any).stores?.name ||
+                (isWaesyArticle ? "Waesy" : "Portal de Notícias"),
+              store_avatar: resolvedDetailAvatar,
+              cover_media_url: resolveCityNewsCover({
+                coverUrl: articleData.cover_media_url,
+                city: (articleData as any).city,
+                category: (articleData as any).category,
+                tags: (articleData as any).tags,
+                title: (articleData as any).title,
+              }),
+            } as any,
+            sponsors: (sponsorsRes.data || []) as SponsorDTO[],
+            related: ((relatedRes.data || []) as any[]).map((rel) => ({
+              ...rel,
+              cover_media_url: resolveCityNewsCover({
+                coverUrl: rel.cover_media_url,
+                category: rel.category,
+                title: rel.title,
+              }),
+            })) as NewsArticleDTO[],
+            linkedEvent,
+          };
+        }
+      } catch (err) {
+        console.warn("[news] Erro ao buscar detalhe do artigo no banco:", err);
+      }
 
- return { article: null, sponsors: [], related: [], linkedEvent: null };
- },
- );
+      return { article: null, sponsors: [], related: [], linkedEvent: null };
+    },
+  );
 
 // ── 2. Gestão no Workspace (Notícias & Redação) ──────────────────────────────
 
 export const listWorkspaceArticles = createServerFn({ method: "GET" }).handler(
- async (): Promise<NewsArticleDTO[]> => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.store_id) return [];
+  async (): Promise<NewsArticleDTO[]> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.store_id) return [];
 
- const { data } = await supabase
- .from("news_articles")
- .select("*")
- .eq("store_id", identity.store_id)
- .order("created_at", { ascending: false });
+    const { data } = await supabase
+      .from("news_articles")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false });
 
- return (data || []) as NewsArticleDTO[];
- },
+    return (data || []) as NewsArticleDTO[];
+  },
 );
 
 export const createArticle = createServerFn({ method: "POST" })
- .validator(
- z.object({
- title: z.string().min(3),
- slug: z.string().min(2),
- kicker: z.string().optional(),
- subtitle: z.string().optional(),
- content_sections: z.array(
- z.object({
- type: z.enum(["paragraph", "heading", "quote", "gallery", "video"]),
- content: z.union([z.string(), z.array(z.string())]),
- caption: z.string().optional(),
- }),
- ),
- cover_media_url: z.string().url().optional(),
- cover_media_type: z.enum(["image", "video", "gif"]).default("image"),
- category: z.string().default("geral"),
- tags: z.array(z.string()).default([]),
- reading_time_minutes: z.number().int().default(3),
- status: z.enum(["draft", "published", "archived"]).default("published"),
- editorial_stage: z.enum(["em_apuracao", "apurado", "publicado", "oculto"]).default("publicado"),
- is_members_only: z.boolean().default(false),
- source_credibility: z.string().optional(),
- }),
- )
- .handler(async ({ data: input }) => {
+  .validator(
+    z.object({
+      title: z.string().min(3),
+      slug: z.string().min(2),
+      kicker: z.string().optional(),
+      subtitle: z.string().optional(),
+      content_sections: z.array(
+        z.object({
+          type: z.enum(["paragraph", "heading", "quote", "gallery", "video"]),
+          content: z.union([z.string(), z.array(z.string())]),
+          caption: z.string().optional(),
+        }),
+      ),
+      cover_media_url: z.string().url().optional(),
+      cover_media_type: z.enum(["image", "video", "gif"]).default("image"),
+      category: z.string().default("geral"),
+      tags: z.array(z.string()).default([]),
+      reading_time_minutes: z.number().int().default(3),
+      status: z.enum(["draft", "published", "archived"]).default("published"),
+      editorial_stage: z
+        .enum(["em_apuracao", "apurado", "publicado", "oculto"])
+        .default("publicado"),
+      is_members_only: z.boolean().default(false),
+      source_credibility: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     if (!identity.store_id) throw new Error("Nenhum espaço de trabalho ativo.");
@@ -457,117 +491,117 @@ export const createArticle = createServerFn({ method: "POST" })
       );
     }
 
- const { data: created, error } = await supabase
- .from("news_articles")
- .insert({
- store_id: identity.store_id,
- author_profile_id: identity.id || null,
- title: input.title,
- slug: input.slug.toLowerCase().trim(),
- kicker: input.kicker || null,
- subtitle: input.subtitle || null,
- content_sections: input.content_sections,
- cover_media_url: input.cover_media_url || null,
- cover_media_type: input.cover_media_type,
- category: input.category,
- tags: input.tags,
- reading_time_minutes: input.reading_time_minutes,
- status: input.status,
- published_at: input.status === "published" ? new Date().toISOString() : null,
- editorial_stage: input.editorial_stage || "publicado",
- is_members_only: Boolean(input.is_members_only),
- source_credibility: input.source_credibility || "Oficial / Verificado",
- })
- .select()
- .single();
+    const { data: created, error } = await supabase
+      .from("news_articles")
+      .insert({
+        store_id: identity.store_id,
+        author_profile_id: identity.id || null,
+        title: input.title,
+        slug: input.slug.toLowerCase().trim(),
+        kicker: input.kicker || null,
+        subtitle: input.subtitle || null,
+        content_sections: input.content_sections,
+        cover_media_url: input.cover_media_url || null,
+        cover_media_type: input.cover_media_type,
+        category: input.category,
+        tags: input.tags,
+        reading_time_minutes: input.reading_time_minutes,
+        status: input.status,
+        published_at: input.status === "published" ? new Date().toISOString() : null,
+        editorial_stage: input.editorial_stage || "publicado",
+        is_members_only: Boolean(input.is_members_only),
+        source_credibility: input.source_credibility || "Oficial / Verificado",
+      })
+      .select()
+      .single();
 
- if (error) throw new Error(error.message);
- return created as NewsArticleDTO;
- });
+    if (error) throw new Error(error.message);
+    return created as NewsArticleDTO;
+  });
 
 export const updateArticle = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid(),
- title: z.string().min(3).optional(),
- slug: z.string().min(2).optional(),
- kicker: z.string().nullable().optional(),
- subtitle: z.string().nullable().optional(),
- content_sections: z
- .array(
- z.object({
- type: z.enum(["paragraph", "heading", "quote", "gallery", "video"]),
- content: z.union([z.string(), z.array(z.string())]),
- caption: z.string().optional(),
- }),
- )
- .optional(),
- cover_media_url: z.string().nullable().optional(),
- cover_media_type: z.enum(["image", "video", "gif"]).optional(),
- category: z.string().optional(),
- tags: z.array(z.string()).optional(),
- reading_time_minutes: z.number().int().optional(),
- status: z.enum(["draft", "published", "archived"]).optional(),
- editorial_stage: z.enum(["em_apuracao", "apurado", "publicado", "oculto"]).optional(),
- is_members_only: z.boolean().optional(),
- source_credibility: z.string().optional(),
- }),
- )
- .handler(async ({ data: { id, ...patch } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.store_id) throw new Error("Acesso negado.");
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      title: z.string().min(3).optional(),
+      slug: z.string().min(2).optional(),
+      kicker: z.string().nullable().optional(),
+      subtitle: z.string().nullable().optional(),
+      content_sections: z
+        .array(
+          z.object({
+            type: z.enum(["paragraph", "heading", "quote", "gallery", "video"]),
+            content: z.union([z.string(), z.array(z.string())]),
+            caption: z.string().optional(),
+          }),
+        )
+        .optional(),
+      cover_media_url: z.string().nullable().optional(),
+      cover_media_type: z.enum(["image", "video", "gif"]).optional(),
+      category: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+      reading_time_minutes: z.number().int().optional(),
+      status: z.enum(["draft", "published", "archived"]).optional(),
+      editorial_stage: z.enum(["em_apuracao", "apurado", "publicado", "oculto"]).optional(),
+      is_members_only: z.boolean().optional(),
+      source_credibility: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: { id, ...patch } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Acesso negado.");
 
- const updatePayload: Record<string, any> = { ...patch, updated_at: new Date().toISOString() };
- if (patch.status === "published") {
- updatePayload.published_at = new Date().toISOString();
- }
+    const updatePayload: Record<string, any> = { ...patch, updated_at: new Date().toISOString() };
+    if (patch.status === "published") {
+      updatePayload.published_at = new Date().toISOString();
+    }
 
- const { data: updated, error } = await supabase
- .from("news_articles")
- .update(updatePayload)
- .eq("id", id)
- .eq("store_id", identity.store_id)
- .select()
- .single();
+    const { data: updated, error } = await supabase
+      .from("news_articles")
+      .update(updatePayload)
+      .eq("id", id)
+      .eq("store_id", identity.store_id)
+      .select()
+      .single();
 
- if (error) throw new Error(error.message);
- return updated as NewsArticleDTO;
- });
+    if (error) throw new Error(error.message);
+    return updated as NewsArticleDTO;
+  });
 
 export const deleteArticle = createServerFn({ method: "POST" })
- .validator(z.object({ id: z.string().uuid() }))
- .handler(async ({ data: { id } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.store_id) throw new Error("Acesso negado.");
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data: { id } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Acesso negado.");
 
- const { error } = await supabase
- .from("news_articles")
- .delete()
- .eq("id", id)
- .eq("store_id", identity.store_id);
+    const { error } = await supabase
+      .from("news_articles")
+      .delete()
+      .eq("id", id)
+      .eq("store_id", identity.store_id);
 
- if (error) throw new Error(error.message);
- return { success: true };
- });
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
 
 // ── 3. Gestão de Patrocinadores (Sponsors) ──────────────────────────────────
 
 export const listWorkspaceSponsors = createServerFn({ method: "GET" }).handler(
- async (): Promise<SponsorDTO[]> => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.store_id) return [];
+  async (): Promise<SponsorDTO[]> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.store_id) return [];
 
- const { data } = await supabase
- .from("sponsors")
- .select("*")
- .eq("store_id", identity.store_id)
- .order("created_at", { ascending: false });
+    const { data } = await supabase
+      .from("sponsors")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false });
 
- return (data || []) as SponsorDTO[];
- },
+    return (data || []) as SponsorDTO[];
+  },
 );
 
 export const createSponsor = createServerFn({ method: "POST" })
@@ -612,301 +646,315 @@ export const createSponsor = createServerFn({ method: "POST" })
   });
 
 export const updateSponsor = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid(),
- name: z.string().min(2).optional(),
- logo_url: z.string().nullable().optional(),
- banner_url: z.string().nullable().optional(),
- video_url: z.string().nullable().optional(),
- website_url: z.string().nullable().optional(),
- cta_label: z.string().optional(),
- description: z.string().nullable().optional(),
- tier: z.enum(["gold", "silver", "standard", "supporter"]).optional(),
- sponsor_store_id: z.string().uuid().nullable().optional(),
- active: z.boolean().optional(),
- }),
- )
- .handler(async ({ data: { id, ...patch } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.store_id) throw new Error("Acesso negado.");
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      name: z.string().min(2).optional(),
+      logo_url: z.string().nullable().optional(),
+      banner_url: z.string().nullable().optional(),
+      video_url: z.string().nullable().optional(),
+      website_url: z.string().nullable().optional(),
+      cta_label: z.string().optional(),
+      description: z.string().nullable().optional(),
+      tier: z.enum(["gold", "silver", "standard", "supporter"]).optional(),
+      sponsor_store_id: z.string().uuid().nullable().optional(),
+      active: z.boolean().optional(),
+    }),
+  )
+  .handler(async ({ data: { id, ...patch } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Acesso negado.");
 
- const { data, error } = await supabase
- .from("sponsors")
- .update({ ...patch, updated_at: new Date().toISOString() })
- .eq("id", id)
- .eq("store_id", identity.store_id)
- .select()
- .single();
+    const { data, error } = await supabase
+      .from("sponsors")
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("store_id", identity.store_id)
+      .select()
+      .single();
 
- if (error) throw new Error(error.message);
- return data as SponsorDTO;
- });
+    if (error) throw new Error(error.message);
+    return data as SponsorDTO;
+  });
 
 export const deleteSponsor = createServerFn({ method: "POST" })
- .validator(z.object({ id: z.string().uuid() }))
- .handler(async ({ data: { id } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.store_id) throw new Error("Acesso negado.");
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data: { id } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Acesso negado.");
 
- const { error } = await supabase
- .from("sponsors")
- .delete()
- .eq("id", id)
- .eq("store_id", identity.store_id);
+    const { error } = await supabase
+      .from("sponsors")
+      .delete()
+      .eq("id", id)
+      .eq("store_id", identity.store_id);
 
- if (error) throw new Error(error.message);
- return { success: true };
- });
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
 
 // ── 4. Comentários & Likes Reais ────────────────────────────────────────────
 
 export const listArticleComments = createServerFn({ method: "GET" })
- .validator(z.object({ articleId: z.string().uuid() }))
- .handler(async ({ data: { articleId } }): Promise<NewsCommentDTO[]> => {
- const supabase = getAnonServerClient();
+  .validator(z.object({ articleId: z.string().uuid() }))
+  .handler(async ({ data: { articleId } }): Promise<NewsCommentDTO[]> => {
+    const supabase = getAnonServerClient();
 
- const { data } = await supabase
- .from("news_comments")
- .select(
- `
+    const { data } = await supabase
+      .from("news_comments")
+      .select(
+        `
  id, article_id, user_id, content_text, created_at,
  profiles ( full_name, avatar_url )
  `,
- )
- .eq("article_id", articleId)
- .eq("status", "active")
- .order("created_at", { ascending: false });
+      )
+      .eq("article_id", articleId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
 
- return (data || []).map((c: any) => ({
- id: c.id,
- article_id: c.article_id,
- user_id: c.user_id,
- author_name: c.profiles?.full_name || "Leitor",
- author_avatar: c.profiles?.avatar_url || null,
- content_text: c.content_text,
- created_at: c.created_at,
- }));
- });
+    return (data || []).map((c: any) => ({
+      id: c.id,
+      article_id: c.article_id,
+      user_id: c.user_id,
+      author_name: c.profiles?.full_name || "Leitor",
+      author_avatar: c.profiles?.avatar_url || null,
+      content_text: c.content_text,
+      created_at: c.created_at,
+    }));
+  });
 
 export const submitArticleComment = createServerFn({ method: "POST" })
- .validator(
- z.object({
- articleId: z.string().uuid(),
- contentText: z.string().min(3).max(1000),
- }),
- )
- .handler(async ({ data: { articleId, contentText } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
+  .validator(
+    z.object({
+      articleId: z.string().uuid(),
+      contentText: z.string().min(3).max(1000),
+    }),
+  )
+  .handler(async ({ data: { articleId, contentText } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
 
- if (!identity.id) {
- throw new Error("Você precisa estar autenticado para comentar.");
- }
+    if (!identity.id) {
+      throw new Error("Você precisa estar autenticado para comentar.");
+    }
 
- const { data, error } = await supabase
- .from("news_comments")
- .insert({
- article_id: articleId,
- user_id: identity.id,
- profile_id: identity.id,
- content_text: contentText.trim(),
- status: "active",
- })
- .select()
- .single();
+    const { data, error } = await supabase
+      .from("news_comments")
+      .insert({
+        article_id: articleId,
+        user_id: identity.id,
+        profile_id: identity.id,
+        content_text: contentText.trim(),
+        status: "active",
+      })
+      .select()
+      .single();
 
- if (error) throw new Error(error.message);
- return { success: true, comment: data };
- });
+    if (error) throw new Error(error.message);
+    return { success: true, comment: data };
+  });
 
 export const toggleArticleLike = createServerFn({ method: "POST" })
- .validator(z.object({ articleId: z.string().uuid() }))
- .handler(async ({ data: { articleId } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
+  .validator(z.object({ articleId: z.string().uuid() }))
+  .handler(async ({ data: { articleId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
 
- if (!identity.id) {
- throw new Error("Faça login para curtir esta matéria.");
- }
+    if (!identity.id) {
+      throw new Error("Faça login para curtir esta matéria.");
+    }
 
- const { data: existing } = await supabase
- .from("news_likes")
- .select("article_id")
- .eq("article_id", articleId)
- .eq("user_id", identity.id)
- .maybeSingle();
+    const { data: existing } = await supabase
+      .from("news_likes")
+      .select("article_id")
+      .eq("article_id", articleId)
+      .eq("user_id", identity.id)
+      .maybeSingle();
 
- if (existing) {
- await supabase
- .from("news_likes")
- .delete()
- .eq("article_id", articleId)
- .eq("user_id", identity.id);
- return { liked: false };
- } else {
- await supabase
- .from("news_likes")
- .insert({ article_id: articleId, user_id: identity.id });
- return { liked: true };
- }
- });
+    if (existing) {
+      await supabase
+        .from("news_likes")
+        .delete()
+        .eq("article_id", articleId)
+        .eq("user_id", identity.id);
+      return { liked: false };
+    } else {
+      await supabase.from("news_likes").insert({ article_id: articleId, user_id: identity.id });
+      return { liked: true };
+    }
+  });
 
 export const getArticleLikeStatus = createServerFn({ method: "GET" })
- .validator(z.object({ articleId: z.string().uuid() }))
- .handler(async ({ data: { articleId } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.id) return { liked: false, totalLikes: 0 };
+  .validator(z.object({ articleId: z.string().uuid() }))
+  .handler(async ({ data: { articleId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.id) return { liked: false, totalLikes: 0 };
 
- const [userLikeRes, countRes] = await Promise.all([
- supabase
- .from("news_likes")
- .select("article_id")
- .eq("article_id", articleId)
- .eq("user_id", identity.id)
- .maybeSingle(),
- supabase
- .from("news_likes")
- .select("user_id", { count: "exact", head: true })
- .eq("article_id", articleId),
- ]);
+    const [userLikeRes, countRes] = await Promise.all([
+      supabase
+        .from("news_likes")
+        .select("article_id")
+        .eq("article_id", articleId)
+        .eq("user_id", identity.id)
+        .maybeSingle(),
+      supabase
+        .from("news_likes")
+        .select("user_id", { count: "exact", head: true })
+        .eq("article_id", articleId),
+    ]);
 
- return {
- liked: !!userLikeRes.data,
- totalLikes: countRes.count || 0,
- };
- });
+    return {
+      liked: !!userLikeRes.data,
+      totalLikes: countRes.count || 0,
+    };
+  });
 
 export const recordSponsorImpression = createServerFn({ method: "POST" })
- .validator(z.object({ sponsorId: z.string().uuid(), placement: z.string().optional() }))
- .handler(async ({ data: { sponsorId, placement } }) => {
- const supabase = getServerClient();
- try {
- await supabase.rpc("increment_sponsor_impressions", {
- p_sponsor_id: sponsorId,
- p_placement: placement || "feed",
- });
- } catch {
- // Fallback update
- const { data } = await supabase.from("sponsors").select("views_count").eq("id", sponsorId).single();
- if (data) {
- await supabase.from("sponsors").update({ views_count: (data.views_count || 0) + 1 }).eq("id", sponsorId);
- }
- }
- return { success: true };
- });
+  .validator(z.object({ sponsorId: z.string().uuid(), placement: z.string().optional() }))
+  .handler(async ({ data: { sponsorId, placement } }) => {
+    const supabase = getServerClient();
+    try {
+      await supabase.rpc("increment_sponsor_impressions", {
+        p_sponsor_id: sponsorId,
+        p_placement: placement || "feed",
+      });
+    } catch {
+      // Fallback update
+      const { data } = await supabase
+        .from("sponsors")
+        .select("views_count")
+        .eq("id", sponsorId)
+        .single();
+      if (data) {
+        await supabase
+          .from("sponsors")
+          .update({ views_count: (data.views_count || 0) + 1 })
+          .eq("id", sponsorId);
+      }
+    }
+    return { success: true };
+  });
 
 export const recordSponsorClick = createServerFn({ method: "POST" })
- .validator(z.object({ sponsorId: z.string().uuid(), placement: z.string().optional() }))
- .handler(async ({ data: { sponsorId } }) => {
- const supabase = getServerClient();
- const { data } = await supabase.from("sponsors").select("clicks_count").eq("id", sponsorId).single();
- if (data) {
- await supabase.from("sponsors").update({ clicks_count: (data.clicks_count || 0) + 1 }).eq("id", sponsorId);
- }
- return { success: true };
- });
+  .validator(z.object({ sponsorId: z.string().uuid(), placement: z.string().optional() }))
+  .handler(async ({ data: { sponsorId } }) => {
+    const supabase = getServerClient();
+    const { data } = await supabase
+      .from("sponsors")
+      .select("clicks_count")
+      .eq("id", sponsorId)
+      .single();
+    if (data) {
+      await supabase
+        .from("sponsors")
+        .update({ clicks_count: (data.clicks_count || 0) + 1 })
+        .eq("id", sponsorId);
+    }
+    return { success: true };
+  });
 
 export const getSponsorAnalytics = createServerFn({ method: "GET" })
- .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- const storeId = data?.storeId || identity.store_id;
- if (!storeId) return [];
+  .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity.store_id;
+    if (!storeId) return [];
 
- const { data: sponsors } = await supabase
- .from("sponsors")
- .select("id, name, logo_url, banner_url, website_url, tier, active, views_count, clicks_count, created_at")
- .eq("store_id", storeId)
- .order("created_at", { ascending: false });
+    const { data: sponsors } = await supabase
+      .from("sponsors")
+      .select(
+        "id, name, logo_url, banner_url, website_url, tier, active, views_count, clicks_count, created_at",
+      )
+      .eq("store_id", storeId)
+      .order("created_at", { ascending: false });
 
- return (sponsors || []).map((s: any) => {
- const views = s.views_count || 0;
- const clicks = s.clicks_count || 0;
- const ctr = views > 0 ? Number(((clicks / views) * 100).toFixed(2)) : 0;
- return {
- ...s,
- views_count: views,
- clicks_count: clicks,
- ctr_percent: ctr,
- };
- });
- });
+    return (sponsors || []).map((s: any) => {
+      const views = s.views_count || 0;
+      const clicks = s.clicks_count || 0;
+      const ctr = views > 0 ? Number(((clicks / views) * 100).toFixed(2)) : 0;
+      return {
+        ...s,
+        views_count: views,
+        clicks_count: clicks,
+        ctr_percent: ctr,
+      };
+    });
+  });
 
 export const submitCommunityNewsTip = createServerFn({ method: "POST" })
- .validator(
- z.object({
- storeId: z.string().uuid(),
- tipText: z.string().min(5),
- authorName: z.string().min(2),
- contactInfo: z.string().optional(),
- mediaUrls: z.array(z.string().url()).optional(),
- }),
- )
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const slug = `pauta-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
- const { data: tip, error } = await supabase
- .from("news_articles")
- .insert({
- store_id: data.storeId,
- title: `[Sugestão de Pauta] ${data.authorName}`,
- subtitle: data.contactInfo ? `Contato: ${data.contactInfo}` : null,
- kicker: "Comunidade",
- slug,
- content_sections: [{ type: "paragraph", content: data.tipText }],
- cover_media_url: data.mediaUrls && data.mediaUrls.length > 0 ? data.mediaUrls[0] : null,
- status: "draft",
- source_type: "community_tip",
- curation_status: "pending_review",
- author_name: data.authorName,
- })
- .select()
- .single();
+  .validator(
+    z.object({
+      storeId: z.string().uuid(),
+      tipText: z.string().min(5),
+      authorName: z.string().min(2),
+      contactInfo: z.string().optional(),
+      mediaUrls: z.array(z.string().url()).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const slug = `pauta-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const { data: tip, error } = await supabase
+      .from("news_articles")
+      .insert({
+        store_id: data.storeId,
+        title: `[Sugestão de Pauta] ${data.authorName}`,
+        subtitle: data.contactInfo ? `Contato: ${data.contactInfo}` : null,
+        kicker: "Comunidade",
+        slug,
+        content_sections: [{ type: "paragraph", content: data.tipText }],
+        cover_media_url: data.mediaUrls && data.mediaUrls.length > 0 ? data.mediaUrls[0] : null,
+        status: "draft",
+        source_type: "community_tip",
+        curation_status: "pending_review",
+        author_name: data.authorName,
+      })
+      .select()
+      .single();
 
- if (error) {
- console.warn("[news_tips] Erro ao salvar pauta:", error.message);
- return { success: true, message: "Sugestão recebida pela redação!" };
- }
- return { success: true, tip };
- });
+    if (error) {
+      console.warn("[news_tips] Erro ao salvar pauta:", error.message);
+      return { success: true, message: "Sugestão recebida pela redação!" };
+    }
+    return { success: true, tip };
+  });
 
 export const listCommunityNewsTips = createServerFn({ method: "GET" }).handler(async () => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.store_id) return [];
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  if (!identity.store_id) return [];
 
- const { data } = await supabase
- .from("news_articles")
- .select("*")
- .eq("store_id", identity.store_id)
- .eq("source_type", "community_tip")
- .order("created_at", { ascending: false });
+  const { data } = await supabase
+    .from("news_articles")
+    .select("*")
+    .eq("store_id", identity.store_id)
+    .eq("source_type", "community_tip")
+    .order("created_at", { ascending: false });
 
- return data || [];
+  return data || [];
 });
 
 // ── 5. Importador de Artigo via URL (Workspace Integration) ─────────────────
 
 export interface ImportedArticlePreview {
- title: string;
- subtitle: string;
- kicker: string;
- category: string;
- tags: string[];
- cover_media_url: string | null;
- content_sections: NewsSectionDTO[];
- reading_time_minutes: number;
- quality_score: number;
- ai_summary: string;
- source_url: string;
- source_domain: string;
- ai_provider_used: string;
- mined_article_id: string | null;
+  title: string;
+  subtitle: string;
+  kicker: string;
+  category: string;
+  tags: string[];
+  cover_media_url: string | null;
+  content_sections: NewsSectionDTO[];
+  reading_time_minutes: number;
+  quality_score: number;
+  ai_summary: string;
+  source_url: string;
+  source_domain: string;
+  ai_provider_used: string;
+  mined_article_id: string | null;
 }
 
 /**
@@ -915,94 +963,109 @@ export interface ImportedArticlePreview {
  * Grava em mined_articles para rastreabilidade e retorna preview para o editor.
  */
 export const importArticleFromUrl = createServerFn({ method: "POST" })
- .validator(
- z.object({
- url: z.string().url("URL inválida — informe uma URL completa (https://...)"),
- tone: z.enum(["editorial", "profissional", "imparcial", "opinativo", "tecnico"]).default("editorial"),
- content_type: z.enum(["news", "blog_post", "recipe", "tech_spec"]).default("news"),
- })
- )
- .handler(async ({ data: input }): Promise<ImportedArticlePreview> => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.store_id) throw new Error("Nenhum espaço de trabalho ativo.");
+  .validator(
+    z.object({
+      url: z.string().url("URL inválida — informe uma URL completa (https://...)"),
+      tone: z
+        .enum(["editorial", "profissional", "imparcial", "opinativo", "tecnico"])
+        .default("editorial"),
+      content_type: z.enum(["news", "blog_post", "recipe", "tech_spec"]).default("news"),
+    }),
+  )
+  .handler(async ({ data: input }): Promise<ImportedArticlePreview> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Nenhum espaço de trabalho ativo.");
 
- const domain = new URL(input.url).hostname;
+    const domain = new URL(input.url).hostname;
 
- // Verifica bloqueio do domínio
- const { data: scraperConfig } = await supabase
- .from("scraper_configs")
- .select("is_blocked, blocked_reason")
- .eq("domain", domain)
- .maybeSingle();
+    // Verifica bloqueio do domínio
+    const { data: scraperConfig } = await supabase
+      .from("scraper_configs")
+      .select("is_blocked, blocked_reason")
+      .eq("domain", domain)
+      .maybeSingle();
 
- if (scraperConfig?.is_blocked) {
- throw new Error(`Domínio ${domain} está bloqueado: ${scraperConfig.blocked_reason || "Violação de ToS"}`);
- }
+    if (scraperConfig?.is_blocked) {
+      throw new Error(
+        `Domínio ${domain} está bloqueado: ${scraperConfig.blocked_reason || "Violação de ToS"}`,
+      );
+    }
 
- // Helper: próxima chave ativa
- async function getNextActiveKey(provider: string) {
- const { data } = await supabase
- .from("api_key_pools")
- .select("id, encrypted_key")
- .eq("provider", provider)
- .eq("is_active", true)
- .order("last_used_at", { ascending: true, nullsFirst: true })
- .limit(1)
- .maybeSingle();
- if (!data?.encrypted_key) return null;
- const rawKey = Buffer.from(data.encrypted_key, "base64").toString("utf-8");
- await supabase.from("api_key_pools").update({ last_used_at: new Date().toISOString() }).eq("id", data.id);
- return { id: data.id, rawKey };
- }
+    // Helper: próxima chave ativa
+    async function getNextActiveKey(provider: string) {
+      const { data } = await supabase
+        .from("api_key_pools")
+        .select("id, encrypted_key")
+        .eq("provider", provider)
+        .eq("is_active", true)
+        .order("last_used_at", { ascending: true, nullsFirst: true })
+        .limit(1)
+        .maybeSingle();
+      if (!data?.encrypted_key) return null;
+      let rawKey: string;
+      try {
+        rawKey = decryptSecret(data.encrypted_key);
+      } catch {
+        return null;
+      }
+      await supabase
+        .from("api_key_pools")
+        .update({ last_used_at: new Date().toISOString() })
+        .eq("id", data.id);
+      return { id: data.id, rawKey };
+    }
 
- // 1. Extração de conteúdo
- let rawContent = "";
- let firecrawlUsed = false;
+    // 1. Extração de conteúdo
+    let rawContent = "";
+    let firecrawlUsed = false;
 
- const firecrawlKey = await getNextActiveKey("firecrawl");
- if (firecrawlKey) {
- try {
- const fcRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
- method: "POST",
- headers: { "Content-Type": "application/json", Authorization: `Bearer ${firecrawlKey.rawKey}` },
- body: JSON.stringify({ url: input.url, formats: ["markdown"], onlyMainContent: true }),
- signal: AbortSignal.timeout(12000),
- });
- if (fcRes.ok) {
- const fcJson = await fcRes.json();
- rawContent = fcJson?.data?.markdown || "";
- if (rawContent) firecrawlUsed = true;
- }
- } catch (e: any) {
- console.warn("[importArticle] Firecrawl error:", e.message);
- }
- }
+    const firecrawlKey = await getNextActiveKey("firecrawl");
+    if (firecrawlKey) {
+      try {
+        const fcRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${firecrawlKey.rawKey}`,
+          },
+          body: JSON.stringify({ url: input.url, formats: ["markdown"], onlyMainContent: true }),
+          signal: AbortSignal.timeout(12000),
+        });
+        if (fcRes.ok) {
+          const fcJson = await fcRes.json();
+          rawContent = fcJson?.data?.markdown || "";
+          if (rawContent) firecrawlUsed = true;
+        }
+      } catch (e: any) {
+        console.warn("[importArticle] Firecrawl error:", e.message);
+      }
+    }
 
- if (!rawContent) {
- const fetchRes = await fetch(input.url, {
- headers: { "User-Agent": "Mozilla/5.0 (compatible; WaesyBot/1.0)" },
- signal: AbortSignal.timeout(8000),
- });
- if (!fetchRes.ok) throw new Error(`Não foi possível acessar a URL (HTTP ${fetchRes.status})`);
- const html = await fetchRes.text();
- rawContent = html
- .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
- .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
- .replace(/<[^>]+>/g, " ")
- .replace(/\s+/g, " ")
- .slice(0, 15000);
- }
+    if (!rawContent) {
+      const fetchRes = await fetch(input.url, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; WaesyBot/1.0)" },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!fetchRes.ok) throw new Error(`Não foi possível acessar a URL (HTTP ${fetchRes.status})`);
+      const html = await fetchRes.text();
+      rawContent = html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .slice(0, 15000);
+    }
 
- if (!rawContent || rawContent.length < 50) {
- throw new Error("A página não retornou conteúdo suficiente para importação.");
- }
+    if (!rawContent || rawContent.length < 50) {
+      throw new Error("A página não retornou conteúdo suficiente para importação.");
+    }
 
- const sanitized = rawContent.replace(/\{\{|\}\}/g, "").slice(0, 12000);
+    const sanitized = rawContent.replace(/\{\{|\}\}/g, "").slice(0, 12000);
 
- // 2. Estruturação via IA
- const systemPrompt = `Você é um editor-chefe de jornalismo digital. Extraia e estruture o conteúdo abaixo no formato JSON solicitado. Retorne APENAS JSON válido, sem markdown.`;
- const userPrompt = `Extraia e estruture este conteúdo como artigo jornalístico.
+    // 2. Estruturação via IA
+    const systemPrompt = `Você é um editor-chefe de jornalismo digital. Extraia e estruture o conteúdo abaixo no formato JSON solicitado. Retorne APENAS JSON válido, sem markdown.`;
+    const userPrompt = `Extraia e estruture este conteúdo como artigo jornalístico.
 URL: ${input.url}
 Tom: ${input.tone}
 
@@ -1028,133 +1091,134 @@ Retorne APENAS este JSON:
  ]
 }`;
 
- let extracted: any = null;
- let aiProviderUsed = "fallback";
+    let extracted: any = null;
+    let aiProviderUsed = "fallback";
 
-  try {
-    const aiRes = await executeUnifiedAiCall({
-      systemPrompt,
-      userPrompt,
-      responseFormat: "json_object",
-      temperature: 0.2,
-    });
-    if (aiRes.parsedJson) {
-      extracted = aiRes.parsedJson;
-      aiProviderUsed = aiRes.provider;
+    try {
+      const aiRes = await executeUnifiedAiCall({
+        systemPrompt,
+        userPrompt,
+        responseFormat: "json_object",
+        temperature: 0.2,
+      });
+      if (aiRes.parsedJson) {
+        extracted = aiRes.parsedJson;
+        aiProviderUsed = aiRes.provider;
+      }
+    } catch (e: any) {
+      console.warn("[importArticle] Unified AI error:", e.message);
     }
-  } catch (e: any) {
-    console.warn("[importArticle] Unified AI error:", e.message);
-  }
 
- // Fallback determinístico
- if (!extracted) {
- extracted = {
- title: `Conteúdo importado de ${domain}`,
- subtitle: `Importado de ${input.url}`,
- kicker: "IMPORTADO",
- category: "geral",
- tags: [domain.replace("www.", "")],
- cover_image_url: null,
- summary: `Conteúdo importado de ${input.url}. Revise antes de publicar.`,
- estimated_reading_time: 3,
- quality_score: 20,
- sections: [{ type: "paragraph" as const, content: sanitized.slice(0, 3000) }],
- };
- aiProviderUsed = "fallback";
- }
+    // Fallback determinístico
+    if (!extracted) {
+      extracted = {
+        title: `Conteúdo importado de ${domain}`,
+        subtitle: `Importado de ${input.url}`,
+        kicker: "IMPORTADO",
+        category: "geral",
+        tags: [domain.replace("www.", "")],
+        cover_image_url: null,
+        summary: `Conteúdo importado de ${input.url}. Revise antes de publicar.`,
+        estimated_reading_time: 3,
+        quality_score: 20,
+        sections: [{ type: "paragraph" as const, content: sanitized.slice(0, 3000) }],
+      };
+      aiProviderUsed = "fallback";
+    }
 
- // 3. Persiste em mined_articles para rastreabilidade
- const { data: mined } = await supabase
- .from("mined_articles")
- .insert({
- source_url: input.url,
- source_domain: domain,
- source_type: "crawl",
- store_id: identity.store_id,
- raw_title: extracted.title,
- extracted_markdown: rawContent.slice(0, 50000),
- ai_structured_title: extracted.title,
- ai_structured_subtitle: extracted.subtitle,
- ai_structured_sections: extracted.sections || [],
- ai_suggested_kicker: extracted.kicker,
- ai_suggested_category: extracted.category,
- ai_suggested_tags: extracted.tags || [],
- ai_suggested_cover_url: extracted.cover_image_url || null,
- ai_summary: extracted.summary,
- quality_score: extracted.quality_score || 50,
- word_count: rawContent.split(/\s+/).length,
- has_cover_image: !!extracted.cover_image_url,
- status: "pending_review",
- tokens_consumed: 3000, // burn_content_import_url
- ai_provider_used: aiProviderUsed,
- firecrawl_used: firecrawlUsed,
- processing_completed_at: new Date().toISOString(),
- })
- .select("id")
- .single();
+    // 3. Persiste em mined_articles para rastreabilidade
+    const { data: mined } = await supabase
+      .from("mined_articles")
+      .insert({
+        source_url: input.url,
+        source_domain: domain,
+        source_type: "crawl",
+        store_id: identity.store_id,
+        raw_title: extracted.title,
+        extracted_markdown: rawContent.slice(0, 50000),
+        ai_structured_title: extracted.title,
+        ai_structured_subtitle: extracted.subtitle,
+        ai_structured_sections: extracted.sections || [],
+        ai_suggested_kicker: extracted.kicker,
+        ai_suggested_category: extracted.category,
+        ai_suggested_tags: extracted.tags || [],
+        ai_suggested_cover_url: extracted.cover_image_url || null,
+        ai_summary: extracted.summary,
+        quality_score: extracted.quality_score || 50,
+        word_count: rawContent.split(/\s+/).length,
+        has_cover_image: !!extracted.cover_image_url,
+        status: "pending_review",
+        tokens_consumed: 3000, // burn_content_import_url
+        ai_provider_used: aiProviderUsed,
+        firecrawl_used: firecrawlUsed,
+        processing_completed_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
 
- return {
- title: extracted.title || "",
- subtitle: extracted.subtitle || "",
- kicker: extracted.kicker || "",
- category: extracted.category || "geral",
- tags: extracted.tags || [],
- cover_media_url: extracted.cover_image_url || null,
- content_sections: (extracted.sections || []) as NewsSectionDTO[],
- reading_time_minutes: extracted.estimated_reading_time || 3,
- quality_score: extracted.quality_score || 50,
- ai_summary: extracted.summary || "",
- source_url: input.url,
- source_domain: domain,
- ai_provider_used: aiProviderUsed,
- mined_article_id: mined?.id || null,
- };
- });
+    return {
+      title: extracted.title || "",
+      subtitle: extracted.subtitle || "",
+      kicker: extracted.kicker || "",
+      category: extracted.category || "geral",
+      tags: extracted.tags || [],
+      cover_media_url: extracted.cover_image_url || null,
+      content_sections: (extracted.sections || []) as NewsSectionDTO[],
+      reading_time_minutes: extracted.estimated_reading_time || 3,
+      quality_score: extracted.quality_score || 50,
+      ai_summary: extracted.summary || "",
+      source_url: input.url,
+      source_domain: domain,
+      ai_provider_used: aiProviderUsed,
+      mined_article_id: mined?.id || null,
+    };
+  });
 
 /**
  * Gera um resumo executivo de um artigo existente com IA
  */
 export const aiSummarizeArticle = createServerFn({ method: "POST" })
- .validator(z.object({ article_id: z.string().uuid() }))
- .handler(async ({ data: { article_id } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity.store_id) throw new Error("Acesso negado.");
+  .validator(z.object({ article_id: z.string().uuid() }))
+  .handler(async ({ data: { article_id } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.store_id) throw new Error("Acesso negado.");
 
- const { data: article, error } = await supabase
- .from("news_articles")
- .select("title, subtitle, content_sections")
- .eq("id", article_id)
- .eq("store_id", identity.store_id)
- .single();
+    const { data: article, error } = await supabase
+      .from("news_articles")
+      .select("title, subtitle, content_sections")
+      .eq("id", article_id)
+      .eq("store_id", identity.store_id)
+      .single();
 
- if (error || !article) throw new Error("Artigo não encontrado.");
+    if (error || !article) throw new Error("Artigo não encontrado.");
 
-  const contentText = (article.content_sections as any[])
-    .filter((s) => s.type === "paragraph")
-    .map((s) => s.content)
-    .join("\n")
-    .slice(0, 5000);
+    const contentText = (article.content_sections as any[])
+      .filter((s) => s.type === "paragraph")
+      .map((s) => s.content)
+      .join("\n")
+      .slice(0, 5000);
 
-  const prompt = `Título: ${article.title}\nSubtítulo: ${article.subtitle || ""}\nConteúdo: ${contentText}`;
+    const prompt = `Título: ${article.title}\nSubtítulo: ${article.subtitle || ""}\nConteúdo: ${contentText}`;
 
-  const aiRes = await executeUnifiedAiCall({
-    systemPrompt: "Você é um editor de notícias. Gere um resumo executivo de 2-3 frases do artigo fornecido, capturando o ponto principal, impacto e contexto. Seja direto, objetivo e retorne APENAS o texto do resumo.",
-    userPrompt: prompt,
-    temperature: 0.3,
-    maxTokens: 256,
+    const aiRes = await executeUnifiedAiCall({
+      systemPrompt:
+        "Você é um editor de notícias. Gere um resumo executivo de 2-3 frases do artigo fornecido, capturando o ponto principal, impacto e contexto. Seja direto, objetivo e retorne APENAS o texto do resumo.",
+      userPrompt: prompt,
+      temperature: 0.3,
+      maxTokens: 256,
+    });
+
+    const summary = aiRes.content.trim();
+
+    // Persiste o resumo no artigo
+    await supabase
+      .from("news_articles")
+      .update({ ai_summary: summary, updated_at: new Date().toISOString() })
+      .eq("id", article_id);
+
+    return { summary };
   });
-
-  const summary = aiRes.content.trim();
-
-  // Persiste o resumo no artigo
-  await supabase
-    .from("news_articles")
-    .update({ ai_summary: summary, updated_at: new Date().toISOString() })
-    .eq("id", article_id);
-
-  return { summary };
-});
 
 /**
  * Retorna os patrocinadores ativos vinculados à loja
@@ -1164,11 +1228,16 @@ export const listStorePublicSponsors = createServerFn({ method: "GET" })
   .handler(async ({ data: { storeId } }): Promise<SponsorDTO[]> => {
     try {
       const supabase = getServerClient();
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(storeId);
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(storeId);
       let targetUuid = storeId;
 
       if (!isUuid) {
-        const { data: st } = await supabase.from("stores").select("id").eq("slug", storeId).maybeSingle();
+        const { data: st } = await supabase
+          .from("stores")
+          .select("id")
+          .eq("slug", storeId)
+          .maybeSingle();
         if (!st?.id) return [];
         targetUuid = st.id;
       }
@@ -1275,10 +1344,7 @@ export const getPublicSponsorReport = createServerFn({ method: "GET" })
           .order("created_at", { ascending: true }),
       ]);
 
-      const events = [
-        ...(modernEventsRes.data || []),
-        ...(legacyEventsRes.data || []),
-      ];
+      const events = [...(modernEventsRes.data || []), ...(legacyEventsRes.data || [])];
 
       let recordedImpressions = sponsor.views_count || 0;
       let recordedClicks = sponsor.clicks_count || 0;
@@ -1298,16 +1364,20 @@ export const getPublicSponsorReport = createServerFn({ method: "GET" })
         } else if (ev.event_type === "click") {
           entry.clicks += 1;
         } else if (ev.event_type === "view_duration") {
-          totalDurationSeconds += (ev.duration_seconds || 0);
+          totalDurationSeconds += ev.duration_seconds || 0;
         }
       });
 
-      const eventImpressionsSum = Array.from(dailyMap.values()).reduce((acc, d) => acc + d.impressions, 0);
+      const eventImpressionsSum = Array.from(dailyMap.values()).reduce(
+        (acc, d) => acc + d.impressions,
+        0,
+      );
       const eventClicksSum = Array.from(dailyMap.values()).reduce((acc, d) => acc + d.clicks, 0);
 
       const totalImpressions = Math.max(recordedImpressions, eventImpressionsSum);
       const totalClicks = Math.max(recordedClicks, eventClicksSum);
-      const ctrPercent = totalImpressions > 0 ? Number(((totalClicks / totalImpressions) * 100).toFixed(2)) : 0;
+      const ctrPercent =
+        totalImpressions > 0 ? Number(((totalClicks / totalImpressions) * 100).toFixed(2)) : 0;
 
       const dailyPoints = Array.from(dailyMap.entries()).map(([date, counts]) => ({
         date,
@@ -1339,8 +1409,8 @@ export const getPublicSponsorReport = createServerFn({ method: "GET" })
 /**
  * Retorna as campanhas publicitárias em que a loja logada é o patrocinador
  */
-export const listStoreSponsoredCampaigns = createServerFn({ method: "GET" })
-  .handler(async (): Promise<SponsorDTO[]> => {
+export const listStoreSponsoredCampaigns = createServerFn({ method: "GET" }).handler(
+  async (): Promise<SponsorDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     if (!identity.store_id) return [];
@@ -1352,25 +1422,27 @@ export const listStoreSponsoredCampaigns = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
 
     return (data || []) as SponsorDTO[];
-  });
+  },
+);
 
 /**
  * Gestão do Consórcio de Imprensa para Admin Master
  */
-export const listPressConsortiumStores = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const supabase = getServerClient();
-    const identity = await getServerIdentity();
-    if (identity.role !== "admin") throw new Error("Acesso restrito à administração.");
+export const listPressConsortiumStores = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  if (identity.role !== "admin") throw new Error("Acesso restrito à administração.");
 
-    const { data, error } = await supabase
-      .from("stores")
-      .select("id, name, slug, logo_url, city, state, is_press_consortium, press_accreditation_status, press_approved_at, created_at")
-      .order("created_at", { ascending: false });
+  const { data, error } = await supabase
+    .from("stores")
+    .select(
+      "id, name, slug, logo_url, city, state, is_press_consortium, press_accreditation_status, press_approved_at, created_at",
+    )
+    .order("created_at", { ascending: false });
 
-    if (error) throw new Error(error.message);
-    return data || [];
-  });
+  if (error) throw new Error(error.message);
+  return data || [];
+});
 
 export const reviewPressAccreditation = createServerFn({ method: "POST" })
   .validator(
@@ -1471,7 +1543,10 @@ export const fetchNewsImageDataUrlFn = createServerFn({ method: "POST" })
         return { ok: false, dataUrl: null };
       }
 
-      const contentType = (res.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+      const contentType = (res.headers.get("content-type") || "")
+        .split(";")[0]
+        .trim()
+        .toLowerCase();
       if (!contentType.startsWith("image/")) {
         return { ok: false, dataUrl: null };
       }
@@ -1509,7 +1584,8 @@ export const syncRegionalMinedNewsFn = createServerFn({ method: "POST" })
     }
 
     const regionPreset = data?.regionPreset ?? "vale_do_paraiba";
-    const city = data?.city ?? (regionPreset === "vale_do_paraiba" ? "São José dos Campos" : undefined);
+    const city =
+      data?.city ?? (regionPreset === "vale_do_paraiba" ? "São José dos Campos" : undefined);
     const state = data?.state ?? (regionPreset === "vale_do_paraiba" ? "SP" : undefined);
     const maxItems = data?.maxItems ?? 8;
 
@@ -1553,7 +1629,9 @@ export const resolveEditorialAdPlacementsFn = createServerFn({ method: "POST" })
     if (input.articleId) {
       const { data: artData } = await supabase
         .from("news_articles")
-        .select("id, store_id, ad_policy, exclusive_sponsor_ids, placement_overrides, category, city")
+        .select(
+          "id, store_id, ad_policy, exclusive_sponsor_ids, placement_overrides, category, city",
+        )
         .eq("id", input.articleId)
         .maybeSingle();
 
@@ -1624,7 +1702,8 @@ export const resolveEditorialAdPlacementsFn = createServerFn({ method: "POST" })
       if (candidates.length === 1) return candidates[0];
 
       const getWeight = (s: SponsorDTO) => {
-        if (typeof s.priority_weight === "number" && s.priority_weight > 0) return s.priority_weight;
+        if (typeof s.priority_weight === "number" && s.priority_weight > 0)
+          return s.priority_weight;
         if (s.tier === "diamond") return 50;
         if (s.tier === "gold") return 30;
         if (s.tier === "silver") return 20;
@@ -1686,7 +1765,10 @@ export const resolveEditorialAdPlacementsFn = createServerFn({ method: "POST" })
         // Filtro por cidade (geotargeting)
         if (s.target_cities && s.target_cities.length > 0) {
           const currentCity = input.viewerCity || article?.city;
-          if (!currentCity || !s.target_cities.some((c) => c.toLowerCase() === currentCity.toLowerCase())) {
+          if (
+            !currentCity ||
+            !s.target_cities.some((c) => c.toLowerCase() === currentCity.toLowerCase())
+          ) {
             return false;
           }
         }
@@ -1694,7 +1776,10 @@ export const resolveEditorialAdPlacementsFn = createServerFn({ method: "POST" })
         // Filtro por categoria editorial
         if (s.target_categories && s.target_categories.length > 0) {
           const currentCat = input.category || article?.category;
-          if (!currentCat || !s.target_categories.some((c) => c.toLowerCase() === currentCat.toLowerCase())) {
+          if (
+            !currentCat ||
+            !s.target_categories.some((c) => c.toLowerCase() === currentCat.toLowerCase())
+          ) {
             return false;
           }
         }
@@ -1919,7 +2004,9 @@ export const getEditorialAdNetworkAnalyticsFn = createServerFn({ method: "GET" }
     const [sponsorsRes, eventsRes] = await Promise.all([
       supabase
         .from("sponsors")
-        .select("id, name, tier, views_count, clicks_count, max_impressions_quota, public_report_token")
+        .select(
+          "id, name, tier, views_count, clicks_count, max_impressions_quota, public_report_token",
+        )
         .eq("store_id", storeId),
       supabase
         .from("sponsor_ad_events")
@@ -1936,10 +2023,7 @@ export const getEditorialAdNetworkAnalyticsFn = createServerFn({ method: "GET" }
     let totalClicks = 0;
     let totalDurationSeconds = 0;
 
-    const zoneMap = new Map<
-      string,
-      { impressions: number; viewable: number; clicks: number }
-    >();
+    const zoneMap = new Map<string, { impressions: number; viewable: number; clicks: number }>();
 
     for (const ev of events) {
       if (!zoneMap.has(ev.placement_zone)) {
@@ -1976,7 +2060,8 @@ export const getEditorialAdNetworkAnalyticsFn = createServerFn({ method: "GET" }
       impressions: stats.impressions,
       viewableImpressions: stats.viewable,
       clicks: stats.clicks,
-      ctrPercent: stats.viewable > 0 ? Number(((stats.clicks / stats.viewable) * 100).toFixed(2)) : 0,
+      ctrPercent:
+        stats.viewable > 0 ? Number(((stats.clicks / stats.viewable) * 100).toFixed(2)) : 0,
     }));
 
     const bySponsor = sponsors.map((s: any) => {
@@ -1984,7 +2069,8 @@ export const getEditorialAdNetworkAnalyticsFn = createServerFn({ method: "GET" }
       const clicks = s.clicks_count || 0;
       const ctr = views > 0 ? Number(((clicks / views) * 100).toFixed(2)) : 0;
       const quota = s.max_impressions_quota;
-      const quotaUsedPercent = quota && quota > 0 ? Number(((views / quota) * 100).toFixed(1)) : null;
+      const quotaUsedPercent =
+        quota && quota > 0 ? Number(((views / quota) * 100).toFixed(1)) : null;
 
       return {
         sponsorId: s.id,
@@ -2044,29 +2130,38 @@ export interface EditorialSocialSettingsDTO {
 }
 
 export const scheduleEditorialSocialPostFn = createServerFn({ method: "POST" })
-  .validator((d: {
-    storeId?: string;
-    articleId?: string;
-    channel: "instagram_feed" | "instagram_stories" | "whatsapp_channel" | "multi_channel";
-    scheduledFor?: string;
-    captionText?: string;
-    renderedAssets?: string[];
-    autoPostMode?: "manual" | "daily_scheduled" | "immediate";
-    fixedEndingSlideUrl?: string;
-    layoutVariant?: string;
-  }) => {
-    return z.object({
-      storeId: z.string().optional(),
-      articleId: z.string().optional(),
-      channel: z.enum(["instagram_feed", "instagram_stories", "whatsapp_channel", "multi_channel"]),
-      scheduledFor: z.string().optional(),
-      captionText: z.string().optional(),
-      renderedAssets: z.array(z.string()).optional(),
-      autoPostMode: z.enum(["manual", "daily_scheduled", "immediate"]).optional(),
-      fixedEndingSlideUrl: z.string().optional(),
-      layoutVariant: z.string().optional(),
-    }).parse(d);
-  })
+  .validator(
+    (d: {
+      storeId?: string;
+      articleId?: string;
+      channel: "instagram_feed" | "instagram_stories" | "whatsapp_channel" | "multi_channel";
+      scheduledFor?: string;
+      captionText?: string;
+      renderedAssets?: string[];
+      autoPostMode?: "manual" | "daily_scheduled" | "immediate";
+      fixedEndingSlideUrl?: string;
+      layoutVariant?: string;
+    }) => {
+      return z
+        .object({
+          storeId: z.string().optional(),
+          articleId: z.string().optional(),
+          channel: z.enum([
+            "instagram_feed",
+            "instagram_stories",
+            "whatsapp_channel",
+            "multi_channel",
+          ]),
+          scheduledFor: z.string().optional(),
+          captionText: z.string().optional(),
+          renderedAssets: z.array(z.string()).optional(),
+          autoPostMode: z.enum(["manual", "daily_scheduled", "immediate"]).optional(),
+          fixedEndingSlideUrl: z.string().optional(),
+          layoutVariant: z.string().optional(),
+        })
+        .parse(d);
+    },
+  )
   .handler(async ({ data }) => {
     const {
       storeId: explicitStoreId,
@@ -2088,7 +2183,9 @@ export const scheduleEditorialSocialPostFn = createServerFn({ method: "POST" })
     assertStoreAccess(identity, ["owner", "admin", "manager", "editor"]);
 
     const supabase = getServerClient();
-    const scheduledTimestamp = scheduledFor ? new Date(scheduledFor).toISOString() : new Date().toISOString();
+    const scheduledTimestamp = scheduledFor
+      ? new Date(scheduledFor).toISOString()
+      : new Date().toISOString();
 
     const { data: inserted, error } = await supabase
       .from("editorial_social_schedules")
@@ -2118,10 +2215,12 @@ export const scheduleEditorialSocialPostFn = createServerFn({ method: "POST" })
 
 export const listEditorialSocialSchedulesFn = createServerFn({ method: "GET" })
   .validator((d: { storeId?: string; limit?: number }) => {
-    return z.object({
-      storeId: z.string().optional(),
-      limit: z.number().optional(),
-    }).parse(d || {});
+    return z
+      .object({
+        storeId: z.string().optional(),
+        limit: z.number().optional(),
+      })
+      .parse(d || {});
   })
   .handler(async ({ data }) => {
     const { storeId: explicitStoreId, limit = 50 } = data;
@@ -2134,12 +2233,14 @@ export const listEditorialSocialSchedulesFn = createServerFn({ method: "GET" })
 
     const { data: rows, error } = await supabase
       .from("editorial_social_schedules")
-      .select(`
+      .select(
+        `
         *,
         news_articles (
           title
         )
-      `)
+      `,
+      )
       .eq("store_id", storeId)
       .order("scheduled_for", { ascending: false })
       .limit(limit);
@@ -2157,9 +2258,11 @@ export const listEditorialSocialSchedulesFn = createServerFn({ method: "GET" })
 
 export const getEditorialSocialSettingsFn = createServerFn({ method: "GET" })
   .validator((d: { storeId?: string }) => {
-    return z.object({
-      storeId: z.string().optional(),
-    }).parse(d || {});
+    return z
+      .object({
+        storeId: z.string().optional(),
+      })
+      .parse(d || {});
   })
   .handler(async ({ data }) => {
     const { storeId: explicitStoreId } = data;
@@ -2201,25 +2304,29 @@ export const getEditorialSocialSettingsFn = createServerFn({ method: "GET" })
   });
 
 export const updateEditorialSocialSettingsFn = createServerFn({ method: "POST" })
-  .validator((d: {
-    storeId?: string;
-    instagramAccountHandle?: string;
-    autoPublishStoriesEnabled?: boolean;
-    autoPublishFeedEnabled?: boolean;
-    dailyStoriesTime?: string;
-    fixedEndingSlideUrl?: string;
-    randomLayoutsEnabled?: boolean;
-  }) => {
-    return z.object({
-      storeId: z.string().optional(),
-      instagramAccountHandle: z.string().optional(),
-      autoPublishStoriesEnabled: z.boolean().optional(),
-      autoPublishFeedEnabled: z.boolean().optional(),
-      dailyStoriesTime: z.string().optional(),
-      fixedEndingSlideUrl: z.string().optional(),
-      randomLayoutsEnabled: z.boolean().optional(),
-    }).parse(d);
-  })
+  .validator(
+    (d: {
+      storeId?: string;
+      instagramAccountHandle?: string;
+      autoPublishStoriesEnabled?: boolean;
+      autoPublishFeedEnabled?: boolean;
+      dailyStoriesTime?: string;
+      fixedEndingSlideUrl?: string;
+      randomLayoutsEnabled?: boolean;
+    }) => {
+      return z
+        .object({
+          storeId: z.string().optional(),
+          instagramAccountHandle: z.string().optional(),
+          autoPublishStoriesEnabled: z.boolean().optional(),
+          autoPublishFeedEnabled: z.boolean().optional(),
+          dailyStoriesTime: z.string().optional(),
+          fixedEndingSlideUrl: z.string().optional(),
+          randomLayoutsEnabled: z.boolean().optional(),
+        })
+        .parse(d);
+    },
+  )
   .handler(async ({ data }) => {
     const {
       storeId: explicitStoreId,
@@ -2243,11 +2350,15 @@ export const updateEditorialSocialSettingsFn = createServerFn({ method: "POST" }
       store_id: storeId,
       updated_at: new Date().toISOString(),
     };
-    if (instagramAccountHandle !== undefined) updates.instagram_account_handle = instagramAccountHandle;
-    if (autoPublishStoriesEnabled !== undefined) updates.auto_publish_stories_enabled = autoPublishStoriesEnabled;
-    if (autoPublishFeedEnabled !== undefined) updates.auto_publish_feed_enabled = autoPublishFeedEnabled;
+    if (instagramAccountHandle !== undefined)
+      updates.instagram_account_handle = instagramAccountHandle;
+    if (autoPublishStoriesEnabled !== undefined)
+      updates.auto_publish_stories_enabled = autoPublishStoriesEnabled;
+    if (autoPublishFeedEnabled !== undefined)
+      updates.auto_publish_feed_enabled = autoPublishFeedEnabled;
     if (dailyStoriesTime !== undefined) updates.daily_stories_time = dailyStoriesTime;
-    if (fixedEndingSlideUrl !== undefined) updates.fixed_ending_slide_url = fixedEndingSlideUrl || null;
+    if (fixedEndingSlideUrl !== undefined)
+      updates.fixed_ending_slide_url = fixedEndingSlideUrl || null;
     if (randomLayoutsEnabled !== undefined) updates.random_layouts_enabled = randomLayoutsEnabled;
 
     const { data: upserted, error } = await supabase
@@ -2263,7 +2374,3 @@ export const updateEditorialSocialSettingsFn = createServerFn({ method: "POST" }
 
     return upserted as EditorialSocialSettingsDTO;
   });
-
-
-
-

@@ -207,14 +207,12 @@ function CustomerReviewsPage() {
           ) : null
         }
         rightActions={
-          <Button
-            asChild
-            variant="outline"
-            size="default"
-            className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer shadow-2xs focus-visible:ring-2 focus-visible:ring-primary"
+          <Link
+            to="/mercado"
+            className="h-11 min-h-11 px-3 inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
           >
-            <Link to="/mercado">Explorar</Link>
-          </Button>
+            Explorar
+          </Link>
         }
       />
 

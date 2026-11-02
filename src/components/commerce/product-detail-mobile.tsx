@@ -164,13 +164,13 @@ export function ProductDetailMobile({
           <button
             type="button"
             onClick={handleShare}
-            className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground border border-white/20 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="size-11 rounded-full bg-background/80 text-foreground border border-border/60 hover:bg-muted/50 flex items-center justify-center active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Compartilhar"
           >
             <Share2 className="size-5" />
           </button>
 
-          <div className="size-11 rounded-full bg-foreground/50 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-md">
+          <div className="size-11 rounded-full bg-background/80 border border-border/60 flex items-center justify-center">
             <FavoriteButton
               itemId={product.id}
               itemType="product"

@@ -8,6 +8,20 @@ const BASELINE_PATH = path.resolve('design-lint.baseline.json');
 const REPORT_PATH = path.resolve('design-lint.report.json');
 const DASHBOARD_PATH = path.resolve('docs/design/LINT_DASHBOARD.md');
 
+function safeWriteFileSync(filePath, data, encoding = 'utf8') {
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      fs.writeFileSync(filePath, data, encoding);
+      return;
+    } catch (err) {
+      if (attempt === 5) throw err;
+      const waitMs = attempt * 100;
+      const start = Date.now();
+      while (Date.now() - start < waitMs) {}
+    }
+  }
+}
+
 /**
  * Carrega e valida configuração normativa do Design Lint (.designlintrc.json).
  */
@@ -268,6 +282,38 @@ export function parseJsxTags(content) {
   return tags;
 }
 
+/** Detecta atributos JSX no nível da tag, ignorando handlers dentro de props-filhas. */
+export function hasTopLevelJsxAttribute(tagContent, attributeName) {
+  let braceDepth = 0;
+  let inQuote = null;
+
+  for (let index = 0; index < tagContent.length; index += 1) {
+    const character = tagContent[index];
+    if (inQuote) {
+      if (character === inQuote && tagContent[index - 1] !== "\\") inQuote = null;
+      continue;
+    }
+    if (character === '"' || character === "'" || character === "`") {
+      inQuote = character;
+      continue;
+    }
+    if (character === "{") {
+      braceDepth += 1;
+      continue;
+    }
+    if (character === "}") {
+      braceDepth = Math.max(0, braceDepth - 1);
+      continue;
+    }
+    if (braceDepth === 0 && tagContent.slice(index).match(new RegExp(`^${attributeName}\\s*=`))) {
+      const previous = tagContent[index - 1];
+      if (!previous || /[\\s{/]/.test(previous)) return true;
+    }
+  }
+
+  return false;
+}
+
 /**
  * Linta uma string de código fonte e retorna todas as violações encontradas.
  */
@@ -427,7 +473,10 @@ export function lintSource(content, filePath, customConfig = null) {
       arbitraryClassRegex.lastIndex = 0;
       while ((m = arbitraryClassRegex.exec(line)) !== null) {
         // Attribute variants select state; only their utility value can be arbitrary.
-        if (/^(?:data|aria|supports)-\[/.test(m[0]) && line[m.index + m[0].length] === ':') continue;
+        // Preserve compound variants such as group-data-*, peer-data-* and has-*
+        // while still reporting real arbitrary utilities such as w-[...].
+        const isAttributeVariant = /(?:data|aria|supports)-\[/.test(m[0]) || /has-\[\[/.test(m[0]);
+        if (isAttributeVariant) continue;
         violations.push({
           id: 'DL-02',
           rule: 'DL-02',
@@ -815,7 +864,7 @@ export function lintSource(content, filePath, customConfig = null) {
       const isNativeButton = tag.tagName.toLowerCase() === 'button';
       const isDsButton = tag.tagName === 'Button' || tag.tagName.endsWith('Button');
       const isLink = (tag.tagName.toLowerCase() === 'a' || tag.tagName === 'Link' || tag.tagName === 'NavLink') && tag.tagName !== 'ExternalLink';
-      const hasOnClick = /\bonClick\s*=/.test(tag.tagContent);
+      const hasOnClick = hasTopLevelJsxAttribute(tag.tagContent, "onClick");
       const isInteractive = isNativeButton || isDsButton || isLink || hasOnClick;
 
       // DL-14: Alvo de toque < 44px (inspeção de tags JSX multilinhas)
@@ -1091,7 +1140,7 @@ export function updateBaseline(baselinePath = BASELINE_PATH, violations = [], fi
     byModule: agg.byModule
   };
 
-  fs.writeFileSync(baselinePath, JSON.stringify(baselineData, null, 2), 'utf8');
+  safeWriteFileSync(baselinePath, JSON.stringify(baselineData, null, 2), 'utf8');
   return baselineData;
 }
 
@@ -1207,7 +1256,7 @@ export function generateDashboard(reportData, baselineData, outputPath = DASHBOA
   }
   md += `\n`;
 
-  fs.writeFileSync(outputPath, md, 'utf8');
+  safeWriteFileSync(outputPath, md, 'utf8');
 }
 
 /**
@@ -1300,7 +1349,7 @@ if (isMain) {
     config,
     violationsSample: violations.slice(0, 150)
   };
-  fs.writeFileSync(REPORT_PATH, JSON.stringify(reportData, null, 2), 'utf8');
+  safeWriteFileSync(REPORT_PATH, JSON.stringify(reportData, null, 2), 'utf8');
 
   // Carregar baseline para comparar se existir
   let baseline = null;

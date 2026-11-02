@@ -47,6 +47,14 @@ export function setClientContextCookies(payload: ContextPayload): void {
 }
 
 /**
+ * Purga atomicamente todos os cookies corporativos de tenant e redefine o contexto civil.
+ * Garante que a vitrine pública opere sob Zero-Trust Civil Root.
+ */
+export function purgeCorporateContextCookies(): void {
+  setClientContextCookies({ context: "civil" });
+}
+
+/**
  * Lê o contexto ativo atual a partir do document.cookie (última ocorrência mais recente).
  */
 export function getClientActiveContext(): ContextType {

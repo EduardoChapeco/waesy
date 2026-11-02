@@ -613,9 +613,7 @@ export function CreatorProfileSheetEditor({
         cropShape="rect"
         lockAspect={true}
         title={
-          cropperType === "avatar"
-            ? (isAffiliate ? "Recortar Foto do Parceiro (1:1)" : "Recortar Foto / Logo da Marca (1:1)")
-            : (isAffiliate ? "Recortar Capa do Parceiro (21:9)" : "Recortar Capa Panorâmica da Marca (21:9)")
+          isAffiliate ? "Recortar Foto do Parceiro (1:1)" : "Recortar Foto / Logo da Marca (1:1)"
         }
         onCropComplete={handleCropComplete}
       />

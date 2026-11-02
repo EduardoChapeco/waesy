@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import { UploadCloud, X, Loader2, Image as ImageIcon, Film, AlertCircle, Crop, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadMediaUniversal, ingestExternalMediaUrl } from "@/services/storage.functions";
-import { getBrowserClient } from "@/lib/supabase";
 import { toast } from "sonner";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { compressImage } from "@/lib/image-compression";
@@ -290,30 +289,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  }
  } catch (err: any) {
  console.error("Erro no upload do arquivo:", file.name, err);
- // Fallback para upload direto via client browser caso Server Function falhe
- try {
- const supabase = getBrowserClient();
- const { error: directErr } = await supabase.storage
- .from(bucket)
- .upload(filePath, file, { upsert: true });
-
- if (!directErr) {
- const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(filePath);
- if (publicData?.publicUrl) {
- updatedMedia.push({
- id: `media-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
- url: publicData.publicUrl,
- path: filePath,
- type: isVideo ? "video" : "image",
- });
- successCount++;
- }
- } else {
  failCount++;
- }
- } catch {
- failCount++;
- }
  }
  }
 

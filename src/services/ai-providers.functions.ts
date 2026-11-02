@@ -100,8 +100,9 @@ export const saveTenantAiProvider = createServerFn({ method: "POST" })
     }
 
     const db = getServerClient();
-    const { encryptSecret } = await import("@/lib/crypto-vault.server");
-    const encryptedApiKey = encryptSecret(data.api_key.trim());
+    const { encryptSecret, cleanApiKey } = await import("@/lib/crypto-vault.server");
+    const sanitizedKey = cleanApiKey(data.api_key);
+    const encryptedApiKey = encryptSecret(sanitizedKey);
     const { data: saved, error } = await db
       .from("tenant_ai_providers")
       .upsert(

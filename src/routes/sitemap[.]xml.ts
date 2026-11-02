@@ -118,10 +118,10 @@ export const Route = createFileRoute("/sitemap.xml")({
 
           // 8. Fetch directory listings, events, recipes, communities, lead forms, biolinks, raffles e Omni-Builder documents
           const [dirRes, eventsRes, recipesRes, omniRes, formsRes, bioRes, commRes, rafflesRes] = await Promise.all([
-            db.from("directory_listings").select("id, slug").limit(2000),
+            db.from("directory_listings").select("id").limit(2000),
             db.from("events").select("id").eq("status", "published").limit(1000),
             db.from("mined_recipes").select("id").limit(1000),
-            db.from("experience_documents").select("slug").eq("status", "published").limit(1000),
+            db.from("experience_documents").select("slug").eq("is_active", true).limit(1000),
             db.from("lead_forms").select("slug").eq("status", "active").limit(1000),
             db.from("links_in_bio").select("slug").limit(1000),
             db.from("communities").select("slug").limit(1000),
@@ -130,7 +130,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           if (dirRes.data) {
             dirRes.data.forEach((d: any) => {
               dynamicPaths.push(`/diretorio/${d.id}`);
-              if (d.slug) dynamicPaths.push(`/places/${d.slug}`);
+              
             });
           }
           if (eventsRes.data) {

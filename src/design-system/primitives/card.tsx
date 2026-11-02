@@ -23,10 +23,10 @@ export const Card = React.forwardRef<HTMLDivElement, CardBaseProps>(
       <div
         ref={ref}
         className={cn(
-          "rounded-lg border border-border/70 bg-card text-card-foreground p-5",
-          variant === "subtle" && "bg-muted/30 border-border/40",
+          "rounded-2xl bg-card text-card-foreground p-5",
+          variant === "subtle" && "bg-muted/30",
           variant === "interactive" &&
-            "cursor-pointer hover:border-primary/50 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "cursor-pointer hover:bg-muted/30 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           className
         )}
         {...props}
@@ -62,7 +62,7 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border/70 bg-card p-5 flex flex-col justify-between gap-4",
+        "rounded-2xl bg-card p-5 flex flex-col justify-between gap-4",
         className
       )}
     >
@@ -140,9 +140,9 @@ export function EntityCard({
         }
       }}
       className={cn(
-        "flex items-center justify-between gap-4 p-4 rounded-lg border border-border/70 bg-card text-card-foreground select-none",
+        "flex items-center justify-between gap-4 p-4 rounded-2xl bg-card text-card-foreground select-none",
         isInteractive &&
-          "cursor-pointer hover:border-primary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "cursor-pointer hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
     >
@@ -199,7 +199,7 @@ export function OfferCard({
   return (
     <div
       className={cn(
-        "flex flex-col rounded-lg border border-border/70 bg-card overflow-hidden transition-colors hover:border-primary/40",
+        "flex flex-col rounded-2xl bg-card overflow-hidden transition-colors hover:bg-muted/20",
         className
       )}
     >
@@ -219,7 +219,7 @@ export function OfferCard({
           </div>
         )}
         {badgeText && (
-          <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background/90 backdrop-blur-xs text-2xs font-semibold text-foreground shadow-xs">
+          <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background/90 backdrop-blur-xs text-2xs font-semibold text-foreground">
             {badgeText}
           </span>
         )}
@@ -242,7 +242,7 @@ export function OfferCard({
         </div>
 
         {/* Price & Primary CTA */}
-        <div className="flex items-end justify-between gap-3 pt-2 border-t border-border/40">
+        <div className="flex items-end justify-between gap-3 pt-2">
           <div className="space-y-1">
             {originalPrice && (
               <span className="text-xs line-through text-muted-foreground font-mono tabular-nums">
@@ -293,8 +293,8 @@ export function ActionCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-start gap-4 p-5 rounded-lg border border-border/70 bg-card text-left transition-colors cursor-pointer select-none",
-        "hover:border-primary/50 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "flex items-start gap-4 p-5 rounded-2xl bg-card text-left transition-colors cursor-pointer select-none",
+        "hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
     >
@@ -354,7 +354,7 @@ export function MediaCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col rounded-lg border border-border/70 bg-card overflow-hidden transition-colors hover:border-primary/50",
+        "group relative flex flex-col rounded-2xl bg-card overflow-hidden transition-colors hover:bg-muted/20",
         className
       )}
     >
@@ -373,7 +373,7 @@ export function MediaCard({
         )}
 
         {badge && (
-          <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background/90 text-2xs font-semibold text-foreground shadow-xs">
+          <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background/90 text-2xs font-semibold text-foreground">
             {badge}
           </span>
         )}
@@ -391,7 +391,7 @@ export function MediaCard({
             aria-label={`Reproduzir ${title}`}
             className="absolute inset-0 flex items-center justify-center bg-foreground/25 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="size-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+            <div className="size-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
               <Play className="size-5 fill-current ml-1" />
             </div>
           </button>
@@ -436,7 +436,7 @@ export function DataSummaryCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border/70 bg-card p-5 space-y-4 flex flex-col justify-between",
+        "rounded-2xl bg-card p-5 space-y-4 flex flex-col justify-between",
         className
       )}
     >
@@ -449,7 +449,7 @@ export function DataSummaryCard({
         <h4 className="text-sm font-semibold text-foreground">{title}</h4>
       </div>
 
-      <div className="divide-y divide-border/40">
+      <div className="space-y-2">
         {items.map((item, idx) => (
           <div
             key={idx}
@@ -469,7 +469,7 @@ export function DataSummaryCard({
       </div>
 
       {footerNote && (
-        <div className="pt-2 border-t border-border/40 text-2xs text-muted-foreground">
+        <div className="pt-2 text-2xs text-muted-foreground">
           {footerNote}
         </div>
       )}
@@ -501,7 +501,7 @@ export function PreviewCard({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-4 p-4 rounded-lg border border-border/70 bg-card hover:border-primary/40 transition-colors",
+        "flex items-center justify-between gap-4 p-4 rounded-2xl bg-card hover:bg-muted/20 transition-colors",
         className
       )}
     >
@@ -570,11 +570,11 @@ export function InteractiveCard({
         }
       }}
       className={cn(
-        "relative flex flex-col p-5 rounded-lg border transition-colors duration-200 cursor-pointer select-none",
+        "relative flex flex-col p-5 rounded-2xl transition-colors duration-200 cursor-pointer select-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         selected
-          ? "border-primary bg-primary/5 shadow-xs"
-          : "border-border/70 bg-card hover:border-primary/40 hover:bg-muted/20",
+          ? "bg-primary/5 ring-2 ring-primary/50"
+          : "bg-card hover:bg-muted/20",
         className
       )}
     >
@@ -606,17 +606,17 @@ export function InteractiveCard({
 
         <div
           className={cn(
-            "size-5 rounded-full border flex items-center justify-center shrink-0 transition-colors",
+            "size-5 rounded-full flex items-center justify-center shrink-0 transition-colors",
             selected
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border/80 bg-background"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted"
           )}
         >
           {selected && <CheckCircle2 className="size-4" />}
         </div>
       </div>
 
-      {children && <div className="mt-4 pt-3 border-t border-border/40">{children}</div>}
+      {children && <div className="mt-4 pt-3">{children}</div>}
     </div>
   );
 }

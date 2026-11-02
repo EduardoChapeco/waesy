@@ -4,6 +4,37 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
 
+type ModulePermissionValue = boolean | { enabled?: boolean; active?: boolean; module_enabled?: boolean };
+
+async function assertWorkspaceModuleEnabled(
+  supabase: ReturnType<typeof getServerClient>,
+  identity: Awaited<ReturnType<typeof getServerIdentity>>,
+  moduleKey: string,
+) {
+  if (identity.role === "owner" || identity.role === "admin") return;
+
+  const { data, error } = await supabase
+    .from("workspace_role_permissions")
+    .select("module_permissions")
+    .eq("store_id", identity.store_id)
+    .eq("role_key", identity.role)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Não foi possível validar a habilitação do módulo.");
+  }
+
+  const permissions = (data?.module_permissions || {}) as Record<string, ModulePermissionValue>;
+  const configured = permissions[moduleKey];
+  const enabled = typeof configured === "boolean"
+    ? configured
+    : configured?.enabled ?? configured?.active ?? configured?.module_enabled;
+
+  if (enabled === false) {
+    throw new Error(`O módulo ${moduleKey} está desabilitado para este papel.`);
+  }
+}
+
 // ============================================================
 // 1. ACORDOS DE SALÃO PARCEIRO / PROFISSIONAL
 // ============================================================
@@ -34,6 +65,7 @@ export const getPartnerAgreement = createServerFn({ method: "GET" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
     const supabase = getServerClient();
+    await assertWorkspaceModuleEnabled(supabase, identity, "services");
 
     const { data, error } = await supabase
       .from("workspace_partner_agreements")
@@ -55,6 +87,7 @@ export const savePartnerAgreement = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
     const supabase = getServerClient();
+    await assertWorkspaceModuleEnabled(supabase, identity, "services");
 
     const payload = {
       store_id: identity.store_id,
@@ -93,6 +126,7 @@ export const listServiceConsumedMaterials = createServerFn({ method: "GET" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
     const supabase = getServerClient();
+    await assertWorkspaceModuleEnabled(supabase, identity, "services");
 
     const { data, error } = await supabase
       .from("service_consumed_materials")
@@ -125,6 +159,7 @@ export const saveServiceConsumedMaterials = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
     const supabase = getServerClient();
+    await assertWorkspaceModuleEnabled(supabase, identity, "services");
 
     // Remove insumos antigos para substituição atômica
     await supabase
@@ -176,6 +211,7 @@ export const saveServiceCollaboratorSplits = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
     const supabase = getServerClient();
+    await assertWorkspaceModuleEnabled(supabase, identity, "services");
 
     await supabase
       .from("service_collaborator_splits")
@@ -210,6 +246,7 @@ export const listServiceCollaboratorSplits = createServerFn({ method: "GET" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
     const supabase = getServerClient();
+    await assertWorkspaceModuleEnabled(supabase, identity, "services");
 
     const { data, error } = await supabase
       .from("service_collaborator_splits")
@@ -244,7 +281,7 @@ export const listCustomerAnamneses = createServerFn({ method: "GET" })
 
     if (error) {
       console.error("[listCustomerAnamneses] error:", error);
-      return [];
+      throw new Error("Falha ao carregar fichas de anamnese.");
     }
     return data || [];
   });
@@ -365,6 +402,7 @@ export const emitRowFiscalInvoice = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager", "finance", "seller"]);
     const supabase = getServerClient();
+    await assertWorkspaceModuleEnabled(supabase, identity, "fiscal");
 
     // Geração simulada/pronta de nota fiscal com registro
     const invoicePayload = {

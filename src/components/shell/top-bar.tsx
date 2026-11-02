@@ -52,19 +52,19 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             <List className="size-6" weight="bold" />
           </button>
 
-          {/* Botão + Contextual de Criação Rápida (WeChat / WhatsApp SuperApp) */}
+          {/* Botão + Contextual de Criação Rápida (Desktop/Tablet — no mobile o MobileNav centraliza a criação) */}
           <button
             type="button"
             onClick={() => openQuickCreateModal(location.pathname)}
             aria-label="Criar"
             title="Criar"
-            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="hidden sm:flex size-11 min-h-11 min-w-11 rounded-lg items-center justify-center text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Plus className="size-5" weight="bold" />
           </button>
           <Link
             to="/"
-            className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0"
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0 min-w-0"
             aria-label="Ir para a página inicial"
           >
             {brandSettings?.show_logo !== false && brandSettings?.logo_url ? (
@@ -75,7 +75,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
               />
             ) : null}
             {(brandSettings?.show_name !== false || !brandSettings?.logo_url) && (
-              <span className="font-display font-black text-lg sm:text-xl tracking-tight text-foreground leading-none">
+              <span className="font-display font-black text-lg sm:text-xl tracking-tight text-foreground leading-none truncate max-w-28 sm:max-w-none">
                 {platformDisplayName}
               </span>
             )}
@@ -91,8 +91,8 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             BETA
           </button>
 
-          {/* Location Master Pill — com largura fluida que não estrangula o nome da cidade */}
-          <LocationMasterPill className="max-w-36 sm:max-w-52" />
+          {/* Location Master Pill — exibido a partir de telas sm para garantir 100% de largura nativa sem transbordamento no mobile */}
+          <LocationMasterPill className="hidden sm:flex max-w-36 sm:max-w-52" />
         </div>
 
         {/* Centro (Desktop >= 768px): Busca Global Inteligente Silenciosa */}

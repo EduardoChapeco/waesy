@@ -102,11 +102,17 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
     ? document.cookie.match(/waesy_active_tenant=([^;]+)/)?.[1] || null
     : null;
 
-  // Sanitização anti-fantasma (Auto-heal B7)
+  // Sanitização anti-fantasma (Auto-heal B7 & Zero-Trust Civil Root DEC-206)
   let activeContext: "civil" | "store" | "creator" = rawContext;
   let activeCreatorId: string | null = null;
 
-  if (activeContext === "creator") {
+  if (activeContext === "store") {
+    // Zero-Trust Civil Root: A vitrine pública nunca deve herdar perfil empresarial sem ação voluntária
+    activeContext = "civil";
+    if (typeof window !== "undefined") {
+      setClientContextCookies({ context: "civil" });
+    }
+  } else if (activeContext === "creator") {
     if (creatorProfiles.length === 0) {
       activeContext = "civil";
       if (typeof window !== "undefined") {
@@ -164,6 +170,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
   const handleLogout = async () => {
     try {
       if (typeof window !== "undefined") {
+        setClientContextCookies({ context: "civil" });
         try {
           const { getBrowserClient } = await import("@/lib/supabase");
           await getBrowserClient().auth.signOut().catch(() => {});
@@ -279,7 +286,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                     <div className="flex items-center gap-2 px-1 min-w-0">
                       {activeContext === "creator" ? (
                         <Award className="size-4 text-amber-500 shrink-0" />
-                      ) : activeContext === "store" ? (
+                      ) : (activeContext as string) === "store" ? (
                         <Store className="size-4 text-primary shrink-0" />
                       ) : (
                         <User className="size-4 text-muted-foreground shrink-0" />
@@ -287,7 +294,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                       <span className="text-xs font-semibold truncate text-foreground">
                         {activeContext === "creator"
                           ? `Criador: @${activeCreatorId || "ativo"}`
-                          : activeContext === "store"
+                          : (activeContext as string) === "store"
                           ? `Empresa: ${activeStoreName}`
                           : "Conta Civil Pessoal"}
                       </span>
@@ -412,7 +419,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                   )}
 
                   {/* ── CONTEXTO 2: MODO EMPRESA ATIVO ── */}
-                  {activeContext === "store" && (
+                  {(activeContext as string) === "store" && (
                     <>
                       <div className="text-xs font-bold text-primary uppercase tracking-wider px-3 py-1 flex items-center gap-2">
                         <Building2 className="size-3.5" />

@@ -95,6 +95,7 @@ const ASPECT_RATIOS: Array<{ id: HomeAspectRatio; label: string; ratioDesc: stri
 
 
 export const CANONICAL_PRESETS = [
+  { key: "chat_noor_bento", title: "Menu Noor Chat (Tetris Bento Grid)", layout: "bento_grid", aspect: "auto", desc: "Grade modular de 3 linhas do chat (3 botões em cima, 2 embaixo sendo 1 duplo, chamada de mobilidade)" },
   { key: "hero_banners", title: "Destaques Principais", layout: "carousel", aspect: "ifood", desc: "Carrossel panorâmico principal com paginação em traços" },
   { key: "quick_categories_ifood", title: "Categorias Principais", layout: "horizontal_scroll", aspect: "1:1", desc: "Dock 5x2 de categorias com 10 atalhos" },
   { key: "feature_mini_banners", title: "No Waesy também tem", layout: "carousel", aspect: "4:5", desc: "Mini-banners verticais de vantagens e serviços" },
@@ -107,7 +108,7 @@ export const CANONICAL_PRESETS = [
   { key: "procedural_infinite_feed", title: "Descoberta Procedural Contínua", layout: "grid_2d", aspect: "auto", desc: "Feed algorítmico contínuo intercalando produtos, anúncios e lojas" },
   { key: "vertical_reels_carousel", title: "Carrossel Vertical / Reels", layout: "carousel", aspect: "9:16", desc: "Stories e vídeos curtos verticais 9:16 de alta conversão" },
   { key: "mosaic_gallery_showcase", title: "Galeria Mosaico", layout: "bento_grid", aspect: "4:3", desc: "Mosaico editorial de fotos e banners clicáveis" },
-  { key: "canonical_video_player", title: "Player de Vídeo Canônico", layout: "slim_slider", aspect: "16:9", desc: "Seção de vídeo widescreen com CTA de conversão" },
+  { key: "canonical_video_player", title: "Vídeo em Destaque", layout: "slim_slider", aspect: "16:9", desc: "Seção de vídeo widescreen com CTA de conversão" },
   { key: "car_rental_3days_rail", title: "Aluguel de Carros 3 Diárias", layout: "carousel", aspect: "16:9", desc: "Frota de locação com regra de reserva mínima de 3 diárias" },
 ];
 

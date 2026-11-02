@@ -43,7 +43,7 @@ export interface InstallmentTimelineDrawerProps {
   contractTitle?: string;
   totalInstallments?: number;
   installments?: InstallmentItem[];
-  onPayEarlyClick?: (selectedCount: number) => void;
+  onPayEarlyClick?: (selectedCount: number) => void | Promise<void>;
   className?: string;
 }
 
@@ -56,6 +56,7 @@ export function InstallmentTimelineDrawer({
   onPayEarlyClick,
   className,
 }: InstallmentTimelineDrawerProps) {
+  const [isAdvancing, setIsAdvancing] = useState(false);
   const effectiveTotal = totalInstallments || (installments.length > 0 ? installments.length : 1);
   const paidCount = installments.filter((i) => i.status === "paid").length;
   const progressPercent = installments.length > 0 ? Math.round((paidCount / effectiveTotal) * 100) : 0;
@@ -63,9 +64,21 @@ export function InstallmentTimelineDrawer({
     .filter((i) => i.status === "future" && i.discountCentsIfEarly)
     .reduce((acc, curr) => acc + (curr.discountCentsIfEarly || 0), 0);
 
-  const handleAdvance = () => {
-    toast.success("Simulação de antecipação gerada com desconto nos juros!");
-    onPayEarlyClick?.(installments.filter((i) => i.status === "future").length);
+  const handleAdvance = async () => {
+    if (!onPayEarlyClick) {
+      toast.error("A antecipação ainda não está conectada a um contrato ativo.");
+      return;
+    }
+    setIsAdvancing(true);
+    try {
+      await onPayEarlyClick(installments.filter((i) => i.status === "future").length);
+      toast.success("Solicitação de antecipação enviada.");
+    } catch (error) {
+      console.error("[InstallmentTimelineDrawer] Falha ao antecipar parcelas:", error);
+      toast.error(error instanceof Error ? error.message : "Não foi possível solicitar a antecipação.");
+    } finally {
+      setIsAdvancing(false);
+    }
   };
 
   return (
@@ -137,7 +150,8 @@ export function InstallmentTimelineDrawer({
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={handleAdvance}
+                onClick={() => void handleAdvance()}
+                disabled={isAdvancing}
                 className="rounded-xl h-11 min-h-11 px-3 text-xs font-semibold gap-1 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               >
                 <span>Adiantar</span>

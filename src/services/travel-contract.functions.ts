@@ -613,12 +613,31 @@ export const generateTravelReservationCheckout = createServerFn({ method: "POST"
 
     let storeRow: any = null;
     if (storeId) {
-      const { data: s } = await supabase
+      const { data: s, error: storeError } = await supabase
         .from("stores")
         .select("id, name, cnpj, phone, settings")
         .eq("id", storeId)
         .maybeSingle();
+      if (storeError) throw new Error("Erro ao carregar configuração da agência: " + storeError.message);
       storeRow = s;
+    }
+
+    // Validar e preparar a cobrança antes de qualquer escrita de contrato.
+    let pixBrCode: string | null = null;
+    if (input.generatePix && input.totalValueCents > 0) {
+      const storeSettings = (storeRow?.settings as Record<string, unknown>) || {};
+      const configuredPixKey = typeof storeSettings.pix_key === "string" ? storeSettings.pix_key.trim() : "";
+      if (!configuredPixKey) {
+        throw new Error("Chave Pix da agência não configurada. Configure a chave Pix nas configurações da empresa antes de gerar cobranças.");
+      }
+      pixBrCode = generatePixBrCode({
+        pixKey: configuredPixKey,
+        amountCents: input.totalValueCents,
+        merchantName: (storeRow?.name || "AGENCIA DE TURISMO").trim(),
+        merchantCity: "BRASIL",
+        txId: (input.proposalId || input.classifiedId || "RESERVA").slice(0, 20),
+        description: input.packageSummary.slice(0, 30),
+      });
     }
 
     let actorProfileId = identity?.id;
@@ -667,29 +686,6 @@ export const generateTravelReservationCheckout = createServerFn({ method: "POST"
         }
       } catch (err: any) {
         console.warn("[generateTravelReservationCheckout] Contrato automático:", err?.message);
-      }
-    }
-
-    let pixBrCode: string | null = null;
-    if (input.generatePix && input.totalValueCents > 0) {
-      try {
-        const storeSettings = (storeRow?.settings as Record<string, any>) || {};
-        const pixKey =
-          storeSettings.pix_key ||
-          storeRow?.cnpj?.replace(/\D/g, "") ||
-          storeRow?.phone?.replace(/\D/g, "") ||
-          "pix@waesy.com";
-
-        pixBrCode = generatePixBrCode({
-          pixKey,
-          amountCents: input.totalValueCents,
-          merchantName: storeRow?.name || "WAESY TURISMO",
-          merchantCity: "CHAPECO",
-          txId: (publicToken || "RESERVA").slice(0, 20),
-          description: input.packageSummary.slice(0, 30),
-        });
-      } catch (err: any) {
-        console.warn("[generateTravelReservationCheckout] Falha defensiva ao gerar Pix:", err?.message);
       }
     }
 

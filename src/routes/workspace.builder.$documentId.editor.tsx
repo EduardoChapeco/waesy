@@ -4,7 +4,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getExperienceDocument } from "@/services/builder.functions";
 import { listCategories, listCollections, listAdminProducts } from "@/services/admin-catalog.functions";
-import { OmniEditor } from "@/components/builder/OmniEditor";
+const OmniEditor = React.lazy(() =>
+  import("@/components/builder/OmniEditor").then((m) => ({ default: m.OmniEditor })),
+);
 import { OmniPageDocument, OmniPageDocumentSchema, createEmptyOmniPage } from "@/components/builder/types";
 import { applyTemplateToPage } from "@/components/builder/templates";
 import { saveOmniPageDocument, publishOmniPageDocument } from "@/services/omni-builder.functions";
@@ -106,23 +108,31 @@ function BuilderEditorPage() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-background">
-      <OmniEditor
-        initialDocument={initialOmniDocument}
-        onSave={handleSaveOmni}
-        onPublish={handlePublishOmni}
-        onBack={() => navigate({ to: "/workspace/cms/paginas" })}
-        products={initialData.products}
-        categories={initialData.categories}
-        collections={initialData.collections}
-        classifieds={initialData.classifieds}
-        posts={initialData.posts}
-        flyers={initialData.flyers}
-        events={initialData.events}
-        jobs={initialData.jobs}
-        stores={initialData.stores}
-        banners={initialData.banners}
-        hotpages={initialData.hotpages}
-      />
+      <React.Suspense
+        fallback={
+          <div className="w-full h-full flex items-center justify-center bg-background text-sm text-muted-foreground animate-pulse motion-reduce:animate-none">
+            Carregando editor...
+          </div>
+        }
+      >
+        <OmniEditor
+          initialDocument={initialOmniDocument}
+          onSave={handleSaveOmni}
+          onPublish={handlePublishOmni}
+          onBack={() => navigate({ to: "/workspace/cms/paginas" })}
+          products={initialData.products}
+          categories={initialData.categories}
+          collections={initialData.collections}
+          classifieds={initialData.classifieds}
+          posts={initialData.posts}
+          flyers={initialData.flyers}
+          events={initialData.events}
+          jobs={initialData.jobs}
+          stores={initialData.stores}
+          banners={initialData.banners}
+          hotpages={initialData.hotpages}
+        />
+      </React.Suspense>
     </div>
   );
 }

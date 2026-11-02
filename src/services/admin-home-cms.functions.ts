@@ -198,6 +198,66 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
       {
         id: "item-cat-4",
         section_id: "canonical-quick-categories",
+        title: "Explorar",
+        subtitle: null,
+        image_url: null,
+        target_url: "/explorar",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Compass",
+        is_active: true,
+        sort_order: 4,
+      },
+      {
+        id: "item-cat-5",
+        section_id: "canonical-quick-categories",
+        title: "Marketplace",
+        subtitle: null,
+        image_url: null,
+        target_url: "/marketplace",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Store",
+        is_active: true,
+        sort_order: 5,
+      },
+      {
+        id: "item-cat-6",
+        section_id: "canonical-quick-categories",
+        title: "Classificados",
+        subtitle: null,
+        image_url: null,
+        target_url: "/classificados",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Tag",
+        is_active: true,
+        sort_order: 6,
+      },
+      {
+        id: "item-cat-7",
+        section_id: "canonical-quick-categories",
+        title: "Viagens",
+        subtitle: null,
+        image_url: null,
+        target_url: "/turismo",
+        show_text: true,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Plane",
+        is_active: true,
+        sort_order: 7,
+      },
+      {
+        id: "item-cat-8",
+        section_id: "canonical-quick-categories",
         title: "Corridas",
         subtitle: null,
         image_url: null,
@@ -205,93 +265,33 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
-        badge_text: "Novo",
+        badge_text: null,
         icon_name: "Car",
-        is_active: true,
-        sort_order: 4,
-      },
-      {
-        id: "item-cat-5",
-        section_id: "canonical-quick-categories",
-        title: "Promoções",
-        subtitle: null,
-        image_url: null,
-        target_url: "/ofertas",
-        show_text: true,
-        grid_span_x: 1,
-        grid_span_y: 1,
-        badge_text: "Novo",
-        icon_name: "Tag",
-        is_active: true,
-        sort_order: 5,
-      },
-      {
-        id: "item-cat-6",
-        section_id: "canonical-quick-categories",
-        title: "Bolão",
-        subtitle: null,
-        image_url: null,
-        target_url: "/concursos",
-        show_text: true,
-        grid_span_x: 1,
-        grid_span_y: 1,
-        badge_text: null,
-        icon_name: "SoccerBall",
-        is_active: true,
-        sort_order: 6,
-      },
-      {
-        id: "item-cat-7",
-        section_id: "canonical-quick-categories",
-        title: "Gourmet",
-        subtitle: null,
-        image_url: null,
-        target_url: "/gastronomia",
-        show_text: true,
-        grid_span_x: 1,
-        grid_span_y: 1,
-        badge_text: null,
-        icon_name: "CookingPot",
-        is_active: true,
-        sort_order: 7,
-      },
-      {
-        id: "item-cat-8",
-        section_id: "canonical-quick-categories",
-        title: "Clube",
-        subtitle: null,
-        image_url: null,
-        target_url: "/conta/creditos",
-        show_text: true,
-        grid_span_x: 1,
-        grid_span_y: 1,
-        badge_text: null,
-        icon_name: "Sparkle",
         is_active: true,
         sort_order: 8,
       },
       {
         id: "item-cat-9",
         section_id: "canonical-quick-categories",
-        title: "Turbo",
+        title: "Serviços",
         subtitle: null,
         image_url: null,
-        target_url: "/gastronomia",
+        target_url: "/diretorio",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
-        badge_text: "Novo",
-        icon_name: "Lightning",
+        badge_text: null,
+        icon_name: "Briefcase",
         is_active: true,
         sort_order: 9,
       },
       {
         id: "item-cat-10",
         section_id: "canonical-quick-categories",
-        title: "Ver mais",
+        title: "Mais",
         subtitle: null,
         image_url: null,
-        target_url: "#categorias",
+        target_url: "/explorar",
         show_text: true,
         grid_span_x: 1,
         grid_span_y: 1,
@@ -774,6 +774,111 @@ export const CANONICAL_DEFAULT_HOME_SECTIONS: HomePageSectionDTO[] = [
     metadata: { category: "optional_module" },
     items: [],
   },
+  {
+    id: "canonical-chat-noor-bento",
+    section_key: "chat_noor_bento",
+    title: "Menu Rápido Noor (Chat Bento Grid)",
+    subtitle: "Grade modular de 3 linhas do chat (3 botões em cima, 2 embaixo sendo 1 duplo, chamada de mobilidade)",
+    show_title: false,
+    show_subtitle: false,
+    layout_variant: "bento_grid",
+    aspect_ratio: "auto",
+    is_active: true,
+    sort_order: 23,
+    metadata: { category: "chat_core" },
+    items: [
+      {
+        id: "item-chat-bento-1",
+        section_id: "canonical-chat-noor-bento",
+        title: "Marketplace",
+        subtitle: null,
+        image_url: null,
+        target_url: "/marketplace",
+        show_text: false,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "ShoppingBag",
+        is_active: true,
+        sort_order: 1,
+      },
+      {
+        id: "item-chat-bento-2",
+        section_id: "canonical-chat-noor-bento",
+        title: "Farmácias",
+        subtitle: null,
+        image_url: null,
+        target_url: "/farmacia",
+        show_text: false,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Pill",
+        is_active: true,
+        sort_order: 2,
+      },
+      {
+        id: "item-chat-bento-3",
+        section_id: "canonical-chat-noor-bento",
+        title: "Classificados",
+        subtitle: null,
+        image_url: null,
+        target_url: "/classificados",
+        show_text: false,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: null,
+        icon_name: "Tag",
+        is_active: true,
+        sort_order: 3,
+      },
+      {
+        id: "item-chat-bento-4",
+        section_id: "canonical-chat-noor-bento",
+        title: "Corridas & Moto",
+        subtitle: "Pedir agora",
+        image_url: null,
+        target_url: "/mobilidade",
+        show_text: false,
+        grid_span_x: 2,
+        grid_span_y: 1,
+        badge_text: "Rápido",
+        icon_name: "Car",
+        is_active: true,
+        sort_order: 4,
+      },
+      {
+        id: "item-chat-bento-5",
+        section_id: "canonical-chat-noor-bento",
+        title: "Lojas & Locais",
+        subtitle: null,
+        image_url: null,
+        target_url: "/diretorio",
+        show_text: false,
+        grid_span_x: 1,
+        grid_span_y: 1,
+        badge_text: "Novo",
+        icon_name: "Storefront",
+        is_active: true,
+        sort_order: 5,
+      },
+      {
+        id: "item-chat-bento-6",
+        section_id: "canonical-chat-noor-bento",
+        title: "Chamar Moto ou Corrida",
+        subtitle: "Para onde vamos? Peça com taxa fixa de R$ 0,99",
+        image_url: null,
+        target_url: "/mobilidade",
+        show_text: false,
+        grid_span_x: 3,
+        grid_span_y: 1,
+        badge_text: "MotoLink",
+        icon_name: "Car",
+        is_active: true,
+        sort_order: 6,
+      },
+    ],
+  },
 ];
 
 // Chaves canônicas ativas por padrão no novo design SuperApp / iFood
@@ -787,6 +892,7 @@ const CANONICAL_DEFAULT_ACTIVE_KEYS = new Set([
   "spotlight_pharmacies",
   "filter_chips_bar",
   "stores_feed_list",
+  "chat_noor_bento",
 ]);
 
 function mergeCanonicalWithDbSections(
@@ -1418,7 +1524,7 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
       if (normalizedList.length < limit) {
         const { data: rawArticlesData } = await supabase
           .from("news_articles")
-          .select("id, slug, title, subtitle, summary, cover_media_url, category, published_at, city")
+          .select("id, slug, title, subtitle, ai_summary, cover_media_url, category, published_at, city")
           .eq("status", "published")
           .order("published_at", { ascending: false })
           .limit(Math.max(limit, 8));
@@ -1468,5 +1574,28 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
     } catch (err) {
       console.warn("[getUnifiedShowcasePosts] Erro:", err);
       return [];
+    }
+  });
+
+// ── 7. BUSCAR SEÇÃO DO MENU NOOR PARA A TELA DE CHAT ──
+export const getChatNoorSection = createServerFn({ method: "GET" })
+  .handler(async (): Promise<HomePageSectionDTO> => {
+    try {
+      const all = await listPublicHomePageSections();
+      const found = all.find((s) => s.section_key === "chat_noor_bento");
+      if (found) return found;
+      const canonical = CANONICAL_DEFAULT_HOME_SECTIONS.find(
+        (s) => s.section_key === "chat_noor_bento",
+      );
+      return (
+        canonical ||
+        CANONICAL_DEFAULT_HOME_SECTIONS.find((s) => s.layout_variant === "bento_grid") ||
+        CANONICAL_DEFAULT_HOME_SECTIONS[0]
+      );
+    } catch {
+      const canonical = CANONICAL_DEFAULT_HOME_SECTIONS.find(
+        (s) => s.section_key === "chat_noor_bento",
+      );
+      return canonical || ({} as any);
     }
   });

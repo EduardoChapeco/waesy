@@ -44,45 +44,23 @@ function WorkspaceVisasPage() {
   const [consularStudioOpen, setConsularStudioOpen] = useState(false);
 
   // Estados da Pré-Análise Consular DS-160 (INA 214b) & Scanner MRZ
-  const [dsApplicantName, setDsApplicantName] = useState("Passageiro Titular");
+  const [dsApplicantName, setDsApplicantName] = useState("");
   const [dsEmploymentType, setDsEmploymentType] = useState<
     "clt" | "empresario" | "servidor_publico" | "autonomo" | "estudante" | "desempregado"
-  >("empresario");
-  const [dsMonthsInJob, setDsMonthsInJob] = useState(48);
-  const [dsMonthlyIncomeCents, setDsMonthlyIncomeCents] = useState(1450000);
-  const [dsEvaluation, setDsEvaluation] = useState<VisaDs160EvaluationResult>(() =>
-    evaluateUsVisaDs160ConsularTies({
-      applicantName: "Passageiro Titular",
-      destinationCountry: "Estados Unidos",
-      visaType: "B1/B2 Turismo e Negócios",
-      occupationType: "empresario",
-      employmentTenureMonths: 48,
-      monthlyIncomeCents: 1450000,
-      hasIncomeTaxReturn: true,
-      hasPropertyInBrazil: true,
-      hasDependentsInBrazil: true,
-      hasRelativesInDestination: false,
-      relativesLegalStatus: "none",
-      previousInternationalTrips: ["Europa Schengen", "Argentina"],
-      previousVisaRefusal: false,
-      tripSponsorType: "self",
-      estimatedTripCostCents: 1800000,
-      plannedStayDays: 12,
-    }),
-  );
-
-  const [mrzLine1, setMrzLine1] = useState("P<BRASILVA<<CARLOS<EDUARDO<<<<<<<<<<<<<<<<<<");
-  const [mrzLine2, setMrzLine2] = useState("FP849201<4BRA8804158M3108206<<<<<<<<<<<<<<02");
-  const [tripReturnDate, setTripReturnDate] = useState("2026-12-15");
-  const [mrzResult, setMrzResult] = useState(() =>
-    parseAndValidatePassportMrz(
-      "P<BRASILVA<<CARLOS<EDUARDO<<<<<<<<<<<<<<<<<<",
-      "FP849201<4BRA8804158M3108206<<<<<<<<<<<<<<02",
-      "2026-12-15",
-    ),
-  );
+  >("clt");
+  const [dsMonthsInJob, setDsMonthsInJob] = useState(0);
+  const [dsMonthlyIncomeCents, setDsMonthlyIncomeCents] = useState(0);
+  const [dsEvaluation, setDsEvaluation] = useState<VisaDs160EvaluationResult | null>(null);
+  const [mrzLine1, setMrzLine1] = useState("");
+  const [mrzLine2, setMrzLine2] = useState("");
+  const [tripReturnDate, setTripReturnDate] = useState("");
+  const [mrzResult, setMrzResult] = useState<any>(null);
 
   const handleRunConsularEvaluation = () => {
+    if (!dsApplicantName.trim()) {
+      toast.error("Informe o nome do solicitante para a análise DS-160.");
+      return;
+    }
     const evalRes = evaluateUsVisaDs160ConsularTies({
       applicantName: dsApplicantName,
       destinationCountry: "Estados Unidos",
@@ -90,21 +68,24 @@ function WorkspaceVisasPage() {
       occupationType: dsEmploymentType,
       employmentTenureMonths: dsMonthsInJob,
       monthlyIncomeCents: dsMonthlyIncomeCents,
-      hasIncomeTaxReturn: true,
-      hasPropertyInBrazil: true,
+      hasIncomeTaxReturn: dsMonthlyIncomeCents >= 250000,
+      hasPropertyInBrazil: dsMonthsInJob >= 12,
       hasDependentsInBrazil: true,
       hasRelativesInDestination: false,
       relativesLegalStatus: "none",
-      previousInternationalTrips: ["América do Sul"],
+      previousInternationalTrips: [],
       previousVisaRefusal: false,
       tripSponsorType: "self",
-      estimatedTripCostCents: 1800000,
+      estimatedTripCostCents: 1500000,
       plannedStayDays: 10,
     });
     setDsEvaluation(evalRes);
-    const mrzRes = parseAndValidatePassportMrz(mrzLine1, mrzLine2, tripReturnDate);
-    setMrzResult(mrzRes);
-    toast.success("Auditoria DS-160 (INA 214b) e validação MRZ 6 meses concluídas!");
+
+    if (mrzLine1.trim() && mrzLine2.trim() && tripReturnDate) {
+      const mrzRes = parseAndValidatePassportMrz(mrzLine1, mrzLine2, tripReturnDate);
+      setMrzResult(mrzRes);
+    }
+    toast.success("Auditoria DS-160 calculada com sucesso!");
   };
 
   const { data: visas = [], refetch, isLoading } = useQuery({
@@ -251,7 +232,7 @@ function WorkspaceVisasPage() {
       toolDescription="Acompanhamento de processos consulares (EUA B1/B2, Canadá, ETIAS Europa), formulários e agendamentos de entrevista."
       store={store}
     >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
         {/* ── HEADER DA PÁGINA ── */}
         <PageHeader
           eyebrow="Turismo & Assessoria Consular"
@@ -317,9 +298,11 @@ function WorkspaceVisasPage() {
               <div className="rounded-lg bg-muted/20 border border-border p-4 space-y-4">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-sm font-bold text-foreground">1. Matriz de Vínculos Socioeconômicos (DS-160)</h3>
-                  <Badge variant={dsEvaluation.consularTiesScore >= 75 ? "default" : "outline"} className="text-xs font-bold">
-                    Score: {dsEvaluation.consularTiesScore}/100 ({dsEvaluation.readinessTier})
-                  </Badge>
+                  {dsEvaluation && (
+                    <Badge variant={dsEvaluation.consularTiesScore >= 75 ? "default" : "outline"} className="text-xs font-bold">
+                      Score: {dsEvaluation.consularTiesScore}/100 ({dsEvaluation.readinessTier})
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -366,37 +349,45 @@ function WorkspaceVisasPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2 pt-2 border-t border-border">
-                  <p className="text-xs font-bold text-foreground">Fatores Positivos Verificados:</p>
-                  <ul className="space-y-1">
-                    {dsEvaluation.strengths.map((s: string, idx: number) => (
-                      <li key={idx} className="text-xs text-muted-foreground break-words leading-relaxed">
-                        • {s}
-                      </li>
-                    ))}
-                  </ul>
-                  {dsEvaluation.redFlags.length > 0 && (
-                    <>
-                      <p className="text-xs font-bold text-amber-600 pt-2">Alertas de Atenção Consular (INA 214b):</p>
-                      <ul className="space-y-1">
-                        {dsEvaluation.redFlags.map((f: string, idx: number) => (
-                          <li key={idx} className="text-xs text-amber-700 dark:text-amber-300 break-words leading-relaxed">
-                            • {f}
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                </div>
+                {dsEvaluation ? (
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    <p className="text-xs font-bold text-foreground">Fatores Positivos Verificados:</p>
+                    <ul className="space-y-1">
+                      {dsEvaluation.strengths.map((s: string, idx: number) => (
+                        <li key={idx} className="text-xs text-muted-foreground break-words leading-relaxed">
+                          • {s}
+                        </li>
+                      ))}
+                    </ul>
+                    {dsEvaluation.redFlags.length > 0 && (
+                      <>
+                        <p className="text-xs font-bold text-amber-600 pt-2">Alertas de Atenção Consular (INA 214b):</p>
+                        <ul className="space-y-1">
+                          {dsEvaluation.redFlags.map((f: string, idx: number) => (
+                            <li key={idx} className="text-xs text-amber-700 dark:text-amber-300 break-words leading-relaxed">
+                              • {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="pt-2 border-t border-border/60 text-xs text-muted-foreground italic">
+                    Preencha o nome do passageiro e execute a simulação para calcular o score consular e fatores de elegibilidade.
+                  </div>
+                )}
               </div>
 
               {/* Coluna 2: Scanner MRZ ICAO 9303 e Regra dos 6 Meses */}
               <div className="rounded-lg bg-muted/20 border border-border p-4 space-y-4">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-sm font-bold text-foreground">2. Validador MRZ (ICAO 9303) & Regra de 6 Meses</h3>
-                  <Badge variant={mrzResult.meetsSixMonthValidityRule && mrzResult.isValidMrz ? "default" : "outline"} className="text-xs font-bold">
-                    {mrzResult.meetsSixMonthValidityRule ? "Apto para Embarque" : "Alerta de Validade"}
-                  </Badge>
+                  {mrzResult && (
+                    <Badge variant={mrzResult.meetsSixMonthValidityRule && mrzResult.isValidMrz ? "default" : "outline"} className="text-xs font-bold">
+                      {mrzResult.meetsSixMonthValidityRule ? "Apto para Embarque" : "Alerta de Validade"}
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -421,17 +412,23 @@ function WorkspaceVisasPage() {
                   />
                 </div>
 
-                <div className="rounded-lg bg-card border border-border p-3 space-y-2 text-xs">
-                  <p className="font-bold text-foreground">
-                    Titular Extraído: {mrzResult.holderFirstName} {mrzResult.holderLastName} • Passaporte: {mrzResult.passportNumber}
-                  </p>
-                  <p className="text-muted-foreground">
-                    Validade: {mrzResult.expiryDateIso} ({mrzResult.daysUntilExpiryFromReturn} dias após o retorno)
-                  </p>
-                  <p className="text-amber-600 font-semibold break-words">
-                    • {mrzResult.validationMessagePt}
-                  </p>
-                </div>
+                {mrzResult ? (
+                  <div className="rounded-xl bg-card border border-border/80 p-3 space-y-2 text-xs">
+                    <p className="font-bold text-foreground">
+                      Titular Extraído: {mrzResult.holderFirstName} {mrzResult.holderLastName} • Passaporte: {mrzResult.passportNumber}
+                    </p>
+                    <p className="text-muted-foreground">
+                      Validade: {mrzResult.expiryDateIso} ({mrzResult.daysUntilExpiryFromReturn} dias após o retorno)
+                    </p>
+                    <p className="text-amber-600 font-semibold break-words">
+                      • {mrzResult.validationMessagePt}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-muted/20 border border-border/50 text-xs text-muted-foreground italic">
+                    Insira as linhas 1 e 2 do código mecânico (MRZ) e a data de volta para conferência ICAO.
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -504,7 +501,7 @@ function WorkspaceVisasPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <div className="tab-list flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
             {[
               { id: "all", label: "Todos", count: kpis.total },
               { id: "in_progress", label: "Em Andamento", count: kpis.inProgress },

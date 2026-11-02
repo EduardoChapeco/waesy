@@ -66,7 +66,7 @@ export function BuilderTopBar({
  variant="ghost"
  size="sm"
  onClick={handleExit}
- className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer shrink-0"
+  className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer shrink-0"
  >
  <ArrowLeft className="size-4" />
  <span className="hidden sm:inline">Voltar</span>
@@ -104,7 +104,7 @@ export function BuilderTopBar({
  onClick={() => setViewport("tablet")}
  title="Modo Tablet (768px)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
  viewport === "tablet"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -119,7 +119,7 @@ export function BuilderTopBar({
  onClick={() => setViewport("desktop")}
  title="Modo Desktop (1440px)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
  viewport === "desktop"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -134,7 +134,7 @@ export function BuilderTopBar({
  onClick={() => setViewport("mobile")}
  title="Modo Mobile (390px)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
  viewport === "mobile"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -149,7 +149,7 @@ export function BuilderTopBar({
  onClick={() => setViewport("native_app")}
  title="Modo App Nativo (PWA / iOS / Android)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-8 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
  viewport === "native_app"
  ? "bg-background text-primary shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
@@ -169,7 +169,7 @@ export function BuilderTopBar({
  onClick={undo}
  disabled={!canUndo}
  title="Desfazer (Ctrl+Z)"
- className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Undo2 className="size-4" />
  </button>
@@ -178,7 +178,7 @@ export function BuilderTopBar({
  onClick={redo}
  disabled={!canRedo}
  title="Refazer (Ctrl+Y)"
- className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Redo2 className="size-4" />
  </button>
@@ -191,7 +191,7 @@ export function BuilderTopBar({
  variant="outline"
  size="sm"
  onClick={onOpenAppMarket}
- className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 hidden xl:inline-flex cursor-pointer border-primary/30 text-primary hover:bg-primary/10"
+  className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 hidden xl:inline-flex cursor-pointer border-primary/30 text-primary hover:bg-primary/10"
  >
  <LayoutTemplate className="size-3.5" />
  <span>Apps</span>
@@ -205,7 +205,7 @@ export function BuilderTopBar({
  variant="outline"
  size="sm"
  onClick={onOpenCodeExplorer}
- className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 hidden lg:inline-flex cursor-pointer"
+  className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 hidden lg:inline-flex cursor-pointer"
  >
  <ExternalLink className="size-3.5 text-muted-foreground" />
  <span>Código</span>
@@ -218,7 +218,7 @@ export function BuilderTopBar({
  variant="outline"
  size="sm"
  onClick={() => setIsTemplateModalOpen(true)}
- className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 hidden lg:inline-flex cursor-pointer"
+  className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 hidden lg:inline-flex cursor-pointer"
  >
  <Layers className="size-3.5 text-primary" />
  <span>Modelos</span>
@@ -229,7 +229,7 @@ export function BuilderTopBar({
  asChild
  variant="outline"
  size="sm"
- className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 hidden md:inline-flex cursor-pointer"
+  className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 hidden md:inline-flex cursor-pointer"
  >
  <a href={publicLink} target="_blank" rel="noopener noreferrer">
  <Eye className="size-3.5 text-muted-foreground" />
@@ -244,7 +244,7 @@ export function BuilderTopBar({
  size="sm"
  onClick={handleSave}
  disabled={isSaving || isPublishing}
- className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+  className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
  >
  {isSaving ? (
  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
@@ -260,7 +260,7 @@ export function BuilderTopBar({
  size="sm"
  onClick={handlePublish}
  disabled={isPublishing || isSaving}
- className="h-9 px-4 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+  className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
  >
  {isPublishing ? (
  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />

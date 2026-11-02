@@ -23,6 +23,7 @@ import {
 } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 import { EntityCard } from "@/design-system/primitives/card";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
@@ -474,7 +475,7 @@ export function HomeMobileNativeApp({
         <div
           role="tablist"
           aria-label="Modo de descoberta"
-          className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/50"
+          className="grid grid-cols-3 w-full bg-muted/50 p-1 rounded-xl"
         >
           {(
             [
@@ -492,9 +493,9 @@ export function HomeMobileNativeApp({
                 aria-selected={active}
                 onClick={() => handleSelectPillar(tab.id)}
                 className={cn(
-                  "h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "w-full h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center justify-center transition-all truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   active
-                    ? "bg-background text-foreground shadow-2xs border border-border/60"
+                    ? "bg-background text-foreground font-bold shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -827,7 +828,8 @@ export function HomeMobileNativeApp({
                 className={cn(
                   sec.layout_variant === "cards_action_grid"
                     ? "grid grid-cols-2 gap-2"
-                    : "grid grid-cols-2 sm:grid-cols-4 gap-2",
+                    /* design-lint-ignore DL-29 reason:"Grade canônica iFood 5 colunas" expiry:"2027-12-31" */
+                    : "grid grid-cols-5 gap-y-3 gap-x-2",
                 )}
               >
                 {activeSecItems.map((it) => (
@@ -899,9 +901,12 @@ export function HomeMobileNativeApp({
                           <h3 className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                             {item.business_name}
                           </h3>
-                          {item.is_verified && (
-                            <CheckCircle size={15} weight="fill" className="text-primary shrink-0" />
-                          )}
+                          <VerifiedBadge
+                            isVerified={item.is_verified}
+                            badgeUrl={(item as any).verified_badge_url}
+                            size="sm"
+                            title="Empresa Verificada pelo Admin Master"
+                          />
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-1">
                           {item.address || "Regional"}

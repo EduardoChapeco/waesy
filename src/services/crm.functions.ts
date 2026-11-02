@@ -1015,6 +1015,14 @@ export const saveTravelerPreferences = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
 
+    const { data: customer, error: customerError } = await supabase
+      .from("customers_crm")
+      .select("id")
+      .eq("id", input.customerId)
+      .eq("store_id", identity.store_id)
+      .single();
+    if (customerError || !customer) throw new Error("Cliente não pertence à loja ativa.");
+
     const { data, error } = await supabase
       .from("crm_clinical_records")
       .insert({
@@ -1431,6 +1439,8 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
  text: z.string(),
  done: z.boolean(),
  })).optional(),
+ pax_list: z.array(z.record(z.unknown())).optional(),
+ custom_fields: z.record(z.unknown()).optional(),
  lost_reason: z.string().optional().nullable(),
  }),
  )
@@ -1473,6 +1483,8 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
  if (updates.follow_up_at !== undefined) dbUpdates.follow_up_at = updates.follow_up_at;
  if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
  if (updates.checklist !== undefined) dbUpdates.checklist = updates.checklist;
+ if (updates.pax_list !== undefined) dbUpdates.pax_list = updates.pax_list;
+ if (updates.custom_fields !== undefined) dbUpdates.custom_fields = updates.custom_fields;
  if (updates.lost_reason !== undefined) dbUpdates.lost_reason = updates.lost_reason;
 
  const { error } = await supabase
@@ -1798,7 +1810,7 @@ export const deleteCustomerAddress = createServerFn({ method: "POST" })
  }
  });
 
-// ─── CRM LEAD 360° DRAWER & MEETINGS (TRAVELAGENCIAS ENTERPRISE STANDARD) ──
+// ─── CRM LEAD 360° DRAWER & MEETINGS (ENTERPRISE STANDARD) ──
 
 export const getLeadById = createServerFn({ method: "GET" })
   .validator(z.object({ leadId: z.string().uuid() }))
@@ -1874,7 +1886,7 @@ export const addLeadMeeting = createServerFn({ method: "POST" })
 
     if (error) throw new Error("Erro ao agendar reunião: " + error.message);
 
-    await supabase.from("lead_activities").insert({
+    const { error: activityError } = await supabase.from("lead_activities").insert({
       lead_id: input.leadId,
       store_id: identity.store_id,
       author_id: identity.id,
@@ -1882,6 +1894,10 @@ export const addLeadMeeting = createServerFn({ method: "POST" })
       content: `Reunião agendada: "${input.title}" para ${new Date(input.scheduledAt).toLocaleString("pt-BR")}`,
       metadata: { meeting_id: meeting.id },
     });
+    if (activityError) {
+      await supabase.from("lead_meetings").delete().eq("id", meeting.id).eq("store_id", identity.store_id);
+      throw new Error("A reunião foi revertida porque a atividade do lead não pôde ser registrada.");
+    }
 
     return meeting;
   });
@@ -2196,6 +2212,8 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
     let customer: any = null;
     let otherLeads: any[] = [];
     let contracts: any[] = [];
+    let trips: any[] = [];
+    let incidents: any[] = [];
 
     if (lead.customer_id) {
       const { data: cData } = await supabase
@@ -2224,8 +2242,30 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
         .or(`customer_id.eq.${lead.customer_id},lead_id.eq.${lead.id}`)
         .order("created_at", { ascending: false });
       contracts = ctrData || [];
+
+      // Busca todas as viagens confirmadas/históricas deste cliente ou de seus leads
+      const leadIdsForCustomer = [lead.id, ...otherLeads.map((l: any) => l.id)];
+      const { data: tripsData } = await supabase
+        .from("tourism_trips")
+        .select("id, title, destination, departure_date, return_date, status, total_price_cents, lead_id, created_at")
+        .eq("store_id", identity.store_id)
+        .in("lead_id", leadIdsForCustomer)
+        .order("departure_date", { ascending: false });
+      trips = tripsData || [];
+
+      // Busca chamados de suporte/incidentes vinculados ao cliente ou às suas viagens
+      const tripIds = trips.map((t: any) => t.id);
+      if (tripIds.length > 0) {
+        const { data: incData } = await supabase
+          .from("tourism_incident_tickets")
+          .select("id, title, category, severity, status, trip_id, passenger_name, created_at")
+          .eq("store_id", identity.store_id)
+          .in("trip_id", tripIds)
+          .order("created_at", { ascending: false });
+        incidents = incData || [];
+      }
     } else {
-      // Se ainda não tem customer_id, busca contratos só pelo lead_id
+      // Se ainda não tem customer_id, busca contratos e viagens só pelo lead_id
       const { data: ctrData } = await supabase
         .from("travel_contracts")
         .select("id, contract_title, public_token, status, total_value_cents, destination, signed_at, created_at")
@@ -2233,23 +2273,42 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
         .eq("store_id", identity.store_id)
         .order("created_at", { ascending: false });
       contracts = ctrData || [];
+
+      const { data: tripsData } = await supabase
+        .from("tourism_trips")
+        .select("id, title, destination, departure_date, return_date, status, total_price_cents, lead_id, created_at")
+        .eq("store_id", identity.store_id)
+        .eq("lead_id", lead.id)
+        .order("departure_date", { ascending: false });
+      trips = tripsData || [];
     }
 
-    // 3. Busca atividades da timeline isoladas por store_id
-    const { data: activities } = await supabase
-      .from("lead_activities")
-      .select("*")
-      .eq("lead_id", lead.id)
-      .eq("store_id", identity.store_id)
-      .order("created_at", { ascending: false })
-      .limit(30);
+    // 3. Busca atividades da timeline e reuniões isoladas por store_id
+    const [{ data: activities }, { data: meetings }] = await Promise.all([
+      supabase
+        .from("lead_activities")
+        .select("*")
+        .eq("lead_id", lead.id)
+        .eq("store_id", identity.store_id)
+        .order("created_at", { ascending: false })
+        .limit(30),
+      supabase
+        .from("lead_meetings")
+        .select("*")
+        .eq("lead_id", lead.id)
+        .eq("store_id", identity.store_id)
+        .order("scheduled_at", { ascending: true }),
+    ]);
 
     return {
       lead,
       customer,
       otherLeads,
       contracts,
+      trips,
+      incidents,
       activities: activities || [],
+      meetings: meetings || [],
     };
   });
 

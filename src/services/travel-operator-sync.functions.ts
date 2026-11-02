@@ -239,6 +239,15 @@ export const ingestOperatorSyncBatch = createServerFn({ method: "POST" })
 
     let processedCount = 0;
     let totalPaxCount = 0;
+    let reconciledTripsCount = 0;
+    let reconciledCustomersCount = 0;
+
+    const parseBrlToCents = (raw: string | undefined): number => {
+      if (!raw) return 0;
+      const cleaned = raw.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
+      const val = Number.parseFloat(cleaned);
+      return Number.isFinite(val) ? Math.round(val * 100) : 0;
+    };
 
     for (const item of items) {
       const idempotencyKey = `operator-batch:${identity.store_id}:${operatorCode}:${item.id}`;
@@ -273,6 +282,137 @@ export const ingestOperatorSyncBatch = createServerFn({ method: "POST" })
         processedCount++;
       }
 
+      // Reconciliação Canônica End-to-End: Cliente -> Viagem -> Passageiros -> Embarque -> Ficha Financeira
+      const titularPax = (item.passageiros || []).find((p) => p.titular) || item.passageiros?.[0];
+      const customerName = (item.contato || titularPax?.nome || `Cliente Reserva #${item.id}`).trim();
+      const customerEmail = (item.email || "").trim() || null;
+      const customerPhone = (item.telefone || "").trim() || null;
+      const customerCpf = (titularPax?.cpf || "").replace(/\D/g, "") || null;
+
+      let customerId: string | null = null;
+      if (customerCpf || customerEmail || customerPhone) {
+        const filters: string[] = [];
+        if (customerCpf) filters.push(`cpf_cnpj.eq.${customerCpf}`);
+        if (customerEmail) filters.push(`email.eq.${customerEmail}`);
+        if (customerPhone) filters.push(`phone.eq.${customerPhone}`);
+
+        const { data: foundCustomer } = await supabase
+          .from("customers_crm")
+          .select("id")
+          .eq("store_id", identity.store_id)
+          .or(filters.join(","))
+          .limit(1)
+          .maybeSingle();
+
+        if (foundCustomer?.id) {
+          customerId = foundCustomer.id;
+        }
+      }
+
+      if (!customerId && customerName) {
+        const { data: newCust } = await supabase
+          .from("customers_crm")
+          .insert({
+            store_id: identity.store_id,
+            name: customerName,
+            email: customerEmail,
+            phone: customerPhone,
+            cpf_cnpj: customerCpf,
+            notes: `Importado via sincronização ${operatorCode.toUpperCase()} (Reserva #${item.id})`,
+          })
+          .select("id")
+          .maybeSingle();
+        if (newCust?.id) {
+          customerId = newCust.id;
+          reconciledCustomersCount++;
+        }
+      }
+
+      const totalCents = parseBrlToCents(item.valorTotal);
+      const commissionCents = parseBrlToCents(item.comissao);
+      const netCostCents = Math.max(0, totalCents - commissionCents);
+      const tripTitle = item.hotel
+        ? `${item.hotel} (#${item.id})`
+        : `Reserva ${operatorCode.toUpperCase()} #${item.id}`;
+
+      // Verifica se já existe viagem reconciliada para esta reserva
+      const { data: existingTrip } = await supabase
+        .from("tourism_trips")
+        .select("id")
+        .eq("store_id", identity.store_id)
+        .ilike("title", `%#${item.id}%`)
+        .limit(1)
+        .maybeSingle();
+
+      let tripId = existingTrip?.id || null;
+      const departureIso = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+      const returnIso = new Date(Date.now() + 19 * 86400000).toISOString().slice(0, 10);
+
+      if (!tripId) {
+        const { data: createdTrip } = await supabase
+          .from("tourism_trips")
+          .insert({
+            store_id: identity.store_id,
+            title: tripTitle,
+            destination: item.hotel || operatorCode.toUpperCase(),
+            departure_date: departureIso,
+            return_date: returnIso,
+            status: item.status?.toLowerCase().includes("cancel") ? "cancelled" : "confirmed",
+            total_price_cents: totalCents,
+            notes: `Reserva ${operatorCode.toUpperCase()} #${item.id} | Acomodação: ${item.acomodacao || "Padrão"} | Pagto: ${item.formaPagto || "N/A"} (${item.parcelamento || "1x"})`,
+          })
+          .select("id")
+          .maybeSingle();
+
+        if (createdTrip?.id) {
+          tripId = createdTrip.id;
+          reconciledTripsCount++;
+
+          // Insere passageiros na viagem
+          if (item.passageiros && item.passageiros.length > 0) {
+            const paxRows = item.passageiros.map((pax) => ({
+              store_id: identity.store_id,
+              trip_id: tripId,
+              full_name: pax.nome,
+              document_number: pax.cpf || null,
+              birth_date: pax.birthDate && /^\d{4}-\d{2}-\d{2}$/.test(pax.birthDate) ? pax.birthDate : null,
+              passenger_type: pax.tipo?.toUpperCase() === "CHD" ? "child" : pax.tipo?.toUpperCase() === "INF" ? "infant" : "adult",
+              boarding_status: "pending",
+            }));
+            await supabase.from("trip_passengers").insert(paxRows);
+          }
+
+          // Garante card no Kanban de Embarques D-X
+          await supabase.from("travel_departures_kanban").insert({
+            store_id: identity.store_id,
+            trip_id: tripId,
+            customer_id: customerId,
+            passenger_name: customerName,
+            destination: item.hotel || operatorCode.toUpperCase(),
+            departure_date: departureIso,
+            return_date: returnIso,
+            stage: "d_30_docs",
+            pnr_locator: item.id,
+            voucher_emitted: item.statusPagto?.toLowerCase().includes("aprovado") ?? false,
+          });
+
+          // Garante Ficha Financeira da Reserva (Gross / Net / Markup / Comissão)
+          if (totalCents > 0) {
+            await supabase.from("travel_sale_financial_sheets").insert({
+              store_id: identity.store_id,
+              trip_id: tripId,
+              customer_id: customerId,
+              description: tripTitle,
+              gross_sale_cents: totalCents,
+              supplier_net_cost_cents: netCostCents,
+              agency_commission_cents: commissionCents,
+              status: item.statusPagto?.toLowerCase().includes("aprovado") ? "settled" : "open",
+              currency: "BRL",
+            });
+          }
+        }
+      }
+
       totalPaxCount += (item.passageiros || []).length;
     }
 
@@ -291,6 +431,8 @@ export const ingestOperatorSyncBatch = createServerFn({ method: "POST" })
       operatorCode,
       totalReceived: items.length,
       newProcessed: processedCount,
+      reconciledTripsCount,
+      reconciledCustomersCount,
       totalPax: totalPaxCount,
       timestamp: new Date().toISOString(),
     };

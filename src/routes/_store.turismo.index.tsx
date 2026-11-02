@@ -34,6 +34,7 @@ import { TourismDynamicSearchPanel } from "@/components/tourism/tourism-dynamic-
 import { CorporateVollConciergeView } from "@/components/tourism/corporate-voll-concierge-view";
 import { WeekendIdeasRail } from "@/components/tourism/weekend-ideas-rail";
 import { CarRentalShowcaseRail } from "@/components/tourism/CarRentalOfferCard";
+import { GlobalTripCompanionWidget } from "@/components/tourism/traveler/GlobalTripCompanionWidget";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -533,6 +534,7 @@ function TourismMasterPage() {
       )}
 
       {/* ── Modal de Cotação Rápida ── */}
+      <GlobalTripCompanionWidget />
       <TravelQuoteModal
         open={isQuoteModalOpen}
         onOpenChange={setIsQuoteModalOpen}

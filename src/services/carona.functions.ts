@@ -21,232 +21,6 @@ import {
 
 export type { MatchedCaronaCorridorDTO };
 
-// ============================================================
-// Seed Resiliente para Corredores de SC (Testabilidade Imediata)
-// ============================================================
-
-const DEFAULT_CARONA_CORRIDORS: CaronaRideGraphInput[] = [
-  {
-    id: "00000000-0000-4000-8000-000000000101",
-    driverId: "00000000-0000-4000-8000-000000000901",
-    driverName: "Rafael Becker",
-    driverAvatarUrl: null,
-    driverRating: 4.95,
-    originCity: "Chapecó",
-    originState: "SC",
-    destinationCity: "Florianópolis",
-    destinationState: "SC",
-    departureAt: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
-    totalSeats: 4,
-    fullRoutePriceCents: 18000,
-    womenOnly: false,
-    allowPriceNegotiation: true,
-    vehicleModel: "Toyota Corolla XEi Prata",
-    vehicleColor: "Prata",
-    vehiclePlate: "QJX-4E21",
-    vehiclePhotoUrl: null,
-    luggageSize: "medium",
-    notes: "Saída pontual próximo ao Terminal Urbano. Paradas rápidas na BR-282.",
-    status: "published",
-    waypoints: [
-      {
-        stopOrder: 0,
-        cityName: "Chapecó",
-        stateCode: "SC",
-        meetingPoint: "Praça Coronel Bertaso / Centro",
-        cumulativePriceCents: 0,
-      },
-      {
-        stopOrder: 1,
-        cityName: "Concórdia",
-        stateCode: "SC",
-        meetingPoint: "Posto Trevão BR-153",
-        cumulativePriceCents: 3500,
-      },
-      {
-        stopOrder: 2,
-        cityName: "Lages",
-        stateCode: "SC",
-        meetingPoint: "Acesso Principal BR-282 / Coral",
-        cumulativePriceCents: 11000,
-      },
-      {
-        stopOrder: 3,
-        cityName: "São José",
-        stateCode: "SC",
-        meetingPoint: "Shopping Itaguaçu / BR-101",
-        cumulativePriceCents: 16500,
-      },
-      {
-        stopOrder: 4,
-        cityName: "Florianópolis",
-        stateCode: "SC",
-        meetingPoint: "Terminal Rita Maria — Centro",
-        cumulativePriceCents: 18000,
-      },
-    ],
-    bookings: [
-      {
-        id: "seed-booking-1",
-        fromStopOrder: 0,
-        toStopOrder: 1,
-        fromCity: "Chapecó",
-        toCity: "Concórdia",
-        seatsBooked: 2,
-        status: "confirmed",
-        passengerName: "Lucas M.",
-      },
-      {
-        id: "seed-booking-2",
-        fromStopOrder: 2,
-        toStopOrder: 3,
-        fromCity: "Lages",
-        toCity: "São José",
-        seatsBooked: 1,
-        status: "confirmed",
-        passengerName: "Fernanda T.",
-      },
-    ],
-  },
-  {
-    id: "00000000-0000-4000-8000-000000000102",
-    driverId: "00000000-0000-4000-8000-000000000902",
-    driverName: "Camila Dalmolin",
-    driverAvatarUrl: null,
-    driverRating: 5.0,
-    originCity: "Chapecó",
-    originState: "SC",
-    destinationCity: "Florianópolis",
-    destinationState: "SC",
-    departureAt: new Date(Date.now() + 9 * 3600 * 1000).toISOString(),
-    totalSeats: 3,
-    fullRoutePriceCents: 18500,
-    womenOnly: true,
-    allowPriceNegotiation: true,
-    vehicleModel: "Jeep Compass Longitude Branco",
-    vehicleColor: "Branco",
-    vehiclePlate: "RLK-8A90",
-    vehiclePhotoUrl: null,
-    luggageSize: "large",
-    notes: "Viagem tranquila exclusiva para passageiras mulheres. Ar-condicionado e Wi-Fi a bordo.",
-    status: "published",
-    waypoints: [
-      {
-        stopOrder: 0,
-        cityName: "Chapecó",
-        stateCode: "SC",
-        meetingPoint: "Shopping Pátio Chapecó",
-        cumulativePriceCents: 0,
-      },
-      {
-        stopOrder: 1,
-        cityName: "Concórdia",
-        stateCode: "SC",
-        meetingPoint: "Rodoviária de Concórdia",
-        cumulativePriceCents: 3800,
-      },
-      {
-        stopOrder: 2,
-        cityName: "Lages",
-        stateCode: "SC",
-        meetingPoint: "Lages Garden Shopping",
-        cumulativePriceCents: 11500,
-      },
-      {
-        stopOrder: 3,
-        cityName: "São José",
-        stateCode: "SC",
-        meetingPoint: "Kobrasol — Av. Central",
-        cumulativePriceCents: 17000,
-      },
-      {
-        stopOrder: 4,
-        cityName: "Florianópolis",
-        stateCode: "SC",
-        meetingPoint: "UFSC — Trindade",
-        cumulativePriceCents: 18500,
-      },
-    ],
-    bookings: [
-      {
-        id: "seed-booking-3",
-        fromStopOrder: 0,
-        toStopOrder: 2,
-        fromCity: "Chapecó",
-        toCity: "Lages",
-        seatsBooked: 1,
-        status: "confirmed",
-        passengerName: "Juliana S.",
-      },
-    ],
-  },
-  {
-    id: "00000000-0000-4000-8000-000000000103",
-    driverId: "00000000-0000-4000-8000-000000000903",
-    driverName: "Eduardo Zanetti",
-    driverAvatarUrl: null,
-    driverRating: 4.88,
-    originCity: "São Miguel do Oeste",
-    originState: "SC",
-    destinationCity: "Chapecó",
-    destinationState: "SC",
-    departureAt: new Date(Date.now() + 3 * 3600 * 1000).toISOString(),
-    totalSeats: 4,
-    fullRoutePriceCents: 5000,
-    womenOnly: false,
-    allowPriceNegotiation: true,
-    vehicleModel: "Volkswagen Nivus Highline Cinza",
-    vehicleColor: "Cinza",
-    vehiclePlate: "MKR-2C19",
-    vehiclePhotoUrl: null,
-    luggageSize: "medium",
-    notes: "Rota diária pela BR-282 passando por Maravilha e Pinhalzinho.",
-    status: "published",
-    waypoints: [
-      {
-        stopOrder: 0,
-        cityName: "São Miguel do Oeste",
-        stateCode: "SC",
-        meetingPoint: "Praça Walnir Bottaro Daniel",
-        cumulativePriceCents: 0,
-      },
-      {
-        stopOrder: 1,
-        cityName: "Maravilha",
-        stateCode: "SC",
-        meetingPoint: "Trevo Principal BR-282",
-        cumulativePriceCents: 2200,
-      },
-      {
-        stopOrder: 2,
-        cityName: "Pinhalzinho",
-        stateCode: "SC",
-        meetingPoint: "Acesso Av. Brasília",
-        cumulativePriceCents: 3400,
-      },
-      {
-        stopOrder: 3,
-        cityName: "Chapecó",
-        stateCode: "SC",
-        meetingPoint: "Av. Getúlio Vargas — Centro",
-        cumulativePriceCents: 5000,
-      },
-    ],
-    bookings: [
-      {
-        id: "seed-booking-4",
-        fromStopOrder: 0,
-        toStopOrder: 1,
-        fromCity: "São Miguel do Oeste",
-        toCity: "Maravilha",
-        seatsBooked: 2,
-        status: "confirmed",
-        passengerName: "Marcos V.",
-      },
-    ],
-  },
-];
-
 export interface IntercityBusStopDTO {
   city: string;
   time: string;
@@ -485,13 +259,6 @@ export const listMatchingCaronas = createServerFn({ method: "GET" })
       });
     }
 
-    // Mescla com os corredores de referência de SC para garantir demonstrabilidade imediata
-    const existingIds = new Set(graphInputs.map((g) => g.id));
-    for (const seedRide of DEFAULT_CARONA_CORRIDORS) {
-      if (!existingIds.has(seedRide.id)) {
-        graphInputs.push(seedRide);
-      }
-    }
 
     return matchCaronaCorridors(
       graphInputs,
@@ -667,59 +434,46 @@ export const bookCaronaSegment = createServerFn({ method: "POST" })
 
     const db = getServerClient();
 
-    // Verifica se é uma carona do banco ou uma carona de demonstração (seed)
+    // Busca a carona no banco relacional
     const { data: dbRide } = await db
       .from("carona_rides")
       .select("*")
       .eq("id", rideId)
       .maybeSingle();
 
-    const seedRide = DEFAULT_CARONA_CORRIDORS.find((r) => r.id === rideId);
-    const targetRide = dbRide || seedRide;
-
-    if (!targetRide) {
+    if (!dbRide) {
       throw new Error("Carona não encontrada.");
     }
 
-    const totalSeats = Number((targetRide as any).total_seats ?? (targetRide as any).totalSeats ?? 4);
-    const fullPriceCents = Number(
-      (targetRide as any).full_route_price_cents ?? (targetRide as any).fullRoutePriceCents ?? 5000,
-    );
+    const totalSeats = Number(dbRide.total_seats ?? 4);
+    const fullPriceCents = Number(dbRide.full_route_price_cents ?? 5000);
 
-    let waypoints: CaronaWaypointNode[] = [];
-    let existingBookings: CaronaSegmentBookingEdge[] = [];
+    const [{ data: wpRows }, { data: bkRows }] = await Promise.all([
+      db
+        .from("carona_waypoints")
+        .select("*")
+        .eq("ride_id", rideId)
+        .order("stop_order", { ascending: true }),
+      db
+        .from("carona_segment_bookings")
+        .select("*")
+        .eq("ride_id", rideId)
+        .neq("status", "cancelled"),
+    ]);
 
-    if (dbRide) {
-      const [{ data: wpRows }, { data: bkRows }] = await Promise.all([
-        db
-          .from("carona_waypoints")
-          .select("*")
-          .eq("ride_id", rideId)
-          .order("stop_order", { ascending: true }),
-        db
-          .from("carona_segment_bookings")
-          .select("*")
-          .eq("ride_id", rideId)
-          .neq("status", "cancelled"),
-      ]);
+    const waypoints: CaronaWaypointNode[] = (wpRows || []).map((w: any) => ({
+      stopOrder: Number(w.stop_order),
+      cityName: w.city_name,
+      stateCode: w.state_code || "SC",
+      cumulativePriceCents: Number(w.cumulative_price_cents || 0),
+    }));
 
-      waypoints = (wpRows || []).map((w: any) => ({
-        stopOrder: Number(w.stop_order),
-        cityName: w.city_name,
-        stateCode: w.state_code || "SC",
-        cumulativePriceCents: Number(w.cumulative_price_cents || 0),
-      }));
-
-      existingBookings = (bkRows || []).map((b: any) => ({
-        fromStopOrder: Number(b.from_stop_order),
-        toStopOrder: Number(b.to_stop_order),
-        seatsBooked: Number(b.seats_booked || 1),
-        status: b.status,
-      }));
-    } else if (seedRide) {
-      waypoints = seedRide.waypoints;
-      existingBookings = seedRide.bookings;
-    }
+    const existingBookings: CaronaSegmentBookingEdge[] = (bkRows || []).map((b: any) => ({
+      fromStopOrder: Number(b.from_stop_order),
+      toStopOrder: Number(b.to_stop_order),
+      seatsBooked: Number(b.seats_booked || 1),
+      status: b.status,
+    }));
 
     const waypointCount = Math.max(waypoints.length, toStopOrder + 1);
     const availableSeats = computeAvailableSeatsForSegment(
@@ -776,49 +530,13 @@ export const bookCaronaSegment = createServerFn({ method: "POST" })
         ]
       : [];
 
-    if (dbRide) {
-      const { data: bookingRow, error: bookingError } = await db
-        .from("carona_segment_bookings")
-        .insert({
-          ride_id: rideId,
-          passenger_id: identity.id,
-          passenger_name: resolvedName,
-          passenger_avatar_url: userProfile?.avatar_url || null,
-          from_stop_order: fromStopOrder,
-          to_stop_order: toStopOrder,
-          from_city: fromCity,
-          to_city: toCity,
-          seats_booked: seatsBooked,
-          original_price_cents: originalTotalCents,
-          proposed_price_cents: proposedPriceCents || null,
-          agreed_price_cents: agreedCents,
-          status: isNegotiation ? "pending_negotiation" : "confirmed",
-          boarding_pin: boardingPin,
-          chat_messages: chatMessages,
-        })
-        .select()
-        .single();
-
-      if (bookingError) {
-        throw new Error(`Erro ao registrar reserva de trecho: ${bookingError.message}`);
-      }
-
-      return {
-        success: true,
-        booking: bookingRow,
-        boardingPin,
-        remainingSeatsOnSegment: availableSeats - seatsBooked,
-      };
-    }
-
-    // Fallback se a carona for de seed e ainda não persistida na tabela
-    return {
-      success: true,
-      booking: {
-        id: crypto.randomUUID(),
+    const { data: bookingRow, error: bookingError } = await db
+      .from("carona_segment_bookings")
+      .insert({
         ride_id: rideId,
         passenger_id: identity.id,
         passenger_name: resolvedName,
+        passenger_avatar_url: userProfile?.avatar_url || null,
         from_stop_order: fromStopOrder,
         to_stop_order: toStopOrder,
         from_city: fromCity,
@@ -830,8 +548,17 @@ export const bookCaronaSegment = createServerFn({ method: "POST" })
         status: isNegotiation ? "pending_negotiation" : "confirmed",
         boarding_pin: boardingPin,
         chat_messages: chatMessages,
-        created_at: new Date().toISOString(),
-      },
+      })
+      .select()
+      .single();
+
+    if (bookingError) {
+      throw new Error(`Erro ao registrar reserva de trecho: ${bookingError.message}`);
+    }
+
+    return {
+      success: true,
+      booking: bookingRow,
       boardingPin,
       remainingSeatsOnSegment: availableSeats - seatsBooked,
     };

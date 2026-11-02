@@ -172,7 +172,7 @@ export default function WorkspaceMarketingSocialPage() {
             variant="outline"
             size="sm"
             onClick={handleOpenWhatsAppTest}
-            className="rounded-lg h-10 px-4 gap-2"
+            className="rounded-lg h-11 min-h-11 sm:h-9 sm:min-h-9 px-4 gap-2"
           >
             <MessageCircle className="w-4 h-4 text-emerald-500" />
             <span>Testar no WhatsApp</span>
@@ -181,7 +181,7 @@ export default function WorkspaceMarketingSocialPage() {
             size="sm"
             onClick={handleSave}
             disabled={isSaving}
-            className="rounded-lg h-10 px-5 gap-2 shadow-xs"
+            className="rounded-lg h-11 min-h-11 sm:h-9 sm:min-h-9 px-5 gap-2 shadow-xs"
           >
             <Save className="w-4 h-4" />
             <span>{isSaving ? "Salvando..." : "Salvar Configurações"}</span>
@@ -439,44 +439,44 @@ export default function WorkspaceMarketingSocialPage() {
 
             {/* SIMULADOR WHATSAPP */}
             {previewPlatform === "whatsapp" && (
-              <div className="bg-[#EFEAE2] dark:bg-[#0b141a] rounded-lg p-4 border border-border/40 font-sans shadow-inner">
-                <div className="max-w-[340px] ml-auto">
-                  <div className="bg-[#DCF8C6] dark:bg-[#005c4b] text-foreground rounded-lg rounded-tr-none p-3 shadow-xs space-y-2 text-xs">
+              <div className="bg-muted/40 rounded-lg p-4 border border-border/40 font-sans shadow-inner">
+                <div className="max-w-xs ml-auto">
+                  <div className="bg-emerald-500/15 text-foreground rounded-lg rounded-tr-none p-3 shadow-xs space-y-2 text-xs border border-emerald-500/20">
                     {/* Mensagem de texto antes do link */}
-                    <p className="text-xs leading-relaxed break-words whitespace-pre-wrap dark:text-[#e9edef] text-[#111b21]">
+                    <p className="text-xs leading-relaxed break-words whitespace-pre-wrap text-foreground">
                       {computedWhatsappMessage}
                     </p>
 
                     {/* Card de Link Prévia do WhatsApp */}
-                    <div className="bg-foreground/5 dark:bg-foreground/20 rounded-lg overflow-hidden border border-black/10 dark:border-white/10">
-                      <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden relative">
+                    <div className="bg-card rounded-lg overflow-hidden border border-border/40">
+                      <div className="aspect-video w-full bg-muted overflow-hidden relative">
                         <img
                           src={previewProduct.image}
                           alt={computedTitle}
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-2 right-2">
-                          <Badge className="bg-foreground/70 text-foreground border-0 text-xs px-2 py-1">
+                          <Badge className="bg-foreground/70 text-background border-0 text-xs px-2 py-1">
                             {storeName}
                           </Badge>
                         </div>
                       </div>
                       <div className="p-3 space-y-1">
-                        <h4 className="font-semibold text-xs leading-snug line-clamp-2 dark:text-[#e9edef] text-[#111b21]">
+                        <h4 className="font-semibold text-xs leading-snug line-clamp-2 text-foreground">
                           {computedTitle}
                         </h4>
-                        <p className="text-xs line-clamp-2 text-muted-foreground dark:text-[#8696a0]">
+                        <p className="text-xs line-clamp-2 text-muted-foreground">
                           {computedDescription}
                         </p>
-                        <p className="text-xs text-muted-foreground/80 dark:text-[#8696a0] font-mono truncate pt-1">
+                        <p className="text-xs text-muted-foreground font-mono truncate pt-1">
                           usewaesy.com
                         </p>
                       </div>
                     </div>
 
                     {/* Timestamp do WhatsApp */}
-                    <div className="text-xs text-right text-muted-foreground dark:text-[#8696a0] pt-1">
-                      12:45 
+                    <div className="text-xs text-right text-muted-foreground pt-1">
+                      12:45
                     </div>
                   </div>
                 </div>
@@ -486,14 +486,14 @@ export default function WorkspaceMarketingSocialPage() {
             {/* SIMULADOR TWITTER / X */}
             {previewPlatform === "twitter" && (
               <div className="bg-background border border-border rounded-lg overflow-hidden shadow-xs">
-                <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden relative">
+                <div className="aspect-video w-full bg-muted overflow-hidden relative">
                   <img
                     src={previewProduct.image}
                     alt={computedTitle}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute bottom-2 left-2">
-                    <Badge className="bg-foreground/80 text-foreground text-xs">
+                    <Badge className="bg-foreground/80 text-background text-xs">
                       usewaesy.com
                     </Badge>
                   </div>
@@ -515,7 +515,7 @@ export default function WorkspaceMarketingSocialPage() {
             {/* SIMULADOR FACEBOOK */}
             {previewPlatform === "facebook" && (
               <div className="bg-card border border-border rounded-lg overflow-hidden shadow-xs">
-                <div className="aspect-[1.91/1] w-full bg-muted overflow-hidden">
+                <div className="aspect-video w-full bg-muted overflow-hidden">
                   <img
                     src={previewProduct.image}
                     alt={computedTitle}
@@ -544,7 +544,7 @@ export default function WorkspaceMarketingSocialPage() {
                 size="sm"
                 onClick={handleCopyTestLink}
                 disabled={!storeSlug}
-                className="h-8 gap-2 text-xs text-primary"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 gap-2 text-xs text-primary"
               >
                 {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedLink ? "Copiado" : "Copiar Link"}</span>

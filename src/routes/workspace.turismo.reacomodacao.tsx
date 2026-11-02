@@ -166,7 +166,7 @@ export default function ReaccommodationPage() {
   });
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -277,7 +277,7 @@ export default function ReaccommodationPage() {
           {filteredCases.map((c) => (
             <div
               key={c.id}
-              className="p-5 rounded-lg border border-border bg-card shadow-xs flex flex-col gap-4"
+              className="p-5 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card flex flex-col gap-4 shadow-none"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
                 <div className="flex items-center gap-3">
@@ -322,13 +322,13 @@ export default function ReaccommodationPage() {
               {/* Relato e Notas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 {c.passenger_notes && (
-                  <div className="p-3 rounded-lg bg-muted/40 border border-border/40">
+                  <div className="p-3 rounded-xl bg-muted/30">
                     <span className="font-semibold text-foreground block mb-1">Passageiro / Situação:</span>
                     <p className="text-muted-foreground leading-relaxed">{c.passenger_notes}</p>
                   </div>
                 )}
                 {c.internal_notes && (
-                  <div className="p-3 rounded-lg bg-muted/40 border border-border/40">
+                  <div className="p-3 rounded-xl bg-muted/30">
                     <span className="font-semibold text-foreground block mb-1">Anotações da Agência:</span>
                     <p className="text-muted-foreground leading-relaxed">{c.internal_notes}</p>
                   </div>
@@ -602,7 +602,7 @@ export default function ReaccommodationPage() {
                 Direitos ANAC 400/2016 Calculados para {delayHours}h de atraso
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-lg bg-background/60 border border-border/40 flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-background/80 flex items-center gap-2">
                   <Utensils className="size-4 text-muted-foreground" />
                   <div>
                     <span className="text-xs text-muted-foreground block">Alimentação</span>
@@ -611,7 +611,7 @@ export default function ReaccommodationPage() {
                     </strong>
                   </div>
                 </div>
-                <div className="p-3 rounded-lg bg-background/60 border border-border/40 flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-background/80 flex items-center gap-2">
                   <Hotel className="size-4 text-muted-foreground" />
                   <div>
                     <span className="text-xs text-muted-foreground block">Hospedagem</span>
@@ -620,7 +620,7 @@ export default function ReaccommodationPage() {
                     </strong>
                   </div>
                 </div>
-                <div className="p-3 rounded-lg bg-background/60 border border-border/40 flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-background/80 flex items-center gap-2">
                   <RefreshCw className="size-4 text-muted-foreground" />
                   <div>
                     <span className="text-xs text-muted-foreground block">Voo Concorrente</span>
@@ -629,7 +629,7 @@ export default function ReaccommodationPage() {
                     </strong>
                   </div>
                 </div>
-                <div className="p-3 rounded-lg bg-background/60 border border-border/40 flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-background/80 flex items-center gap-2">
                   <FileText className="size-4 text-muted-foreground" />
                   <div>
                     <span className="text-xs text-muted-foreground block">Reembolso 100%</span>

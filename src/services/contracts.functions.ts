@@ -1363,7 +1363,7 @@ export const generateContractFromOrder = createServerFn({ method: "POST" })
     const valorTotalFormatado = `R$ ${(Number(order.total_cents || 0) / 100).toFixed(2)}`;
     const dataExtenso = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date());
 
-    // Template com Variáveis Inteligentes (DocuSign / Pipefy style)
+    // Template com Variáveis Inteligentes e Campos Dinâmicos
     const baseTemplate = `# {{titulo}}
 
 **CONTRATADA:** {{empresa_nome}}

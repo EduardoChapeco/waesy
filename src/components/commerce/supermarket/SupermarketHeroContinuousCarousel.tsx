@@ -123,9 +123,9 @@ export function SupermarketHeroContinuousCarousel({
         })}
       </div>
 
-      {/* ── Indicador Canônico de Paginação por Pontos ── */}
+      {/* ── Indicador Canônico de Paginação por Pontos (Touch Target >= 44px) ── */}
       {validBanners.length > 1 ? (
-        <div className="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1.5 py-1 z-10">
+        <div className="absolute bottom-1 inset-x-0 flex items-center justify-center z-10">
           {validBanners.map((_, i) => (
             <button
               key={`dot-${i}`}
@@ -138,13 +138,17 @@ export function SupermarketHeroContinuousCarousel({
                   setActiveIndex(i);
                 }
               }}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                i === activeIndex ? "w-6 bg-primary" : "w-1.5 bg-foreground/30 hover:bg-foreground/50",
-              )}
+              className="h-11 min-h-11 px-1.5 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
               aria-label={`Ir para slide ${i + 1}`}
               aria-current={i === activeIndex ? "true" : undefined}
-            />
+            >
+              <span
+                className={cn(
+                  "h-1.5 rounded-full transition-all duration-300 pointer-events-none block",
+                  i === activeIndex ? "w-6 bg-primary" : "w-1.5 bg-foreground/30 hover:bg-foreground/50",
+                )}
+              />
+            </button>
           ))}
         </div>
       ) : null}

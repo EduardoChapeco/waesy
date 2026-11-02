@@ -18,7 +18,6 @@ import {
   Briefcase,
   Heart,
   ExternalLink,
-  Sparkles,
 } from "lucide-react";
 import { formatCep, formatPhone } from "@/lib/document-validator";
 import { cn } from "@/lib/utils";
@@ -420,8 +419,8 @@ export function CanonicalAddressForm({
               </>
             ) : (
               <>
-                <Sparkles className="size-4 text-primary" />
-                <span>Complete com minha localização</span>
+                <Navigation className="size-4 text-primary" />
+                <span>Preencher com localização atual</span>
               </>
             )}
           </Button>

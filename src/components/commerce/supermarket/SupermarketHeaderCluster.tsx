@@ -43,7 +43,7 @@ export function SupermarketHeaderCluster({
   className,
 }: SupermarketHeaderClusterProps) {
   return (
-    <header className={cn("w-full space-y-3 px-4 pt-3 pb-2 bg-background/95 backdrop-blur-md sticky top-0 z-30 border-b border-border/40", className)}>
+    <header className={cn("w-full space-y-3 px-4 pt-3 pb-2 bg-background sticky top-0 z-30 border-b border-border/40", className)}>
       {/* ── Linha Superior: Seletor de Loja & Ações Rápidas ── */}
       <div className="flex items-center justify-between gap-3">
         {/* Seletor de Loja/Filial */}

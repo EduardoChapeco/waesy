@@ -271,7 +271,7 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
     // 1. Busca lojas ativas reais no Supabase, filtradas pelo nicho se aplicável
     let storesQuery = supabase
       .from("stores")
-      .select("id, name, slug, settings, logo_url, is_verified")
+      .select("id, name, slug, settings, logo_url")
       .limit(30);
 
     const { data: storesData, error: storeErr } = await storesQuery;
@@ -325,8 +325,6 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
  price_cents,
  compare_at_cents,
  status,
- stock,
- is_unlimited_stock,
  attributes,
  media:product_media(url, alt, sort_order),
  store:stores(id, name, slug, settings)
@@ -364,7 +362,7 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
         cover_image: cover,
         selling_unit: p.attributes?.selling_unit || undefined,
         in_stock:
-          p.is_unlimited_stock === true || (typeof p.stock === "number" ? p.stock > 0 : undefined),
+          p.attributes?.is_unlimited_stock === true || p.status !== "out_of_stock",
         has_flash_offer: discount > 0,
         meal_time: p.attributes?.meal_time || null,
         has_free_delivery:
@@ -478,8 +476,6 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
  price_cents,
  compare_at_cents,
  status,
- stock,
- is_unlimited_stock,
  attributes,
  media:product_media(url, alt, sort_order),
  store:stores(id, name, slug, settings, description)
@@ -519,8 +515,7 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
           cover_image: cover,
           selling_unit: p.attributes?.selling_unit || undefined,
           in_stock:
-            p.is_unlimited_stock === true ||
-            (typeof p.stock === "number" ? p.stock > 0 : undefined),
+            p.attributes?.is_unlimited_stock === true || p.status !== "out_of_stock",
           has_flash_offer: discount >= 15,
           has_free_delivery:
             p.attributes?.free_delivery === true || p.attributes?.entrega_gratis === true,
@@ -532,7 +527,7 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
     // 2. Busca lojas ativas
     const { data: storesData } = await supabase
       .from("stores")
-      .select("id, name, slug, settings, logo_url, is_verified")
+      .select("id, name, slug, settings, logo_url")
       .limit(50);
 
     const allDbStores: StoreCardDTO[] = (storesData || []).map((s: any) => ({

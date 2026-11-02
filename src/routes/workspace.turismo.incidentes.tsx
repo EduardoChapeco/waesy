@@ -214,7 +214,7 @@ export default function TourismIncidentsPage() {
   const anacRights = detail?.anac_rights_summary as any;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 min-h-[calc(100dvh-8.5rem)] pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-4 flex flex-col gap-4 min-h-dvh pb-20 animate-in fade-in duration-200">
       {/* ── Toolbar Canônica ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -259,7 +259,7 @@ export default function TourismIncidentsPage() {
               <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 key={incident.id}
                 onClick={() => setSelectedId(incident.id)}
-                className="flex items-center justify-between p-4 sm:p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/30 cursor-pointer transition-colors duration-200 shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex items-center justify-between p-4 sm:p-4 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card hover:border-black/[0.12] dark:hover:border-white/[0.16] hover:bg-muted/20 cursor-pointer transition-colors duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -305,7 +305,7 @@ export default function TourismIncidentsPage() {
       <Sheet open={Boolean(selectedId)} onOpenChange={(open) => !open && setSelectedId(null)}>
         <SheetContent
           side="right"
-          size="wide"
+          size="dossier"
           className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl border-l p-0 flex flex-col h-full bg-card overflow-hidden overscroll-contain"
         >
           {detailLoading ? (
@@ -340,7 +340,7 @@ export default function TourismIncidentsPage() {
 
                 {/* ANAC Rights badge for flight incidents */}
                 {isFlightType && anacRights?.material_assistance && (
-                  <div className="mt-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 grid grid-cols-2 gap-2 text-xs">
+                  <div className="mt-2 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 grid grid-cols-2 gap-2 text-xs">
                     <div className="flex items-center gap-2 col-span-2">
                       <ShieldAlert className="size-3.5 text-amber-600" />
                       <span className="font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide text-xs">Direitos ANAC 400</span>
@@ -381,7 +381,7 @@ export default function TourismIncidentsPage() {
                         size="sm"
                         onClick={() => updateStatusMutation.mutate({ status: 'in_analysis' })}
                         disabled={updateStatusMutation.isPending}
-                        className="h-7 px-3 text-xs gap-1 font-semibold cursor-pointer"
+                        className="h-11 min-h-11 px-3 text-xs gap-1 font-semibold cursor-pointer"
                       >
                         Em Análise
                       </Button>
@@ -392,7 +392,7 @@ export default function TourismIncidentsPage() {
                         size="sm"
                         onClick={() => updateStatusMutation.mutate({ status: 'awaiting_airline' })}
                         disabled={updateStatusMutation.isPending}
-                        className="h-10 sm:h-8 px-4 sm:px-3 text-xs rounded-lg sm:rounded-lg gap-1 font-semibold cursor-pointer"
+                        className="h-11 min-h-11 px-4 text-xs rounded-xl gap-1 font-semibold cursor-pointer"
                       >
                         Aguardando CIA
                       </Button>
@@ -402,7 +402,7 @@ export default function TourismIncidentsPage() {
                       size="sm"
                       onClick={() => updateStatusMutation.mutate({ status: 'resolved', note: 'Incidente resolvido pela agência.' })}
                       disabled={updateStatusMutation.isPending}
-                      className="h-10 sm:h-8 px-4 sm:px-3 text-xs rounded-lg sm:rounded-lg gap-1 text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer"
+                      className="h-11 min-h-11 px-4 text-xs rounded-xl gap-1 text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer"
                     >
                       <CheckCircle2 className="size-3.5" />
                       Marcar Resolvido
@@ -472,7 +472,7 @@ export default function TourismIncidentsPage() {
                   <Button
                     type="submit"
                     disabled={addEventMutation.isPending || !replyText.trim()}
-                    className="size-10 rounded-lg shrink-0 cursor-pointer"
+                    className="size-11 min-h-11 min-w-11 rounded-xl shrink-0 cursor-pointer"
                   >
                     <Send className="size-4" />
                   </Button>
@@ -639,14 +639,14 @@ export default function TourismIncidentsPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setNewOpen(false)}
-                className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+                className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={createMutation.isPending || !description.trim()}
-                className="h-10 px-5 rounded-lg text-xs font-bold cursor-pointer"
+                className="h-11 min-h-11 px-5 rounded-xl text-xs font-bold cursor-pointer"
               >
                 {createMutation.isPending ? (
                   <><Loader2 className="size-3 animate-spin motion-reduce:animate-none mr-2" />Registrando...</>

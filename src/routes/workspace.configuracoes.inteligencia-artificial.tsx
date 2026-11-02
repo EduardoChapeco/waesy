@@ -82,7 +82,8 @@ function WorkspaceAiSettingsPage() {
 
  const handleSave = async (e: React.FormEvent) => {
  e.preventDefault();
- if (!apiKey.trim()) return toast.error("Informe a chave de API");
+ const sanitizedKey = apiKey.trim().replace(/^[\(\[\{"'`\s]+|[\)\]\}"'`\s,;]+$/g, "").replace(/^bearer\s+/i, "");
+ if (!sanitizedKey) return toast.error("Informe a chave de API");
 
  try {
  setSubmitting(true);
@@ -91,7 +92,7 @@ function WorkspaceAiSettingsPage() {
  store_id: storeId,
  provider: selectedProvider,
  model_name: modelName.trim(),
- api_key: apiKey.trim(),
+ api_key: sanitizedKey,
  monthly_token_limit: tokenLimitStr ? parseInt(tokenLimitStr) : null,
  is_active: true,
  },

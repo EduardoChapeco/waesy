@@ -162,7 +162,7 @@ export function BannerHeroCarousel({
             <div className="absolute inset-0 bg-black/60 flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-foreground pointer-events-none z-10">
               <div className="max-w-xl space-y-2 sm:space-y-3 z-10 pointer-events-auto">
                 {currentBanner.show_badge === true && currentBanner.badge_text && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-card/20 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-foreground border border-white/30">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-background/80 text-xs font-bold uppercase tracking-wider text-foreground border border-border/60">
                     <Layers className="size-3 text-amber-300" />
                     <span>{currentBanner.badge_text}</span>
                   </div>
@@ -201,14 +201,14 @@ export function BannerHeroCarousel({
             <button
               onClick={handlePrev}
               aria-label="Banner anterior"
-              className="absolute left-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-foreground/40 hover:bg-foreground/70 text-foreground backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="absolute left-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-background/80 hover:bg-background text-foreground border border-border/40 hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <ChevronLeft className="size-5" />
             </button>
             <button
               onClick={handleNext}
               aria-label="Próximo banner"
-              className="absolute right-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-foreground/40 hover:bg-foreground/70 text-foreground backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 size-11 rounded-full bg-background/80 hover:bg-background text-foreground border border-border/40 hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <ChevronRight className="size-5" />
             </button>

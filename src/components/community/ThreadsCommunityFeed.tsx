@@ -182,6 +182,13 @@ export function ThreadsCommunityFeed({
         const isVerified = Boolean(post.author?.is_verified);
         const timeAgo = formatRelativeTime(post.created_at);
         const mediaUrls = post.media_urls || [];
+        const isOwner = Boolean(
+          currentUserId &&
+            (currentUserId === post.author?.id ||
+              currentUserId === (post as any)?.author_profile_id ||
+              currentUserId === (post.author as any)?.profile_id ||
+              currentUserId === (post as any)?.author_user_id)
+        );
 
         return (
           <article
@@ -250,7 +257,11 @@ export function ThreadsCommunityFeed({
                     entityId={post.id}
                     canonicalUrl={`/publicacao/${post.id}`}
                     title={authorName}
-                    isOwner={currentUserId === post.author.id}
+                    description={post.content_text || ""}
+                    isOwner={isOwner}
+                    status={(post as any)?.status || "active"}
+                    postData={post}
+                    authorUsername={authorUsername}
                   />
                 </div>
 

@@ -116,7 +116,7 @@ export default function WorkspaceContractsIndexPage() {
       toolDescription="Gestão de minutas, contratos com validade jurídica e link de assinatura digital para passageiros e contratantes de pacotes turísticos."
       store={store}
     >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
         {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}
         <WorkspaceCanonicalToolbar
           tabs={TABS}
@@ -175,7 +175,7 @@ export default function WorkspaceContractsIndexPage() {
               return (
                 <Card
                   key={c.id}
-                  className="rounded-lg border border-border/70 bg-card p-4 sm:p-5 space-y-4 hover:border-foreground/20 transition-colors flex flex-col justify-between"
+                  className="rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card p-4 sm:p-5 space-y-4 hover:border-black/[0.12] dark:hover:border-white/[0.16] transition-colors flex flex-col justify-between shadow-none"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
@@ -221,7 +221,7 @@ export default function WorkspaceContractsIndexPage() {
                     </div>
 
                     {isSigned && (c.signatures || []).length > 0 && (
-                      <div className="p-3 rounded-lg bg-muted/40 border border-border/40 text-xs space-y-1">
+                      <div className="p-3 rounded-xl bg-muted/30 text-xs space-y-1">
                         <p className="font-bold text-foreground flex items-center gap-1">
                           <CheckCircle2 className="size-3 text-emerald-600" />
                           <span>Assinado por {c.signatures[0].signer_name}</span>

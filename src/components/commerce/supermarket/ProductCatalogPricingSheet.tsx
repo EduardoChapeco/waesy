@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   Tag,
-  Sparkle,
+  IdentificationCard,
   Storefront,
   Globe,
   CurrencyCircleDollar,
@@ -227,7 +227,7 @@ export function ProductCatalogPricingSheet({
               <div className="p-3.5 rounded-2xl bg-card border border-border/60 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <Sparkle size={16} weight="fill" className="text-amber-500" />
+                    <IdentificationCard size={16} weight="fill" className="text-amber-500" />
                     Preço Clube
                   </span>
                   <input

@@ -179,7 +179,7 @@ describe("Milestone 1 Challenger: Empirical Omni-Builder & Dynamic Blocks Stress
         },
       };
 
-      const createChainableQuery = (finalData: any, spy?: Function) => {
+      const createChainableQuery = (finalData: any, spy?: () => void) => {
         const query: any = {
           select: () => query,
           eq: () => query,
@@ -255,7 +255,7 @@ describe("Milestone 1 Challenger: Empirical Omni-Builder & Dynamic Blocks Stress
         },
       };
 
-      const createChainableQuery = (finalData: any, spy?: Function) => {
+      const createChainableQuery = (finalData: any, spy?: () => void) => {
         const query: any = {
           select: () => query,
           eq: () => query,

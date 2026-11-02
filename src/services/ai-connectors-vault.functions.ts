@@ -48,7 +48,10 @@ const disconnectConnectorSchema = z.object({
  * Criptografia simétrica defensiva para credenciais em repouso no cofre
  */
 function encryptSecretPayload(payload: Record<string, any>): Record<string, any> {
-  const secretKey = process.env.SECRET_ENCRYPTION_KEY || "waesy-vault-key-32-chars-minimum-prod-2026";
+  const secretKey = process.env.SECRET_ENCRYPTION_KEY?.trim();
+  if (!secretKey || secretKey.length < 32) {
+    throw new Error("SECRET_ENCRYPTION_KEY ausente ou menor que 32 caracteres; cofre bloqueado.");
+  }
   const key = crypto.createHash("sha256").update(secretKey).digest();
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);

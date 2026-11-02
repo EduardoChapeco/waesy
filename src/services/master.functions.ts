@@ -1701,8 +1701,6 @@ export async function getPlatformMetaSecretsServerInternal(): Promise<{
         } catch {
           // fallback seguro se falhar descriptografia
         }
-      } else if (integrations.meta_app_secret) {
-        appSecret = integrations.meta_app_secret;
       }
     }
 
@@ -1716,6 +1714,6 @@ export async function getPlatformMetaSecretsServerInternal(): Promise<{
   return {
     appId,
     appSecret,
-    verifyToken: verifyToken || "waesy_meta_ads_verify",
+    verifyToken,
   };
 }

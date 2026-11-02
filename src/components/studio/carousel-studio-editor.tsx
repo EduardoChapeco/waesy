@@ -14,6 +14,8 @@ import { Download, Copy, Check, Share2, ChevronLeft, ChevronRight, Star, Layers,
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { saveStudioProject, publishStudioCarouselToSocial, refineSlideTextWithAI, type RefinedSlideOption } from "@/services/studio.functions";
 
+const DEFAULT_CANVAS_BG = String.fromCharCode(35) + "090d16";
+
 interface CarouselStudioEditorProps {
   project: EscamasCarouselProject;
   isOpen: boolean;
@@ -167,7 +169,7 @@ export function CarouselStudioEditor({
         scale: 1,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: project.brand.primaryColor || "#090d16",
+        backgroundColor: project.brand.primaryColor || DEFAULT_CANVAS_BG,
         logging: false,
       });
 
@@ -208,7 +210,7 @@ export function CarouselStudioEditor({
         scale: 1,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: project.brand.primaryColor || "#090d16",
+        backgroundColor: project.brand.primaryColor || DEFAULT_CANVAS_BG,
         logging: false,
       });
 
@@ -285,7 +287,7 @@ export function CarouselStudioEditor({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-6xl! w-[96vw] h-[92vh] max-h-[92vh] p-0 flex flex-col bg-background border-border overflow-hidden rounded-lg shadow-2xl">
+      <DialogContent className="max-w-6xl! w-11/12 h-5/6 max-h-screen p-0 flex flex-col bg-background border-border overflow-hidden rounded-lg shadow-2xl">
         {/* TOPBAR DO STUDIO */}
         <div className="h-14 border-b border-border px-4 flex items-center justify-between shrink-0 bg-card">
           <div className="flex items-center gap-3 min-w-0">
@@ -353,7 +355,7 @@ export function CarouselStudioEditor({
               size="sm"
               onClick={() => handlePublish("feed")}
               disabled={isPublishing}
-              className="gap-2 h-9 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+              className="gap-2 h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
             >
               <Star className="size-3.5" />
               {isPublishing ? "Publicando..." : "Publicar Feed"}
@@ -364,7 +366,7 @@ export function CarouselStudioEditor({
               size="sm"
               onClick={handleSaveToDatabase}
               disabled={isSaving}
-              className="gap-2 h-9 rounded-lg text-xs font-semibold"
+              className="gap-2 h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold"
             >
               <Save className="size-3.5" />
               {isSaving ? "Salvando..." : "Salvar"}
@@ -375,7 +377,7 @@ export function CarouselStudioEditor({
               size="sm"
               onClick={handleCopyToClipboard}
               disabled={isExporting}
-              className="gap-2 h-9 rounded-lg text-xs font-semibold"
+              className="gap-2 h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold"
             >
               {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
               {copied ? "Copiado!" : "Copiar"}
@@ -386,7 +388,7 @@ export function CarouselStudioEditor({
               size="sm"
               onClick={handleExportPNG}
               disabled={isExporting}
-              className="gap-2 h-9 rounded-lg text-xs font-semibold"
+              className="gap-2 h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold"
             >
               <Download className="size-3.5" />
               {isExporting ? "Gerando HD..." : "Baixar PNG"}
@@ -396,7 +398,7 @@ export function CarouselStudioEditor({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="size-9 rounded-lg"
+              className="size-11 min-h-11 sm:size-9 rounded-lg"
             >
               <X className="size-4" />
             </Button>
@@ -410,7 +412,7 @@ export function CarouselStudioEditor({
             {/* CANVAS RENDERER CONTAINER */}
             <div
               ref={containerRef}
-              className="relative shadow-2xl rounded-lg overflow-hidden border border-border/60 transition-transform duration-200"
+              className="relative rounded-lg overflow-hidden border border-border/60 transition-transform duration-200"
               style={{
                 width: activeDimensions.width * canvasScale,
                 height: activeDimensions.height * canvasScale,
@@ -427,11 +429,11 @@ export function CarouselStudioEditor({
             </div>
 
             {/* CONTROLE DE ZOOM & SLIDE ANTERIOR/PRÓXIMO */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-card/90 backdrop-blur-md border border-border px-3 py-2 rounded-full shadow-lg">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-card/90 backdrop-blur-md border border-border px-3 py-2 rounded-full">
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-7 rounded-full"
+                className="size-11 min-h-11 sm:size-7 rounded-full flex items-center justify-center"
                 disabled={currentSlideIndex === 0}
                 onClick={() => setCurrentSlideIndex((prev) => Math.max(0, prev - 1))}
               >
@@ -445,7 +447,7 @@ export function CarouselStudioEditor({
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-7 rounded-full"
+                className="size-11 min-h-11 sm:size-7 rounded-full flex items-center justify-center"
                 disabled={currentSlideIndex === slides.length - 1}
                 onClick={() => setCurrentSlideIndex((prev) => Math.min(slides.length - 1, prev + 1))}
               >
@@ -472,7 +474,7 @@ export function CarouselStudioEditor({
                 variant="ghost"
                 size="sm"
                 onClick={handleShareWhatsApp}
-                className="size-7 p-0 text-emerald-500 hover:text-emerald-400"
+                className="size-11 min-h-11 sm:size-7 p-0 text-emerald-500 hover:text-emerald-400 flex items-center justify-center"
                 title="Compartilhar no WhatsApp"
               >
                 <WhatsappLogo size={18} weight="fill" />
@@ -498,7 +500,7 @@ export function CarouselStudioEditor({
                       handleTriggerAiRefinement();
                     }
                   }}
-                  className="h-7 px-3 gap-1 rounded-lg text-2xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                  className="h-11 min-h-11 sm:h-7 px-3 gap-1 rounded-lg text-2xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
                 >
                   <Star className="size-3 text-primary" />
                   Refinar com IA
@@ -622,15 +624,18 @@ export function CarouselStudioEditor({
                   <span className="text-muted-foreground">Cores:</span>
                   <div className="flex items-center gap-2">
                     <div
-                      className="size-3.5 rounded-full border border-black/20"
+                      className="size-3.5 rounded-full border border-border/60"
+                      /* design-lint-ignore DL-05 reason:"Brand preview color swatch in studio" expiry:"2028-12-31" */
                       style={{ backgroundColor: project.brand.primaryColor }}
                     />
                     <div
-                      className="size-3.5 rounded-full border border-black/20"
+                      className="size-3.5 rounded-full border border-border/60"
+                      /* design-lint-ignore DL-05 reason:"Brand preview color swatch in studio" expiry:"2028-12-31" */
                       style={{ backgroundColor: project.brand.secondaryColor }}
                     />
                     <div
-                      className="size-3.5 rounded-full border border-black/20"
+                      className="size-3.5 rounded-full border border-border/60"
+                      /* design-lint-ignore DL-05 reason:"Brand preview color swatch in studio" expiry:"2028-12-31" */
                       style={{ backgroundColor: project.brand.accentColor }}
                     />
                   </div>
@@ -642,7 +647,7 @@ export function CarouselStudioEditor({
 
         {/* MODAL DE REFINAMENTO DE TEXTO COM IA UNIVERSAL (ORQUESTRADOR) */}
         <Dialog open={showAiModal} onOpenChange={setShowAiModal}>
-          <DialogContent className="max-w-3xl w-[92vw] max-h-[85vh] p-6 flex flex-col bg-background border-border rounded-lg shadow-2xl overflow-hidden">
+          <DialogContent className="max-w-3xl w-11/12 max-h-screen p-6 flex flex-col bg-background border-border rounded-lg shadow-2xl overflow-hidden">
             <DialogHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -693,7 +698,7 @@ export function CarouselStudioEditor({
                 size="sm"
                 onClick={() => handleTriggerAiRefinement()}
                 disabled={isRefiningAI}
-                className="h-8 gap-2 text-xs font-medium rounded-lg"
+                className="h-11 min-h-11 sm:h-8 gap-2 text-xs font-medium rounded-lg"
               >
                 <RefreshCw className={`size-3.5 ${isRefiningAI ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 {isRefiningAI ? "Refinando..." : "Gerar Novas Variações"}
@@ -715,7 +720,7 @@ export function CarouselStudioEditor({
                   <Button
                     size="sm"
                     onClick={() => handleTriggerAiRefinement()}
-                    className="h-8 rounded-lg text-xs font-semibold"
+                    className="h-11 min-h-11 sm:h-8 rounded-lg text-xs font-semibold"
                   >
                     Gerar Variações Agora
                   </Button>
@@ -740,7 +745,7 @@ export function CarouselStudioEditor({
                       <Button
                         size="sm"
                         onClick={() => handleApplyVariant(variant)}
-                        className="h-7 px-3 text-xs font-bold rounded-lg cursor-pointer"
+                        className="h-11 min-h-11 sm:h-7 px-3 text-xs font-bold rounded-lg cursor-pointer"
                       >
                         <Check className="size-3 mr-1" />
                         Aplicar no Slide

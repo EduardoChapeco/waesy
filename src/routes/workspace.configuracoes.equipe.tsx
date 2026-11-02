@@ -21,6 +21,8 @@ import { toast } from "sonner";
 import { getStoreSettings } from "@/services/store.functions";
 import { RolePermissionsMatrix } from "@/components/workspace/RolePermissionsMatrix";
 import { PartnerAgreementEditor } from "@/components/workspace/PartnerAgreementEditor";
+import { SeoGeoOptimizationPanel, type SeoGeoMetadata } from "@/components/seo";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/workspace/configuracoes/equipe")({
  head: () => ({
@@ -123,11 +125,22 @@ export default function WorkspaceTeamPage() {
   const [inviteRole, setInviteRole] = useState<
     "admin" | "manager" | "seller" | "finance" | "content" | "stock" | "support"
   >("seller");
+  const [inviteContractType, setInviteContractType] = useState<"clt" | "pj" | "partner_law">("partner_law");
+  const [inviteCommissionPercent, setInviteCommissionPercent] = useState<number>(60);
+  const [inviteFeeBearer, setInviteFeeBearer] = useState<"store_100" | "pro_100" | "split_50" | "proportional">("proportional");
+  const [inviteCanViewContacts, setInviteCanViewContacts] = useState<boolean>(false);
+  const [inviteAutoDeductSupplies, setInviteAutoDeductSupplies] = useState<boolean>(true);
   const [isInviting, setIsInviting] = useState(false);
 
  // Estados do Modal de Criação de Vaga
  const [isJobOpen, setIsJobOpen] = useState(false);
  const [isCreatingJob, setIsCreatingJob] = useState(false);
+ const [jobSeoGeo, setJobSeoGeo] = useState<SeoGeoMetadata>({
+   seoTitle: "",
+   seoDescription: "",
+   keywords: [],
+   allowAiIndexing: true,
+ });
  const [jobForm, setJobForm] = useState({
  title: "",
  company_name: "",
@@ -340,23 +353,23 @@ export default function WorkspaceTeamPage() {
  {/* ── Tabs de Navegação ── */}
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full">
  <TabsList className="grid grid-cols-2 sm:grid-cols-5 max-w-3xl h-auto p-1 bg-muted/60 rounded-lg gap-1">
- <TabsTrigger value="members" className="rounded-lg font-bold text-xs gap-1.5 py-2">
+ <TabsTrigger value="members" className="rounded-lg font-bold text-xs gap-2 py-2">
  <Users className="size-3.5" />
  <span>Colaboradores ({members.length})</span>
  </TabsTrigger>
- <TabsTrigger value="contractors" className="rounded-lg font-bold text-xs gap-1.5 py-2">
+ <TabsTrigger value="contractors" className="rounded-lg font-bold text-xs gap-2 py-2">
  <Briefcase className="size-3.5" />
  <span>Terceirizados ({contractorsList.length})</span>
  </TabsTrigger>
- <TabsTrigger value="partner_agreement" className="rounded-lg font-bold text-xs gap-1.5 py-2">
+ <TabsTrigger value="partner_agreement" className="rounded-lg font-bold text-xs gap-2 py-2">
  <Building2 className="size-3.5 text-primary" />
  <span>Salão Parceiro</span>
  </TabsTrigger>
- <TabsTrigger value="permissions" className="rounded-lg font-bold text-xs gap-1.5 py-2">
+ <TabsTrigger value="permissions" className="rounded-lg font-bold text-xs gap-2 py-2">
  <ShieldCheck className="size-3.5" />
  <span>Permissões</span>
  </TabsTrigger>
- <TabsTrigger value="jobs" className="rounded-lg font-bold text-xs gap-1.5 py-2">
+ <TabsTrigger value="jobs" className="rounded-lg font-bold text-xs gap-2 py-2">
  <Layers className="size-3.5" />
  <span>Vagas ({jobs.length})</span>
  </TabsTrigger>
@@ -891,6 +904,14 @@ export default function WorkspaceTeamPage() {
  />
  </div>
  </div>
+
+ <SeoGeoOptimizationPanel
+ value={jobSeoGeo}
+ onChange={setJobSeoGeo}
+ referenceTitle={jobForm.title}
+ referenceDescription={jobForm.description}
+ referenceAddress={jobForm.location}
+ />
  </div>
  </SheetPage>
 
@@ -959,6 +980,81 @@ export default function WorkspaceTeamPage() {
  ))}
  </SelectContent>
  </Select>
+ </div>
+
+ <div className="space-y-2 text-left">
+ <Label className="text-xs font-bold text-foreground">Regime Jurídico / Tipo de Contrato</Label>
+ <Select
+ value={inviteContractType}
+ onValueChange={(v: any) => setInviteContractType(v)}
+ >
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-muted/30 font-semibold">
+ <SelectValue />
+ </SelectTrigger>
+ <SelectContent className="rounded-lg">
+ <SelectItem value="partner_law">Salão Parceiro (Lei 13.352/2016) — Segregação Fiscal de Cota-Parte</SelectItem>
+ <SelectItem value="clt">CLT — Regime Tradicional Celetista</SelectItem>
+ <SelectItem value="pj">Prestador PJ / Autônomo — Emissão de NFS-e</SelectItem>
+ </SelectContent>
+ </Select>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+ <div className="space-y-1">
+ <Label className="text-xs font-bold text-foreground">Comissão / Cota-Parte (%)</Label>
+ <Input
+ type="number"
+ min={0}
+ max={100}
+ value={inviteCommissionPercent}
+ onChange={(e) => setInviteCommissionPercent(Number(e.target.value) || 0)}
+ className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold bg-muted/30"
+ />
+ </div>
+
+ <div className="space-y-1">
+ <Label className="text-xs font-bold text-foreground">Absorção de Taxas de Cartão</Label>
+ <Select
+ value={inviteFeeBearer}
+ onValueChange={(v: any) => setInviteFeeBearer(v)}
+ >
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-muted/30 font-semibold">
+ <SelectValue />
+ </SelectTrigger>
+ <SelectContent className="rounded-lg">
+ <SelectItem value="proportional">Proporcional às cotas</SelectItem>
+ <SelectItem value="store_100">Loja 100%</SelectItem>
+ <SelectItem value="pro_100">Profissional 100%</SelectItem>
+ <SelectItem value="split_50">Meio a Meio (50/50)</SelectItem>
+ </SelectContent>
+ </Select>
+ </div>
+ </div>
+
+ <div className="space-y-3 pt-1 text-left">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+ <div className="space-y-1">
+ <p className="text-xs font-bold text-foreground">Sigilo de Contatos (LGPD)</p>
+ <p className="text-2xs text-muted-foreground">Exibe telefone com máscara ((49) 9****-**12) para proteger a carteira de clientes.</p>
+ </div>
+ <Switch
+ checked={inviteCanViewContacts}
+ onCheckedChange={setInviteCanViewContacts}
+ className="h-6 w-11"
+ />
+ </div>
+
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+ <div className="space-y-1">
+ <p className="text-xs font-bold text-foreground">Dedução Automática de Insumos</p>
+ <p className="text-2xs text-muted-foreground">Abate o custo da ficha técnica dos materiais consumidos no serviço.</p>
+ </div>
+ <Switch
+ checked={inviteAutoDeductSupplies}
+ onCheckedChange={setInviteAutoDeductSupplies}
+ className="h-6 w-11"
+ />
+ </div>
  </div>
 
  <div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-xs text-muted-foreground flex items-start gap-2">

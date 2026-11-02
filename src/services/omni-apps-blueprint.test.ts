@@ -31,8 +31,11 @@ describe("Omni Apps Blueprint Engine (Wix App Market Parity)", () => {
     
     const slugs = supermarketApp.pages.map((p) => p.slug);
     expect(slugs).toContain("mercado");
-    expect(slugs).toContain("clube");
+    expect(slugs).toContain("departamento");
+    expect(slugs).toContain("produto");
     expect(slugs).toContain("carrinho");
+    expect(slugs).toContain("pedidos");
+    expect(slugs).toContain("clube");
 
     const homePage = supermarketApp.pages.find((p) => p.slug === "mercado")!;
     expect(homePage.initialBlocks.some((b) => b.type === "supermarket_hero_carousel")).toBe(true);
@@ -44,6 +47,13 @@ describe("Omni Apps Blueprint Engine (Wix App Market Parity)", () => {
     const deliveryApp = OMNI_APP_BLUEPRINTS.delivery;
     expect(deliveryApp.navItems.length).toBeGreaterThanOrEqual(3);
     expect(deliveryApp.dataRequirements.tableManagement).toBe(true);
+
+    const deliverySlugs = deliveryApp.pages.map((p) => p.slug);
+    expect(deliverySlugs).toContain("cardapio");
+    expect(deliverySlugs).toContain("produto");
+    expect(deliverySlugs).toContain("carrinho");
+    expect(deliverySlugs).toContain("pedidos");
+    expect(deliverySlugs).toContain("acompanhar");
   });
 
   it("valida que páginas possuem meta SEO completa sem campos vazios", () => {

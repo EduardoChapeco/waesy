@@ -1,23 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Lightning, CurrencyCircleDollar, Users, Clock } from "@phosphor-icons/react";
+import { Lightning, CurrencyCircleDollar, Users, Clock, Snowflake, Tag } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import type { SupermarketPromotionalRule } from "@/services/supermarket.functions";
+import type {
+  SupermarketPromotionalRule,
+  SupermarketFreshFoodSpecs,
+} from "@/services/supermarket.functions";
 
 interface SupermarketClubRibbonBadgeProps {
   rule?: SupermarketPromotionalRule | null;
+  freshFoodSpecs?: SupermarketFreshFoodSpecs | null;
+  badges?: string[] | null;
+  clubPriceCents?: number | null;
+  isMember?: boolean;
   className?: string;
 }
 
 export function SupermarketClubRibbonBadge({
   rule,
+  freshFoodSpecs,
+  badges,
+  clubPriceCents,
+  isMember = false,
   className,
 }: SupermarketClubRibbonBadgeProps) {
-  if (!rule || rule.is_active === false) return null;
-
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!rule.ends_at) return;
+    if (!rule?.ends_at) return;
 
     const calculateTime = () => {
       const diff = new Date(rule.ends_at!).getTime() - Date.now();
@@ -39,26 +48,60 @@ export function SupermarketClubRibbonBadge({
     calculateTime();
     const interval = setInterval(calculateTime, 60000);
     return () => clearInterval(interval);
-  }, [rule.ends_at]);
+  }, [rule?.ends_at]);
+
+  const isChilled =
+    freshFoodSpecs?.temperature_tag === "gelado" ||
+    (Array.isArray(badges) && badges.some((b) => b.toLowerCase().includes("gelad")));
+
+  const isFeatured =
+    Array.isArray(badges) &&
+    badges.some((b) => ["destaque", "impulsionado", "promocao"].includes(b.toLowerCase()));
+
+  const hasClubPrice = Boolean(clubPriceCents && clubPriceCents > 0);
 
   const hasAnyBadge =
-    Boolean(rule.badge_ribbon) ||
-    Boolean(rule.max_per_cpf) ||
-    Boolean(rule.cashback_cents) ||
-    rule.rule_type === "buy_x_pay_y" ||
-    rule.rule_type === "progressive" ||
-    Boolean(timeLeft);
+    Boolean(rule?.badge_ribbon) ||
+    Boolean(rule?.max_per_cpf) ||
+    Boolean(rule?.cashback_cents) ||
+    rule?.rule_type === "buy_x_pay_y" ||
+    rule?.rule_type === "progressive" ||
+    Boolean(timeLeft) ||
+    isChilled ||
+    isFeatured ||
+    hasClubPrice;
 
   if (!hasAnyBadge) return null;
 
   return (
     <div className={cn("flex flex-col gap-1 z-10 pointer-events-none select-none", className)}>
-      {/* ── Fitas Angulares no Topo (Clube K / Oferta / Progressivo) ── */}
+      {/* ── Fitas Primárias Angulares no Topo ── */}
       <div className="flex flex-wrap items-center gap-1">
-        {rule.badge_ribbon && rule.badge_ribbon !== "none" ? (
+        {/* Badge de Temperatura Gelada */}
+        {isChilled ? (
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-3xs font-extrabold uppercase tracking-wider rounded-md bg-sky-600 text-primary-foreground">
+            <Snowflake size={11} weight="bold" />
+            Gelado
+          </span>
+        ) : null}
+
+        {/* Badge de Destaque / Impulsionado */}
+        {isFeatured ? (
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-3xs font-extrabold uppercase tracking-wider rounded-md bg-primary text-primary-foreground">
+            <Tag size={11} weight="bold" />
+            Destaque
+          </span>
+        ) : null}
+
+        {/* Badge de Clube de Fidelidade */}
+        {hasClubPrice && (!rule?.badge_ribbon || rule.badge_ribbon === "clube") ? (
+          <span className="px-2 py-1 text-3xs font-extrabold uppercase tracking-wider rounded-md bg-blue-600 dark:bg-blue-700 text-primary-foreground">
+            Exclusivo Clube
+          </span>
+        ) : rule?.badge_ribbon && rule.badge_ribbon !== "none" ? (
           <span
             className={cn(
-              "px-2 py-0.5 text-3xs font-extrabold uppercase tracking-wider rounded-md text-primary-foreground",
+              "px-2 py-1 text-3xs font-extrabold uppercase tracking-wider rounded-md text-primary-foreground",
               rule.badge_ribbon === "clube" && "bg-blue-600 dark:bg-blue-700",
               rule.badge_ribbon === "oferta" && "bg-destructive",
               rule.badge_ribbon === "progressivo" && "bg-amber-600 dark:bg-amber-700",
@@ -70,8 +113,9 @@ export function SupermarketClubRibbonBadge({
           </span>
         ) : null}
 
-        {rule.rule_type === "buy_x_pay_y" && rule.buy_qty && rule.pay_qty ? (
-          <span className="px-2 py-0.5 text-3xs font-extrabold uppercase tracking-wider rounded-md bg-destructive text-destructive-foreground">
+        {/* Mecânica Leve X Pague Y */}
+        {rule?.rule_type === "buy_x_pay_y" && rule.buy_qty && rule.pay_qty ? (
+          <span className="px-2 py-1 text-3xs font-extrabold uppercase tracking-wider rounded-md bg-destructive text-destructive-foreground">
             Leve {rule.buy_qty}, Pague {rule.pay_qty}
           </span>
         ) : null}
@@ -79,24 +123,24 @@ export function SupermarketClubRibbonBadge({
 
       {/* ── Badges Secundárias: Limite por CPF & Cashback ── */}
       <div className="flex flex-wrap items-center gap-1">
-        {rule.max_per_cpf ? (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-3xs font-medium rounded bg-muted text-muted-foreground border border-border/40">
+        {rule?.max_per_cpf ? (
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-3xs font-medium rounded bg-muted text-muted-foreground border border-border/40">
             <Users size={10} weight="bold" />
             Máx. {rule.max_per_cpf} un/CPF
           </span>
         ) : null}
 
-        {rule.cashback_cents && rule.cashback_cents > 0 ? (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-3xs font-bold rounded bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-600/30">
+        {rule?.cashback_cents && rule.cashback_cents > 0 ? (
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-3xs font-bold rounded bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-600/30">
             <CurrencyCircleDollar size={11} weight="fill" />
             R$ {(rule.cashback_cents / 100).toFixed(2).replace(".", ",")} Cashback
           </span>
         ) : null}
       </div>
 
-      {/* ── Faixa de Urgência com Countdown ── */}
+      {/* ── Faixa de Urgência com Countdown (Oferta Relâmpago) ── */}
       {timeLeft ? (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-3xs font-bold rounded-md bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 w-max">
+        <span className="inline-flex items-center gap-1 px-2 py-1 text-3xs font-bold rounded-md bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 w-max">
           <Clock size={11} weight="fill" />
           Termina em: {timeLeft}
         </span>

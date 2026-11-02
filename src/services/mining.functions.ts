@@ -4,10 +4,16 @@ import { harvestAndPersistPlaces } from "./mining/places-harvester";
 import { syncAndPersistEconomicIndicators } from "./mining/economic-indicators-persister";
 import { extractAndPersistJobOpportunity } from "./mining/job-opportunity-extractor";
 import { harvestAndPersistPncpTenders } from "./mining/pncp-harvester";
-import { executeCrawlQueueBatchDirect, reapStalledProcessingQueueItems } from "./mining/crawler-batch-engine";
+import {
+  executeCrawlQueueBatchDirect,
+  reapStalledProcessingQueueItems,
+} from "./mining/crawler-batch-engine";
 import { crossEnrichListingsWithCnpj } from "./mining/places-cnpj-cross-enricher";
 import { pollActiveCrawlerSources } from "./crawler-sources.functions";
-import { curateDirectoryListingRecord, batchCurateDirectoryListings } from "./mining/business-curation-bootstrap";
+import {
+  curateDirectoryListingRecord,
+  batchCurateDirectoryListings,
+} from "./mining/business-curation-bootstrap";
 import { scrapeUrl } from "@/lib/mining/firecrawl-client";
 import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
 /**
@@ -21,10 +27,20 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireAdmin, assertStoreAccess } from "@/lib/server-access";
+import { decryptSecret } from "@/lib/crypto-vault.server";
 import { enforceRateLimit } from "@/lib/rate-limiter";
-import { inspectPromptSecurity, buildSandboxedPromptPayload, sanitizeAiOutput } from "@/lib/prompt-shield";
+import {
+  inspectPromptSecurity,
+  buildSandboxedPromptPayload,
+  sanitizeAiOutput,
+} from "@/lib/prompt-shield";
 import { extractContentMechanically } from "./mining/mechanical-extractor";
-import { validateMechanicalCompleteness, generateTitleHash, isHealthyImageUrl, getFallbackThematicImage } from "./mining/integrity-gate";
+import {
+  validateMechanicalCompleteness,
+  generateTitleHash,
+  isHealthyImageUrl,
+  getFallbackThematicImage,
+} from "./mining/integrity-gate";
 import { curateWithEditorialSquad } from "./mining/editorial-squad";
 import { fetchPncpContracts, convertPncpToExtractionResult } from "./mining/pncp-extractor";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
@@ -32,7 +48,13 @@ import { executeContinuousCrawl } from "@/lib/mining/continuous-crawler.engine";
 import { parseFeed } from "@/lib/mining/rss-ingester.engine";
 import { fetchAllMarketIndicators } from "@/lib/mining/market-data-miner.engine";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
-import { extractDomain, isDomainInCooldown, setDomainCooldown, clearDomainCooldown, cleanHtmlText } from "@/lib/mining/scraper-utils";
+import {
+  extractDomain,
+  isDomainInCooldown,
+  setDomainCooldown,
+  clearDomainCooldown,
+  cleanHtmlText,
+} from "@/lib/mining/scraper-utils";
 import type {
   MiningStats,
   CrawlQueueItem,
@@ -46,19 +68,18 @@ import type {
 // Constantes: Token Burn Rates para Scraping
 // ============================================================
 export const MINING_TOKEN_COSTS = {
- scrape_url: 5_000, // Extração completa de URL com IA
- rss_import: 500, // Importação de item RSS único
- ai_curate: 2_000, // Curadoria e análise IA de conteúdo
- ai_rewrite: 8_000, // Reescrita editorial completa com IA
- ai_summarize: 1_000, // Geração de resumo executivo
- content_import_url: 3_000, // Importação rápida de conteúdo via URL
- batch_crawl_per_url: 4_000, // Crawl em lote (por URL)
+  scrape_url: 5_000, // Extração completa de URL com IA
+  rss_import: 500, // Importação de item RSS único
+  ai_curate: 2_000, // Curadoria e análise IA de conteúdo
+  ai_rewrite: 8_000, // Reescrita editorial completa com IA
+  ai_summarize: 1_000, // Geração de resumo executivo
+  content_import_url: 3_000, // Importação rápida de conteúdo via URL
+  batch_crawl_per_url: 4_000, // Crawl em lote (por URL)
 } as const;
 
 // ============================================================
 // Schemas e Tipos
 // ============================================================
-
 
 /**
  * Enriquecimento Dinâmico vs. Duplicação (Master Prompt V18 - Fase 4)
@@ -96,7 +117,7 @@ export async function autoPromoteMinedArticle(supabase: any, article: any) {
       .filter(
         (p) =>
           p.length > 40 &&
-          p.includes("Esta matéria foi apurada originalmente pela equipe de jornalismo") === false
+          p.includes("Esta matéria foi apurada originalmente pela equipe de jornalismo") === false,
       );
 
     if (paragraphs.length < 3) {
@@ -121,10 +142,7 @@ export async function autoPromoteMinedArticle(supabase: any, article: any) {
     const baseSlug = slugify(title);
     const slug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
 
-    let existingQuery = supabase
-      .from("news_articles")
-      .select("id")
-      .ilike("title", title);
+    let existingQuery = supabase.from("news_articles").select("id").ilike("title", title);
 
     if (article.source_url) {
       const { data: byUrl } = await supabase
@@ -138,7 +156,12 @@ export async function autoPromoteMinedArticle(supabase: any, article: any) {
     const { data: existingNews } = await existingQuery.maybeSingle();
 
     if (!existingNews) {
-      const articleCity = article.city || article.metadata?.city || article.metadata?.region || article.region || null;
+      const articleCity =
+        article.city ||
+        article.metadata?.city ||
+        article.metadata?.region ||
+        article.region ||
+        null;
       const articleState = article.state || article.metadata?.state || article.metadata?.uf || "SC";
       const effectiveCover = resolveCityNewsCover({
         coverUrl,
@@ -159,13 +182,21 @@ export async function autoPromoteMinedArticle(supabase: any, article: any) {
         cover_media_url: effectiveCover,
         cover_media_type: "image",
         category: article.ai_category || "cidade",
-        tags: Array.isArray(article.ai_tags) && article.ai_tags.length > 0 ? article.ai_tags : ["notícias", "santa catarina"],
+        tags:
+          Array.isArray(article.ai_tags) && article.ai_tags.length > 0
+            ? article.ai_tags
+            : ["notícias", "santa catarina"],
         ai_summary: article.ai_summary || bodyParagraphs[0].slice(0, 260),
         ai_keywords: Array.isArray(article.ai_tags) ? article.ai_tags : [],
         source_url: article.source_url || null,
         source_type: "crawler",
         author_name: article.source_domain || "Redação Regional",
-        city: article.city || article.metadata?.city || article.metadata?.region || article.region || null,
+        city:
+          article.city ||
+          article.metadata?.city ||
+          article.metadata?.region ||
+          article.region ||
+          null,
         state: article.state || article.metadata?.state || article.metadata?.uf || "SC",
         quality_score: Math.max(85, Number(article.quality_score || 88)),
         curation_status: "approved",
@@ -183,351 +214,406 @@ import { enrichOrInsertMinedProduct } from "./mining/mined-product-enricher";
 export { enrichOrInsertMinedProduct };
 
 export const addCrawlUrlSchema = z.object({
- url: z.string().url("URL inválida"),
- priority: z.number().int().min(1).max(10).default(5),
- content_type: z.enum(["news", "blog_post", "recipe", "tech_spec", "social_post", "product", "classified"]).default("news"),
- store_id: z.string().uuid().optional(),
- metadata: z.record(z.unknown()).optional(),
+  url: z.string().url("URL inválida"),
+  priority: z.number().int().min(1).max(10).default(5),
+  content_type: z
+    .enum(["news", "blog_post", "recipe", "tech_spec", "social_post", "product", "classified"])
+    .default("news"),
+  store_id: z.string().uuid().optional(),
+  metadata: z.record(z.unknown()).optional(),
 });
 
 export const addRssFeedSchema = z.object({
- name: z.string().min(2, "Nome muito curto"),
- feed_url: z.string().url("URL de feed inválida"),
- website_url: z.string().url().optional(),
- category: z.string().default("general"),
- content_type: z.enum(["news", "blog_post", "recipe", "tech_spec", "classified"]).default("news"),
- region: z.string().default("Geral/Nacional"),
- store_id: z.string().uuid().optional(),
- auto_publish: z.boolean().default(false),
- auto_enqueue: z.boolean().default(true),
- quality_threshold: z.number().int().min(0).max(100).default(60),
- fetch_interval_minutes: z.number().int().min(5).default(60),
- max_items_per_fetch: z.number().int().min(1).max(100).default(20),
+  name: z.string().min(2, "Nome muito curto"),
+  feed_url: z.string().url("URL de feed inválida"),
+  website_url: z.string().url().optional(),
+  category: z.string().default("general"),
+  content_type: z.enum(["news", "blog_post", "recipe", "tech_spec", "classified"]).default("news"),
+  region: z.string().default("Geral/Nacional"),
+  store_id: z.string().uuid().optional(),
+  auto_publish: z.boolean().default(false),
+  auto_enqueue: z.boolean().default(true),
+  quality_threshold: z.number().int().min(0).max(100).default(60),
+  fetch_interval_minutes: z.number().int().min(5).default(60),
+  max_items_per_fetch: z.number().int().min(1).max(100).default(20),
 });
 
 export interface MinedArticleDTO {
- id: string;
- source_url: string;
- source_domain: string;
- source_type: "crawl" | "rss" | "api";
- store_id: string | null;
- raw_title: string | null;
- ai_structured_title: string | null;
- ai_structured_subtitle: string | null;
- ai_suggested_kicker: string | null;
- ai_suggested_category: string | null;
- ai_suggested_tags: string[];
- ai_suggested_cover_url: string | null;
- ai_summary: string | null;
- ai_sentiment: string | null;
- quality_score: number | null;
- quality_flags: string[];
- word_count: number;
- has_cover_image: boolean;
- is_duplicate: boolean;
- status: "pending_review" | "approved" | "rejected" | "published" | "processing" | "failed";
- curator_notes: string | null;
- curated_at: string | null;
- tokens_consumed: number;
- ai_provider_used: string | null;
- firecrawl_used: boolean;
- created_at: string;
- extracted_markdown?: string | null;
- ai_structured_sections?: Array<{
-   heading?: string;
-   content: string;
-   order?: number;
-   type?: string;
-   caption?: string;
- }> | null;
+  id: string;
+  source_url: string;
+  source_domain: string;
+  source_type: "crawl" | "rss" | "api";
+  store_id: string | null;
+  raw_title: string | null;
+  ai_structured_title: string | null;
+  ai_structured_subtitle: string | null;
+  ai_suggested_kicker: string | null;
+  ai_suggested_category: string | null;
+  ai_suggested_tags: string[];
+  ai_suggested_cover_url: string | null;
+  ai_summary: string | null;
+  ai_sentiment: string | null;
+  quality_score: number | null;
+  quality_flags: string[];
+  word_count: number;
+  has_cover_image: boolean;
+  is_duplicate: boolean;
+  status: "pending_review" | "approved" | "rejected" | "published" | "processing" | "failed";
+  curator_notes: string | null;
+  curated_at: string | null;
+  tokens_consumed: number;
+  ai_provider_used: string | null;
+  firecrawl_used: boolean;
+  created_at: string;
+  extracted_markdown?: string | null;
+  ai_structured_sections?: Array<{
+    heading?: string;
+    content: string;
+    order?: number;
+    type?: string;
+    caption?: string;
+  }> | null;
 }
 
 export interface ScraperConfigDTO {
- id: string;
- domain: string;
- label: string;
- description: string | null;
- is_active: boolean;
- is_blocked: boolean;
- blocked_reason: string | null;
- requires_javascript: boolean;
- request_delay_ms: number;
- max_requests_per_hour: number;
- reliability_score: number;
- source_credibility: string;
- total_scraped: number;
- total_published: number;
- total_failed: number;
- last_scraped_at: string | null;
+  id: string;
+  domain: string;
+  label: string;
+  description: string | null;
+  is_active: boolean;
+  is_blocked: boolean;
+  blocked_reason: string | null;
+  requires_javascript: boolean;
+  request_delay_ms: number;
+  max_requests_per_hour: number;
+  reliability_score: number;
+  source_credibility: string;
+  total_scraped: number;
+  total_published: number;
+  total_failed: number;
+  last_scraped_at: string | null;
 }
 
 // ============================================================
 // 1. Estatísticas do Mining Hub (ampliadas)
 // ============================================================
 export const getMiningStats = createServerFn({ method: "GET" }).handler(async () => {
- const supabase = getServerClient();
+  const supabase = getServerClient();
 
- const [queueRes, feedsRes, scraperRes, minedRes] = await Promise.all([
- supabase.from("crawl_queue").select("status"),
- supabase.from("rss_feeds").select("id, is_active, items_count, items_published_count"),
- supabase.from("scraper_configs").select("id, is_active, is_blocked, total_scraped, total_published"),
- supabase.from("mined_articles").select("status, quality_score"),
- ]);
+  const [queueRes, feedsRes, scraperRes, minedRes] = await Promise.all([
+    supabase.from("crawl_queue").select("status"),
+    supabase.from("rss_feeds").select("id, is_active, items_count, items_published_count"),
+    supabase
+      .from("scraper_configs")
+      .select("id, is_active, is_blocked, total_scraped, total_published"),
+    supabase.from("mined_articles").select("status, quality_score"),
+  ]);
 
- const queueData = queueRes.data || [];
- const queue = { pending: 0, processing: 0, completed: 0, failed: 0 };
- queueData.forEach((item) => {
- if (item.status in queue) queue[item.status as keyof typeof queue]++;
- });
+  const queueData = queueRes.data || [];
+  const queue = { pending: 0, processing: 0, completed: 0, failed: 0 };
+  queueData.forEach((item) => {
+    if (item.status in queue) queue[item.status as keyof typeof queue]++;
+  });
 
- const feedsData = feedsRes.data || [];
- const minedData = minedRes.data || [];
- const scraperData = scraperRes.data || [];
+  const feedsData = feedsRes.data || [];
+  const minedData = minedRes.data || [];
+  const scraperData = scraperRes.data || [];
 
- const minedStats = {
- pending_review: 0, approved: 0, rejected: 0,
- published: 0, processing: 0, failed: 0,
- avg_quality: 0,
- };
- let qualitySum = 0, qualityCount = 0;
- minedData.forEach((m) => {
- if (m.status in minedStats) minedStats[m.status as keyof typeof minedStats]++;
- if (m.quality_score != null) { qualitySum += m.quality_score; qualityCount++; }
- });
- minedStats.avg_quality = qualityCount > 0 ? Math.round(qualitySum / qualityCount) : 0;
+  const minedStats = {
+    pending_review: 0,
+    approved: 0,
+    rejected: 0,
+    published: 0,
+    processing: 0,
+    failed: 0,
+    avg_quality: 0,
+  };
+  let qualitySum = 0,
+    qualityCount = 0;
+  minedData.forEach((m) => {
+    if (m.status in minedStats) minedStats[m.status as keyof typeof minedStats]++;
+    if (m.quality_score != null) {
+      qualitySum += m.quality_score;
+      qualityCount++;
+    }
+  });
+  minedStats.avg_quality = qualityCount > 0 ? Math.round(qualitySum / qualityCount) : 0;
 
- return {
- queue,
- mined: minedStats,
- feeds: {
- total: feedsData.length,
- active: feedsData.filter((f) => f.is_active).length,
- total_items: feedsData.reduce((s, f) => s + (f.items_count || 0), 0),
- total_published: feedsData.reduce((s, f) => s + (f.items_published_count || 0), 0),
- },
- scrapers: {
- total: scraperData.length,
- active: scraperData.filter((s) => s.is_active && s.is_blocked === false).length,
- blocked: scraperData.filter((s) => s.is_blocked).length,
- total_scraped: scraperData.reduce((s, c) => s + (c.total_scraped || 0), 0),
- },
- };
+  return {
+    queue,
+    mined: minedStats,
+    feeds: {
+      total: feedsData.length,
+      active: feedsData.filter((f) => f.is_active).length,
+      total_items: feedsData.reduce((s, f) => s + (f.items_count || 0), 0),
+      total_published: feedsData.reduce((s, f) => s + (f.items_published_count || 0), 0),
+    },
+    scrapers: {
+      total: scraperData.length,
+      active: scraperData.filter((s) => s.is_active && s.is_blocked === false).length,
+      blocked: scraperData.filter((s) => s.is_blocked).length,
+      total_scraped: scraperData.reduce((s, c) => s + (c.total_scraped || 0), 0),
+    },
+  };
 });
 
 // ============================================================
 // 2. Lista fila de crawling (com filtros)
 // ============================================================
 export const listCrawlQueue = createServerFn({ method: "GET" })
- .validator(z.object({
- status: z.string().optional(),
- content_type: z.string().optional(),
- limit: z.number().int().default(50),
- offset: z.number().int().default(0),
- }).optional())
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- let query = supabase
- .from("crawl_queue")
- .select("*", { count: "exact" })
- .order("priority", { ascending: true })
- .order("created_at", { ascending: true })
- .limit(data?.limit || 50)
- .range(data?.offset || 0, (data?.offset || 0) + (data?.limit || 50) - 1);
+  .validator(
+    z
+      .object({
+        status: z.string().optional(),
+        content_type: z.string().optional(),
+        limit: z.number().int().default(50),
+        offset: z.number().int().default(0),
+      })
+      .optional(),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let query = supabase
+      .from("crawl_queue")
+      .select("*", { count: "exact" })
+      .order("priority", { ascending: true })
+      .order("created_at", { ascending: true })
+      .limit(data?.limit || 50)
+      .range(data?.offset || 0, (data?.offset || 0) + (data?.limit || 50) - 1);
 
- if (data?.status && data.status !== "all") query = query.eq("status", data.status);
- if (data?.content_type) query = query.eq("content_type", data.content_type);
+    if (data?.status && data.status !== "all") query = query.eq("status", data.status);
+    if (data?.content_type) query = query.eq("content_type", data.content_type);
 
- const { data: queue, count, error } = await query;
- if (error) throw new Error(`Falha ao listar fila: ${error.message}`);
- return { items: queue || [], total: count || 0 };
- });
+    const { data: queue, count, error } = await query;
+    if (error) throw new Error(`Falha ao listar fila: ${error.message}`);
+    return { items: queue || [], total: count || 0 };
+  });
 
 // ============================================================
 // 3. Adiciona URL à fila de crawling
 // ============================================================
 export const addUrlToCrawlQueue = createServerFn({ method: "POST" })
- .validator(addCrawlUrlSchema)
- .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
+  .validator(addCrawlUrlSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity) throw new Error("Não autenticado");
 
- const domain = new URL(data.url).hostname;
- const supabase = getServerClient();
+    const domain = new URL(data.url).hostname;
+    const supabase = getServerClient();
 
- // Verifica duplicata na fila
- const { data: existing } = await supabase
- .from("crawl_queue")
- .select("id, status")
- .eq("url", data.url)
- .in("status", ["pending", "processing"])
- .maybeSingle();
+    // Verifica duplicata na fila
+    const { data: existing } = await supabase
+      .from("crawl_queue")
+      .select("id, status")
+      .eq("url", data.url)
+      .in("status", ["pending", "processing"])
+      .maybeSingle();
 
- if (existing) {
- return { id: existing.id, status: existing.status, _duplicate: true };
- }
+    if (existing) {
+      return { id: existing.id, status: existing.status, _duplicate: true };
+    }
 
- const { data: item, error } = await supabase
- .from("crawl_queue")
- .insert({
- url: data.url,
- domain,
- priority: data.priority,
- content_type: data.content_type,
- store_id: data.store_id || null,
- status: "pending",
- discovered_via: "admin_manual",
- metadata: data.metadata || {},
- })
- .select()
- .single();
+    const { data: item, error } = await supabase
+      .from("crawl_queue")
+      .insert({
+        url: data.url,
+        domain,
+        priority: data.priority,
+        content_type: data.content_type,
+        store_id: data.store_id || null,
+        status: "pending",
+        discovered_via: "admin_manual",
+        metadata: data.metadata || {},
+      })
+      .select()
+      .single();
 
- if (error) throw new Error(`Falha ao enfileirar URL: ${error.message}`);
- return item;
- });
+    if (error) throw new Error(`Falha ao enfileirar URL: ${error.message}`);
+    return item;
+  });
 
 // ============================================================
 // 4. Processa URL com IA (Pipeline completo Firecrawl → Gemini/Groq)
 // Consome tokens se for operação de loja
 // ============================================================
 export const processUrlWithAI = createServerFn({ method: "POST" })
- .validator(z.object({
- url: z.string().url("URL inválida"),
- content_type: z.enum(["news", "blog_post", "recipe", "tech_spec", "social_post", "product", "classified"]).default("news"),
- tone: z.enum(["profissional", "editorial", "persuasivo", "tecnico", "minimalista"]).default("profissional"),
- store_id: z.string().uuid().optional(),
- auto_enqueue: z.boolean().default(true),
- consume_tokens: z.boolean().default(false), // true apenas para lojas B2B
- }))
- .handler(async ({ data: input }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
+  .validator(
+    z.object({
+      url: z.string().url("URL inválida"),
+      content_type: z
+        .enum(["news", "blog_post", "recipe", "tech_spec", "social_post", "product", "classified"])
+        .default("news"),
+      tone: z
+        .enum(["profissional", "editorial", "persuasivo", "tecnico", "minimalista"])
+        .default("profissional"),
+      store_id: z.string().uuid().optional(),
+      auto_enqueue: z.boolean().default(true),
+      consume_tokens: z.boolean().default(false), // true apenas para lojas B2B
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
 
- // 1. Verifica bloqueio de domínio
- const domain = new URL(input.url).hostname;
- const { data: config } = await supabase
- .from("scraper_configs")
- .select("is_blocked, blocked_reason, requires_javascript, css_title, css_body, css_cover_image, request_delay_ms, source_credibility")
- .eq("domain", domain)
- .maybeSingle();
+    // 1. Verifica bloqueio de domínio
+    const domain = new URL(input.url).hostname;
+    const { data: config } = await supabase
+      .from("scraper_configs")
+      .select(
+        "is_blocked, blocked_reason, requires_javascript, css_title, css_body, css_cover_image, request_delay_ms, source_credibility",
+      )
+      .eq("domain", domain)
+      .maybeSingle();
 
- if (config?.is_blocked) {
- throw new Error(`Domínio bloqueado: ${config.blocked_reason || "Violação de ToS detectada"}`);
- }
+    if (config?.is_blocked) {
+      throw new Error(`Domínio bloqueado: ${config.blocked_reason || "Violação de ToS detectada"}`);
+    }
 
- // 2. Obtém próxima chave ativa do pool
- async function getNextActiveKey(provider: string) {
- const { data } = await supabase
- .from("api_key_pools")
- .select("id, encrypted_key")
- .eq("provider", provider)
- .eq("is_active", true)
- .order("last_used_at", { ascending: true, nullsFirst: true })
- .limit(1)
- .maybeSingle();
+    // 2. Obtém próxima chave ativa do pool
+    async function getNextActiveKey(provider: string) {
+      const { data } = await supabase
+        .from("api_key_pools")
+        .select("id, encrypted_key")
+        .eq("provider", provider)
+        .eq("is_active", true)
+        .order("last_used_at", { ascending: true, nullsFirst: true })
+        .limit(1)
+        .maybeSingle();
 
- if (!data?.encrypted_key) return null;
- const rawKey = Buffer.from(data.encrypted_key, "base64").toString("utf-8");
- await supabase.from("api_key_pools")
- .update({ last_used_at: new Date().toISOString() })
- .eq("id", data.id);
- return { id: data.id, rawKey };
- }
+      if (!data?.encrypted_key) return null;
+      let rawKey: string;
+      try {
+        rawKey = decryptSecret(data.encrypted_key);
+      } catch {
+        return null;
+      }
+      await supabase
+        .from("api_key_pools")
+        .update({ last_used_at: new Date().toISOString() })
+        .eq("id", data.id);
+      return { id: data.id, rawKey };
+    }
 
- // 3. Extração de conteúdo bruto (Firecrawl → fallback HTTP)
- let rawContent = "";
- let firecrawlUsed = false;
- let crawlQueueId: string | null = null;
+    // 3. Extração de conteúdo bruto (Firecrawl → fallback HTTP)
+    let rawContent = "";
+    let firecrawlUsed = false;
+    let crawlQueueId: string | null = null;
 
- // Enfileira na crawl_queue para rastreabilidade
- if (input.auto_enqueue) {
- const { data: queueItem } = await supabase
- .from("crawl_queue")
- .insert({
- url: input.url,
- domain,
- priority: 3,
- content_type: input.content_type,
- store_id: input.store_id || null,
- status: "processing",
- discovered_via: "admin_manual",
- started_at: new Date().toISOString(),
- metadata: { tone: input.tone },
- })
- .select("id")
- .single();
- crawlQueueId = queueItem?.id || null;
- }
+    // Enfileira na crawl_queue para rastreabilidade
+    if (input.auto_enqueue) {
+      const { data: queueItem } = await supabase
+        .from("crawl_queue")
+        .insert({
+          url: input.url,
+          domain,
+          priority: 3,
+          content_type: input.content_type,
+          store_id: input.store_id || null,
+          status: "processing",
+          discovered_via: "admin_manual",
+          started_at: new Date().toISOString(),
+          metadata: { tone: input.tone },
+        })
+        .select("id")
+        .single();
+      crawlQueueId = queueItem?.id || null;
+    }
 
- let mechanicalResult: any = null;
- try {
- const firecrawlKey = await getNextActiveKey("firecrawl");
- if (firecrawlKey) {
- try {
- const fcRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
- method: "POST",
- headers: { "Content-Type": "application/json", Authorization: `Bearer ${firecrawlKey.rawKey}` },
- body: JSON.stringify({ url: input.url, formats: ["markdown"], onlyMainContent: true }),
- signal: AbortSignal.timeout(15000),
- });
- if (fcRes.ok) {
- const fcJson = await fcRes.json();
- rawContent = fcJson?.data?.markdown || "";
- if (rawContent) firecrawlUsed = true;
- } else if (fcRes.status === 429) {
- await supabase.from("api_key_pools").update({ last_error_at: new Date().toISOString(), last_error_message: "Rate limit 429" }).eq("id", firecrawlKey.id);
- }
- } catch (e: any) {
- await supabase.from("api_key_pools").update({ last_error_at: new Date().toISOString(), last_error_message: e.message?.slice(0, 200) }).eq("id", firecrawlKey.id);
- }
- }
+    let mechanicalResult: any = null;
+    try {
+      const firecrawlKey = await getNextActiveKey("firecrawl");
+      if (firecrawlKey) {
+        try {
+          const fcRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${firecrawlKey.rawKey}`,
+            },
+            body: JSON.stringify({ url: input.url, formats: ["markdown"], onlyMainContent: true }),
+            signal: AbortSignal.timeout(15000),
+          });
+          if (fcRes.ok) {
+            const fcJson = await fcRes.json();
+            rawContent = fcJson?.data?.markdown || "";
+            if (rawContent) firecrawlUsed = true;
+          } else if (fcRes.status === 429) {
+            await supabase
+              .from("api_key_pools")
+              .update({
+                last_error_at: new Date().toISOString(),
+                last_error_message: "Rate limit 429",
+              })
+              .eq("id", firecrawlKey.id);
+          }
+        } catch (e: any) {
+          await supabase
+            .from("api_key_pools")
+            .update({
+              last_error_at: new Date().toISOString(),
+              last_error_message: e.message?.slice(0, 200),
+            })
+            .eq("id", firecrawlKey.id);
+        }
+      }
 
- // Camada Mecânica Resiliente (Stealth Headers + JSON-LD + Dicionário de Seletores)
- mechanicalResult = await extractContentMechanically(input.url, rawContent || undefined);
- if (!rawContent && mechanicalResult.bodyMarkdown) {
- rawContent = mechanicalResult.bodyMarkdown;
- }
+      // Camada Mecânica Resiliente (Stealth Headers + JSON-LD + Dicionário de Seletores)
+      mechanicalResult = await extractContentMechanically(input.url, rawContent || undefined);
+      if (!rawContent && mechanicalResult.bodyMarkdown) {
+        rawContent = mechanicalResult.bodyMarkdown;
+      }
 
- // Gateway de Validação de Integridade (Previne bug de corpo vazio e bloqueios anti-bot)
- const integrity = validateMechanicalCompleteness(mechanicalResult);
- if (!integrity.isValid && (!rawContent || rawContent.length < 100)) {
- if (crawlQueueId) {
- await supabase.from("crawl_queue").update({
- status: "failed",
- processing_error: `Integridade rejeitada: ${integrity.reason || "Conteúdo insuficiente"}`,
- completed_at: new Date().toISOString(),
- }).eq("id", crawlQueueId);
- }
- throw new Error(`Integridade rejeitada: ${integrity.reason}`);
- }
- } catch (e: any) {
- if (crawlQueueId) {
- await supabase.from("crawl_queue").update({
- status: "failed",
- processing_error: e.message?.slice(0, 300),
- completed_at: new Date().toISOString(),
- }).eq("id", crawlQueueId);
- }
- throw new Error(`Falha ao extrair conteúdo: ${e.message}`);
- }
+      // Gateway de Validação de Integridade (Previne bug de corpo vazio e bloqueios anti-bot)
+      const integrity = validateMechanicalCompleteness(mechanicalResult);
+      if (!integrity.isValid && (!rawContent || rawContent.length < 100)) {
+        if (crawlQueueId) {
+          await supabase
+            .from("crawl_queue")
+            .update({
+              status: "failed",
+              processing_error: `Integridade rejeitada: ${integrity.reason || "Conteúdo insuficiente"}`,
+              completed_at: new Date().toISOString(),
+            })
+            .eq("id", crawlQueueId);
+        }
+        throw new Error(`Integridade rejeitada: ${integrity.reason}`);
+      }
+    } catch (e: any) {
+      if (crawlQueueId) {
+        await supabase
+          .from("crawl_queue")
+          .update({
+            status: "failed",
+            processing_error: e.message?.slice(0, 300),
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", crawlQueueId);
+      }
+      throw new Error(`Falha ao extrair conteúdo: ${e.message}`);
+    }
 
- if (!rawContent || rawContent.length < 80) {
- throw new Error("Conteúdo insuficiente para processamento — página retornou menos de 80 caracteres.");
- }
+    if (!rawContent || rawContent.length < 80) {
+      throw new Error(
+        "Conteúdo insuficiente para processamento — página retornou menos de 80 caracteres.",
+      );
+    }
 
- // 4. Anti-prompt injection & Prompt Shield
- const securityCheck = inspectPromptSecurity(rawContent);
- const sanitized = (securityCheck.sanitizedPrompt || rawContent).replace(/\{\{|\}\}/g, "").slice(0, 12000);
+    // 4. Anti-prompt injection & Prompt Shield
+    const securityCheck = inspectPromptSecurity(rawContent);
+    const sanitized = (securityCheck.sanitizedPrompt || rawContent)
+      .replace(/\{\{|\}\}/g, "")
+      .slice(0, 12000);
 
- // 5. Sistema de Prompts por Content Type com Sandboxing
- const systemPrompts: Record<string, string> = {
- news: `Você é um editor-chefe de jornalismo digital de alto padrão. Extraia e estruture matérias jornalísticas a partir de conteúdo bruto da web. Retorne APENAS JSON válido, sem markdown ou texto adicional.`,
- blog_post: `Você é um especialista em marketing de conteúdo. Extraia e estruture posts de blog a partir de conteúdo bruto. Retorne APENAS JSON válido.`,
- recipe: `Você é um chef e editor gastronômico. Extraia e estruture receitas culinárias detalhadas. Retorne APENAS JSON válido.`,
- tech_spec: `Você é um engenheiro técnico. Extraia especificações técnicas e fichas de produto. Retorne APENAS JSON válido.`,
- };
+    // 5. Sistema de Prompts por Content Type com Sandboxing
+    const systemPrompts: Record<string, string> = {
+      news: `Você é um editor-chefe de jornalismo digital de alto padrão. Extraia e estruture matérias jornalísticas a partir de conteúdo bruto da web. Retorne APENAS JSON válido, sem markdown ou texto adicional.`,
+      blog_post: `Você é um especialista em marketing de conteúdo. Extraia e estruture posts de blog a partir de conteúdo bruto. Retorne APENAS JSON válido.`,
+      recipe: `Você é um chef e editor gastronômico. Extraia e estruture receitas culinárias detalhadas. Retorne APENAS JSON válido.`,
+      tech_spec: `Você é um engenheiro técnico. Extraia especificações técnicas e fichas de produto. Retorne APENAS JSON válido.`,
+    };
 
- const contentTypePrompts: Record<string, string> = {
- news: `Analise o conteúdo jornalístico abaixo.
+    const contentTypePrompts: Record<string, string> = {
+      news: `Analise o conteúdo jornalístico abaixo.
 URL: ${input.url}
 Tom solicitado: ${input.tone}
 
@@ -554,14 +640,14 @@ Retorne o JSON:
  {"type": "quote", "content": "Citação", "caption": "Fonte da citação"}
  ]
 }`,
- blog_post: `Analise o artigo de blog abaixo.
+      blog_post: `Analise o artigo de blog abaixo.
 URL: ${input.url}
 
 Conteúdo:
 ${sanitized}
 
 Retorne o JSON no mesmo formato estruturado.`,
- recipe: `Analise a receita abaixo.
+      recipe: `Analise a receita abaixo.
 URL: ${input.url}
 
 Conteúdo:
@@ -586,7 +672,7 @@ Retorne o JSON:
  "quality_score": 80,
  "quality_flags": []
 }`,
- tech_spec: `Analise o produto ou especificação técnica abaixo.
+      tech_spec: `Analise o produto ou especificação técnica abaixo.
 URL: ${input.url}
 
 Conteúdo:
@@ -610,259 +696,277 @@ Retorne o JSON:
  "quality_score": 85,
  "quality_flags": []
 }`,
- };
-
- const baseSystemPrompt = systemPrompts[input.content_type] || systemPrompts.news;
- const baseUserPrompt = contentTypePrompts[input.content_type] || contentTypePrompts.news;
-
- const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(
- baseUserPrompt,
- baseSystemPrompt
- );
-
-  // 5.1. Validador Pré-Voo de Saldo de Tokens (Ledger ACID Lock)
-	if (input.consume_tokens && input.store_id) {
-		const { data: wallet } = await supabase
-			.from("store_token_wallets")
-			.select("balance")
-			.eq("store_id", input.store_id)
-			.maybeSingle();
-
-		if (wallet && (wallet.balance ?? 0) < MINING_TOKEN_COSTS.scrape_url) {
-			throw new Error(
-				`Saldo insuficiente de tokens para extração. Necessário: ${MINING_TOKEN_COSTS.scrape_url.toLocaleString('pt-BR')} tokens. Saldo atual: ${(wallet.balance ?? 0).toLocaleString('pt-BR')} tokens.`
-			);
-		}
-	}
-
-	// 6. Processamento por IA via Orquestrador Universal
-  let extracted: any = null;
-  let aiProviderUsed = "fallback";
-  let tokensConsumed = 0;
-
-  try {
-    const aiRes = await executeUnifiedAiCall({
-      systemPrompt: hardenedSystemPrompt,
-      userPrompt: sandboxedUserPrompt,
-      responseFormat: "json_object",
-      temperature: 0.2,
-    });
-    if (aiRes.parsedJson) {
-      extracted = aiRes.parsedJson;
-      aiProviderUsed = aiRes.provider;
-      tokensConsumed = 1500;
-    }
-  } catch (e: any) {
-    console.warn("[mining] Unified AI error:", e.message);
-  }
-
- // 7. Fallback determinístico se IA falhar
- if (!extracted) {
- const titleMatch = rawContent.match(/<h1[^>]*>([^<]+)<\/h1>/i);
- extracted = {
- title: titleMatch ? titleMatch[1].trim().slice(0, 120) : new URL(input.url).hostname,
- subtitle: `Conteúdo extraído de ${domain}`,
- kicker: input.content_type.toUpperCase(),
- category: "geral",
- tags: [domain.replace("www.", "")],
- summary: `Conteúdo importado de ${input.url}`,
- sentiment: "neutral",
- keywords: [],
- cover_image_url: null,
- estimated_reading_time: Math.ceil(rawContent.split(" ").length / 200),
- quality_score: 20,
- quality_flags: ["ai_extraction_failed", "manual_review_required"],
- sections: [{ type: "paragraph", content: rawContent.slice(0, 2000) }],
- };
- aiProviderUsed = "fallback";
- }
-
-  // 8. Validação e sanitização da imagem de capa (Anti-Broken Image Gate)
-  const candidateCover = extracted.cover_image_url || mechanicalResult?.coverImageUrl;
-  const safeCoverUrl = isHealthyImageUrl(candidateCover)
-    ? candidateCover
-    : getFallbackThematicImage(input.content_type);
-
-  extracted.cover_image_url = safeCoverUrl;
-
-  // Calcula quality score final
-  const qualityScore = extracted.quality_score ?? calculateQualityScore(extracted);
-  const qualityFlags: string[] = extracted.quality_flags || [];
-  if (!safeCoverUrl) qualityFlags.push("missing_cover");
-  if ((extracted.sections?.length || 0) < 2) qualityFlags.push("short_content");
-  if (qualityScore < 40) qualityFlags.push("low_quality");
-
-  tokensConsumed = MINING_TOKEN_COSTS.scrape_url;
-
-  // 9. Persiste em mined_articles
-  const { data: mined, error: minedError } = await supabase
-    .from("mined_articles")
-    .insert({
-      crawl_queue_id: crawlQueueId,
-      source_url: input.url,
-      source_domain: domain,
-      source_type: "crawl",
-      store_id: input.store_id || null,
-      raw_title: extracted.title,
-      extracted_markdown: rawContent.slice(0, 50000),
-      ai_structured_title: extracted.title,
-      ai_structured_subtitle: extracted.subtitle,
-      ai_structured_sections: extracted.sections || [],
-      ai_suggested_kicker: extracted.kicker,
-      ai_suggested_category: extracted.category,
-      ai_suggested_tags: extracted.tags || [],
-      ai_suggested_cover_url: safeCoverUrl,
-      ai_summary: extracted.summary,
-      ai_sentiment: extracted.sentiment,
-      ai_keywords: extracted.keywords || [],
-      ai_estimated_reading_time: extracted.estimated_reading_time || 3,
-      quality_score: qualityScore,
-      quality_flags: qualityFlags,
-      word_count: rawContent.split(/\s+/).length,
-      has_cover_image: true,
-      status: "pending_review",
-      tokens_consumed: tokensConsumed,
-      ai_provider_used: aiProviderUsed,
-      firecrawl_used: firecrawlUsed,
-      processing_completed_at: new Date().toISOString(),
-    })
-    .select()
-    .single();
-
- if (minedError) throw new Error(`Falha ao persistir artigo minerado: ${minedError.message}`);
-
-  // 9.1. Persiste também na tabela de extrações brutas particionadas (mined_raw_extractions)
-  try {
-    const titleHash = generateTitleHash(extracted.title || "");
-    const contentTypeMapping: Record<string, string> = {
-      news: "noticia",
-      blog_post: "blog_post",
-      recipe: "educacao",
-      tech_spec: "artigo",
-      event: "eventos",
-      eventos: "eventos",
-      municipal: "portal_municipal",
-      portal_municipal: "portal_municipal",
     };
-    const mappedType = contentTypeMapping[input.content_type] || "noticia";
 
-    await supabase.from("mined_raw_extractions").upsert({
-      content_type: mappedType as any,
-      source_url: input.url,
-      source_domain: domain,
-      source_name: domain,
-      raw_title: extracted.title,
-      raw_lead: extracted.subtitle || extracted.summary || null,
-      raw_body_text: rawContent,
-      raw_author: extracted.author || null,
-      cover_image_url: extracted.cover_image_url || null,
-      city: "Chapecó",
-      state: "SC",
-      tags: extracted.tags || [],
-      word_count: rawContent.split(/\s+/).length,
-      paragraph_count: extracted.sections?.length || 1,
-      has_full_content: true,
-      extraction_method: mechanicalResult?.method || (firecrawlUsed ? "firecrawl" : "mechanical"),
-      title_hash: titleHash,
-      status: "curated",
-      store_id: input.store_id || null,
-    }, { onConflict: "source_url" });
-  } catch (rawErr) {
-    console.warn("[mining] Aviso ao gravar em mined_raw_extractions:", rawErr);
-  }
+    const baseSystemPrompt = systemPrompts[input.content_type] || systemPrompts.news;
+    const baseUserPrompt = contentTypePrompts[input.content_type] || contentTypePrompts.news;
 
-  // 10. Atualiza crawl_queue com referência ao mined_article
-  if (crawlQueueId) {
-    await supabase.from("crawl_queue")
-      .update({ status: "completed", mined_article_id: mined.id, completed_at: new Date().toISOString() })
-      .eq("id", crawlQueueId);
-  }
+    const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(
+      baseUserPrompt,
+      baseSystemPrompt,
+    );
 
-  // 11. Debita tokens se B2B
-  if (input.consume_tokens && input.store_id) {
-    await supabase.rpc("consume_store_tokens", {
-      p_store_id: input.store_id,
-      p_tokens_to_consume: tokensConsumed,
-      p_action_type: "burn_scrape_url",
-      p_description: `Extração IA de URL: ${domain}`,
-      p_time_saved_minutes: 45,
-      p_metadata: { url: input.url, ai_provider: aiProviderUsed, quality_score: qualityScore },
-    });
-  }
+    // 5.1. Validador Pré-Voo de Saldo de Tokens (Ledger ACID Lock)
+    if (input.consume_tokens && input.store_id) {
+      const { data: wallet } = await supabase
+        .from("store_token_wallets")
+        .select("balance")
+        .eq("store_id", input.store_id)
+        .maybeSingle();
 
-  return mined;
-});
+      if (wallet && (wallet.balance ?? 0) < MINING_TOKEN_COSTS.scrape_url) {
+        throw new Error(
+          `Saldo insuficiente de tokens para extração. Necessário: ${MINING_TOKEN_COSTS.scrape_url.toLocaleString("pt-BR")} tokens. Saldo atual: ${(wallet.balance ?? 0).toLocaleString("pt-BR")} tokens.`,
+        );
+      }
+    }
+
+    // 6. Processamento por IA via Orquestrador Universal
+    let extracted: any = null;
+    let aiProviderUsed = "fallback";
+    let tokensConsumed = 0;
+
+    try {
+      const aiRes = await executeUnifiedAiCall({
+        systemPrompt: hardenedSystemPrompt,
+        userPrompt: sandboxedUserPrompt,
+        responseFormat: "json_object",
+        temperature: 0.2,
+      });
+      if (aiRes.parsedJson) {
+        extracted = aiRes.parsedJson;
+        aiProviderUsed = aiRes.provider;
+        tokensConsumed = 1500;
+      }
+    } catch (e: any) {
+      console.warn("[mining] Unified AI error:", e.message);
+    }
+
+    // 7. Fallback determinístico se IA falhar
+    if (!extracted) {
+      const titleMatch = rawContent.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+      extracted = {
+        title: titleMatch ? titleMatch[1].trim().slice(0, 120) : new URL(input.url).hostname,
+        subtitle: `Conteúdo extraído de ${domain}`,
+        kicker: input.content_type.toUpperCase(),
+        category: "geral",
+        tags: [domain.replace("www.", "")],
+        summary: `Conteúdo importado de ${input.url}`,
+        sentiment: "neutral",
+        keywords: [],
+        cover_image_url: null,
+        estimated_reading_time: Math.ceil(rawContent.split(" ").length / 200),
+        quality_score: 20,
+        quality_flags: ["ai_extraction_failed", "manual_review_required"],
+        sections: [{ type: "paragraph", content: rawContent.slice(0, 2000) }],
+      };
+      aiProviderUsed = "fallback";
+    }
+
+    // 8. Validação e sanitização da imagem de capa (Anti-Broken Image Gate)
+    const candidateCover = extracted.cover_image_url || mechanicalResult?.coverImageUrl;
+    const safeCoverUrl = isHealthyImageUrl(candidateCover)
+      ? candidateCover
+      : getFallbackThematicImage(input.content_type);
+
+    extracted.cover_image_url = safeCoverUrl;
+
+    // Calcula quality score final
+    const qualityScore = extracted.quality_score ?? calculateQualityScore(extracted);
+    const qualityFlags: string[] = extracted.quality_flags || [];
+    if (!safeCoverUrl) qualityFlags.push("missing_cover");
+    if ((extracted.sections?.length || 0) < 2) qualityFlags.push("short_content");
+    if (qualityScore < 40) qualityFlags.push("low_quality");
+
+    tokensConsumed = MINING_TOKEN_COSTS.scrape_url;
+
+    // 9. Persiste em mined_articles
+    const { data: mined, error: minedError } = await supabase
+      .from("mined_articles")
+      .insert({
+        crawl_queue_id: crawlQueueId,
+        source_url: input.url,
+        source_domain: domain,
+        source_type: "crawl",
+        store_id: input.store_id || null,
+        raw_title: extracted.title,
+        extracted_markdown: rawContent.slice(0, 50000),
+        ai_structured_title: extracted.title,
+        ai_structured_subtitle: extracted.subtitle,
+        ai_structured_sections: extracted.sections || [],
+        ai_suggested_kicker: extracted.kicker,
+        ai_suggested_category: extracted.category,
+        ai_suggested_tags: extracted.tags || [],
+        ai_suggested_cover_url: safeCoverUrl,
+        ai_summary: extracted.summary,
+        ai_sentiment: extracted.sentiment,
+        ai_keywords: extracted.keywords || [],
+        ai_estimated_reading_time: extracted.estimated_reading_time || 3,
+        quality_score: qualityScore,
+        quality_flags: qualityFlags,
+        word_count: rawContent.split(/\s+/).length,
+        has_cover_image: true,
+        status: "pending_review",
+        tokens_consumed: tokensConsumed,
+        ai_provider_used: aiProviderUsed,
+        firecrawl_used: firecrawlUsed,
+        processing_completed_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (minedError) throw new Error(`Falha ao persistir artigo minerado: ${minedError.message}`);
+
+    // 9.1. Persiste também na tabela de extrações brutas particionadas (mined_raw_extractions)
+    try {
+      const titleHash = generateTitleHash(extracted.title || "");
+      const contentTypeMapping: Record<string, string> = {
+        news: "noticia",
+        blog_post: "blog_post",
+        recipe: "educacao",
+        tech_spec: "artigo",
+        event: "eventos",
+        eventos: "eventos",
+        municipal: "portal_municipal",
+        portal_municipal: "portal_municipal",
+      };
+      const mappedType = contentTypeMapping[input.content_type] || "noticia";
+
+      await supabase.from("mined_raw_extractions").upsert(
+        {
+          content_type: mappedType as any,
+          source_url: input.url,
+          source_domain: domain,
+          source_name: domain,
+          raw_title: extracted.title,
+          raw_lead: extracted.subtitle || extracted.summary || null,
+          raw_body_text: rawContent,
+          raw_author: extracted.author || null,
+          cover_image_url: extracted.cover_image_url || null,
+          city: "Chapecó",
+          state: "SC",
+          tags: extracted.tags || [],
+          word_count: rawContent.split(/\s+/).length,
+          paragraph_count: extracted.sections?.length || 1,
+          has_full_content: true,
+          extraction_method:
+            mechanicalResult?.method || (firecrawlUsed ? "firecrawl" : "mechanical"),
+          title_hash: titleHash,
+          status: "curated",
+          store_id: input.store_id || null,
+        },
+        { onConflict: "source_url" },
+      );
+    } catch (rawErr) {
+      console.warn("[mining] Aviso ao gravar em mined_raw_extractions:", rawErr);
+    }
+
+    // 10. Atualiza crawl_queue com referência ao mined_article
+    if (crawlQueueId) {
+      await supabase
+        .from("crawl_queue")
+        .update({
+          status: "completed",
+          mined_article_id: mined.id,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", crawlQueueId);
+    }
+
+    // 11. Debita tokens se B2B
+    if (input.consume_tokens && input.store_id) {
+      await supabase.rpc("consume_store_tokens", {
+        p_store_id: input.store_id,
+        p_tokens_to_consume: tokensConsumed,
+        p_action_type: "burn_scrape_url",
+        p_description: `Extração IA de URL: ${domain}`,
+        p_time_saved_minutes: 45,
+        p_metadata: { url: input.url, ai_provider: aiProviderUsed, quality_score: qualityScore },
+      });
+    }
+
+    return mined;
+  });
 
 // ============================================================
 // 5. Lista artigos minerados pendentes de curadoria
 // ============================================================
 export const listMinedArticles = createServerFn({ method: "GET" })
- .validator(z.object({
- status: z.string().optional(),
- store_id: z.string().uuid().optional(),
- source_type: z.string().optional(),
- min_quality: z.number().int().optional(),
- limit: z.number().int().default(30),
- offset: z.number().int().default(0),
- }).optional())
- .handler(async ({ data }): Promise<{ items: MinedArticleDTO[]; total: number }> => {
- const supabase = getServerClient();
- let query = supabase
- .from("mined_articles")
- .select("id, source_url, source_domain, source_type, store_id, raw_title, ai_structured_title, ai_structured_subtitle, ai_suggested_kicker, ai_suggested_category, ai_suggested_tags, ai_suggested_cover_url, ai_summary, ai_sentiment, quality_score, quality_flags, word_count, has_cover_image, is_duplicate, status, curator_notes, curated_at, tokens_consumed, ai_provider_used, firecrawl_used, created_at, extracted_markdown, ai_structured_sections", { count: "exact" })
- .order("created_at", { ascending: false })
- .limit(data?.limit || 30)
- .range(data?.offset || 0, (data?.offset || 0) + (data?.limit || 30) - 1);
+  .validator(
+    z
+      .object({
+        status: z.string().optional(),
+        store_id: z.string().uuid().optional(),
+        source_type: z.string().optional(),
+        min_quality: z.number().int().optional(),
+        limit: z.number().int().default(30),
+        offset: z.number().int().default(0),
+      })
+      .optional(),
+  )
+  .handler(async ({ data }): Promise<{ items: MinedArticleDTO[]; total: number }> => {
+    const supabase = getServerClient();
+    let query = supabase
+      .from("mined_articles")
+      .select(
+        "id, source_url, source_domain, source_type, store_id, raw_title, ai_structured_title, ai_structured_subtitle, ai_suggested_kicker, ai_suggested_category, ai_suggested_tags, ai_suggested_cover_url, ai_summary, ai_sentiment, quality_score, quality_flags, word_count, has_cover_image, is_duplicate, status, curator_notes, curated_at, tokens_consumed, ai_provider_used, firecrawl_used, created_at, extracted_markdown, ai_structured_sections",
+        { count: "exact" },
+      )
+      .order("created_at", { ascending: false })
+      .limit(data?.limit || 30)
+      .range(data?.offset || 0, (data?.offset || 0) + (data?.limit || 30) - 1);
 
- if (data?.status && data.status !== "all") query = query.eq("status", data.status);
- if (data?.store_id) query = query.eq("store_id", data.store_id);
- if (data?.source_type) query = query.eq("source_type", data.source_type);
- if (data?.min_quality != null) query = query.gte("quality_score", data.min_quality);
+    if (data?.status && data.status !== "all") query = query.eq("status", data.status);
+    if (data?.store_id) query = query.eq("store_id", data.store_id);
+    if (data?.source_type) query = query.eq("source_type", data.source_type);
+    if (data?.min_quality != null) query = query.gte("quality_score", data.min_quality);
 
- const { data: items, count, error } = await query;
- if (error) throw new Error(`Falha ao listar artigos minerados: ${error.message}`);
- return { items: (items || []) as MinedArticleDTO[], total: count || 0 };
- });
+    const { data: items, count, error } = await query;
+    if (error) throw new Error(`Falha ao listar artigos minerados: ${error.message}`);
+    return { items: (items || []) as MinedArticleDTO[], total: count || 0 };
+  });
 
 // ============================================================
 // 6. Curadoria: Aprovar ou Rejeitar artigo minerado
 // ============================================================
 export const curateMineArticle = createServerFn({ method: "POST" })
- .validator(z.object({
- mined_article_id: z.string().uuid(),
- action: z.enum(["approve", "reject"]),
- curator_notes: z.string().optional(),
- title_override: z.string().optional(),
- kicker_override: z.string().optional(),
- category_override: z.string().optional(),
- store_id: z.string().uuid().optional(),
- }))
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity?.id) throw new Error("Não autenticado");
+  .validator(
+    z.object({
+      mined_article_id: z.string().uuid(),
+      action: z.enum(["approve", "reject"]),
+      curator_notes: z.string().optional(),
+      title_override: z.string().optional(),
+      kicker_override: z.string().optional(),
+      category_override: z.string().optional(),
+      store_id: z.string().uuid().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
 
- const storeId = data.store_id || identity.store_id;
- if (!storeId && data.action === "approve") {
-   throw new Error("Tenant obrigatório para aprovar artigo minerado.");
- }
+    const storeId = data.store_id || identity.store_id;
+    if (!storeId && data.action === "approve") {
+      throw new Error("Tenant obrigatório para aprovar artigo minerado.");
+    }
 
- const result = await supabase.rpc("process_mined_article", {
- p_mined_article_id: data.mined_article_id,
- p_curator_profile_id: identity.id,
- p_action: data.action,
- p_curator_notes: data.curator_notes || null,
- p_title_override: data.title_override || null,
- p_kicker_override: data.kicker_override || null,
- p_category_override: data.category_override || null,
- p_store_id_override: storeId || null,
- });
+    const result = await supabase.rpc("process_mined_article", {
+      p_mined_article_id: data.mined_article_id,
+      p_curator_profile_id: identity.id,
+      p_action: data.action,
+      p_curator_notes: data.curator_notes || null,
+      p_title_override: data.title_override || null,
+      p_kicker_override: data.kicker_override || null,
+      p_category_override: data.category_override || null,
+      p_store_id_override: storeId || null,
+    });
 
- if (result.error) throw new Error(`Falha na curadoria: ${result.error.message}`);
- const rpcResult = result.data as any;
- if (!rpcResult?.success) throw new Error(rpcResult?.error || "Falha desconhecida na curadoria");
- return rpcResult;
- });
+    if (result.error) throw new Error(`Falha na curadoria: ${result.error.message}`);
+    const rpcResult = result.data as any;
+    if (!rpcResult?.success) throw new Error(rpcResult?.error || "Falha desconhecida na curadoria");
+    return rpcResult;
+  });
 
 // ============================================================
 // 7. Reescrita Editorial com IA
@@ -877,7 +981,7 @@ export const batchCurateMineArticlesFn = createServerFn({ method: "POST" })
       mined_article_ids: z.array(z.string().uuid()).min(1),
       action: z.enum(["approve", "reject"]),
       store_id: z.string().uuid().optional(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -929,44 +1033,48 @@ export const batchCurateMineArticlesFn = createServerFn({ method: "POST" })
   });
 
 export const aiRewriteMinedArticle = createServerFn({ method: "POST" })
- .validator(z.object({
- mined_article_id: z.string().uuid(),
- tone: z.enum(["editorial", "profissional", "imparcial", "opinativo", "tecnico"]).default("editorial"),
- focus: z.string().optional(), // Aspectos a enfatizar
- store_id: z.string().uuid().optional(),
- consume_tokens: z.boolean().default(true),
- }))
- .handler(async ({ data: input }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
+  .validator(
+    z.object({
+      mined_article_id: z.string().uuid(),
+      tone: z
+        .enum(["editorial", "profissional", "imparcial", "opinativo", "tecnico"])
+        .default("editorial"),
+      focus: z.string().optional(), // Aspectos a enfatizar
+      store_id: z.string().uuid().optional(),
+      consume_tokens: z.boolean().default(true),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
 
- // Busca o artigo minerado
- const { data: mined, error: fetchErr } = await supabase
- .from("mined_articles")
- .select("*")
- .eq("id", input.mined_article_id)
- .single();
+    // Busca o artigo minerado
+    const { data: mined, error: fetchErr } = await supabase
+      .from("mined_articles")
+      .select("*")
+      .eq("id", input.mined_article_id)
+      .single();
 
- if (fetchErr != null || mined == null) throw new Error("Artigo minerado não encontrado.");
+    if (fetchErr != null || mined == null) throw new Error("Artigo minerado não encontrado.");
 
- // Validador Pré-Voo de Saldo para Reescrita Editorial
-	if (input.consume_tokens && input.store_id) {
-		const { data: wallet } = await supabase
-			.from("store_token_wallets")
-			.select("balance")
-			.eq("store_id", input.store_id)
-			.maybeSingle();
+    // Validador Pré-Voo de Saldo para Reescrita Editorial
+    if (input.consume_tokens && input.store_id) {
+      const { data: wallet } = await supabase
+        .from("store_token_wallets")
+        .select("balance")
+        .eq("store_id", input.store_id)
+        .maybeSingle();
 
-		if (wallet && (wallet.balance ?? 0) < MINING_TOKEN_COSTS.ai_rewrite) {
-			throw new Error(
-				`Saldo insuficiente de tokens para reescrita editorial. Necessário: ${MINING_TOKEN_COSTS.ai_rewrite.toLocaleString('pt-BR')} tokens. Saldo atual: ${(wallet.balance ?? 0).toLocaleString('pt-BR')} tokens.`
-			);
-		}
-	}
+      if (wallet && (wallet.balance ?? 0) < MINING_TOKEN_COSTS.ai_rewrite) {
+        throw new Error(
+          `Saldo insuficiente de tokens para reescrita editorial. Necessário: ${MINING_TOKEN_COSTS.ai_rewrite.toLocaleString("pt-BR")} tokens. Saldo atual: ${(wallet.balance ?? 0).toLocaleString("pt-BR")} tokens.`,
+        );
+      }
+    }
 
-	const originalContent = JSON.stringify(mined.ai_structured_sections || []);
- const systemPrompt = `Você é um editor-chefe de jornal digital premiado. Reescreva o conteúdo abaixo no tom solicitado, mantendo os fatos e a estrutura em blocos JSON. Retorne APENAS JSON válido.`;
- const userPrompt = `Reescreva este artigo no tom "${input.tone}"${input.focus ? `, enfatizando: ${input.focus}` : ""}.
+    const originalContent = JSON.stringify(mined.ai_structured_sections || []);
+    const systemPrompt = `Você é um editor-chefe de jornal digital premiado. Reescreva o conteúdo abaixo no tom solicitado, mantendo os fatos e a estrutura em blocos JSON. Retorne APENAS JSON válido.`;
+    const userPrompt = `Reescreva este artigo no tom "${input.tone}"${input.focus ? `, enfatizando: ${input.focus}` : ""}.
 
 Título atual: ${mined.ai_structured_title}
 Subtítulo atual: ${mined.ai_structured_subtitle}
@@ -985,284 +1093,315 @@ Retorne o JSON:
  "summary": "Novo resumo executivo"
 }`;
 
- let rewritten: any = null;
- try {
- const aiRes = await executeUnifiedAiCall({
- systemPrompt,
- userPrompt,
- responseFormat: "json_object",
- temperature: 0.4,
- });
- rewritten = aiRes.parsedJson;
- } catch (e: any) {
- console.error("[mining] Rewrite Unified AI error:", e.message);
- }
+    let rewritten: any = null;
+    try {
+      const aiRes = await executeUnifiedAiCall({
+        systemPrompt,
+        userPrompt,
+        responseFormat: "json_object",
+        temperature: 0.4,
+      });
+      rewritten = aiRes.parsedJson;
+    } catch (e: any) {
+      console.error("[mining] Rewrite Unified AI error:", e.message);
+    }
 
- if (!rewritten) throw new Error("IA não conseguiu realizar a reescrita. Verifique suas chaves de IA no painel.");
+    if (!rewritten)
+      throw new Error(
+        "IA não conseguiu realizar a reescrita. Verifique suas chaves de IA no painel.",
+      );
 
- // Atualiza mined_article com conteúdo reescrito
- const { data: updated, error: updateErr } = await supabase
- .from("mined_articles")
- .update({
- ai_structured_title: rewritten.title || mined.ai_structured_title,
- ai_structured_subtitle: rewritten.subtitle || mined.ai_structured_subtitle,
- ai_suggested_kicker: rewritten.kicker || mined.ai_suggested_kicker,
- ai_structured_sections: rewritten.sections || mined.ai_structured_sections,
- ai_summary: rewritten.summary || mined.ai_summary,
- tokens_consumed: (mined.tokens_consumed || 0) + MINING_TOKEN_COSTS.ai_rewrite,
- updated_at: new Date().toISOString(),
- })
- .eq("id", input.mined_article_id)
- .select()
- .single();
+    // Atualiza mined_article com conteúdo reescrito
+    const { data: updated, error: updateErr } = await supabase
+      .from("mined_articles")
+      .update({
+        ai_structured_title: rewritten.title || mined.ai_structured_title,
+        ai_structured_subtitle: rewritten.subtitle || mined.ai_structured_subtitle,
+        ai_suggested_kicker: rewritten.kicker || mined.ai_suggested_kicker,
+        ai_structured_sections: rewritten.sections || mined.ai_structured_sections,
+        ai_summary: rewritten.summary || mined.ai_summary,
+        tokens_consumed: (mined.tokens_consumed || 0) + MINING_TOKEN_COSTS.ai_rewrite,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", input.mined_article_id)
+      .select()
+      .single();
 
- if (updateErr) throw new Error(`Falha ao salvar reescrita: ${updateErr.message}`);
+    if (updateErr) throw new Error(`Falha ao salvar reescrita: ${updateErr.message}`);
 
- // Debita tokens
- if (input.consume_tokens && input.store_id) {
- await supabase.rpc("consume_store_tokens", {
- p_store_id: input.store_id,
- p_tokens_to_consume: MINING_TOKEN_COSTS.ai_rewrite,
- p_action_type: "burn_ai_rewrite",
- p_description: `Reescrita editorial (${input.tone}) — ${mined.source_domain}`,
- p_time_saved_minutes: 120,
- p_metadata: { mined_article_id: input.mined_article_id, tone: input.tone },
- });
- }
+    // Debita tokens
+    if (input.consume_tokens && input.store_id) {
+      await supabase.rpc("consume_store_tokens", {
+        p_store_id: input.store_id,
+        p_tokens_to_consume: MINING_TOKEN_COSTS.ai_rewrite,
+        p_action_type: "burn_ai_rewrite",
+        p_description: `Reescrita editorial (${input.tone}) — ${mined.source_domain}`,
+        p_time_saved_minutes: 120,
+        p_metadata: { mined_article_id: input.mined_article_id, tone: input.tone },
+      });
+    }
 
- return updated;
- });
+    return updated;
+  });
 
 // ============================================================
 // 8. Lista Feeds RSS (com contagens e status)
 // ============================================================
 export const listRssFeeds = createServerFn({ method: "GET" })
- .validator(z.object({
- store_id: z.string().uuid().optional(),
- active_only: z.boolean().default(false),
- }).optional())
- .handler(async ({ data }) => {
- const supabase = getAnonServerClient();
- let query = supabase
- .from("rss_feeds")
- .select("*")
- .order("name");
+  .validator(
+    z
+      .object({
+        store_id: z.string().uuid().optional(),
+        active_only: z.boolean().default(false),
+      })
+      .optional(),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getAnonServerClient();
+    let query = supabase.from("rss_feeds").select("*").order("name");
 
- if (data?.active_only) query = query.eq("is_active", true);
- if (data?.store_id) query = query.eq("store_id", data.store_id);
+    if (data?.active_only) query = query.eq("is_active", true);
+    if (data?.store_id) query = query.eq("store_id", data.store_id);
 
- const { data: feeds, error } = await query;
- if (error) throw new Error(`Falha ao listar feeds: ${error.message}`);
- return feeds || [];
- });
+    const { data: feeds, error } = await query;
+    if (error) throw new Error(`Falha ao listar feeds: ${error.message}`);
+    return feeds || [];
+  });
 
 // ============================================================
 // 9. Cria/Edita Feed RSS
 // ============================================================
 export const upsertRssFeed = createServerFn({ method: "POST" })
- .validator(z.object({
- id: z.string().uuid().optional(),
- ...addRssFeedSchema.shape,
- }))
- .handler(async ({ data: { id, ...rest } }) => {
- const identity = await getServerIdentity();
- if (!identity) throw new Error("Não autenticado");
- const supabase = getServerClient();
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      ...addRssFeedSchema.shape,
+    }),
+  )
+  .handler(async ({ data: { id, ...rest } }) => {
+    const identity = await getServerIdentity();
+    if (!identity) throw new Error("Não autenticado");
+    const supabase = getServerClient();
 
- if (id) {
- const { data, error } = await supabase
- .from("rss_feeds")
- .update({ ...rest, updated_at: new Date().toISOString() })
- .eq("id", id)
- .select()
- .single();
- if (error) throw new Error(`Falha ao atualizar feed: ${error.message}`);
- return data;
- }
+    if (id) {
+      const { data, error } = await supabase
+        .from("rss_feeds")
+        .update({ ...rest, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw new Error(`Falha ao atualizar feed: ${error.message}`);
+      return data;
+    }
 
- const { data, error } = await supabase
- .from("rss_feeds")
- .insert(rest)
- .select()
- .single();
- if (error) throw new Error(`Falha ao cadastrar feed: ${error.message}`);
- return data;
- });
+    const { data, error } = await supabase.from("rss_feeds").insert(rest).select().single();
+    if (error) throw new Error(`Falha ao cadastrar feed: ${error.message}`);
+    return data;
+  });
 
 // ============================================================
 // 10. Toggle RSS Feed ativo/inativo
 // ============================================================
 export const toggleRssFeed = createServerFn({ method: "POST" })
- .validator(z.object({ id: z.string().uuid(), is_active: z.boolean() }))
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const { error } = await supabase
- .from("rss_feeds")
- .update({ is_active: data.is_active, updated_at: new Date().toISOString() })
- .eq("id", data.id);
- if (error) throw new Error(`Falha ao alternar feed: ${error.message}`);
- return { success: true };
- });
+  .validator(z.object({ id: z.string().uuid(), is_active: z.boolean() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { error } = await supabase
+      .from("rss_feeds")
+      .update({ is_active: data.is_active, updated_at: new Date().toISOString() })
+      .eq("id", data.id);
+    if (error) throw new Error(`Falha ao alternar feed: ${error.message}`);
+    return { success: true };
+  });
 
 // ============================================================
 // 11. Lista Scraper Configs (Domínios configurados)
 // ============================================================
 export const listScraperConfigs = createServerFn({ method: "GET" }).handler(
- async (): Promise<ScraperConfigDTO[]> => {
- const supabase = getServerClient();
- const { data, error } = await supabase
- .from("scraper_configs")
- .select("id, domain, label, description, is_active, is_blocked, blocked_reason, requires_javascript, request_delay_ms, max_requests_per_hour, reliability_score, source_credibility, total_scraped, total_published, total_failed, last_scraped_at")
- .order("reliability_score", { ascending: false });
+  async (): Promise<ScraperConfigDTO[]> => {
+    const supabase = getServerClient();
+    const { data, error } = await supabase
+      .from("scraper_configs")
+      .select(
+        "id, domain, label, description, is_active, is_blocked, blocked_reason, requires_javascript, request_delay_ms, max_requests_per_hour, reliability_score, source_credibility, total_scraped, total_published, total_failed, last_scraped_at",
+      )
+      .order("reliability_score", { ascending: false });
 
- if (error) throw new Error(`Falha ao listar scrapers: ${error.message}`);
- return (data || []) as ScraperConfigDTO[];
- }
+    if (error) throw new Error(`Falha ao listar scrapers: ${error.message}`);
+    return (data || []) as ScraperConfigDTO[];
+  },
 );
 
 // ============================================================
 // 12. Salva/Atualiza Scraper Config
 // ============================================================
 export const upsertScraperConfig = createServerFn({ method: "POST" })
- .validator(z.object({
- id: z.string().uuid().optional(),
- domain: z.string().min(3),
- label: z.string().min(2),
- description: z.string().optional(),
- is_active: z.boolean().default(true),
- is_blocked: z.boolean().default(false),
- blocked_reason: z.string().optional(),
- requires_javascript: z.boolean().default(false),
- request_delay_ms: z.number().int().min(100).default(1000),
- max_requests_per_hour: z.number().int().min(1).default(30),
- css_title: z.string().optional(),
- css_body: z.string().optional(),
- css_cover_image: z.string().optional(),
- css_author: z.string().optional(),
- css_date: z.string().optional(),
- reliability_score: z.number().int().min(0).max(100).default(75),
- source_credibility: z.enum(["high", "medium", "low", "unknown"]).default("medium"),
- }))
- .handler(async ({ data: { id, ...rest } }) => {
- await requireAdmin();
- const supabase = getServerClient();
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      domain: z.string().min(3),
+      label: z.string().min(2),
+      description: z.string().optional(),
+      is_active: z.boolean().default(true),
+      is_blocked: z.boolean().default(false),
+      blocked_reason: z.string().optional(),
+      requires_javascript: z.boolean().default(false),
+      request_delay_ms: z.number().int().min(100).default(1000),
+      max_requests_per_hour: z.number().int().min(1).default(30),
+      css_title: z.string().optional(),
+      css_body: z.string().optional(),
+      css_cover_image: z.string().optional(),
+      css_author: z.string().optional(),
+      css_date: z.string().optional(),
+      reliability_score: z.number().int().min(0).max(100).default(75),
+      source_credibility: z.enum(["high", "medium", "low", "unknown"]).default("medium"),
+    }),
+  )
+  .handler(async ({ data: { id, ...rest } }) => {
+    await requireAdmin();
+    const supabase = getServerClient();
 
- if (id) {
- const { data, error } = await supabase
- .from("scraper_configs")
- .update({ ...rest, updated_at: new Date().toISOString() })
- .eq("id", id)
- .select()
- .single();
- if (error) throw new Error(`Falha ao atualizar config: ${error.message}`);
- return data;
- }
+    if (id) {
+      const { data, error } = await supabase
+        .from("scraper_configs")
+        .update({ ...rest, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw new Error(`Falha ao atualizar config: ${error.message}`);
+      return data;
+    }
 
- const { data, error } = await supabase
- .from("scraper_configs")
- .insert(rest)
- .select()
- .single();
- if (error) throw new Error(`Falha ao criar config: ${error.message}`);
- return data;
- });
+    const { data, error } = await supabase.from("scraper_configs").insert(rest).select().single();
+    if (error) throw new Error(`Falha ao criar config: ${error.message}`);
+    return data;
+  });
 
 // ============================================================
 // 13. Dispara fetch de RSS manualmente (processa itens do feed)
 // ============================================================
 export const triggerRssFeedFetch = createServerFn({ method: "POST" })
- .validator(z.object({ feed_id: z.string().uuid() }))
- .handler(async ({ data: { feed_id } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- if (!identity?.id) throw new Error("Não autenticado");
+  .validator(z.object({ feed_id: z.string().uuid() }))
+  .handler(async ({ data: { feed_id } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
 
- // Busca o feed
- const { data: feed, error: feedErr } = await supabase
- .from("rss_feeds")
- .select("*")
- .eq("id", feed_id)
- .single();
+    // Busca o feed
+    const { data: feed, error: feedErr } = await supabase
+      .from("rss_feeds")
+      .select("*")
+      .eq("id", feed_id)
+      .single();
 
- if (feedErr != null || feed == null) throw new Error("Feed não encontrado.");
- if (feed.is_active === false) throw new Error("Feed inativo — ative-o antes de fazer fetch.");
+    if (feedErr != null || feed == null) throw new Error("Feed não encontrado.");
+    if (feed.is_active === false) throw new Error("Feed inativo — ative-o antes de fazer fetch.");
 
- // Faz fetch do XML RSS
- let feedXml = "";
- try {
- const res = await fetch(feed.feed_url, {
- headers: { "User-Agent": "Waesy/1.0 RSS Reader (+https://usewaesy.pages.dev)", Accept: "application/rss+xml, application/xml, text/xml" },
- signal: AbortSignal.timeout(10000),
- });
- if (!res.ok) throw new Error(`HTTP ${res.status}`);
- feedXml = await res.text();
- } catch (e: any) {
- await supabase.from("rss_feeds")
- .update({ error_count: (feed.error_count || 0) + 1, last_error: e.message, updated_at: new Date().toISOString() })
- .eq("id", feed_id);
- throw new Error(`Falha ao buscar RSS: ${e.message}`);
- }
+    // Faz fetch do XML RSS
+    let feedXml = "";
+    try {
+      const res = await fetch(feed.feed_url, {
+        headers: {
+          "User-Agent": "Waesy/1.0 RSS Reader (+https://usewaesy.pages.dev)",
+          Accept: "application/rss+xml, application/xml, text/xml",
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      feedXml = await res.text();
+    } catch (e: any) {
+      await supabase
+        .from("rss_feeds")
+        .update({
+          error_count: (feed.error_count || 0) + 1,
+          last_error: e.message,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", feed_id);
+      throw new Error(`Falha ao buscar RSS: ${e.message}`);
+    }
 
- // Parse básico do XML RSS (sem dependência de parser externo)
- const itemRegex = /<item[^>]*>([\s\S]*?)<\/item>/gi;
- const getTag = (xml: string, tag: string) => {
- const match = xml.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>|<${tag}[^>]*>([^<]*)<\\/${tag}>`, "i"));
- return match ? (match[1] || match[2] || "").trim() : "";
- };
+    // Parse básico do XML RSS (sem dependência de parser externo)
+    const itemRegex = /<item[^>]*>([\s\S]*?)<\/item>/gi;
+    const getTag = (xml: string, tag: string) => {
+      const match = xml.match(
+        new RegExp(
+          `<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>|<${tag}[^>]*>([^<]*)<\\/${tag}>`,
+          "i",
+        ),
+      );
+      return match ? (match[1] || match[2] || "").trim() : "";
+    };
 
- const items: Array<{ guid: string; title: string; link: string; description: string; author: string; pub_date: string; image_url: string | null }> = [];
- let match;
- while ((match = itemRegex.exec(feedXml)) !== null && items.length < (feed.max_items_per_fetch || 20)) {
- const itemXml = match[1];
- const title = getTag(itemXml, "title");
- const link = getTag(itemXml, "link") || getTag(itemXml, "guid");
- const description = getTag(itemXml, "description");
- const author = getTag(itemXml, "author") || getTag(itemXml, "dc:creator");
- const pubDateStr = getTag(itemXml, "pubDate") || getTag(itemXml, "dc:date");
- const guid = getTag(itemXml, "guid") || link;
+    const items: Array<{
+      guid: string;
+      title: string;
+      link: string;
+      description: string;
+      author: string;
+      pub_date: string;
+      image_url: string | null;
+    }> = [];
+    let match;
+    while (
+      (match = itemRegex.exec(feedXml)) !== null &&
+      items.length < (feed.max_items_per_fetch || 20)
+    ) {
+      const itemXml = match[1];
+      const title = getTag(itemXml, "title");
+      const link = getTag(itemXml, "link") || getTag(itemXml, "guid");
+      const description = getTag(itemXml, "description");
+      const author = getTag(itemXml, "author") || getTag(itemXml, "dc:creator");
+      const pubDateStr = getTag(itemXml, "pubDate") || getTag(itemXml, "dc:date");
+      const guid = getTag(itemXml, "guid") || link;
 
- // Tenta extrair imagem do media:content ou enclosure
- const imgMatch = itemXml.match(/<media:content[^>]+url="([^"]+)"|<enclosure[^>]+url="([^"]+)"/i);
- const image_url = imgMatch ? (imgMatch[1] || imgMatch[2]) : null;
+      // Tenta extrair imagem do media:content ou enclosure
+      const imgMatch = itemXml.match(
+        /<media:content[^>]+url="([^"]+)"|<enclosure[^>]+url="([^"]+)"/i,
+      );
+      const image_url = imgMatch ? imgMatch[1] || imgMatch[2] : null;
 
- if (title == null || title.length === 0 || link == null || link.length === 0) continue;
+      if (title == null || title.length === 0 || link == null || link.length === 0) continue;
 
- // Hash para deduplicação
- const hashInput = `${title}|${link}`;
- const hash = Buffer.from(hashInput).toString("base64").slice(0, 32);
+      // Hash para deduplicação
+      const hashInput = `${title}|${link}`;
+      const hash = Buffer.from(hashInput).toString("base64").slice(0, 32);
 
- items.push({ guid, title, link, description, author, pub_date: pubDateStr, image_url });
+      items.push({ guid, title, link, description, author, pub_date: pubDateStr, image_url });
 
- // Insere no banco (ignora duplicatas)
- await supabase.from("rss_feed_items")
- .upsert({
- rss_feed_id: feed_id,
- item_guid: guid,
- item_hash: hash,
- title,
- description: description.slice(0, 5000),
- link,
- author: author || null,
- pub_date: pubDateStr ? new Date(pubDateStr).toISOString() : null,
- image_url: image_url || null,
- status: "pending",
- }, { onConflict: "rss_feed_id,item_guid", ignoreDuplicates: true });
- }
+      // Insere no banco (ignora duplicatas)
+      await supabase.from("rss_feed_items").upsert(
+        {
+          rss_feed_id: feed_id,
+          item_guid: guid,
+          item_hash: hash,
+          title,
+          description: description.slice(0, 5000),
+          link,
+          author: author || null,
+          pub_date: pubDateStr ? new Date(pubDateStr).toISOString() : null,
+          image_url: image_url || null,
+          status: "pending",
+        },
+        { onConflict: "rss_feed_id,item_guid", ignoreDuplicates: true },
+      );
+    }
 
- // Atualiza stats do feed
- await supabase.from("rss_feeds")
- .update({
- last_fetched_at: new Date().toISOString(),
- last_success_at: new Date().toISOString(),
- items_count: (feed.items_count || 0) + items.length,
- error_count: 0,
- last_error: null,
- updated_at: new Date().toISOString(),
- })
- .eq("id", feed_id);
+    // Atualiza stats do feed
+    await supabase
+      .from("rss_feeds")
+      .update({
+        last_fetched_at: new Date().toISOString(),
+        last_success_at: new Date().toISOString(),
+        items_count: (feed.items_count || 0) + items.length,
+        error_count: 0,
+        last_error: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", feed_id);
 
- return { fetched: items.length, items };
- });
+    return { fetched: items.length, items };
+  });
 
 // ============================================================
 // 14. Worker Autônomo: Processa lote da fila de crawling em 4 Camadas
@@ -1270,11 +1409,13 @@ export const triggerRssFeedFetch = createServerFn({ method: "POST" })
 // ============================================================
 export const processCrawlQueueBatch = createServerFn({ method: "POST" })
   .validator(
-    z.object({
-      limit: z.number().int().min(1).max(20).optional(),
-      batchSize: z.number().int().min(1).max(20).optional(),
-      storeId: z.string().uuid().optional(),
-    }).optional()
+    z
+      .object({
+        limit: z.number().int().min(1).max(20).optional(),
+        batchSize: z.number().int().min(1).max(20).optional(),
+        storeId: z.string().uuid().optional(),
+      })
+      .optional(),
   )
   .handler(async ({ data }) => {
     return executeCrawlQueueBatchDirect(data);
@@ -1284,86 +1425,93 @@ export const processCrawlQueueBatch = createServerFn({ method: "POST" })
 // 15. Worker: Enfileira itens pendentes de RSS feeds na crawl_queue
 // ============================================================
 export const enqueueRssItemsBatch = createServerFn({ method: "POST" })
- .validator(z.object({
- limit: z.number().int().min(1).max(50).default(20),
- }).optional())
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const limit = data?.limit || 20;
+  .validator(
+    z
+      .object({
+        limit: z.number().int().min(1).max(50).default(20),
+      })
+      .optional(),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const limit = data?.limit || 20;
 
- // Busca itens de RSS pendentes
- const { data: pendingRssItems, error: fetchErr } = await supabase
- .from("rss_feed_items")
- .select("*, rss_feeds(store_id, content_type, auto_publish, quality_threshold)")
- .eq("status", "pending")
- .order("pub_date", { ascending: false, nullsFirst: false })
- .order("created_at", { ascending: true })
- .limit(limit);
+    // Busca itens de RSS pendentes
+    const { data: pendingRssItems, error: fetchErr } = await supabase
+      .from("rss_feed_items")
+      .select("*, rss_feeds(store_id, content_type, auto_publish, quality_threshold)")
+      .eq("status", "pending")
+      .order("pub_date", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: true })
+      .limit(limit);
 
- if (fetchErr) throw new Error(`Falha ao buscar itens RSS: ${fetchErr.message}`);
- if (!pendingRssItems || pendingRssItems.length === 0) {
- return { enqueued: 0, message: "Nenhum item RSS pendente de enfileiramento." };
- }
+    if (fetchErr) throw new Error(`Falha ao buscar itens RSS: ${fetchErr.message}`);
+    if (!pendingRssItems || pendingRssItems.length === 0) {
+      return { enqueued: 0, message: "Nenhum item RSS pendente de enfileiramento." };
+    }
 
- const enqueued = [];
+    const enqueued = [];
 
- for (const rssItem of pendingRssItems) {
- const feed = rssItem.rss_feeds as any;
- const url = rssItem.link;
- let domain = "";
- try {
- domain = new URL(url).hostname.replace("www.", "");
- } catch {
- domain = "unknown";
- }
+    for (const rssItem of pendingRssItems) {
+      const feed = rssItem.rss_feeds as any;
+      const url = rssItem.link;
+      let domain = "";
+      try {
+        domain = new URL(url).hostname.replace("www.", "");
+      } catch {
+        domain = "unknown";
+      }
 
- // Verifica se o domínio está bloqueado
- const { data: scraperConfig } = await supabase
- .from("scraper_configs")
- .select("is_blocked, blocked_reason")
- .eq("domain", domain)
- .maybeSingle();
+      // Verifica se o domínio está bloqueado
+      const { data: scraperConfig } = await supabase
+        .from("scraper_configs")
+        .select("is_blocked, blocked_reason")
+        .eq("domain", domain)
+        .maybeSingle();
 
- if (scraperConfig?.is_blocked) {
- await supabase
- .from("rss_feed_items")
- .update({ status: "skipped", skip_reason: `Domínio bloqueado: ${scraperConfig.blocked_reason || "ToS"}` })
- .eq("id", rssItem.id);
- continue;
- }
+      if (scraperConfig?.is_blocked) {
+        await supabase
+          .from("rss_feed_items")
+          .update({
+            status: "skipped",
+            skip_reason: `Domínio bloqueado: ${scraperConfig.blocked_reason || "ToS"}`,
+          })
+          .eq("id", rssItem.id);
+        continue;
+      }
 
- // Cria item na crawl_queue
- const { data: queueItem, error: queueErr } = await supabase
- .from("crawl_queue")
- .insert({
- url,
- domain,
- store_id: feed?.store_id || null,
- content_type: feed?.content_type || "news",
- priority: 6,
- discovered_via: `rss_feed:${rssItem.rss_feed_id}`,
- metadata: {
- rss_feed_item_id: rssItem.id,
- rss_feed_id: rssItem.rss_feed_id,
- raw_title: rssItem.title,
- raw_description: rssItem.description,
- pub_date: rssItem.pub_date,
- image_url: rssItem.image_url,
- },
- })
- .select("id")
- .single();
+      // Cria item na crawl_queue
+      const { data: queueItem, error: queueErr } = await supabase
+        .from("crawl_queue")
+        .insert({
+          url,
+          domain,
+          store_id: feed?.store_id || null,
+          content_type: feed?.content_type || "news",
+          priority: 6,
+          discovered_via: `rss_feed:${rssItem.rss_feed_id}`,
+          metadata: {
+            rss_feed_item_id: rssItem.id,
+            rss_feed_id: rssItem.rss_feed_id,
+            raw_title: rssItem.title,
+            raw_description: rssItem.description,
+            pub_date: rssItem.pub_date,
+            image_url: rssItem.image_url,
+          },
+        })
+        .select("id")
+        .single();
 
- if (!queueErr && queueItem) {
- await supabase
- .from("rss_feed_items")
- .update({ status: "enqueued", crawl_queue_id: queueItem.id })
- .eq("id", rssItem.id);
- enqueued.push(queueItem.id);
- }
- }
+      if (!queueErr && queueItem) {
+        await supabase
+          .from("rss_feed_items")
+          .update({ status: "enqueued", crawl_queue_id: queueItem.id })
+          .eq("id", rssItem.id);
+        enqueued.push(queueItem.id);
+      }
+    }
 
-  return { enqueued: enqueued.length };
+    return { enqueued: enqueued.length };
   });
 
 // ============================================================
@@ -1429,12 +1577,14 @@ export const reprocessFailedQueueItems = createServerFn({ method: "POST" })
 // ============================================================
 export const syncPncpMunicipalBids = createServerFn({ method: "POST" })
   .validator(
-    z.object({
-      city: z.string().default("Chapecó"),
-      uf: z.string().default("SC"),
-      query: z.string().default("Chapecó"),
-      limit: z.number().int().min(1).max(30).default(15),
-    }).optional()
+    z
+      .object({
+        city: z.string().default("Chapecó"),
+        uf: z.string().default("SC"),
+        query: z.string().default("Chapecó"),
+        limit: z.number().int().min(1).max(30).default(15),
+      })
+      .optional(),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -1447,7 +1597,11 @@ export const syncPncpMunicipalBids = createServerFn({ method: "POST" })
     let inserted = 0;
 
     for (const contract of contracts) {
-      const mechResult = convertPncpToExtractionResult(contract, data?.city || "Chapecó", data?.uf || "SC");
+      const mechResult = convertPncpToExtractionResult(
+        contract,
+        data?.city || "Chapecó",
+        data?.uf || "SC",
+      );
       const titleHash = generateTitleHash(mechResult.title);
 
       const { error } = await supabase.from("mined_raw_extractions").upsert(
@@ -1481,7 +1635,7 @@ export const syncPncpMunicipalBids = createServerFn({ method: "POST" })
             orgao: contract.orgaoNome,
           },
         },
-        { onConflict: "source_url" }
+        { onConflict: "source_url" },
       );
 
       if (!error) inserted++;
@@ -1507,7 +1661,7 @@ export const convertPncpBidToNewsArticle = createServerFn({ method: "POST" })
       city: z.string().default("Chapecó"),
       store_id: z.string().uuid().optional(),
       enrichWithAi: z.boolean().default(false),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -1523,7 +1677,9 @@ export const convertPncpBidToNewsArticle = createServerFn({ method: "POST" })
     }
 
     const valorFormatado = data.valor_estimado
-      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(data.valor_estimado)
+      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+          data.valor_estimado,
+        )
       : "Valor sob consulta";
 
     let title = `Edital Público: ${data.orgao} abre licitação para ${data.objeto.slice(0, 100)}`;
@@ -1585,7 +1741,10 @@ Os cidadãos, fornecedores e empresas interessadas podem consultar o edital na �
           }
         }
       } catch (curationErr: any) {
-        console.warn("[convertPncpBidToNewsArticle] Editorial squad fallback defensivo:", curationErr?.message);
+        console.warn(
+          "[convertPncpBidToNewsArticle] Editorial squad fallback defensivo:",
+          curationErr?.message,
+        );
       }
     }
 
@@ -1628,58 +1787,60 @@ Os cidadãos, fornecedores e empresas interessadas podem consultar o edital na �
 // 16. Verificação Cruzada de Fatos, Completude & Enriquecimento Multi-Tom
 // ============================================================
 export interface FactCheckReportDTO {
- completeness_score: number; // 0 a 100
- has_5_ws: { who: boolean; what: boolean; where: boolean; when: boolean; why: boolean };
- missing_elements: string[];
- detected_biases: string[];
- alternative_perspectives: string[];
- editorial_version: {
- title: string;
- subtitle: string;
- kicker: string;
- summary: string;
- sections: Array<{ type: string; content: string; caption?: string }>;
- };
- social_copy: string;
- executive_bullet_points: string[];
+  completeness_score: number; // 0 a 100
+  has_5_ws: { who: boolean; what: boolean; where: boolean; when: boolean; why: boolean };
+  missing_elements: string[];
+  detected_biases: string[];
+  alternative_perspectives: string[];
+  editorial_version: {
+    title: string;
+    subtitle: string;
+    kicker: string;
+    summary: string;
+    sections: Array<{ type: string; content: string; caption?: string }>;
+  };
+  social_copy: string;
+  executive_bullet_points: string[];
 }
 
 export const crossVerifyAndEnrichArticle = createServerFn({ method: "POST" })
- .validator(z.object({
- mined_article_id: z.string().uuid(),
- store_id: z.string().uuid().optional(),
- consume_tokens: z.boolean().default(true),
- }))
- .handler(async ({ data: input }): Promise<FactCheckReportDTO> => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
+  .validator(
+    z.object({
+      mined_article_id: z.string().uuid(),
+      store_id: z.string().uuid().optional(),
+      consume_tokens: z.boolean().default(true),
+    }),
+  )
+  .handler(async ({ data: input }): Promise<FactCheckReportDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
 
- const { data: mined, error: fetchErr } = await supabase
- .from("mined_articles")
- .select("*")
- .eq("id", input.mined_article_id)
- .single();
+    const { data: mined, error: fetchErr } = await supabase
+      .from("mined_articles")
+      .select("*")
+      .eq("id", input.mined_article_id)
+      .single();
 
- if (fetchErr != null || mined == null) throw new Error("Artigo minerado não encontrado.");
+    if (fetchErr != null || mined == null) throw new Error("Artigo minerado não encontrado.");
 
-	// Validador Pré-Voo de Saldo para Fact-Checking IA (10.000 tokens)
-	if (input.consume_tokens && input.store_id) {
-		const { data: wallet } = await supabase
-			.from("store_token_wallets")
-			.select("balance")
-			.eq("store_id", input.store_id)
-			.maybeSingle();
+    // Validador Pré-Voo de Saldo para Fact-Checking IA (10.000 tokens)
+    if (input.consume_tokens && input.store_id) {
+      const { data: wallet } = await supabase
+        .from("store_token_wallets")
+        .select("balance")
+        .eq("store_id", input.store_id)
+        .maybeSingle();
 
-		if (wallet && (wallet.balance ?? 0) < 10_000) {
-			throw new Error(
-				`Saldo insuficiente de tokens para fact-checking IA. Necessário: 10.000 tokens. Saldo atual: ${(wallet.balance ?? 0).toLocaleString('pt-BR')} tokens.`
-			);
-		}
-	}
+      if (wallet && (wallet.balance ?? 0) < 10_000) {
+        throw new Error(
+          `Saldo insuficiente de tokens para fact-checking IA. Necessário: 10.000 tokens. Saldo atual: ${(wallet.balance ?? 0).toLocaleString("pt-BR")} tokens.`,
+        );
+      }
+    }
 
- const rawSectionsText = JSON.stringify(mined.ai_structured_sections || []);
- const systemPrompt = `Você é um auditor sênior de jornalismo e fact-checking. Analise a matéria fornecida quanto à completude, clareza, neutralidade e precisão dos fatos. Gere uma versão editorial aprimorada de alto padrão. Retorne APENAS JSON válido no formato solicitado.`;
- const userPrompt = `Analise este artigo:
+    const rawSectionsText = JSON.stringify(mined.ai_structured_sections || []);
+    const systemPrompt = `Você é um auditor sênior de jornalismo e fact-checking. Analise a matéria fornecida quanto à completude, clareza, neutralidade e precisão dos fatos. Gere uma versão editorial aprimorada de alto padrão. Retorne APENAS JSON válido no formato solicitado.`;
+    const userPrompt = `Analise este artigo:
 Título: ${mined.ai_structured_title || mined.raw_title}
 Subtítulo: ${mined.ai_structured_subtitle}
 Fonte de Origem: ${mined.source_domain} (${mined.source_url})
@@ -1707,96 +1868,101 @@ Retorne o JSON estrito:
  "executive_bullet_points": ["Ponto 1", "Ponto 2", "Ponto 3"]
 }`;
 
-  let report: FactCheckReportDTO | null = null;
-  try {
-    const aiRes = await executeUnifiedAiCall({
-      systemPrompt,
-      userPrompt,
-      responseFormat: "json_object",
-      temperature: 0.3,
-    });
-    report = aiRes.parsedJson;
-  } catch (e: any) {
-    console.error("[mining-verify] Unified AI error:", e.message);
-  }
+    let report: FactCheckReportDTO | null = null;
+    try {
+      const aiRes = await executeUnifiedAiCall({
+        systemPrompt,
+        userPrompt,
+        responseFormat: "json_object",
+        temperature: 0.3,
+      });
+      report = aiRes.parsedJson;
+    } catch (e: any) {
+      console.error("[mining-verify] Unified AI error:", e.message);
+    }
 
-  if (!report) throw new Error("Não foi possível gerar a verificação cruzada com IA. Verifique suas chaves de IA no painel.");
+    if (!report)
+      throw new Error(
+        "Não foi possível gerar a verificação cruzada com IA. Verifique suas chaves de IA no painel.",
+      );
 
- // Atualiza mined_article com o relatório e versão editorial
- await supabase
- .from("mined_articles")
- .update({
- ai_structured_title: report.editorial_version.title || mined.ai_structured_title,
- ai_structured_subtitle: report.editorial_version.subtitle || mined.ai_structured_subtitle,
- ai_suggested_kicker: report.editorial_version.kicker || mined.ai_suggested_kicker,
- ai_structured_sections: report.editorial_version.sections || mined.ai_structured_sections,
- ai_summary: report.editorial_version.summary || mined.ai_summary,
- quality_score: report.completeness_score,
- quality_flags: report.missing_elements,
- tokens_consumed: (mined.tokens_consumed || 0) + 10_000,
- updated_at: new Date().toISOString(),
- })
- .eq("id", input.mined_article_id);
+    // Atualiza mined_article com o relatório e versão editorial
+    await supabase
+      .from("mined_articles")
+      .update({
+        ai_structured_title: report.editorial_version.title || mined.ai_structured_title,
+        ai_structured_subtitle: report.editorial_version.subtitle || mined.ai_structured_subtitle,
+        ai_suggested_kicker: report.editorial_version.kicker || mined.ai_suggested_kicker,
+        ai_structured_sections: report.editorial_version.sections || mined.ai_structured_sections,
+        ai_summary: report.editorial_version.summary || mined.ai_summary,
+        quality_score: report.completeness_score,
+        quality_flags: report.missing_elements,
+        tokens_consumed: (mined.tokens_consumed || 0) + 10_000,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", input.mined_article_id);
 
- // Debita tokens se B2B
- if (input.consume_tokens && input.store_id) {
- await supabase.rpc("consume_store_tokens", {
- p_store_id: input.store_id,
- p_tokens_to_consume: 10_000,
- p_action_type: "burn_ai_rewrite",
- p_description: `Auditoria e Fact-Checking IA — ${mined.source_domain}`,
- p_time_saved_minutes: 60,
- p_metadata: { mined_article_id: input.mined_article_id, score: report.completeness_score },
- });
- }
+    // Debita tokens se B2B
+    if (input.consume_tokens && input.store_id) {
+      await supabase.rpc("consume_store_tokens", {
+        p_store_id: input.store_id,
+        p_tokens_to_consume: 10_000,
+        p_action_type: "burn_ai_rewrite",
+        p_description: `Auditoria e Fact-Checking IA — ${mined.source_domain}`,
+        p_time_saved_minutes: 60,
+        p_metadata: { mined_article_id: input.mined_article_id, score: report.completeness_score },
+      });
+    }
 
- return report;
- });
+    return report;
+  });
 
 // ============================================================
 // 17. Extrator Especializado de Receitas Gastronômicas & Fichas Técnicas
 // ============================================================
 export interface StructuredRecipeDTO {
- title: string;
- description: string;
- category: string;
- prep_time_minutes: number;
- cook_time_minutes: number;
- total_time_minutes: number;
- servings: number;
- difficulty: "facil" | "medio" | "avancado" | "profissional";
- ingredients: Array<{ name: string; quantity: number; unit: string; notes?: string }>;
- instructions: Array<{ step_number: number; instruction: string; tip?: string }>;
- nutritional_info?: { calories?: number; protein_g?: number; carbs_g?: number; fat_g?: number };
- estimated_cost_level: "baixo" | "medio" | "alto";
- chef_tips: string[];
- allergens: string[];
+  title: string;
+  description: string;
+  category: string;
+  prep_time_minutes: number;
+  cook_time_minutes: number;
+  total_time_minutes: number;
+  servings: number;
+  difficulty: "facil" | "medio" | "avancado" | "profissional";
+  ingredients: Array<{ name: string; quantity: number; unit: string; notes?: string }>;
+  instructions: Array<{ step_number: number; instruction: string; tip?: string }>;
+  nutritional_info?: { calories?: number; protein_g?: number; carbs_g?: number; fat_g?: number };
+  estimated_cost_level: "baixo" | "medio" | "alto";
+  chef_tips: string[];
+  allergens: string[];
 }
 
 export const extractStructuredRecipe = createServerFn({ method: "POST" })
- .validator(z.object({
- url: z.string().url("URL inválida"),
- store_id: z.string().uuid().optional(),
- consume_tokens: z.boolean().default(false),
- }))
- .handler(async ({ data: input }): Promise<StructuredRecipeDTO> => {
- const supabase = getServerClient();
+  .validator(
+    z.object({
+      url: z.string().url("URL inválida"),
+      store_id: z.string().uuid().optional(),
+      consume_tokens: z.boolean().default(false),
+    }),
+  )
+  .handler(async ({ data: input }): Promise<StructuredRecipeDTO> => {
+    const supabase = getServerClient();
 
- // 1. Extrai conteúdo bruto via processUrlWithAI interno
- const mined = await processUrlWithAI({
- data: {
- url: input.url,
- content_type: "recipe",
- tone: "profissional",
- store_id: input.store_id,
- auto_enqueue: false,
- consume_tokens: input.consume_tokens,
- },
- });
+    // 1. Extrai conteúdo bruto via processUrlWithAI interno
+    const mined = await processUrlWithAI({
+      data: {
+        url: input.url,
+        content_type: "recipe",
+        tone: "profissional",
+        store_id: input.store_id,
+        auto_enqueue: false,
+        consume_tokens: input.consume_tokens,
+      },
+    });
 
- const rawSections = JSON.stringify(mined.ai_structured_sections || []);
+    const rawSections = JSON.stringify(mined.ai_structured_sections || []);
 
- const prompt = `Você é um Chef Executivo e Engenheiro de Alimentos. Extraia e estruture esta receita culinária em uma Ficha Técnica completa.
+    const prompt = `Você é um Chef Executivo e Engenheiro de Alimentos. Extraia e estruture esta receita culinária em uma Ficha Técnica completa.
 Receita Bruta:
 Título: ${mined.ai_structured_title}
 Conteúdo: ${rawSections}
@@ -1823,58 +1989,60 @@ Retorne APENAS JSON:
  "allergens": ["Glúten", "Lactose"]
 }`;
 
- const aiRes = await executeUnifiedAiCall({
- userPrompt: prompt,
- responseFormat: "json_object",
- temperature: 0.2,
- });
+    const aiRes = await executeUnifiedAiCall({
+      userPrompt: prompt,
+      responseFormat: "json_object",
+      temperature: 0.2,
+    });
 
- if (!aiRes.parsedJson) throw new Error("IA retornou resposta vazia para a receita.");
+    if (!aiRes.parsedJson) throw new Error("IA retornou resposta vazia para a receita.");
 
- return aiRes.parsedJson as StructuredRecipeDTO;
- });
+    return aiRes.parsedJson as StructuredRecipeDTO;
+  });
 
 // ============================================================
 // 18. Extrator de Ficha Técnica de Produto & Especificações Industriais
 // ============================================================
 export interface ProductTechSpecDTO {
- product_name: string;
- brand: string;
- model: string;
- category: string;
- summary: string;
- specification_groups: Array<{
- group_name: string;
- specs: Array<{ key: string; value: string; highlight?: boolean }>;
- }>;
- pros: string[];
- cons: string[];
- recommended_for: string[];
- box_contents: string[];
- warranty_months: number;
+  product_name: string;
+  brand: string;
+  model: string;
+  category: string;
+  summary: string;
+  specification_groups: Array<{
+    group_name: string;
+    specs: Array<{ key: string; value: string; highlight?: boolean }>;
+  }>;
+  pros: string[];
+  cons: string[];
+  recommended_for: string[];
+  box_contents: string[];
+  warranty_months: number;
 }
 
 export const extractProductTechSpec = createServerFn({ method: "POST" })
- .validator(z.object({
- url: z.string().url("URL inválida"),
- store_id: z.string().uuid().optional(),
- consume_tokens: z.boolean().default(false),
- }))
- .handler(async ({ data: input }): Promise<ProductTechSpecDTO> => {
- const supabase = getServerClient();
+  .validator(
+    z.object({
+      url: z.string().url("URL inválida"),
+      store_id: z.string().uuid().optional(),
+      consume_tokens: z.boolean().default(false),
+    }),
+  )
+  .handler(async ({ data: input }): Promise<ProductTechSpecDTO> => {
+    const supabase = getServerClient();
 
- const mined = await processUrlWithAI({
- data: {
- url: input.url,
- content_type: "tech_spec",
- tone: "tecnico",
- store_id: input.store_id,
- auto_enqueue: false,
- consume_tokens: input.consume_tokens,
- },
- });
+    const mined = await processUrlWithAI({
+      data: {
+        url: input.url,
+        content_type: "tech_spec",
+        tone: "tecnico",
+        store_id: input.store_id,
+        auto_enqueue: false,
+        consume_tokens: input.consume_tokens,
+      },
+    });
 
- const prompt = `Você é um Engenheiro de Produto. Extraia uma Ficha Técnica completa do produto abaixo:
+    const prompt = `Você é um Engenheiro de Produto. Extraia uma Ficha Técnica completa do produto abaixo:
 URL: ${input.url}
 Título: ${mined.ai_structured_title}
 Conteúdo Bruto: ${JSON.stringify(mined.ai_structured_sections || []).slice(0, 8000)}
@@ -1909,29 +2077,29 @@ Retorne APENAS JSON:
  "warranty_months": 12
 }`;
 
- const aiRes = await executeUnifiedAiCall({
- userPrompt: prompt,
- responseFormat: "json_object",
- temperature: 0.2,
- });
+    const aiRes = await executeUnifiedAiCall({
+      userPrompt: prompt,
+      responseFormat: "json_object",
+      temperature: 0.2,
+    });
 
- if (!aiRes.parsedJson) throw new Error("IA retornou resposta vazia para ficha técnica.");
+    if (!aiRes.parsedJson) throw new Error("IA retornou resposta vazia para ficha técnica.");
 
- return aiRes.parsedJson as ProductTechSpecDTO;
- });
+    return aiRes.parsedJson as ProductTechSpecDTO;
+  });
 
 // ============================================================
 // Helpers Internos
 // ============================================================
 function calculateQualityScore(extracted: any): number {
- let score = 50;
- if (extracted.title && extracted.title.length > 20) score += 10;
- if (extracted.subtitle && extracted.subtitle.length > 30) score += 10;
- if (extracted.cover_image_url) score += 10;
- if (extracted.sections && extracted.sections.length >= 3) score += 10;
- if (extracted.tags && extracted.tags.length >= 2) score += 5;
- if (extracted.summary && extracted.summary.length > 50) score += 5;
- return Math.min(100, score);
+  let score = 50;
+  if (extracted.title && extracted.title.length > 20) score += 10;
+  if (extracted.subtitle && extracted.subtitle.length > 30) score += 10;
+  if (extracted.cover_image_url) score += 10;
+  if (extracted.sections && extracted.sections.length >= 3) score += 10;
+  if (extracted.tags && extracted.tags.length >= 2) score += 5;
+  if (extracted.summary && extracted.summary.length > 50) score += 5;
+  return Math.min(100, score);
 }
 
 export const listPncpContractsAction = createServerFn({ method: "GET" })
@@ -1959,26 +2127,20 @@ export const getMiningStatsFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<MiningStats> => {
     const supabase = getServerClient();
 
-    const [
-      crawlQueueRes,
-      businessesRes,
-      rssRes,
-      auditRes,
-      lastAuditRes,
-      minedRes,
-    ] = await Promise.all([
-      supabase.from("crawl_queue").select("status"),
-      supabase.from("directory_listings").select("id, cnpj, data_quality_score"),
-      supabase.from("rss_feeds").select("id, is_active"),
-      supabase.from("scraper_audit_log").select("id, status"),
-      supabase
-        .from("scraper_audit_log")
-        .select("created_at")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase.from("mined_articles").select("status"),
-    ]);
+    const [crawlQueueRes, businessesRes, rssRes, auditRes, lastAuditRes, minedRes] =
+      await Promise.all([
+        supabase.from("crawl_queue").select("status"),
+        supabase.from("directory_listings").select("id, cnpj, data_quality_score"),
+        supabase.from("rss_feeds").select("id, is_active"),
+        supabase.from("scraper_audit_log").select("id, status"),
+        supabase
+          .from("scraper_audit_log")
+          .select("created_at")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase.from("mined_articles").select("status"),
+      ]);
 
     const queueItems = crawlQueueRes.data || [];
     const queueStats = {
@@ -2003,8 +2165,11 @@ export const getMiningStatsFn = createServerFn({ method: "GET" }).handler(
     };
 
     const audits = auditRes.data || [];
-    const successfulAudits = audits.filter((a) => a.status === "success" || a.status == null).length;
-    const successRate = audits.length > 0 ? Math.round((successfulAudits / audits.length) * 100) : 100;
+    const successfulAudits = audits.filter(
+      (a) => a.status === "success" || a.status == null,
+    ).length;
+    const successRate =
+      audits.length > 0 ? Math.round((successfulAudits / audits.length) * 100) : 100;
 
     const minedArticles = minedRes.data || [];
     const minedStats = {
@@ -2027,7 +2192,7 @@ export const getMiningStatsFn = createServerFn({ method: "GET" }).handler(
         lastUpdated: new Date().toISOString(),
       },
     };
-  }
+  },
 );
 
 /**
@@ -2039,7 +2204,7 @@ export const getCrawlQueueFn = createServerFn({ method: "GET" })
       status: z.enum(["all", "pending", "processing", "completed", "failed"]).optional(),
       limit: z.number().default(50),
       offset: z.number().default(0),
-    })
+    }),
   )
   .handler(async ({ data }): Promise<any> => {
     const supabase = getServerClient();
@@ -2076,7 +2241,7 @@ export const getIndexedBusinessesFn = createServerFn({ method: "GET" })
       city: z.string().optional(),
       limit: z.number().default(50),
       offset: z.number().default(0),
-    })
+    }),
   )
   .handler(async ({ data }): Promise<any> => {
     const supabase = getServerClient();
@@ -2144,7 +2309,7 @@ export const getScraperAuditLogsFn = createServerFn({ method: "GET" })
   .validator(
     z.object({
       limit: z.number().default(50),
-    })
+    }),
   )
   .handler(async ({ data }): Promise<any> => {
     const supabase = getServerClient();
@@ -2179,7 +2344,7 @@ export const getRssFeedsFn = createServerFn({ method: "GET" }).handler(
     }
 
     return (rows as unknown as RssFeedContract[]) || [];
-  }
+  },
 );
 
 /**
@@ -2188,7 +2353,7 @@ export const getRssFeedsFn = createServerFn({ method: "GET" }).handler(
 export const getMarketIndicatorsFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<EconomicIndicator[]> => {
     return await fetchAllMarketIndicators();
-  }
+  },
 );
 
 /**
@@ -2200,7 +2365,7 @@ export const runScraperFn = createServerFn({ method: "POST" })
       scraperType: z.enum(["continuous-crawler", "rss-fetcher", "market-data", "cnpj-enrichment"]),
       targetUrl: z.string().optional(),
       cnpj: z.string().optional(),
-    })
+    }),
   )
   .handler(
     async ({
@@ -2239,7 +2404,9 @@ export const runScraperFn = createServerFn({ method: "POST" })
                 const cooldown = isDomainInCooldown(d);
                 if (cooldown.inCooldown) {
                   // Reagenda o item para depois do cooldown
-                  const newSchedule = new Date(Date.now() + cooldown.remainingSeconds * 1000).toISOString();
+                  const newSchedule = new Date(
+                    Date.now() + cooldown.remainingSeconds * 1000,
+                  ).toISOString();
                   await supabase
                     .from("crawl_queue")
                     .update({
@@ -2295,7 +2462,7 @@ export const runScraperFn = createServerFn({ method: "POST" })
               setDomainCooldown(
                 domain,
                 cooldownMs,
-                is429 ? "rate_limit_429" : is403 ? "cloudflare_403" : "crawl_exception"
+                is429 ? "rate_limit_429" : is403 ? "cloudflare_403" : "crawl_exception",
               );
 
               if (queueItemId) {
@@ -2342,7 +2509,7 @@ export const runScraperFn = createServerFn({ method: "POST" })
                 domain,
                 cooldownMs,
                 is429 ? "rate_limit_429" : is403 ? "cloudflare_403" : "scrape_failure",
-                pageData.httpStatus
+                pageData.httpStatus,
               );
 
               if (queueItemId) {
@@ -2459,23 +2626,23 @@ export const runScraperFn = createServerFn({ method: "POST" })
 
               if (prod.title && prod.title.length > 2) {
                 await enrichOrInsertMinedProduct(supabase, {
-                    source_url: pageData.url,
-                    source_domain: pageData.domain,
-                    title: prod.title,
-                    description: prod.description || pageData.openGraph.description,
-                    brand: prod.brand,
-                    sku: prod.sku,
-                    price_cents: prod.priceCents,
-                    compare_at_cents: prod.compareAtCents,
-                    currency: prod.currency || "BRL",
-                    image_url: prod.imageUrl || pageData.openGraph.image,
-                    availability: prod.availability || "in_stock",
-                    category: prod.category || pageData.classification?.signals?.[0],
-                    price_history: [{ date: new Date().toISOString(), price_cents: prod.priceCents }],
-                    quality_score: prod.priceCents > 0 ? 85 : 60,
-                    status: "pending_review",
-                    updated_at: new Date().toISOString(),
-                  });
+                  source_url: pageData.url,
+                  source_domain: pageData.domain,
+                  title: prod.title,
+                  description: prod.description || pageData.openGraph.description,
+                  brand: prod.brand,
+                  sku: prod.sku,
+                  price_cents: prod.priceCents,
+                  compare_at_cents: prod.compareAtCents,
+                  currency: prod.currency || "BRL",
+                  image_url: prod.imageUrl || pageData.openGraph.image,
+                  availability: prod.availability || "in_stock",
+                  category: prod.category || pageData.classification?.signals?.[0],
+                  price_history: [{ date: new Date().toISOString(), price_cents: prod.priceCents }],
+                  quality_score: prod.priceCents > 0 ? 85 : 60,
+                  status: "pending_review",
+                  updated_at: new Date().toISOString(),
+                });
               }
             }
 
@@ -2510,8 +2677,8 @@ export const runScraperFn = createServerFn({ method: "POST" })
                       (biz?.phones?.length ? 20 : 0) +
                       (pageData.openGraph.image ? 20 : 0) +
                       (biz?.description ? 15 : 0) +
-                      (biz?.socialLinks && Object.keys(biz.socialLinks).length > 0 ? 15 : 0)
-                  )
+                      (biz?.socialLinks && Object.keys(biz.socialLinks).length > 0 ? 15 : 0),
+                  ),
                 );
 
                 await supabase.from("directory_listings").upsert(
@@ -2520,7 +2687,9 @@ export const runScraperFn = createServerFn({ method: "POST" })
                     source: "crawl",
                     business_name: businessName,
                     description:
-                      biz?.description || pageData.openGraph.description || pageData.cleanText.slice(0, 300),
+                      biz?.description ||
+                      pageData.openGraph.description ||
+                      pageData.cleanText.slice(0, 300),
                     cnpj: biz?.cnpj,
                     contact_phone: biz?.phones?.[0],
                     contact_email: biz?.emails?.[0],
@@ -2539,13 +2708,16 @@ export const runScraperFn = createServerFn({ method: "POST" })
                       social_links: biz?.socialLinks || {},
                     },
                   },
-                  { onConflict: "external_id" }
+                  { onConflict: "external_id" },
                 );
               }
             }
 
             // 3. ROTEAMENTO: ESTEIRA EDITORIAL / NOTÍCIAS
-            if (entityType === "news" || (pageData.extractedProduct == null && pageData.extractedBusiness == null)) {
+            if (
+              entityType === "news" ||
+              (pageData.extractedProduct == null && pageData.extractedBusiness == null)
+            ) {
               if (pageData.title && pageData.cleanText.length > 50) {
                 const qualityScore = Math.min(
                   100,
@@ -2554,9 +2726,9 @@ export const runScraperFn = createServerFn({ method: "POST" })
                     Math.round(
                       (pageData.stats.wordCount > 150 ? 50 : 25) +
                         (pageData.openGraph.image ? 25 : 0) +
-                        (pageData.openGraph.description ? 25 : 0)
-                    )
-                  )
+                        (pageData.openGraph.description ? 25 : 0),
+                    ),
+                  ),
                 );
 
                 await supabase.from("mined_articles").insert({
@@ -2567,7 +2739,8 @@ export const runScraperFn = createServerFn({ method: "POST" })
                   raw_description: pageData.openGraph.description,
                   ai_structured_title: pageData.title,
                   ai_suggested_cover_url: pageData.openGraph.image,
-                  ai_summary: pageData.openGraph.description || pageData.cleanText.substring(0, 300),
+                  ai_summary:
+                    pageData.openGraph.description || pageData.cleanText.substring(0, 300),
                   extracted_markdown: pageData.cleanText.substring(0, 10000),
                   quality_score: qualityScore,
                   status: "pending_review",
@@ -2758,9 +2931,10 @@ export const runScraperFn = createServerFn({ method: "POST" })
               source: enriched.source,
               business_name: enriched.nome_fantasia || enriched.razao_social,
               cnpj: enriched.cnpj,
-              description: `Atividade Principal: ${enriched.cnae_principal?.descricao || 'Comércio/Serviços'}`,
+              description: `Atividade Principal: ${enriched.cnae_principal?.descricao || "Comércio/Serviços"}`,
               category: enriched.cnae_principal?.descricao || "Empresa",
-              address: `${enriched.endereco?.logradouro || ''}, ${enriched.endereco?.numero || 'S/N'}`.trim(),
+              address:
+                `${enriched.endereco?.logradouro || ""}, ${enriched.endereco?.numero || "S/N"}`.trim(),
               city: enriched.endereco?.municipio,
               state: enriched.endereco?.uf,
               neighborhood: enriched.endereco?.bairro,
@@ -2815,7 +2989,7 @@ export const runScraperFn = createServerFn({ method: "POST" })
           durationMs: Date.now() - startTime,
         };
       }
-    }
+    },
   );
 
 /**
@@ -2828,7 +3002,7 @@ export const addCrawlSeedFn = createServerFn({ method: "POST" })
       url: z.string().url(),
       category: z.string().default("general"),
       region: z.string().optional(),
-    })
+    }),
   )
   .handler(async ({ data }): Promise<{ success: boolean; message: string }> => {
     const supabase = getServerClient();
@@ -2870,7 +3044,7 @@ export const addRssFeedFn = createServerFn({ method: "POST" })
       websiteUrl: z.string().optional(),
       category: z.string().default("news"),
       region: z.string().optional(),
-    })
+    }),
   )
   .handler(async ({ data }): Promise<{ success: boolean; message: string }> => {
     const supabase = getServerClient();
@@ -2898,106 +3072,117 @@ export const generateGhostStoresFn = createServerFn({ method: "POST" })
     z.object({
       minScore: z.number().int().min(50).max(100).default(80),
       limit: z.number().int().min(1).max(200).default(50),
-    })
+    }),
   )
-  .handler(async ({ data }): Promise<{ success: boolean; createdCount: number; message: string }> => {
-    const identity = await getServerIdentity();
-    await requireAdmin();
-    const supabase = getServerClient();
+  .handler(
+    async ({ data }): Promise<{ success: boolean; createdCount: number; message: string }> => {
+      const identity = await getServerIdentity();
+      await requireAdmin();
+      const supabase = getServerClient();
 
-    // 1. Tenta executar via stored procedure atômica
-    const rpcRes = await supabase.rpc("generate_ghost_stores_from_high_score_listings", {
-      p_min_score: data.minScore,
-      p_limit: data.limit,
-    });
+      // 1. Tenta executar via stored procedure atômica
+      const rpcRes = await supabase.rpc("generate_ghost_stores_from_high_score_listings", {
+        p_min_score: data.minScore,
+        p_limit: data.limit,
+      });
 
-    if (!rpcRes.error && rpcRes.data?.success) {
-      return {
-        success: true,
-        createdCount: rpcRes.data.created_count || 0,
-        message: `${rpcRes.data.created_count || 0} Ghost Store(s) gerada(s) com sucesso a partir de listagens com score >= ${data.minScore}%.`,
-      };
-    }
-
-    // 2. Fallback defensivo caso migration ainda não tenha sido aplicada no banco
-    const { data: listings } = await supabase
-      .from("directory_listings")
-      .select("id, business_name, cnpj, cnae, contact_phone, city, state, address, description, avatar_url, banner_url, photos, data_quality_score, crawl_score, working_hours, scraper_source")
-      .gte("data_quality_score", data.minScore)
-      .is("ghost_store_id", null)
-      .is("store_id", null)
-      .not("business_name", "is", null)
-      .limit(data.limit);
-
-    if (!listings || listings.length === 0) {
-      return {
-        success: true,
-        createdCount: 0,
-        message: "Nenhuma empresa elegível encontrada com score >= " + data.minScore + "% para geração de Ghost Store.",
-      };
-    }
-
-    const { data: defaultOrg } = await supabase.from("organizations").select("id").limit(1).maybeSingle();
-    let createdCount = 0;
-
-    for (const dl of listings) {
-      const baseSlug = (dl.business_name || "empresa")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
-
-      const { data: store, error: insertErr } = await supabase
-        .from("stores")
-        .insert({
-          organization_id: defaultOrg?.id || "00000000-0000-0000-0000-000000000001",
-          name: dl.business_name,
-          slug: uniqueSlug,
-          is_ghost: true,
-          source_listing_id: dl.id,
-          claim_status: "unclaimed",
-          settings: {
-            is_ghost: true,
-            claimed: false,
-            cnpj: dl.cnpj,
-            phone: dl.contact_phone,
-            city: dl.city,
-            state: dl.state,
-            address: dl.address,
-            description: dl.description,
-            avatar_url: dl.avatar_url,
-            banner_url: dl.banner_url,
-            photos: dl.photos,
-            quality_score: dl.data_quality_score,
-            source: dl.scraper_source || "crawled_directory",
-          },
-        })
-        .select("id")
-        .single();
-
-      if (!insertErr && store?.id) {
-        await supabase
-          .from("directory_listings")
-          .update({ ghost_store_id: store.id })
-          .eq("id", dl.id);
-        createdCount++;
+      if (!rpcRes.error && rpcRes.data?.success) {
+        return {
+          success: true,
+          createdCount: rpcRes.data.created_count || 0,
+          message: `${rpcRes.data.created_count || 0} Ghost Store(s) gerada(s) com sucesso a partir de listagens com score >= ${data.minScore}%.`,
+        };
       }
-    }
 
-    return {
-      success: true,
-      createdCount,
-      message: `${createdCount} Ghost Store(s) gerada(s) com sucesso.`,
-    };
-  });
+      // 2. Fallback defensivo caso migration ainda não tenha sido aplicada no banco
+      const { data: listings } = await supabase
+        .from("directory_listings")
+        .select(
+          "id, business_name, cnpj, cnae, contact_phone, city, state, address, description, avatar_url, banner_url, photos, data_quality_score, crawl_score, working_hours, scraper_source",
+        )
+        .gte("data_quality_score", data.minScore)
+        .is("ghost_store_id", null)
+        .is("store_id", null)
+        .not("business_name", "is", null)
+        .limit(data.limit);
+
+      if (!listings || listings.length === 0) {
+        return {
+          success: true,
+          createdCount: 0,
+          message:
+            "Nenhuma empresa elegível encontrada com score >= " +
+            data.minScore +
+            "% para geração de Ghost Store.",
+        };
+      }
+
+      const { data: defaultOrg } = await supabase
+        .from("organizations")
+        .select("id")
+        .limit(1)
+        .maybeSingle();
+      let createdCount = 0;
+
+      for (const dl of listings) {
+        const baseSlug = (dl.business_name || "empresa")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
+
+        const { data: store, error: insertErr } = await supabase
+          .from("stores")
+          .insert({
+            organization_id: defaultOrg?.id || "00000000-0000-0000-0000-000000000001",
+            name: dl.business_name,
+            slug: uniqueSlug,
+            is_ghost: true,
+            source_listing_id: dl.id,
+            claim_status: "unclaimed",
+            settings: {
+              is_ghost: true,
+              claimed: false,
+              cnpj: dl.cnpj,
+              phone: dl.contact_phone,
+              city: dl.city,
+              state: dl.state,
+              address: dl.address,
+              description: dl.description,
+              avatar_url: dl.avatar_url,
+              banner_url: dl.banner_url,
+              photos: dl.photos,
+              quality_score: dl.data_quality_score,
+              source: dl.scraper_source || "crawled_directory",
+            },
+          })
+          .select("id")
+          .single();
+
+        if (!insertErr && store?.id) {
+          await supabase
+            .from("directory_listings")
+            .update({ ghost_store_id: store.id })
+            .eq("id", dl.id);
+          createdCount++;
+        }
+      }
+
+      return {
+        success: true,
+        createdCount,
+        message: `${createdCount} Ghost Store(s) gerada(s) com sucesso.`,
+      };
+    },
+  );
 
 /**
  * Métricas de Ghost Stores e Oportunidades de Claim
  */
-export const getGhostStoreMetricsFn = createServerFn({ method: "GET" })
-  .handler(async (): Promise<{
+export const getGhostStoreMetricsFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{
     totalGhostStores: number;
     claimedGhostStores: number;
     pendingClaims: number;
@@ -3012,9 +3197,19 @@ export const getGhostStoreMetricsFn = createServerFn({ method: "GET" })
       { count: eligibleListings },
     ] = await Promise.all([
       supabase.from("stores").select("id", { count: "exact", head: true }).eq("is_ghost", true),
-      supabase.from("stores").select("id", { count: "exact", head: true }).eq("claim_status", "claimed"),
-      supabase.from("claim_profiles").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      supabase.from("directory_listings").select("id", { count: "exact", head: true }).gte("data_quality_score", 80).is("ghost_store_id", null),
+      supabase
+        .from("stores")
+        .select("id", { count: "exact", head: true })
+        .eq("claim_status", "claimed"),
+      supabase
+        .from("claim_profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending"),
+      supabase
+        .from("directory_listings")
+        .select("id", { count: "exact", head: true })
+        .gte("data_quality_score", 80)
+        .is("ghost_store_id", null),
     ]);
 
     return {
@@ -3023,7 +3218,8 @@ export const getGhostStoreMetricsFn = createServerFn({ method: "GET" })
       pendingClaims: pendingClaims || 0,
       eligibleListings: eligibleListings || 0,
     };
-  });
+  },
+);
 
 /**
  * Despacho Central de Execução de Rotinas Agendadas (pg_cron / webhook)
@@ -3048,7 +3244,7 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         "hospitality-harvest",
         "full-daily-pipeline",
       ]),
-    })
+    }),
   )
   .handler(async ({ data }): Promise<{ success: boolean; result: any }> => {
     const supabase = getServerClient();
@@ -3139,8 +3335,12 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
           let editorialSubtitle = art.ai_structured_subtitle || art.ai_summary || "";
           let editorialKicker = art.ai_suggested_kicker || "ATUALIDADE REGIONAL";
           let editorialCategory = art.ai_suggested_category || "cidade";
-          let editorialTags: string[] = Array.isArray(art.ai_suggested_tags) ? art.ai_suggested_tags : ["notícias", "chapecó"];
-          let editorialSections: any[] = Array.isArray(art.ai_structured_sections) ? art.ai_structured_sections : [];
+          let editorialTags: string[] = Array.isArray(art.ai_suggested_tags)
+            ? art.ai_suggested_tags
+            : ["notícias", "chapecó"];
+          let editorialSections: any[] = Array.isArray(art.ai_structured_sections)
+            ? art.ai_structured_sections
+            : [];
 
           if (editorialSections.length === 0) {
             const curated = await curateWithEditorialSquad({
@@ -3223,7 +3423,10 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
               .maybeSingle();
 
             if (pubErr) {
-              console.error("[MiningCron] Erro ao publicar matéria em news_articles:", pubErr.message);
+              console.error(
+                "[MiningCron] Erro ao publicar matéria em news_articles:",
+                pubErr.message,
+              );
             }
 
             if (insertedNews?.id) {
@@ -3243,7 +3446,12 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
               .eq("id", art.id);
           }
 
-          if (/(show|festival|feira|exposi[çc][ãa]o|congresso|oktoberfest|agenda cultural|espet[áa]culo)/i.test(editorialTitle) && art.source_url) {
+          if (
+            /(show|festival|feira|exposi[çc][ãa]o|congresso|oktoberfest|agenda cultural|espet[áa]culo)/i.test(
+              editorialTitle,
+            ) &&
+            art.source_url
+          ) {
             const { harvestAndPersistEvent } = await import("./mining/event-harvester");
             const evRes = await harvestAndPersistEvent({
               url: art.source_url,
@@ -3335,7 +3543,13 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         query: "comércio",
         city: "Chapecó",
         state: "SC",
-      }).catch((err) => ({ success: false, totalFound: 0, totalInserted: 0, totalUpdated: 0, error: String(err) }));
+      }).catch((err) => ({
+        success: false,
+        totalFound: 0,
+        totalInserted: 0,
+        totalUpdated: 0,
+        error: String(err),
+      }));
 
       jobResult = pRes;
       await supabase.from("scraper_audit_log").insert({
@@ -3348,17 +3562,24 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         result_summary: jobResult,
       });
     } else if (data.jobType === "hospitality-harvest") {
-      const { harvestHotelsAndResorts, purgeUnsplashFromHotelsBank } = await import("./mining/hospitality-harvester");
-      const purgeRes = await purgeUnsplashFromHotelsBank().catch(() => ({ inspected: 0, purgedPhotosCount: 0, enrichedWebsitesCount: 0 }));
-      const harvestRes = await harvestHotelsAndResorts({ city: "Chapecó", state: "SC" }).catch((err) => ({
-        success: false,
-        city: "Chapecó",
-        totalFound: 0,
-        totalInsertedDirectory: 0,
-        totalInsertedHotelsBank: 0,
-        hotels: [],
-        error: String(err),
+      const { harvestHotelsAndResorts, purgeUnsplashFromHotelsBank } =
+        await import("./mining/hospitality-harvester");
+      const purgeRes = await purgeUnsplashFromHotelsBank().catch(() => ({
+        inspected: 0,
+        purgedPhotosCount: 0,
+        enrichedWebsitesCount: 0,
       }));
+      const harvestRes = await harvestHotelsAndResorts({ city: "Chapecó", state: "SC" }).catch(
+        (err) => ({
+          success: false,
+          city: "Chapecó",
+          totalFound: 0,
+          totalInsertedDirectory: 0,
+          totalInsertedHotelsBank: 0,
+          hotels: [],
+          error: String(err),
+        }),
+      );
 
       jobResult = { purgeRes, harvestRes };
       await supabase.from("scraper_audit_log").insert({
@@ -3435,10 +3656,15 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
         for (const item of lawsuits) {
           if (!item.process_number) continue;
           try {
-            const res = await harvestAndPersistDataJudProcess({ processNumber: item.process_number });
+            const res = await harvestAndPersistDataJudProcess({
+              processNumber: item.process_number,
+            });
             if (res.success) syncedCount++;
           } catch (judErr) {
-            console.warn(`[MiningCron] Erro ao sincronizar processo ${item.process_number}:`, judErr);
+            console.warn(
+              `[MiningCron] Erro ao sincronizar processo ${item.process_number}:`,
+              judErr,
+            );
           }
         }
       }
@@ -3491,7 +3717,7 @@ export const getMinedProductsFn = createServerFn({ method: "GET" })
       status: z.enum(["pending_review", "approved", "rejected", "synced"]).optional(),
       limit: z.number().default(20),
       offset: z.number().default(0),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -3529,7 +3755,7 @@ export const getGlobalPriceBenchmarkFn = createServerFn({ method: "GET" })
   .validator(
     z.object({
       query: z.string().min(2),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -3537,7 +3763,9 @@ export const getGlobalPriceBenchmarkFn = createServerFn({ method: "GET" })
 
     const { data: products, error } = await supabase
       .from("mined_products")
-      .select("id, title, price_cents, compare_at_cents, source_domain, source_url, image_url, availability, updated_at")
+      .select(
+        "id, title, price_cents, compare_at_cents, source_domain, source_url, image_url, availability, updated_at",
+      )
       .ilike("title", `%${cleanQuery}%`)
       .gt("price_cents", 0)
       .order("price_cents", { ascending: true })
@@ -3559,7 +3787,8 @@ export const getGlobalPriceBenchmarkFn = createServerFn({ method: "GET" })
     const minPriceCents = Math.min(...prices);
     const maxPriceCents = Math.max(...prices);
     const averagePriceCents = Math.round(prices.reduce((acc, p) => acc + p, 0) / prices.length);
-    const spreadPercent = minPriceCents > 0 ? Math.round(((maxPriceCents - minPriceCents) / minPriceCents) * 100) : 0;
+    const spreadPercent =
+      minPriceCents > 0 ? Math.round(((maxPriceCents - minPriceCents) / minPriceCents) * 100) : 0;
 
     return {
       query: cleanQuery,
@@ -3616,7 +3845,7 @@ export const updateMinedProductFn = createServerFn({ method: "POST" })
       category: z.string().optional(),
       availability: z.string().optional(),
       status: z.enum(["pending_review", "approved", "rejected", "synced"]).optional(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -3625,7 +3854,8 @@ export const updateMinedProductFn = createServerFn({ method: "POST" })
     };
 
     if (data.title !== undefined) updatePayload.title = data.title.trim();
-    if (data.description !== undefined) updatePayload.description = data.description?.trim() || null;
+    if (data.description !== undefined)
+      updatePayload.description = data.description?.trim() || null;
     if (data.price_cents !== undefined) updatePayload.price_cents = data.price_cents;
     if (data.compare_at_cents !== undefined) updatePayload.compare_at_cents = data.compare_at_cents;
     if (data.image_url !== undefined) updatePayload.image_url = data.image_url;
@@ -3676,7 +3906,7 @@ export const importMinedProductToStoreFn = createServerFn({ method: "POST" })
       customTitle: z.string().optional(),
       customPriceCents: z.number().int().min(0).optional(),
       categoryId: z.string().uuid().optional(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -3712,7 +3942,8 @@ export const importMinedProductToStoreFn = createServerFn({ method: "POST" })
       store_id: data.storeId,
       title: rawTitle,
       slug: uniqueSlug,
-      description: mined.description || `Produto importado automaticamente de ${mined.source_domain}`,
+      description:
+        mined.description || `Produto importado automaticamente de ${mined.source_domain}`,
       price_cents: priceCents,
       compare_at_cents: compareAtCents,
       status: "published",
@@ -3735,7 +3966,9 @@ export const importMinedProductToStoreFn = createServerFn({ method: "POST" })
 
     if (prodErr != null || newProduct == null) {
       console.error("[importMinedProductToStoreFn] Erro ao inserir produto oficial:", prodErr);
-      throw new Error(`Falha ao criar produto no catálogo: ${prodErr?.message || "Erro desconhecido"}`);
+      throw new Error(
+        `Falha ao criar produto no catálogo: ${prodErr?.message || "Erro desconhecido"}`,
+      );
     }
 
     // 4. Se tiver imagem, vincular à tabela product_media
@@ -3747,7 +3980,10 @@ export const importMinedProductToStoreFn = createServerFn({ method: "POST" })
           sort_order: 0,
         });
       } catch (mediaErr: any) {
-        console.warn("[importMinedProductToStoreFn] Aviso ao vincular product_media:", mediaErr?.message);
+        console.warn(
+          "[importMinedProductToStoreFn] Aviso ao vincular product_media:",
+          mediaErr?.message,
+        );
       }
     }
 
@@ -3776,7 +4012,7 @@ export const batchImportMinedProductsFn = createServerFn({ method: "POST" })
     z.object({
       minedProductIds: z.array(z.string()).min(1),
       storeId: z.string().uuid(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     let successCount = 0;
@@ -3816,7 +4052,7 @@ export const harvestDataJudMiningFn = createServerFn({ method: "POST" })
     z.object({
       process_number: z.string().min(14, "Número CNJ obrigatório"),
       store_id: z.string().uuid().optional(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity().catch(() => null);
@@ -3841,7 +4077,7 @@ export const harvestPlacesBatchFn = createServerFn({ method: "POST" })
       city: z.string().default("Chapecó"),
       state: z.string().default("SC"),
       store_id: z.string().uuid().optional(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity().catch(() => null);
@@ -3866,7 +4102,7 @@ export const harvestSpecializedUrlFn = createServerFn({ method: "POST" })
     z.object({
       url: z.string().url("URL inválida"),
       store_id: z.string().uuid().optional(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const extraction = await extractContentMechanically(data.url);
@@ -3899,7 +4135,10 @@ export const harvestSpecializedUrlFn = createServerFn({ method: "POST" })
       .single();
 
     if (error) {
-      console.warn("[harvestSpecializedUrlFn] Erro ao salvar em mined_raw_extractions:", error.message);
+      console.warn(
+        "[harvestSpecializedUrlFn] Erro ao salvar em mined_raw_extractions:",
+        error.message,
+      );
     }
 
     return {
@@ -3918,12 +4157,14 @@ export const harvestSpecializedUrlFn = createServerFn({ method: "POST" })
  */
 export const executeAutomatedNewsHarvestFn = createServerFn({ method: "POST" })
   .validator(
-    z.object({
-      store_id: z.string().uuid().optional(),
-      city: z.string().optional(),
-      max_items: z.number().int().min(1).max(50).default(10),
-      force_refresh: z.boolean().default(false),
-    }).optional()
+    z
+      .object({
+        store_id: z.string().uuid().optional(),
+        city: z.string().optional(),
+        max_items: z.number().int().min(1).max(50).default(10),
+        force_refresh: z.boolean().default(false),
+      })
+      .optional(),
   )
   .handler(async ({ data }) => {
     return executeAutomatedNewsHarvest({
@@ -3934,46 +4175,46 @@ export const executeAutomatedNewsHarvestFn = createServerFn({ method: "POST" })
     });
   });
 
-export const getTokenEconomyMetricsFn = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const supabase = getAnonServerClient();
+export const getTokenEconomyMetricsFn = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getAnonServerClient();
 
-    // Contagem de extrações mecânicas em scraper_audit_log
-    const { count: mechanicalCount } = await supabase
-      .from("scraper_audit_log")
-      .select("*", { count: "exact", head: true });
+  // Contagem de extrações mecânicas em scraper_audit_log
+  const { count: mechanicalCount } = await supabase
+    .from("scraper_audit_log")
+    .select("*", { count: "exact", head: true });
 
-    // Contagem de itens em mined_articles
-    const { count: minedCount } = await supabase
-      .from("mined_articles")
-      .select("*", { count: "exact", head: true });
+  // Contagem de itens em mined_articles
+  const { count: minedCount } = await supabase
+    .from("mined_articles")
+    .select("*", { count: "exact", head: true });
 
-    // Contagem de empresas em directory_listings
-    const { count: directoryCount } = await supabase
-      .from("directory_listings")
-      .select("*", { count: "exact", head: true })
-      .eq("is_crawled", true);
+  // Contagem de empresas em directory_listings
+  const { count: directoryCount } = await supabase
+    .from("directory_listings")
+    .select("*", { count: "exact", head: true })
+    .eq("is_crawled", true);
 
-    // Contagem de processos em mined_lawsuits
-    const { count: lawsuitsCount } = await supabase
-      .from("mined_lawsuits")
-      .select("*", { count: "exact", head: true });
+  // Contagem de processos em mined_lawsuits
+  const { count: lawsuitsCount } = await supabase
+    .from("mined_lawsuits")
+    .select("*", { count: "exact", head: true });
 
-    const totalMechanicalExtractions = (mechanicalCount || 0) + (minedCount || 0) + (directoryCount || 0) + (lawsuitsCount || 0);
-    // Cada extração mecânica economiza em média 3.500 tokens de IA
-    const estimatedTokensSaved = totalMechanicalExtractions * 3500;
+  const totalMechanicalExtractions =
+    (mechanicalCount || 0) + (minedCount || 0) + (directoryCount || 0) + (lawsuitsCount || 0);
+  // Cada extração mecânica economiza em média 3.500 tokens de IA
+  const estimatedTokensSaved = totalMechanicalExtractions * 3500;
 
-    return {
-      totalMechanicalExtractions,
-      estimatedTokensSaved,
-      breakdown: {
-        auditLogEntries: mechanicalCount || 0,
-        minedArticles: minedCount || 0,
-        crawledDirectoryListings: directoryCount || 0,
-        minedLawsuits: lawsuitsCount || 0,
-      },
-    };
-  });
+  return {
+    totalMechanicalExtractions,
+    estimatedTokensSaved,
+    breakdown: {
+      auditLogEntries: mechanicalCount || 0,
+      minedArticles: minedCount || 0,
+      crawledDirectoryListings: directoryCount || 0,
+      minedLawsuits: lawsuitsCount || 0,
+    },
+  };
+});
 
 export interface MinedRecipeDTO {
   id: string;
@@ -4008,7 +4249,7 @@ export const listPublicRecipesFn = createServerFn({ method: "GET" })
         limit: z.number().int().min(1).max(50).default(24),
         offset: z.number().int().min(0).default(0),
       })
-      .optional()
+      .optional(),
   )
   .handler(async ({ data }) => {
     const supabase = getAnonServerClient();
@@ -4119,7 +4360,7 @@ export const listAdminMinedRecipesFn = createServerFn({ method: "GET" })
         limit: z.number().int().min(1).max(100).default(50),
         offset: z.number().int().min(0).default(0),
       })
-      .optional()
+      .optional(),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -4194,7 +4435,7 @@ export const updateMinedRecipeFn = createServerFn({ method: "POST" })
       cuisine: z.string().nullable().optional(),
       ingredients: z.array(z.string().min(1)),
       instructions: z.array(z.string().min(1)),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -4249,7 +4490,7 @@ export const toggleMinedRecipeVisibilityFn = createServerFn({ method: "POST" })
     z.object({
       id: z.string().uuid(),
       status: z.enum(["active", "hidden", "archived"]),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -4317,10 +4558,7 @@ export const deleteMinedRecipeFn = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const { error } = await supabase
-      .from("mined_raw_extractions")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await supabase.from("mined_raw_extractions").delete().eq("id", data.id);
 
     if (error) {
       console.error("[deleteMinedRecipeFn] Error:", error);
@@ -4347,7 +4585,7 @@ export const createMinedRecipeFn = createServerFn({ method: "POST" })
       cuisine: z.string().nullable().optional(),
       ingredients: z.array(z.string().min(1)),
       instructions: z.array(z.string().min(1)),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -4397,7 +4635,7 @@ export const curateDirectoryListingFn = createServerFn({ method: "POST" })
   .validator(
     z.object({
       listingId: z.string().uuid("ID do estabelecimento inválido"),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     await requireAdmin();
@@ -4422,10 +4660,9 @@ export const batchCurateDirectoryListingsFn = createServerFn({ method: "POST" })
       .object({
         limit: z.number().int().min(1).max(100).default(30),
       })
-      .optional()
+      .optional(),
   )
   .handler(async ({ data }) => {
     await requireAdmin();
     return await batchCurateDirectoryListings({ limit: data?.limit || 30 });
   });
-

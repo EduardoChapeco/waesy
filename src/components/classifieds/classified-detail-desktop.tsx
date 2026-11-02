@@ -148,6 +148,25 @@ export function ClassifiedDetailDesktop({
     );
   }, [niche, classified.attributes, attrs]);
 
+  const isDirectLodging = useMemo(() => {
+    return (
+      niche.id === "hospitality_stay" ||
+      attrs.vertical === "hospitality" ||
+      Boolean(attrs.hospitality_type) ||
+      attrs.rental_period === "daily" ||
+      Boolean(attrs.accommodation_type)
+    );
+  }, [niche, attrs]);
+
+  const isTravelPackage = useMemo(() => {
+    if (isDirectLodging) return false;
+    return (
+      niche.id === "travel" ||
+      (classified.attributes?.template_style as string) === "turismo" ||
+      attrs.vertical === "tourism"
+    );
+  }, [isDirectLodging, niche, classified.attributes, attrs]);
+
   const nicheTabLabels = useMemo(() => getNicheTabLabels(niche.id), [niche.id]);
 
   const tabs = useMemo(() => {
@@ -298,15 +317,6 @@ export function ClassifiedDetailDesktop({
         },
       };
     }
-    if (false) {
-      return {
-        label: "Candidatar-se à Vaga",
-        action: () => {
-          if (onOpenApplyModal) onOpenApplyModal();
-          else if (cleanPhone) handleWhatsApp();
-        },
-      };
-    }
     // Protocolo V140: Se for anúncio conversacional (Classificados / Serviços),
     // o botão de Comprar DESAPARECE e o CTA primário vira Enviar Mensagem.
     if (isConversational) {
@@ -355,28 +365,21 @@ export function ClassifiedDetailDesktop({
         ? classified.content.length > 220
           ? `${classified.content.slice(0, 220)}...`
           : classified.content
-        : "Destino turístico completo com excelente infraestrutura de lazer, gastronomia e passeios.");
+        : "");
 
-    const hotelName =
-      firstLodging.name ||
-      attrs.hotel_name ||
-      "Hotel & Resort Selecionado";
+    const hasExplicitHotel = Boolean(
+      (firstLodging.name && String(firstLodging.name).trim()) ||
+      (attrs.hotel_name && String(attrs.hotel_name).trim()) ||
+      lodgings.length > 0
+    );
 
-    const hotelSummary =
-      firstLodging.description ||
-      attrs.hotel_description ||
-      "Acomodação confortável com infraestrutura completa e excelente localização para sua estadia.";
-
-    const hotelStars = Number(firstLodging.stars || attrs.hotel_stars || 4);
+    const hotelName = firstLodging.name || attrs.hotel_name || "";
+    const hotelSummary = firstLodging.description || attrs.hotel_description || "";
+    const hotelStars = Number(firstLodging.stars || attrs.hotel_stars || 0);
 
     const lodgingPhotos: string[] = [];
     if (Array.isArray(firstLodging.images)) lodgingPhotos.push(...firstLodging.images);
     if (firstLodging.photo_url) lodgingPhotos.push(firstLodging.photo_url);
-    if (lodgingPhotos.length === 0 && images.length > 1) {
-      lodgingPhotos.push(...images.slice(1, 6));
-    } else if (lodgingPhotos.length === 0 && images.length === 1) {
-      lodgingPhotos.push(images[0]);
-    }
 
     const hotelAmenities: string[] = (
       (Array.isArray(firstLodging.amenities) && firstLodging.amenities.length > 0
@@ -385,36 +388,34 @@ export function ClassifiedDetailDesktop({
       (Array.isArray(attrs.hotel_amenities) && attrs.hotel_amenities.length > 0
         ? attrs.hotel_amenities
         : null) ||
-      (Array.isArray(attrs.amenities) && attrs.amenities.length > 0
-        ? attrs.amenities
-        : null) ||
-      ["Wi-Fi Grátis", "Ar-Condicionado", "Café da Manhã", "Piscina", "Estacionamento"]
+      []
     );
 
-    const hotelCheckin = attrs.checkin_time || firstLodging.checkin_time || "A partir das 14:00";
-    const hotelCheckout = attrs.checkout_time || firstLodging.checkout_time || "Até as 12:00";
+    const hotelCheckin = attrs.checkin_time || firstLodging.checkin_time || null;
+    const hotelCheckout = attrs.checkout_time || firstLodging.checkout_time || null;
     const hotelAddress = firstLodging.address || attrs.hotel_address || locationText;
 
     const packageMealPlan =
       attrs.meal_plan ||
       firstLodging.regime ||
-      "Café da manhã incluso diariamente no restaurante do hotel.";
+      "";
 
     const packageTransfer =
       attrs.has_transfer
         ? (attrs.transfer_vehicle ? `Traslado ${attrs.transfer_vehicle} in/out incluso aeroporto-hotel` : "Traslado in/out aeroporto incluso no pacote")
         : attrs.transfer_from
         ? `Traslado programado: ${attrs.transfer_from} para ${attrs.transfer_to || "destino"}`
-        : "Traslado aeroporto / hotel incluso com motorista credenciado.";
+        : "";
 
     const packageTours =
       attrs.included_tours ||
       attrs.package_includes ||
-      "Passeios aos principais pontos turísticos da região com guia credenciado.";
+      "";
 
     return {
       destinationTitle,
       destinationDescription,
+      hasExplicitHotel,
       hotelName,
       hotelSummary,
       hotelStars,
@@ -456,7 +457,7 @@ export function ClassifiedDetailDesktop({
               variant="outline"
               size="sm"
               onClick={onOpenCompanion}
-              className="h-10 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer active:scale-98"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer active:scale-98"
             >
               <Smartphone className="size-4 text-primary" />
               <span>Guia Digital</span>
@@ -467,7 +468,7 @@ export function ClassifiedDetailDesktop({
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="h-10 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer"
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-2 cursor-pointer"
           >
             <Share2 className="size-4" />
             <span>Compartilhar</span>
@@ -476,7 +477,7 @@ export function ClassifiedDetailDesktop({
           <FavoriteButton
             itemId={classified.id}
             itemType="classified"
-            className="size-10 rounded-lg border border-border/70 bg-card hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground"
+            className="size-11 min-h-11 rounded-lg border border-border/70 bg-card hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground"
           />
 
           {isOwner && onEdit && (
@@ -484,7 +485,7 @@ export function ClassifiedDetailDesktop({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-10 px-3 rounded-lg border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-2"
+              className="h-11 min-h-11 px-3 rounded-lg border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-2"
             >
               <Edit3 className="size-3.5 text-amber-600" />
               <span>Editar Anúncio</span>
@@ -496,32 +497,32 @@ export function ClassifiedDetailDesktop({
       {/* ── MOSAICO BENTO DE MÍDIA (Desktop Airbnb Layout) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 mb-8">
         {images.length === 0 ? (
-          <div className="w-full aspect-[21/9] max-h-[420px] rounded-lg bg-muted/20 border border-border/40 flex flex-col items-center justify-center text-muted-foreground gap-2">
-            <Package className="size-12 stroke-[1.5]" />
+          <div className="w-full aspect-banner-hero max-h-105 rounded-lg bg-muted/20 border border-border/40 flex flex-col items-center justify-center text-muted-foreground gap-2">
+            <Package className="size-12 stroke-1" />
             <span className="text-sm">Nenhuma foto cadastrada para este anúncio</span>
           </div>
         ) : images.length === 1 ? (
-          <div className="w-full aspect-[16/9] max-h-[480px] rounded-lg overflow-hidden bg-muted/20 border border-border/40 relative group">
+          <div className="w-full aspect-banner-cinema max-h-120 rounded-lg overflow-hidden bg-muted/20 border border-border/40 relative group">
             <img
     src={images[0]}
     alt={classified.title}
     tabIndex={0}
     role="button"
     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[0]); } }}
-    className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="size-full object-cover cursor-pointer group-hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     onClick={() => setFullscreenImage(images[0])}
   />
   <button
     type="button"
     onClick={() => setFullscreenImage(images[0])}
-    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-colors duration-200 shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   >
               <Maximize2 className="size-4" />
               <span>Ver em tela cheia</span>
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 aspect-[16/9] max-h-[500px] rounded-lg overflow-hidden border border-border/40 bg-muted/20 relative group">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 aspect-banner-cinema max-h-125 rounded-lg overflow-hidden border border-border/40 bg-muted/20 relative group">
             {/* Foto Principal Hero (8 colunas) */}
             <div className="col-span-8 relative overflow-hidden bg-muted/30 h-full">
               <img
@@ -530,7 +531,7 @@ export function ClassifiedDetailDesktop({
     tabIndex={0}
     role="button"
     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[0]); } }}
-    className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="size-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     onClick={() => setFullscreenImage(images[0])}
   />
             </div>
@@ -543,7 +544,7 @@ export function ClassifiedDetailDesktop({
     tabIndex={0}
     role="button"
     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[1] || images[0]); } }}
-    className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="size-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     onClick={() => setFullscreenImage(images[1] || images[0])}
   />
               </div>
@@ -554,13 +555,13 @@ export function ClassifiedDetailDesktop({
     tabIndex={0}
     role="button"
     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFullscreenImage(images[2] || images[0]); } }}
-    className="size-full object-cover cursor-pointer hover:scale-[1.01] transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="size-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     onClick={() => setFullscreenImage(images[2] || images[0])}
   />
   <button
     type="button"
     onClick={() => setFullscreenImage(images[0])}
-    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 shadow-md hover:bg-background cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 hover:bg-background cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   >
                   <Maximize2 className="size-3.5" />
                   <span>Ver todas ({images.length})</span>
@@ -785,12 +786,18 @@ export function ClassifiedDetailDesktop({
                 <div className="space-y-4">
                   <NicheSpecificationsDisplay
                     items={featureList}
-                    title={isTravelOrHospitality ? "Destaques & Especificações do Pacote" : "Ficha Técnica & Especificações"}
+                    title={
+                      niche.id === "travel"
+                        ? "Destaques do Pacote"
+                        : isTravelOrHospitality
+                        ? "Especificações da Acomodação"
+                        : "Ficha Técnica"
+                    }
                   />
                 </div>
               )}
 
-              {isTravelOrHospitality && (
+              {isTravelPackage && (
                 <div className="space-y-4">
                   {/* ── CARD 1: Destino & Localização ── */}
                   <div className="rounded-lg border border-border/60 bg-card p-5 space-y-3">
@@ -802,9 +809,11 @@ export function ClassifiedDetailDesktop({
                       <h3 className="text-base font-bold text-foreground">
                         {travelDetails.destinationTitle}
                       </h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                        {travelDetails.destinationDescription}
-                      </p>
+                      {travelDetails.destinationDescription && (
+                        <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                          {travelDetails.destinationDescription}
+                        </p>
+                      )}
                     </div>
                     {/* Mapa Integrado */}
                     {classified.location_lat && classified.location_lng && !classified.hide_location && !attrs.hide_location ? (
@@ -828,86 +837,97 @@ export function ClassifiedDetailDesktop({
                     )}
                   </div>
 
-                  {/* ── CARD 2: Hospedagem & Hotel ── */}
-                  <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                        <Hotel className="size-4 text-primary shrink-0" />
-                        <span className="uppercase tracking-wider">Hospedagem & Hotel</span>
+                  {/* ── CARD 2: Hospedagem & Hotel (apenas se houver hotel cadastrado no pacote) ── */}
+                  {travelDetails.hasExplicitHotel && travelDetails.hotelName && (
+                    <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                          <Hotel className="size-4 text-primary shrink-0" />
+                          <span className="uppercase tracking-wider">Hospedagem & Hotel</span>
+                        </div>
+                        {travelDetails.hotelStars > 0 && (
+                          <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
+                            <Star className="size-3.5 fill-amber-500" />
+                            <span>{travelDetails.hotelStars} estrelas</span>
+                          </div>
+                        )}
                       </div>
-                      {travelDetails.hotelStars > 0 && (
-                        <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
-                          <Star className="size-3.5 fill-amber-500" />
-                          <span>{travelDetails.hotelStars} estrelas</span>
+
+                      <div>
+                        <h4 className="text-base font-bold text-foreground">{travelDetails.hotelName}</h4>
+                        {travelDetails.hotelSummary && (
+                          <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                            {travelDetails.hotelSummary}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Carrossel / Galeria Limpa de Fotos da Hospedagem */}
+                      {travelDetails.hotelPhotos.length > 0 && (
+                        <div className="space-y-2">
+                          <span className="text-xs text-muted-foreground block font-medium">Fotos da Acomodação</span>
+                          {/* design-lint-ignore DL-30 reason:"Galeria horizontal de fotos da hospedagem desktop com snap-x" expiry:"2027-12-31" */}
+                          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 snap-x">
+                            {travelDetails.hotelPhotos.map((photo, pIdx) => (
+                              <button
+                                key={pIdx}
+                                type="button"
+                                onClick={() => setFullscreenImage(photo)}
+                                className="w-48 aspect-video shrink-0 snap-start rounded-lg overflow-hidden bg-muted/30 border border-border/40 relative cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                aria-label={`Ver foto do hotel ${pIdx + 1}`}
+                              >
+                                <img src={photo} alt="" className="size-full object-cover group-hover:scale-105 transition-transform" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Comodidades do Hotel */}
+                      {travelDetails.hotelAmenities.length > 0 && (
+                        <div className="space-y-2 pt-1">
+                          <span className="text-xs font-semibold text-muted-foreground block">
+                            Comodidades Principais da Hospedagem
+                          </span>
+                          <div className="flex flex-wrap gap-2">
+                            {travelDetails.hotelAmenities.map((amenity: string, idx: number) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                              >
+                                <Check className="size-3 text-primary shrink-0" />
+                                <span>{amenity}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Endereço & Horários de Check-in (apenas se preenchidos) */}
+                      {(travelDetails.hotelCheckin || travelDetails.hotelCheckout || travelDetails.hotelAddress) && (
+                        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border/40 text-xs">
+                          {travelDetails.hotelCheckin && (
+                            <div>
+                              <span className="text-muted-foreground block">Horário de Check-in</span>
+                              <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckin}</span>
+                            </div>
+                          )}
+                          {travelDetails.hotelCheckout && (
+                            <div>
+                              <span className="text-muted-foreground block">Horário de Check-out</span>
+                              <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckout}</span>
+                            </div>
+                          )}
+                          {travelDetails.hotelAddress && (
+                            <div className="col-span-2 pt-1 text-muted-foreground flex items-center gap-2">
+                              <MapPin className="size-3 text-primary shrink-0" />
+                              <span className="break-words text-wrap">{travelDetails.hotelAddress}</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-
-                    <div>
-                      <h4 className="text-base font-bold text-foreground">{travelDetails.hotelName}</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                        {travelDetails.hotelSummary}
-                      </p>
-                    </div>
-
-                    {/* Carrossel / Galeria Limpa de Fotos da Hospedagem */}
-                    {travelDetails.hotelPhotos.length > 0 && (
-                      <div className="space-y-2">
-                        <span className="text-xs text-muted-foreground block font-medium">Fotos da Acomodação</span>
-                        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 snap-x">
-                          {travelDetails.hotelPhotos.map((photo, pIdx) => (
-                            <button
-                              key={pIdx}
-                              type="button"
-                              onClick={() => setFullscreenImage(photo)}
-                              className="w-48 aspect-video shrink-0 snap-start rounded-lg overflow-hidden bg-muted/30 border border-border/40 relative cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                              aria-label={`Ver foto do hotel ${pIdx + 1}`}
-                            >
-                              <img src={photo} alt="" className="size-full object-cover group-hover:scale-105 transition-transform" />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Comodidades do Hotel */}
-                    {travelDetails.hotelAmenities.length > 0 && (
-                      <div className="space-y-2 pt-1">
-                        <span className="text-xs font-semibold text-muted-foreground block">
-                          Comodidades Principais da Hospedagem
-                        </span>
-                        <div className="flex flex-wrap gap-2">
-                          {travelDetails.hotelAmenities.map((amenity: string, idx: number) => (
-                            <span
-                              key={idx}
-                              className="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
-                            >
-                              <Check className="size-3 text-primary shrink-0" />
-                              <span>{amenity}</span>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Endereço & Horários de Check-in */}
-                    <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border/40 text-xs">
-                      <div>
-                        <span className="text-muted-foreground block">Horário de Check-in</span>
-                        <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckin}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block">Horário de Check-out</span>
-                        <span className="font-bold text-foreground font-mono">{travelDetails.hotelCheckout}</span>
-                      </div>
-                      {travelDetails.hotelAddress && (
-                        <div className="col-span-2 pt-1 text-muted-foreground flex items-center gap-2">
-                          <MapPin className="size-3 text-primary shrink-0" />
-                          <span className="break-words text-wrap">{travelDetails.hotelAddress}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  )}
 
                   {/* ── CARD 3: O que inclui o pacote ── */}
                   <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
@@ -1076,7 +1096,7 @@ export function ClassifiedDetailDesktop({
                         <span>Boleto Bancário</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {attrs.boleto_due_days ? `Vencimento em ${attrs.boleto_due_days} dias` : "À vista sob consulta"}
+                        {attrs.boleto_due_days ? `Vencimento em ${attrs.boleto_due_days} dias` : "Pagamento à vista"}
                       </p>
                     </div>
                   )}
@@ -1326,7 +1346,7 @@ export function ClassifiedDetailDesktop({
 
         {/* ══ COLUNA DIREITA: Card Sticky de Preço & Conversão (5 Colunas) ══ */}
         <div className="col-span-5">
-          <div className="sticky top-20 rounded-lg border border-border/60 bg-card p-6 shadow-sm space-y-6">
+          <div className="sticky top-20 rounded-lg border border-border/60 bg-card p-6 space-y-6">
             {/* Bloco de Preço */}
             <div className="space-y-2 pb-4 border-b border-border/50">
               {isDonation ? (
@@ -1418,7 +1438,7 @@ export function ClassifiedDetailDesktop({
                 <Button
                   type="button"
                   onClick={() => setIsLeadFormModalOpen(true)}
-                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-[0.99] transition-transform duration-200 cursor-pointer flex items-center justify-center gap-2"
+                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground hover:opacity-95 active:scale-95 transition-transform duration-200 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <FileText className="size-4" />
                   <span>{attrs?.inquiry_config?.title || "Tenho Interesse neste Anúncio"}</span>
@@ -1430,7 +1450,7 @@ export function ClassifiedDetailDesktop({
                 onClick={primaryCta.action}
                 disabled={isBooking || isBuyingDirect || isDownloadingDigital}
                 className={cn(
-                  "h-12 w-full rounded-lg text-sm font-bold shadow-sm hover:opacity-95 active:scale-[0.99] transition-transform duration-200 cursor-pointer",
+                  "h-12 w-full rounded-lg text-sm font-bold hover:opacity-95 active:scale-95 transition-transform duration-200 cursor-pointer",
                   classified.lead_form || classified.form_id
                     ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     : "bg-primary text-primary-foreground"
@@ -1500,7 +1520,7 @@ export function ClassifiedDetailDesktop({
           <button
             type="button"
             onClick={() => setFullscreenImage(null)}
-            className="absolute top-4 right-4 z-10 size-10 rounded-lg bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="absolute top-4 right-4 z-10 size-11 min-h-11 rounded-lg bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Fechar tela cheia"
           >
             <X className="size-6" />
@@ -1511,14 +1531,14 @@ export function ClassifiedDetailDesktop({
     controls
     playsInline
     autoPlay
-    className="max-h-(--spacing-screen-90,90vh) max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
+    className="max-h-(--spacing-screen-90,90vh) max-w-screen-xl max-w-full object-contain rounded-lg focus-visible:outline-none"
     onClick={(e) => e.stopPropagation()}
   />
           ) : (
             <img
     src={fullscreenImage}
     alt="Tela cheia"
-    className="max-h-(--spacing-screen-90,90vh) max-w-[90vw] object-contain rounded-lg focus-visible:outline-none"
+    className="max-h-(--spacing-screen-90,90vh) max-w-screen-xl max-w-full object-contain rounded-lg focus-visible:outline-none"
     onClick={(e) => e.stopPropagation()}
   />
           )}

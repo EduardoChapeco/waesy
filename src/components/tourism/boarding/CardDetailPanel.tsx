@@ -263,7 +263,8 @@ export function CardDetailPanel({
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-2xl md:max-w-3xl flex flex-col p-0 bg-background text-foreground border-l border-border/70"
+        size="dossier"
+        className="flex flex-col p-0 bg-background text-foreground border-l border-border/70"
       >
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3">
@@ -353,7 +354,7 @@ export function CardDetailPanel({
                       }
                     }}
                     disabled={deleteDepartureMutation.isPending}
-                    className="size-10 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                     title="Excluir embarque"
                   >
                     <Trash2 className="size-4" />
@@ -362,7 +363,7 @@ export function CardDetailPanel({
               </div>
 
               {/* Navegação por Abas */}
-              <div className="flex border-b border-border/60 gap-2 -mb-6 pt-2 overflow-x-auto no-scrollbar">
+              <div className="tab-list flex border-b border-border/60 gap-2 -mb-6 pt-2 overflow-x-auto no-scrollbar">
                 {[
                   { id: 'checklist', label: `Checklist (${checklist.length})` },
                   { id: 'documents', label: `Documentos (${documents.length})` },
@@ -432,7 +433,7 @@ export function CardDetailPanel({
                               variant="ghost"
                               size="icon"
                               onClick={() => deleteItemMutation.mutate(item.id)}
-                              className="size-7 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer shrink-0"
+                              className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer shrink-0"
                             >
                               <Trash2 className="size-3.5" />
                             </Button>
@@ -506,7 +507,7 @@ export function CardDetailPanel({
                               OCR 
                             </Badge>
                           )}
-                          <Button asChild size="icon" variant="ghost" className="size-7 rounded-lg text-muted-foreground">
+                          <Button asChild size="icon" variant="ghost" className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground">
                             <a href={doc.file_url} target="_blank" rel="noreferrer" title="Visualizar arquivo">
                               <ExternalLink className="size-3.5" />
                             </a>
@@ -520,7 +521,7 @@ export function CardDetailPanel({
                               }
                             }}
                             disabled={deleteDocMutation.isPending}
-                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer"
                             title="Excluir documento"
                           >
                             <Trash2 className="size-3.5" />
@@ -566,7 +567,7 @@ export function CardDetailPanel({
                     <Button
                       onClick={() => uploadDocMutation.mutate()}
                       disabled={!docUrl || uploadDocMutation.isPending}
-                      className="w-full rounded-lg font-bold text-xs h-9 gap-2 cursor-pointer"
+                      className="w-full rounded-xl font-bold text-xs h-11 min-h-11 gap-2 cursor-pointer"
                     >
                       {uploadDocMutation.isPending ? (
                         <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
@@ -592,7 +593,7 @@ export function CardDetailPanel({
                         variant="ghost"
                         size="sm"
                         onClick={() => setIsEditing(!isEditing)}
-                        className="h-7 px-3 text-2xs font-bold rounded-lg cursor-pointer"
+                        className="h-11 min-h-11 px-3 text-2xs font-bold rounded-xl cursor-pointer"
                       >
                         {isEditing ? <Check className="size-3 mr-1 text-emerald-500" /> : <Pencil className="size-3 mr-1" />}
                         {isEditing ? 'Pronto' : 'Editar'}

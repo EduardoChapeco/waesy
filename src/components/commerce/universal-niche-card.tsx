@@ -438,7 +438,7 @@ export function UniversalNicheCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col justify-between overflow-hidden rounded-lg border border-border/60 bg-card p-4 sm:p-5 hover:border-foreground/30 transition-colors duration-300 motion-reduce:transition-none h-full",
+        "group relative flex flex-col justify-between overflow-hidden rounded-lg border-0 bg-card p-4 sm:p-5 hover:bg-muted/20 transition-colors duration-300 motion-reduce:transition-none h-full",
         className
       )}
     >
@@ -475,7 +475,7 @@ export function UniversalNicheCard({
           {/* Badge Discreto de Vidro no Canto Superior Direito (Apenas quando houver dado real relevante) */}
           {floatingBadgeText && floatingBadgeText !== "Destaque" && (
             <div className="absolute top-3 right-3 pointer-events-none z-10">
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-background/85 backdrop-blur-md text-foreground border border-border/40 font-medium text-xs">
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-background text-foreground border border-border/60 font-medium text-xs">
                 {floatingBadgeText}
               </span>
             </div>

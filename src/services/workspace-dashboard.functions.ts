@@ -131,7 +131,7 @@ export const getWorkspaceDashboardKpisFn = createServerFn({ method: "GET" })
     // 2. Consulta de Produtos do Catálogo (products)
     const { data: productsData } = await supabase
       .from("products")
-      .select("id, status, stock_quantity")
+      .select("id, status")
       .eq("store_id", targetStoreId);
 
     const products = productsData || [];
@@ -142,7 +142,7 @@ export const getWorkspaceDashboardKpisFn = createServerFn({ method: "GET" })
       if (prod.status === "active" || prod.status === "published") {
         activeProductsCount++;
       }
-      const qty = Number(prod.stock_quantity ?? 0);
+      const qty = prod.status === "out_of_stock" ? 0 : 1;
       if (qty <= 0 || prod.status === "out_of_stock") {
         outOfStockCount++;
       }

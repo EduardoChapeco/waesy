@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
@@ -179,7 +180,8 @@ export function HomeDesktopWebApp({
     if (count === 4) return "md:grid-cols-4";
     if (count <= 5) return "md:grid-cols-5";
     if (count <= 6) return "md:grid-cols-3 lg:grid-cols-6";
-    return "md:grid-cols-4 lg:grid-cols-8";
+    if (count <= 8) return "md:grid-cols-4 lg:grid-cols-8";
+    return "md:grid-cols-5 lg:grid-cols-10";
   };
 
   const hasActiveCoupons = React.useMemo(() => {
@@ -500,9 +502,12 @@ export function HomeDesktopWebApp({
                           <h3 className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                             {item.business_name}
                           </h3>
-                          {item.is_verified && (
-                            <CheckCircle size={15} weight="fill" className="text-primary shrink-0" />
-                          )}
+                          <VerifiedBadge
+                            isVerified={item.is_verified}
+                            badgeUrl={(item as any).verified_badge_url}
+                            size="sm"
+                            title="Empresa Verificada pelo Admin Master"
+                          />
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-1">
                           {item.address || "Regional"}

@@ -826,6 +826,259 @@ export const createPost = createServerFn({ method: "POST" })
     return { success: true, post_id: data.id };
   });
 
+export const updatePost = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      postId: z.string().uuid(),
+      content_text: z.string().optional().nullable(),
+      tags: z.array(z.string()).optional(),
+      location_name: z.string().optional().nullable(),
+      allow_comments: z.boolean().optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const db = getServerClient();
+    const { getSSRClient, getServerIdentity } = await import("@/lib/server-access");
+    const ssr = await getSSRClient();
+    const {
+      data: { user },
+    } = await ssr.auth.getUser();
+    const identity = await getServerIdentity();
+    const currentUserId = user?.id || identity.id;
+    if (!currentUserId) throw new Error("Não autorizado — faça login para editar.");
+
+    const { data: post, error: fetchErr } = await db
+      .from("posts")
+      .select("id, author_profile_id, author_store_id, metadata")
+      .eq("id", input.postId)
+      .single();
+
+    if (fetchErr || !post) throw new Error("Publicação não encontrada.");
+
+    const isOwner = post.author_profile_id === currentUserId;
+    if (!isOwner) {
+      if (post.author_store_id) {
+        const { data: storeMember } = await db
+          .from("store_members")
+          .select("id")
+          .eq("store_id", post.author_store_id)
+          .eq("profile_id", currentUserId)
+          .maybeSingle();
+        if (!storeMember && identity.role !== "admin_master") {
+          throw new Error("Você não tem permissão para editar esta publicação.");
+        }
+      } else if (identity.role !== "admin_master") {
+        throw new Error("Você não tem permissão para editar esta publicação.");
+      }
+    }
+
+    const updatedMetadata = {
+      ...(post.metadata || {}),
+      ...(input.allow_comments !== undefined ? { allow_comments: input.allow_comments } : {}),
+      updated_at_iso: new Date().toISOString(),
+    };
+
+    const updatePayload: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+      metadata: updatedMetadata,
+    };
+
+    if (input.content_text !== undefined) updatePayload.content_text = input.content_text;
+    if (input.tags !== undefined) updatePayload.tags = input.tags;
+    if (input.location_name !== undefined) updatePayload.location_name = input.location_name;
+
+    const { data: updated, error: updateError } = await db
+      .from("posts")
+      .update(updatePayload)
+      .eq("id", input.postId)
+      .select()
+      .single();
+
+    if (updateError) throw new Error(`Erro ao atualizar publicação: ${updateError.message}`);
+    return { success: true, post: updated };
+  });
+
+export const deletePost = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      postId: z.string().uuid(),
+    }),
+  )
+  .handler(async ({ data: { postId } }) => {
+    const db = getServerClient();
+    const { getSSRClient, getServerIdentity } = await import("@/lib/server-access");
+    const ssr = await getSSRClient();
+    const {
+      data: { user },
+    } = await ssr.auth.getUser();
+    const identity = await getServerIdentity();
+    const currentUserId = user?.id || identity.id;
+    if (!currentUserId) throw new Error("Não autorizado — faça login.");
+
+    const { data: post, error: fetchErr } = await db
+      .from("posts")
+      .select("id, author_profile_id, author_store_id")
+      .eq("id", postId)
+      .single();
+
+    if (fetchErr || !post) throw new Error("Publicação não encontrada.");
+
+    const isOwner = post.author_profile_id === currentUserId;
+    if (!isOwner) {
+      if (post.author_store_id) {
+        const { data: storeMember } = await db
+          .from("store_members")
+          .select("id")
+          .eq("store_id", post.author_store_id)
+          .eq("profile_id", currentUserId)
+          .maybeSingle();
+        if (!storeMember && identity.role !== "admin_master") {
+          throw new Error("Você não tem permissão para excluir esta publicação.");
+        }
+      } else if (identity.role !== "admin_master") {
+        throw new Error("Você não tem permissão para excluir esta publicação.");
+      }
+    }
+
+    const { error: updateErr } = await db
+      .from("posts")
+      .update({ status: "deleted", updated_at: new Date().toISOString() })
+      .eq("id", postId);
+
+    if (updateErr) {
+      const { error: delErr } = await db.from("posts").delete().eq("id", postId);
+      if (delErr) throw new Error(`Erro ao excluir publicação: ${delErr.message}`);
+    }
+
+    return { success: true, postId };
+  });
+
+export const updatePostStatus = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      postId: z.string().uuid(),
+      status: z.enum(["active", "paused", "archived", "hidden", "deleted"]),
+    }),
+  )
+  .handler(async ({ data: { postId, status } }) => {
+    const db = getServerClient();
+    const { getSSRClient, getServerIdentity } = await import("@/lib/server-access");
+    const ssr = await getSSRClient();
+    const {
+      data: { user },
+    } = await ssr.auth.getUser();
+    const identity = await getServerIdentity();
+    const currentUserId = user?.id || identity.id;
+    if (!currentUserId) throw new Error("Não autorizado.");
+
+    const { data: post, error: fetchErr } = await db
+      .from("posts")
+      .select("id, author_profile_id, author_store_id")
+      .eq("id", postId)
+      .single();
+
+    if (fetchErr || !post) throw new Error("Publicação não encontrada.");
+
+    const isOwner = post.author_profile_id === currentUserId;
+    if (!isOwner && identity.role !== "admin_master") {
+      throw new Error("Permissão negada.");
+    }
+
+    const { error } = await db
+      .from("posts")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", postId);
+
+    if (error) throw new Error(`Erro ao atualizar status: ${error.message}`);
+    return { success: true, postId, status };
+  });
+
+export const togglePostPin = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      postId: z.string().uuid(),
+    }),
+  )
+  .handler(async ({ data: { postId } }) => {
+    const db = getServerClient();
+    const { getSSRClient, getServerIdentity } = await import("@/lib/server-access");
+    const ssr = await getSSRClient();
+    const {
+      data: { user },
+    } = await ssr.auth.getUser();
+    const identity = await getServerIdentity();
+    const currentUserId = user?.id || identity.id;
+    if (!currentUserId) throw new Error("Não autorizado.");
+
+    const { data: post, error: fetchErr } = await db
+      .from("posts")
+      .select("id, author_profile_id, metadata")
+      .eq("id", postId)
+      .single();
+
+    if (fetchErr || !post) throw new Error("Publicação não encontrada.");
+    if (post.author_profile_id !== currentUserId && identity.role !== "admin_master") {
+      throw new Error("Permissão negada.");
+    }
+
+    const isPinned = Boolean(post.metadata?.is_pinned);
+    const newPinned = !isPinned;
+
+    const { error } = await db
+      .from("posts")
+      .update({
+        metadata: { ...(post.metadata || {}), is_pinned: newPinned },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", postId);
+
+    if (error) throw new Error(`Erro ao fixar publicação: ${error.message}`);
+    return { success: true, is_pinned: newPinned };
+  });
+
+export const togglePostComments = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      postId: z.string().uuid(),
+    }),
+  )
+  .handler(async ({ data: { postId } }) => {
+    const db = getServerClient();
+    const { getSSRClient, getServerIdentity } = await import("@/lib/server-access");
+    const ssr = await getSSRClient();
+    const {
+      data: { user },
+    } = await ssr.auth.getUser();
+    const identity = await getServerIdentity();
+    const currentUserId = user?.id || identity.id;
+    if (!currentUserId) throw new Error("Não autorizado.");
+
+    const { data: post, error: fetchErr } = await db
+      .from("posts")
+      .select("id, author_profile_id, metadata")
+      .eq("id", postId)
+      .single();
+
+    if (fetchErr || !post) throw new Error("Publicação não encontrada.");
+    if (post.author_profile_id !== currentUserId && identity.role !== "admin_master") {
+      throw new Error("Permissão negada.");
+    }
+
+    const commentsDisabled = Boolean(post.metadata?.disable_comments);
+    const newDisabled = !commentsDisabled;
+
+    const { error } = await db
+      .from("posts")
+      .update({
+        metadata: { ...(post.metadata || {}), disable_comments: newDisabled },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", postId);
+
+    if (error) throw new Error(`Erro ao configurar comentários: ${error.message}`);
+    return { success: true, disable_comments: newDisabled };
+  });
+
 export const togglePostLike = createServerFn({ method: "POST" })
  .validator(z.object({ post_id: z.string().uuid() }))
  .handler(async ({ data: { post_id } }) => {

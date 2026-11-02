@@ -305,7 +305,7 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  // Futuro ideal: delegar essa agregação para uma RPC (Stored Procedure) no banco.
  let storesQuery = supabase
  .from("stores")
- .select("id, name, slug, description, settings, city, is_verified")
+ .select("id, name, slug, description, settings, city")
  .order("created_at", { ascending: false })
  .limit(storeId ? 1 : 100);
 
@@ -987,7 +987,7 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
       if (mode === 2) {
         let storesQuery: any = supabase
           .from("stores")
-          .select("id, name, slug, description, settings, is_verified, created_at")
+          .select("id, name, slug, description, settings, created_at")
           .order("created_at", { ascending: false })
           .limit(10);
 

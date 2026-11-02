@@ -17,6 +17,7 @@ import {
 } from "@/services/admin-home-cms.functions";
 import { RichPostContent } from "@/components/community/rich-post-content";
 import { Quote } from "lucide-react";
+import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 
 function isVideoUrl(url?: string | null): boolean {
   if (!url) return false;
@@ -138,9 +139,12 @@ export function HomePostsShowcase({
                       <span className="text-xs sm:text-sm font-bold text-foreground break-words text-wrap truncate">
                         {post.authorName || "Membro da comunidade"}
                       </span>
-                      {post.isVerified && (
-                        <CheckCircle size={14} weight="fill" className="text-info shrink-0" />
-                      )}
+                      <VerifiedBadge
+                        isVerified={post.isVerified}
+                        badgeUrl={(post as any)?.verifiedBadgeUrl}
+                        size="sm"
+                        title="Membro Verificado pelo Admin Master"
+                      />
                       <span className="text-xs text-muted-foreground shrink-0">
                         {formatRelativeTime(post.publishedAt)}
                       </span>
@@ -217,40 +221,25 @@ export function HomePostsShowcase({
                         ))}
                       </div>
                     ) : (
-                      <div className="relative w-full h-52 rounded-lg overflow-hidden bg-muted/80 border border-border/40 flex items-center justify-center group/media mt-2 shrink-0">
+                      <div className="relative w-full h-52 rounded-lg overflow-hidden bg-muted/30 border border-border/40 mt-2 shrink-0">
                         {isVideoUrl(mediaList[0]) ? (
-                          <>
-                            <video
-                              src={mediaList[0]}
-                              aria-hidden="true"
-                              className="absolute inset-0 size-full object-cover blur-xl opacity-20 scale-125 pointer-events-none select-none"
-                            />
-                            <video
-                              src={mediaList[0]}
-                              controls
-                              playsInline
-                              preload="metadata"
-                              className="relative z-10 max-h-full max-w-full h-auto w-auto object-contain mx-auto"
-                            />
-                          </>
+                          <video
+                            src={mediaList[0]}
+                            controls
+                            playsInline
+                            preload="metadata"
+                            className="size-full object-cover"
+                          />
                         ) : (
-                          <>
-                            <img
-                              src={mediaList[0]}
-                              alt=""
-                              aria-hidden="true"
-                              className="absolute inset-0 size-full object-cover blur-xl opacity-25 scale-125 pointer-events-none select-none"
-                            />
-                            <img
-                              src={mediaList[0]}
-                              alt={post.title || ""}
-                              loading="lazy"
-                              className="relative z-10 max-h-full max-w-full h-auto w-auto object-contain mx-auto group-hover/media:scale-102 transition-transform duration-300 motion-reduce:transition-none"
-                              onError={(e) => {
-                                (e.currentTarget.parentElement as HTMLElement)?.style.setProperty("display", "none");
-                              }}
-                            />
-                          </>
+                          <img
+                            src={mediaList[0]}
+                            alt={post.title || ""}
+                            loading="lazy"
+                            className="size-full object-cover group-hover:scale-102 transition-transform duration-300 motion-reduce:transition-none"
+                            onError={(e) => {
+                              (e.currentTarget.parentElement as HTMLElement)?.style.setProperty("display", "none");
+                            }}
+                          />
                         )}
                       </div>
                     )}

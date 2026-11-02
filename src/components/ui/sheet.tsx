@@ -36,12 +36,12 @@ const sheetVariants = cva(
   {
     variants: {
       side: {
-        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+        top: "inset-x-0 top-0 data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
-          "inset-x-0 bottom-0 border-t rounded-t-lg data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom max-h-overlay-max",
-        left: "inset-y-0 left-0 h-full w-full border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+          "inset-x-0 bottom-0 rounded-t-2xl data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom max-h-overlay-max",
+        left: "inset-y-0 left-0 h-full w-full data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
         right:
-          "inset-y-0 right-0 h-full w-full border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+          "inset-y-0 right-0 h-full w-full data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
       },
       size: {
         default: "w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl",
@@ -49,6 +49,8 @@ const sheetVariants = cva(
         md: "w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl",
         lg: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl",
         xl: "w-full sm:max-w-4xl md:max-w-5xl lg:max-w-6xl",
+        "2xl": "w-full max-sm:inset-0 max-sm:h-dvh max-sm:w-screen max-sm:rounded-none sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl",
+        dossier: "w-full max-sm:inset-0 max-sm:h-dvh max-sm:w-screen max-sm:rounded-none sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl",
         "70": "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl",
         wide: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl",
         full: "w-full max-w-full",

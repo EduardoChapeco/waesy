@@ -4,8 +4,7 @@ import { Accordion, Card, AddBtn, L, Inp, TextField, NumField, SMALL_INPUT } fro
 import { replaceAt } from "@/components/proposals/ProposalFormFields";
 import { Trash2, Plus, PlaneTakeoff, PlaneLanding, BaggageClaim, Search, AlertTriangle, Clock } from "lucide-react";
 import { useAgency } from "@/lib/agency-context";
-import { getAgencyMarkup, calculateMarkup } from "@/utils/pricing";
-import { infotravelSearchFlights } from "@/services/infotravel";
+import { searchAgencyGdsFlightsFn } from "@/services/infotravel";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FormInput as Input } from "@/components/ui/input";
@@ -85,7 +84,7 @@ export function SectionFlights({ draft, save }: Props) {
   const { agency } = useAgency();
   const flights = draft.flights ?? [];
 
-  // Infotravel States
+  // Busca de voo isolado: canal Wooba, com preço já calculado no servidor.
   const [infotravelOpen, setInfotravelOpen] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchParams, setSearchParams] = useState({
@@ -107,29 +106,46 @@ export function SectionFlights({ draft, save }: Props) {
     if (!agency) return;
     setSearching(true);
     try {
-      const data = await infotravelSearchFlights(agency.id, searchParams);
+      const response = await searchAgencyGdsFlightsFn({
+        data: {
+          origin: searchParams.origin,
+          destination: searchParams.destination,
+          departureDate: searchParams.date,
+          passengers: 1,
+        },
+      });
+      const data: Flight[] = response.offers.map((offer) => ({
+        id: `${offer.flightNumber}-${offer.departureTime}`,
+        origin: offer.departureAirport,
+        destination: offer.arrivalAirport,
+        date: searchParams.date,
+        departure_time: offer.departureTime,
+        arrival_time: offer.arrivalTime,
+        airline: offer.airline,
+        flight_number: offer.flightNumber,
+        stops: offer.stops,
+        baggage_rules: offer.baggageIncluded ? "Bagagem incluída" : "Apenas bagagem de mão",
+        price: offer.priceCents / 100,
+      }));
       setResults(data);
       if (data.length === 0) {
         toast.info("Nenhum voo disponível para esta busca.");
       }
     } catch (err: any) {
-      toast.error(err.message || "Erro ao consultar Infotravel.");
+      toast.error(err.message || "Erro ao consultar Wooba.");
     } finally {
       setSearching(false);
     }
   }
 
   function importFlight(f: Flight) {
-    const markup = getAgencyMarkup(agency, "infotravel");
-    const finalPrice = calculateMarkup(f.price, markup);
-
     save({
       flights: [
         ...flights,
         {
           ...f,
           id: crypto.randomUUID(),
-          price: finalPrice,
+          price: f.price,
         },
       ],
     });

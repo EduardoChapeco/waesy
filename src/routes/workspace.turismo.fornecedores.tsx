@@ -14,6 +14,7 @@ import { listTravelSuppliers, deleteTravelSupplier } from '@/services/travel-sup
 import { SUPPLIER_KIND_LABELS, type SupplierKind } from '@/types/travel-suppliers';
 import { NewSupplierWizard } from '@/components/tourism/suppliers/new-supplier-wizard';
 import { SupplierAutocomplete } from '@/components/tourism/suppliers/supplier-autocomplete';
+import { InfotravelIntegrationPanel } from '@/components/admin/infotravel-integration-panel';
 
 export const Route = createFileRoute('/workspace/turismo/fornecedores')({
  head: () => ({ meta: [{ title: 'Fornecedores & Tarifários de DMCs | Workspace' }] }),
@@ -98,10 +99,11 @@ function WorkspaceSuppliersPage() {
       id: k,
       label: label.split('/')[0].trim(),
     })),
+    { id: 'infotravel_sync', label: 'Sincronização InfoTravel', icon: Globe },
   ], [suppliers]);
 
   return (
-    <div className="px-0 sm:px-6 lg:px-8 py-2 sm:py-6 max-w-7xl mx-auto space-y-6">
+    <div className="px-0 sm:px-6 lg:px-8 py-2 sm:py-6 w-full space-y-6">
       <WorkspaceCanonicalToolbar
         tabs={supplierTabs}
         activeTab={selectedKind}
@@ -125,8 +127,9 @@ function WorkspaceSuppliersPage() {
         items={dashboardMetrics}
       />
 
- {/* Grid de Fornecedores */}
- {isLoading ? (
+      {selectedKind === 'infotravel_sync' ? (
+        <InfotravelIntegrationPanel />
+      ) : isLoading ? (
  <div className="py-12 text-center text-xs text-muted-foreground">Carregando catálogo de fornecedores...</div>
  ) : filtered.length === 0 ? (
  <div className="p-12 text-center rounded-lg border border-dashed border-border bg-card space-y-3">
@@ -142,7 +145,7 @@ function WorkspaceSuppliersPage() {
  {filtered.map((s) => (
  <div
  key={s.id}
- className="p-5 rounded-lg bg-card border border-border hover:border-primary/40 transition-colors duration-200 shadow-sm flex flex-col justify-between space-y-4"
+ className="p-5 rounded-2xl bg-card border border-border hover:border-primary/40 transition-colors duration-200 flex flex-col justify-between space-y-4"
  >
  <div className="space-y-2">
  <div className="flex items-start justify-between gap-2">

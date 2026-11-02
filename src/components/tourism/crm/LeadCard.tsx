@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { MessageSquare, Clock, MapPin, Calendar, Users, CheckCircle2, ChevronRight, ChevronLeft, DollarSign, User, ExternalLink, Archive, UserCheck, MoreVertical, Edit3, FileText, Calculator, Plane, Trash2, AlertTriangle } from 'lucide-react';
+import { MessageSquare, Clock, MapPin, Calendar, Users, CheckCircle2, ChevronRight, ChevronLeft, UserCheck, MoreVertical, Edit3, FileText, Calculator, Plane, Trash2, AlertTriangle, Paperclip, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -22,6 +22,17 @@ export interface LeadCardProps {
   prevStageId?: string | null;
   nextStageId?: string | null;
 }
+
+const INTEREST_TYPE_LABELS: Record<string, string> = {
+  package_flight: 'Pacote Aéreo',
+  hotel: 'Hospedagem',
+  package_ground: 'Terrestre',
+  flights: 'Passagens',
+  cruise: 'Cruzeiro',
+  visa: 'Visto & Doc',
+  corporate: 'Corporativo',
+  other: 'Personalizado',
+};
 
 export function LeadCard({
   lead,
@@ -47,6 +58,18 @@ export function LeadCard({
       .join('')
       .toUpperCase();
   }, [lead?.full_name]);
+
+  // Tempo de permanência na etapa calculado com base em updated_at ou created_at
+  const stageTimer = useMemo(() => {
+    const refDate = lead.updated_at || lead.created_at;
+    if (!refDate) return 'há 1h';
+    const diffMs = Math.max(0, Date.now() - new Date(refDate).getTime());
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHours < 1) return 'agora';
+    if (diffHours < 24) return `há ${diffHours}h`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d`;
+  }, [lead.updated_at, lead.created_at]);
 
   // Staleness calculation (inactivity since last contact)
   const staleness = useMemo(() => {
@@ -95,6 +118,40 @@ export function LeadCard({
     return { total, done };
   }, [lead.checklist]);
 
+  // Contadores de comentários/notas e anexos/passageiros
+  const counters = useMemo(() => {
+    const notesCount = lead.notes || lead.message ? 1 : 0;
+    const activitiesCount = Array.isArray(lead.activities) ? lead.activities.length : 0;
+    const paxDocsCount = Array.isArray(lead.pax_list) ? lead.pax_list.length : 0;
+    const attachmentsCount = Array.isArray(lead.attachments) ? lead.attachments.length : paxDocsCount;
+    return {
+      comments: notesCount + activitiesCount,
+      attachments: attachmentsCount,
+    };
+  }, [lead.notes, lead.message, lead.activities, lead.pax_list, lead.attachments]);
+
+  const categoryLabel = useMemo(() => {
+    if (lead.interest_type && INTEREST_TYPE_LABELS[lead.interest_type]) {
+      return INTEREST_TYPE_LABELS[lead.interest_type];
+    }
+    if (Array.isArray(lead.tags) && lead.tags.length > 0) {
+      return String(lead.tags[0]).split(':')[0];
+    }
+    return 'Roteiro';
+  }, [lead.interest_type, lead.tags]);
+
+  const isLgpdActive = useMemo(() => {
+    if (lead.lgpd_accepted === false) return false;
+    return Boolean(
+      lead.lgpd_accepted ||
+      lead.is_consent_lgpd ||
+      lead.custom_fields?.lgpd_accepted ||
+      lead.source === 'whatsapp' ||
+      lead.source === 'site' ||
+      lead.phone
+    );
+  }, [lead]);
+
   const cleanPhone = (lead.phone || '').replace(/\D/g, '');
   const whatsappUrl = cleanPhone
     ? `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(
@@ -105,51 +162,83 @@ export function LeadCard({
     : null;
 
   const assignedMember = team.find((m) => (m.profile_id || m.id) === lead.assigned_to);
+  const assignedInitials = useMemo(() => {
+    const name = assignedMember?.full_name || assignedMember?.name || '';
+    if (!name) return initials;
+    return name
+      .split(' ')
+      .map((n: string) => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+  }, [assignedMember, initials]);
+
+  const temperatureMeta = useMemo(() => {
+    const rawTemp = String(lead.temperature || lead.custom_fields?.temperature || '').toLowerCase();
+    if (rawTemp === 'hot' || rawTemp === 'quente' || ((lead.estimated_value_cents || 0) >= 1200000 && !staleness.isCold)) {
+      return {
+        label: 'Quente',
+        className: 'bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/25',
+      };
+    }
+    if (rawTemp === 'cold' || rawTemp === 'frio' || staleness.isCold) {
+      return {
+        label: 'Frio',
+        className: 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/25',
+      };
+    }
+    return {
+      label: 'Morno',
+      className: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25',
+    };
+  }, [lead.temperature, lead.custom_fields, lead.estimated_value_cents, staleness.isCold]);
+
+  const estimatedCommissionCents = useMemo(() => {
+    if (typeof lead.commission_cents === 'number' && lead.commission_cents > 0) {
+      return lead.commission_cents;
+    }
+    const val = lead.estimated_value_cents || 0;
+    return val > 0 ? Math.round(val * 0.1) : 0;
+  }, [lead.commission_cents, lead.estimated_value_cents]);
 
   return (
     <div
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onOpenDetails?.(lead);
-      }
-    }}
-    onClick={() => onOpenDetails?.(lead)}
-    className={cn(
-      'p-4 rounded-lg border bg-card hover:border-primary/50 transition-colors duration-200 shadow-xs hover:shadow-md space-y-3 text-xs group cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpenDetails?.(lead);
+        }
+      }}
+      onClick={() => onOpenDetails?.(lead)}
+      className={cn(
+        'p-4 rounded-2xl border bg-card hover:border-foreground/25 transition-colors duration-150 space-y-3 text-xs group cursor-pointer relative select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
         staleness.isCold
-          ? 'border-rose-500/40 bg-rose-500/[0.02]'
+          ? 'border-rose-500/30'
           : staleness.isStale
-          ? 'border-amber-500/40 bg-amber-500/[0.02]'
-          : 'border-border/70'
+          ? 'border-amber-500/30'
+          : 'border-border/60'
       )}
     >
-      {/* Header do Card */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Avatar className="size-7 rounded-lg shrink-0 border border-border/60">
-            <AvatarFallback className="text-2xs font-bold bg-primary/10 text-primary">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <h4 className="font-bold text-foreground text-xs truncate group-hover:text-primary transition-colors">
-              {lead.full_name}
-            </h4>
-            <div className="flex items-center gap-2 text-2xs text-muted-foreground truncate">
-              {lead.phone && <span>{lead.phone}</span>}
-              {lead.lead_source_detail && (
-                <>
-                  <span>•</span>
-                  <span className="font-mono uppercase font-semibold text-primary/80">
-                    {lead.lead_source_detail}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
+      {/* Topo do Card: Chip de Temperatura + Categoria + SLA Temporal + Ações Rápidas */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 min-w-0 flex-wrap">
+          <span
+            className={cn(
+              'inline-flex items-center px-2 py-1 rounded-md text-2xs font-bold border',
+              temperatureMeta.className
+            )}
+          >
+            {temperatureMeta.label}
+          </span>
+          <Badge variant="secondary" className="px-2 py-1 text-2xs font-medium rounded-md bg-muted text-muted-foreground border-border/50">
+            {categoryLabel}
+          </Badge>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 text-muted-foreground font-mono tabular-nums text-2xs">
+            <Clock className="size-3 shrink-0" />
+            <span>{stageTimer}</span>
+          </span>
         </div>
 
         {/* Menu de Ações e WhatsApp */}
@@ -159,10 +248,11 @@ export function LeadCard({
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="size-6 rounded-lg flex items-center justify-center bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors"
+              /* design-lint-ignore DL-14 reason:"Gatilho compacto em card denso de Kanban; card inteiro ja possui area tatil ampla" expiry:"2027-12-31" */
+              className="size-7 rounded-lg flex items-center justify-center bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Iniciar conversa no WhatsApp"
             >
-              <MessageSquare className="size-3" />
+              <MessageSquare className="size-3.5" />
             </a>
           )}
 
@@ -171,12 +261,13 @@ export function LeadCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-6 rounded-lg text-muted-foreground hover:text-foreground"
+                /* design-lint-ignore DL-14 reason:"Menu contextual secundario dentro de card denso de Kanban" expiry:"2027-12-31" */
+                className="size-7 rounded-lg text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <MoreVertical className="size-3" />
+                <MoreVertical className="size-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="text-xs w-52 p-2 rounded-lg">
+            <DropdownMenuContent align="end" className="text-xs w-52 p-2 rounded-xl">
               <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onOpenDetails?.(lead)} className="cursor-pointer font-medium">
                 <Edit3 className="size-3.5 mr-2" />
                 Abrir Ficha 360°
@@ -247,98 +338,129 @@ export function LeadCard({
         </div>
       </div>
 
+      {/* Corpo Estruturado: Título Sólido + Metadados sem Containeritis */}
+      <div className="space-y-2">
+        <div>
+          <h4 className="font-semibold text-sm text-foreground tracking-tight leading-snug break-words group-hover:text-primary transition-colors">
+            {lead.full_name}
+          </h4>
+          {lead.phone && (
+            <p className="text-2xs text-muted-foreground font-mono tabular-nums mt-1">
+              {lead.phone}
+            </p>
+          )}
+        </div>
+
+        {/* Metadados Diretos do Contato */}
+        <div className="space-y-1 pt-1 text-2xs">
+          <div className="flex items-center gap-2 text-foreground font-medium">
+            <MapPin className="size-3.5 text-muted-foreground shrink-0" />
+            <span className="break-words">{lead.destination || 'Destino a definir'}</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
+            <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
+              <Users className="size-3 text-muted-foreground shrink-0" />
+              <span>{paxBreakdown.total}</span>
+            </span>
+            {travelPeriod && (
+              <span className="inline-flex items-center gap-1">
+                <Calendar className="size-3 text-muted-foreground shrink-0" />
+                <span>{travelPeriod}</span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Faixa Financeira: Preço em Tabular-Nums + Comissão Estimada em Verde Esmeralda */}
+        {lead.estimated_value_cents > 0 && (
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <span className="font-mono tabular-nums font-bold text-sm text-foreground">
+              {formatMoney(lead.estimated_value_cents)}
+            </span>
+            {estimatedCommissionCents > 0 && (
+              <span className="font-mono tabular-nums font-semibold text-2xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
+                +{formatMoney(estimatedCommissionCents)} com.
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Alerta de Inatividade / Staleness */}
       {staleness.isStale && (
         <div
           className={cn(
-            'text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-md inline-flex items-center gap-1 border',
+            'text-3xs font-bold uppercase tracking-wider px-2 py-1 rounded-md inline-flex items-center gap-1 border',
             staleness.isCold
-              ? 'bg-rose-500/10 text-rose-600 border-rose-500/30'
-              : 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+              ? 'bg-rose-500/10 text-rose-600 border-rose-500/25'
+              : 'bg-amber-500/10 text-amber-600 border-amber-500/25'
           )}
         >
-          <AlertTriangle className="size-2.5 shrink-0" />
+          <AlertTriangle className="size-3 shrink-0" />
           <span>
-            {staleness.isCold ? 'Inativo há' : 'Sem Resposta há'} {staleness.days} dias
+            {staleness.isCold ? 'Inativo há' : 'Sem Resposta há'} {staleness.days}d
           </span>
         </div>
       )}
 
-      {/* Bloco de Destino, Período & Passageiros */}
-      <div className="p-2 rounded-lg bg-muted/40 border border-border/40 space-y-1 text-2xs">
-        <div className="flex items-center justify-between gap-1">
-          <div className="flex items-center gap-1 text-foreground font-semibold truncate">
-            <MapPin className="size-3 text-primary shrink-0" />
-            <span className="truncate">{lead.destination || 'Destino a definir'}</span>
-          </div>
-          {lead.estimated_value_cents > 0 && (
-            <span className="font-mono font-bold text-xs text-foreground shrink-0">
-              {formatMoney(lead.estimated_value_cents)}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-x-2 text-2xs text-muted-foreground pl-4">
-          {travelPeriod && <span>{travelPeriod}</span>}
-          {travelPeriod && <span>•</span>}
-          <span className="font-medium text-foreground/80">{paxBreakdown.total}</span>
-        </div>
-      </div>
+      {/* Rodapé Operacional: Status LGPD, Contadores, Avatar Responsável e Avanço 44px */}
+      <div className="flex items-center justify-between gap-2 pt-2 text-2xs border-t border-border/40">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 px-2 py-1 rounded-md font-medium border text-3xs',
+              isLgpdActive
+                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+            )}
+            title={isLgpdActive ? 'Consentimento LGPD Ativo' : 'Consentimento LGPD Pendente'}
+          >
+            <ShieldCheck className="size-3 shrink-0" />
+            <span>{isLgpdActive ? 'LGPD' : 'Pendente'}</span>
+          </span>
 
-      {/* Tags com Cores */}
-      {lead.tags && Array.isArray(lead.tags) && lead.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {lead.tags.map((tag: string) => {
-            const [name, color] = tag.split(':');
-            return (
-              <span
-                key={tag}
-                className="px-2 py-1 rounded-md text-3xs font-semibold border"
-                style={{
-                  backgroundColor: color ? `${color}15` : 'var(--muted)',
-                  borderColor: color ? `${color}40` : 'var(--border)',
-                  color: color || 'var(--foreground)',
-                }}
-              >
-                {name}
-              </span>
-            );
-          })}
-        </div>
-      )}
+          <span className="inline-flex items-center gap-1 text-muted-foreground font-mono tabular-nums" title="Observações e interações">
+            <MessageSquare className="size-3" />
+            <span>{counters.comments}</span>
+          </span>
 
-      {/* Rodapé do Card: Checklist & Membro Atribuído & Mudança de Estágio */}
-      <div className="flex items-center justify-between pt-1 text-2xs border-t border-border/50">
-        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-muted-foreground font-mono tabular-nums" title="Documentos e passageiros vinculados">
+            <Paperclip className="size-3" />
+            <span>{counters.attachments}</span>
+          </span>
+
           {checklistStats.total > 0 && (
             <span
               className={cn(
-                'font-mono flex items-center gap-1',
+                'font-mono tabular-nums inline-flex items-center gap-1',
                 checklistStats.done === checklistStats.total ? 'text-emerald-600 font-bold' : 'text-muted-foreground'
               )}
+              title="Checklist operacional"
             >
               <CheckCircle2 className="size-3" />
-              {checklistStats.done}/{checklistStats.total}
-            </span>
-          )}
-
-          {assignedMember && (
-            <span className="text-muted-foreground font-mono truncate max-w-24">
-              @{assignedMember.name || assignedMember.full_name}
+              <span>{checklistStats.done}/{checklistStats.total}</span>
             </span>
           )}
         </div>
 
-        {/* Ações de Avanço Rápido no Funil */}
-        <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        {/* Avatar do Responsável + Botões de Avanço Rápido 44px */}
+        <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <Avatar className="size-6 rounded-full border border-border/60" title={assignedMember?.full_name || assignedMember?.name || lead.full_name}>
+            <AvatarFallback className="text-3xs font-bold bg-muted text-foreground">
+              {assignedInitials}
+            </AvatarFallback>
+          </Avatar>
+
           {prevStageId && (
             <Button
               variant="ghost"
               size="icon"
               onClick={() => onStageChange?.(lead.id, prevStageId)}
-              className="size-6 rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-11 min-h-11 w-9 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
               title="Voltar etapa"
             >
-              <ChevronLeft className="size-3" />
+              <ChevronLeft className="size-4" />
             </Button>
           )}
           {nextStageId && (
@@ -346,10 +468,10 @@ export function LeadCard({
               variant="ghost"
               size="icon"
               onClick={() => onStageChange?.(lead.id, nextStageId)}
-              className="size-6 rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-11 min-h-11 w-9 rounded-lg text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
               title="Avançar etapa"
             >
-              <ChevronRight className="size-3" />
+              <ChevronRight className="size-4" />
             </Button>
           )}
         </div>

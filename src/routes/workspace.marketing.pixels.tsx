@@ -66,6 +66,7 @@ export default function WorkspaceMarketingPixelsPage() {
           storeId: config?.store_id,
           meta_pixel_id: metaPixelId.trim() || null,
           meta_capi_token: metaCapiToken.trim() || null,
+          meta_test_event_code: testEventCode.trim() || null,
           // Armazena o AW-XXXX e o api_secret juntos como JSON para retrocompat
           google_ads_id: ga4ApiSecret.trim()
             ? JSON.stringify({ conversion_id: googleAdsId.trim(), api_secret: ga4ApiSecret.trim() })
@@ -105,6 +106,7 @@ export default function WorkspaceMarketingPixelsPage() {
         data: {
           storeId: config.store_id,
           eventName: "Lead",
+          eventId: `test_capi_${config.store_id}_${Date.now()}`,
           eventSourceUrl: window.location.href,
           testEventCode: testEventCode.trim() || undefined,
           customData: {

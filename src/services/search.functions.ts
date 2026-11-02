@@ -154,8 +154,8 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
  .from("products")
  .select(
             normalizedCity
-              ? "id, title, slug, price_cents, status, store_id, product_media(url, is_cover, sort_order), store:stores!inner(id, name, city, settings)"
-              : "id, title, slug, price_cents, status, store_id, product_media(url, is_cover, sort_order), store:stores(id, name, city, settings)"
+              ? "id, title, slug, price_cents, status, store_id, product_media(url, sort_order), store:stores!inner(id, name, city, settings)"
+              : "id, title, slug, price_cents, status, store_id, product_media(url, sort_order), store:stores(id, name, city, settings)"
           )
           .eq("status", "published")
           .limit(limit);
@@ -167,7 +167,7 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
 
  const extractCover = (mediaList: any[] = []) => {
  if (!mediaList || mediaList.length === 0) return null;
- const cover = mediaList.find((m) => m.is_cover);
+ const cover = mediaList.find((m) => m.sort_order === 0) || mediaList[0];
  return cover?.url || mediaList[0]?.url || null;
  };
 

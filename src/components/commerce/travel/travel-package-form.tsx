@@ -77,6 +77,11 @@ import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media
 import { formatMoney } from "@/lib/money";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
+import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
+import {
+  publishExtractedTravelPackageToCatalogAndMatchRadar,
+  type ExtractedTravelAdDTO,
+} from "@/services/travel-ai-extractor.functions";
 
 export interface TravelPackageFormProps {
   value: Partial<TravelPackageData>;
@@ -139,6 +144,7 @@ export function TravelPackageForm({
   categoriesList = [],
   onOpenQuickCategory,
   onPriceChange,
+  setValue,
   storeName = "Agência Parceira",
   storePhone = "",
 }: TravelPackageFormProps) {
@@ -166,12 +172,12 @@ export function TravelPackageForm({
   const [isSavingHotel, setIsSavingHotel] = useState(false);
 
   // Queries para carregar Destinos e Banco de Hotéis
-  const { data: destinationsList = [] } = useQuery({
+  const { data: destinationsList = [], isLoading: isLoadingDestinations } = useQuery({
     queryKey: ["travel_destinations_options"],
     queryFn: () => listDestinations().catch(() => []),
   });
 
-  const { data: hotelsBankList = [] } = useQuery({
+  const { data: hotelsBankList = [], isLoading: isLoadingHotels } = useQuery({
     queryKey: ["travel_hotels_options"],
     queryFn: () => listHotelsBank().catch(() => []),
   });
@@ -665,9 +671,138 @@ export function TravelPackageForm({
 
   // Modal de Transporte Ativo
   const currentTransportType = value.transport_type || "aereo";
+  const [lastExtractedOcrAd, setLastExtractedOcrAd] = useState<ExtractedTravelAdDTO | null>(null);
+  const [isAutoPublishingOcr, setIsAutoPublishingOcr] = useState(false);
+
+  const handleOcrPackageExtracted = (extracted: ExtractedTravelAdDTO) => {
+    setLastExtractedOcrAd(extracted);
+
+    if (extracted.title && setValue) {
+      setValue("title", extracted.title, { shouldDirty: true });
+    }
+
+    if (extracted.price_cents && extracted.price_cents > 0 && onPriceChange) {
+      onPriceChange(extracted.price_cents);
+    }
+
+    const matchedBankHotel = hotelsBankList.find(
+      (h: HotelBankDTO) =>
+        (extracted.matched_hotel_id && h.id === extracted.matched_hotel_id) ||
+        (extracted.hotel_name && h.name.toLowerCase().includes(extracted.hotel_name.toLowerCase())),
+    );
+
+    const nextDepartureOptions = [...departureOptions];
+    if (extracted.departure_date) {
+      nextDepartureOptions.unshift({
+        id: `dep_ocr_${Date.now()}`,
+        label: extracted.dates_text || "Saída Extraída via OCR",
+        departure_date: extracted.departure_date,
+        return_date: extracted.return_date || "",
+        status: "confirmed",
+        available_seats: 20,
+      });
+    }
+
+    onChange({
+      ...value,
+      transport_type:
+        extracted.transport_type === "bus"
+          ? "terrestre"
+          : extracted.transport_type === "cruise"
+            ? "cruzeiro"
+            : "aereo",
+      destination: {
+        ...destination,
+        name: extracted.destination_city || destination.name,
+        region: extracted.destination_state || destination.region,
+        country: extracted.destination_country || destination.country || "Brasil",
+      },
+      resort: {
+        ...resort,
+        name: matchedBankHotel?.name || extracted.hotel_name || resort.name,
+        meal_plan:
+          extracted.meal_plan ||
+          matchedBankHotel?.regime_options?.[0] ||
+          resort.meal_plan ||
+          "Café da Manhã",
+        cover_image_url:
+          matchedBankHotel?.cover_photo_url ||
+          extracted.suggested_background_url ||
+          resort.cover_image_url,
+        photos:
+          matchedBankHotel?.photos && matchedBankHotel.photos.length > 0
+            ? matchedBankHotel.photos
+            : resort.photos,
+        badges:
+          matchedBankHotel?.badges && matchedBankHotel.badges.length > 0
+            ? matchedBankHotel.badges
+            : resort.badges,
+        bio_bullets:
+          extracted.highlights && extracted.highlights.length > 0
+            ? extracted.highlights
+            : matchedBankHotel?.bio_bullets || resort.bio_bullets,
+      },
+      inclusions:
+        extracted.inclusions && extracted.inclusions.length > 0
+          ? Array.from(new Set([...(value.inclusions || []), ...extracted.inclusions]))
+          : value.inclusions,
+      departure_options: nextDepartureOptions,
+    });
+  };
+
+  const handleAutoPublishOcrToCatalogAndRadar = async () => {
+    if (!lastExtractedOcrAd) return;
+    setIsAutoPublishingOcr(true);
+    try {
+      const res = await publishExtractedTravelPackageToCatalogAndMatchRadar({
+        data: lastExtractedOcrAd,
+      });
+      toast.success(
+        `Publicado no catálogo! ${res.radarMatchesFound} match(es) no Radar e ${res.matchedCrmLeadsCount} lead(s) compatíveis.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["opportunity-matches"] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-crm-leads"] });
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao autopublicar pacote no catálogo.");
+    } finally {
+      setIsAutoPublishingOcr(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      {/* ─────────────────────────────────────────────────────────────
+          0. IMPORTADOR OCR DE PRINT / FOLDER + AUTOPUBLICAÇÃO NO RADAR
+      ───────────────────────────────────────────────────────────── */}
+      {showRoteiro && (
+        <div className="space-y-3">
+          <TravelAiImporterBanner onExtracted={handleOcrPackageExtracted} />
+          {lastExtractedOcrAd && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+              <div className="text-xs text-foreground">
+                <span className="font-bold">Pacote pronto para Catálogo & Radar:</span>{" "}
+                {lastExtractedOcrAd.title} ({lastExtractedOcrAd.destination_city})
+                {lastExtractedOcrAd.hotel_name ? ` · Hotel: ${lastExtractedOcrAd.hotel_name}` : ""}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAutoPublishOcrToCatalogAndRadar}
+                disabled={isAutoPublishingOcr}
+                className="h-11 min-h-11 px-4 text-xs font-bold gap-2 shrink-0 focus-visible:ring-2"
+              >
+                {isAutoPublishingOcr ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="size-3.5" />
+                )}
+                <span>Autopublicar & Cruzar Oportunidades</span>
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ─────────────────────────────────────────────────────────────
           1. ABA ROTEIRO & DESTINO
       ───────────────────────────────────────────────────────────── */}
@@ -787,7 +922,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={() => setShowNewDestModal(!showNewDestModal)}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Novo Destino</span>
@@ -802,7 +937,7 @@ export function TravelPackageForm({
                   <span>Vincular do Catálogo de Destinos</span>
                 </Label>
                 <Select onValueChange={handleSelectDestinationFromBank}>
-                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectTrigger disabled={isLoadingDestinations} className="h-11 rounded-lg text-xs bg-background">
                     <SelectValue placeholder="Escolher um destino cadastrado..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -824,7 +959,7 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewDestModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -858,7 +993,7 @@ export function TravelPackageForm({
                     variant="ghost"
                     onClick={() => setShowNewDestModal(false)}
                     disabled={isSavingDest}
-                    className="rounded-lg text-xs h-9"
+                    className="rounded-lg text-xs min-h-11"
                   >
                     Cancelar
                   </Button>
@@ -867,7 +1002,7 @@ export function TravelPackageForm({
                     size="sm"
                     onClick={handleQuickAddDest}
                     disabled={isSavingDest || !quickDestName.trim()}
-                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-9"
+                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 min-h-11"
                   >
                     {isSavingDest ? (
                       <>
@@ -1013,7 +1148,7 @@ export function TravelPackageForm({
                             size="sm"
                             disabled={idx === 0}
                             onClick={() => moveBioBullet(idx, "up")}
-                            className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                             title="Mover para cima"
                           >
                             <ChevronUp className="size-3.5" />
@@ -1024,7 +1159,7 @@ export function TravelPackageForm({
                             size="sm"
                             disabled={idx === resort.bio_bullets!.length - 1}
                             onClick={() => moveBioBullet(idx, "down")}
-                            className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                             title="Mover para baixo"
                           >
                             <ChevronDown className="size-3.5" />
@@ -1036,7 +1171,7 @@ export function TravelPackageForm({
                         variant="ghost"
                         size="sm"
                         onClick={() => removeBioBullet(idx)}
-                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -1060,7 +1195,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={addItineraryDay}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Adicionar Dia</span>
@@ -1076,7 +1211,7 @@ export function TravelPackageForm({
                   size="sm"
                   variant="outline"
                   onClick={addItineraryDay}
-                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
+                  className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer"
                 >
                   <Plus className="size-3.5" />
                   <span>Cadastrar Primeiro Dia</span>
@@ -1109,7 +1244,7 @@ export function TravelPackageForm({
                           size="sm"
                           disabled={idx === 0}
                           onClick={() => moveDay(idx, "up")}
-                          className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                           title="Mover dia para cima"
                         >
                           <ChevronUp className="size-3.5" />
@@ -1120,7 +1255,7 @@ export function TravelPackageForm({
                           size="sm"
                           disabled={idx === itinerary.length - 1}
                           onClick={() => moveDay(idx, "down")}
-                          className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                            className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
                           title="Mover dia para baixo"
                         >
                           <ChevronDown className="size-3.5" />
@@ -1130,7 +1265,7 @@ export function TravelPackageForm({
                           variant="ghost"
                           size="sm"
                           onClick={() => removeItineraryDay(idx)}
-                          className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                           title="Excluir dia"
                         >
                           <Trash2 className="size-3.5" />
@@ -1176,7 +1311,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={addRecommendation}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Adicionar Dica</span>
@@ -1198,7 +1333,7 @@ export function TravelPackageForm({
                         variant="ghost"
                         size="sm"
                         onClick={() => removeRecommendation(idx)}
-                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -1263,7 +1398,7 @@ export function TravelPackageForm({
                   size="sm"
                   variant="outline"
                   onClick={() => setShowNewHotelModal(!showNewHotelModal)}
-                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Plus className="size-3.5" />
                   <span>+ Novo Hotel</span>
@@ -1278,6 +1413,7 @@ export function TravelPackageForm({
                 placeholder="Buscar hotel, resort ou pousada (ex: Salinas, Nannai, Tivoli)..."
                 value={resort.name}
                 storeHotels={hotelsBankList}
+                disabled={isLoadingHotels}
                 onChange={(hotelId, hotelItem) => handleSelectHotelFromCombobox(hotelId, hotelItem)}
                 helperText="Busque no banco central ou no catálogo de sua agência para preencher automaticamente destino, fotos e refeições."
               />
@@ -1291,7 +1427,7 @@ export function TravelPackageForm({
                   <button
                     type="button"
                     onClick={() => setShowNewHotelModal(false)}
-                    className="size-5 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -1340,7 +1476,7 @@ export function TravelPackageForm({
                     variant="ghost"
                     onClick={() => setShowNewHotelModal(false)}
                     disabled={isSavingHotel}
-                    className="rounded-lg text-xs h-9"
+                    className="rounded-lg text-xs min-h-11"
                   >
                     Cancelar
                   </Button>
@@ -1349,7 +1485,7 @@ export function TravelPackageForm({
                     size="sm"
                     onClick={handleQuickAddHotel}
                     disabled={isSavingHotel || !quickHotelName.trim() || !quickHotelCity.trim()}
-                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 h-9"
+                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground gap-2 min-h-11"
                   >
                     {isSavingHotel ? (
                       <>
@@ -1456,7 +1592,7 @@ export function TravelPackageForm({
                       <button
                         type="button"
                         onClick={() => removeBadge(idx)}
-                        className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center hover:bg-destructive/20 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <X className="size-3" />
                       </button>
@@ -1734,7 +1870,7 @@ export function TravelPackageForm({
                           <button
                             type="button"
                             onClick={() => handleRemoveGateway(gw)}
-                            className="size-4 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-11 min-h-11 min-w-11 hover:bg-destructive/20 rounded flex items-center justify-center ml-1 text-primary hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <X className="size-2.5" />
                           </button>
@@ -1844,7 +1980,7 @@ export function TravelPackageForm({
                 size="sm"
                 variant="outline"
                 onClick={handleAddDeparture}
-                className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer border-primary/30 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus className="size-3.5" />
                 <span>+ Adicionar Saída</span>
@@ -1862,7 +1998,7 @@ export function TravelPackageForm({
                   size="sm"
                   variant="outline"
                   onClick={handleAddDeparture}
-                  className="rounded-lg text-xs font-semibold gap-1 h-9 cursor-pointer"
+                className="rounded-lg text-xs font-semibold gap-1 min-h-11 cursor-pointer"
                 >
                   <Plus className="size-3.5" />
                   <span>Cadastrar Primeira Saída</span>
@@ -1884,7 +2020,7 @@ export function TravelPackageForm({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveDeparture(opt.id)}
-                        className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -2281,7 +2417,7 @@ export function TravelPackageForm({
                       type="button"
                       onClick={() => toggleInclusion(item)}
                       className={cn(
-                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isChecked
                           ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-semibold"
                           : "bg-background border-border/60 text-muted-foreground hover:border-emerald-500/30"
@@ -2347,7 +2483,7 @@ export function TravelPackageForm({
                       type="button"
                       onClick={() => toggleExclusion(item)}
                       className={cn(
-                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isChecked
                           ? "bg-destructive/15 border-destructive/40 text-destructive font-semibold"
                           : "bg-background border-border/60 text-muted-foreground hover:border-destructive/30"
@@ -2408,7 +2544,7 @@ export function TravelPackageForm({
                       type="button"
                       onClick={() => toggleBoardingDoc(item)}
                       className={cn(
-                        "h-9 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isChecked
                           ? "bg-primary/15 border-primary/40 text-primary font-semibold"
                           : "bg-background border-border/60 text-muted-foreground hover:border-primary/30"

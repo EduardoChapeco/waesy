@@ -55,7 +55,7 @@ export function TravelHotelSlider({
                 onHotelClick?.(hotel);
               }
             }}
-            className="w-72 sm:w-80 shrink-0 bg-card rounded-lg overflow-hidden border border-border/70 hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors duration-200 cursor-pointer group flex flex-col"
+            className="w-72 sm:w-80 shrink-0 bg-card rounded-lg overflow-hidden border-0 hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors duration-200 cursor-pointer group flex flex-col"
           >
             {/* Imagem de Capa */}
             <div className="relative aspect-[16/10] w-full bg-muted/40 overflow-hidden">
@@ -66,11 +66,13 @@ export function TravelHotelSlider({
               />
               <div className="absolute inset-0 bg-background/60 pointer-events-none" />
 
-              <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 backdrop-blur-md text-warning text-xs">
-                {Array.from({ length: hotel.stars || 4 }).map((_, i) => (
-                  <Star key={i} className="size-3 fill-warning text-warning" />
-                ))}
-              </div>
+              {Boolean(hotel.stars && hotel.stars > 0) && (
+                <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-background/90 text-warning text-xs">
+                  {Array.from({ length: hotel.stars! }).map((_, i) => (
+                    <Star key={i} className="size-3 fill-warning text-warning" />
+                  ))}
+                </div>
+              )}
 
               {hotel.rating && (
                 <Badge className="absolute top-3 right-3 bg-primary text-primary-foreground font-semibold text-xs border-none flex items-center gap-1">

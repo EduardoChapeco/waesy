@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/commerce/page-header";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { SeoGeoOptimizationPanel, type SeoGeoMetadata } from "@/components/seo";
 import { createArticle, type NewsSectionDTO } from "@/services/news.functions";
 import { processUrlWithAI } from "@/services/mining.functions";
 import { toast } from "sonner";
@@ -40,6 +41,12 @@ function WorkspaceNovaMateriaPage() {
  const [readingTime, setReadingTime] = useState(3);
  const [tags, setTags] = useState<string[]>([]);
  const [tagsInput, setTagsInput] = useState("");
+ const [seoGeo, setSeoGeo] = useState<SeoGeoMetadata>({
+   seoTitle: "",
+   seoDescription: "",
+   keywords: [],
+   allowAiIndexing: true,
+ });
 
  // Seções do artigo
  const [sections, setSections] = useState<NewsSectionDTO[]>([
@@ -391,7 +398,21 @@ function WorkspaceNovaMateriaPage() {
  </div>
  </div>
 
- {/* ── 3. Corpo da Matéria (Blocos) ── */}
+ {/* ── 3. Painel de Otimização SEO, GEO e Agentes de IA ── */}
+ <SeoGeoOptimizationPanel
+   value={seoGeo}
+   onChange={(upd) => {
+     setSeoGeo(upd);
+     if (upd.keywords && upd.keywords.length > 0) {
+       setTags(upd.keywords);
+       setTagsInput(upd.keywords.join(", "));
+     }
+   }}
+   referenceTitle={title}
+   referenceDescription={subtitle}
+ />
+
+ {/* ── 4. Corpo da Matéria (Blocos) ── */}
  <div className="p-5 rounded-lg bg-card border border-border/60 space-y-4">
  <div className="flex items-center justify-between">
  <span className="text-xs font-black uppercase tracking-wider text-primary">

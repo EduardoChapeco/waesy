@@ -42,7 +42,15 @@ export function TestimonialCarousel({
  transientData?.reviews ??
  null;
 
- const testimonials = isDynamic ? (serverReviews ?? []) : (staticTestimonials ?? []);
+ const testimonials = (serverReviews && serverReviews.length > 0)
+   ? serverReviews
+   : (staticTestimonials && staticTestimonials.length > 0)
+   ? staticTestimonials
+   : [];
+
+ if (testimonials.length === 0) {
+   return null;
+ }
 
  return (
  <div
@@ -76,7 +84,7 @@ export function TestimonialCarousel({
  {testimonials.map((item: any, idx: number) => (
  <CarouselItem key={idx} className="pl-2 @md:pl-4 @md:basis-1/2 @lg:basis-1/3">
  <div className="p-1 h-full">
- <Card className="h-full border-muted/50 bg-background/50 backdrop-blur ">
+ <Card className="h-full border-border/60 bg-card">
  <CardContent className="flex flex-col h-full p-6">
  {item.rating && (
  <div className="flex gap-1 mb-4 text-warning">

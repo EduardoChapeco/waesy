@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tansta
 import { useState, useMemo, useEffect, useRef, useCallback, lazy } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Sparkles, ExternalLink, Film } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Tractor, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Building2, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette, Ticket, Mic, Coffee, HelpCircle, Compass, Camera, ExternalLink, Film } from 'lucide-react';
 import type { StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import type { ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -46,6 +46,7 @@ const DigitalFileDropzone = lazy(() =>
 import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
+import { SeoGeoOptimizationPanel, type SeoGeoMetadata } from "@/components/seo";
 import { cn } from "@/lib/utils";
 import { ClassifiedTemplateStyle, ClassifiedDisplayMode, CivilInquiryQuestion, CivilInquiryConfig } from "@/types/unified-ad-engine";
 
@@ -1216,6 +1217,18 @@ function SpecializedClassifiedEditor({
         ? initialData.attributes.bio_bullets.join("\n")
         : ""
   );
+
+  const [seoGeo, setSeoGeo] = useState<SeoGeoMetadata>({
+    seoTitle: initialData?.attributes?.seo_title || initialData?.title || "",
+    seoDescription: initialData?.attributes?.seo_description || initialData?.attributes?.summary || "",
+    keywords: Array.isArray(initialData?.attributes?.tags) ? initialData.attributes.tags : [],
+    latitude: initialData?.latitude ?? null,
+    longitude: initialData?.longitude ?? null,
+    neighborhood: initialData?.neighborhood || "",
+    city: initialData?.city || "",
+    state: initialData?.state || "",
+    allowAiIndexing: initialData?.attributes?.allow_ai_indexing ?? true,
+  });
 
   const buildCurrentNicheContext = () => {
     const ctx: Record<string, any> = {};
@@ -3283,7 +3296,7 @@ const [aiInstructions, setAiInstructions] = useState("");
           supports_fresh_pricing: true,
           default_pricing_mode: groceryDefaultPricingMode,
           avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-          price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+          price_per_kg_cents: groceryPricePerKgCents || null,
           price_per_unit_cents: priceCents || 0,
         } : undefined;
         attributes.grocery_ripeness_config = groceryRipenessEnabled ? {
@@ -4027,7 +4040,7 @@ const [aiInstructions, setAiInstructions] = useState("");
           supports_fresh_pricing: true,
           default_pricing_mode: groceryDefaultPricingMode,
           avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-          price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+          price_per_kg_cents: groceryPricePerKgCents || null,
           price_per_unit_cents: priceCents || 0,
         } : undefined,
         grocery_ripeness_config: groceryRipenessEnabled ? {
@@ -4477,7 +4490,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   onClick={() => handleOpenCopilot("title")}
                   className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  <Sparkles className="size-4" />
+                  <FileText className="size-4" />
                   <span>Sugerir título</span>
                 </Button>
               </div>
@@ -4825,8 +4838,8 @@ const [aiInstructions, setAiInstructions] = useState("");
                     onClick={() => setTravelStudioOpen(true)}
                     className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-primary/40 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <Sparkles className="size-4 shrink-0 text-primary" />
-                    <span>Estúdio Excelência (Story 9:16 + WhatsApp)</span>
+                    <Compass className="size-4 shrink-0 text-primary" />
+                    <span>Estúdio de Divulgação (Story 9:16 + WhatsApp)</span>
                   </Button>
                 </div>
 
@@ -10443,6 +10456,20 @@ const [aiInstructions, setAiInstructions] = useState("");
                 </div>
               )}
 
+              {/* Otimização Universal de SEO, GEO e Indexação Agêntica */}
+              <SeoGeoOptimizationPanel
+                value={seoGeo}
+                onChange={(upd) => {
+                  setSeoGeo(upd);
+                  if (upd.keywords && upd.keywords.length > 0) {
+                    setEditorialTags(upd.keywords);
+                  }
+                }}
+                referenceTitle={title}
+                referenceDescription={description}
+                referenceAddress={locationName}
+              />
+
               {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
               {isPaymentAllowed && niche.id !== "evento" && (
                 <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
@@ -11668,7 +11695,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                         supports_fresh_pricing: true,
                         default_pricing_mode: groceryDefaultPricingMode,
                         avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-                        price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+                        price_per_kg_cents: groceryPricePerKgCents || undefined,
                         price_per_unit_cents: priceCents || 0,
                       } : undefined,
                       groceryRipenessConfig: groceryRipenessEnabled ? {
@@ -11706,8 +11733,8 @@ const [aiInstructions, setAiInstructions] = useState("");
                     previewViewport={previewDevice}
                     isOwner={true}
                     canManage={true}
-                    onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
-                    onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
+                    onOpenBookingModal={undefined}
+                    onOpenProposalModal={undefined}
                     onEdit={() => {
                       setIsPreviewModalOpen(false);
                       setCurrentStep(2);
@@ -11750,7 +11777,7 @@ const [aiInstructions, setAiInstructions] = useState("");
           priceCents={priceCents ?? null}
           installments={maxInstallments}
           backgroundImageUrl={images[0] || null}
-          storeName={selectedStoreId ? undefined : "Excelência Tour"}
+          storeName={selectedStoreId ? userStores.find((s) => s.id === selectedStoreId)?.name : undefined}
           onAttachToClassified={(imageUrl) => {
             setImages((prev) => [imageUrl, ...prev]);
             toast.success("Story 9:16 exportado e adicionado à galeria de fotos!");

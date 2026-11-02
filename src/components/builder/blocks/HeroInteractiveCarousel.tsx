@@ -114,7 +114,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-11 sm:h-12 px-5 sm:px-6 text-xs sm:text-sm font-semibold rounded-lg border-border bg-card/60 backdrop-blur-xs hover:bg-muted text-foreground transition-colors cursor-pointer"
+                  className="h-11 sm:h-12 px-5 sm:px-6 text-xs sm:text-sm font-semibold rounded-lg border-border bg-card hover:bg-muted text-foreground transition-colors cursor-pointer"
                   asChild
                 >
                   <a href={secondaryHref}>
@@ -148,14 +148,14 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
 
               {/* Tag Superior */}
               {currentSlide.highlightTag && (
-                <div className="absolute top-3 left-3 px-3 py-1 rounded-lg bg-background/80 backdrop-blur-md border border-border/60 text-xs font-bold text-foreground uppercase tracking-wider">
+                <div className="absolute top-3 left-3 px-3 py-1 rounded-lg bg-background text-foreground border border-border/60 text-xs font-bold uppercase tracking-wider">
                   {currentSlide.highlightTag}
                 </div>
               )}
 
               {/* Card Flutuante de Indicador */}
               {currentSlide.floatingStat && (
-                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 px-4 py-3 rounded-lg bg-card/90 backdrop-blur-md border border-border/60 shadow-xs flex items-center gap-3">
+                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 px-4 py-3 rounded-lg bg-card border border-border/60 shadow-xs flex items-center gap-3">
                   {currentSlide.floatingStat.statusDot && (
                     <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none shrink-0" />
                   )}

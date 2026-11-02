@@ -7,7 +7,7 @@
 
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Gift, Sparkles, ArrowRight, CheckCircle2, Shield } from "lucide-react";
+import { Gift, ArrowRight, CheckCircle2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WzCardMockup } from "@/components/wz/WzCardMockup";

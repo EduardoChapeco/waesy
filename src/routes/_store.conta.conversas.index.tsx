@@ -14,7 +14,6 @@ import {
   MessageCircle,
   MessageSquarePlus,
   Pin,
-  Plus,
   Search,
   ShoppingBag,
   Store,
@@ -25,12 +24,17 @@ import {
   Wrench,
   X,
 } from "lucide-react";
+import { List } from "@phosphor-icons/react";
 import {
   listCustomerChatThreads,
   mutateCustomerChatThreadAction,
   searchChatContacts,
   startCustomerChatThread,
 } from "@/services/chat.functions";
+import {
+  getChatNoorSection,
+  type HomePageSectionDTO,
+} from "@/services/admin-home-cms.functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { CustomerChatRoom } from "./_store.conta.conversas.$id";
@@ -51,6 +55,9 @@ import {
   type ChatListItemData,
   type ReadReceiptState,
 } from "@/components/chat/chat-list-item";
+import { LocationMasterPill } from "@/components/location/location-master-pill";
+import { NoorChatBentoGrid } from "@/components/chat/NoorChatBentoGrid";
+import { drawerStore } from "@/lib/drawer-store";
 import { getRealtimeChannel } from "@/services/realtime-channel";
 import { toast } from "sonner";
 
@@ -58,9 +65,16 @@ export const Route = createFileRoute("/_store/conta/conversas/")({
   head: () => ({ meta: [{ title: "Mensagens | Waesy" }] }),
   loader: async () => {
     try {
-      return (await listCustomerChatThreads().catch(() => [])) || [];
+      const [threads, noorSection] = await Promise.all([
+        listCustomerChatThreads().catch(() => []),
+        getChatNoorSection().catch(() => null),
+      ]);
+      return {
+        threads: threads || [],
+        noorSection: noorSection || null,
+      };
     } catch {
-      return [];
+      return { threads: [], noorSection: null };
     }
   },
   errorComponent: CustomerConversationsErrorComponent,
@@ -98,21 +112,19 @@ const FILTER_TABS = [
   { id: "archived", label: "Arquivadas" },
 ];
 
-const NOOR_DOCK_ITEMS = [
-  { id: "explorar", label: "Explorar", to: "/", icon: Compass },
-  { id: "marketplace", label: "Marketplace", to: "/marketplace", icon: ShoppingBag },
-  { id: "classificados", label: "Classificados", to: "/classificados", icon: Tag },
-  { id: "mobilidade", label: "Mobilidade", to: "/mobilidade", icon: Car },
-  { id: "bank", label: "Bank", to: "/conta/financas", icon: Wallet },
-  { id: "servicos", label: "Serviços", to: "/servicos", icon: Wrench },
-  { id: "eventos", label: "Eventos", to: "/eventos", icon: Calendar },
-  { id: "empregos", label: "Empregos", to: "/empregos", icon: Briefcase },
-];
-
 function CustomerConversationsIndexPage() {
-  const initialThreads = Route.useLoaderData();
+  const loaderData = (Route.useLoaderData?.() as any) || {};
+  const initialThreads = loaderData.threads || [];
+  const initialNoorSection = loaderData.noorSection || null;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { data: noorSection } = useQuery({
+    queryKey: ["chat-noor-bento-section"],
+    queryFn: () => getChatNoorSection(),
+    initialData: initialNoorSection,
+    staleTime: 30000,
+  });
 
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -204,14 +216,14 @@ function CustomerConversationsIndexPage() {
     };
   }, []);
 
-  const { data: threads } = useQuery({
+  const { data: threads, isLoading: isLoadingThreads } = useQuery({
     queryKey: ["customer-chat-threads"],
     queryFn: () => listCustomerChatThreads(),
     initialData: initialThreads,
     refetchInterval: 12000,
   });
 
-  const { data: contactsData } = useQuery({
+  const { data: contactsData, isLoading: isLoadingContacts } = useQuery({
     queryKey: ["chat-contacts", contactSearch],
     queryFn: () => searchChatContacts({ data: { query: contactSearch } }),
     enabled: newChatOpen,
@@ -418,17 +430,30 @@ function CustomerConversationsIndexPage() {
 
   return (
     <div className="relative w-full max-w-5xl mx-auto min-h-screen flex flex-col space-y-3 pb-32 px-0 sm:px-4 md:px-0">
-      {/* ── FASE 1: Header Nativo WhatsApp iOS 2024 ("Conversas" + Ações Contextuais) ── */}
-      <header className="flex items-center justify-between gap-3 border-b border-border/40 px-4 sm:px-0 pb-3 pt-2 sticky top-0 z-20 bg-background/95 backdrop-blur-md">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-          Conversas
-        </h1>
+      {/* ── Header Minimalista Padronizado (Hambúrguer SuperApp + LocationMasterPill + Busca/Notificações) ── */}
+      <header className="flex items-center justify-between gap-2 border-b border-border/40 px-3 sm:px-0 py-2 sticky top-0 z-20 bg-background/95 backdrop-blur-md">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {/* Botão Hambúrguer Delicado/Minimalista (Abre SuperApp Drawer) */}
+          <button
+            type="button"
+            onClick={() => drawerStore.openSuperApp()}
+            aria-label="Abrir menu de módulos"
+            title="Menu Waesy"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+          >
+            <List className="size-6" weight="bold" />
+          </button>
 
-        <div className="flex items-center gap-2">
+          {/* Location Master Pill (GPS Geolocation + Seletor de Cidades Integrado com Desktop) */}
+          <LocationMasterPill className="max-w-48 sm:max-w-64" />
+        </div>
+
+        {/* Lado Direito: Busca Rápida + Notificações (Sem botão + no topo) */}
+        <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
             onClick={() => setShowSearch((s) => !s)}
-            className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Buscar conversa"
           >
             <Search className="size-5" />
@@ -437,52 +462,24 @@ function CustomerConversationsIndexPage() {
           <button
             type="button"
             onClick={() => toast.info("Notificações de mensagens sincronizadas.")}
-            className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Notificações"
           >
             <Bell className="size-5" />
           </button>
-
-          <button
-            type="button"
-            onClick={() => setNewChatOpen(true)}
-            className="size-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Nova conversa ou ação rápida"
-          >
-            <Plus className="size-5" />
-          </button>
         </div>
       </header>
 
-      {/* ── Scroll-Aware Top Noor Squircle Dock (Recolhe ao rolar para baixo, expande ao subir) ── */}
-      <nav
-        aria-label="Atalhos do Ecossistema"
-        className={`transition-opacity duration-300 ease-out px-4 sm:px-0 ${
+      {/* ── Menu Estilo Noor (BentoGrid / Tetris 3 Linhas 100% Editável via CMS) ── */}
+      <div
+        className={`transition-opacity duration-300 ease-out ${
           isDockCollapsed
             ? "max-h-0 opacity-0 overflow-hidden py-0 pointer-events-none"
-            : "max-h-28 opacity-100 py-1"
+            : "max-h-96 opacity-100 py-1"
         }`}
       >
-        <div className="flex items-center gap-3 overflow-x-auto scroll-area snap-x snap-mandatory py-1">
-          {NOOR_DOCK_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.id}
-                to={item.to as any}
-                className="snap-start shrink-0 flex flex-col items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl p-1"
-              >
-                <div className="size-12 rounded-2xl bg-muted/60 group-hover:bg-primary/15 border border-border/60 group-hover:border-primary/30 flex items-center justify-center text-foreground group-hover:text-primary transition-colors">
-                  <Icon className="size-5" />
-                </div>
-                <span className="text-2xs font-semibold text-muted-foreground group-hover:text-foreground">
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+        <NoorChatBentoGrid items={noorSection?.items} />
+      </div>
 
       {/* Barra de busca expansível sob demanda */}
       {showSearch && (
@@ -501,7 +498,7 @@ function CustomerConversationsIndexPage() {
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 size-9 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+                className="absolute right-1 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
               >
                 <X className="size-4" />
               </button>
@@ -542,8 +539,20 @@ function CustomerConversationsIndexPage() {
         })}
       </div>
 
-      {/* ── FASE 1 & 2: Empty State Silencioso (Marca d'Água) ou Lista Nativa <ChatListItem> ── */}
-      {filtered.length === 0 ? (
+      {/* ── FASE 1 & 2: Loading Skeleton, Empty State ou Lista Nativa <ChatListItem> ── */}
+      {isLoadingThreads && (!threads || threads.length === 0) ? (
+        <div className="w-full divide-y divide-border/20 rounded-none sm:rounded-lg border-y sm:border border-border/50 bg-card overflow-hidden p-3 space-y-3" aria-busy="true" aria-label="Carregando conversas">
+          {Array.from({ length: 4 }).map((_, sIdx) => (
+            <div key={`chat-skel-${sIdx}`} className="flex items-center gap-3 py-2 animate-pulse motion-reduce:animate-none">
+              <div className="size-12 rounded-full bg-muted/60 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-32 bg-muted/60 rounded" />
+                <div className="h-3 w-48 bg-muted/40 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 py-24 px-4 text-center select-none">
           <MessageCircle className="size-14 text-muted-foreground/25 mb-3" />
           <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
@@ -819,17 +828,15 @@ function CustomerConversationsIndexPage() {
               <div className="flex items-center justify-end gap-2 pt-2">
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => setSelectedTarget(null)}
-                  className="rounded-lg text-xs font-semibold h-10 px-4 cursor-pointer"
+                  className="rounded-lg text-xs font-semibold h-11 min-h-11 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Voltar
                 </Button>
                 <Button
-                  size="sm"
                   disabled={isStartingChat}
                   onClick={handleStartConversation}
-                  className="rounded-lg text-xs font-bold h-10 px-5 cursor-pointer"
+                  className="rounded-lg text-xs font-bold h-11 min-h-11 px-5 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {isStartingChat ? "Enviando..." : "Enviar"}
                 </Button>

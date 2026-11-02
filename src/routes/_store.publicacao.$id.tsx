@@ -1,7 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPostById, listPostComments, createPostComment, togglePostLike, type MuralFeedItem } from "@/services/social.functions";
+import {
+  getPostById,
+  listPostComments,
+  createPostComment,
+  togglePostLike,
+  type MuralFeedItem,
+} from "@/services/social.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { formatRelativeTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -9,7 +15,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageSquare, Share2, Bookmark, ChevronLeft, ShoppingBag, Calendar, MapPin, ExternalLink, Send, Star } from "lucide-react";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { ContentActionsMenu } from "@/components/common/content-actions-menu";
+import {
+  Heart,
+  MessageSquare,
+  Share2,
+  Bookmark,
+  ChevronLeft,
+  ShoppingBag,
+  Calendar,
+  MapPin,
+  ExternalLink,
+  Send,
+  Star,
+} from "lucide-react";
 import { toast } from "sonner";
 import { RichPostContent } from "@/components/community/rich-post-content";
 
@@ -85,7 +105,7 @@ export const Route = createFileRoute("/_store/publicacao/$id")({
 });
 
 function PostThreadPage() {
-  const { post: initialPost, session } = ((Route.useLoaderData() || {}) as any);
+  const { post: initialPost, session } = (Route.useLoaderData() || {}) as any;
   const params = Route.useParams();
   const queryClient = useQueryClient();
 
@@ -153,11 +173,13 @@ function PostThreadPage() {
   const handleShare = () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
     if (navigator.share) {
-      navigator.share({
-        title: `${post?.author?.name || "Membro"} no Waesy`,
-        text: post?.content?.slice(0, 80) || "Veja esta publicação",
-        url,
-      }).catch(() => {});
+      navigator
+        .share({
+          title: `${post?.author?.name || "Membro"} no Waesy`,
+          text: post?.content?.slice(0, 80) || "Veja esta publicação",
+          url,
+        })
+        .catch(() => {});
     } else {
       navigator.clipboard.writeText(url);
       toast.success("Link da publicação copiado!");
@@ -193,25 +215,35 @@ function PostThreadPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
-      {/* Barra de Retorno */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" asChild className="h-11 min-h-11 px-3 rounded-lg text-xs">
-          <Link to="/feed">
-            <ChevronLeft className="h-4 w-4 mr-1" /> Voltar ao Feed
-          </Link>
-        </Button>
-        <span className="text-xs text-muted-foreground font-mono">
-          {formatRelativeTime(post.created_at)}
-        </span>
-      </div>
+      {/* Header Padronizado Canônico com Botão de Retorno e Ações Minimalistas */}
+      <NativeMobileHeader
+        title="Publicação"
+        showBack={true}
+        fallbackHref="/feed"
+        mobileOnly={false}
+        rightActions={
+          <button
+            type="button"
+            onClick={handleShare}
+            aria-label="Compartilhar"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Share2 className="size-5" />
+          </button>
+        }
+      />
 
-      {/* Cartão Central da Publicação */}
-      <article className="bg-card border border-border/60 rounded-lg p-5 sm:p-6 shadow-xs space-y-4">
+      {/* Publicação Central em Layout Threads Flat Contínuo (Zero Containeritis) */}
+      <article className="bg-transparent border-b border-border/40 pb-6 space-y-4 text-foreground">
         {/* Cabeçalho do Autor */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="size-11 rounded-full border border-border/60">
-              <AvatarImage src={post.author?.avatar_url || ""} alt={post.author?.name} className="object-cover" />
+              <AvatarImage
+                src={post.author?.avatar_url || ""}
+                alt={post.author?.name}
+                className="object-cover"
+              />
               <AvatarFallback className="font-bold text-sm bg-primary/10 text-primary">
                 {authorInitial}
               </AvatarFallback>
@@ -219,7 +251,9 @@ function PostThreadPage() {
             <div>
               <div className="font-bold text-sm text-foreground flex items-center gap-2">
                 <span>{post.author?.name}</span>
-                <span className="text-xs text-muted-foreground font-normal">• {formatRelativeTime(post.created_at)}</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  • {formatRelativeTime(post.created_at)}
+                </span>
               </div>
               {((post.author as any)?.username || post.location_name || post.city) && (
                 <div className="text-xs text-muted-foreground flex items-center gap-2">
@@ -237,15 +271,35 @@ function PostThreadPage() {
             </div>
           </div>
 
-          <Badge variant="secondary" className="capitalize text-xs rounded-full px-3 py-1">
-            {(post.post_type as string) === "offer"
-              ? "Oferta"
-              : (post.post_type as string) === "news"
-                ? "Notícia"
-                : (post.post_type as string) === "travel"
-                  ? "Roteiro"
-                  : "Publicação"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="capitalize text-xs rounded-full px-3 py-1">
+              {(post.post_type as string) === "offer"
+                ? "Oferta"
+                : (post.post_type as string) === "news"
+                  ? "Notícia"
+                  : (post.post_type as string) === "travel"
+                    ? "Roteiro"
+                    : "Publicação"}
+            </Badge>
+
+            <ContentActionsMenu
+              entityType="post"
+              entityId={post.id}
+              canonicalUrl={`/publicacao/${post.id}`}
+              title={post.author?.name || "Publicação"}
+              description={post.content_text || ""}
+              isOwner={Boolean(
+                (session?.user?.id || session?.id) &&
+                  ((session?.user?.id || session?.id) === post.author?.id ||
+                    (session?.user?.id || session?.id) === (post as any)?.author_profile_id ||
+                    (session?.user?.id || session?.id) === (post.author as any)?.profile_id ||
+                    (session?.user?.id || session?.id) === (post as any)?.author_user_id)
+              )}
+              postData={post}
+              status={(post as any)?.status || "active"}
+              authorUsername={(post.author as any)?.username}
+            />
+          </div>
         </div>
 
         {/* Manchete quando for notícia */}
@@ -292,49 +346,53 @@ function PostThreadPage() {
               </div>
             ))}
           </div>
-        ) : post.media_urls && post.media_urls.filter(Boolean).length === 1 ? (() => {
-          const singleUrl = post.media_urls.filter(Boolean)[0];
-          const isVideo = isVideoUrl(singleUrl);
-          const postRatio = (post as any).aspect_ratio || post.metadata?.aspect_ratio;
+        ) : post.media_urls && post.media_urls.filter(Boolean).length === 1 ? (
+          (() => {
+            const singleUrl = post.media_urls.filter(Boolean)[0];
+            const isVideo = isVideoUrl(singleUrl);
+            const postRatio = (post as any).aspect_ratio || post.metadata?.aspect_ratio;
 
-          let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-[640px]";
-          let objectFitClass = "object-cover";
+            let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-[640px]";
+            let objectFitClass = "object-cover";
 
-          if (post.post_type === "moment" || postRatio === "9:16") {
-            containerAspectClass = "aspect-post-moment max-w-sm mx-auto max-h-[640px]";
-            objectFitClass = isVideo ? "object-contain bg-foreground/95" : "object-cover";
-          } else if (postRatio === "1:1") {
-            containerAspectClass = "aspect-square max-h-[580px]";
-          } else if (postRatio === "4:5") {
-            containerAspectClass = "aspect-post-vertical max-h-[640px]";
-          } else if (postRatio === "16:9") {
-            containerAspectClass = "aspect-video max-h-[540px]";
-          } else if (isVideo) {
-            containerAspectClass = "aspect-post-vertical max-h-[640px]";
-            objectFitClass = "object-contain bg-foreground/95";
-          }
+            if (post.post_type === "moment" || postRatio === "9:16") {
+              containerAspectClass = "aspect-post-moment max-w-sm mx-auto max-h-[640px]";
+              objectFitClass = isVideo ? "object-contain bg-foreground/95" : "object-cover";
+            } else if (postRatio === "1:1") {
+              containerAspectClass = "aspect-square max-h-[580px]";
+            } else if (postRatio === "4:5") {
+              containerAspectClass = "aspect-post-vertical max-h-[640px]";
+            } else if (postRatio === "16:9") {
+              containerAspectClass = "aspect-video max-h-[540px]";
+            } else if (isVideo) {
+              containerAspectClass = "aspect-post-vertical max-h-[640px]";
+              objectFitClass = "object-contain bg-foreground/95";
+            }
 
-          return (
-            <div className={`rounded-lg overflow-hidden border border-border/60 bg-muted ${containerAspectClass}`}>
-              {isVideo ? (
-                <video
-                  src={singleUrl}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  className={`size-full ${objectFitClass}`}
-                />
-              ) : (
-                <img
-                  src={singleUrl}
-                  alt="Mídia da publicação"
-                  className={`size-full ${objectFitClass}`}
-                  loading="lazy"
-                />
-              )}
-            </div>
-          );
-        })() : null}
+            return (
+              <div
+                className={`rounded-lg overflow-hidden border border-border/60 bg-muted ${containerAspectClass}`}
+              >
+                {isVideo ? (
+                  <video
+                    src={singleUrl}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className={`size-full ${objectFitClass}`}
+                  />
+                ) : (
+                  <img
+                    src={singleUrl}
+                    alt="Mídia da publicação"
+                    className={`size-full ${objectFitClass}`}
+                    loading="lazy"
+                  />
+                )}
+              </div>
+            );
+          })()
+        ) : null}
 
         {/* Card de Referência Embutido (Produto ou Evento) */}
         {post.reference_data && (
@@ -348,31 +406,49 @@ function PostThreadPage() {
                 />
               ) : (
                 <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  {post.reference_type === "product" ? <ShoppingBag className="h-5 w-5" /> : <Calendar className="h-5 w-5" />}
+                  {post.reference_type === "product" ? (
+                    <ShoppingBag className="h-5 w-5" />
+                  ) : (
+                    <Calendar className="h-5 w-5" />
+                  )}
                 </div>
               )}
               <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground truncate">{post.reference_data.title}</p>
+                <p className="text-xs font-bold text-foreground truncate">
+                  {post.reference_data.title}
+                </p>
                 {post.reference_data.price_cents !== undefined && (
                   <p className="text-xs font-mono font-semibold text-emerald-600 dark:text-emerald-400">
-                    {post.reference_data.is_free ? "Gratuito" : formatMoney(post.reference_data.price_cents)}
+                    {post.reference_data.is_free
+                      ? "Gratuito"
+                      : formatMoney(post.reference_data.price_cents)}
                   </p>
                 )}
                 {post.reference_data.store_name && (
-                  <p className="text-xs text-muted-foreground truncate">{post.reference_data.store_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {post.reference_data.store_name}
+                  </p>
                 )}
               </div>
             </div>
 
             {post.reference_type === "product" && post.reference_id && (
-              <Button size="sm" asChild className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0">
+              <Button
+                size="sm"
+                asChild
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0"
+              >
                 <Link to={`/produto/${post.reference_id}` as any}>
                   Ver Oferta <ExternalLink className="h-3 w-3 ml-1" />
                 </Link>
               </Button>
             )}
             {post.reference_type === "event" && post.reference_id && (
-              <Button size="sm" asChild className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0">
+              <Button
+                size="sm"
+                asChild
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold shrink-0"
+              >
                 <Link to={`/evento/${post.reference_id}` as any}>
                   Ingresso <ExternalLink className="h-3 w-3 ml-1" />
                 </Link>
@@ -388,7 +464,9 @@ function PostThreadPage() {
               type="button"
               onClick={() => likeMutation.mutate()}
               className={`h-11 min-h-11 px-3 rounded-full flex items-center gap-2 text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                post.user_liked ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                post.user_liked
+                  ? "text-destructive bg-destructive/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
               <Heart className={`h-4 w-4 ${post.user_liked ? "fill-current" : ""}`} />
@@ -416,10 +494,14 @@ function PostThreadPage() {
               type="button"
               onClick={() => {
                 setIsSaved(!isSaved);
-                toast.success(isSaved ? "Removido dos salvos" : "Publicação salva nos seus favoritos!");
+                toast.success(
+                  isSaved ? "Removido dos salvos" : "Publicação salva nos seus favoritos!",
+                );
               }}
               className={`size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                isSaved ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                isSaved
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
               title="Salvar"
               aria-label="Salvar"
@@ -456,20 +538,22 @@ function PostThreadPage() {
 
         {/* Lista de Comentários */}
         {isCommentsLoading ? (
-          <div className="py-6 text-center text-xs text-muted-foreground">Carregando comentários...</div>
+          <div className="py-6 text-center text-xs text-muted-foreground">
+            Carregando comentários...
+          </div>
         ) : comments.length === 0 ? (
           <div className="py-8 text-center text-xs text-muted-foreground border border-dashed rounded-lg p-4">
             Seja o primeiro a comentar nesta publicação.
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="divide-y divide-border/40">
             {comments.map((c: any) => (
-              <div key={c.id} className="bg-card border border-border/60 rounded-lg p-4 space-y-2 shadow-xs">
+              <div key={c.id} className="py-3 sm:py-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Avatar className="size-7 rounded-full border">
+                    <Avatar className="size-8 rounded-full border border-border/50">
                       <AvatarImage src={c.profile?.avatar_url || ""} />
-                      <AvatarFallback className="text-2xs">
+                      <AvatarFallback className="text-2xs font-bold bg-muted">
                         {c.profile?.full_name?.charAt(0)?.toUpperCase() || "M"}
                       </AvatarFallback>
                     </Avatar>
@@ -481,7 +565,7 @@ function PostThreadPage() {
                     {formatRelativeTime(c.created_at)}
                   </span>
                 </div>
-                <p className="text-xs sm:text-sm text-foreground/90 pl-9 whitespace-pre-line">
+                <p className="text-xs sm:text-sm text-foreground/90 pl-10 whitespace-pre-line leading-relaxed">
                   {c.content}
                 </p>
               </div>

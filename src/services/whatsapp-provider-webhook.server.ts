@@ -133,6 +133,7 @@ async function persistInboundMessage(db: ReturnType<typeof getServerClient>, pro
   if (inserted.error) throw inserted.error;
   if (inserted.data?.id) {
     await db.from("chat_threads").update({ last_customer_message_at: message.occurredAt, last_message_text: "[Mensagem protegida]", last_message_at: message.occurredAt, updated_at: new Date().toISOString(), status: "open" }).eq("id", thread.id).eq("store_id", storeId);
+    try { const cleanDigits = message.phone.replace(/\D/g, ""); if (cleanDigits.length >= 10) await db.from("profiles").update({ phone_verified_at: new Date().toISOString() }).or(`phone.eq.${message.phone},phone.eq.${cleanDigits}`).is("phone_verified_at", null); } catch { /* noop */ }
     await dispatchWhatsAppInboundFlows({ storeId, instanceId: instance.id, provider, threadId: thread.id, identityId: identity.id, phone: message.phone, text: message.text, eventId: event?.id || null, payload: { ...message.payload, event_type: eventName(body) } });
   }
   if (event?.id) await db.from("whatsapp_provider_webhook_events").update({ processing_status: "processed", processed_at: new Date().toISOString(), error_message: null }).eq("id", event.id);
@@ -152,6 +153,13 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   const verification = verifyWebhookSignature(rawBody, request.headers, secret || undefined, { signatureHeader: request.headers.has("x-waesy-signature") ? "x-waesy-signature" : "x-webhook-signature", timestampHeader: request.headers.has("x-waesy-timestamp") ? "x-waesy-timestamp" : "x-webhook-timestamp" });
   if (!verification.ok) return json({ error: "Invalid webhook signature" }, 401);
   const name = eventName(body);
+  if (name === "connection.update" || name === "qrcode.updated") {
+    const state = firstString(body.data?.state, body.state) || (name === "qrcode.updated" ? "qr_pending" : "connecting");
+    const statusMap = state === "open" ? "connected" : state === "close" ? "disconnected" : "qr_pending";
+    const ownerPhone = remotePhone(firstString(body.data?.ownerJid, body.data?.wuid, body.sender));
+    await db.from("whatsapp_channel_instances").update({ status: statusMap, ...(ownerPhone ? { display_phone_number: ownerPhone } : {}), last_healthcheck_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", instance.id);
+    return json({ ok: true, provider, instance: instanceKey, event: name, status: statusMap });
+  }
   const isDelivery = name.includes("update") || name.includes("receipt") || name.includes("status");
   const results: unknown[] = [];
   try {

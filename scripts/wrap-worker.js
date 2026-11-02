@@ -31,6 +31,7 @@ if (fs.existsSync(secretsPath)) {
 const targetSupabaseUrl = secrets.VITE_SUPABASE_URL || secrets.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "https://jfuebqmltksyznovhlwa.supabase.co";
 const targetAnonKey = secrets.VITE_SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
 const targetServiceRoleKey = secrets.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const targetVaultMasterKey = secrets.VAULT_MASTER_KEY || process.env.VAULT_MASTER_KEY || targetServiceRoleKey;
 const targetSiteUrl = secrets.VITE_SITE_URL || process.env.VITE_SITE_URL || "https://usewaesy.pages.dev";
 
 const fallbackEnv = {
@@ -39,6 +40,7 @@ const fallbackEnv = {
   VITE_SUPABASE_ANON_KEY: targetAnonKey,
   SUPABASE_ANON_KEY: targetAnonKey,
   SUPABASE_SERVICE_ROLE_KEY: targetServiceRoleKey,
+  VAULT_MASTER_KEY: targetVaultMasterKey,
   VITE_SITE_URL: targetSiteUrl,
 };
 

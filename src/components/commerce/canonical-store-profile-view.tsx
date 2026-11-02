@@ -118,7 +118,6 @@ export function CanonicalStoreProfileView({
 
   // Modal de Lightbox para fotos dos posts
   const [lightboxPost, setLightboxPost] = useState<any | null>(null);
-  const [isBioExpanded, setIsBioExpanded] = useState(false);
 
   // Estado de Seções Personalizáveis da Vitrine (Wix / App Builder Style)
   const [vitrineSections, setVitrineSections] = useState<VitrineSectionConfig[]>(() => {
@@ -499,11 +498,12 @@ export function CanonicalStoreProfileView({
       toast.success("Solicitação de atendimento enviada com sucesso!");
 
       // Telemetria de Lead (Meta Pixel client-side & CAPI server-side)
+      const eventId = `lead_quote_${store?.id || "store"}_${Date.now()}`;
       if (typeof window !== "undefined" && typeof (window as any).fbq === "function") {
         (window as any).fbq("track", "Lead", {
           content_name: quoteService || "Atendimento Geral",
           content_category: "quote",
-        });
+        }, { eventID: eventId });
       }
       if (store?.id) {
         import("@/services/pixels.functions")
@@ -512,6 +512,7 @@ export function CanonicalStoreProfileView({
               data: {
                 storeId: store.id,
                 eventName: "Lead",
+                eventId,
                 eventSourceUrl: window.location.href,
                 customData: {
                   service_needed: quoteService,
@@ -811,15 +812,6 @@ function cleanAddressSegment(text: string): string {
               >
                 {store.description || settings.bio || settings.about}
               </p>
-              {false && (
-                <button
-                  type="button"
-                  onClick={() => setIsBioExpanded(!isBioExpanded)}
-                  className="text-xs font-bold text-primary hover:underline cursor-pointer inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  {isBioExpanded ? "Ver menos" : "...mais"}
-                </button>
-              )}
             </div>
           )}
 
@@ -1085,7 +1077,7 @@ function cleanAddressSegment(text: string): string {
               type="button"
               onClick={() => setActiveTab("vitrine")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "vitrine"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1100,7 +1092,7 @@ function cleanAddressSegment(text: string): string {
               type="button"
               onClick={() => setActiveTab("catalogo")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "catalogo"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1120,7 +1112,7 @@ function cleanAddressSegment(text: string): string {
               type="button"
               onClick={() => setActiveTab("sobre")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "sobre"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1136,7 +1128,7 @@ function cleanAddressSegment(text: string): string {
               onClick={() => setActiveTab("informacoes")}
               className={cn(
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "informacoes"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1151,7 +1143,7 @@ function cleanAddressSegment(text: string): string {
               type="button"
               onClick={() => setActiveTab("posts")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "posts"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1171,7 +1163,7 @@ function cleanAddressSegment(text: string): string {
               type="button"
               onClick={() => setActiveTab("avaliacoes")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "avaliacoes"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1191,7 +1183,7 @@ function cleanAddressSegment(text: string): string {
               type="button"
               onClick={() => setActiveTab("vagas")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "vagas"
                   ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -1212,7 +1204,7 @@ function cleanAddressSegment(text: string): string {
                 type="button"
                 onClick={() => setActiveTab("classificados")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                  "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "classificados"
                     ? "bg-background text-foreground font-bold shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -1232,7 +1224,7 @@ function cleanAddressSegment(text: string): string {
                 type="button"
                 onClick={() => setActiveTab("concursos")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "px-4 py-2 sm:px-4 sm:py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                  "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "concursos"
                     ? "bg-background text-foreground font-bold shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"

@@ -35,6 +35,7 @@ const ENTRY_POINTS_PATTERNS = [
   "src/types/",
   "/index.ts",
   "/index.tsx",
+  "src/lib/server-browser-only-shim.ts",
 ];
 
 function isEntryPoint(filePath) {

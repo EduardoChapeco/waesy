@@ -15992,42 +15992,57 @@ export type Database = {
         Row: {
           amount_cents: number
           category: string
+          central_cash_register_entry_id: string | null
           created_at: string
           description: string
           entry_type: string
           id: string
+          idempotency_key: string | null
           occurred_at: string
           payment_method: string
           receipt_url: string | null
           registered_by_profile_id: string | null
+          reversal_of_id: string | null
+          reversal_reason: string | null
+          reversed_at: string | null
           store_id: string
           tour_id: string
         }
         Insert: {
           amount_cents: number
           category?: string
+          central_cash_register_entry_id?: string | null
           created_at?: string
           description: string
           entry_type: string
           id?: string
+          idempotency_key?: string | null
           occurred_at?: string
           payment_method?: string
           receipt_url?: string | null
           registered_by_profile_id?: string | null
+          reversal_of_id?: string | null
+          reversal_reason?: string | null
+          reversed_at?: string | null
           store_id: string
           tour_id: string
         }
         Update: {
           amount_cents?: number
           category?: string
+          central_cash_register_entry_id?: string | null
           created_at?: string
           description?: string
           entry_type?: string
           id?: string
+          idempotency_key?: string | null
           occurred_at?: string
           payment_method?: string
           receipt_url?: string | null
           registered_by_profile_id?: string | null
+          reversal_of_id?: string | null
+          reversal_reason?: string | null
+          reversed_at?: string | null
           store_id?: string
           tour_id?: string
         }
@@ -43878,6 +43893,30 @@ export type Database = {
       }
     }
     Functions: {
+      record_stock_movement_atomic: {
+        Args: {
+          p_actor_id?: string | null
+          p_movement_type: string
+          p_note?: string | null
+          p_qty: number
+          p_reference_id?: string | null
+          p_reference_type?: string | null
+          p_store_id: string
+          p_variant_id: string
+        }
+        Returns: Database["public"]["Tables"]["stock_movements"]["Row"]
+      }
+      submit_loan_application: {
+        Args: {
+          p_amount_cents: number
+          p_customer_id: string
+          p_first_due_date: string
+          p_installments_count: number
+          p_monthly_payment_cents: number
+          p_total_payable_cents: number
+        }
+        Returns: { id: string; status: string }[]
+      }
       finalize_contract_signature: {
         Args: {
           p_envelope_id: string
@@ -44781,6 +44820,24 @@ export type Database = {
         Args: { p_courier_id: string; p_order_id: string }
         Returns: Json
       }
+      record_group_tour_cash_entry: {
+        Args: {
+          p_actor_id: string
+          p_actor_role: string
+          p_amount_cents: number
+          p_category: string
+          p_description: string
+          p_entry_type: string
+          p_idempotency_key: string
+          p_occurred_at?: string | null
+          p_payment_method: string
+          p_receipt_url?: string | null
+          p_store_id: string
+          p_sync_with_central_cash: boolean
+          p_tour_id: string
+        }
+        Returns: Json
+      }
       record_immutable_ledger_entry: {
         Args: {
           p_actor_id?: string
@@ -44834,6 +44891,17 @@ export type Database = {
       }
       record_order_customer_view: {
         Args: { p_public_token: string; p_user_agent?: string }
+        Returns: Json
+      }
+      reverse_group_tour_cash_entry: {
+        Args: {
+          p_actor_id: string
+          p_actor_role: string
+          p_entry_id: string
+          p_idempotency_key: string
+          p_reason?: string | null
+          p_store_id: string
+        }
         Returns: Json
       }
       record_travel_document_conflict_resolution: {

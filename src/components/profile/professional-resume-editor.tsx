@@ -352,7 +352,7 @@ export function ProfessionalResumeEditor({
  variant="outline"
  size="sm"
  onClick={() => setIsProfessionSearchOpen(true)}
- className="h-8 rounded-lg text-xs gap-2 font-bold border-border/60 hover:bg-muted/30 text-foreground"
+ className="h-11 min-h-11 rounded-lg text-xs gap-2 font-bold border-border/60 hover:bg-muted/30 text-foreground"
  >
  <Search className="size-4 text-primary" />
  <span>Buscar Cargo CBO</span>
@@ -455,6 +455,7 @@ export function ProfessionalResumeEditor({
  <button
  type="button"
  onClick={() => handleRemoveSkill(skill)}
+ // design-lint-ignore DL-14 reason:"Botão de remoção inline de skill no badge" expiry:"2027-12-31"
  className="size-4 rounded-full flex items-center justify-center hover:bg-destructive/20 hover:text-destructive text-muted-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-2.5" />
@@ -485,7 +486,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("experience");
  }}
- className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-4 cursor-pointer"
  >
  <Plus className="size-4" />
  <span>Adicionar</span>
@@ -538,7 +539,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(exp);
  setActiveModal("experience");
  }}
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer flex items-center justify-center"
  >
  <Edit3 className="size-4" />
  </Button>
@@ -568,7 +569,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("education");
  }}
- className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-4 cursor-pointer"
  >
  <Plus className="size-4" />
  <span>Adicionar</span>
@@ -612,7 +613,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(edu);
  setActiveModal("education");
  }}
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer flex items-center justify-center"
  >
  <Edit3 className="size-4" />
  </Button>
@@ -642,7 +643,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("certification");
  }}
- className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-4 cursor-pointer"
  >
  <Plus className="size-4" />
  <span>Adicionar</span>
@@ -696,7 +697,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(cert);
  setActiveModal("certification");
  }}
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer flex items-center justify-center"
  >
  <Edit3 className="size-4" />
  </Button>
@@ -726,7 +727,7 @@ export function ProfessionalResumeEditor({
             setActiveItem(null);
             setActiveModal("license");
           }}
-          className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
+          className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-4 cursor-pointer"
         >
           <Plus className="size-4" />
           <span>Adicionar</span>
@@ -793,7 +794,7 @@ export function ProfessionalResumeEditor({
                   setActiveItem(lic);
                   setActiveModal("license");
                 }}
-                className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer flex items-center justify-center"
               >
                 <Edit3 className="size-4" />
               </Button>
@@ -823,7 +824,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("project");
  }}
- className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-4 cursor-pointer"
  >
  <Plus className="size-4" />
  <span>Adicionar</span>
@@ -854,7 +855,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(proj);
  setActiveModal("project");
  }}
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center"
  >
  <Edit3 className="size-4" />
  </Button>
@@ -874,7 +875,7 @@ export function ProfessionalResumeEditor({
 
  {/* Mídias / Fotos do Projeto */}
  {proj.media_urls && proj.media_urls.length > 0 && (
- <div className="flex gap-2 pt-1 overflow-x-auto no-scrollbar">
+ <div className="flex gap-2 pt-1 scroll-area-carousel no-scrollbar">
  {proj.media_urls.map((mUrl, mIdx) => (
  <div
  key={mIdx}
@@ -921,7 +922,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("volunteering");
  }}
- className="rounded-lg text-xs font-bold gap-1 h-7 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-1 h-11 min-h-11 px-4 cursor-pointer"
  >
  <Plus className="size-3" />
  <span>Adicionar</span>
@@ -955,7 +956,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(vol);
  setActiveModal("volunteering");
  }}
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center"
  >
  <Edit3 className="size-3" />
  </Button>
@@ -977,7 +978,7 @@ export function ProfessionalResumeEditor({
  size="sm"
  variant="outline"
  onClick={() => setActiveModal("causes")}
- className="rounded-lg text-xs font-bold gap-1 h-7 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-1 h-11 min-h-11 px-4 cursor-pointer"
  >
  <Edit3 className="size-3" />
  <span>Editar</span>
@@ -1024,7 +1025,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(null);
  setActiveModal("language");
  }}
- className="rounded-lg text-xs font-bold gap-2 h-8 px-3 cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-4 cursor-pointer"
  >
  <Plus className="size-4" />
  <span>Adicionar</span>
@@ -1056,7 +1057,7 @@ export function ProfessionalResumeEditor({
  setActiveItem(lang);
  setActiveModal("language");
  }}
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
+ className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0 flex items-center justify-center"
  >
  <Edit3 className="size-3" />
  </Button>
@@ -1378,7 +1379,7 @@ export function ProfessionalResumeEditor({
                     <Button
                       type="button"
                       onClick={handleApplyLinkedInData}
-                      className="w-full h-10 rounded-lg font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-xs cursor-pointer"
+                      className="w-full h-11 min-h-11 rounded-lg font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-xs cursor-pointer"
                     >
                       <ArrowRight className="size-4" />
                       <span>Aplicar ao Meu Currículo Waesy (1s)</span>

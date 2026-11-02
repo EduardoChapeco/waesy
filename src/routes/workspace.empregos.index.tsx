@@ -210,7 +210,7 @@ function WorkspaceJobsPage() {
           <Button
             asChild
             variant="outline"
-            className="rounded-lg font-bold text-xs h-9 gap-2"
+            className="rounded-lg font-bold text-xs h-11 min-h-11 sm:h-9 sm:min-h-9 gap-2"
           >
             <Link to="/workspace/empregos/candidatos">
               <Users className="size-3.5 text-primary" />
@@ -220,7 +220,7 @@ function WorkspaceJobsPage() {
 
           <Button
             onClick={() => setIsNewJobOpen(true)}
-            className="rounded-lg font-bold text-xs h-9 bg-primary text-primary-foreground gap-2 cursor-pointer"
+            className="rounded-lg font-bold text-xs h-11 min-h-11 sm:h-9 sm:min-h-9 bg-primary text-primary-foreground gap-2 cursor-pointer"
           >
             <Plus className="size-3.5" />
             <span>Publicar Nova Vaga</span>
@@ -256,7 +256,7 @@ function WorkspaceJobsPage() {
           </p>
           <Button
             onClick={() => setIsNewJobOpen(true)}
-            className="rounded-lg text-xs font-bold h-9 mt-2 cursor-pointer"
+            className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 sm:min-h-9 mt-2 cursor-pointer"
           >
             <Plus className="size-3.5 mr-1" />
             Publicar Primeira Vaga
@@ -287,7 +287,7 @@ function WorkspaceJobsPage() {
 
                 <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
                     {job.linkedin_sync_status === "published" && (
-                      <Badge variant="outline" className="text-xs font-bold border-[#0A66C2]/40 text-[#0A66C2] bg-[#0A66C2]/10 flex items-center gap-1">
+                      <Badge variant="outline" className="text-xs font-bold border-primary/40 text-primary bg-primary/10 flex items-center gap-1">
                         <Linkedin className="size-2.5 fill-current" />
                         <span>LinkedIn </span>
                       </Badge>
@@ -322,7 +322,7 @@ function WorkspaceJobsPage() {
                     size="sm"
                     onClick={() => handleSyndicateJob(job.id)}
                     disabled={isSyndicatingJobId === job.id}
-                    className="rounded-lg text-xs font-semibold h-8.5 gap-2 border-[#0A66C2]/40 text-[#0A66C2] hover:bg-[#0A66C2]/10 cursor-pointer"
+                    className="rounded-lg text-xs font-semibold h-11 min-h-11 sm:h-9 sm:min-h-9 gap-2 border-primary/40 text-primary hover:bg-primary/10 cursor-pointer"
                   >
                     <Linkedin className="size-3 fill-current" />
                     <span>{isSyndicatingJobId === job.id ? "Sindicando..." : "LinkedIn"}</span>
@@ -333,7 +333,7 @@ function WorkspaceJobsPage() {
                   asChild
                   variant="outline"
                   size="sm"
-                  className="rounded-lg text-xs font-bold h-8.5 gap-2"
+                  className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 sm:min-h-9 gap-2"
                 >
                   <Link to="/workspace/empregos/candidatos" search={{ jobId: job.id }}>
                     <Users className="size-3.5 text-primary" />
@@ -345,7 +345,7 @@ function WorkspaceJobsPage() {
                   asChild
                   variant="ghost"
                   size="sm"
-                  className="rounded-lg text-xs font-semibold h-8.5 gap-1"
+                  className="rounded-lg text-xs font-semibold h-11 min-h-11 sm:h-9 sm:min-h-9 gap-1"
                 >
                   <Link to="/empregos/$id" params={{ id: job.id }} target="_blank">
                     <Eye className="size-3.5" />
@@ -360,7 +360,7 @@ function WorkspaceJobsPage() {
 
       {/* Modal: Publicar Nova Vaga */}
       <Dialog open={isNewJobOpen} onOpenChange={setIsNewJobOpen}>
-        <DialogContent className="max-w-2xl rounded-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+        <DialogContent size="lg" className="rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Briefcase className="size-4 text-primary" />
@@ -487,14 +487,14 @@ function WorkspaceJobsPage() {
                   onChange={(e) => setRequirementDraft(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddRequirement())}
                   placeholder="Ex: Experiência com atendimento ou Ensino Superior em andamento"
-                  className="h-8 rounded-lg text-xs"
+                  className="h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg text-xs"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={handleAddRequirement}
-                  className="rounded-lg text-xs h-8 cursor-pointer"
+                  className="rounded-lg text-xs h-11 min-h-11 sm:h-9 sm:min-h-9 cursor-pointer"
                 >
                   Adicionar
                 </Button>
@@ -530,14 +530,14 @@ function WorkspaceJobsPage() {
                   onChange={(e) => setBenefitDraft(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddBenefit())}
                   placeholder="Ex: Vale Alimentação, Plano de Saúde, Bonificação por Metas"
-                  className="h-8 rounded-lg text-xs"
+                  className="h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg text-xs"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={handleAddBenefit}
-                  className="rounded-lg text-xs h-8 cursor-pointer"
+                  className="rounded-lg text-xs h-11 min-h-11 sm:h-9 sm:min-h-9 cursor-pointer"
                 >
                   Adicionar
                 </Button>
@@ -570,7 +570,7 @@ function WorkspaceJobsPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsNewJobOpen(false)}
-                className="rounded-lg text-xs h-9 cursor-pointer"
+                className="rounded-lg text-xs h-11 min-h-11 sm:h-9 sm:min-h-9 cursor-pointer"
               >
                 Cancelar
               </Button>
@@ -579,7 +579,7 @@ function WorkspaceJobsPage() {
                 type="submit"
                 disabled={isProcessing}
                 size="sm"
-                className="rounded-lg text-xs font-bold h-9 bg-primary text-primary-foreground gap-2 cursor-pointer"
+                className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 sm:min-h-9 bg-primary text-primary-foreground gap-2 cursor-pointer"
               >
                 <CheckCircle2 className="size-3.5" />
                 <span>{isProcessing ? "Publicando vaga..." : "Publicar Vaga no Mural"}</span>
@@ -587,9 +587,9 @@ function WorkspaceJobsPage() {
             </DialogFooter>
           
             {/* LinkedIn Omni-Bridge Quick Toggle */}
-            <div className="p-4 rounded-lg bg-[#0A66C2]/5 border border-[#0A66C2]/20 flex items-center justify-between gap-3">
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="size-7 rounded-lg bg-[#0A66C2] text-foreground flex items-center justify-center shrink-0">
+                <div className="size-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0">
                   <Linkedin className="size-4 fill-current" />
                 </div>
                 <div>
@@ -613,7 +613,7 @@ function WorkspaceJobsPage() {
                   size="sm"
                   variant="outline"
                   onClick={() => setIsPaywallOpen(true)}
-                  className="h-7 px-3 rounded-lg text-xs font-bold border-amber-500/40 text-amber-700 bg-amber-500/10 hover:bg-amber-500/20"
+                  className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-bold border-amber-500/40 text-amber-700 bg-amber-500/10 hover:bg-amber-500/20"
                 >
                   <Lock className="size-3 mr-1" /> Desbloquear
                 </Button>

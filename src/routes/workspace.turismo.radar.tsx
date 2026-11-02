@@ -271,7 +271,7 @@ export default function TurismoRadarPage() {
   );
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── Toolbar Canônica de 2 Tiers (Apple HIG & Sem Colisões) ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -325,7 +325,7 @@ export default function TurismoRadarPage() {
               variant="ghost"
               size="sm"
               onClick={() => setIsAddAlertOpen(true)}
-              className="text-xs text-primary h-10 sm:h-7 px-3 gap-1 rounded-lg cursor-pointer"
+              className="text-xs text-primary h-11 min-h-11 px-3 gap-1 rounded-xl cursor-pointer"
             >
               <Plus className="size-3.5" /> Adicionar Alerta
             </Button>
@@ -408,8 +408,8 @@ export default function TurismoRadarPage() {
                 onClick={() => setSelectedDest(isSelected ? null : dest)}
                 className={`relative p-5 rounded-lg border cursor-pointer transition-colors duration-200 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary  ${
                   isSelected
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20 '
-                    : 'border-border/70 bg-card hover:border-primary/40'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20 rounded-2xl'
+                    : 'border-black/[0.06] dark:border-white/[0.08] bg-card hover:border-black/[0.12] dark:hover:border-white/[0.16] rounded-2xl'
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -447,19 +447,19 @@ export default function TurismoRadarPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
-                  <div className="text-center p-2 rounded-lg bg-muted/20 border border-border/40">
+                  <div className="text-center p-3 rounded-xl bg-muted/30">
                     <p className="text-xs text-muted-foreground">Pacote Médio</p>
                     <p className="text-xs font-semibold tabular-nums text-foreground mt-1">
                       {dest.avg_package_brl ? `R$ ${(dest.avg_package_brl / 1000).toFixed(1)}k` : '—'}
                     </p>
                   </div>
-                  <div className="text-center p-2 rounded-lg bg-muted/20 border border-border/40">
+                  <div className="text-center p-3 rounded-xl bg-muted/30">
                     <p className="text-xs text-muted-foreground">Diária Média</p>
                     <p className="text-xs font-semibold tabular-nums text-foreground mt-1">
                       {dest.avg_daily_rate_brl ? `R$ ${dest.avg_daily_rate_brl}` : '—'}
                     </p>
                   </div>
-                  <div className="text-center p-2 rounded-lg bg-muted/20 border border-border/40">
+                  <div className="text-center p-3 rounded-xl bg-muted/30">
                     <p className="text-xs text-muted-foreground">Moeda / Câmbio</p>
                     <p className="text-xs font-semibold tabular-nums text-foreground mt-1 font-mono">
                       {dest.currency_code || 'BRL'}

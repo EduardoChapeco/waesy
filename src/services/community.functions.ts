@@ -228,6 +228,24 @@ export const createCommunity = createServerFn({ method: "POST" })
       throw new Error(`O identificador @${cleanSlug} já está em uso. Escolha outro.`);
     }
 
+    // Garante que o perfil do criador exista na tabela public.profiles
+    const { data: profileCheck } = await db
+      .from("profiles")
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (!profileCheck) {
+      await db.from("profiles").upsert(
+        {
+          id: userId,
+          name: (identity as any)?.name || "Membro",
+          username: "membro_" + userId.slice(0, 8),
+        },
+        { onConflict: "id" }
+      );
+    }
+
     const { data: created, error } = await db
       .from("communities")
       .insert({
@@ -251,21 +269,31 @@ export const createCommunity = createServerFn({ method: "POST" })
 
     if (error || !created) {
       console.error("[createCommunity] Error creating community:", error);
-      throw new Error("Falha ao criar comunidade. Tente novamente.");
+      throw new Error(error?.message || "Falha ao criar comunidade. Tente novamente.");
     }
 
     // Insere criador como membro owner
-    await db.from("community_members").insert({
-      community_id: created.id,
-      profile_id: userId,
-      role: "owner",
-      status: "active",
-    });
+    await db.from("community_members").upsert(
+      {
+        community_id: created.id,
+        profile_id: userId,
+        role: "owner",
+        status: "active",
+      },
+      { onConflict: "community_id,profile_id" }
+    );
 
-    return communitySchema.parse({
-      ...created,
-      rules: Array.isArray(created.rules) ? created.rules : [],
-    });
+    try {
+      return communitySchema.parse({
+        ...created,
+        rules: Array.isArray(created.rules) ? created.rules : [],
+      });
+    } catch {
+      return {
+        ...created,
+        rules: Array.isArray(created.rules) ? created.rules : [],
+      } as Community;
+    }
   });
 
 // ─── 4. Atualizar Comunidade ───────────────────────────────────────────────

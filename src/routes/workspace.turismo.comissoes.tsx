@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { formatMoney } from "@/lib/money";
 import {
@@ -56,11 +56,24 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/turismo/comissoes")({
   loader: async () => {
-    const sheets = await listTravelSaleFinancialSheets({ data: {} }).catch(() => []);
+    const sheets = await listTravelSaleFinancialSheets({ data: {} });
     return { initialSheets: sheets };
   },
   component: TravelSalesFinancialCompositionPage,
+  errorComponent: FinancialSheetsError,
 });
+
+function FinancialSheetsError({ reset }: { reset: () => void }) {
+  const router = useRouter();
+  return (
+    <div className="p-4 space-y-4" role="alert">
+      <p className="text-sm text-foreground">Não foi possível carregar as comissões.</p>
+      <Button className="h-11 min-h-11 focus-visible:ring-2" onClick={() => {
+        void router.invalidate().then(reset).catch(() => toast.error("Não foi possível atualizar as comissões."));
+      }}>Tentar novamente</Button>
+    </div>
+  );
+}
 
 interface SaleFinancialRecord {
   id: string;
@@ -134,126 +147,10 @@ interface SaleFinancialRecord {
   }>;
 }
 
-const INITIAL_DEMO_SHEETS: SaleFinancialRecord[] = [
-  {
-    id: "fin-sheet-1",
-    internal_code: "RES-2026-0142",
-    client_name: "Carlos Eduardo & Família",
-    client_document: "048.***.***-12",
-    seller_name: "Ana Paula (Consultora Sênior)",
-    agency_unit: "Matriz Chapecó",
-    primary_operator: "Orinter",
-    locator_code: "ORN-98421B",
-    destination: "Porto Seguro • Resort All Inclusive (7 Noites)",
-    sale_date: "2026-10-14",
-    departure_date: "2026-12-10",
-    return_date: "2026-12-17",
-    booking_status: "confirmada",
-    gross_sale_cents: 1000000, // R$ 10.000,00
-    non_commissionable_cents: 120000, // R$ 1.200,00
-    net_sale_cents: 880000, // R$ 8.800,00
-    non_commissionable_fees: [
-      { fee_type: "taxa_embarque", description: "Taxas de embarque aéreo (3 passageiros)", amount_cents: 120000 },
-    ],
-    commission_mode: "percentage",
-    commission_base_type: "net_sale",
-    commission_custom_base_cents: 880000,
-    commission_percentage: 10,
-    commission_calculated_cents: 88000, // R$ 880,00
-    commission_override_cents: null,
-    commission_final_cents: 88000,
-    over_mode: "amount",
-    over_percentage: 0,
-    over_gross_cents: 50000, // R$ 500,00
-    over_deductions_cents: 5000, // R$ 50,00
-    over_deductions: [
-      { deduction_type: "imposto", calc_mode: "percentage", percentage: 6, amount_cents: 3000, notes: "Imposto NF sobre Over (6%)" },
-      { deduction_type: "taxa_operadora", calc_mode: "amount", percentage: 0, amount_cents: 2000, notes: "Retenção administrativa" },
-    ],
-    over_net_calculated_cents: 45000, // R$ 450,00
-    over_net_override_cents: null,
-    over_net_final_cents: 45000,
-    agency_revenue_cents: 133000, // R$ 1.330,00
-    internal_costs_cents: 33000, // R$ 330,00
-    internal_costs: [
-      {
-        cost_type: "comissao_vendedor",
-        description: "Comissão vendedora Ana Paula",
-        calc_mode: "amount",
-        percentage: 0,
-        amount_cents: 25000,
-        beneficiary_name: "Ana Paula",
-        payment_status: "previsto",
-      },
-      {
-        cost_type: "brinde_cliente",
-        description: "Kit viagem + necessaire personalizada",
-        calc_mode: "amount",
-        percentage: 0,
-        amount_cents: 8000,
-        beneficiary_name: "Fornecedor Brindes",
-        payment_status: "pago",
-      },
-    ],
-    net_result_cents: 100000, // R$ 1.000,00
-    margin_on_sale_pct: 10.0,
-    margin_on_revenue_pct: 75.19,
-    settlement_method: "fatura_abatida",
-    expected_receipt_cents: 133000,
-    received_cents: 88000,
-    expected_receipt_date: "2026-11-15",
-    receivable_status: "parcialmente_recebido",
-    supplier_items: [
-      {
-        item_category: "aereo",
-        operator_name: "BFly",
-        locator_code: "LA-XAP99",
-        gross_amount_cents: 420000,
-        non_commissionable_cents: 120000,
-        net_amount_cents: 300000,
-        commission_cents: 18000,
-        over_net_cents: 25000,
-        expected_receipt_cents: 43000,
-        received_cents: 43000,
-        settlement_method: "fatura_abatida",
-        status: "recebido",
-      },
-      {
-        item_category: "hotel",
-        operator_name: "Orinter",
-        locator_code: "ORN-98421B",
-        gross_amount_cents: 580000,
-        non_commissionable_cents: 0,
-        net_amount_cents: 580000,
-        commission_cents: 70000,
-        over_net_cents: 20000,
-        expected_receipt_cents: 90000,
-        received_cents: 45000,
-        settlement_method: "pix",
-        status: "a_receber",
-      },
-    ],
-    invoice_status: "solicitar",
-    invoice_number: "",
-    invoice_amount_cents: 133000,
-    invoice_recipient: "Orinter Tour & Travel",
-    audit_logs: [
-      {
-        id: "log-1",
-        actor_name: "Ana Paula",
-        action_type: "CRIACAO_FICHA_FINANCEIRA",
-        new_value: "Venda: R$ 10000.00 | Receita Agência: R$ 1330.00 | Resultado: R$ 1000.00",
-        reason: "Abertura da composição financeira da reserva RES-2026-0142",
-        created_at: "2026-10-14T14:20:00Z",
-      },
-    ],
-  },
-];
-
 function TravelSalesFinancialCompositionPage() {
   const { initialSheets } = (Route.useLoaderData?.() as any) || {};
   const [sheets, setSheets] = useState<SaleFinancialRecord[]>(
-    Array.isArray(initialSheets) && initialSheets.length > 0 ? initialSheets : INITIAL_DEMO_SHEETS
+    Array.isArray(initialSheets) ? initialSheets : []
   );
 
   // Filtros Gerenciais
@@ -557,7 +454,7 @@ function TravelSalesFinancialCompositionPage() {
     const receivedCents = Math.round((parseFloat(receivedReais.replace(",", ".")) || 0) * 100);
 
     const newRecord: SaleFinancialRecord = {
-      id: editingSheetId || `fin-${Date.now()}`,
+      id: editingSheetId || "",
       internal_code: internalCode.trim().toUpperCase(),
       client_name: clientName.trim(),
       client_document: clientDocument.trim() || undefined,
@@ -625,7 +522,7 @@ function TravelSalesFinancialCompositionPage() {
     };
 
     try {
-      await upsertTravelSaleFinancialSheet({
+      const result = await upsertTravelSaleFinancialSheet({
         data: {
           ...(editingSheetId && editingSheetId.length === 36 ? { id: editingSheetId } : {}),
           internal_code: newRecord.internal_code,
@@ -672,17 +569,26 @@ function TravelSalesFinancialCompositionPage() {
           general_notes: newRecord.general_notes,
           audit_reason: auditReason,
         },
-      }).catch(() => null);
+      });
+
+      if (!result?.success || !result.sheet?.id) {
+        throw new Error("A gravação não retornou uma ficha confirmada.");
+      }
+      const persistedSheets = await listTravelSaleFinancialSheets({ data: {} });
+      const savedRecord = persistedSheets.find((sheet) => sheet.id === result.sheet.id) as SaleFinancialRecord | undefined;
+      if (!savedRecord) throw new Error("A ficha foi enviada, mas não foi possível confirmar sua leitura. Atualize antes de reenviar.");
 
       setSheets((prev) => {
         if (editingSheetId) {
-          return prev.map((s) => (s.id === editingSheetId ? newRecord : s));
+          return prev.map((s) => (s.id === editingSheetId ? savedRecord : s));
         }
-        return [newRecord, ...prev];
+        return [savedRecord, ...prev];
       });
 
-      toast.success("Composição Financeira da Reserva salva e auditada!");
+      toast.success("Ficha salva.");
       setIsSheetModalOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar a ficha.");
     } finally {
       setIsSaving(false);
     }
@@ -705,7 +611,7 @@ function TravelSalesFinancialCompositionPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 w-full space-y-6">
       {/* ── Cabeçalho Executivo do Módulo Interno ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div className="space-y-1">
@@ -737,27 +643,27 @@ function TravelSalesFinancialCompositionPage() {
       {/* ── Painel de Indicadores Contábeis Separados (Sem Confundir Venda com Receita) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Volume Bruto vs Venda Líquida */}
-        <div className="p-4 rounded-lg border border-border/70 bg-card space-y-2">
+        <div className="p-4 rounded-2xl border border-foreground/15 bg-foreground text-background space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>1. Venda Bruta vs. Líquida</span>
             <DollarSign className="size-4 text-primary" />
           </div>
-          <p className="text-xl font-black text-foreground font-mono">
+          <p className="text-xl font-black text-background font-mono tabular-nums">
             {formatMoney(totals.grossSale)}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
             <span>Venda Líquida (s/ taxas):</span>
-            <strong className="text-foreground font-mono">{formatMoney(totals.netSale)}</strong>
+            <strong className="text-background font-mono tabular-nums">{formatMoney(totals.netSale)}</strong>
           </div>
         </div>
 
         {/* Card 2: Receita da Agência (Comissão + Over Líquido) */}
-        <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
+        <div className="p-4 rounded-2xl border border-primary/30 bg-primary/5 space-y-2">
           <div className="flex items-center justify-between text-xs text-primary font-bold">
             <span>2. Receita da Agência (Comissão + Over)</span>
             <TrendingUp className="size-4 text-primary" />
           </div>
-          <p className="text-xl font-black text-primary font-mono">
+          <p className="text-xl font-black text-primary font-mono tabular-nums">
             {formatMoney(totals.agencyRevenue)}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-primary/20">
@@ -767,12 +673,12 @@ function TravelSalesFinancialCompositionPage() {
         </div>
 
         {/* Card 3: Resultado Líquido da Agência (Receita - Custos Internos) */}
-        <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+        <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
           <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 font-bold">
             <span>3. Resultado Final (Lucro Real)</span>
             <Wallet className="size-4 text-emerald-600" />
           </div>
-          <p className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
+          <p className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono tabular-nums">
             {formatMoney(totals.netResult)}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-emerald-500/20">
@@ -786,12 +692,12 @@ function TravelSalesFinancialCompositionPage() {
         </div>
 
         {/* Card 4: Conciliação de Recebimento & Operadoras */}
-        <div className="p-4 rounded-lg border border-border/70 bg-card space-y-2">
+        <div className="p-4 rounded-2xl border border-foreground/15 bg-foreground text-background space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>4. A Receber das Operadoras</span>
             <Clock className="size-4 text-amber-500" />
           </div>
-          <p className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono">
+          <p className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono tabular-nums">
             {formatMoney(Math.max(0, totals.expectedReceipt - totals.received))}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">

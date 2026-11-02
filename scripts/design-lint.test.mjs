@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { lintSource, evaluateRatchet, parseInlineExemptions, getModule } from './design-lint.mjs';
+import { lintSource, evaluateRatchet, parseInlineExemptions, getModule, hasTopLevelJsxAttribute } from './design-lint.mjs';
 
 console.log(`\n======================================================================`);
 console.log(`SUÍTE DE TESTES NORMATIVOS — DESIGN LINT V2 (DL-01 a DL-30)`);
@@ -99,6 +99,12 @@ runTest('DL-02: distingue variantes de estado de valores arbitrarios', () => {
   const violations = lintSource(code, 'src/components/ui/example.tsx', testConfig).filter(v => v.id === 'DL-02');
   assert.strictEqual(violations.length, 1);
   assert.strictEqual(violations[0].match, 'w-[327px]');
+});
+
+runTest('DL-02: permite variantes compostas group-data, peer-data e has', () => {
+  const code = '<div className="group-data-[collapsible=icon]:w-8 peer-data-[state=collapsed]:opacity-0 has-[[data-sidebar=menu-action]]:pr-2">Teste</div>';
+  const violations = lintSource(code, 'src/components/ui/sidebar.tsx', testConfig).filter(v => v.id === 'DL-02');
+  assert.equal(violations.length, 0);
 });
 
 // 3. DL-03: Espaçamento Fora da Grade de 4px
@@ -263,6 +269,13 @@ runTest('DL-15: Permite elemento com anel focus-visible:ring-2', () => {
   const violations = lintSource(code, 'src/routes/civil/action.tsx', testConfig);
   const dl15 = violations.filter(v => v.id === 'DL-15');
   assert.strictEqual(dl15.length, 0);
+});
+
+runTest('DL-15: Ignora onClick dentro de prop JSX filha', () => {
+  const code = `<PageHeader actions={<Button onClick={() => save()} />} />`;
+  const violations = lintSource(code, 'src/routes/workspace/test.tsx', testConfig);
+  assert.equal(hasTopLevelJsxAttribute(' actions={<Button onClick={() => save()} />} />', 'onClick'), false);
+  assert.equal(violations.filter(v => v.id === 'DL-15').length, 0);
 });
 
 // 15. DL-18: Hardcoded white/black literal

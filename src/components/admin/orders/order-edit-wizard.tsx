@@ -98,7 +98,7 @@ export function OrderEditWizard({
  <Button
  variant="outline"
  size="icon"
- className="h-7 w-7"
+  className="h-11 min-h-11 w-11 min-w-11"
  onClick={() => handleUpdateQty(idx, -1)}
  disabled={item.qty <= 1}
  >
@@ -108,7 +108,7 @@ export function OrderEditWizard({
  <Button
  variant="outline"
  size="icon"
- className="h-7 w-7"
+  className="h-11 min-h-11 w-11 min-w-11"
  onClick={() => handleUpdateQty(idx, 1)}
  >
  <Plus className="h-3 w-3" />
@@ -116,7 +116,7 @@ export function OrderEditWizard({
  <Button
  variant="destructive"
  size="icon"
- className="h-7 w-7 ml-2"
+  className="h-11 min-h-11 w-11 min-w-11 ml-2"
  onClick={() => handleRemove(idx)}
  >
  <Trash2 className="h-3 w-3" />

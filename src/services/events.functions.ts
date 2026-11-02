@@ -630,7 +630,8 @@ async function _upsertCivilianEvent(data: z.infer<typeof civilianEventSchema>) {
       await supabase.from("ticket_lots").insert({
         event_id: event.id,
         name: "1º Lote Geral",
-        price_cents: safeData.is_free ? 0 : (price_cents || 0),
+        price_min_cents: safeData.is_free ? 0 : (price_cents || 0),
+        price_max_cents: safeData.is_free ? 0 : (price_cents || 0),
         capacity: safeData.capacity || 100,
         status: "active",
       });
@@ -1427,7 +1428,7 @@ async function _getEventWithLots(eventId: string) {
     // Fallback bidirecional: Eventos Civis / Luma criados em classifieds (category = 'event')
     const { data: classifiedRow } = await supabase
       .from("classifieds")
-      .select("*, profiles:profile_id(id, full_name, avatar_url, phone), stores:store_id(id, name, slug, logo_url)")
+      .select("*, profiles:author_profile_id(id, full_name, avatar_url, phone), stores:store_id(id, name, slug, logo_url)")
       .eq("id", eventId)
       .maybeSingle();
 
@@ -1581,7 +1582,7 @@ async function _getPublicEvents(opts: {
     let classifiedsQuery = supabase
       .from("classifieds")
       .select(
-        "id, store_id, profile_id, title, content, price_cents, location_name, sub_category, images, attributes, status, visibility, created_at",
+        "id, store_id, author_profile_id, title, content, price_cents, location_name, sub_category, images, attributes, status, visibility, created_at",
       )
       .in("category", ["event", "events", "evento", "eventos", "ingressos", "ingresso", "show", "shows", "entretenimento"])
       .eq("status", "active")
@@ -3737,7 +3738,7 @@ export const getPublicEventOrganizers = createServerFn({ method: "GET" })
 
     let directoryQuery = supabase
       .from("directory_listings")
-      .select("id, name, slug, logo_url, rating, review_count, is_verified, city, category")
+      .select("id, business_name, avatar_url, rating, reviews_count, is_verified, city")
       .eq("status", "active")
       .in("category", ["entretenimento", "cultura", "eventos", "lazer", "festas", "musica"])
       .limit(limit);
@@ -3753,15 +3754,17 @@ export const getPublicEventOrganizers = createServerFn({ method: "GET" })
 
     if (directoryStores && directoryStores.length > 0) {
       for (const store of directoryStores) {
-        seenNames.add(store.name.toLowerCase());
-        const eventCount = countMap.get(store.name)?.count || 0;
+        const storeName = store.business_name;
+        if (!storeName) continue;
+        seenNames.add(storeName.toLowerCase());
+        const eventCount = countMap.get(storeName)?.count || 0;
         results.push({
           id: store.id,
-          name: store.name,
-          slug: store.slug || null,
-          logoUrl: store.logo_url || null,
+          name: storeName,
+          slug: null,
+          logoUrl: store.avatar_url || null,
           rating: typeof store.rating === "number" && store.rating > 0 ? store.rating : null,
-          reviewCount: typeof store.review_count === "number" && store.review_count > 0 ? store.review_count : null,
+          reviewCount: typeof store.reviews_count === "number" && store.reviews_count > 0 ? store.reviews_count : null,
           activeEventsCount: eventCount,
           city: store.city || null,
           isVerified: Boolean(store.is_verified),

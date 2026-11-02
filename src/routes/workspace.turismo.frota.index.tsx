@@ -200,7 +200,7 @@ function VehicleLayoutsListPage() {
  toolDescription="Editor interativo de plantas baixas de ônibus (Double Decker, Executivo, Leito) com mapa de assentos para agências de turismo e fretamento."
  store={store}
  >
- <div className="flex flex-col min-h-[calc(100dvh-4rem)] w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20">
+ <div className="flex flex-col min-h-dvh w-full px-0 sm:px-4 space-y-6 pb-20">
  {/* ── 1. BARRA CANÔNICA APPLE HIG ── */}
  <WorkspaceCanonicalToolbar
  placeholder="Buscar modelo de veículo..."
@@ -278,7 +278,7 @@ function VehicleLayoutsListPage() {
  onClick={() => handleDuplicate(layout)}
  title="Duplicar modelo"
  aria-label="Duplicar modelo"
- className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <Copy className="size-4 sm:size-3.5" />
  </Button>
@@ -289,7 +289,7 @@ function VehicleLayoutsListPage() {
  onClick={() => handleDelete(layout)}
  title="Excluir modelo"
  aria-label="Excluir modelo"
- className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer"
+ className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-rose-600 cursor-pointer"
  >
  <Trash2 className="size-4 sm:size-3.5" />
  </Button>

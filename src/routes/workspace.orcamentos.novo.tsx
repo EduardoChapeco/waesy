@@ -91,7 +91,7 @@ function NovoOrcamentoRouterPage() {
  )}
  >
  <Plane className="size-3.5" />
- <span>Roteiro Completo (TravelOS)</span>
+ <span>Roteiro Completo</span>
  </button>
  </div>
  </div>
@@ -415,7 +415,7 @@ function NovoOrcamentoTravelosPage() {
  <div>
  <div className="flex items-center gap-2">
  <Badge variant="outline" className="text-xs px-2 py-1 rounded-lg border-primary/30 text-primary bg-primary/10 font-bold">
- Travelos e TravelAgências Standard
+  Orçamento Comercial Enterprise
  </Badge>
  <span className="text-xs text-muted-foreground font-mono">
  Total: {formatMoney(totalPriceCents)}

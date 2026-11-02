@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
-import { encryptSecret, decryptSecret, maskSecret } from "@/lib/crypto-vault.server";
+import { encryptSecret, decryptSecret, maskSecret, cleanApiKey } from "@/lib/crypto-vault.server";
 import { getRequest } from "@tanstack/start-server-core";
 import { extractClientIp } from "@/lib/rate-limiter";
 
@@ -21,9 +21,10 @@ export const saveSecretKey = createServerFn({ method: "POST" })
  "steel",
  "resend",
  "google_maps",
+ "asaas",
  ]),
  label: z.string().min(2),
- secretKey: z.string().min(6),
+ secretKey: z.string().min(4),
  dailyBudgetCents: z.number().int().min(0).optional().default(0),
  }),
  )
@@ -32,7 +33,10 @@ export const saveSecretKey = createServerFn({ method: "POST" })
   const identity = await getIdentity();
   if (!identity?.id) throw new Error("Não autenticado");
 
-  const rawKey = input.secretKey.trim();
+  const rawKey = cleanApiKey(input.secretKey);
+  if (!rawKey || rawKey.length < 4) {
+    throw new Error("Chave de API inválida após sanitização.");
+  }
 
   // Governança RBAC estrita por escopo no cofre:
   if (input.scope === "global" && identity.role !== "platform_admin" && identity.role !== "master") {
@@ -297,15 +301,16 @@ export async function internalTestSecretKeyConnection(
     | "firecrawl"
     | "steel"
     | "resend"
-    | "google_maps",
+    | "google_maps"
+    | "asaas",
   secretKey?: string
 ): Promise<{ success: boolean; message: string }> {
-  const rawKey = secretKey?.trim();
+  const rawKey = cleanApiKey(secretKey || "");
   const identity = await getIdentity().catch(() => null);
   let keyToTest = rawKey;
 
   if (!keyToTest && identity?.id) {
-    keyToTest = (await getActiveSecretForProvider(provider, identity.id).catch(() => null)) || undefined;
+    keyToTest = cleanApiKey((await getActiveSecretForProvider(provider, identity.id).catch(() => null)) || "");
   }
 
   if (!keyToTest) {
@@ -368,6 +373,26 @@ export async function internalTestSecretKeyConnection(
     }
 
     if (provider === "firecrawl") {
+      try {
+        const creditRes = await fetch("https://api.firecrawl.dev/v1/team/credit-usage", {
+          headers: { Authorization: `Bearer ${keyToTest}` },
+          signal: AbortSignal.timeout(10000),
+        });
+        if (creditRes.ok) {
+          const body = (await creditRes.json().catch(() => null)) as any;
+          const remaining = body?.data?.remaining_credits;
+          const msg = remaining !== undefined
+            ? `Conexão com Firecrawl estabelecida com sucesso! (${remaining} créditos restantes)`
+            : "Conexão com Firecrawl estabelecida com sucesso!";
+          return { success: true, message: msg };
+        }
+        if (creditRes.status === 401 || creditRes.status === 403) {
+          return { success: false, message: "Chave Firecrawl inválida ou expirada (HTTP 401/403)." };
+        }
+      } catch {
+        // Fallback defensivo para scrape se o endpoint team não estiver disponível
+      }
+
       const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
         method: "POST",
         headers: {
@@ -375,7 +400,7 @@ export async function internalTestSecretKeyConnection(
           Authorization: `Bearer ${keyToTest}`,
         },
         body: JSON.stringify({ url: "https://example.com" }),
-        signal: AbortSignal.timeout(7000),
+        signal: AbortSignal.timeout(12000),
       });
       if (res.status === 200 || res.status === 400) {
         return { success: true, message: "Conexão com Firecrawl estabelecida com sucesso!" };
@@ -389,7 +414,7 @@ export async function internalTestSecretKeyConnection(
     if (provider === "steel") {
       const res = await fetch("https://api.steel.dev/v1/sessions", {
         headers: { "x-steel-api-key": keyToTest },
-        signal: AbortSignal.timeout(7000),
+        signal: AbortSignal.timeout(8000),
       });
       if (res.ok || res.status === 200) {
         return { success: true, message: "Conexão com Steel.dev estabelecida com sucesso!" };
@@ -398,6 +423,49 @@ export async function internalTestSecretKeyConnection(
         return { success: false, message: "Chave Steel.dev inválida (HTTP 401/403)." };
       }
       return { success: true, message: `Steel.dev respondeu com status ${res.status}.` };
+    }
+
+    if (provider === "resend") {
+      const res = await fetch("https://api.resend.com/api-keys", {
+        headers: { Authorization: `Bearer ${keyToTest}` },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        return { success: true, message: "Conexão com Resend estabelecida com sucesso!" };
+      }
+      if (res.status === 401 || res.status === 403) {
+        return { success: false, message: "Chave Resend inválida (HTTP 401/403)." };
+      }
+      return { success: true, message: `Resend respondeu com status ${res.status}.` };
+    }
+
+    if (provider === "google_maps") {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=Brasilia&key=${keyToTest}`,
+        { signal: AbortSignal.timeout(8000) }
+      );
+      if (res.ok) {
+        const body = (await res.json().catch(() => ({}))) as any;
+        if (body.status === "REQUEST_DENIED") {
+          return { success: false, message: `Chave Google Maps rejeitada: ${body.error_message || "Acesso negado"}` };
+        }
+        return { success: true, message: "Conexão com Google Maps API estabelecida com sucesso!" };
+      }
+      return { success: false, message: `Google Maps respondeu com status ${res.status}.` };
+    }
+
+    if (provider === "asaas") {
+      const res = await fetch("https://api.asaas.com/v3/myAccount", {
+        headers: { access_token: keyToTest },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        return { success: true, message: "Conexão com Asaas estabelecida com sucesso!" };
+      }
+      if (res.status === 401 || res.status === 403) {
+        return { success: false, message: "Chave Asaas inválida ou expirada (HTTP 401/403)." };
+      }
+      return { success: true, message: `Asaas respondeu com status ${res.status}.` };
     }
 
     return { success: true, message: `Formato da chave ${provider} validado com sucesso.` };
@@ -419,6 +487,7 @@ export const testSecretKeyConnection = createServerFn({ method: "POST" })
         "steel",
         "resend",
         "google_maps",
+        "asaas",
       ]),
       secretKey: z.string().optional(),
     })

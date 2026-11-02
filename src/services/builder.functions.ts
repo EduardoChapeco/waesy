@@ -650,7 +650,7 @@ async function hydrateOmniVitrineCollections(db: any, storeId: string | null): P
     safeQuery(
       db
         .from("stores")
-        .select("id, name, slug, category, city, state, logo_url, cover_url, is_verified")
+        .select("id, name, slug, settings, city, state, logo_url, banner_url")
         .eq("is_active", true)
         .limit(16),
     ),

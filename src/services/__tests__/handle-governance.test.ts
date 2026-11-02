@@ -52,7 +52,7 @@ function createMockDb() {
         }),
         in: vi.fn((col: string, vals: any[]) => {
           if (col === "username") filterInUsernames = vals;
-          if (col === "old_handle") filterInOldOldHandles: filterInOldHandles = vals;
+          if (col === "old_handle") filterInOldHandles = vals;
           return chain;
         }),
         gt: vi.fn((col: string, val: any) => {

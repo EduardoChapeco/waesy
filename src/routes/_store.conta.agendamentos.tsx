@@ -131,14 +131,12 @@ function CustomerAgendaPage() {
        ) : null
      }
      rightActions={
-       <Button
-         asChild
-         size="sm"
-         variant="outline"
-         className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer"
+       <Link
+         to="/agendar"
+         className="h-11 min-h-11 px-3 inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
        >
-         <Link to="/agendar">Agendar</Link>
-       </Button>
+         Agendar
+       </Link>
      }
    />
 

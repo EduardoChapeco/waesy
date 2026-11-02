@@ -687,7 +687,16 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
         </header>
 
         <main id="workspace-main-content" className="main-container-query flex-1 w-full min-h-0 overflow-y-auto no-scrollbar flex flex-col">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 lg:pb-6 flex-1 flex flex-col min-h-0">
+          <div
+            className={cn(
+              "w-full mx-auto flex-1 flex flex-col min-h-0",
+              currentPath.startsWith("/workspace/turismo") ||
+                currentPath.startsWith("/workspace/crm") ||
+                currentPath.startsWith("/workspace/pdv")
+                ? "max-w-none px-2 sm:px-4 lg:px-5 py-2 sm:py-3 pb-24 lg:pb-3"
+                : "max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 lg:pb-6"
+            )}
+          >
             {isAuthorized ? (
               children
             ) : (

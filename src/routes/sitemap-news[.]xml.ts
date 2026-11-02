@@ -47,7 +47,7 @@ export const Route = createFileRoute("/sitemap-news.xml")({
             finalArticles = fallback.data;
           }
 
-          const itemsXml = (articles || [])
+          const itemsXml = (finalArticles || [])
             .map((art) => {
               const pubDate = art.published_at || art.created_at || new Date().toISOString();
               return `  <url>

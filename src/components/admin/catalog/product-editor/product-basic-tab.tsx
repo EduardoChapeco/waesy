@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
+import { SeoGeoOptimizationPanel } from "@/components/seo";
 import type { TravelPackageData } from "@/types/travel-package";
 
 export interface ProductBasicTabProps {
@@ -217,6 +218,28 @@ export function ProductBasicTab({
           </div>
         </div>
       )}
+
+      {/* Otimização Universal de SEO, GEO e Agentes de IA */}
+      <SeoGeoOptimizationPanel
+        value={{
+          seoTitle: formValues.seo_title || formValues.title || "",
+          seoDescription: formValues.seo_description || formValues.description || "",
+          keywords: Array.isArray(formValues.tags) ? formValues.tags : [],
+          latitude: formValues.latitude,
+          longitude: formValues.longitude,
+          allowAiIndexing: formValues.allow_ai_indexing ?? true,
+        }}
+        onChange={(upd) => {
+          if (upd.seoTitle !== undefined) setValue("seo_title", upd.seoTitle);
+          if (upd.seoDescription !== undefined) setValue("seo_description", upd.seoDescription);
+          if (upd.keywords !== undefined) setValue("tags", upd.keywords);
+          if (upd.latitude !== undefined) setValue("latitude", upd.latitude);
+          if (upd.longitude !== undefined) setValue("longitude", upd.longitude);
+          if (upd.allowAiIndexing !== undefined) setValue("allow_ai_indexing", upd.allowAiIndexing);
+        }}
+        referenceTitle={formValues.title}
+        referenceDescription={formValues.description}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveClassifiedNiche, getSemanticBadges, NICHE_DEFINITIONS, getClassifiedFeatureCards, getNicheTabLabels } from "./semantics";
+import { resolveClassifiedNiche, getSemanticBadges, NICHE_DEFINITIONS, getClassifiedFeatureCards, getNicheTabLabels, isNichePaymentApplicable } from "./semantics";
 
 describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nichos", () => {
   it("resolve corretamente o nicho de Viagem / Turismo para pacotes e resorts", () => {
@@ -212,5 +212,22 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
     expect(getNicheTabLabels("business").overviewTab).toBe("Sobre o Negócio");
     expect(getNicheTabLabels("food").overviewTab).toBe("Detalhes do Cardápio");
     expect(getNicheTabLabels("donation").overviewTab).toBe("Detalhes da Doação");
+  });
+
+  it("impede aplicação de parcelamento e meios de pagamento diretos para venda e locação de imóveis", () => {
+    expect(isNichePaymentApplicable("real_estate_sale")).toBe(false);
+    expect(isNichePaymentApplicable("real_estate_rent")).toBe(false);
+    expect(isNichePaymentApplicable("imovel")).toBe(false);
+    expect(isNichePaymentApplicable("imoveis")).toBe(false);
+    expect(isNichePaymentApplicable("aluguel_imovel")).toBe(false);
+    expect(isNichePaymentApplicable("hospitality_stay")).toBe(false);
+    expect(isNichePaymentApplicable("job")).toBe(false);
+    expect(isNichePaymentApplicable("donation")).toBe(false);
+
+    // Válido para produtos físicos, veículos, serviços e pacotes
+    expect(isNichePaymentApplicable("goods")).toBe(true);
+    expect(isNichePaymentApplicable("vehicle")).toBe(true);
+    expect(isNichePaymentApplicable("travel")).toBe(true);
+    expect(isNichePaymentApplicable("service")).toBe(true);
   });
 });

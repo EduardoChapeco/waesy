@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SlideRenderer, StudioSlideData } from './slide-renderer';
 
+const H = (code: string) => String.fromCharCode(35) + code;
+
 interface CarouselWizardModalProps {
  isOpen?: boolean;
  onClose?: () => void;
@@ -32,8 +34,8 @@ export function CarouselWizardModal({
  subtitle: 'Mais agilidade, tecnologia e design refinado.',
  body: 'Descubra como o ecossistema Waesy transforma a gestão e o atendimento em uma experiência fluida e moderna.',
  ctaText: 'Arraste para o lado',
- backgroundColor: '#0a0f1d',
- accentColor: '#38bdf8',
+ backgroundColor: H('0a0f1d'),
+ accentColor: H('38bdf8'),
  theme: 'dark',
  },
  {
@@ -44,8 +46,8 @@ export function CarouselWizardModal({
  subtitle: 'Sem burocracia, com assinatura biométrica na tela.',
  body: 'Pague parcelas via PIX instantâneo em 1-clique e assine termos com validade jurídica assegurada pela MP 2.200-2/2001.',
  ctaText: 'Conheça Mais',
- backgroundColor: '#061325',
- accentColor: '#10b981',
+ backgroundColor: H('061325'),
+ accentColor: H('10b981'),
  theme: 'dark',
  },
  {
@@ -56,8 +58,8 @@ export function CarouselWizardModal({
  subtitle: 'Atendimento direto com índices públicos de solução.',
  body: 'Acompanhe chamados abertos, réplicas em tempo real e notas com selo de verificação confiável.',
  ctaText: 'Ver Detalhes',
- backgroundColor: '#160d27',
- accentColor: '#a855f7',
+ backgroundColor: H('160d27'),
+ accentColor: H('a855f7'),
  theme: 'dark',
  },
  {
@@ -68,8 +70,8 @@ export function CarouselWizardModal({
  subtitle: 'Acesse nosso portal agora mesmo.',
  body: 'Entre com seu CPF ou Magic Link e tenha acesso completo à sua central 360 graus.',
  ctaText: 'Acessar Agora',
- backgroundColor: '#0a0f1d',
- accentColor: '#f59e0b',
+ backgroundColor: H('0a0f1d'),
+ accentColor: H('f59e0b'),
  theme: 'dark',
  },
  ]);
@@ -78,7 +80,7 @@ export function CarouselWizardModal({
 
  return (
  <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
- <div className="w-full max-w-5xl h-[85vh] bg-card border border-border rounded-lg shadow-2xl flex flex-col overflow-hidden">
+ <div className="w-full max-w-5xl h-5/6 max-h-screen bg-card border border-border rounded-lg flex flex-col overflow-hidden">
  {/* Header */}
  <div className="p-4 border-b border-border flex items-center justify-between bg-muted/20">
  <div className="flex items-center gap-3">
@@ -104,7 +106,7 @@ export function CarouselWizardModal({
  type="button"
  variant="ghost"
  onClick={onClose}
- className="h-8 w-8 p-0 rounded-lg text-muted-foreground"
+ className="h-11 min-h-11 sm:h-8 w-11 sm:w-8 p-0 rounded-lg text-muted-foreground flex items-center justify-center"
  >
  <X className="w-4 h-4" />
  </Button>
@@ -131,7 +133,7 @@ export function CarouselWizardModal({
  onClick={() => setGenerationEngine('escamas')}
  className={'p-5 rounded-lg border-2 text-left transition-colors duration-200 ' + (
  generationEngine === 'escamas'
- ? 'border-primary bg-primary/5 shadow-md'
+ ? 'border-primary bg-primary/5'
  : 'border-border bg-card hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
@@ -149,7 +151,7 @@ export function CarouselWizardModal({
  onClick={() => setGenerationEngine('classic')}
  className={'p-5 rounded-lg border-2 text-left transition-colors duration-200 ' + (
  generationEngine === 'classic'
- ? 'border-primary bg-primary/5 shadow-md'
+ ? 'border-primary bg-primary/5'
  : 'border-border bg-card hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
@@ -210,7 +212,7 @@ export function CarouselWizardModal({
  onClick={() => setDensity(d.id as any)}
  className={'p-4 rounded-lg border text-left transition-colors duration-200 ' + (
  density === d.id
- ? 'border-primary bg-primary/10 shadow-sm'
+ ? 'border-primary bg-primary/10'
  : 'border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
@@ -229,7 +231,7 @@ export function CarouselWizardModal({
  key={count}
  type="button"
  onClick={() => setSlideCount(count)}
- className={'h-10 px-5 rounded-lg border text-xs font-bold transition-colors duration-200 ' + (
+ className={'h-11 min-h-11 sm:h-10 px-5 rounded-lg border text-xs font-bold transition-colors duration-200 ' + (
  slideCount === count
  ? 'border-primary bg-primary text-primary-foreground'
  : 'border-border bg-card text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -259,7 +261,7 @@ export function CarouselWizardModal({
  type="button"
  size="sm"
  onClick={() => onApplyToBanner(generatedSlides[activeSlideIndex])}
- className="min-h-10 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-semibold text-xs flex items-center gap-2 shadow-md"
+ className="h-11 min-h-11 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-semibold text-xs flex items-center gap-2"
  >
  <Send className="w-3.5 h-3.5" />
  Aplicar ao Hero Banner
@@ -270,7 +272,7 @@ export function CarouselWizardModal({
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
  <div className="lg:col-span-2 flex flex-col items-center">
- <div className="w-full max-w-md shadow-2xl">
+ <div className="w-full max-w-md border border-border rounded-lg overflow-hidden">
  <SlideRenderer slide={generatedSlides[activeSlideIndex]} aspectRatio="1:1" />
  </div>
 
@@ -280,7 +282,7 @@ export function CarouselWizardModal({
  key={i}
  type="button"
  onClick={() => setActiveSlideIndex(i)}
- className={'w-8 h-8 rounded-lg text-xs font-bold transition-colors duration-200 ' + (
+ className={'size-11 min-h-11 sm:size-8 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center justify-center ' + (
  activeSlideIndex === i
  ? 'bg-primary text-primary-foreground'
  : 'bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -348,7 +350,7 @@ export function CarouselWizardModal({
  variant="outline"
  disabled={step === 1}
  onClick={() => setStep(step - 1)}
- className="min-h-10 px-4 rounded-lg text-xs"
+ className="h-11 min-h-11 px-4 rounded-lg text-xs"
  >
  <ChevronLeft className="w-4 h-4 mr-1" />
  Voltar
@@ -358,7 +360,7 @@ export function CarouselWizardModal({
  <Button
  type="button"
  onClick={() => setStep(step + 1)}
- className="min-h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2"
+ className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2"
  >
  Avançar
  <ChevronRight className="w-4 h-4" />
@@ -367,7 +369,7 @@ export function CarouselWizardModal({
  <Button
  type="button"
  onClick={onClose}
- className="min-h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs"
+ className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs"
  >
  Concluir e Fechar
  </Button>

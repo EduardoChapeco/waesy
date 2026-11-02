@@ -183,13 +183,13 @@ export function ImportCatalogModal({
  variant="ghost"
  size="sm"
  onClick={() => setPreviewData(null)}
- className="text-xs h-7 rounded-lg"
+  className="text-xs h-11 min-h-11 rounded-lg"
  >
  Alterar Link / Dados
  </Button>
  </div>
 
- <ScrollArea className="max-h-[40vh] pr-2">
+  <ScrollArea className="max-h-preview pr-2">
  <div className="space-y-3">
  {previewData.categories?.map((cat, cIdx) => (
  <div
@@ -252,7 +252,7 @@ export function ImportCatalogModal({
  size="sm"
  disabled={parseMutation.isPending}
  onClick={() => parseMutation.mutate()}
- className="h-10 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
+  className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
  >
  {parseMutation.isPending ? (
  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
@@ -267,7 +267,7 @@ export function ImportCatalogModal({
  size="sm"
  disabled={commitMutation.isPending || totalProductsCount === 0}
  onClick={() => commitMutation.mutate()}
- className="h-10 px-5 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2 cursor-pointer shadow-xs"
+  className="h-11 min-h-11 px-5 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2 cursor-pointer shadow-xs"
  >
  {commitMutation.isPending ? (
  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />

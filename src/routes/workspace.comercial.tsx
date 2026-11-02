@@ -38,14 +38,15 @@ export const Route = createFileRoute("/workspace/comercial")({
   loader: async () => {
     try {
     const [leadsRes, teamRes, store] = await Promise.all([
-      listLeads().catch(() => []),
-      listTeamMembers().catch(() => []),
-      getStoreSettings().catch(() => null),
+      listLeads(),
+      listTeamMembers(),
+      getStoreSettings(),
     ]);
     return {
       leads: leadsRes || [],
       team: teamRes || [],
       store,
+      loadError: null,
     };
     } catch (err) {
       console.error("[loader:workspace.comercial] Unhandled loader error:", err);
@@ -53,6 +54,7 @@ export const Route = createFileRoute("/workspace/comercial")({
         leads: [],
         team: [],
         store: null,
+        loadError: err instanceof Error ? err.message : "Não foi possível carregar o módulo comercial.",
       };
     }
   },
@@ -143,14 +145,24 @@ export const LEAD_SOURCES = [
 ] as const;
 
 export const POPULAR_TAGS = [
-  { name: "Família", color: "#3b82f6" },
-  { name: "Lua de Mel", color: "#ec4899" },
-  { name: "Alta Renda", color: "#10b981" },
-  { name: "Resort All-Inclusive", color: "#f59e0b" },
-  { name: "Internacional", color: "#8b5cf6" },
-  { name: "Urgente", color: "#ef4444" },
-  { name: "Grupo", color: "#06b6d4" },
+  { name: "Família", tone: "info" },
+  { name: "Lua de Mel", tone: "accent" },
+  { name: "Alta Renda", tone: "success" },
+  { name: "Resort All-Inclusive", tone: "warning" },
+  { name: "Internacional", tone: "primary" },
+  { name: "Urgente", tone: "danger" },
+  { name: "Grupo", tone: "secondary" },
 ];
+
+const TAG_TONE_CLASSES: Record<string, string> = {
+  info: "bg-info text-info-foreground",
+  accent: "bg-accent text-accent-foreground",
+  success: "bg-success text-success-foreground",
+  warning: "bg-warning text-warning-foreground",
+  primary: "bg-primary text-primary-foreground",
+  danger: "bg-destructive text-destructive-foreground",
+  secondary: "bg-secondary text-secondary-foreground",
+};
 
 export const DEFAULT_CHECKLIST_TEMPLATE = [
   { id: "item-1", text: "Primeiro contato via WhatsApp realizado", done: false },
@@ -226,7 +238,7 @@ const COMERCIAL_TOUR_SLIDES: TourSlide[] = [
 ];
 
 function WorkspaceComercialPage() {
-  const { leads: initialLeads = [], team = [], store = null } = ((Route.useLoaderData?.() as any) || {});
+  const { leads: initialLeads = [], team = [], store = null, loadError = null } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
   const storeId = store?.id || "";
 
@@ -276,7 +288,7 @@ function WorkspaceComercialPage() {
     }
   };
 
-  // Formulário Avançado de Novo Lead (Padrão TravelAgências Enterprise)
+  // Formulário Avançado de Novo Lead (Padrão Enterprise)
   const initialNewLeadState = {
     name: "",
     email: "",
@@ -542,20 +554,28 @@ function WorkspaceComercialPage() {
     }
   };
 
-  const handleCopyMagicLink = () => {
+  const handleCopyMagicLink = async () => {
     if (!selectedLead) return;
     const token = selectedLead.magic_token || selectedLead.id;
     const url = `${window.location.origin}/m/lead/${token}`;
-    navigator.clipboard.writeText(url);
-    setCopiedMagicLink(true);
-    toast.success("Link do formulário autônomo copiado!");
-    setTimeout(() => setCopiedMagicLink(false), 2500);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedMagicLink(true);
+      toast.success("Link do formulário autônomo copiado!");
+      setTimeout(() => setCopiedMagicLink(false), 2500);
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível copiar o link.");
+    }
   };
 
-  const handleCopyContractLink = (publicToken: string) => {
+  const handleCopyContractLink = async (publicToken: string) => {
     const url = `${window.location.origin}/viajante/${publicToken}`;
-    navigator.clipboard.writeText(url);
-    toast.success("Link de assinatura digital copiado!");
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link de assinatura digital copiado!");
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível copiar o link.");
+    }
   };
 
   const handleIssueContract = async () => {
@@ -766,6 +786,7 @@ function WorkspaceComercialPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-5 min-h-screen pb-12 overflow-x-hidden">
+      {loadError && <div role="alert" className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">{loadError}</div>}
       <div className="flex items-center justify-between px-1">
         <p className="text-xs font-medium text-muted-foreground">Pipeline de oportunidades, CRM e propostas comerciais</p>
         <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
@@ -921,14 +942,14 @@ function WorkspaceComercialPage() {
         })}
       </div>
 
-      {/* ── MODAL / SHEET LATERAL DE NOVA OPORTUNIDADE (TRAVELAGÊNCIAS STANDARD) ── */}
+      {/* ── MODAL / SHEET LATERAL DE NOVA OPORTUNIDADE (PADRÃO ENTERPRISE) ── */}
       <Sheet open={isNewLeadOpen} onOpenChange={setIsNewLeadOpen}>
         <SheetContent side="right" className="w-full sm:max-w-2xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           <div className="space-y-6">
             <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-md">
-                  TravelAgências Standard
+                  Cockpit Comercial Enterprise
                 </span>
                 <span className="text-xs text-muted-foreground">Etapa: {STAGES.find((s) => s.id === newLeadTargetStage)?.title}</span>
               </div>
@@ -1157,7 +1178,7 @@ function WorkspaceComercialPage() {
                   <Label className="text-xs text-muted-foreground/75 font-semibold">Tags de Segmentação</Label>
                   <div className="flex flex-wrap gap-2">
                     {POPULAR_TAGS.map((t) => {
-                      const tagStr = `${t.name}:${t.color}`;
+                      const tagStr = `${t.name}:${t.tone}`;
                       const isSelected = newLeadForm.tags.includes(tagStr);
                       return (
                         <button
@@ -1165,12 +1186,11 @@ function WorkspaceComercialPage() {
                           type="button"
                           onClick={() => handleToggleNewLeadTag(tagStr)}
                           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "text-xs font-bold uppercase px-2 py-1 rounded-md transition-colors duration-200 cursor-pointer border",
+                            "text-xs font-bold uppercase px-2 min-h-11 rounded-md transition-colors duration-200 cursor-pointer",
                             isSelected
-                              ? "text-foreground border-transparent shadow-xs"
-                              : "text-muted-foreground border-border bg-background hover:border-primary/40"
+                              ? TAG_TONE_CLASSES[t.tone]
+                              : "text-muted-foreground bg-background hover:bg-muted"
                           )}
-                          style={{ backgroundColor: isSelected ? t.color : undefined }}
                         >
                           {t.name}
                         </button>
@@ -1216,9 +1236,9 @@ function WorkspaceComercialPage() {
         </SheetContent>
       </Sheet>
 
-      {/* ── FICHA 360° DO LEAD (TRAVELAGÊNCIAS ENTERPRISE STANDARD) ── */}
+      {/* ── FICHA 360° DO LEAD (DOSSIÊ ENTERPRISE STANDARD) ── */}
       <Sheet open={!!selectedLead} onOpenChange={(open) => !open && setSelectedLead(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
+        <SheetContent side="right" size="dossier" className="p-4 sm:p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           {selectedLead && (
             <>
               <div className="space-y-5">
@@ -1656,7 +1676,7 @@ function WorkspaceComercialPage() {
                               {customer360Data.customer.full_name || "Cliente Oficial"}
                             </span>
                             <Badge variant="outline" className="text-xs font-mono border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
-                              Perfil Canônico
+                              Ficha Completa do Cliente
                             </Badge>
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground/75 text-muted-foreground">
@@ -1935,7 +1955,7 @@ function WorkspaceComercialPage() {
                       ) : (
                         <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                           {customer360Data.activities.map((act: any) => (
-                            <div key={act.id} className="p-2 rounded-lg border border-border/40 bg-card text-xs text-muted-foreground/75 flex items-center justify-between">
+                            <div key={act.id} className="p-3 rounded-xl bg-muted/30 text-xs text-muted-foreground flex items-center justify-between">
                               <div>
                                 <span className="font-medium text-foreground">{act.content}</span>
                                 <span className="text-xs text-muted-foreground block">
@@ -2092,7 +2112,7 @@ function WorkspaceComercialPage() {
                       <Label className="text-xs font-semibold">Tags da Oportunidade</Label>
                       <div className="flex flex-wrap gap-2">
                         {POPULAR_TAGS.map((t) => {
-                          const tagStr = `${t.name}:${t.color}`;
+                          const tagStr = `${t.name}:${t.tone}`;
                           const isSelected = editLeadForm.tags.includes(tagStr);
                           return (
                             <button
@@ -2100,12 +2120,11 @@ function WorkspaceComercialPage() {
                               type="button"
                               onClick={() => handleToggleTag(tagStr)}
                               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                                "text-xs font-bold uppercase px-2 py-1 rounded-md transition-colors duration-200 cursor-pointer border",
+                                "text-xs font-bold uppercase px-2 min-h-11 rounded-md transition-colors duration-200 cursor-pointer",
                                 isSelected
-                                  ? "text-foreground border-transparent shadow-xs"
-                                  : "text-muted-foreground border-border bg-background hover:border-primary/40"
+                                  ? TAG_TONE_CLASSES[t.tone]
+                                  : "text-muted-foreground bg-background hover:bg-muted"
                               )}
-                              style={{ backgroundColor: isSelected ? t.color : undefined }}
                             >
                               {t.name}
                             </button>
@@ -2293,7 +2312,7 @@ function WorkspaceComercialPage() {
 
       {/* ── Modal Canônico de Agendamento de Reunião com o Lead (lead_meetings) ── */}
       <Dialog open={meetingModalOpen} onOpenChange={setMeetingModalOpen}>
-        <DialogContent className="sm:max-w-md p-6 rounded-lg bg-card border border-border/70 space-y-4">
+        <DialogContent className="sm:max-w-md p-6 rounded-2xl bg-card space-y-4">
           <DialogHeader className="space-y-1">
             <div className="flex items-center gap-2">
               <Calendar className="size-4 text-primary" />

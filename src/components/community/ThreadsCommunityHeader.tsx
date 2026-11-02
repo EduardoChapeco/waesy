@@ -1,9 +1,10 @@
 import * as React from "react";
 import { useState } from "react";
-import { Search, Plus, Check, ShieldCheck, Share2, Settings, Users, Sparkles } from "lucide-react";
+import { Search, Plus, Check, ShieldCheck, Share2, Settings, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   COMMUNITY_GRADIENT_PRESETS,
   COMMUNITY_TYPE_LABELS,
@@ -84,7 +85,7 @@ export function ThreadsCommunityHeader({
     <div className={`w-full max-w-3xl mx-auto px-0 sm:px-4 pt-0 sm:pt-4 pb-2 ${className}`}>
       {/* ─── Cartão Squircle Imersivo de Capa (Edge-to-Edge Mobile / Widescreen Desktop) ─── */}
       <div
-        className={`relative w-full rounded-none rounded-b-3xl sm:rounded-3xl overflow-hidden shadow-sm transition-colors duration-300 ${
+        className={`relative w-full rounded-none rounded-b-3xl sm:rounded-3xl overflow-hidden transition-colors duration-300 ${
           community.cover_mode === "image" && community.cover_image_url
             ? "bg-zinc-950"
             : "bg-zinc-950"
@@ -119,18 +120,18 @@ export function ThreadsCommunityHeader({
                   }}
                   onFocus={() => setIsSearchActive(true)}
                   onBlur={() => setIsSearchActive(false)}
-                  placeholder="Search"
-                  className="w-full h-11 min-h-11 pl-10 pr-4 rounded-full bg-card/20 hover:bg-card/25 focus:bg-card/30 backdrop-blur-md text-primary-foreground placeholder:text-primary-foreground/80 text-xs sm:text-sm font-medium border border-white/25 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  placeholder="Buscar na comunidade..."
+                  className="w-full h-11 min-h-11 pl-10 pr-4 rounded-xl bg-card text-foreground placeholder:text-muted-foreground text-xs sm:text-sm font-medium border border-border/60 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label="Pesquisar nesta comunidade"
                 />
               </div>
             </form>
 
-            {/* Botão Circular de Ação Rápida (+) com Piso 44px */}
+            {/* Botão de Ação Rápida (+) com Piso 44px — Sólido Padrão HIG */}
             <button
               type="button"
               onClick={isMember ? onNewPostClick : onJoinToggle}
-              className="size-11 min-h-11 min-w-11 rounded-full bg-card/20 hover:bg-card/30 active:scale-95 backdrop-blur-md border border-white/30 text-primary-foreground flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="size-11 min-h-11 min-w-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label={isMember ? "Criar publicação" : "Participar da comunidade"}
               title={isMember ? "Criar publicação" : "Participar da comunidade"}
             >
@@ -142,7 +143,7 @@ export function ThreadsCommunityHeader({
               <button
                 type="button"
                 onClick={onSettingsClick}
-                className="size-11 min-h-11 min-w-11 rounded-full bg-card/20 hover:bg-card/30 active:scale-95 backdrop-blur-md border border-white/30 text-primary-foreground flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="size-11 min-h-11 min-w-11 rounded-xl bg-card hover:bg-muted text-foreground border border-border/60 flex items-center justify-center shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Gerenciar comunidade"
                 title="Gerenciar comunidade"
               >
@@ -154,7 +155,7 @@ export function ThreadsCommunityHeader({
             <button
               type="button"
               onClick={handleShare}
-              className="size-11 min-h-11 min-w-11 rounded-full bg-card/20 hover:bg-card/30 active:scale-95 backdrop-blur-md border border-white/30 text-primary-foreground flex items-center justify-center shrink-0 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="size-11 min-h-11 min-w-11 rounded-xl bg-card hover:bg-muted text-foreground border border-border/60 flex items-center justify-center shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Compartilhar comunidade"
               title="Compartilhar link"
             >
@@ -222,11 +223,12 @@ export function ThreadsCommunityHeader({
               type="button"
               onClick={onJoinToggle}
               variant={isMember ? "secondary" : "default"}
-              className={`h-11 min-h-11 px-5 rounded-full text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white shadow-sm ${
+              className={cn(
+                "h-11 min-h-11 px-5 rounded-full text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 isMember
-                  ? "bg-card/25 hover:bg-card/35 text-primary-foreground border border-white/40 backdrop-blur-md"
-                  : "bg-card hover:bg-card/90 text-zinc-950 font-extrabold"
-              }`}
+                  ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              )}
             >
               {isMember ? (
                 <>

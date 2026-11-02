@@ -602,9 +602,6 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
         content: {
           title: "Resort All Inclusive & Praia Privativa",
           location: "Porto de Galinhas, PE",
-          stars: 5,
-          ratingScore: 9.4,
-          reviewsCount: 382,
         },
       },
     ],

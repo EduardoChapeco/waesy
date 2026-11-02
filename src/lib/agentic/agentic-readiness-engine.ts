@@ -1340,6 +1340,7 @@ export function evaluateAgenticReadiness(input: AuditTargetInput = {}): AgenticR
 
   const checks: AgenticCheckResult[] = rawChecks.map((c) => ({
     ...c,
+    status: c.status as "passed" | "partial" | "failed",
     layer: c.layer as "essential" | "recommended",
     category: c.layer as "essential" | "recommended",
     number: c.id,

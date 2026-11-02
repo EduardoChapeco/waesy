@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   Heart,
@@ -24,8 +24,10 @@ import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 import { RichPostContent } from "@/components/community/rich-post-content";
 import { formatRelativeTime } from "@/lib/datetime";
 import { togglePostLike, type MuralFeedItem } from "@/services/social.functions";
+import { getUserSession } from "@/services/auth.functions";
 import { toast } from "sonner";
 
+// empty: feed thread post card com fallback para layout sem media
 export interface FeedThreadPostCardProps {
   post: MuralFeedItem;
   session?: any;
@@ -129,10 +131,31 @@ export function FeedThreadPostCard({
   const mediaUrls = post.media_urls || [];
   const createdAtFormatted = formatRelativeTime(post.created_at);
 
+  const { data: clientSession, isLoading: isClientSessionLoading } = useQuery({
+    queryKey: ["current-user-session"],
+    queryFn: () => getUserSession().catch(() => null),
+    staleTime: 60000,
+  });
+
+  const currentUserId =
+    session?.user?.id ||
+    session?.id ||
+    clientSession?.user?.id ||
+    (clientSession as any)?.id ||
+    null;
+
+  const isOwner = Boolean(
+    currentUserId &&
+      (currentUserId === post.author?.id ||
+        currentUserId === (post as any)?.author_profile_id ||
+        currentUserId === (post.author as any)?.profile_id ||
+        currentUserId === (post as any)?.author_user_id)
+  );
+
   return (
     <>
       <article
-        className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-border/50 bg-card text-foreground transition-colors duration-200 duration-200 hover:border-border/80 ${className}`}
+        className={`py-4 px-3 sm:px-4 bg-transparent text-foreground transition-colors duration-200 hover:bg-muted/10 ${className}`}
       >
         <div className="flex items-start gap-3">
           {/* ─── Coluna Esquerda: Avatar & Conector de Thread ─────────── */}
@@ -200,7 +223,11 @@ export function FeedThreadPostCard({
                 entityId={post.id}
                 canonicalUrl={`/publicacao/${post.id}`}
                 title={authorName}
-                isOwner={session?.user?.id === post.author.id}
+                description={post.content_text || ""}
+                isOwner={isOwner}
+                status={(post as any)?.status || "active"}
+                postData={post}
+                authorUsername={authorUsername}
               />
             </div>
 

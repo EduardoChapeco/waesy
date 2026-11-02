@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { openQuickCreateModal } from "@/components/shell/GlobalQuickCreateModal";
+import { setClientContextCookies } from "@/lib/context-auth";
 
 export interface VitrineLateralMenuItem {
   id?: string;
@@ -194,13 +195,18 @@ export function VitrineLateralMenuSheet({
 
   const handleSwitchContext = (type: "civil" | "creator" | "courier" | "store") => {
     onClose();
-    if (typeof window !== "undefined") {
-      window.document.cookie = `waesy_active_context=${type}; path=/; max-age=31536000; SameSite=Lax`;
+    if (type === "civil") {
+      setClientContextCookies({ context: "civil" });
+      window.location.href = "/conta";
+    } else if (type === "courier") {
+      setClientContextCookies({ context: "courier" });
+      window.location.href = "/conta/entregador";
+    } else if (type === "creator") {
+      setClientContextCookies({ context: "creator" });
+      window.location.href = "/conta/criadores";
+    } else if (type === "store") {
+      window.location.href = "/workspace";
     }
-    if (type === "civil") window.location.href = "/conta";
-    else if (type === "courier") window.location.href = "/conta/entregador";
-    else if (type === "creator") window.location.href = "/conta/criadores";
-    else if (type === "store") window.location.href = "/workspace";
   };
 
   // Agrupa itens em seções semânticas compatíveis com iFood

@@ -566,7 +566,7 @@ function AdminMiningHubPage() {
   });
 
   const TABS: { id: Tab; icon: React.ReactNode; label: string; badge?: number }[] = [
-    { id: "sources", icon: <Database className="h-4 w-4" />, label: "Fontes Canônicas (V127)", badge: sourcesList.length },
+    { id: "sources", icon: <Database className="h-4 w-4" />, label: "Fontes Oficiais de Dados", badge: sourcesList.length },
     { id: "mined", icon: <Robot className="h-4 w-4" />, label: "Artigos Minerados", badge: stats.mined.pending_review },
     { id: "queue", icon: <Queue className="h-4 w-4" />, label: "Fila de Extração", badge: stats.queue.pending },
     { id: "events", icon: <Ticket className="h-4 w-4" />, label: "Eventos e RSVP", badge: eventsList.length },
@@ -685,7 +685,7 @@ function AdminMiningHubPage() {
               className="h-10 rounded-lg font-bold text-xs gap-2 shrink-0"
             >
               <Plus size={16} weight="bold" />
-              <span>{isCreatingSource ? "Cancelar" : "Nova Fonte Canônica"}</span>
+              <span>{isCreatingSource ? "Cancelar" : "Nova Fonte Oficial"}</span>
             </Button>
           </div>
 
@@ -694,7 +694,7 @@ function AdminMiningHubPage() {
             <form onSubmit={handleCreateSource} className="bg-card p-5 rounded-lg border border-primary/30 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-foreground">Cadastrar Fonte do Omni-Crawler V127</h3>
-                <Badge variant="outline">Injeção Canônica</Badge>
+                <Badge variant="outline">Importação Oficial</Badge>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div>

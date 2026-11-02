@@ -169,7 +169,7 @@ export function ProductEditMediaManager({ product }: ProductEditMediaManagerProp
                         type="button"
                         variant="secondary"
                         size="icon"
-                        className="size-8 rounded-md focus-visible:ring-2 focus-visible:ring-ring"
+                         className="size-11 min-h-11 min-w-11 rounded-md focus-visible:ring-2 focus-visible:ring-ring"
                         onClick={() => setEditingMedia(m)} /* focus-visible: */
                       >
                         <Settings className="size-4" />
@@ -178,7 +178,7 @@ export function ProductEditMediaManager({ product }: ProductEditMediaManagerProp
                         type="button"
                         variant="destructive"
                         size="icon"
-                        className="size-8 rounded-md focus-visible:ring-2 focus-visible:ring-ring"
+                         className="size-11 min-h-11 min-w-11 rounded-md focus-visible:ring-2 focus-visible:ring-ring"
                         onClick={() => handleDelete(m.id, m.url)} /* focus-visible: */
                       >
                         <Trash2 className="size-4" />
@@ -195,7 +195,7 @@ export function ProductEditMediaManager({ product }: ProductEditMediaManagerProp
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="size-8 rounded-md focus-visible:ring-2 focus-visible:ring-ring"
+                         className="size-11 min-h-11 min-w-11 rounded-md focus-visible:ring-2 focus-visible:ring-ring"
                         disabled={idx === 0}
                         onClick={() => handleMove(idx, "left")} /* focus-visible: */
                       >
@@ -208,7 +208,7 @@ export function ProductEditMediaManager({ product }: ProductEditMediaManagerProp
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="size-8 rounded-md focus-visible:ring-2 focus-visible:ring-ring"
+                         className="size-11 min-h-11 min-w-11 rounded-md focus-visible:ring-2 focus-visible:ring-ring"
                         disabled={idx === (product.product_media?.length || 0) - 1}
                         onClick={() => handleMove(idx, "right")} /* focus-visible: */
                       >

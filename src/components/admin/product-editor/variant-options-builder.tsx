@@ -165,14 +165,14 @@ export function VariantOptionsBuilder({ product, onClose }: VariantOptionsBuilde
  placeholder="Ex: Cor, Tamanho..."
  value={option.name}
  onChange={(e) => handleOptionNameChange(oIdx, e.target.value)}
- className="max-w-[250px]"
+  className="max-w-sm"
  />
  </div>
  <Button
  variant="ghost"
  size="icon"
  onClick={() => handleRemoveOption(oIdx)}
- className="text-muted-foreground hover:text-destructive"
+  className="min-h-11 min-w-11 text-muted-foreground hover:text-destructive"
  >
  <TrashIcon className="size-4" />
  </Button>
@@ -192,7 +192,7 @@ export function VariantOptionsBuilder({ product, onClose }: VariantOptionsBuilde
     type="button"
     aria-label={`Remover valor ${val}`}
     onClick={() => handleRemoveValue(oIdx, vIdx)}
-    className="p-1 rounded hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+     className="min-h-11 min-w-11 rounded hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
   >
     <X className="size-3" />
   </button>
@@ -200,7 +200,7 @@ export function VariantOptionsBuilder({ product, onClose }: VariantOptionsBuilde
  ))}
  <Input
  placeholder="Digite um valor e aperte Enter..."
- className="border-0 shadow-none focus-visible:ring-0 px-1 min-w-[150px] flex-1 h-7 text-sm"
+  className="border-0 shadow-none focus-visible:ring-0 px-1 min-w-36 flex-1 h-11 min-h-11 text-sm"
  onKeyDown={(e) => {
  if (e.key === "Enter") {
  e.preventDefault();
