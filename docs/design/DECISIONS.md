@@ -1,5 +1,27 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-417: Motor Atômico de Reservas de 15 Minutos (Anti-Race Condition) e Carimbo da Lotérica (Idempotência Estrita — SPEC-006)
+- **Data:** 2026-11-02
+- **Contexto:**
+  1. Vulnerabilidades de concorrência (Race Conditions) do tipo "ler -> decidir -> gravar" (Check-then-Act) em checkout, deals/classificados e ingressos permitiam sobrevenda ou duplicidade em cliques simultâneos.
+  2. Ausência de tabela centralizada de idempotência transacional ("O Carimbo da Lotérica: Carimbou PAGO, não paga de novo") com lock lease temporal para impedir execução concorrente de webhooks e transações financeiras.
+- **Decisão:**
+  1. **Motor Soberano de Reserva Atômica de 15 Minutos (`universal_reservations`):**
+     - RPC `reserve_resource_15min_atomic` com bloqueio pessimista em nível de linha (`SELECT ... FOR UPDATE`), expiração lazy de reservas vencidas e verificação estrita de disponibilidade (`stock_on_hand - active_reservations`).
+     - Suporte universal a variantes de produto físico (`product_variant`), ofertas/deals (`deal`), ingressos de eventos (`ticket_lot`) e slots de agendamento (`booking_service_slot`).
+     - RPC `consume_reservation_atomic` para baixa definitiva pós-pagamento e `release_reservation_atomic` para liberação antecipada no cancelamento.
+  2. **Registro de Idempotência Central ("O Carimbo da Lotérica" — `processed_events`):**
+     - Chave primária `event_id`, escopo, status (`processing`, `completed`, `failed`), `result_payload` e lease de 2 minutos (`locked_until`).
+     - Replay de evento carimbado retorna imediatamente o payload cacheado sem reexecutar a lógica de negócio nem deduzir estoques/saldos repetidamente.
+     - Bloqueio de corridas simultâneas com status `already_processing: true`.
+  3. **Camada BFF e Helper `executeWithIdempotency`:**
+     - `atomic-reservations.functions.ts` e `idempotency.functions.ts` com validação estrita via schemas Zod e desestruturação completa de parâmetros (Regra B.25).
+  4. **Testes Automatizados e Evidências:**
+     - `src/services/__tests__/atomic-reservations-and-idempotency.test.ts`: 16 testes aprovados (100% de sucesso).
+     - Aprovação plena na catraca mecânica de CI (`node scripts/design-lint.mjs --ratchet`) com redução de débito (-18 violações).
+- **Fundamentação:** AGENTS.md Regras B.4, B.5, B.7, B.9, B.11, B.25 e SPEC-006.
+- **Consequências:** Impossibilidade matemática de estoque negativo, sobrevenda ou múltiplos processamentos do mesmo webhook/evento transacional em todo o ecossistema Waesy.
+
 ## DEC-425: Arquitetura Unificada Página por Página no Omni Builder (Paridade Wix Studio / Editor X), Subestados de Menus e Edição em Planilha In-Page (Modo Sheet)
 - **Data:** 2026-11-02
 - **Contexto:**
@@ -7828,3 +7850,20 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   3. **Qualidade Visual:** Redução de 18 violações no Design Lint Ratchet (de 3.154 para **3.136**, com 0 P0).
 - **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.25, B.26, DL-01 a DL-32 e WCAG 2.2 AA.
 - **Consequências:** Kanban e Gaveta 360° operando com ergonomia comercial de alta densidade, zero deleções, zero mocks estáticos e 100% de integração com o BFF.
+
+
+---
+
+### DEC-416 (2026-11-02): Criação de Organizações, Associações e Ecossistema B2B com Regra do Maior Desconto e Métricas
+- **Data:** 2026-11-02
+- **ID da Decisão:** DEC-416
+- **Contexto:** Necessidade de habilitar a criação de entidades de classe, associações comerciais (ACIs, CDLs), sindicatos, cooperativas e ONGs no fluxo de criação de negócio, permitindo filiação entre empresas, aba pública de associadas no perfil da entidade, descontos mútuos B2B com prevalência do maior percentual e dashboard de metrificação de negócios gerados (diretos via checkout e indiretos/offline).
+- **Decisão Adotada:**
+  1. **Taxonomia e Segmentos:** Adicionada a categoria `organizacoes` ("Organizações, Associações e ONGs") com os segmentos `associacao_comercial`, `cooperativa` e `coletivo_ong` em `src/lib/constants/business-segments.ts`, integrando-se dinamicamente ao fluxo de `_store.criar-negocio.tsx`.
+  2. **Contrato de Dados e RLS:** Criada a migration `20261102210000_associations_and_b2b_partnerships.sql` com as tabelas `store_association_memberships` (filiações com aprovação, % de desconto e RLS) e `association_b2b_transactions` (ledger de transações diretas e indiretas/offline).
+  3. **Server Functions e Regra do Maior Desconto:** Criado `src/services/association.functions.ts` com validação Zod estrita (Rule B.25). O motor `calculateInterMemberDiscount` cruza as entidades em comum e aplica `MAX(discount_percent)`.
+  4. **Aba Pública de Associadas:** Em `src/routes/_store.loja.$slug.tsx` e `CanonicalStoreProfileView`, renderizada a aba "Empresas Associadas" exclusivamente quando existirem parceiros aprovados (Rule B.33), com squircle 1:1, badge de benefício e CTA para vitrine.
+  5. **Workspace da Associação:** Implementada a rota `src/routes/workspace.associacao.tsx` com 4 KPIs (membros, faturamento gerado, economia em descontos, transações), gestão de filiações e diálogo tátil para registrar negócios offline.
+  6. **Testes Automatizados:** Suíte unitária `src/services/__tests__/association-b2b-engine.test.ts` com 9 testes aprovados (100% pass) cobrindo Zod, regra do maior desconto e cálculo financeiro.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.5, B.7, B.8, B.9, B.25, B.33 e WCAG 2.2 AA.
+- **Consequências:** Entidades comerciais e civis agora operam como ecossistemas integrados no Waesy, fortalecendo a economia local e viabilizando clubes de benefícios B2B auditáveis.

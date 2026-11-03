@@ -131,6 +131,7 @@ import { Route as VerificarSerialRouteImport } from './routes/verificar.$serial'
 import { Route as ViajanteTokenRouteImport } from './routes/viajante.$token'
 import { Route as ViajanteCarteiraRouteImport } from './routes/viajante.carteira'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace.index'
+import { Route as WorkspaceAssociacaoRouteImport } from './routes/workspace.associacao'
 import { Route as WorkspaceAutomacoesRouteImport } from './routes/workspace.automacoes'
 import { Route as WorkspaceAvaliacoesRouteImport } from './routes/workspace.avaliacoes'
 import { Route as WorkspaceComercialRouteImport } from './routes/workspace.comercial'
@@ -1063,6 +1064,11 @@ const ViajanteCarteiraRoute = ViajanteCarteiraRouteImport.update({
 const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceAssociacaoRoute = WorkspaceAssociacaoRouteImport.update({
+  id: '/associacao',
+  path: '/associacao',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceAutomacoesRoute = WorkspaceAutomacoesRouteImport.update({
@@ -2920,6 +2926,7 @@ export interface FileRoutesByFullPath {
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
   '/viajante/carteira': typeof ViajanteCarteiraRoute
+  '/workspace/associacao': typeof WorkspaceAssociacaoRoute
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
@@ -3355,6 +3362,7 @@ export interface FileRoutesByTo {
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
   '/viajante/carteira': typeof ViajanteCarteiraRoute
+  '/workspace/associacao': typeof WorkspaceAssociacaoRoute
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
@@ -3798,6 +3806,7 @@ export interface FileRoutesById {
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
   '/viajante/carteira': typeof ViajanteCarteiraRoute
+  '/workspace/associacao': typeof WorkspaceAssociacaoRoute
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
@@ -4244,6 +4253,7 @@ export interface FileRouteTypes {
     | '/verificar/$serial'
     | '/viajante/$token'
     | '/viajante/carteira'
+    | '/workspace/associacao'
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
@@ -4679,6 +4689,7 @@ export interface FileRouteTypes {
     | '/verificar/$serial'
     | '/viajante/$token'
     | '/viajante/carteira'
+    | '/workspace/associacao'
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
@@ -5121,6 +5132,7 @@ export interface FileRouteTypes {
     | '/verificar/$serial'
     | '/viajante/$token'
     | '/viajante/carteira'
+    | '/workspace/associacao'
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
@@ -6356,6 +6368,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/workspace/'
       preLoaderRoute: typeof WorkspaceIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/associacao': {
+      id: '/workspace/associacao'
+      path: '/associacao'
+      fullPath: '/workspace/associacao'
+      preLoaderRoute: typeof WorkspaceAssociacaoRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/automacoes': {
@@ -9200,6 +9219,7 @@ const WorkspaceTurismoGruposIdRouteWithChildren =
   )
 
 interface WorkspaceRouteChildren {
+  WorkspaceAssociacaoRoute: typeof WorkspaceAssociacaoRoute
   WorkspaceAutomacoesRoute: typeof WorkspaceAutomacoesRoute
   WorkspaceAvaliacoesRoute: typeof WorkspaceAvaliacoesRoute
   WorkspaceComercialRoute: typeof WorkspaceComercialRoute
@@ -9380,6 +9400,7 @@ interface WorkspaceRouteChildren {
 }
 
 const WorkspaceRouteChildren: WorkspaceRouteChildren = {
+  WorkspaceAssociacaoRoute: WorkspaceAssociacaoRoute,
   WorkspaceAutomacoesRoute: WorkspaceAutomacoesRoute,
   WorkspaceAvaliacoesRoute: WorkspaceAvaliacoesRoute,
   WorkspaceComercialRoute: WorkspaceComercialRoute,
@@ -9644,13 +9665,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

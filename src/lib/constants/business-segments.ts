@@ -1,9 +1,9 @@
 import React from "react";
-import { Utensils, ShoppingBag, Store, Scissors, Pill, Dog, Ticket, Smartphone, Briefcase, Building2, Car, Home, Palette, Dumbbell, Compass, Layers } from 'lucide-react';
+import { Utensils, ShoppingBag, Store, Scissors, Pill, Dog, Ticket, Smartphone, Briefcase, Building2, Car, Home, Palette, Dumbbell, Compass, Layers, Users, Landmark } from 'lucide-react';
 
 export interface BusinessSegment {
  id: string;
- category: "alimentacao" | "varejo" | "servicos" | "experiencias";
+ category: "alimentacao" | "varejo" | "servicos" | "experiencias" | "organizacoes";
  categoryLabel: string;
  title: string;
  shortDesc: string;
@@ -23,6 +23,7 @@ export const BUSINESS_CATEGORIES = [
  { id: "varejo", label: "Varejo e Comércio" },
  { id: "servicos", label: "Serviços, Saúde e Beleza" },
  { id: "experiencias", label: "Eventos, Cultura e Outros" },
+ { id: "organizacoes", label: "Organizações, Associações e ONGs" },
 ] as const;
 
 export const BUSINESS_SEGMENTS: BusinessSegment[] = [
@@ -380,17 +381,47 @@ export const BUSINESS_SEGMENTS: BusinessSegment[] = [
  },
  {
  id: "collective",
- category: "experiencias",
- categoryLabel: "Eventos, Cultura & Outros",
- title: "Coletivo Cultural, Arte e ONG",
- shortDesc: "Associações, artesãos, projetos sociais, coletivos locais e galerias.",
- fullDesc: "Publicação de eventos culturais, arrecadação colaborativa, vitrine de artistas locais e publicação de zines digitais.",
- badge: "Comunidade & Zines",
- modules: ["Vitrine Colaborativa", "Zines & Biolinks", "Doações & Contribuições", "Mural da Comunidade"],
+ category: "organizacoes",
+ categoryLabel: "Organizações, Associações e ONGs",
+ title: "Organização Social, Coletivo e ONG",
+ shortDesc: "ONGs, fundações, coletivos comunitários, projetos sociais e artesãos.",
+ fullDesc: "Gestão de causas, arrecadação colaborativa, vitrine de iniciativas sociais e rede de empresas mantenedoras parceiras.",
+ badge: "Causas & Projetos",
+ modules: ["Vitrine Colaborativa", "Empresas Parceiras", "Doações & Contribuições", "Mural da Comunidade"],
  icon: Building2,
  iconBg: "bg-indigo-500/15",
  iconColor: "text-indigo-500",
  gradient: "from-indigo-950/90 via-black/60 to-black/90",
+ coverImage: "",
+ },
+ {
+ id: "associacao_comercial",
+ category: "organizacoes",
+ categoryLabel: "Organizações, Associações e ONGs",
+ title: "Associação Comercial, CDL e Entidade de Classe",
+ shortDesc: "Associações empresariais, CDLs, polos tecnológicos e sindicatos.",
+ fullDesc: "Gestão completa de empresas associadas, tabela de desconto padrão inter-associados, métricas mensais de negócios gerados e clube de benefícios.",
+ badge: "Rede de Associados",
+ modules: ["Empresas Associadas", "Clube de Descontos", "Métricas B2B", "Aprovações"],
+ icon: Landmark,
+ iconBg: "bg-blue-500/15",
+ iconColor: "text-blue-500",
+ gradient: "from-blue-950/90 via-black/60 to-black/90",
+ coverImage: "",
+ },
+ {
+ id: "cooperativa",
+ category: "organizacoes",
+ categoryLabel: "Organizações, Associações e ONGs",
+ title: "Cooperativa e Central de Negócios",
+ shortDesc: "Cooperativas agropecuárias, de crédito, de produção e centrais de compras.",
+ fullDesc: "Catálogo compartilhado de cooperados, rede integrada de descontos mútuos, faturamento centralizado e relatório de volume transacionado.",
+ badge: "Cooperados & Central",
+ modules: ["Rede de Cooperados", "Descontos Mútuos", "Volume Negociado", "Tabela Central"],
+ icon: Users,
+ iconBg: "bg-emerald-500/15",
+ iconColor: "text-emerald-500",
+ gradient: "from-emerald-950/90 via-black/60 to-black/90",
  coverImage: "",
  },
 ];

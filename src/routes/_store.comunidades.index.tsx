@@ -175,7 +175,7 @@ function CommunitiesDirectoryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {communities.map((comm) => (
+            {communities.map((comm: any) => (
               <Link
                 key={comm.id}
                 to={`/_store/c/${comm.slug}` as any}
@@ -187,7 +187,7 @@ function CommunitiesDirectoryPage() {
                       {comm.title}
                     </h3>
                     <span className="text-xs font-semibold px-2 py-1 rounded-md bg-muted text-muted-foreground shrink-0 uppercase tracking-wide">
-                      {COMMUNITY_TYPE_LABELS[comm.community_type]}
+                      {COMMUNITY_TYPE_LABELS[comm.community_type as keyof typeof COMMUNITY_TYPE_LABELS] || comm.community_type}
                     </span>
                   </div>
 

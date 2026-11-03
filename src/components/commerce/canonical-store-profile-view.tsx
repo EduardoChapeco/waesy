@@ -7,7 +7,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, Phone, MapPin, SlidersHorizontal, Shield, Star, ShieldCheck, Share2, ArrowLeft, Store, ShoppingBag, Layers, UtensilsCrossed, Briefcase, Building2, ChevronRight, Search, ExternalLink, Plus, MessageSquare, Award, CreditCard, Truck, CheckCircle, Eye, Check, Navigation, Ticket, FileCheck, Grid, List, Camera, Edit3, Package, LayoutGrid, Tag, Sparkles, ArrowRight } from "lucide-react";
+import { Clock, Phone, MapPin, SlidersHorizontal, Shield, Star, ShieldCheck, Share2, ArrowLeft, Store, ShoppingBag, Layers, UtensilsCrossed, Briefcase, Building2, ChevronRight, Search, ExternalLink, Plus, MessageSquare, Award, CreditCard, Truck, CheckCircle, Eye, Check, Navigation, Ticket, FileCheck, Grid, List, Camera, Edit3, Package, LayoutGrid, Tag, Sparkles, ArrowRight, Handshake } from "lucide-react";
 import { WhatsappLogo, PaperPlaneTilt, Globe, InstagramLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +64,7 @@ export interface CanonicalStoreProfileViewProps {
   sponsors?: any[];
   concursos?: any[];
   employerStats?: any;
+  associatedMembers?: any[];
   builderTree?: any[] | null;
   omniPageDoc?: any | null;
   initialTab?: string;
@@ -88,6 +89,7 @@ export function CanonicalStoreProfileView({
   sponsors = [],
   concursos = [],
   employerStats = null,
+  associatedMembers = [],
   omniPageDoc = null,
   initialTab = "vitrine",
   isOwner = false,
@@ -391,9 +393,10 @@ export function CanonicalStoreProfileView({
       ...(jobs.length > 0 ? ["vagas"] : []),
       ...(ads.length > 0 ? ["classificados"] : []),
       ...(concursos.length > 0 ? ["concursos"] : []),
+      ...(associatedMembers.length > 0 ? ["associadas"] : []),
     ]);
     if (!available.has(activeTab)) setActiveTab("vitrine");
-  }, [activeTab, ads.length, catalog.length, concursos.length, hasAboutData, jobs.length, posts.length, reviews.length]);
+  }, [activeTab, ads.length, associatedMembers.length, catalog.length, concursos.length, hasAboutData, jobs.length, posts.length, reviews.length]);
 
   // Semântica por Nicho
   const segment = (store?.type || store?.category || settings.segment || "loja").toLowerCase();
@@ -1234,6 +1237,26 @@ function cleanAddressSegment(text: string): string {
                 <span>Sorteios</span>
                 <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {concursos.length}
+                </span>
+              </button>
+            )}
+
+            {/* Aba 9: Empresas Associadas / Rede de Parceiros */}
+            {associatedMembers.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("associadas")}
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                  activeTab === "associadas"
+                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Handshake className="size-4 sm:size-4" />
+                <span>Empresas Associadas</span>
+                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                  {associatedMembers.length}
                 </span>
               </button>
             )}
@@ -2777,6 +2800,74 @@ function cleanAddressSegment(text: string): string {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* ── CONTEÚDO DA ABA 9: EMPRESAS ASSOCIADAS / PARCEIRAS ── */}
+          {activeTab === "associadas" && associatedMembers.length > 0 && (
+            <div className="space-y-4 pt-2 animate-in fade-in duration-150">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
+                <div>
+                  <h2 className="text-base font-bold text-foreground">Rede de Empresas Associadas</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Empresas parceiras e membros com benefícios exclusivos pactuados com esta entidade.
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+                  {associatedMembers.length} Empresas Parceiras
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {associatedMembers.map((m: any) => (
+                  <div
+                    key={m.membershipId}
+                    className="p-4 rounded-lg border border-border/60 bg-card flex flex-col justify-between gap-3 shadow-2xs hover:border-primary/40 transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="size-14 rounded-xl bg-muted/40 border border-border/50 shrink-0 overflow-hidden flex items-center justify-center">
+                        {m.store?.logoUrl ? (
+                          <img
+                            src={m.store.logoUrl}
+                            alt={m.store.name}
+                            className="size-full object-cover select-none"
+                          />
+                        ) : (
+                          <Store className="size-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <h3 className="text-sm font-bold text-foreground truncate">
+                          {m.store?.name || "Empresa Parceira"}
+                        </h3>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {m.store?.city ? `${m.store.city} - ${m.store.state}` : "Localidade integrada"}
+                        </p>
+                        <div className="flex items-center gap-2 pt-1">
+                          <Badge variant="outline" className="text-2xs font-bold border-primary/40 text-primary">
+                            {m.discountPercent}% OFF para Associados
+                          </Badge>
+                          {m.customBenefitDescription && (
+                            <span className="text-2xs text-muted-foreground truncate">
+                              {m.customBenefitDescription}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {m.store?.slug && (
+                      <div className="flex justify-end pt-2 border-t border-border/40">
+                        <Button asChild variant="outline" className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer">
+                          <Link to="/loja/$slug" params={{ slug: m.store.slug }}>
+                            <span>Ver Vitrine</span>
+                            <ExternalLink className="size-4" />
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
