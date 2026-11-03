@@ -233,7 +233,7 @@ function ShiftsPage() {
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <AlertTriangle className={`size-3.5 ${kpis.totalDiscrepancyCents === 0 ? "text-muted-foreground" : "text-amber-500"}`} />
+            <AlertTriangle className={`size-3.5 ${kpis.totalDiscrepancyCents === 0 ? "text-muted-foreground" : "text-warning-strong"}`} />
             Divergência Líquida
           </span>
           <div className={`text-2xl font-mono font-bold ${
@@ -320,7 +320,7 @@ function ShiftsPage() {
         />
       ) : (
         <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
-          <div className="overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
@@ -356,7 +356,7 @@ function ShiftsPage() {
                         {formatDateTime(s.opened_at)}
                       </TableCell>
                       <TableCell
-                        className="font-medium text-xs max-w-[130px] truncate"
+                        className="font-medium text-xs max-w-33 truncate"
                         title={s.opened_by_profile?.full_name || "Operador"}
                       >
                         {s.opened_by_profile?.full_name || "Operador"}
@@ -398,7 +398,7 @@ function ShiftsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleOpenAudit(s.id)}
-                          className="h-8 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 gap-1 cursor-pointer"
+                          className="h-8 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 gap-1 cursor-pointer min-h-11 sm:min-h-0"
                         >
                           <Eye className="size-3.5" />
                           <span>Auditar</span>
@@ -542,7 +542,7 @@ function ShiftsPage() {
                               : "Despesa (-)"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-medium text-muted-foreground truncate max-w-[150px]">
+                        <TableCell className="font-medium text-muted-foreground truncate max-w-38">
                           {entry.notes || (entry.channel ? `Canal: ${entry.channel}` : "Lançamento")}
                         </TableCell>
                         <TableCell className={`text-right font-mono font-bold ${

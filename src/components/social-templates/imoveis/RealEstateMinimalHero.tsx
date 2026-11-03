@@ -62,13 +62,13 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
       >
         {/* Topo / Safe Zone Superior (Tags & Localização) */}
         <div className="pt-2 flex items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/60 backdrop-blur-md border border-white/20 text-amber-300 font-bold uppercase tracking-wider text-xs sm:text-sm shadow-md">
-            <span className="size-2 rounded-full bg-amber-400 animate-pulse motion-reduce:animate-none" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/60 backdrop-blur-md border border-white/20 text-warning-strong font-bold uppercase tracking-wider text-xs sm:text-sm ">
+            <span className="size-2 rounded-full bg-warning animate-pulse motion-reduce:animate-none" />
             <span>{promoBadge || "IMÓVEL EXCLUSIVO"}</span>
           </div>
 
           <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/60 backdrop-blur-md border border-white/15 text-foreground/90 text-xs sm:text-sm font-medium">
-            <MapPin className="size-4 text-amber-400 shrink-0" />
+            <MapPin className="size-4 text-warning-strong shrink-0" />
             <span className="truncate max-w-52">{destinationOrLocation || "Localização Nobre"}</span>
           </div>
         </div>
@@ -78,7 +78,7 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
           {/* Título & Subtítulo */}
           <div className="space-y-2">
             <h1
-              className={`font-black uppercase tracking-tight text-foreground drop-shadow-md leading-[1.05] line-clamp-2 ${
+              className={`font-black uppercase tracking-tight text-foreground  leading-none line-clamp-2 ${
                 aspectRatio === "1:1" ? "text-4xl md:text-5xl" : "text-6xl md:text-7xl"
               }`}
             >
@@ -94,9 +94,9 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
             {resolvedSpecs.map((spec, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground/70 backdrop-blur-md border border-white/20 text-foreground font-semibold text-xs sm:text-sm shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground/70 backdrop-blur-md border border-white/20 text-foreground font-semibold text-xs sm:text-sm "
               >
-                <CheckCircle2 className="size-4 text-amber-400 shrink-0" />
+                <CheckCircle2 className="size-4 text-warning-strong shrink-0" />
                 <span>{spec}</span>
               </div>
             ))}
@@ -113,7 +113,7 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
               </div>
               {maxInstallments > 1 && (
                 <p className="text-xs text-foreground/80 font-mono">
-                  Entrada + parcelas de <span className="text-amber-400 font-bold">{formatMoney(effectiveInstallmentCents)}</span>
+                  Entrada + parcelas de <span className="text-warning-strong font-bold">{formatMoney(effectiveInstallmentCents)}</span>
                 </p>
               )}
               <p className="text-2xs text-foreground/60">{paymentMethodsLabel}</p>
@@ -121,9 +121,9 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
 
             {/* Botão CTA com Alto Contraste */}
             <div className="flex flex-col items-end gap-2 shrink-0">
-              <div className="h-12 px-6 rounded-lg bg-amber-400 text-slate-950 font-black text-sm uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-amber-400/20 active:scale-95 transition-transform duration-200">
+              <div className="h-12 px-6 rounded-lg bg-warning text-slate-950 font-black text-sm uppercase tracking-wider flex items-center gap-2  shadow-amber-400/20 active:scale-95 transition-transform duration-200">
                 <span>{ctaLabel}</span>
-                <ArrowRight className="size-4 stroke-[3]" />
+                <ArrowRight className="size-4 stroke-3" />
               </div>
               <div className="flex items-center gap-2 text-2xs text-foreground/70 font-medium">
                 <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />

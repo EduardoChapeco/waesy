@@ -52,7 +52,7 @@ const TRIGGER_META: Record<string, { label: string; icon: any; color: string }> 
   lead_created: {
     label: "Lead Criado",
     icon: TrendingUp,
-    color: "text-amber-500 bg-amber-500/10 border-amber-500/30",
+    color: "text-warning-strong bg-warning/10 border-warning/30",
   },
   lead_won: {
     label: "Lead Ganho",
@@ -77,7 +77,7 @@ const TRIGGER_META: Record<string, { label: string; icon: any; color: string }> 
   cart_abandoned: {
     label: "Carrinho Abandonado",
     icon: ShoppingCart,
-    color: "text-amber-500 bg-amber-500/10 border-amber-500/30",
+    color: "text-warning-strong bg-warning/10 border-warning/30",
   },
   product_low_stock: {
     label: "Estoque Baixo",
@@ -234,7 +234,7 @@ function AutomacoesWorkflowsPage() {
         </div>
         <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rascunhos</span>
-          <div className="text-2xl font-black text-amber-500">
+          <div className="text-2xl font-black text-warning-strong">
             {workflows.filter((w) => w.status === "draft").length}
           </div>
         </div>
@@ -265,7 +265,7 @@ function AutomacoesWorkflowsPage() {
           {WORKFLOW_PREVIEW_NODES.map((node, idx) => {
             const Icon = node.icon;
             const colors = [
-              "text-amber-500 bg-amber-500/10 border-amber-500/30",
+              "text-warning-strong bg-warning/10 border-warning/30",
               "text-blue-500 bg-blue-500/10 border-blue-500/30",
               "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
               "text-violet-500 bg-violet-500/10 border-violet-500/30",
@@ -355,7 +355,7 @@ function AutomacoesWorkflowsPage() {
                       size="icon"
                       disabled={isLoading || executingId === wf.id}
                       onClick={() => handleRunTest(wf)}
-                      className="size-11 sm:size-9 rounded-lg text-primary hover:bg-primary/10 cursor-pointer"
+                      className="size-11 sm:size-9 rounded-lg text-primary hover:bg-primary/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Disparar Teste Manual do Workflow"
                     >
                       {executingId === wf.id ? (
@@ -369,7 +369,7 @@ function AutomacoesWorkflowsPage() {
                       size="icon"
                       disabled={isLoading || executingId === wf.id}
                       onClick={() => handleToggle(wf)}
-                      className={`size-11 sm:size-9 rounded-lg cursor-pointer ${isActive ? "text-emerald-600" : "text-muted-foreground"}`}
+                      className={`size-11 sm:size-9 rounded-lg cursor-pointer ${isActive ? "text-emerald-600" : "text-muted-foreground"} min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
                       title={isActive ? "Desativar" : "Ativar"}
                     >
                       {isActive ? <ToggleRight className="size-5" /> : <ToggleLeft className="size-5" />}

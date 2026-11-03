@@ -253,7 +253,7 @@ export default function AgencyCorporateCockpitPage() {
       <div className="flex flex-col min-h-dvh bg-background text-foreground">
         <WorkspaceCanonicalToolbar title="Viagens Corporativas B2B" />
         <div className="p-6 max-w-2xl mx-auto w-full my-auto text-center space-y-4">
-          <div className="size-16 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
+          <div className="size-16 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  mx-auto flex items-center justify-center">
             <Building2 className="size-8" />
           </div>
           <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -484,7 +484,7 @@ export default function AgencyCorporateCockpitPage() {
               {accounts.filter((a) => a.status === "pending").map((pendingAcc) => (
                 <div
                   key={pendingAcc.id}
-                  className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                  className="p-4 rounded-lg border border-warning/30 bg-warning/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                 >
                   <div className="space-y-1">
                     <span className="font-bold text-foreground">
@@ -648,7 +648,7 @@ export default function AgencyCorporateCockpitPage() {
                 <div className="p-4 rounded-lg border border-border/80 bg-muted/20 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs font-semibold text-amber-600 bg-amber-500/10 border-amber-500/20">
+                      <Badge variant="outline" className="text-xs font-semibold text-warning-strong bg-warning/10 border-warning/20">
                         Aprovação de Gestor
                       </Badge>
                       <span className="font-bold text-foreground">Gestor: Rodrigo Mendes · Projeto Expansão PR</span>

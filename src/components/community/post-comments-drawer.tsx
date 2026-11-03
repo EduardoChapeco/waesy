@@ -74,7 +74,7 @@ export function PostCommentsDrawer({
 
  {/* Drawer Container */}
  <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
- className="relative w-full max-w-lg mx-auto bg-background sm:rounded-t-lg rounded-t-lg border-t border-border flex flex-col h-[75vh] max-h-[600px] overflow-hidden animate-in slide-in-from-bottom duration-300"
+ className="relative w-full max-w-lg mx-auto bg-background sm:rounded-t-lg rounded-t-lg border-t border-border flex flex-col h-vh-75 max-h-150 overflow-hidden animate-in slide-in-from-bottom duration-300"
  onClick={(e) => e.stopPropagation()}
  >
  {/* Drag Handle & Header */}
@@ -89,7 +89,7 @@ export function PostCommentsDrawer({
  </div>
  <button
  onClick={onClose}
- className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <X className="size-4" />
  </button>
@@ -203,7 +203,7 @@ export function PostCommentsDrawer({
  type="submit"
  size="sm"
  disabled={!commentText.trim() || addComment.isPending}
- className="h-10 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2"
+ className="h-10 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 min-h-11 sm:min-h-0"
  >
  {addComment.isPending ? (
  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />

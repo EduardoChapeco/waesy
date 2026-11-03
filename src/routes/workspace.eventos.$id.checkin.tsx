@@ -507,7 +507,7 @@ function EventCheckinPage() {
             </Badge>
           </div>
 
-          <div className="space-y-2 max-h-[420px] overflow-y-auto no-scrollbar pr-1">
+          <div className="space-y-2 max-h-105 overflow-y-auto no-scrollbar pr-1">
             {history.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-8">
                 Nenhuma leitura realizada nesta sessão.

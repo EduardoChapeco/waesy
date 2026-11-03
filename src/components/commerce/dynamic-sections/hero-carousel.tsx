@@ -50,12 +50,12 @@ export function HeroCarousel({
   const heightMode = String(content.desktopHeight || "proportional");
   const heightClass =
     heightMode === "full"
-      ? "h-[85dvh] @md:h-dvh"
+      ? "h-vh-85 @md:h-dvh"
       : heightMode === "square"
       ? "aspect-square"
       : heightMode === "natural"
       ? ""
-      : "aspect-[16/9] sm:aspect-[2.4/1] @md:aspect-[21/9] lg:aspect-[3/1] w-full h-auto"; // Escala proporcional sem cortes no mobile
+      : "aspect-16/9 sm:aspect-[2.4/1] @md:aspect-21/9 lg:aspect-3/1 w-full h-auto"; // Escala proporcional sem cortes no mobile
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -90,7 +90,7 @@ export function HeroCarousel({
   if (banners.length === 0) {
     return (
       <section className="relative overflow-hidden bg-secondary">
-        <div className="flex aspect-[4/5] @md:aspect-[21/9] w-full flex-col items-center justify-center gap-3 text-muted-foreground border-y border-border">
+        <div className="flex aspect-4/5 @md:aspect-21/9 w-full flex-col items-center justify-center gap-3 text-muted-foreground border-y border-border">
           <ImageOff className="size-10" aria-hidden />
           <p>Nenhum banner configurado</p>
         </div>
@@ -172,7 +172,7 @@ export function HeroCarousel({
                     <div className="mt-4 sm:mt-6 @md:mt-8 pointer-events-auto">
                       <Button
                         size="lg"
-                        className="bg-card/95 text-foreground hover:bg-card border border-transparent hover:scale-[1.02] transition-transform duration-200 font-medium rounded-full px-6 sm:px-8 h-10 sm:h-12 text-xs sm:text-sm"
+                        className="bg-card/95 text-foreground hover:bg-card border border-transparent hover:scale-102 transition-transform duration-200 font-medium rounded-full px-6 sm:px-8 h-10 sm:h-12 text-xs sm:text-sm"
                         asChild
                       >
                         <Link className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

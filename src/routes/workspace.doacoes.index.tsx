@@ -44,7 +44,7 @@ function WorkspaceDoacoesHubPage() {
           </p>
         </div>
 
-        <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs">
+        <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs min-h-11 sm:min-h-0">
           <Link to="/conta/classificados/novo" search={{ tipo: "doacao" }}>
             <Plus className="size-3.5" />
             <span>Cadastrar Doação Gratuita</span>
@@ -111,7 +111,7 @@ function WorkspaceDoacoesHubPage() {
                 Ajude famílias e projetos sociais da sua cidade doando itens excedentes, mostruários ou organizando campanhas solidárias.
               </p>
             </div>
-            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold">
+            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold min-h-11 sm:min-h-0">
               <Link to="/conta/classificados/novo" search={{ tipo: "doacao" }}>
                 <Plus className="size-3.5 mr-2" />
                 <span>Criar Primeira Doação</span>

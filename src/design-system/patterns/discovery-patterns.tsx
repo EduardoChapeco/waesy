@@ -84,7 +84,7 @@ export function CategoryBubbleCarousel({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 overflow-x-auto scrollbar-none py-1 px-1 select-none",
+        "flex items-center gap-3 overflow-x-auto scroll-area-carousel scrollbar-none py-1 px-1 select-none",
         className
       )}
     >
@@ -143,7 +143,7 @@ export function HorizontalProductShelf({
         )}
       </div>
 
-      <div className="flex items-stretch gap-4 overflow-x-auto scrollbar-none py-1 px-1">
+      <div className="flex items-stretch gap-4 overflow-x-auto scroll-area-carousel scrollbar-none py-1 px-1">
         {children}
       </div>
     </section>

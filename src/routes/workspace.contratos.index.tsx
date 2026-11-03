@@ -219,7 +219,7 @@ function ContractsDashboard() {
               ? "Tente ajustar o termo de busca ou selecione outra aba de status."
               : "Comece criando o seu primeiro documento legal ou utilize um template inteligente de prestação de serviços."}
           </p>
-          <Button asChild size="sm" variant="outline" className="rounded-lg h-10 px-4 text-xs font-semibold mt-2 cursor-pointer">
+          <Button asChild size="sm" variant="outline" className="rounded-lg h-10 px-4 text-xs font-semibold mt-2 cursor-pointer min-h-11 sm:min-h-0">
             <Link to="/workspace/contratos/novo">Criar Primeiro Contrato</Link>
           </Button>
         </div>
@@ -254,7 +254,7 @@ function ContractsDashboard() {
                         <CheckCircle2 size={11} /> Assinado
                       </Badge>
                     ) : isSigning ? (
-                      <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-semibold gap-1">
+                      <Badge variant="secondary" className="bg-warning/10 text-warning-strong  border border-warning/20 text-xs font-semibold gap-1">
                         <Clock size={11} /> Em Assinatura
                       </Badge>
                     ) : (
@@ -285,7 +285,7 @@ function ContractsDashboard() {
                 </div>
 
                 <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
- <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-2 flex-1">
+ <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-2 flex-1 min-h-11 sm:min-h-0">
  <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
  <FileSignature className="size-3.5" />
  <span>Abrir Contrato</span>

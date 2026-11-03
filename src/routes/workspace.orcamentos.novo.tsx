@@ -407,7 +407,7 @@ function NovoOrcamentoTravelosPage() {
  {/* Topo / Breadcrumb & Ações */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="flex items-center gap-3">
- <Button asChild variant="ghost" size="icon" className="rounded-lg size-9">
+ <Button asChild variant="ghost" size="icon" className="rounded-lg size-9 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0">
  <Link to="/workspace/orcamentos">
  <ArrowLeft className="size-4" />
  </Link>
@@ -432,14 +432,14 @@ function NovoOrcamentoTravelosPage() {
  onClick={() => handleSaveProposal(false)}
  disabled={isSubmitting}
  variant="outline"
- className="h-10 rounded-lg text-xs font-bold gap-2"
+ className="h-10 rounded-lg text-xs font-bold gap-2 min-h-11 sm:min-h-0"
  >
  <span>Salvar Rascunho</span>
  </Button>
  <Button
  onClick={() => handleSaveProposal(true)}
  disabled={isSubmitting}
- className="h-10 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm cursor-pointer"
+ className="h-10 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground  cursor-pointer min-h-11 sm:min-h-0"
  >
  <FileSpreadsheet className="size-4" />
  <span>Salvar e Abrir Lâmina Visual</span>
@@ -706,7 +706,7 @@ function NovoOrcamentoTravelosPage() {
  onClick={() => setFlights((prev) => prev.filter((f) => f.id !== flight.id))}
  variant="ghost"
  size="icon"
- className="size-8 text-destructive hover:bg-destructive/10 rounded-lg"
+ className="size-8 text-destructive hover:bg-destructive/10 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -854,14 +854,14 @@ function NovoOrcamentoTravelosPage() {
  Opção {idx + 1}
  </Badge>
  <span className="text-xs font-bold text-foreground">{hotel.hotel_name}</span>
- <span className="text-xs text-amber-500">{"".repeat(hotel.stars || 5)}</span>
+ <span className="text-xs text-warning-strong">{"".repeat(hotel.stars || 5)}</span>
  </div>
  {hotels.length > 1 && (
  <Button
  onClick={() => setHotels((prev) => prev.filter((h) => h.id !== hotel.id))}
  variant="ghost"
  size="icon"
- className="size-8 text-destructive hover:bg-destructive/10 rounded-lg"
+ className="size-8 text-destructive hover:bg-destructive/10 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -982,7 +982,7 @@ function NovoOrcamentoTravelosPage() {
  onClick={() => setItinerary((prev) => prev.filter((d) => d.id !== day.id))}
  variant="ghost"
  size="icon"
- className="size-8 text-destructive hover:bg-destructive/10 rounded-lg"
+ className="size-8 text-destructive hover:bg-destructive/10 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -1253,7 +1253,7 @@ function NovoOrcamentoTravelosPage() {
  window.open(`https://wa.me/?text=${msg}`, '_blank');
  }
  }}
- className="h-10 px-5 rounded-lg text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-10 px-5 rounded-lg text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
  >
  <span></span>
  <span>Enviar Proposta via WhatsApp</span>
@@ -1279,7 +1279,7 @@ function NovoOrcamentoTravelosPage() {
  navigator.clipboard?.writeText(text);
  toast.success('Texto copiado! Cole no WhatsApp, e-mail ou onde quiser.');
  }}
- className="h-10 px-4 rounded-lg text-xs font-bold flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground border border-border/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-10 px-4 rounded-lg text-xs font-bold flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground border border-border/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
  >
  <span></span>
  <span>Copiar Resumo</span>
@@ -1732,7 +1732,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  variant="ghost"
  size="sm"
  onClick={handleUnlinkCustomer}
- className="h-7 text-xs text-muted-foreground hover:text-destructive cursor-pointer"
+ className="h-7 text-xs text-muted-foreground hover:text-destructive cursor-pointer min-h-11 sm:min-h-0"
  >
  Desvincular
  </Button>
@@ -1794,7 +1794,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
               type="button"
               size="sm"
               onClick={handleOpenCatalogForNewItem}
-              className="rounded-lg text-xs font-bold gap-2 h-8 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-8 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 cursor-pointer min-h-11 sm:min-h-0"
             >
               <Package className="size-3.5" />
               <span>+ Produto da Loja</span>
@@ -1804,7 +1804,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
               size="sm"
               variant="outline"
               onClick={() => setIsMasterCatalogOpen(true)}
-              className="rounded-lg text-xs font-bold gap-2 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer min-h-11 sm:min-h-0"
             >
               <Boxes className="size-3.5 text-primary" />
               <span>+ Catálogo Mestre</span>
@@ -1814,7 +1814,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
               size="sm"
               variant="outline"
               onClick={() => setIsServiceCatalogOpen(true)}
-              className="rounded-lg text-xs font-bold gap-2 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer min-h-11 sm:min-h-0"
             >
               <Wrench className="size-3.5 text-primary" />
               <span>+ Serviços</span>
@@ -1824,7 +1824,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
               variant="outline"
               size="sm"
               onClick={handleAddItem}
-              className="rounded-lg text-xs font-bold gap-2 h-8 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-8 cursor-pointer min-h-11 sm:min-h-0"
             >
               <Plus className="size-3.5" />
               <span>Item Avulso</span>
@@ -1866,7 +1866,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  variant="ghost"
  size="sm"
  onClick={() => handleOpenCatalogForExistingItem(item.id)}
- className="h-7 px-2 text-xs text-muted-foreground/75 font-bold text-primary hover:bg-primary/10 rounded-lg cursor-pointer"
+ className="h-7 px-2 text-xs text-muted-foreground/75 font-bold text-primary hover:bg-primary/10 rounded-lg cursor-pointer min-h-11 sm:min-h-0"
  >
   Conectar Catálogo
  </Button>
@@ -1884,7 +1884,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  variant="ghost"
  size="icon"
  onClick={() => handleRemoveItem(item.id)}
- className="size-7 text-muted-foreground hover:text-destructive rounded-lg cursor-pointer"
+ className="size-7 text-muted-foreground hover:text-destructive rounded-lg cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -2112,7 +2112,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  />
 
  {catalogCategories.length > 0 && (
- <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar text-xs">
  <button
  type="button"
  onClick={() => setCatalogCategory("all")}

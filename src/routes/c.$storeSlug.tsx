@@ -183,7 +183,7 @@ function CommunityAndPortalWhitelabelPage() {
               variant="outline"
               size="sm"
               onClick={handleShare}
-              className="h-9 px-3 rounded-lg text-xs gap-2 border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-9 px-3 rounded-lg text-xs gap-2 border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0"
             >
               <Share2 className="size-3.5" />
               <span className="hidden sm:inline">Compartilhar</span>
@@ -194,7 +194,7 @@ function CommunityAndPortalWhitelabelPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="h-9 px-3 text-xs gap-2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-9 px-3 text-xs gap-2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0"
               >
                 <LogOut className="size-3.5" />
                 <span className="hidden sm:inline">Sair</span>
@@ -224,7 +224,7 @@ function CommunityAndPortalWhitelabelPage() {
         <div className="px-4 sm:px-6 -mt-12 sm:-mt-14 space-y-3 relative z-10">
           <div className="flex items-end justify-between gap-3">
             {/* Avatar em Squircle */}
-            <div className="size-24 sm:size-28 rounded-2xl sm:rounded-3xl border-4 border-background bg-card text-foreground shadow-lg overflow-hidden flex items-center justify-center font-bold text-2xl text-primary shrink-0">
+            <div className="size-24 sm:size-28 rounded-2xl sm:rounded-3xl border-4 border-background bg-card text-foreground  overflow-hidden flex items-center justify-center font-bold text-2xl text-primary shrink-0">
               {storeLogo ? (
                 <img
                   src={storeLogo}
@@ -416,7 +416,7 @@ function CommunityAndPortalWhitelabelPage() {
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {ev.description || "Participe e garanta sua presença com ingressos oficiais."}
                       </p>
-                      <Button asChild size="sm" className="w-full h-10 min-h-10 rounded-xl text-xs font-bold mt-2">
+                      <Button asChild size="sm" className="w-full h-10 min-h-10 rounded-xl text-xs font-bold mt-2 min-h-11 sm:min-h-0">
                         <Link to={`/evento/${ev.id}` as any}>
                           Ver Detalhes do Evento
                         </Link>

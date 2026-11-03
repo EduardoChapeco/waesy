@@ -127,7 +127,7 @@ export function FoodMenuStreamlinedSection({
  </div>
 
  {/* ── 2. Barra de Categorias Horizontal (Pills de Navegação) ── */}
- <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md py-2 px-0 border-b border-border/40 flex items-center gap-2 overflow-x-auto no-scrollbar ">
+ <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md py-2 px-0 border-b border-border/40 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar ">
  {displayCategories.map((cat) => {
  const isSelected = activeCategory === cat;
  return (
@@ -193,7 +193,7 @@ export function FoodMenuStreamlinedSection({
  e.stopPropagation();
  handleAddItem(item);
  }}
- className="absolute bottom-1.5 right-1.5 size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-md hover:scale-110 active:scale-95 transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute bottom-1.5 right-1.5 size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-overlay hover:scale-110 active:scale-95 transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Adicionar ao Pedido"
  >
  <Plus className="size-3.5" />
@@ -208,7 +208,7 @@ export function FoodMenuStreamlinedSection({
  {/* ── 4. Barra Flutuante Inferior Fixa na Thumb Zone (Padrão iFood / Rocco) ── */}
  {cartItemsCount > 0 && (
  <div className="fixed bottom-4 inset-x-4 max-w-lg mx-auto z-40 animate-in slide-in-from-bottom-3 duration-200">
- <div className="p-3 rounded-lg bg-foreground text-background shadow-2xl flex items-center justify-between gap-4 border border-foreground/10">
+ <div className="p-3 rounded-lg bg-foreground text-background shadow-overlay flex items-center justify-between gap-4 border border-foreground/10">
  <div className="flex items-center gap-3 pl-2">
  <div className="size-8 rounded-full bg-background/20 flex items-center justify-center font-bold text-xs">
  {cartItemsCount}
@@ -226,7 +226,7 @@ export function FoodMenuStreamlinedSection({
  <Button
  type="button"
  onClick={onOpenCart}
- className="h-10 px-6 rounded-lg font-bold text-xs bg-background text-foreground hover:bg-background/90 cursor-pointer shadow-xs gap-2"
+ className="h-10 px-6 rounded-lg font-bold text-xs bg-background text-foreground hover:bg-background/90 cursor-pointer shadow-xs gap-2 min-h-11 sm:min-h-0"
  >
  <span>Ver Sacola / Pedir</span>
  </Button>

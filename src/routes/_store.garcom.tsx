@@ -156,7 +156,7 @@ function GarcomTerminalPage() {
  onClick={() => setSelectedTable(table)}
  className={`p-4 rounded-lg border text-left transition-colors duration-200 min-h-28 flex flex-col justify-between ${
  isOccupied 
- ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400" 
+ ? "bg-warning/10 border-warning/30 text-warning-strong " 
  : isBilling 
  ? "bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400"
  : "bg-card border-border hover:border-primary/50 text-foreground"
@@ -243,7 +243,7 @@ function GarcomTerminalPage() {
  variant="ghost"
  size="sm"
  onClick={() => setCartItems(cartItems.filter((_, i) => i !== idx))}
- className="text-destructive size-9 p-0"
+ className="text-destructive size-9 p-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="h-4 w-4" />
  </Button>

@@ -151,7 +151,7 @@ export function MediaLightboxModal({
  <img
  src={currentMediaUrl}
  alt={`Mídia ${currentIndex + 1}`}
- className="max-h-[75vh] max-w-full rounded-lg object-contain transition-colors duration-200 duration-300"
+ className="max-h-vh-75 max-w-full rounded-lg object-contain transition-colors duration-200 duration-300"
  />
 
  {/* Next Button */}
@@ -210,7 +210,7 @@ export function MediaLightboxModal({
  onClick={() => setCurrentIndex(idx)}
  className={`size-2 rounded-full transition-colors duration-200 ${
  idx === currentIndex ? "w-6 bg-card" : "bg-card/30 hover:bg-card/60"
- } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
  />
  ))}
  </div>

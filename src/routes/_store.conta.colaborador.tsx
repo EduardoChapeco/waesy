@@ -137,11 +137,11 @@ function ColaboradorPortalPage() {
           </div>
 
           {/* Navegação por Abas com Touch Targets de 44px */}
-          <div className="flex gap-1 bg-muted/60 p-1 rounded-lg border border-border w-full sm:w-auto overflow-x-auto no-scrollbar">
+          <div className="flex gap-1 bg-muted/60 p-1 rounded-lg border border-border w-full sm:w-auto overflow-x-auto scroll-area-carousel no-scrollbar">
             <button
               onClick={() => setActiveTab("ponto")}
               className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
-                activeTab === "ponto" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                activeTab === "ponto" ? "bg-card text-foreground " : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Ponto Digital
@@ -149,7 +149,7 @@ function ColaboradorPortalPage() {
             <button
               onClick={() => setActiveTab("holerites")}
               className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
-                activeTab === "holerites" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                activeTab === "holerites" ? "bg-card text-foreground " : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Holerites
@@ -157,7 +157,7 @@ function ColaboradorPortalPage() {
             <button
               onClick={() => setActiveTab("solicitacoes")}
               className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
-                activeTab === "solicitacoes" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                activeTab === "solicitacoes" ? "bg-card text-foreground " : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Vales e Férias
@@ -189,7 +189,7 @@ function ColaboradorPortalPage() {
  {activeTab === "ponto" && (
  <div className="space-y-6">
  {/* Relógio Digital Flutuante */}
- <div className="bg-card/70 backdrop-blur-xl border border-border rounded-lg p-8 text-center shadow-sm relative overflow-hidden">
+ <div className="bg-card/70 backdrop-blur-xl border border-border rounded-lg p-8 text-center  relative overflow-hidden">
  <div className="absolute top-4 right-4 flex items-center gap-2 text-xs text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
  <MapPin className="h-3.5 w-3.5" /> GPS Ativo
  </div>
@@ -206,7 +206,7 @@ function ColaboradorPortalPage() {
  <Button
  onClick={() => clockMutation.mutate("clock_in")}
  disabled={clockMutation.isPending}
- className="min-h-[52px] rounded-lg bg-emerald-600 hover:bg-emerald-500 text-foreground font-bold flex flex-col gap-1 shadow-xs shadow-emerald-600/20"
+ className="min-h-13 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-foreground font-bold flex flex-col gap-1 shadow-xs shadow-emerald-600/20"
  >
  <span>Entrada</span>
  <span className="text-2xs opacity-80 font-normal">Início da jornada</span>
@@ -215,7 +215,7 @@ function ColaboradorPortalPage() {
  onClick={() => clockMutation.mutate("lunch_out")}
  disabled={clockMutation.isPending}
  variant="outline"
- className="min-h-[52px] rounded-lg border-border font-bold flex flex-col gap-1"
+ className="min-h-13 rounded-lg border-border font-bold flex flex-col gap-1"
  >
  <span>Saída Almoço</span>
  <span className="text-2xs text-muted-foreground font-normal">Pausa refeição</span>
@@ -224,7 +224,7 @@ function ColaboradorPortalPage() {
  onClick={() => clockMutation.mutate("lunch_in")}
  disabled={clockMutation.isPending}
  variant="outline"
- className="min-h-[52px] rounded-lg border-border font-bold flex flex-col gap-1"
+ className="min-h-13 rounded-lg border-border font-bold flex flex-col gap-1"
  >
  <span>Volta Almoço</span>
  <span className="text-2xs text-muted-foreground font-normal">Retorno da pausa</span>
@@ -232,7 +232,7 @@ function ColaboradorPortalPage() {
  <Button
  onClick={() => clockMutation.mutate("clock_out")}
  disabled={clockMutation.isPending}
- className="min-h-[52px] rounded-lg bg-rose-600 hover:bg-rose-500 text-foreground font-bold flex flex-col gap-1 shadow-xs shadow-rose-600/20"
+ className="min-h-13 rounded-lg bg-rose-600 hover:bg-rose-500 text-foreground font-bold flex flex-col gap-1 shadow-xs shadow-rose-600/20"
  >
  <span>Saída</span>
  <span className="text-2xs opacity-80 font-normal">Fim do expediente</span>
@@ -241,7 +241,7 @@ function ColaboradorPortalPage() {
  </div>
 
  {/* Histórico Recente de Marcações */}
- <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+ <div className="bg-card rounded-lg border border-border p-6 ">
  <h3 className="font-bold text-sm text-foreground mb-4 flex items-center gap-2">
  <Clock className="h-4 w-4 text-primary" /> Batidas Registradas Hoje
  </h3>
@@ -362,7 +362,7 @@ function ColaboradorPortalPage() {
  placeholder="Descreva a razão do pedido para análise do RH..."
  value={requestDesc}
  onChange={(e) => setRequestDesc(e.target.value)}
- className="w-full min-h-[100px] p-3 rounded-lg bg-background border border-border text-sm"
+ className="w-full min-h-25 p-3 rounded-lg bg-background border border-border text-sm"
  />
  </div>
 

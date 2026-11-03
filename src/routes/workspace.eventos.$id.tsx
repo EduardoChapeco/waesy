@@ -442,7 +442,7 @@ function SubPainelEventoPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleDeleteLot(lot.id)}
- className="size-11 sm:size-9 text-muted-foreground hover:text-destructive cursor-pointer"
+ className="size-11 sm:size-9 text-muted-foreground hover:text-destructive cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Excluir Lote"
  >
  <Trash2 className="size-4" />

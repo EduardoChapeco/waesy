@@ -19,7 +19,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
   return (
     <div className="flex flex-col w-full font-sans bg-slate-50 text-slate-900 pb-16">
       {/* CAPA - ESTILO BANNER DE E-COMMERCE */}
-      <div className="relative w-full h-[400px] break-inside-avoid overflow-hidden">
+      <div className="relative w-full h-100 break-inside-avoid overflow-hidden">
         {p.cover_image_url ? (
           <img
             src={p.cover_image_url}
@@ -37,7 +37,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-10 w-auto max-w-40 aspect-[4/1] object-contain brightness-0 invert"
+              className="h-10 w-auto max-w-40 aspect-4/1 object-contain brightness-0 invert"
               width={160}
               height={40}
             />

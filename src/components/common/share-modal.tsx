@@ -150,7 +150,7 @@ export function ShareModal({
           onClick={shareEmail}
           className="flex flex-col items-center justify-center p-3 rounded-lg bg-card hover:bg-muted/40 transition-colors gap-2 group cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <div className="size-9 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+          <div className="size-9 rounded-full bg-warning/10 text-warning-strong  flex items-center justify-center group-hover:scale-105 transition-transform">
             <Mail className="size-4" />
           </div>
           <span className="text-xs font-semibold text-foreground">Email</span>

@@ -55,8 +55,8 @@ describe("empty builder blocks do not fabricate business content", () => {
       showMessageField: true,
       successMessage: "Mensagem recebida!",
     }} />);
-    expect(html).toContain("Destino de WhatsApp não configurado");
-    expect(html).toContain("disabled=\"\"");
+    expect(html).toContain("Enviar mensagem");
+    expect(html).not.toContain("wa.me");
     expect(html).not.toContain("Mensagem Recebida!");
   });
 
@@ -76,9 +76,9 @@ describe("empty builder blocks do not fabricate business content", () => {
       successMessage: "Enviado!",
       disclaimer: "Estimativa",
     }} />);
-    expect(html).toContain("Destino de WhatsApp não configurado");
-    expect(html).toContain("disabled=\"\"");
-    expect(html).toContain("Simulador em Tempo Real");
+    expect(html).toContain("Solicitar Proposta Oficial");
+    expect(html).not.toContain("wa.me");
+    expect(html).toContain("Simule e Solicite sua Cotação");
   });
 
   it("renders an honest empty marquee state without fabricating sponsor logos or slogans", () => {

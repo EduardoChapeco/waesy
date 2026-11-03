@@ -34,7 +34,7 @@ export function DualLineFilterPills({
   return (
     <div className={cn("w-full space-y-2 py-1", className)}>
       {/* Linha 1: Ordenação e Campanhas */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-1">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar px-1">
         {ROW_1_OPTIONS.map((opt) => {
           const Icon = opt.icon;
           const isActive = activeSort === opt.id;
@@ -58,7 +58,7 @@ export function DualLineFilterPills({
       </div>
 
       {/* Linha 2: Tipo de Entrega e Condições */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-1">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar px-1">
         {ROW_2_OPTIONS.map((opt) => {
           const Icon = opt.icon;
           const isActive = activeFilter === opt.id;

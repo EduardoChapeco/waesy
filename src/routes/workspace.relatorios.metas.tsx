@@ -274,7 +274,7 @@ function RevenueGoalsPage() {
                   ? "bg-emerald-600"
                   : data.percent_achieved >= 70
                     ? "bg-blue-600"
-                    : "bg-amber-500"
+                    : "bg-warning"
               }`}
               style={{ width: `${Math.min(100, Math.max(0, data.percent_achieved))}%` }}
             />
@@ -329,7 +329,7 @@ function RevenueGoalsPage() {
           </div>
           <p className="text-xs text-muted-foreground font-mono flex items-center gap-1">
             <span>Projetado:</span>
-            <strong className={data.projected_percent >= 100 ? "text-emerald-600" : "text-amber-600"}>
+            <strong className={data.projected_percent >= 100 ? "text-emerald-600" : "text-warning-strong"}>
               {data.projected_percent}%
             </strong>
           </p>
@@ -337,10 +337,10 @@ function RevenueGoalsPage() {
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <ArrowUpRight className="size-3.5 text-amber-500" />
+            <ArrowUpRight className="size-3.5 text-warning-strong" />
             Meta Diária Necessária
           </span>
-          <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-2xl font-mono font-bold text-warning-strong ">
             {formatMoney(data.required_daily_run_rate_cents)}
             <span className="text-xs font-normal text-muted-foreground">/dia</span>
           </div>
@@ -475,7 +475,7 @@ function RevenueGoalsPage() {
                               ? "bg-emerald-600"
                               : ch.percent_achieved >= 70
                                 ? "bg-blue-600"
-                                : "bg-amber-500"
+                                : "bg-warning"
                           }`}
                           style={{ width: `${Math.min(100, ch.percent_achieved)}%` }}
                         />

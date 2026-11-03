@@ -211,7 +211,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                       {section.badge_tag}
                     </span>
                   )}
-                  <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight drop-shadow-sm">
+                  <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight ">
                     {section.title}
                   </h3>
                   {section.subtitle && (
@@ -262,7 +262,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                     )}
                     <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                     <div className="absolute bottom-2.5 left-3 right-3 text-left">
-                      <p className="text-xs sm:text-sm font-bold text-foreground leading-tight drop-shadow-sm truncate">
+                      <p className="text-xs sm:text-sm font-bold text-foreground leading-tight  truncate">
                         {b.title || section.title}
                       </p>
                     </div>
@@ -293,7 +293,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                 )}
               </div>
 
-              <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
+              <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
                 {section.items.map((btn: any) => (
                   <SurfaceLink
                     key={btn.id}
@@ -360,7 +360,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                       subtitle={leadCard?.subtitle || section.subtitle || "Ofertas especiais"}
                       badge={leadCard?.badge || section.badge_tag || "Oferta"}
                       coverImage={leadCard?.cover_image || leadCard?.image_url}
-                      gradient={leadCard?.gradient || "from-red-600 via-orange-500 to-amber-500"}
+                      gradient={leadCard?.gradient || "from-red-600 via-orange-500 to-warning"}
                       actionLabel={leadCard?.action_label || "Ver ofertas"}
                       className="w-36 sm:w-44 h-36 sm:h-40"
                     />

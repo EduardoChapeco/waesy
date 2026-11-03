@@ -994,7 +994,7 @@ export function TravelPromoFlyerModal({
               className="h-11 min-h-11 px-3 rounded-lg text-xs gap-2 font-semibold cursor-pointer border-border/80 hover:bg-primary/10 hover:text-primary transition-colors focus-visible:ring-2"
               title="Alternar entre templates do mesmo nicho"
             >
-              <Dices className="size-4 text-amber-500" />
+              <Dices className="size-4 text-warning-strong" />
               <span className="hidden sm:inline">Trocar Layout</span>
             </Button>
 
@@ -1015,7 +1015,7 @@ export function TravelPromoFlyerModal({
               size="sm"
               onClick={handleDownloadVideo}
               disabled={isExportingVideo}
-              className="h-11 min-h-11 px-3 sm:px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer border-amber-500/30 hover:bg-amber-500/10 text-amber-500 hover:text-amber-400 focus-visible:ring-2"
+              className="h-11 min-h-11 px-3 sm:px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer border-warning/30 hover:bg-warning/10 text-warning-strong hover:text-warning-strong focus-visible:ring-2"
               title="Gerar e baixar vídeo animado de 3s (Stories/Reels)"
             >
               {isExportingVideo ? (
@@ -1234,7 +1234,7 @@ export function TravelPromoFlyerModal({
                         onClick={handleShuffleLayout}
                         className="h-11 min-h-11 px-2 text-xs text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer focus-visible:ring-2 rounded-lg"
                       >
-                        <Dices className="size-4 text-amber-500" />
+                        <Dices className="size-4 text-warning-strong" />
                         <span>Sortear</span>
                       </button>
                     </div>
@@ -1362,8 +1362,8 @@ export function TravelPromoFlyerModal({
                     )}
                     {!hotelCatalogMatch.matched &&
                       hotelCatalogMatch.candidates.length > 0 && (
-                        <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 space-y-1 text-xs">
-                          <span className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <div className="p-2 rounded-lg bg-warning/10 border border-warning/30 space-y-1 text-xs">
+                          <span className="font-semibold text-warning-strong  flex items-center gap-1">
                             <AlertTriangle className="size-3" />
                             Sugestão do catálogo:
                           </span>

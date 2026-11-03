@@ -190,7 +190,7 @@ function CmsStoriesPage() {
 
  return (
  <Card key={story.id} className="overflow-hidden group border-border/70 rounded-lg bg-card">
- <div className="relative aspect-[9/16] bg-zinc-950 flex items-center justify-center overflow-hidden">
+ <div className="relative aspect-9/16 bg-zinc-950 flex items-center justify-center overflow-hidden">
  {isVid ? (
  <video
  src={story.media_url}
@@ -304,7 +304,7 @@ function CmsStoriesPage() {
  </div>
 
  {collab.story && (
- <div className="aspect-[9/16] rounded-lg overflow-hidden bg-zinc-950 max-h-[220px]">
+ <div className="aspect-9/16 rounded-lg overflow-hidden bg-zinc-950 max-h-55">
  <img src={collab.story.media_url} alt="" className="size-full object-cover" />
  </div>
  )}

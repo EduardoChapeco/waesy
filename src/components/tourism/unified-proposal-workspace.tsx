@@ -1003,7 +1003,7 @@ export function UnifiedProposalWorkspace({
             )}
 
             {/* Abas do Fluxo Canônico */}
-            <div className="flex items-center gap-1 mt-4 overflow-x-auto no-scrollbar border-b border-border/30 pb-2">
+            <div className="flex items-center gap-1 mt-4 overflow-x-auto scroll-area-carousel no-scrollbar border-b border-border/30 pb-2">
               <button
                 type="button"
                 onClick={() => setStepTab("destino")}
@@ -1312,7 +1312,7 @@ export function UnifiedProposalWorkspace({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveRoom(room.roomNumber)}
-                          className="size-9 p-0 text-muted-foreground hover:text-destructive"
+                          className="size-9 p-0 text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           title="Remover quarto"
                         >
                           <Trash2 className="size-4" />
@@ -1333,7 +1333,7 @@ export function UnifiedProposalWorkspace({
                                 adultsCount: Math.max(1, room.adultsCount - 1),
                               })
                             }
-                            className="size-9 p-0"
+                            className="size-9 p-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           >
                             <Minus className="size-3" />
                           </Button>
@@ -1349,7 +1349,7 @@ export function UnifiedProposalWorkspace({
                                 adultsCount: room.adultsCount + 1,
                               })
                             }
-                            className="size-9 p-0"
+                            className="size-9 p-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           >
                             <Plus className="size-3" />
                           </Button>
@@ -1370,7 +1370,7 @@ export function UnifiedProposalWorkspace({
                                 childrenAges: room.childrenAges.slice(0, newCount),
                               });
                             }}
-                            className="size-9 p-0"
+                            className="size-9 p-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           >
                             <Minus className="size-3" />
                           </Button>
@@ -1388,7 +1388,7 @@ export function UnifiedProposalWorkspace({
                                 childrenAges: [...room.childrenAges, 5],
                               });
                             }}
-                            className="size-9 p-0"
+                            className="size-9 p-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           >
                             <Plus className="size-3" />
                           </Button>
@@ -1473,7 +1473,7 @@ export function UnifiedProposalWorkspace({
                   />
 
                   {isHotelDropdownOpen && hotelSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-overlay z-50 max-h-48 overflow-y-auto">
                       {hotelSuggestions.map((h: any) => (
                         <button
                           key={h.id}

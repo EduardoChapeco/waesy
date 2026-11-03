@@ -78,7 +78,7 @@ export function HotelAutocompleteInput({
       </button>
 
       {isOpen && !disabled && (
-        <div className="absolute left-0 right-0 top-12 z-50 space-y-2 rounded-lg border border-border bg-card p-2 shadow-lg">
+        <div className="absolute left-0 right-0 top-12 z-50 space-y-2 rounded-lg border border-border bg-card p-2 shadow-overlay">
           <Input
             autoFocus
             value={query}

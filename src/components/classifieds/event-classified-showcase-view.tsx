@@ -374,7 +374,7 @@ export function EventClassifiedShowcaseView({
     <div className="min-h-screen bg-background pb-32 pb-safe">
       {/* 1. CLEAN WIDE HERO BANNER (ZERO HEAVY SHADOW OVERLAY, CONTROLLABLE FOCAL POINT) */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-4 sm:pt-6">
-        <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-lg overflow-hidden border border-border/60 bg-muted">
+        <div className="relative w-full aspect-16/9 sm:aspect-21/9 rounded-lg overflow-hidden border border-border/60 bg-muted">
           {event.hero_image_url && !heroImageFailed ? (
             <img
               src={event.hero_image_url}
@@ -465,7 +465,7 @@ export function EventClassifiedShowcaseView({
                   {event.visibility === "unlisted" && (
                     <Badge
                       variant="outline"
-                      className="text-xs font-semibold px-3 py-1 rounded-md border-amber-500/40 text-amber-600 dark:text-amber-400"
+                      className="text-xs font-semibold px-3 py-1 rounded-md border-warning/40 text-warning-strong "
                     >
                       Evento Exclusivo (Link Direto)
                     </Badge>
@@ -1114,7 +1114,7 @@ export function EventClassifiedShowcaseView({
                           key={`${imgUrl}-${idx}`}
                           type="button"
                           onClick={() => setLightboxImageUrl(imgUrl)}
-                          className="group relative aspect-[4/3] rounded-lg overflow-hidden border border-border/60 bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="group relative aspect-4/3 rounded-lg overflow-hidden border border-border/60 bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                           <img
                             src={imgUrl}
@@ -1285,7 +1285,7 @@ export function EventClassifiedShowcaseView({
 
                 {/* Mapa real do local (coordenadas persistidas do evento) */}
                 {typeof event.latitude === "number" && typeof event.longitude === "number" && (
-                  <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-lg overflow-hidden border border-border/60 bg-muted/20">
+                  <div className="w-full aspect-16/9 sm:aspect-21/9 rounded-lg overflow-hidden border border-border/60 bg-muted/20">
                     <MapLibreCanvas
                       initialCenter={[event.longitude, event.latitude]}
                       initialZoom={15}
@@ -1554,7 +1554,7 @@ export function EventClassifiedShowcaseView({
                               Array.from({ length: Math.min(5, Math.floor(Number(t.rating))) }).map((_, idx) => (
                                 <Star
                                   key={idx}
-                                  className="size-3 fill-amber-400 text-amber-400"
+                                  className="size-3 fill-warning text-warning-strong"
                                 />
                               ))
                             ) : (
@@ -1801,7 +1801,7 @@ export function EventClassifiedShowcaseView({
             <img
               src={lightboxImageUrl}
               alt={event.title}
-              className="w-full max-h-[80vh] object-contain rounded-md"
+              className="w-full max-h-vh-80 object-contain rounded-md"
             />
           )}
         </DialogContent>
@@ -1814,7 +1814,7 @@ export function EventClassifiedShowcaseView({
             <DialogTitle>Story Oficial — {event.title}</DialogTitle>
             <DialogDescription>Destaque vertical 9:16 do evento.</DialogDescription>
           </DialogHeader>
-          <div className="relative aspect-[9/16] w-full bg-foreground flex items-center justify-center">
+          <div className="relative aspect-9/16 w-full bg-foreground flex items-center justify-center">
             {event.story_url &&
             (event.story_url.endsWith(".mp4") || event.story_url.endsWith(".webm")) ? (
               <video

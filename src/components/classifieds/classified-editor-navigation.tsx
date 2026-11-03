@@ -199,7 +199,7 @@ export function ClassifiedEditorNavigation({
            <div
              className={cn(
                "h-full rounded-full transition-colors duration-300",
-               qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-amber-500" : "bg-primary"
+               qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-warning" : "bg-primary"
              )}
              style={{ width: `${qualityScore}%` }}
            />

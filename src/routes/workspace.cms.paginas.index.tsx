@@ -63,10 +63,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { listAdminPages, deletePage } from "@/services/cms.functions";
 import {
+  listExperienceDocuments,
   createExperienceDocument,
   duplicateExperienceDocument,
+  deleteExperienceDocument,
   provisionTourismWixAppSuiteFn,
   provisionCommerceWixAppSuiteFn,
   provisionServicesWixAppSuiteFn,
@@ -86,7 +87,7 @@ export const Route = createFileRoute("/workspace/cms/paginas/")({
   head: () => ({ meta: [{ title: "Páginas | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const res = await listAdminPages();
+      const res = await listExperienceDocuments({ data: {} });
       return res || [];
     } catch (err) {
       console.error("[loader:workspace.cms.paginas.index] Unhandled loader error:", err);
@@ -264,7 +265,7 @@ function CmsPagesPage() {
     if (!pageToDelete) return;
     setIsDeleting(true);
     try {
-      await deletePage({ data: { id: pageToDelete.id } });
+      await deleteExperienceDocument({ data: { id: pageToDelete.id } });
       toast.success("Página excluída.");
       setPageToDelete(null);
       router.invalidate();
@@ -478,7 +479,11 @@ function CmsPagesPage() {
         /* ── GRID DE PROJETOS SOFTWARE PRO (ESTILO FRAMER / LINEAR) ── */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredPages.map((page: any) => {
-            const isPublished = page.status === "published";
+            const isPublished =
+              page.status === "published" ||
+              Boolean(page.published_version_id) ||
+              Boolean(page.settings?.omni_page_published) ||
+              Boolean(page.settings?.published_version_id);
 
             return (
               <div

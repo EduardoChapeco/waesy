@@ -54,7 +54,7 @@ export function ManusTaskTelemetrySheet({
 
             <div className="rounded-xl border border-border/70 bg-muted/20 p-4 space-y-1">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Coins className="size-3.5 text-amber-500" />
+                <Coins className="size-3.5 text-warning-strong" />
                 <span>Créditos usados</span>
               </div>
               <p className="text-sm font-bold font-mono text-foreground">

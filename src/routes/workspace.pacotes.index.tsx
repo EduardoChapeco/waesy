@@ -175,7 +175,7 @@ function WorkspacePackagesPage() {
       />
 
       {/* ── Abas de Navegação em Linha Única (B.39) ── */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-border/40 pb-2">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar border-b border-border/40 pb-2">
         <button
           type="button"
           onClick={() => setActiveTab("pacotes")}
@@ -330,7 +330,7 @@ function WorkspacePackagesPage() {
               description="Quando clientes adquirirem seus pacotes, os passes e créditos aparecerão aqui em tempo real."
             />
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-border/60 bg-card">
+            <div className="overflow-x-auto scroll-area-carousel rounded-xl border border-border/60 bg-card">
               <table className="w-full text-xs text-left">
                 <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase font-mono">
                   <tr>
@@ -416,7 +416,7 @@ function WorkspacePackagesPage() {
               description="Todas as concessões, agendamentos, check-ins, reembolsos e cancelamentos são registrados aqui de forma imutável."
             />
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-border/60 bg-card">
+            <div className="overflow-x-auto scroll-area-carousel rounded-xl border border-border/60 bg-card">
               <table className="w-full text-xs text-left">
                 <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase font-mono">
                   <tr>

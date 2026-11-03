@@ -358,7 +358,7 @@ function AdminOrdersPage() {
  </Button>
 
  {availableViewModes.length > 1 && (
- <div className="flex items-center rounded-lg p-1 bg-muted/40 border border-border/60 overflow-x-auto no-scrollbar max-w-full">
+ <div className="flex items-center rounded-lg p-1 bg-muted/40 border border-border/60 overflow-x-auto scroll-area-carousel no-scrollbar max-w-full">
  {availableViewModes.map((mode) => {
  const Icon = mode.icon;
  const isActive = viewMode === mode.id;
@@ -421,7 +421,7 @@ function AdminOrdersPage() {
  <div className="space-y-3">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-amber-500 animate-pulse motion-reduce:animate-none" />
+ <span className="size-2.5 rounded-full bg-warning animate-pulse motion-reduce:animate-none" />
  <h3 className="text-sm font-bold text-foreground">Novas Reservas</h3>
  </div>
  <Badge variant="secondary" className="font-bold text-xs">
@@ -488,7 +488,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="WhatsApp do Cliente"
  >
  <a
@@ -504,7 +504,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Ver Ficha do Passageiro"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -585,7 +585,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Imprimir Contrato"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
@@ -660,7 +660,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Ver Voucher Digital"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -796,7 +796,7 @@ function AdminOrdersPage() {
  {item.title || item.product_name || item.name || "Item"}
  </p>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">
+ <p className="text-xs text-warning-strong  font-mono">
  Obs: {item.notes}
  </p>
  )}
@@ -820,7 +820,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Ver Comanda"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
@@ -838,7 +838,7 @@ function AdminOrdersPage() {
  <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-amber-500" />
+ <span className="size-2.5 rounded-full bg-warning" />
  <h3 className="text-sm font-bold text-foreground">Em Preparo</h3>
  </div>
  <Badge variant="secondary" className="font-bold text-xs">
@@ -867,7 +867,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-amber-500/10 text-amber-600 uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-warning/10 text-warning-strong uppercase">
  Cozinha Produzindo
  </span>
  </div>
@@ -890,7 +890,7 @@ function AdminOrdersPage() {
  {item.title || item.product_name || item.name || "Item"}
  </p>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">
+ <p className="text-xs text-warning-strong  font-mono">
  Obs: {item.notes}
  </p>
  )}
@@ -920,7 +920,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
  <Printer className="size-4" />
@@ -931,7 +931,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
+ className="size-11 sm:size-9 rounded-lg shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Baixar DANFE (PDF da Nota Fiscal)"
  >
  <a href={(order as any).danfe_pdf_url} target="_blank" rel="noopener noreferrer">
@@ -1004,7 +1004,7 @@ function AdminOrdersPage() {
  {item.title || item.product_name || item.name || "Item"}
  </p>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">
+ <p className="text-xs text-warning-strong  font-mono">
  Obs: {item.notes}
  </p>
  )}
@@ -1029,7 +1029,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
  <Eye className="size-4" />
@@ -1211,7 +1211,7 @@ function AdminOrdersPage() {
  isAllChecked
  ? "bg-emerald-600 hover:bg-emerald-700 text-foreground"
  : "bg-foreground text-background"
- }`}
+ } min-h-11 sm:min-h-0`}
  >
  <CheckCircle2 className="size-4 mr-2" />
  <span>
@@ -1225,7 +1225,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-10 rounded-lg shrink-0"
+ className="size-10 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Ver Comanda Completa"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -1462,7 +1462,7 @@ function AdminOrdersPage() {
         ) : (
           /* ── VISÃO DESKTOP (>= 840px): Tabela Analítica de Alta Densidade com Rolagem Interna Independente ── */
           <div className="flex flex-col bg-card overflow-hidden rounded-xl border border-border/70 shadow-2xs flex-1 min-h-0">
-          <div className="overflow-x-auto overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
+          <div className="overflow-x-auto scroll-area-carousel overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40">

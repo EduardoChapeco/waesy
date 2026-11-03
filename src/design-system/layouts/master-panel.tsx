@@ -74,7 +74,7 @@ export function MasterPanel({
                 onClick={onToggleCollapse}
                 title="Recolher painel"
                 aria-label="Recolher painel"
-                className="size-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                className="size-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               >
                 <ChevronLeft className="size-4" />
               </button>
@@ -106,7 +106,7 @@ export function MasterPanel({
 
       {/* Filter Tabs / Badges */}
       {filterTabs && filterTabs.length > 0 && (
-        <div className="flex items-center gap-1 p-2 px-3 border-b border-border/30 overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-1 p-2 px-3 border-b border-border/30 overflow-x-auto scroll-area-carousel scrollbar-none">
           {filterTabs.map((tab) => {
             const isActive = tab.id === activeTabId;
             return (

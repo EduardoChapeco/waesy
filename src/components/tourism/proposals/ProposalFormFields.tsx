@@ -159,7 +159,7 @@ export function Card({ children, onRemove }: { children: React.ReactNode; onRemo
         variant="ghost"
         type="button"
         onClick={onRemove}
-        className="absolute right-2 top-2 size-10 sm:size-8 rounded-lg p-1 text-muted-foreground hover:bg-surface hover:text-danger transition-colors shadow-none cursor-pointer"
+        className="absolute right-2 top-2 size-10 sm:size-8 rounded-lg p-1 text-muted-foreground hover:bg-surface hover:text-danger transition-colors shadow-none cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
       >
         <Trash2 className="h-4 w-4" />
       </Button>

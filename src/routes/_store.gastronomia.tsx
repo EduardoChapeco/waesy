@@ -17,10 +17,11 @@ import { PageSkeleton } from "@/components/state/loading";
 import { ProductOptionDrawer, type CustomizableProduct } from "@/components/commerce/ProductOptionDrawer";
 import { addToCart } from "@/services/cart.functions";
 import { toast } from "sonner";
-import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
+import { getModularSurfaceFeed, resolveSurfacePageExperienceDocument } from "@/services/surface-cms.functions";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublishedProducts } from "@/services/catalog.functions";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 
 import { CommercialShowcaseTemplate } from "@/components/commerce/ifood/CommercialShowcaseTemplate";
 import type { SubcategoryItem } from "@/components/commerce/ifood/IFoodSubcategoryPillRail";
@@ -67,7 +68,7 @@ export const Route = createFileRoute("/_store/gastronomia")({
   loader: async ({ location, deps: search }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
+      const [banners, hotpages, marketplaceFeed, productsRes, surfaceExperience] = await Promise.all([
         listActiveBanners({ data: { placement: "gastronomia", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "gastronomia" } }).catch(() => []),
         getModularSurfaceFeed({ data: { surfaceSlug: "gastronomia", city: activeCity } }).catch(() => ({
@@ -77,6 +78,9 @@ export const Route = createFileRoute("/_store/gastronomia")({
         listPublishedProducts({
           data: { niche: "gastronomia", limit: 40, sort: search.sort ?? "newest" },
         }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
+        resolveSurfacePageExperienceDocument({
+          data: { surfaceSlug: "gastronomia", city: activeCity },
+        }).catch(() => ({ mode: "canonical_cms" as const, documentId: null, document: null, liveData: null })),
       ]);
 
       return {
@@ -84,10 +88,11 @@ export const Route = createFileRoute("/_store/gastronomia")({
         hotpages,
         marketplaceFeed,
         catalogProducts: productsRes.status === "ok" ? (productsRes as any).data ?? [] : [],
+        surfaceExperience: surfaceExperience || null,
       };
     } catch (err) {
       console.error("[loader:_store.gastronomia] Unhandled error:", err);
-      return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
+      return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null, surfaceExperience: null };
     }
   },
   errorComponent: GastronomiaErrorComponent,
@@ -113,7 +118,7 @@ function GastronomiaErrorComponent({ error, reset }: { error: any; reset: () => 
 }
 
 function GastronomiaVerticalPage() {
-  const { banners, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
+  const { banners, hotpages, marketplaceFeed, catalogProducts, surfaceExperience } = ((Route.useLoaderData?.() as any) || {});
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const { refreshCart, setIsCartOpen } = useCart();
@@ -208,6 +213,56 @@ function GastronomiaVerticalPage() {
   const spotlightStores = useMemo(() => {
     return stores.filter((s) => Boolean(s.couponBadge));
   }, [stores]);
+
+  const handleOmniAddToCart = async (productId: string) => {
+    try {
+      await addToCart({ data: { productId, quantity: 1 } });
+      await refreshCart();
+      toast.success("Item adicionado à sacola!");
+      setIsCartOpen(true);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao adicionar item à sacola.");
+    }
+  };
+
+  if (surfaceExperience?.mode === "omni_published" && surfaceExperience.document) {
+    const live = surfaceExperience.liveData || {};
+    return (
+      <main className="min-h-screen bg-background">
+        <OmniPageRenderer
+          document={surfaceExperience.document}
+          products={live.products?.length ? live.products : catalogProducts || []}
+          stores={live.stores?.length ? live.stores : rawStores}
+          banners={live.banners?.length ? live.banners : banners || []}
+          hotpages={live.hotpages?.length ? live.hotpages : hotpages || []}
+          categories={GASTRONOMIA_SUBCATEGORIES as any}
+          onAddToCart={handleOmniAddToCart}
+        />
+        <ProductOptionDrawer
+          isOpen={!!selectedProductForOptions}
+          onClose={() => setSelectedProductForOptions(null)}
+          product={selectedProductForOptions}
+          onConfirmAdd={async ({ product, quantity, selectedOptions }) => {
+            try {
+              await addToCart({
+                data: {
+                  productId: product.id,
+                  quantity,
+                  options: selectedOptions,
+                },
+              });
+              await refreshCart();
+              toast.success(`${product.title} adicionado à sacola!`);
+              setSelectedProductForOptions(null);
+              setIsCartOpen(true);
+            } catch (err: any) {
+              toast.error(err?.message || "Erro ao adicionar item customizado à sacola.");
+            }
+          }}
+        />
+      </main>
+    );
+  }
 
   return (
     <>

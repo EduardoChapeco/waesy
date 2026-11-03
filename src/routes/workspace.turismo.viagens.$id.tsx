@@ -536,7 +536,7 @@ function WorkspaceTripDetailPage() {
 
       {/* ── 2. ABAS DE NAVEGAÇÃO ── */}
       {/* design-lint-ignore DL-30 reason:"Horizontal scrollable tabs navigation bar" expiry:"2027-12-31" */}
-      <div className="flex items-center gap-1 border-b border-border/80 overflow-x-auto pb-px">
+      <div className="flex items-center gap-1 border-b border-border/80 overflow-x-auto scroll-area-carousel pb-px">
         <button /* focus-visible:ring-2 */
           onClick={() => setActiveTab("overview")} /* focus-visible:ring-2 */
           className={`h-11 px-4 py-2 text-xs font-bold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/20 outline-none rounded-t ${
@@ -718,7 +718,7 @@ function WorkspaceTripDetailPage() {
                 {trip.operator_contacts?.emergency_phone && (
                   <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
                     <span className="text-xs text-muted-foreground/75 text-muted-foreground flex items-center gap-2 font-medium">
-                      <Phone className="size-3.5 text-amber-500" /> Plantão de Emergência 24h
+                      <Phone className="size-3.5 text-warning-strong" /> Plantão de Emergência 24h
                     </span>
                     <p className="font-mono font-bold text-foreground text-sm">
                       {trip.operator_contacts.emergency_phone}
@@ -753,7 +753,7 @@ function WorkspaceTripDetailPage() {
           {trip.tariff_rules && Object.keys(trip.tariff_rules).length > 0 && (
             <div className="p-4 rounded-lg bg-card border border-border/80 space-y-3">
               <div className="flex items-center gap-2 pb-2 border-b border-border/60">
-                <ShieldAlert className="size-4 text-amber-500" />
+                <ShieldAlert className="size-4 text-warning-strong" />
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                   Regras Tarifárias, Cancelamento e Bagagem
                 </h3>
@@ -761,8 +761,8 @@ function WorkspaceTripDetailPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {(trip.tariff_rules.cancellation_deadline || trip.tariff_rules.cancel_deadline) && (
-                  <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-1">
-                    <span className="text-xs text-muted-foreground/75 font-bold text-amber-700 dark:text-amber-400 block">
+                  <div className="p-3 rounded-lg bg-warning/5 border border-warning/20 space-y-1">
+                    <span className="text-xs text-muted-foreground/75 font-bold text-warning-strong  block">
                       Prazo Limite de Cancelamento
                     </span>
                     <p className="text-foreground text-xs">
@@ -1127,7 +1127,7 @@ function WorkspaceTripDetailPage() {
                             </Badge>
                           )}
                           {validity.status === "warning" && (
-                            <Badge className="text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 gap-1">
+                            <Badge className="text-xs font-bold bg-warning/15 text-warning-strong  border border-warning/30 gap-1">
                               <AlertTriangle className="size-3" />
                               <span>{validity.label}</span>
                             </Badge>
@@ -1330,7 +1330,7 @@ function WorkspaceTripDetailPage() {
                   className={`text-xs font-bold uppercase ${
                     aggregate.contract.status === "signed"
                       ? "text-emerald-600 border-emerald-500/30 bg-emerald-500/10"
-                      : "text-amber-600 border-amber-500/30 bg-amber-500/10"
+                      : "text-warning-strong border-warning/30 bg-warning/10"
                   }`}
                 >
                   {aggregate.contract.status === "signed" ? "Assinado" : "Pendente de Assinatura"}

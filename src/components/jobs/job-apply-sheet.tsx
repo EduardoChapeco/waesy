@@ -82,7 +82,7 @@ export function JobApplySheet({
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border/80 shadow-2xl"
+        className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border/80 shadow-overlay"
       >
         <div className="p-5 pb-4 border-b border-border/40 shrink-0">
           <SheetTitle className="text-lg font-black text-foreground">
@@ -96,7 +96,7 @@ export function JobApplySheet({
         <div className="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar">
           {hasApplied ? (
             <div className="py-12 text-center space-y-3">
-              <div className="size-14 rounded-lg bg-foreground text-background flex items-center justify-center mx-auto shadow-md">
+              <div className="size-14 rounded-lg bg-foreground text-background flex items-center justify-center mx-auto shadow-overlay">
                 <CheckCircle size={28} weight="bold" />
               </div>
               <h4 className="text-base font-bold text-foreground">Candidatura Registrada!</h4>
@@ -263,7 +263,7 @@ export function JobApplySheet({
                           key={star}
                           type="button"
                           onClick={() => setPreviousCompanyRating(star)}
-                          className="text-amber-500 hover:scale-125 transition-transform cursor-pointer text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="text-warning-strong hover:scale-125 transition-transform cursor-pointer text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {previousCompanyRating >= star ? "" : ""}
                         </button>

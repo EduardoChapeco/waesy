@@ -191,7 +191,7 @@ export function CommunityFeedCard({
  <Button
  size="sm"
  variant="ghost"
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground opacity-70 group-hover:opacity-100 transition-opacity"
+ className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground opacity-70 group-hover:opacity-100 transition-opacity min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <MoreHorizontal className="size-4" />
  </Button>
@@ -235,7 +235,7 @@ export function CommunityFeedCard({
 
  {/* Texto do Post */}
  {post.content_text && (
- <p className="text-sm sm:text-[15px] text-foreground leading-relaxed whitespace-pre-line font-normal break-words">
+ <p className="text-sm sm:text-base text-foreground leading-relaxed whitespace-pre-line font-normal break-words">
  {post.content_text}
  </p>
  )}
@@ -259,7 +259,7 @@ export function CommunityFeedCard({
  onClick={() => handleVotePoll(option.id)}
  disabled={!!pollData.user_voted_option}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "w-full relative h-10 rounded-lg overflow-hidden text-left flex items-center justify-between px-3 text-xs font-bold transition-colors duration-200 border",
+ "w-full relative h-10 rounded-lg overflow-hidden text-left flex items-center justify-between px-3 text-xs font-bold transition-colors duration-200 border min-h-11 sm:min-h-0",
  isSelected
  ? "border-primary bg-primary/10 text-primary"
  : "border-border/60 bg-card hover:bg-muted/40 text-foreground"
@@ -315,7 +315,7 @@ export function CommunityFeedCard({
  type="button"
  onClick={handleLikeClick}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-90",
+ "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-90 min-h-11 sm:min-h-0",
  liked ? "text-rose-500" : "hover:text-foreground hover:bg-muted/40"
  )}
  aria-label="Curtir"
@@ -328,7 +328,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={() => onReply && onReply(post)}
- className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-colors duration-200 cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-colors duration-200 cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
  aria-label="Comentar"
  >
  <MessageCircle className="size-4" />
@@ -340,7 +340,7 @@ export function CommunityFeedCard({
  type="button"
  onClick={handleRepostClick}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-90",
+ "h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-90 min-h-11 sm:min-h-0",
  reposted ? "text-emerald-500" : "hover:text-foreground hover:bg-muted/40"
  )}
  aria-label="Republicar"
@@ -353,7 +353,7 @@ export function CommunityFeedCard({
  <button
  type="button"
  onClick={handleShare}
- className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-colors duration-200 cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="h-9 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold hover:text-foreground hover:bg-muted/40 transition-colors duration-200 cursor-pointer active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
  aria-label="Compartilhar"
  >
  <Send className="size-4" />

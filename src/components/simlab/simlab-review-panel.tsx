@@ -94,7 +94,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-foreground">Hipótese e contexto</label>
-            <Textarea value={offerObjective} onChange={(event) => setOfferObjective(event.target.value)} placeholder="Público pretendido, região, oferta e o que ainda é incerto" className="min-h-[88px] resize-y" required />
+            <Textarea value={offerObjective} onChange={(event) => setOfferObjective(event.target.value)} placeholder="Público pretendido, região, oferta e o que ainda é incerto" className="min-h-22 resize-y" required />
           </div>
           <div className="flex flex-wrap items-end gap-3">
             <div className="space-y-2">
@@ -141,7 +141,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
             ))}
           </div>
 
-          <div className="flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-2xs text-amber-700 dark:text-amber-300">
+          <div className="flex gap-2 rounded-lg border border-warning/30 bg-warning/5 p-3 text-2xs text-warning-strong ">
             <AlertTriangle className="size-3.5 shrink-0" />
             <span>{synthesis.limitations?.join(" ") || "Perfis sintéticos não são amostra representativa; valide com participantes e resultados observados."}</span>
           </div>

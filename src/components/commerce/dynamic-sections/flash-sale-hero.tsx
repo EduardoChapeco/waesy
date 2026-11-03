@@ -205,7 +205,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  onClick={handleCopyCoupon}
  size="sm"
  className={cn(
- "h-8 px-3 rounded-lg text-xs font-bold gap-2 transition-colors duration-200 cursor-pointer",
+ "h-8 px-3 rounded-lg text-xs font-bold gap-2 transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0",
  copied
  ? "bg-emerald-500 text-foreground"
  : "text-zinc-950 font-bold hover:brightness-110"
@@ -238,7 +238,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  {/* Lado Direito: Temporizador Regressivo & CTA */}
  <div className="lg:col-span-5">
  <div
- className="rounded-lg border p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center space-y-6"
+ className="rounded-lg border p-6 sm:p-8  backdrop-blur-xl text-center space-y-6"
  style={{
  backgroundColor: "rgba(24, 24, 27, 0.88)",
  borderColor: `${accentColor}40`,
@@ -281,7 +281,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
 
  <Button
  asChild
- className="w-full h-11 rounded-lg text-xs sm:text-sm font-bold gap-2 text-zinc-950 shadow-lg cursor-pointer transition-transform hover:scale-102"
+ className="w-full h-11 rounded-lg text-xs sm:text-sm font-bold gap-2 text-zinc-950  cursor-pointer transition-transform hover:scale-102"
  style={{
  background: `linear-gradient(135deg, ${accentColor}, #f97316)`,
  }}

@@ -231,7 +231,7 @@ export function EventCategoryButtonsGrid({
 
       {/* ── Gaveta Inferior Completa: Todas as Categorias (Ver mais) ── */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto p-4 sm:p-6 z-50">
+        <SheetContent side="bottom" className="rounded-t-3xl max-h-vh-85 overflow-y-auto p-4 sm:p-6 z-50">
           <SheetHeader className="pb-4 border-b border-border/40 text-left">
             <SheetTitle className="text-lg font-bold text-foreground">
               Todas as Categorias de Eventos

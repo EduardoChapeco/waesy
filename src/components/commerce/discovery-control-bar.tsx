@@ -296,7 +296,7 @@ export function DiscoveryControlBar({
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/60 backdrop-blur-xs animate-in fade-in duration-150 motion-reduce:animate-none"
         >
           /* design-lint-ignore DL-07 reason:"Sombra de elevação de diálogo modal per B.8" expiry:"2027-12-31" */
-          <div className="w-full h-dvh sm:h-auto sm:max-h-full sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden shadow-2xl">
+          <div className="w-full h-dvh sm:h-auto sm:max-h-full sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden ">
             <div className="px-4 h-14 border-b border-border/60 flex items-center justify-between shrink-0">
               <span className="text-base font-bold text-foreground">
                 Filtros e Ordenação

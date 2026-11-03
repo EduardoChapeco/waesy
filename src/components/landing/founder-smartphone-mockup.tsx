@@ -112,7 +112,7 @@ export function FounderSmartphoneMockup({
         </div>
 
         {/* Conteúdo do Perfil da Empresa */}
-        <div className="p-4 sm:px-4 sm:pt-2 sm:pb-6 space-y-4 max-h-none sm:max-h-[580px] overflow-y-visible sm:overflow-y-auto scrollbar-none text-left">
+        <div className="p-4 sm:px-4 sm:pt-2 sm:pb-6 space-y-4 max-h-none sm:max-h-145 overflow-y-visible sm:overflow-y-auto scrollbar-none text-left">
           {/* Topo do Perfil com Avatar e Capa Compacta */}
           <div className="flex items-center gap-3">
             <div className="size-16 rounded-lg bg-muted border border-border flex items-center justify-center font-bold text-xl text-primary shrink-0 shadow-xs uppercase">
@@ -130,8 +130,8 @@ export function FounderSmartphoneMockup({
                 <span>{displayCity}</span>
               </p>
               <div className="flex items-center gap-2 text-2xs font-medium text-muted-foreground">
-                <span className="flex items-center gap-1 text-amber-500 font-bold">
-                  <Star className="size-3 fill-amber-400 text-amber-400" /> 5.0
+                <span className="flex items-center gap-1 text-warning-strong font-bold">
+                  <Star className="size-3 fill-warning text-warning-strong" /> 5.0
                 </span>
                 <span>•</span>
                 <span className="text-emerald-600 font-semibold flex items-center gap-1">
@@ -181,7 +181,7 @@ export function FounderSmartphoneMockup({
             <Button
               asChild
               size="sm"
-              className="w-full rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground h-10 gap-2 shadow-xs"
+              className="w-full rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground h-10 gap-2 shadow-xs min-h-11 sm:min-h-0"
             >
               <a
                 href={cleanWa ? `https://wa.me/55${cleanWa}` : "#"}
@@ -195,7 +195,7 @@ export function FounderSmartphoneMockup({
             <Button
               variant="outline"
               size="sm"
-              className="w-full rounded-lg text-xs font-bold h-10 gap-2 border-border"
+              className="w-full rounded-lg text-xs font-bold h-10 gap-2 border-border min-h-11 sm:min-h-0"
               onClick={handleShare}
             >
               <Share2 className="size-3.5" />

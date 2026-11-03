@@ -74,7 +74,10 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-96 lg:min-h-128">
           {/* Lado Esquerdo: Conteúdo Editorial do Slide */}
-          <div className="lg:col-span-7 flex flex-col items-start text-left z-10 animate-in fade-in duration-300 key={currentIndex}">
+          <div
+            key={currentIndex}
+            className="lg:col-span-7 flex flex-col items-start text-left z-10 animate-in fade-in duration-300"
+          >
             {/* Badge de Contexto do Slide */}
             {currentSlide.badgeText && (
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-4 sm:mb-6 shadow-xs">
@@ -157,7 +160,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
               {currentSlide.floatingStat && (
                 <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 px-4 py-3 rounded-lg bg-card border border-border/60 shadow-xs flex items-center gap-3">
                   {currentSlide.floatingStat.statusDot && (
-                    <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none shrink-0" />
+                    <span className="size-2 rounded-full bg-success animate-pulse motion-reduce:animate-none shrink-0" />
                   )}
                   <div>
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">

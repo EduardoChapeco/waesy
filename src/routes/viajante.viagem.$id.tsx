@@ -519,7 +519,7 @@ export default function TripPortalPage() {
               onClick={() => setSupportModalOpen(true)}
               className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <LifeBuoy className="size-4 text-amber-500" />
+              <LifeBuoy className="size-4 text-warning-strong" />
               <span>Plantão & Suporte</span>
             </Button>
           </div>
@@ -534,9 +534,9 @@ export default function TripPortalPage() {
             .map((changeCase: any) => (
               <div
                 key={changeCase.id}
-                className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10 space-y-3"
+                className="p-4 rounded-lg border border-warning/30 bg-warning/10 space-y-3"
               >
-                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-xs sm:text-sm">
+                <div className="flex items-center gap-2 text-warning-strong  font-bold text-xs sm:text-sm">
                   <AlertTriangle className="size-4 shrink-0" />
                   <span>Alteração de Voo Compulsória pela Companhia Aérea (PNR: {changeCase.pnr})</span>
                 </div>
@@ -722,7 +722,7 @@ export default function TripPortalPage() {
                       }}
                       className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                     >
-                      <Luggage className="size-4 mr-2 text-amber-500" />
+                      <Luggage className="size-4 mr-2 text-warning-strong" />
                       <span>+ Alugar Carro / Transfer</span>
                     </Button>
                   </div>
@@ -1267,7 +1267,7 @@ export default function TripPortalPage() {
           <div className="bg-card text-card-foreground border border-border rounded-lg max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="font-bold text-base text-foreground flex items-center gap-2">
-                <LifeBuoy className="size-5 text-amber-500" />
+                <LifeBuoy className="size-5 text-warning-strong" />
                 <span>Acionar Plantão de Atendimento</span>
               </h3>
               <Button

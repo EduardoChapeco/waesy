@@ -366,7 +366,7 @@ export function BrandBriefingPage() {
                 size="sm"
                 onClick={handleAIMagic}
                 disabled={isGenerating}
-                className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
+                className="h-9 px-4 rounded-lg text-xs font-medium gap-2 min-h-11 sm:min-h-0"
               >
                 {isGenerating ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
@@ -379,7 +379,7 @@ export function BrandBriefingPage() {
                 size="sm"
                 onClick={() => handleSave()}
                 disabled={isSaving}
-                className="h-9 px-4 rounded-lg text-xs font-medium gap-2"
+                className="h-9 px-4 rounded-lg text-xs font-medium gap-2 min-h-11 sm:min-h-0"
               >
                 {isSaving ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
@@ -527,7 +527,7 @@ export function BrandBriefingPage() {
             <button
               type="button"
               onClick={addPillar}
-              className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full h-10 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Pilar de Conteúdo
@@ -564,7 +564,7 @@ export function BrandBriefingPage() {
             <button
               type="button"
               onClick={addKeyword}
-              className="h-9 px-4 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-9 px-4 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Keyword

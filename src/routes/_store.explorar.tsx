@@ -31,6 +31,8 @@ import { getMuralFeed, type MuralFeedResponse } from "@/services/social.function
 import { getAllPublicConcursos, type RaffleDTO } from "@/services/invite.functions";
 import { getMarketplaceFeed, type FlashOfferDTO } from "@/services/marketplace.functions";
 import { listUnifiedListings } from "@/services/unified-listing.functions";
+import { resolveSurfacePageExperienceDocument } from "@/services/surface-cms.functions";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { OfferCard } from "@/components/commerce/offer-card";
 import type { UnifiedListing } from "@/types/unified-ad-engine";
 
@@ -132,6 +134,7 @@ export const Route = createFileRoute("/_store/explorar")({
         marketplaceFeed,
         workspaceListings,
         cmsSections,
+        surfaceExperience,
       ] = await Promise.all([
         listActiveBanners({ data: { placement: "home", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
@@ -147,6 +150,9 @@ export const Route = createFileRoute("/_store/explorar")({
         getMarketplaceFeed().catch(() => ({ sections: [], allProducts: [] })),
         listUnifiedListings({ data: { origin: "workspace", limit: 36 } }).catch(() => []),
         listPublicHomePageSections({ data: { city: filteredCity } }).catch(() => []),
+        resolveSurfacePageExperienceDocument({ data: { surfaceSlug: "explorar", city: filteredCity } }).catch(
+          () => null,
+        ),
       ]);
 
       const directWorkspaceProducts = (workspaceListings || []).map((item: UnifiedListing) => {
@@ -192,6 +198,7 @@ export const Route = createFileRoute("/_store/explorar")({
         concursos: concursos || [],
         marketplaceProducts: Array.from(combinedMap.values()),
         cmsSections: cmsSections || [],
+        surfaceExperience: surfaceExperience || null,
         activeCity: filteredCity,
       };
     } catch (err) {
@@ -210,6 +217,7 @@ export const Route = createFileRoute("/_store/explorar")({
         concursos: [],
         marketplaceProducts: [],
         cmsSections: [],
+        surfaceExperience: null,
         activeCity: undefined,
       };
     }
@@ -245,6 +253,7 @@ function CommunityHomePage() {
     concursos = [],
     marketplaceProducts = [],
     cmsSections = [],
+    surfaceExperience = null,
   } = ((Route.useLoaderData?.() as any) || {});
 
   const resolvedExploreShortcuts = useMemo(() => {
@@ -612,6 +621,26 @@ function CommunityHomePage() {
     filteredConcursos,
   ]);
 
+  if (surfaceExperience?.mode === "omni_published" && surfaceExperience.document) {
+    const live = surfaceExperience.liveData || {};
+    return (
+      <main className="w-full pb-14 bg-background">
+        <OmniPageRenderer
+          document={surfaceExperience.document}
+          products={live.products?.length ? live.products : marketplaceProducts}
+          stores={live.stores?.length ? live.stores : placesListings}
+          banners={live.banners?.length ? live.banners : banners}
+          newsArticles={live.newsArticles?.length ? live.newsArticles : newsArticles}
+          events={live.events?.length ? live.events : events}
+          jobs={live.jobs?.length ? live.jobs : jobs}
+          classifieds={live.classifieds?.length ? live.classifieds : classifieds}
+          hotpages={live.hotpages?.length ? live.hotpages : heroCards}
+          posts={live.posts?.length ? live.posts : feedPosts}
+        />
+      </main>
+    );
+  }
+
   return (
     <div className="w-full space-y-4 sm:space-y-4 pb-14">
       {/* ── 1. NAVEGAÇÃO CANÔNICA DE CATEGORIAS (Grid 5x2 Mobile / TetrisGrid Desktop) ── */}
@@ -733,7 +762,7 @@ function CommunityHomePage() {
                       </Link>
 
                       <div className="px-4 pb-3 pt-0 flex items-center justify-between gap-2 border-t border-border/30 mt-auto h-10">
-                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+                        <div className="flex items-center gap-1 text-xs font-bold text-warning-strong">
                           <Star size={13} weight="fill" />
                           <span>{item.rating ? Number(item.rating).toFixed(1) : null}</span>
                         </div>
@@ -1184,7 +1213,7 @@ function CommunityHomePage() {
                       Indique empresas para a plataforma e receba comissões e benefícios na sua conta.
                     </p>
                   </div>
-                  <Button asChild size="sm" className="h-10 px-5 rounded-lg text-xs font-bold shrink-0 cursor-pointer">
+                  <Button asChild size="sm" className="h-10 px-5 rounded-lg text-xs font-bold shrink-0 cursor-pointer min-h-11 sm:min-h-0">
                     <Link to="/afiliados">
                       <span>Conhecer Afiliados</span>
                       <ArrowRight size={13} className="ml-2" />
@@ -1372,7 +1401,7 @@ function CommunityHomePage() {
                               entityTitle: item.title,
                             })
                           }
-                          className="h-10 sm:h-8 px-3 rounded-lg text-xs gap-2 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                          className="h-10 sm:h-8 px-3 rounded-lg text-xs gap-2 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer min-h-11 sm:min-h-0"
                         >
                           <WhatsappLogo size={15} weight="bold" />
                           <span>WhatsApp</span>
@@ -1382,7 +1411,7 @@ function CommunityHomePage() {
                       <Button
                         asChild
                         size="sm"
-                        className="h-10 sm:h-8 px-4 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer"
+                        className="h-10 sm:h-8 px-4 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0"
                       >
                         <Link to={item.to as any}>
                           <span>Ver</span>
@@ -1458,13 +1487,13 @@ function CommunityHomePage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              <Button asChild className="h-10 px-5 rounded-lg font-bold text-xs cursor-pointer">
+              <Button asChild className="h-10 px-5 rounded-lg font-bold text-xs cursor-pointer min-h-11 sm:min-h-0">
                 <Link to="/criar-negocio">
                   <Storefront size={15} weight="bold" className="mr-2" />
                   Cadastrar Empresa
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-10 px-5 rounded-lg font-bold text-xs border-border/80 hover:bg-muted/60 cursor-pointer">
+              <Button asChild variant="outline" className="h-10 px-5 rounded-lg font-bold text-xs border-border/80 hover:bg-muted/60 cursor-pointer min-h-11 sm:min-h-0">
                 <Link to="/portal-completo">
                   Conhecer o Sistema Pro
                 </Link>

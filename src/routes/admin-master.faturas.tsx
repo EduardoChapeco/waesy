@@ -308,7 +308,7 @@ function MasterFaturasPage() {
 
       {/* Create Form */}
       {isCreating && (
-        <div className="bg-card rounded-lg border border-border/80 p-5 shadow-sm">
+        <div className="bg-card rounded-lg border border-border/80 p-5 ">
           <h2 className="text-sm font-semibold mb-3">Emitir Nova Fatura / Cobrança</h2>
           <form onSubmit={handleCreateInvoice} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
@@ -378,7 +378,7 @@ function MasterFaturasPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setReceiptUrl("")}
-                      className="h-8 px-3 text-xs text-muted-foreground hover:text-destructive shrink-0"
+                      className="h-8 px-3 text-xs text-muted-foreground hover:text-destructive shrink-0 min-h-11 sm:min-h-0"
                     >
                       Remover
                     </Button>
@@ -453,7 +453,7 @@ function MasterFaturasPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto no-scrollbar">
+        <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
           <table className="w-full text-xs text-left">
             <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-2xs tracking-wider">
               <tr>
@@ -530,7 +530,7 @@ function MasterFaturasPage() {
                             <ExternalLink className="size-3 opacity-60" />
                           </a>
                           {inv.status !== "paid" && (
-                            <span className="text-3xs font-semibold text-amber-600 bg-amber-500/10 px-2 py-1 rounded">
+                            <span className="text-3xs font-semibold text-warning-strong bg-warning/10 px-2 py-1 rounded">
                               Anexado p/ Lojista
                             </span>
                           )}
@@ -566,7 +566,7 @@ function MasterFaturasPage() {
                           inv.receipt_url ? (
                             <Button
                               size="sm"
-                              className="h-7 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-xs gap-1 cursor-pointer"
+                              className="h-7 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
                               disabled={loadingAction === inv.id}
                               onClick={() => handleUpdateStatus(inv.id, "paid")}
                             >
@@ -577,7 +577,7 @@ function MasterFaturasPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-7 px-2 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
+                              className="h-7 px-2 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-500/10 cursor-pointer min-h-11 sm:min-h-0"
                               disabled={loadingAction === inv.id}
                               onClick={() => handleUpdateStatus(inv.id, "paid")}
                             >
@@ -589,7 +589,7 @@ function MasterFaturasPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 px-2 rounded-lg text-xs font-medium text-amber-600 hover:bg-amber-500/10"
+                            className="h-7 px-2 rounded-lg text-xs font-medium text-warning-strong hover:bg-warning/10 min-h-11 sm:min-h-0"
                             disabled={loadingAction === inv.id}
                             onClick={() => handleUpdateStatus(inv.id, "cancelled")}
                           >
@@ -600,7 +600,7 @@ function MasterFaturasPage() {
                           size="sm"
                           variant="ghost"
                           title="Gerar Cartão 9:16 para WhatsApp"
-                          className="size-7 p-0 rounded-lg text-primary hover:bg-primary/10"
+                          className="size-7 p-0 rounded-lg text-primary hover:bg-primary/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           onClick={() => setSelectedCompanionInvoice(inv)}
                         >
                           <Smartphone className="size-3.5" />
@@ -609,7 +609,7 @@ function MasterFaturasPage() {
                           size="sm"
                           variant="ghost"
                           title="Enviar Notificação via WhatsApp"
-                          className="size-7 p-0 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                          className="size-7 p-0 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           onClick={() => handleSendWhatsAppNotice(inv)}
                         >
                           <Smartphone className="size-3.5" />
@@ -618,7 +618,7 @@ function MasterFaturasPage() {
                           size="sm"
                           variant="ghost"
                           title="Duplicar Fatura"
-                          className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                          className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           disabled={loadingAction === inv.id}
                           onClick={() => handleDuplicate(inv.id)}
                         >
@@ -628,7 +628,7 @@ function MasterFaturasPage() {
                           size="sm"
                           variant="ghost"
                           title="Excluir Fatura"
-                          className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                          className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           disabled={loadingAction === inv.id}
                           onClick={() => handleDelete(inv.id)}
                         >

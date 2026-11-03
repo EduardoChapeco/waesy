@@ -305,7 +305,7 @@ function SecurityAndDevicesPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleCopyCode(formatDeviceCode(activeDevice.device_fingerprint || currentDeviceCode))}
-                className="size-8 p-0 rounded-md text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                className="size-8 p-0 rounded-md text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 title="Copiar Código de Compliance"
                 aria-label="Copiar Código de Compliance"
               >
@@ -414,7 +414,7 @@ function SecurityAndDevicesPage() {
                             Confiável
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs px-2 py-0 text-amber-600 border-amber-500/30">
+                          <Badge variant="outline" className="text-xs px-2 py-0 text-warning-strong border-warning/30">
                             Não verificado
                           </Badge>
                         )}

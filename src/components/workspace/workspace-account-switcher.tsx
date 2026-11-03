@@ -92,7 +92,7 @@ export function WorkspaceAccountSwitcher({
       <PopoverContent
         align="start"
         sideOffset={6}
-        className="w-80 sm:w-88 p-2 rounded-xl border border-border/80 bg-background/98 backdrop-blur-xl shadow-2xl overflow-hidden space-y-2"
+        className="w-80 sm:w-88 p-2 rounded-xl border border-border/80 bg-background/98 backdrop-blur-xl  overflow-hidden space-y-2"
       >
         {/* ── 1. Topo: Empresa Ativa em Destaque ── */}
         <div className="p-3 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between gap-2">
@@ -129,7 +129,7 @@ export function WorkspaceAccountSwitcher({
           <Link
             to="/workspace/configuracoes"
             onClick={() => setOpen(false)}
-            className="size-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="size-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
             title="Configurações da Empresa"
           >
             <Settings className="size-4" />

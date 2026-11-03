@@ -51,11 +51,11 @@ function IncidentTypeIcon({ type, className = 'size-4' }: { type: TourismInciden
 // ── Icon por tipo de evento ──
 function EventIcon({ type }: { type: TourismEventType }) {
   switch (type) {
-    case 'opened':        return <Circle className="size-3.5 text-amber-500 fill-amber-500" />;
+    case 'opened':        return <Circle className="size-3.5 text-warning-strong fill-warning" />;
     case 'status_change': return <ArrowRight className="size-3.5 text-sky-500" />;
     case 'airline_contact': return <Building2 className="size-3.5 text-violet-500" />;
     case 'client_contact': return <PhoneCall className="size-3.5 text-emerald-500" />;
-    case 'anac_rights_sent': return <ShieldAlert className="size-3.5 text-amber-500" />;
+    case 'anac_rights_sent': return <ShieldAlert className="size-3.5 text-warning-strong" />;
     case 'rebooking_offer': return <RefreshCw className="size-3.5 text-blue-500" />;
     case 'client_accepted': return <CheckCircle2 className="size-3.5 text-emerald-500" />;
     case 'client_rejected': return <AlertTriangle className="size-3.5 text-red-500" />;
@@ -69,7 +69,7 @@ function EventIcon({ type }: { type: TourismEventType }) {
 function priorityBadgeClass(p: TourismIncidentPriority) {
   switch (p) {
     case 'urgent': return 'bg-destructive/10 text-destructive border-destructive/20';
-    case 'high':   return 'bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-400';
+    case 'high':   return 'bg-warning/10 text-warning-strong border-warning/30 ';
     case 'normal': return 'bg-blue-500/10 text-blue-700 border-blue-500/30 dark:text-blue-400';
     default:       return 'bg-muted text-muted-foreground border-border';
   }
@@ -340,10 +340,10 @@ export default function TourismIncidentsPage() {
 
                 {/* ANAC Rights badge for flight incidents */}
                 {isFlightType && anacRights?.material_assistance && (
-                  <div className="mt-2 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 grid grid-cols-2 gap-2 text-xs">
+                  <div className="mt-2 p-3 rounded-xl border border-warning/20 bg-warning/5 grid grid-cols-2 gap-2 text-xs">
                     <div className="flex items-center gap-2 col-span-2">
-                      <ShieldAlert className="size-3.5 text-amber-600" />
-                      <span className="font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide text-xs">Direitos ANAC 400</span>
+                      <ShieldAlert className="size-3.5 text-warning-strong" />
+                      <span className="font-semibold text-warning-strong  uppercase tracking-wide text-xs">Direitos ANAC 400</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Utensils className="size-3 text-muted-foreground" />
@@ -510,7 +510,7 @@ export default function TourismIncidentsPage() {
         >
           <SheetHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <SheetTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-              <AlertTriangle className="size-4 text-amber-500" />
+              <AlertTriangle className="size-4 text-warning-strong" />
               Registrar Incidente Turístico
             </SheetTitle>
           </SheetHeader>

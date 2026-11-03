@@ -66,7 +66,7 @@ function AppointmentServicesDashboard({
               <p className="text-xs text-muted-foreground">Grade de especialistas e agendamentos</p>
             </div>
           </div>
-          <Button asChild size="sm" variant="outline" className="h-8 rounded-lg text-xs font-semibold gap-2 border-border/80">
+          <Button asChild size="sm" variant="outline" className="h-8 rounded-lg text-xs font-semibold gap-2 border-border/80 min-h-11 sm:min-h-0">
             <Link to="/workspace/agenda">
               <span>Abrir Agenda Completa</span>
               <ArrowUpRight className="size-3.5 text-muted-foreground" />
@@ -194,12 +194,12 @@ function HighValueLeadsDashboard({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" className="h-10 px-4 rounded-lg text-xs font-bold bg-background text-foreground hover:bg-muted cursor-pointer shadow-xs">
+          <Button asChild size="sm" className="h-10 px-4 rounded-lg text-xs font-bold bg-background text-foreground hover:bg-muted cursor-pointer shadow-xs min-h-11 sm:min-h-0">
             <Link to="/workspace/orcamentos/novo">
               <span>Nova Proposta Comercial</span>
             </Link>
           </Button>
-          <Button asChild size="sm" variant="outline" className="h-10 px-4 rounded-lg text-xs font-bold border-background/30 text-background hover:bg-background/10">
+          <Button asChild size="sm" variant="outline" className="h-10 px-4 rounded-lg text-xs font-bold border-background/30 text-background hover:bg-background/10 min-h-11 sm:min-h-0">
             <Link to="/workspace/catalogo/produtos/novo">
               <span>{isVehicle ? "Cadastrar Veículo" : "Cadastrar Imóvel"}</span>
             </Link>
@@ -214,7 +214,7 @@ function HighValueLeadsDashboard({
           <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-foreground">
             {activeProposals}
           </div>
-          <div className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
+          <div className="text-xs text-warning-strong  font-semibold">
             Em fase de negociação
           </div>
         </div>
@@ -255,7 +255,7 @@ function HighValueLeadsDashboard({
           </h3>
           <p className="text-xs text-foreground mt-1">Acompanhe minutas, vistorias e contratos em andamento</p>
         </div>
-        <Button asChild size="sm" variant="outline" className="h-9 px-4 text-xs font-semibold">
+        <Button asChild size="sm" variant="outline" className="h-9 px-4 text-xs font-semibold min-h-11 sm:min-h-0">
           <Link to="/workspace/orcamentos">
             <span>Ver Todas as Negociações</span>
             <ArrowUpRight className="size-3.5 ml-1" />
@@ -296,12 +296,12 @@ function TourismAgencyDashboard({
           <p className="text-xs text-muted-foreground">Faturamento de pacotes e cotações no mês</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" className="h-10 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground">
+          <Button asChild size="sm" className="h-10 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground min-h-11 sm:min-h-0">
             <Link to="/workspace/turismo/cotacoes">
               <span>Kanban de Cotações</span>
             </Link>
           </Button>
-          <Button asChild size="sm" variant="outline" className="h-10 px-4 rounded-lg text-xs font-bold border-border/80">
+          <Button asChild size="sm" variant="outline" className="h-10 px-4 rounded-lg text-xs font-bold border-border/80 min-h-11 sm:min-h-0">
             <Link to="/workspace/turismo/comissoes">
               <span>Planilha de Comissões</span>
             </Link>
@@ -364,7 +364,7 @@ function EventsMasterDashboard({
           <p className="text-xs text-muted-foreground">Bilheteria e concessões consolidadas</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" className="h-10 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground">
+          <Button asChild size="sm" className="h-10 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground min-h-11 sm:min-h-0">
             <Link to="/workspace/eventos">
               <span>Gestão de Eventos</span>
             </Link>
@@ -435,7 +435,7 @@ function CommerceGastroDashboard({
               </p>
             </div>
           </div>
-          <Button asChild size="sm" className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground">
+          <Button asChild size="sm" className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground min-h-11 sm:min-h-0">
             <Link to={isGastro ? "/workspace/pedidos/gestor" : "/workspace/pedidos"}>
               <span>{isGastro ? "Abrir Tela KDS" : "Ver Fila de Envios"}</span>
               <ArrowUpRight className="size-3.5" />
@@ -445,7 +445,7 @@ function CommerceGastroDashboard({
 
         {/* Resumo de Pedidos em Tempo Real */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400">
+          <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong ">
             <span className="text-xs font-bold uppercase tracking-wider block">Aguardando</span>
             <span className="text-xl font-bold font-mono mt-1 block">{awaitingOrders}</span>
           </div>

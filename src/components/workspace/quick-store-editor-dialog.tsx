@@ -276,7 +276,7 @@ export function QuickStoreEditorDialog({
  <SelectItem value="active" className="text-xs text-emerald-600 font-semibold">
  ● Aberto ao Público (Ativo)
  </SelectItem>
- <SelectItem value="maintenance" className="text-xs text-amber-600 font-semibold">
+ <SelectItem value="maintenance" className="text-xs text-warning-strong font-semibold">
  ● Em Manutenção / Pausado
  </SelectItem>
  <SelectItem value="draft" className="text-xs text-muted-foreground font-semibold">

@@ -197,7 +197,7 @@ export function PrometheeExploreSearchModal({
                           {idx + 1} · {item.category}
                         </span>
                         <div>
-                          <span className="inline-block rounded-md bg-amber-400/20 text-foreground font-black text-sm px-2 py-1">
+                          <span className="inline-block rounded-md bg-warning/20 text-foreground font-black text-sm px-2 py-1">
                             {item.label}
                           </span>
                         </div>

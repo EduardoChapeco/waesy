@@ -655,7 +655,7 @@ export function NewGroupTourSheet({
  size="sm"
  variant="outline"
  onClick={addBoardingPoint}
- className="rounded-lg text-xs font-bold h-8 gap-1"
+ className="rounded-lg text-xs font-bold h-8 gap-1 min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Ponto</span>
@@ -814,7 +814,7 @@ export function NewGroupTourSheet({
  variant="outline"
  size="sm"
  onClick={() => onOpenChange(false)}
- className="rounded-lg text-xs h-10 px-4"
+ className="rounded-lg text-xs h-10 px-4 min-h-11 sm:min-h-0"
  >
  Cancelar
  </Button>
@@ -824,7 +824,7 @@ export function NewGroupTourSheet({
  size="sm"
  disabled={createMutation.isPending || !title || !destination || !departureDate || !returnDate}
  onClick={() => createMutation.mutate()}
- className="rounded-lg text-xs font-bold h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
+ className="rounded-lg text-xs font-bold h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer min-h-11 sm:min-h-0"
  >
  <CheckCircle2 className="size-4 text-emerald-500" />
  <span>{createMutation.isPending ? "Cadastrando Excursão..." : "Cadastrar e Abrir Mapa 2D"}</span>

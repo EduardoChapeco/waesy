@@ -56,8 +56,8 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
           crossOrigin={backgroundImageUrl?.startsWith("data:") ? undefined : "anonymous"}
           className="w-full h-full object-cover object-center transform scale-102"
         />
-        {/* Gradiente escuro para legibilidade perfeita */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80" />
+        {/* Scrim escuro para legibilidade perfeita */}
+        <div className="absolute inset-0 bg-foreground/65" />
       </div>
 
       {/* 2. Conteúdo em Camadas */}
@@ -68,12 +68,12 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
       >
         {/* Topo: Badges de Oferta + Loja */}
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-red-600 text-foreground font-black uppercase tracking-wider text-xs sm:text-sm shadow-lg">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-red-600 text-foreground font-black uppercase tracking-wider text-xs sm:text-sm ">
             <Zap className="size-4 shrink-0 fill-current" />
             <span>{promoBadge || "SUPER OFERTA"}</span>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-400 text-foreground font-black text-xs sm:text-sm">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-warning text-foreground font-black text-xs sm:text-sm">
             <span>-{discountPercent}% OFF</span>
           </div>
         </div>
@@ -81,7 +81,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
         {/* Centro: Título do Produto & Destaques */}
         <div className="space-y-4">
           <h1
-            className={`font-black uppercase tracking-tight text-foreground drop-shadow-md leading-[1.05] line-clamp-2 ${
+            className={`font-black uppercase tracking-tight text-foreground  leading-none line-clamp-2 ${
               aspectRatio === "1:1" ? "text-4xl md:text-5xl" : "text-6xl md:text-7xl"
             }`}
           >
@@ -114,7 +114,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
               </div>
             )}
             <div className="flex items-baseline gap-2">
-              <span className="text-xs sm:text-sm font-bold text-amber-400 uppercase tracking-wider">
+              <span className="text-xs sm:text-sm font-bold text-warning-strong uppercase tracking-wider">
                 Por
               </span>
               <span className="text-4xl sm:text-5xl font-black font-mono text-foreground tracking-tight">
@@ -123,7 +123,7 @@ export function RetailPromoTemplate({ data, className = "" }: SocialTemplateProp
             </div>
             {maxInstallments > 1 && (
               <p className="text-xs sm:text-sm text-foreground/80 font-mono">
-                Ou em até <span className="font-bold text-foreground">{maxInstallments}x</span> de <span className="text-amber-400 font-bold">{formatMoney(effectiveInstallmentCents)}</span>
+                Ou em até <span className="font-bold text-foreground">{maxInstallments}x</span> de <span className="text-warning-strong font-bold">{formatMoney(effectiveInstallmentCents)}</span>
               </p>
             )}
             <p className="text-2xs sm:text-xs text-foreground/60">

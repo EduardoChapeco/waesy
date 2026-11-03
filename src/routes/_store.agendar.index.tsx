@@ -293,7 +293,7 @@ function BookingIndexPage() {
                   {items.map((service: any) => (
                     <div
                       key={service.id}
-                      className="min-w-72 sm:min-w-[310px] max-w-[330px] rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between shrink-0 group select-none"
+                      className="min-w-72 sm:min-w-78 max-w-83 rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between shrink-0 group select-none"
                     >
                       <Link
                         to="/agendar/$id"
@@ -301,7 +301,7 @@ function BookingIndexPage() {
                         className="block cursor-pointer"
                       >
                         {/* Imagem do Serviço */}
-                        <div className="aspect-[16/10] relative overflow-hidden bg-muted">
+                        <div className="aspect-16/10 relative overflow-hidden bg-muted">
                           {service.image_url ? (
                             <img
                               src={service.image_url}
@@ -354,7 +354,7 @@ function BookingIndexPage() {
                         <Button
                           size="default"
                           onClick={() => handleOpenBookingSheet(service)}
-                          className="h-11 min-h-11 px-3 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
+                          className="h-11 min-h-11 px-3 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer  hover:opacity-90"
                         >
                           Agendar
                         </Button>
@@ -379,7 +379,7 @@ function BookingIndexPage() {
                         params={{ id: service.id }}
                         className="block cursor-pointer"
                       >
-                        <div className="aspect-[16/10] relative overflow-hidden bg-muted">
+                        <div className="aspect-16/10 relative overflow-hidden bg-muted">
                           {service.image_url ? (
                             <img
                               src={service.image_url}
@@ -430,7 +430,7 @@ function BookingIndexPage() {
                         <Button
                           size="default"
                           onClick={() => handleOpenBookingSheet(service)}
-                          className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
+                          className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer  hover:opacity-90"
                         >
                           Agendar
                         </Button>
@@ -456,7 +456,7 @@ function BookingIndexPage() {
                     className="block cursor-pointer"
                   >
                     {/* Imagem */}
-                    <div className="aspect-[16/10] relative overflow-hidden bg-muted">
+                    <div className="aspect-16/10 relative overflow-hidden bg-muted">
                       {service.image_url ? (
                         <img
                           src={service.image_url}
@@ -512,7 +512,7 @@ function BookingIndexPage() {
                     <Button
                       size="default"
                       onClick={() => handleOpenBookingSheet(service)}
-                      className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm hover:opacity-90"
+                      className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer  hover:opacity-90"
                     >
                       Agendar Horário
                     </Button>
@@ -528,7 +528,7 @@ function BookingIndexPage() {
               {services.map((service: any) => (
                 <div
                   key={service.id}
-                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-4 sm:p-4 hover:border-foreground/30 transition-colors duration-200 flex items-center justify-between gap-4 sm:gap-4 w-full"
+                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card min-h-34 pl-32 sm:pl-44 p-4 sm:p-4 hover:border-foreground/30 transition-colors duration-200 flex items-center justify-between gap-4 sm:gap-4 w-full"
                 >
                   <Link
                     to="/agendar/$id"
@@ -589,7 +589,7 @@ function BookingIndexPage() {
                     <Button
                       size="sm"
                       onClick={(e) => handleOpenBookingSheet(service, e)}
-                      className="h-9 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground shrink-0 cursor-pointer hover:opacity-90 shadow-sm"
+                      className="h-9 px-4 rounded-lg font-bold text-xs bg-primary text-primary-foreground shrink-0 cursor-pointer hover:opacity-90  min-h-11 sm:min-h-0"
                     >
                       Agendar
                     </Button>
@@ -628,13 +628,13 @@ function BookingIndexPage() {
                   <strong>{selectedDate}</strong> às <strong>{selectedSlot ? new Date(selectedSlot).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "horário comercial"}</strong>.
                 </p>
                 <div className="pt-4 flex flex-col gap-2">
-                  <Button asChild className="rounded-lg font-bold text-xs h-10">
+                  <Button asChild className="rounded-lg font-bold text-xs h-10 min-h-11 sm:min-h-0">
                     <Link to="/conta/agendamentos">Ver Meus Agendamentos</Link>
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setSelectedService(null)}
-                    className="rounded-lg font-bold text-xs h-10"
+                    className="rounded-lg font-bold text-xs h-10 min-h-11 sm:min-h-0"
                   >
                     Fechar
                   </Button>
@@ -660,7 +660,7 @@ function BookingIndexPage() {
                             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                               "p-2 rounded-lg text-center border transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center",
                               isSelected
-                                ? "bg-foreground text-background border-foreground font-bold shadow-sm"
+                                ? "bg-foreground text-background border-foreground font-bold "
                                 : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted"
                             )}
                           >
@@ -704,7 +704,7 @@ function BookingIndexPage() {
                               type="button"
                               onClick={() => setSelectedSlot(slotIso)}
                               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                                "h-9 rounded-lg text-xs font-mono font-bold border transition-colors duration-200 cursor-pointer flex items-center justify-center",
+                                "h-9 rounded-lg text-xs font-mono font-bold border transition-colors duration-200 cursor-pointer flex items-center justify-center min-h-11 sm:min-h-0",
                                 isSelected
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : "bg-card border-border/60 hover:bg-muted text-foreground"
@@ -794,7 +794,7 @@ function BookingIndexPage() {
                 type="submit"
                 form="quick-booking-form"
                 disabled={appointmentMutation.isPending}
-                className="h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm"
+                className="h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer "
               >
                 {appointmentMutation.isPending ? (
                   <CircleNotch size={16} className="animate-spin motion-reduce:animate-none" />

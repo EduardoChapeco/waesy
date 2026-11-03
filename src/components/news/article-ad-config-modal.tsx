@@ -181,7 +181,7 @@ export function ArticleAdConfigModal({
                 }`}
               >
                 <div className="flex w-full items-center justify-between">
-                  <Lock className="size-5 text-amber-500" />
+                  <Lock className="size-5 text-warning-strong" />
                   {adPolicy === "exclusive_lock" && <Check className="size-4 text-primary" />}
                 </div>
                 <div>

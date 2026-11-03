@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { connectStoreCustomDomain } from "@/services/cms.functions";
 import {
   Globe,
   Server,
@@ -23,6 +24,7 @@ export interface HostingDomainConnectModalProps {
   onClose: () => void;
   storeSlug: string;
   storeName: string;
+  storeId?: string;
   currentCustomDomain?: string | null;
   onConnectCustomDomain?: (domain: string) => Promise<void>;
 }
@@ -30,6 +32,7 @@ export interface HostingDomainConnectModalProps {
 export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModalProps, "isOpen" | "onClose">> = ({
   storeSlug,
   storeName,
+  storeId,
   currentCustomDomain,
   onConnectCustomDomain,
 }) => {
@@ -63,6 +66,16 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
     try {
       if (onConnectCustomDomain) {
         await onConnectCustomDomain(cleanDomain);
+      } else {
+        const res = await connectStoreCustomDomain({
+          data: {
+            domain: cleanDomain,
+            requestedStoreId: storeId || undefined,
+          },
+        });
+        if (!res?.success) {
+          throw new Error(res?.error || "Falha ao vincular domínio personalizado.");
+        }
       }
       toast.success(`Domínio ${cleanDomain} registrado com sucesso para provisionamento!`);
       setActiveTab("custom");
@@ -258,7 +271,7 @@ export const HostingDomainConnectModal: React.FC<HostingDomainConnectModalProps>
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-6 bg-card border border-border/80 shadow-2xl rounded-2xl z-50">
+      <DialogContent className="sm:max-w-xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-6 bg-card border border-border/80 shadow-overlay rounded-2xl z-50">
         <HostingDomainConnectContent {...contentProps} />
       </DialogContent>
     </Dialog>

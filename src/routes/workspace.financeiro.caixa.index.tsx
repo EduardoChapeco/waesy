@@ -121,7 +121,7 @@ function CashRegisterManagerPage() {
  function getChannelBadge(channel?: string) {
  switch (channel) {
  case "mercadolivre":
- return <Badge variant="outline" className="text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">Mercado Livre</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-warning/10 text-warning-strong  border-warning/30">Mercado Livre</Badge>;
  case "ifood":
  return <Badge variant="outline" className="text-xs font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">iFood</Badge>;
  case "amazon":
@@ -477,7 +477,7 @@ function CashRegisterManagerPage() {
  ) : register?.recentEntries && register.recentEntries.length > 0 ? (
  <div className="space-y-3">
       {/* Seletor Rápido de Canal / Origem */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 text-xs">
         <span className="text-muted-foreground font-medium text-xs mr-1 shrink-0">Filtrar Canal:</span>
         {[
           { id: "all", label: "Todos os Canais" },
@@ -565,7 +565,7 @@ function CashRegisterManagerPage() {
           {/* ── 2. TABLET / FOLD (640px-1024px): BIFURCAÇÃO MASTER-DETAIL EM 2 COLUNAS ── */}
           <div className="hidden sm:grid lg:hidden sm:grid-cols-12 gap-4 items-start">
             {/* Coluna Esquerda (5 cols): WhatsApp List Interativa */}
-            <div className="sm:col-span-5 rounded-lg border border-border/60 bg-card overflow-hidden divide-y divide-border/40 max-h-[600px] overflow-y-auto">
+            <div className="sm:col-span-5 rounded-lg border border-border/60 bg-card overflow-hidden divide-y divide-border/40 max-h-150 overflow-y-auto">
               {filteredEntries.map((entry: any) => {
                 const isNegative = entry.amount_cents < 0;
                 const isSelected = (selectedEntryId || filteredEntries[0]?.id) === entry.id;

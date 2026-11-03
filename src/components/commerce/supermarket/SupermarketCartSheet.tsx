@@ -284,9 +284,9 @@ export function SupermarketCartSheet({
 
             {/* Card de Order Bump (Oferta Relâmpago em Linha) */}
             {orderBumpProduct && allItems.length > 0 ? (
-              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2">
-                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-xs">
-                  <Lightning size={16} weight="fill" className="text-amber-500" />
+              <div className="p-4 rounded-2xl bg-warning/10 border border-warning/20 space-y-2">
+                <div className="flex items-center gap-2 text-warning-strong  font-bold text-xs">
+                  <Lightning size={16} weight="fill" className="text-warning-strong" />
                   <span>Oferta Relâmpago Imperdível</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -477,8 +477,8 @@ export function SupermarketCartSheet({
             </div>
 
             {/* Aviso Legal Obrigatório de Pesagem (Invariante Canônico) */}
-            <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-2xs text-amber-900 dark:text-amber-200">
-              <Info size={18} weight="bold" className="text-amber-600 shrink-0 mt-1" />
+            <div className="flex items-start gap-3 p-4 rounded-2xl bg-warning/10 border border-warning/20 text-2xs text-warning-strong ">
+              <Info size={18} weight="bold" className="text-warning-strong shrink-0 mt-1" />
               <p>
                 <strong>Importante:</strong> O valor total de sua compra poderá sofrer pequenas variações para mais ou para menos caso ocorra alguma alteração ou diferença de pesagem durante o processo de separação física na loja.
               </p>

@@ -183,7 +183,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3"
               style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
             >
-              <Hotel className="w-6 h-6 text-amber-500" /> Acomodação
+              <Hotel className="w-6 h-6 text-warning-strong" /> Acomodação
             </h2>
             <div className="space-y-6">
               {p.hotels!.map((h, i) => (
@@ -191,9 +191,9 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                   key={i}
                   className="border border-slate-200 rounded-lg overflow-hidden break-inside-avoid"
                 >
-                  <div className="bg-amber-50 px-6 py-3 flex justify-between items-center border-b border-amber-100">
-                    <span className="ds-label-caps text-amber-700">Hotel e Resort</span>
-                    <span className="ds-label-caps text-amber-800 bg-amber-100/50 px-3 py-1 rounded-full">
+                  <div className="bg-warning/10 px-6 py-3 flex justify-between items-center border-b border-warning/30">
+                    <span className="ds-label-caps text-warning-strong">Hotel e Resort</span>
+                    <span className="ds-label-caps text-warning-strong bg-warning/50 px-3 py-1 rounded-full">
                       {h.meal_plan || "Só Hospedagem"}
                     </span>
                   </div>
@@ -282,7 +282,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                   {formatCurrency(vm.totals.valorParcelaCartao, p.currency)}
                 </div>
               </div>
-              <div className="bg-amber-400/10 rounded-lg p-6 border border-amber-400/30 backdrop-blur relative">
+              <div className="bg-warning/10 rounded-lg p-6 border border-warning/30 backdrop-blur relative">
                 <div className="ds-meta uppercase font-bold tracking-widest text-zinc-400 mb-2">
                   À vista (PIX)
                 </div>

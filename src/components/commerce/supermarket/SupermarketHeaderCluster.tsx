@@ -50,7 +50,7 @@ export function SupermarketHeaderCluster({
         <button
           type="button"
           onClick={onOpenStoreSelector}
-          className="flex items-center gap-2.5 min-w-0 flex-1 text-left rounded-xl p-1 -ml-1 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11"
+          className="flex items-center gap-3 min-w-0 flex-1 text-left rounded-xl p-1 -ml-1 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-11 min-h-11"
           aria-label={`Selecionar filial: ${storeName}`}
         >
           {storeLogoUrl ? (
@@ -79,13 +79,13 @@ export function SupermarketHeaderCluster({
         </button>
 
         {/* Grupo de Ações (Cupons & Carrinho) */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           {couponsCount > 0 ? (
             <Button
               variant="outline"
               size="sm"
               onClick={onOpenCoupons}
-              className="h-11 min-h-11 min-w-11 px-3 rounded-xl border-border/60 gap-1.5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 min-w-11 px-3 rounded-xl border-border/60 gap-2 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
               aria-label={`${couponsCount} cupons disponíveis`}
             >
               <Ticket size={18} weight="duotone" className="text-primary" />
@@ -98,12 +98,12 @@ export function SupermarketHeaderCluster({
               variant="default"
               size="sm"
               onClick={onOpenCart}
-              className="h-11 min-h-11 min-w-11 px-3.5 rounded-xl gap-2 font-bold focus-visible:ring-2 focus-visible:ring-primary relative"
+              className="h-11 min-h-11 min-w-11 px-4 rounded-xl gap-2 font-bold focus-visible:ring-2 focus-visible:ring-primary relative"
               aria-label={`Abrir carrinho com ${cartItemCount} itens`}
             >
               <ShoppingBag size={18} weight="bold" />
               {cartItemCount > 0 ? (
-                <span className="text-xs bg-primary-foreground text-primary px-1.5 py-0.5 rounded-full font-extrabold">
+                <span className="text-xs bg-primary-foreground text-primary px-2 py-1 rounded-full font-extrabold">
                   {cartItemCount}
                 </span>
               ) : null}
@@ -127,7 +127,7 @@ export function SupermarketHeaderCluster({
           aria-label="Buscar produtos no supermercado"
         />
 
-        <div className="absolute right-1.5 flex items-center gap-0.5">
+        <div className="absolute right-1.5 flex items-center gap-1">
           {onVoiceSearchClick ? (
             <button
               type="button"

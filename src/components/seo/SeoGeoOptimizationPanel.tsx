@@ -230,7 +230,7 @@ export function SeoGeoOptimizationPanel({
                 </Label>
                 <span
                   className={`text-xs font-mono ${
-                    titleLength > 60 ? "text-amber-500 font-bold" : "text-muted-foreground"
+                    titleLength > 60 ? "text-warning-strong font-bold" : "text-muted-foreground"
                   }`}
                 >
                   {titleLength}/60 caracteres
@@ -252,7 +252,7 @@ export function SeoGeoOptimizationPanel({
                 </Label>
                 <span
                   className={`text-xs font-mono ${
-                    descLength > 160 ? "text-amber-500 font-bold" : "text-muted-foreground"
+                    descLength > 160 ? "text-warning-strong font-bold" : "text-muted-foreground"
                   }`}
                 >
                   {descLength}/160 caracteres

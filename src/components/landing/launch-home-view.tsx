@@ -160,7 +160,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
               asChild
               variant="ghost"
               size="sm"
-              className="hidden sm:inline-flex text-xs font-semibold rounded-lg text-muted-foreground hover:text-foreground h-9 px-3 gap-2"
+              className="hidden sm:inline-flex text-xs font-semibold rounded-lg text-muted-foreground hover:text-foreground h-9 px-3 gap-2 min-h-11 sm:min-h-0"
             >
               <Link to="/explorar">
                 <Store className="size-3.5" />
@@ -172,7 +172,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
               asChild
               variant="outline"
               size="sm"
-              className="text-xs font-bold rounded-lg border-border/80 hover:bg-muted text-foreground h-9 px-4 gap-2  cursor-pointer"
+              className="text-xs font-bold rounded-lg border-border/80 hover:bg-muted text-foreground h-9 px-4 gap-2  cursor-pointer min-h-11 sm:min-h-0"
             >
               <Link to="/entrar">
                 <LogIn className="size-3.5 text-primary" />
@@ -184,7 +184,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             <Button
               size="sm"
               onClick={() => setIsSheetOpen(true)}
-              className="rounded-lg text-xs font-bold bg-primary text-primary-foreground h-9 px-4 gap-2  cursor-pointer hover:bg-primary/90"
+              className="rounded-lg text-xs font-bold bg-primary text-primary-foreground h-9 px-4 gap-2  cursor-pointer hover:bg-primary/90 min-h-11 sm:min-h-0"
             >
               <Star className="size-3.5" />
               <span>Seja Fundador</span>
@@ -352,7 +352,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
                 type="submit"
                 size="sm"
                 disabled={isLookingUp}
-                className="rounded-lg text-xs font-bold h-10 px-4 shrink-0 bg-primary text-primary-foreground cursor-pointer"
+                className="rounded-lg text-xs font-bold h-10 px-4 shrink-0 bg-primary text-primary-foreground cursor-pointer min-h-11 sm:min-h-0"
               >
                 {isLookingUp ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : "Consultar"}
               </Button>

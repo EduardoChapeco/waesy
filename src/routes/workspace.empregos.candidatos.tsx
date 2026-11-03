@@ -484,7 +484,7 @@ function WorkspaceCandidatesPage() {
 
       {/* ── 3. Filtros & Barra de Pesquisa ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
           {[
             { id: "all", label: "Todos", count: applications.length },
             { id: "pending", label: "Novos", count: applications.filter((a) => a.status === "pending").length },
@@ -500,7 +500,7 @@ function WorkspaceCandidatesPage() {
                 statusTab === tab.id
                   ? "bg-foreground text-background"
                   : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
-              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
             >
               <span>{tab.label}</span>
               <span className="opacity-70 text-xs">({tab.count})</span>
@@ -641,8 +641,8 @@ function WorkspaceCandidatesPage() {
 
                     <div className="flex items-center gap-2 pt-1">
                       {app.rating ? (
-                        <div className="flex items-center text-xs text-amber-500 font-bold">
-                          <Star className="size-3 fill-amber-400 mr-1" />
+                        <div className="flex items-center text-xs text-warning-strong font-bold">
+                          <Star className="size-3 fill-warning mr-1" />
                           <span>{app.rating}.0</span>
                         </div>
                       ) : null}
@@ -742,7 +742,7 @@ function WorkspaceCandidatesPage() {
                         </div>
                       )}
                       {app.previous_company_name && (
-                        <div className="pt-1.5 border-t border-border/50 space-y-1">
+                        <div className="pt-2 border-t border-border/50 space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-muted-foreground">Última Empresa:</span>
                             <span className="font-semibold text-foreground">{app.previous_company_name}</span>
@@ -753,10 +753,10 @@ function WorkspaceCandidatesPage() {
                             </p>
                           )}
                           {app.previous_company_rating && (
-                            <div className="flex items-center gap-1 text-xs text-amber-600 font-medium pt-0.5">
+                            <div className="flex items-center gap-1 text-xs text-warning-strong font-medium pt-1">
                               <span>Avaliação:</span>
                               <span className="font-bold">{app.previous_company_rating}/5</span>
-                              <Star className="size-3.5 fill-amber-500 text-amber-500" />
+                              <Star className="size-3.5 fill-warning text-warning-strong" />
                             </div>
                           )}
                           {app.previous_company_feedback && (
@@ -813,11 +813,11 @@ function WorkspaceCandidatesPage() {
                           key={star}
                           type="button"
                           onClick={() => handleUpdateRating(app.id, star)}
-                          className="text-amber-500 hover:scale-125 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="text-warning-strong hover:scale-125 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Star
                             className={`size-4 ${
-                              app.rating && app.rating >= star ? "fill-amber-400" : "text-muted-foreground/30"
+                              app.rating && app.rating >= star ? "fill-warning" : "text-muted-foreground/30"
                             }`}
                           />
                         </button>
@@ -942,29 +942,29 @@ function WorkspaceCandidatesPage() {
               {/* Inteligência Salarial & Histórico de Empregador (DEC-375) */}
               {(dossierCandidate.salary_expectation_cents || dossierCandidate.last_salary_cents || dossierCandidate.previous_company_name) && (
                 <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3 text-xs">
-                  <h4 className="font-bold text-foreground text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <h4 className="font-bold text-foreground text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Briefcase className="size-3.5 text-primary" />
                     <span>Inteligência Salarial & Experiência Prévia</span>
                   </h4>
 
                   <div className="grid grid-cols-2 gap-3 pt-1">
-                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/50">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                       <span className="text-muted-foreground block text-xs">Pretensão Salarial</span>
-                      <span className="font-bold text-foreground font-mono text-sm block mt-0.5">
+                      <span className="font-bold text-foreground font-mono text-sm block mt-1">
                         {dossierCandidate.salary_expectation_cents ? formatMoney(dossierCandidate.salary_expectation_cents) : "A combinar"}
                       </span>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-muted/30 border border-border/50">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                       <span className="text-muted-foreground block text-xs">Último Salário</span>
-                      <span className="font-semibold text-foreground font-mono text-sm block mt-0.5">
+                      <span className="font-semibold text-foreground font-mono text-sm block mt-1">
                         {dossierCandidate.last_salary_cents ? formatMoney(dossierCandidate.last_salary_cents) : "Não informado"}
                       </span>
                     </div>
                   </div>
 
                   {dossierCandidate.previous_company_name && (
-                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-1.5">
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground">Última Empresa</span>
                         <span className="font-bold text-foreground">{dossierCandidate.previous_company_name}</span>
@@ -975,10 +975,10 @@ function WorkspaceCandidatesPage() {
                         </p>
                       )}
                       {dossierCandidate.previous_company_rating && (
-                        <div className="flex items-center gap-1 text-xs text-amber-600 font-bold">
+                        <div className="flex items-center gap-1 text-xs text-warning-strong font-bold">
                           <span>Avaliação:</span>
                           <span>{dossierCandidate.previous_company_rating}/5</span>
-                          <Star className="size-3.5 fill-amber-500 text-amber-500" />
+                          <Star className="size-3.5 fill-warning text-warning-strong" />
                         </div>
                       )}
                       {dossierCandidate.previous_company_feedback && (
@@ -1005,7 +1005,7 @@ function WorkspaceCandidatesPage() {
                       <Star
                         className={`size-4 ${
                           dossierCandidate.rating && dossierCandidate.rating >= star
-                            ? "fill-amber-400 text-amber-500"
+                            ? "fill-warning text-warning-strong"
                             : "text-muted-foreground/30"
                         }`}
                       />

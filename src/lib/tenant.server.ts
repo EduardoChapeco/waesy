@@ -10,13 +10,16 @@ import { getAnonServerClient } from "@/lib/supabase";
  */
 export async function resolveTenantStoreId(): Promise<string | null> {
  // 1. Cookie de sessão de tenant (definido por setTenantContext ou após createBusinessProfile)
- let activeTenantCookie = getCookie("waesy_active_tenant") || getCookie("jah_active_tenant") || getCookie("waesy_active_tenant");
- if (!activeTenantCookie) {
+ let activeTenantCookie: string | null = null;
  const rawCookie = getRequestHeader("cookie") || "";
- const match = rawCookie.match(/(?:waesy_active_tenant|jah_active_tenant|waesy_active_tenant)=([^;]+)/);
- if (match && match[1]) {
- activeTenantCookie = decodeURIComponent(match[1].trim());
+ if (rawCookie) {
+   const matches = [...rawCookie.matchAll(/(?:waesy_active_tenant|jah_active_tenant|waesy_store_id)=([^;]+)/g)];
+   if (matches.length > 0) {
+     activeTenantCookie = decodeURIComponent(matches[matches.length - 1][1].trim());
+   }
  }
+ if (!activeTenantCookie) {
+   activeTenantCookie = getCookie("waesy_active_tenant") || getCookie("jah_active_tenant") || getCookie("waesy_store_id") || null;
  }
 
  if (activeTenantCookie) {

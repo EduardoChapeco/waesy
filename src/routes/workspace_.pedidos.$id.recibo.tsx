@@ -238,7 +238,7 @@ function ReceiptPrintPage() {
               <td className="py-2">{item.qty}x</td>
               <td className="py-2">
                 <div className="font-semibold">{item.product_title}</div>
-                {item.notes && <div className="text-xs text-amber-700 font-sans italic">Obs: {item.notes}</div>}
+                {item.notes && <div className="text-xs text-warning-strong font-sans italic">Obs: {item.notes}</div>}
                 {item.variant_sku && <div className="text-xs text-neutral-500">SKU: {item.variant_sku}</div>}
               </td>
               <td className="text-right py-2">{formatMoney(item.unit_price_cents)}</td>

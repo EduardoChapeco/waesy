@@ -253,7 +253,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Link to="/workspace/suporte">
-        <ShieldAlert className="size-4 text-amber-500" />
+        <ShieldAlert className="size-4 text-warning-strong" />
         <span>Abrir Chamado no SAC</span>
         <ArrowUpRight className="size-3.5 ml-auto text-muted-foreground" />
       </Link>

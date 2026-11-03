@@ -361,10 +361,10 @@ function WorkspaceVisasPage() {
                     </ul>
                     {dsEvaluation.redFlags.length > 0 && (
                       <>
-                        <p className="text-xs font-bold text-amber-600 pt-2">Alertas de Atenção Consular (INA 214b):</p>
+                        <p className="text-xs font-bold text-warning-strong pt-2">Alertas de Atenção Consular (INA 214b):</p>
                         <ul className="space-y-1">
                           {dsEvaluation.redFlags.map((f: string, idx: number) => (
-                            <li key={idx} className="text-xs text-amber-700 dark:text-amber-300 break-words leading-relaxed">
+                            <li key={idx} className="text-xs text-warning-strong  break-words leading-relaxed">
                               • {f}
                             </li>
                           ))}
@@ -420,7 +420,7 @@ function WorkspaceVisasPage() {
                     <p className="text-muted-foreground">
                       Validade: {mrzResult.expiryDateIso} ({mrzResult.daysUntilExpiryFromReturn} dias após o retorno)
                     </p>
-                    <p className="text-amber-600 font-semibold break-words">
+                    <p className="text-warning-strong font-semibold break-words">
                       • {mrzResult.validationMessagePt}
                     </p>
                   </div>
@@ -438,10 +438,10 @@ function WorkspaceVisasPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-              <Clock className="size-3.5 text-amber-600" />
+              <Clock className="size-3.5 text-warning-strong" />
               Processos em Andamento
             </span>
-            <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+            <div className="text-2xl font-mono font-bold text-warning-strong ">
               {kpis.inProgress}
             </div>
             <p className="text-xs text-muted-foreground font-mono">

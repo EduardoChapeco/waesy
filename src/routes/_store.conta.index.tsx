@@ -131,7 +131,7 @@ function AccountDashboardPage() {
     try {
       setClientContextCookies({ context: "store", storeId });
       await setTenantContext({ data: { store_id: storeId } });
-      window.location.href = "/workspace";
+      window.location.href = `/workspace?storeId=${encodeURIComponent(storeId)}`;
     } catch (err: any) {
       toast.error(err?.message || "Erro ao acessar workspace.");
     }
@@ -303,7 +303,7 @@ function AccountDashboardPage() {
           </div>
 
           {/* Lado Direito: Toolbar de Ações em Cards Squircle Padronizados (Linha Única) */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 shrink-0">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar py-1 shrink-0">
             <ContextSwitcher
               currentContextType="civil"
               activeProfileId={activeCreatorFromCookie || activeTenantFromCookie}
@@ -363,7 +363,7 @@ function AccountDashboardPage() {
       </div>
 
       {/* ── 1.1 Barra Compacta de Atalhos em Cards Squircle Canônicos (Bidirecional) ── */}
-      <div className="flex flex-nowrap overflow-x-auto no-scrollbar gap-2 sm:grid sm:grid-cols-4 sm:gap-3 pb-1">
+      <div className="flex flex-nowrap overflow-x-auto scroll-area-carousel no-scrollbar gap-2 sm:grid sm:grid-cols-4 sm:gap-3 pb-1">
         <Link
           to="/conta/pedidos"
           className="h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer shadow-2xs shrink-0 min-w-36 sm:min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"

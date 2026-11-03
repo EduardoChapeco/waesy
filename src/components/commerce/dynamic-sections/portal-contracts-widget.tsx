@@ -119,7 +119,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
         {contractsList.map((ct) => (
  <div
  key={ct.id}
- className="p-5 rounded-lg border border-border/60 bg-card hover:border-border transition-colors duration-200 duration-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+ className="p-5 rounded-lg border border-border/60 bg-card hover:border-border transition-colors duration-200 duration-200  flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
  >
  <div className="space-y-2 flex-1">
  <div className="flex items-center gap-3 flex-wrap">
@@ -129,7 +129,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  <CheckCircle2 className="w-3 h-3" /> Assinado
  </Badge>
  ) : (
- <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs flex items-center gap-1">
+ <Badge variant="outline" className="bg-warning/10 text-warning-strong  border-warning/20 text-xs flex items-center gap-1">
  <Clock className="w-3 h-3" /> Assinatura Pendente
  </Badge>
  )}
@@ -154,7 +154,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  {ct.status === "pending_signature" ? (
  <Button
  size="sm"
- className="min-h-11 flex-1 md:flex-none gap-2 bg-primary text-primary-foreground shadow-sm"
+ className="min-h-11 flex-1 md:flex-none gap-2 bg-primary text-primary-foreground "
  onClick={() => {
  setSelectedContract(ct);
  setIsSigningModalOpen(true);

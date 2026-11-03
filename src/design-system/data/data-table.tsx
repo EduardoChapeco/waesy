@@ -223,7 +223,7 @@ export function DataTable<T>({
   // Visualização Desktop: Tabela de Alta Legibilidade
   return (
     <div className={cn("rounded-lg border border-border/70 bg-card overflow-hidden select-none", className)}>
-      <div className="overflow-x-auto native-scroll">
+      <div className="overflow-x-auto scroll-area-carousel native-scroll">
         <table className="w-full text-left text-xs border-collapse">
           {/* Header */}
           <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-semibold">
@@ -355,7 +355,7 @@ export function DataTable<T>({
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
               aria-label="Página anterior"
-              className="size-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              className="size-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
             >
               <ChevronLeft className="size-4" />
             </button>
@@ -364,7 +364,7 @@ export function DataTable<T>({
               disabled={page >= Math.ceil(totalItems / pageSize)}
               onClick={() => onPageChange(page + 1)}
               aria-label="Próxima página"
-              className="size-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              className="size-8 rounded-lg flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
             >
               <ChevronRight className="size-4" />
             </button>

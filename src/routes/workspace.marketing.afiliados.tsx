@@ -107,9 +107,9 @@ function WorkspaceAffiliatesPage() {
         <div className="bg-card border border-border rounded-lg p-5 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Saques Pendentes</span>
-            <Clock className="h-4 w-4 text-amber-500" />
+            <Clock className="h-4 w-4 text-warning-strong" />
           </div>
-          <div className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400">
+          <div className="text-2xl font-bold font-mono text-warning-strong ">
             {formatMoney(pendingAmountCents)}
           </div>
           <div className="text-xs text-muted-foreground">
@@ -178,7 +178,7 @@ function WorkspaceAffiliatesPage() {
             Nenhuma solicitação de saque encontrada com os filtros selecionados.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scroll-area-carousel">
             <table className="w-full text-xs text-left">
               <thead className="border-b border-border text-muted-foreground">
                 <tr>
@@ -193,7 +193,7 @@ function WorkspaceAffiliatesPage() {
               <tbody className="divide-y divide-border/60">
                 {filteredPayouts.map((payout: any) => {
                   const statusMap: Record<string, { label: string; badge: string; icon: any }> = {
-                    pending: { label: "Pendente", badge: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: Clock },
+                    pending: { label: "Pendente", badge: "bg-warning/10 text-warning-strong border-warning/20", icon: Clock },
                     processing: { label: "Processando", badge: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Clock },
                     paid: { label: "Pago", badge: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle2 },
                     rejected: { label: "Rejeitado", badge: "bg-destructive/10 text-destructive border-destructive/20", icon: XCircle },
@@ -235,7 +235,7 @@ function WorkspaceAffiliatesPage() {
                           <Button
                             size="sm"
                             onClick={() => handleOpenProcess(payout)}
-                            className="h-8 px-3 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
+                            className="h-8 px-3 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer min-h-11 sm:min-h-0"
                           >
                             Revisar e Pagar
                           </Button>
@@ -322,7 +322,7 @@ function WorkspaceAffiliatesPage() {
                       notes: adminNotes || "Repasse rejeitado pela administração.",
                     })
                   }
-                  className="h-10 rounded-lg font-semibold text-xs cursor-pointer"
+                  className="h-10 rounded-lg font-semibold text-xs cursor-pointer min-h-11 sm:min-h-0"
                 >
                   Rejeitar Saque
                 </Button>
@@ -337,7 +337,7 @@ function WorkspaceAffiliatesPage() {
                       notes: adminNotes.trim() || undefined,
                     })
                   }
-                  className="h-10 rounded-lg font-semibold text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                  className="h-10 rounded-lg font-semibold text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer min-h-11 sm:min-h-0"
                 >
                   <Check className="h-4 w-4 mr-1" />
                   {processMutation.isPending ? "Processando..." : "Confirmar Quitação"}

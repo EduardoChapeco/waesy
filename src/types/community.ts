@@ -366,7 +366,7 @@ export const COMMUNITY_GRADIENT_PRESETS: Record<
   "blue-lime": {
     id: "blue-lime",
     label: "Blue Lime (Threads Classic)",
-    gradientClass: "from-sky-600 via-cyan-500 to-lime-500",
+    gradientClass: "from-sky-600 via-cyan-500 to-warning",
     badgeBg: "bg-emerald-950/40 text-emerald-300",
   },
   "pink-cyan": {
@@ -378,8 +378,8 @@ export const COMMUNITY_GRADIENT_PRESETS: Record<
   sunset: {
     id: "sunset",
     label: "Sunset Glow",
-    gradientClass: "from-orange-500 via-red-500 to-amber-500",
-    badgeBg: "bg-amber-950/40 text-amber-300",
+    gradientClass: "from-orange-500 via-red-500 to-warning",
+    badgeBg: "bg-warning/40 text-warning-strong",
   },
   cyberpunk: {
     id: "cyberpunk",

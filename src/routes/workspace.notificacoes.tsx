@@ -156,7 +156,7 @@ export default function WorkspaceNotificationsPage() {
             variant="outline"
             size="sm"
             onClick={toggleSound}
-            className="rounded-lg h-10 px-3 text-xs gap-2"
+            className="rounded-lg h-10 px-3 text-xs gap-2 min-h-11 sm:min-h-0"
             title={soundMuted ? "Ativar som de alertas" : "Silenciar som de alertas"}
           >
             {soundMuted ? (
@@ -173,7 +173,7 @@ export default function WorkspaceNotificationsPage() {
               size="sm"
               onClick={() => markAllAsReadMutation.mutate()}
               disabled={markAllAsReadMutation.isPending}
-              className="rounded-lg h-10 px-4 text-xs gap-2"
+              className="rounded-lg h-10 px-4 text-xs gap-2 min-h-11 sm:min-h-0"
             >
               <CheckCheck className="w-4 h-4" />
               <span>Marcar todas como lidas</span>
@@ -219,7 +219,7 @@ export default function WorkspaceNotificationsPage() {
               variant="outline"
               size="sm"
               onClick={handleTestNotification}
-              className="rounded-lg h-9 text-xs px-4 gap-2"
+              className="rounded-lg h-9 text-xs px-4 gap-2 min-h-11 sm:min-h-0"
             >
               <span>Testar Notificação</span>
             </Button>
@@ -227,7 +227,7 @@ export default function WorkspaceNotificationsPage() {
             <Button
               size="sm"
               onClick={handleRequestPush}
-              className="rounded-lg h-9 text-xs px-4 gap-2 shadow-xs"
+              className="rounded-lg h-9 text-xs px-4 gap-2 shadow-xs min-h-11 sm:min-h-0"
             >
               <span>Ativar Notificações</span>
             </Button>
@@ -236,7 +236,7 @@ export default function WorkspaceNotificationsPage() {
       </div>
 
       {/* Filtros por Categoria */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 text-xs">
         <button
           type="button"
           onClick={() => setActiveFilter("all")}

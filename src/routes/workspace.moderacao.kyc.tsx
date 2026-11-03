@@ -90,7 +90,7 @@ function KycAuditPage() {
  ) : (
  <div className="grid gap-4">
  {verifications?.map((v: any) => (
- <div key={v.id} className="bg-card p-6 rounded-lg border shadow-sm space-y-4">
+ <div key={v.id} className="bg-card p-6 rounded-lg border  space-y-4">
  <div className="flex justify-between items-start">
  <div>
  <h3 className="font-bold text-lg flex items-center gap-2">

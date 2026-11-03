@@ -28,7 +28,7 @@ export function PresentationRenderer({
 }: PresentationRendererProps) {
  const containerClasses =
  aspectRatio === "9:16"
- ? "aspect-[9/16] w-full max-w-[360px]"
+ ? "aspect-9/16 w-full max-w-90"
  : "aspect-square w-full max-w-md";
 
  // Base colors mapping
@@ -49,7 +49,7 @@ export function PresentationRenderer({
  <Surface
  variant="default"
  elevation="sm"
- className={`w-full max-w-[85%] flex flex-col gap-4 p-4 pb-12 rotate-2 ${bgClass}`}
+ className={`w-full max-w-17/20 flex flex-col gap-4 p-4 pb-12 rotate-2 ${bgClass}`}
  >
  <div className="aspect-square w-full bg-muted overflow-hidden">
  {entity.image_url ? (
@@ -93,7 +93,7 @@ export function PresentationRenderer({
  {entity.category}
  </span>
  )}
- <h2 className="font-display font-black text-4xl uppercase leading-[0.9] tracking-tighter mt-4 break-words">
+ <h2 className="font-display font-black text-4xl uppercase leading-none tracking-tighter mt-4 break-words">
  {entity.title}
  </h2>
  </div>
@@ -128,7 +128,7 @@ export function PresentationRenderer({
  variant="ticket"
  padding="lg"
  elevation="none"
- className={`w-full max-w-[90%] flex flex-col ${bgClass}`}
+ className={`w-full max-w-9/10 flex flex-col ${bgClass}`}
  >
  <div className="text-center mb-6">
  <p className="font-mono text-xs uppercase tracking-widest opacity-70 mb-2">WAESY TICKET</p>

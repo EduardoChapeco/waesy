@@ -68,7 +68,7 @@ export const PlateField = forwardRef<HTMLInputElement, PlateFieldProps>(
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-muted-foreground">
           {showIndicator && isComplete && isValid ? (
             <span className="text-emerald-600 dark:text-emerald-400">
-              <Check className="size-4 stroke-[2.5]" />
+              <Check className="size-4 stroke-bold" />
             </span>
           ) : (
             <Car className="size-3.5 opacity-60" />

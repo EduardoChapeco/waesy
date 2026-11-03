@@ -187,7 +187,7 @@ export function SevenSinsCanvasPage() {
                 type="button"
                 onClick={() => handleGenerateCopy()}
                 disabled={generating || !storeId || (!selectedProductId && !productName.trim())}
-                className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground  hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <RefreshCw className={`w-4 h-4 ${generating ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 {generating ? "Gerando rascunho..." : "Gerar rascunho de copy"}
@@ -240,7 +240,7 @@ export function SevenSinsCanvasPage() {
                   onClick={() => setSelectedSin(sinKey)}
                   className={`p-4 rounded-lg border text-left transition-colors duration-200 ${
                     isSelected
-                      ? "bg-card border-primary shadow-sm ring-1 ring-primary/30"
+                      ? "bg-card border-primary  ring-1 ring-primary/30"
                       : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
@@ -386,7 +386,7 @@ export function SevenSinsCanvasPage() {
                           `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n${generatedHook.call_to_action}`
                         )
                       }
-                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       Copiar
@@ -395,7 +395,7 @@ export function SevenSinsCanvasPage() {
                     <button
                       type="button"
                       onClick={handleOpenWhatsApp}
-                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-emerald-600 text-foreground hover:bg-emerald-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-emerald-600 text-foreground hover:bg-emerald-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       WhatsApp
@@ -437,7 +437,7 @@ export function SevenSinsCanvasPage() {
                   type="button"
                   onClick={() => handleGenerateCopy()}
                   disabled={generating || !storeId || (!selectedProductId && !productName.trim())}
-                  className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Gerar rascunho
@@ -487,7 +487,7 @@ export function SevenSinsCanvasPage() {
 
                     {p.primary_objection && (
                       <div className="flex items-start gap-2 text-xs text-muted-foreground pt-1">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-1" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-warning-strong shrink-0 mt-1" />
                         <span>
                           <strong>Objeção:</strong> {p.primary_objection}{" "}
                           {p.recommended_fix && (

@@ -360,7 +360,7 @@ function HrFinancePage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleOpenStatement(emp.id)}
-                    className="rounded-lg text-xs font-bold h-9 gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="rounded-lg text-xs font-bold h-9 gap-1 text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <FileText className="size-3.5" />
                     <span>Extrato</span>
@@ -369,7 +369,7 @@ function HrFinancePage() {
                   <Button
                     size="sm"
                     onClick={() => handleOpenModal(emp)}
-                    className="rounded-lg text-xs font-bold h-9 gap-2 bg-primary text-primary-foreground cursor-pointer shadow-2xs"
+                    className="rounded-lg text-xs font-bold h-9 gap-2 bg-primary text-primary-foreground cursor-pointer shadow-2xs min-h-11 sm:min-h-0"
                   >
                     <Plus className="size-3.5" />
                     <span>Lançar Vale / Bônus</span>

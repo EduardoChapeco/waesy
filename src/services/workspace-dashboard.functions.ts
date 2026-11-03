@@ -66,16 +66,20 @@ export const getWorkspaceDashboardKpisFn = createServerFn({ method: "GET" })
       throw new Error("Loja ativa não identificada na sessão do operador");
     }
 
-    assertStoreAccess(identity, [
-      "owner",
-      "admin",
-      "manager",
-      "seller",
-      "finance",
-      "stock",
-      "content",
-      "support",
-    ]);
+    assertStoreAccess(
+      identity,
+      [
+        "owner",
+        "admin",
+        "manager",
+        "seller",
+        "finance",
+        "stock",
+        "content",
+        "support",
+      ],
+      targetStoreId
+    );
 
     const supabase = getServerClient();
     const period = data?.period || "30d";

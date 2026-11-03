@@ -42,7 +42,7 @@ export function SupermarketProductCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col justify-between p-3 rounded-2xl bg-card border border-border/60 hover:border-border transition-all select-none overflow-hidden",
+        "group relative flex flex-col justify-between p-3 rounded-2xl bg-card border border-border/60 hover:border-border transition select-none overflow-hidden",
         className,
       )}
       data-testid="supermarket-product-card"
@@ -64,7 +64,7 @@ export function SupermarketProductCard({
             e.stopPropagation();
             onAddToCart?.(product);
           }}
-          className="size-11 min-w-11 min-h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center pointer-events-auto shadow-sm hover:scale-105 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ml-auto"
+          className="size-11 min-w-11 min-h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center pointer-events-auto  hover:scale-105 active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ml-auto"
           aria-label={`Adicionar ${product.title} ao carrinho`}
         >
           <Plus size={20} weight="bold" />
@@ -98,11 +98,11 @@ export function SupermarketProductCard({
       </div>
 
       {/* ── Detalhes e Preço ── */}
-      <div className="flex flex-col gap-1.5 mt-2 min-w-0">
+      <div className="flex flex-col gap-2 mt-2 min-w-0">
         {/* Preço Promocional & Riscado */}
         <div className="flex flex-col leading-tight">
           {hasDiscount && formattedComparePrice ? (
-            <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
+            <div className="flex items-center gap-2 text-2xs text-muted-foreground">
               <span className="line-through">R$ {formattedComparePrice}</span>
               {discountPercent > 0 ? (
                 <span className="px-1 py-0.2 rounded text-3xs font-extrabold bg-destructive/15 text-destructive">

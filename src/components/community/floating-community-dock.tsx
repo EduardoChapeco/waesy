@@ -175,7 +175,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-auto">
  {/* ── Card Minimalista Expansível (Card Flutuante Expansível) ── */}
  {isExpanded && (
- <div className="w-[90vw] sm:w-[420px] bg-background/95 backdrop-blur-xl border border-border/80 rounded-lg p-4 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+ <div className="w-[90vw] sm:w-105 bg-background/95 backdrop-blur-xl border border-border/80 rounded-lg p-4  space-y-4 animate-in fade-in zoom-in-95 duration-200">
  {/* Header do Floating Composer */}
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-3">
@@ -193,7 +193,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
 
  <button
  onClick={() => setIsExpanded(false)}
- className="size-7 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-7 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Fechar compositor"
  >
  <X size={15} weight="bold" />
@@ -201,7 +201,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  </div>
 
  {/* Formatos de Post em Cápsulas */}
- <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar">
+ <div className="flex items-center gap-1 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar">
  {formats.map((fmt) => {
  const Icon = fmt.icon;
  const isSelected = activeFormat === fmt.id;
@@ -270,7 +270,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
 
  {/* Mídias Anexadas */}
  {mediaPreviews.length > 0 && (
- <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+ <div className="flex gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
  {mediaPreviews.map((media, idx) => (
  <div
  key={idx}
@@ -287,7 +287,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <button
  type="button"
  onClick={() => handleRemoveMedia(idx)}
- className="absolute top-1 right-1 size-8 rounded-full bg-foreground/70 text-foreground flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1 right-1 size-8 rounded-full bg-foreground/70 text-foreground flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash size={12} weight="bold" />
  </button>

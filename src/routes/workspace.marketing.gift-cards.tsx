@@ -116,7 +116,7 @@ function NewGiftCardDrawer({
     >
       <div className="py-2 space-y-4 text-xs">
         {/* Aviso de Isolamento Econômico Obrigatório */}
-        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-amber-600 dark:text-amber-400">
+        <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 flex items-start gap-2 text-warning-strong ">
           <AlertTriangle className="size-4 shrink-0 mt-1" />
           <p className="leading-tight">
             <strong>Invariante de Financiamento:</strong> Este vale é restrito a compras nesta loja. Vales de cortesia não geram recebíveis em dinheiro nem obrigações de repasse por parte da Waesy.

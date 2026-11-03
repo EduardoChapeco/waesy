@@ -220,7 +220,7 @@ export default function WorkspaceTripsListPage() {
 
             const statusColors: Record<string, string> = {
               confirmed: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-              in_progress: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+              in_progress: "bg-warning/10 text-warning-strong border-warning/20",
               completed: "bg-sky-500/10 text-sky-600 border-sky-500/20",
               cancelled: "bg-rose-500/10 text-rose-600 border-rose-500/20",
             };
@@ -285,7 +285,7 @@ export default function WorkspaceTripsListPage() {
                     )}
                     {trip.hotels?.length > 0 && (
                       <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted/60 text-xs text-muted-foreground font-medium">
-                        <Building2 className="size-3 text-amber-500" />
+                        <Building2 className="size-3 text-warning-strong" />
                         {trip.hotels.length} hotel(s)
                       </span>
                     )}

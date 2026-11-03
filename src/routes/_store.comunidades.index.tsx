@@ -107,7 +107,7 @@ function CommunitiesDirectoryPage() {
 
         {/* Trilho de Categorias (Padrão Threads) */}
         // design-lint-ignore DL-30 reason:"Trilho horizontal de categorias no estilo Threads" expiry:"2027-12-31"
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel scrollbar-none py-1">
           <button
             type="button"
             onClick={() => setActiveTab("all")}

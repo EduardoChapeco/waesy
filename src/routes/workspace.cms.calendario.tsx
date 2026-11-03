@@ -308,7 +308,7 @@ function CalendarioEditorialPage() {
  variant="outline"
  size="sm"
  onClick={() => handleMoveDay(post.id, -1)}
- className="size-11 sm:size-9 p-0 rounded-lg"
+ className="size-11 sm:size-9 p-0 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Voltar 1 dia"
  >
  <ChevronLeft className="size-3.5" />
@@ -318,7 +318,7 @@ function CalendarioEditorialPage() {
  variant="outline"
  size="sm"
  onClick={() => handleMoveDay(post.id, 1)}
- className="size-11 sm:size-9 p-0 rounded-lg"
+ className="size-11 sm:size-9 p-0 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Avançar 1 dia"
  >
  <ChevronRight className="size-3.5" />

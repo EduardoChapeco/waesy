@@ -152,7 +152,7 @@ function CollectionsMobileView({ filteredCollections, onUpdateStatus }: Collecti
 function CollectionsDesktopView({ filteredCollections, onUpdateStatus }: CollectionsViewProps) {
   return (
     <div className="rounded-lg overflow-hidden bg-card border border-border/40 shadow-2xs">
-      <div className="overflow-x-auto no-scrollbar">
+      <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40">
@@ -223,7 +223,7 @@ function CollectionsDesktopView({ filteredCollections, onUpdateStatus }: Collect
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="size-9 rounded-lg hover:bg-muted cursor-pointer"
+                        className="size-9 rounded-lg hover:bg-muted cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                         aria-label="Ações da coleção"
                       >
                         <MoreHorizontal className="size-4" />

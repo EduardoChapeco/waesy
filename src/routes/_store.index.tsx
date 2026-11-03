@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+// empty state verificado via HomeMobileNativeApp e HomeDesktopWebApp
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Tag,
@@ -35,6 +36,8 @@ import { getAllPublicConcursos, type RaffleDTO } from "@/services/invite.functio
 import { getUserSession } from "@/services/auth.functions";
 import { HomeMobileNativeApp } from "@/components/home/HomeMobileNativeApp";
 import { HomeDesktopWebApp } from "@/components/home/HomeDesktopWebApp";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
+import { resolveSurfacePageExperienceDocument } from "@/services/surface-cms.functions";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import {
   listPublicHomePageSections,
@@ -114,6 +117,7 @@ export const Route = createFileRoute("/_store/")({
         homeSections,
         showcasePosts,
         session,
+        surfaceExperience,
       ] = await Promise.all([
         listActiveBanners({ data: { placement: "home", city: filteredCity } }).catch(() => []),
         listActiveBanners({ data: { placement: "home_middle", city: filteredCity } }).catch(() => []),
@@ -131,6 +135,9 @@ export const Route = createFileRoute("/_store/")({
         listPublicHomePageSections({ data: { city: filteredCity } }).catch(() => []),
         getUnifiedShowcasePosts({ data: { limit: 12, city: filteredCity } }).catch(() => []),
         getUserSession().catch(() => null),
+        resolveSurfacePageExperienceDocument({ data: { surfaceSlug: "home", city: filteredCity } }).catch(
+          () => ({ mode: "canonical_cms" as const, documentId: null, document: null, liveData: null }),
+        ),
       ]);
 
       const directWorkspaceProducts = (workspaceListings || []).map((item: UnifiedListing) => {
@@ -178,6 +185,7 @@ export const Route = createFileRoute("/_store/")({
         homeSections: homeSections || [],
         showcasePosts: showcasePosts || [],
         session: session || null,
+        surfaceExperience: surfaceExperience || null,
         activeCity: filteredCity,
       };
     } catch (err) {
@@ -617,7 +625,56 @@ function CommunityMarketplaceView({ data }: { data: any }) {
         </p>
       </section>
 
-      {isCompact ? (
+      {data?.surfaceExperience?.mode === "omni_published" && data.surfaceExperience.document ? (
+        <OmniPageRenderer
+          document={data.surfaceExperience.document}
+          products={
+            data.surfaceExperience.liveData?.products?.length
+              ? data.surfaceExperience.liveData.products
+              : marketplaceProducts
+          }
+          stores={
+            data.surfaceExperience.liveData?.stores?.length
+              ? data.surfaceExperience.liveData.stores
+              : placesListings
+          }
+          banners={
+            data.surfaceExperience.liveData?.banners?.length
+              ? data.surfaceExperience.liveData.banners
+              : banners
+          }
+          newsArticles={
+            data.surfaceExperience.liveData?.newsArticles?.length
+              ? data.surfaceExperience.liveData.newsArticles
+              : newsArticles
+          }
+          events={
+            data.surfaceExperience.liveData?.events?.length
+              ? data.surfaceExperience.liveData.events
+              : events
+          }
+          jobs={
+            data.surfaceExperience.liveData?.jobs?.length
+              ? data.surfaceExperience.liveData.jobs
+              : jobs
+          }
+          classifieds={
+            data.surfaceExperience.liveData?.classifieds?.length
+              ? data.surfaceExperience.liveData.classifieds
+              : classifieds
+          }
+          hotpages={
+            data.surfaceExperience.liveData?.hotpages?.length
+              ? data.surfaceExperience.liveData.hotpages
+              : editorialHotpages
+          }
+          posts={
+            data.surfaceExperience.liveData?.posts?.length
+              ? data.surfaceExperience.liveData.posts
+              : feedPosts
+          }
+        />
+      ) : isCompact ? (
         <HomeMobileNativeApp {...sharedViewProps} />
       ) : (
         <HomeDesktopWebApp {...sharedViewProps} />

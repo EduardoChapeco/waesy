@@ -469,7 +469,7 @@ function BiolinkPage() {
 
  <div className="flex items-center gap-2 shrink-0">
  {block.badge && (
- <span className="px-2 py-1 rounded-md text-xs font-mono font-bold bg-amber-500 text-primary-foreground">
+ <span className="px-2 py-1 rounded-md text-xs font-mono font-bold bg-warning text-primary-foreground">
  {block.badge}
  </span>
  )}

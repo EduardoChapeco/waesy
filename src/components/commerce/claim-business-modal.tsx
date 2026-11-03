@@ -64,7 +64,7 @@ export function ClaimBusinessModal({
       <DialogContent className="sm:max-w-md rounded-lg bg-card border border-border/50">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+            <span className="p-2 rounded-lg bg-warning/10 text-warning-strong">
               <Building2 className="w-5 h-5" />
             </span>
             <DialogTitle className="text-base sm:text-lg font-bold">

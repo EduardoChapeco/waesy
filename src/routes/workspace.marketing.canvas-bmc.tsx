@@ -312,7 +312,7 @@ export function BusinessModelCanvasPage() {
               variant="secondary"
               size="sm"
               disabled={!newItemText[key]?.trim()}
-              className="h-8 w-8 p-0 flex-shrink-0"
+              className="h-8 w-8 p-0 flex-shrink-0 min-h-11 sm:min-h-0"
               title="Adicionar"
             >
               <Plus className="h-4 w-4" />

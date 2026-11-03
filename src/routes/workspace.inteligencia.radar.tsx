@@ -345,7 +345,7 @@ export function MarketRadarPage() {
                             <span
                               className={`text-xs font-medium px-2 py-1 rounded-md uppercase tracking-wider ${
                                 snap?.pricing_signals?.tier === "luxury"
-                                  ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                                  ? "bg-warning/10 text-warning-strong border border-warning/20"
                                   : snap?.pricing_signals?.tier === "premium"
                                   ? "bg-purple-500/10 text-purple-500 border border-purple-500/20"
                                   : "bg-blue-500/10 text-blue-500 border border-blue-500/20"
@@ -400,12 +400,12 @@ export function MarketRadarPage() {
                               : "Pendente"}
                           </p>
                           {selectedCompetitor.latest_snapshot?.analysis_status === "ai_generated_draft" && (
-                            <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                            <p className="mt-2 text-xs text-warning-strong ">
                               Rascunho de IA · baseado em uma captura pública · requer revisão · não comprova desempenho do concorrente.
                             </p>
                           )}
                           {selectedCompetitor.latest_snapshot?.analysis_status === "legacy_unverified" && (
-                            <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                            <p className="mt-2 text-xs text-warning-strong ">
                               Snapshot legado sem proveniência verificável; trate como não validado.
                             </p>
                           )}
@@ -495,7 +495,7 @@ export function MarketRadarPage() {
                                   key={idx}
                                   className="flex items-start gap-3 text-xs text-muted-foreground p-3 rounded-lg bg-card/40 border border-border/30"
                                 >
-                                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-1" />
+                                  <AlertCircle className="w-4 h-4 text-warning-strong shrink-0 mt-1" />
                                   <span>{w}</span>
                                 </div>
                               ))}
@@ -660,14 +660,14 @@ export function MarketRadarPage() {
                       </ul>
                     </div>
 
-                    <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
+                    <div className="p-4 rounded-lg bg-warning/5 border border-warning/20 space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-warning-strong  block">
                         Fraquezas (Weaknesses)
                       </span>
                       <ul className="space-y-2 text-xs text-foreground">
                         {brandDna.swot_analysis.weaknesses.map((w, idx) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <span className="text-amber-500 font-bold">•</span>
+                            <span className="text-warning-strong font-bold">•</span>
                             <span>{w}</span>
                           </li>
                         ))}

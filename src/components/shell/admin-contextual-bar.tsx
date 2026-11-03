@@ -67,7 +67,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
     setOpeningOmni(true);
     try {
       const res = await openOrCreatePageExperienceDocument({
-        data: { pageSlug: activeNiche.id, citySlug: null },
+        data: { pageSlug: activeNiche.id, pageTitle: activeNiche.label },
       });
       if (res?.documentId) {
         navigate({

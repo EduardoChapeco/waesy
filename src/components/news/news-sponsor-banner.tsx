@@ -104,7 +104,7 @@ export function NewsSponsorBanner({
           <span>Conteúdo Patrocinado</span>
         </div>
         {sponsor.tier === "gold" && (
-          <span className="px-2 py-1 rounded-full text-3xs font-black uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+          <span className="px-2 py-1 rounded-full text-3xs font-black uppercase tracking-wider bg-warning/15 text-warning-strong  border border-warning/30">
              Patrocinador Master
           </span>
         )}

@@ -197,7 +197,7 @@ function TimeBox({
  <div className="flex flex-col items-center">
  <div
  className={cn(
- "w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center text-xl sm:text-3xl font-mono font-black shadow-sm transition-colors duration-200",
+ "w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center text-xl sm:text-3xl font-mono font-black  transition-colors duration-200",
  radiusClass
  )}
  style={{

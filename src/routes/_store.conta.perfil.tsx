@@ -522,7 +522,7 @@ function ProfileCivilPage() {
       {/* ── 3. Formulário de Perfil Civil com 4 Abas ── */}
       <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="flex items-center overflow-x-auto no-scrollbar pb-1">
+          <div className="flex items-center overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
             <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap">
               <TabsTrigger
                 value="dados"
@@ -720,7 +720,7 @@ function ProfileCivilPage() {
                         handleStatus.available
                           ? "text-emerald-600 dark:text-emerald-400"
                           : handleStatus.isQuarantined
-                          ? "text-amber-600 dark:text-amber-400"
+                          ? "text-warning-strong "
                           : "text-rose-600 dark:text-rose-400",
                       )}
                     >
@@ -907,7 +907,7 @@ function ProfileCivilPage() {
                   <span
                     className={cn(
                       "text-2xs font-mono",
-                      formData.bio.length > 280 ? "text-amber-500 font-bold" : "text-muted-foreground"
+                      formData.bio.length > 280 ? "text-warning-strong font-bold" : "text-muted-foreground"
                     )}
                   >
                     {formData.bio.length}/280
@@ -918,7 +918,7 @@ function ProfileCivilPage() {
                   maxLength={280}
                   onChange={(e) => set("bio", e.target.value)}
                   placeholder="Apresente-se à comunidade civil..."
-                  className="rounded-lg text-base sm:text-xs min-h-[80px] resize-none bg-background"
+                  className="rounded-lg text-base sm:text-xs min-h-20 resize-none bg-background"
                 />
               </div>
             </div>
@@ -1122,7 +1122,7 @@ function ProfileCivilPage() {
                           asChild
                           variant="ghost"
                           size="sm"
-                          className="size-9 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                          className="size-9 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                         >
                           <a href={link.url} target="_blank" rel="noopener noreferrer" title="Testar Link">
                             <ExternalLink className="size-3.5" />
@@ -1133,7 +1133,7 @@ function ProfileCivilPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveBiolink(link.id)}
-                          className="size-9 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                          className="size-9 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           title="Remover Link"
                         >
                           <Trash2 className="size-3.5" />
@@ -1215,7 +1215,7 @@ function ProfileCivilPage() {
                       {biolinks.filter((b) => !!b.imageUrl).map((link, idx) => (
                         <div
                           key={link.id || idx}
-                          className="block w-full aspect-[3/1] rounded-lg overflow-hidden border border-border/60 relative select-none"
+                          className="block w-full aspect-3/1 rounded-lg overflow-hidden border border-border/60 relative select-none"
                         >
                           <img
                             src={link.imageUrl}
@@ -1235,7 +1235,7 @@ function ProfileCivilPage() {
 
                   {/* Botões Minimalistas */}
                   {biolinks.some((b) => !b.imageUrl) && (
-                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full sm:flex-wrap">
+                    <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar py-1 max-w-full sm:flex-wrap">
                       {biolinks.filter((b) => !b.imageUrl).map((link, idx) => (
                         <div
                           key={link.id || idx}
@@ -1251,7 +1251,7 @@ function ProfileCivilPage() {
                   {/* Mini-Banner de Destaque na Prévia */}
                   {formData.featuredBannerUrl && (
                     <div className="pt-2 max-w-56 sm:max-w-64">
-                      <div className="block w-full aspect-[3/1] rounded-lg overflow-hidden border border-border/60 relative select-none">
+                      <div className="block w-full aspect-3/1 rounded-lg overflow-hidden border border-border/60 relative select-none">
                         <img
                           src={formData.featuredBannerUrl}
                           alt="Destaque"
@@ -1295,7 +1295,7 @@ function ProfileCivilPage() {
                       className="text-xs font-bold text-foreground flex items-center gap-2 cursor-pointer"
                     >
                       {formData.isAnonymous ? (
-                        <EyeOff className="size-3.5 text-amber-500" />
+                        <EyeOff className="size-3.5 text-warning-strong" />
                       ) : (
                         <Eye className="size-3.5 text-primary" />
                       )}
@@ -1385,7 +1385,7 @@ function ProfileCivilPage() {
                       type="button"
                       variant="destructive"
                       size="sm"
-                      className="rounded-lg text-xs font-bold gap-2 h-10 px-4 cursor-pointer"
+                      className="rounded-lg text-xs font-bold gap-2 h-10 px-4 cursor-pointer min-h-11 sm:min-h-0"
                     >
                       <Trash2 className="size-3.5" />
                       <span>Solicitar Exclusão da Conta</span>
@@ -1451,7 +1451,7 @@ function ProfileCivilPage() {
               </>
             ) : (
               <>
-                <Check className="size-4 stroke-[2.5]" />
+                <Check className="size-4 stroke-bold" />
                 <span>Salvar Perfil</span>
               </>
             )}
@@ -1473,7 +1473,7 @@ function ProfileCivilPage() {
               </>
             ) : (
               <>
-                <Check className="size-4 stroke-[2.5]" />
+                <Check className="size-4 stroke-bold" />
                 <span>Salvar Perfil</span>
               </>
             )}

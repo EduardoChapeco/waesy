@@ -26,6 +26,9 @@ function isPlatformAdminUser(session: any): boolean {
 }
 
 export const Route = createFileRoute("/workspace")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    storeId: typeof search.storeId === "string" ? search.storeId : undefined,
+  }),
  beforeLoad: async () => {
  let session: any = null;
  try {
@@ -153,6 +156,7 @@ function WorkspaceErrorComponent({ error, reset }: { error: unknown; reset: () =
 
 function WorkspaceLayout() {
  const loaderData = Route.useLoaderData() as any;
+ const search = (Route.useSearch?.() as { storeId?: string }) || {};
  const session = loaderData?.session;
  const onboardingData = loaderData?.onboardingData;
  const routerState = useRouterState();
@@ -167,10 +171,10 @@ function WorkspaceLayout() {
 
   const memberships = (session?.memberships as any[]) || [];
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-  const queryStoreId = searchParams.get("storeId");
+  const queryStoreId = search?.storeId || searchParams.get("storeId");
   const isQueryStoreValid = queryStoreId && (isPlatformAdmin || memberships.some((m: any) => m.store_id === queryStoreId));
   const existingCookieTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
-  const isExistingTenantValid = existingCookieTenant && memberships.some((m: any) => m.store_id === existingCookieTenant);
+  const isExistingTenantValid = existingCookieTenant && (isPlatformAdmin || memberships.some((m: any) => m.store_id === existingCookieTenant));
 
   const activeStoreId =
     (isQueryStoreValid ? queryStoreId : null) ||

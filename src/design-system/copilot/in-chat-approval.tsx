@@ -65,7 +65,7 @@ export function InChatApproval({
             type="button"
             onClick={onReject}
             disabled={isLoading}
-            className="min-h-10 px-4 py-2 rounded-lg border border-border/80 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+            className="min-h-10 px-4 py-2 rounded-lg border border-border/80 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-0"
           >
             Recusar
           </button>
@@ -73,7 +73,7 @@ export function InChatApproval({
             type="button"
             onClick={onApprove}
             disabled={isLoading}
-            className="min-h-10 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+            className="min-h-10 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-0"
           >
             Aprovar
           </button>

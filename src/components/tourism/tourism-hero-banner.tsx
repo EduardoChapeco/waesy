@@ -92,7 +92,7 @@ export function TourismHeroBanner({
 
       {/* ── Widget Flutuante de Pontos & Fidelidade (Estilo iFood / Decolar) ── */}
       <div className="relative z-10 px-4 sm:px-8 pb-6">
-        <div className="w-full max-w-xl mx-auto sm:mx-0 rounded-xl bg-card/95 backdrop-blur-md border border-border/80 p-4 sm:p-5 shadow-lg space-y-4">
+        <div className="w-full max-w-xl mx-auto sm:mx-0 rounded-xl bg-card/95 backdrop-blur-md border border-border/80 p-4 sm:p-5  space-y-4">
           <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3">
             <div className="flex items-center gap-2">
               <div className="size-8 rounded-lg bg-red-500/10 text-red-600 flex items-center justify-center shrink-0">
@@ -161,7 +161,7 @@ export function TourismHeroBanner({
             <Button
               type="button"
               onClick={() => onOpenQuote?.()}
-              className="w-full h-11 min-h-11 rounded-lg bg-red-600 hover:bg-red-700 text-primary-foreground font-bold text-xs sm:text-sm shadow-sm transition-transform active:scale-98 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring gap-2"
+              className="w-full h-11 min-h-11 rounded-lg bg-red-600 hover:bg-red-700 text-primary-foreground font-bold text-xs sm:text-sm  transition-transform active:scale-98 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring gap-2"
             >
               <Sparkle size={16} weight="fill" />
               <span>Ganhe 250 pontos grátis na primeira reserva</span>

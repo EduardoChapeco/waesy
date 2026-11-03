@@ -407,7 +407,7 @@ export default function AgencyQuotesPage() {
           <div className="tab-list flex gap-4 overflow-x-auto pb-4 min-h-96 no-scrollbar">
             {[
               { id: "new", title: "Novas Solicitações", icon: Clock, borderClass: "border-t-primary", textClass: "text-primary" },
-              { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, borderClass: "border-t-amber-500", textClass: "text-amber-500" },
+              { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, borderClass: "border-t-warning", textClass: "text-warning-strong" },
               { id: "quoted", title: "Proposta Enviada", icon: FileText, borderClass: "border-t-purple-500", textClass: "text-purple-500" },
               { id: "won", title: "Fechadas / Ganhas", icon: CheckCircle, borderClass: "border-t-emerald-500", textClass: "text-emerald-500" },
               { id: "lost", title: "Perdidas", icon: Trash, borderClass: "border-t-destructive", textClass: "text-destructive" },
@@ -593,7 +593,7 @@ export default function AgencyQuotesPage() {
  : q.status === "quoted"
  ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-800"
  : q.status === "analyzing"
- ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+ ? "bg-warning/10 text-warning-strong   border-warning/30 "
  : q.status === "lost"
  ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800"
  : "bg-muted text-muted-foreground";
@@ -1173,7 +1173,7 @@ export default function AgencyQuotesPage() {
  label: "Somente Hotel / Resort",
  value: (quotes || []).filter((q: any) => q.trip_type === "hotel_only").length,
  total: Math.max((quotes || []).length, 1),
- color: "bg-amber-500",
+ color: "bg-warning",
  },
  {
  label: "Cruzeiro Marítimo",

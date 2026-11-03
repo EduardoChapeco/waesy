@@ -150,7 +150,7 @@ function OfertasPage() {
         />
         <nav
           aria-label="Filtrar ofertas por categoria"
-          className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 px-4 sm:px-0 py-2 pr-12"
+          className="flex items-center overflow-x-auto scroll-area-carousel snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 px-4 sm:px-0 py-2 pr-12"
         >
           {NICHE_CHIPS.map((chip) => (
             <button
@@ -216,7 +216,7 @@ function OfertasPage() {
               </div>
 
               {/* Rail de Ofertas */}
-              <div className="flex items-start gap-3 overflow-x-auto no-scrollbar pb-2">
+              <div className="flex items-start gap-3 overflow-x-auto scroll-area-carousel no-scrollbar pb-2">
                 {section.items.map((offer) => (
                   <div key={offer.id} className="min-w-40 sm:min-w-45 shrink-0">
                     <OfferCard
@@ -240,7 +240,7 @@ function OfertasPage() {
 
               {/* Lojas do nicho (compactas) */}
               {section.stores.length > 0 && (
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 pt-1">
+                <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 pt-1">
                   {section.stores.map((store) => (
                     <Link
                       key={store.id}

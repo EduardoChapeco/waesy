@@ -99,14 +99,14 @@ export function QuickModuleConfigDrawer({
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Disponibilidade Imediata
               </Label>
-              <Badge variant="outline" className={isPaused ? "bg-amber-500/10 text-amber-600 border-amber-500/30" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"}>
+              <Badge variant="outline" className={isPaused ? "bg-warning/10 text-warning-strong border-warning/30" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"}>
                 {isPaused ? "Pausado" : "Aberto"}
               </Badge>
             </div>
 
             <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className={`size-10 rounded-lg flex items-center justify-center ${isPaused ? "bg-amber-500/10 text-amber-600" : "bg-emerald-500/10 text-emerald-600"}`}>
+                <div className={`size-10 rounded-lg flex items-center justify-center ${isPaused ? "bg-warning/10 text-warning-strong" : "bg-emerald-500/10 text-emerald-600"}`}>
                   <Power className="size-5" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -123,7 +123,7 @@ export function QuickModuleConfigDrawer({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full h-10 rounded-lg font-medium border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+                  className="w-full h-10 rounded-lg font-medium border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 min-h-11 sm:min-h-0"
                   onClick={() => handleToggleEmergencyPause(null)}
                   disabled={isSaving}
                 >
@@ -135,7 +135,7 @@ export function QuickModuleConfigDrawer({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-10 rounded-lg text-xs font-medium"
+                    className="h-10 rounded-lg text-xs font-medium min-h-11 sm:min-h-0"
                     onClick={() => handleToggleEmergencyPause(30)}
                     disabled={isSaving}
                   >
@@ -145,7 +145,7 @@ export function QuickModuleConfigDrawer({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-10 rounded-lg text-xs font-medium"
+                    className="h-10 rounded-lg text-xs font-medium min-h-11 sm:min-h-0"
                     onClick={() => handleToggleEmergencyPause(60)}
                     disabled={isSaving}
                   >
@@ -246,7 +246,7 @@ export function QuickModuleConfigDrawer({
               asChild
               variant="ghost"
               size="sm"
-              className="w-full h-10 rounded-lg justify-between text-xs text-muted-foreground hover:text-foreground"
+              className="w-full h-10 rounded-lg justify-between text-xs text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
             >
               <Link to="/workspace/configuracoes">
                 <span>Painel Completo de Configurações</span>

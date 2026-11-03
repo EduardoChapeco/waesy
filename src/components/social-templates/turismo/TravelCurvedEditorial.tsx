@@ -30,15 +30,15 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
       className={`relative bg-[#FAF9F5] text-slate-900 overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
     >
       {/* Bloco Superior: Imagem com Curvatura Orgânica (62% da Altura) */}
-      <div className="relative w-full h-[62%] rounded-b-[72px] overflow-hidden shadow-2xl bg-slate-900">
+      <div className="relative w-full h-31/50 rounded-b-[72px] overflow-hidden  bg-slate-900">
         <img
           src={data.backgroundImageUrl}
           alt={data.title}
           crossOrigin={data.backgroundImageUrl?.startsWith("data:") ? undefined : "anonymous"}
           className="w-full h-full object-cover"
         />
-        {/* Gradiente sutil para legibilidade no topo */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/40" />
+        {/* Scrim sutil para legibilidade no topo */}
+        <div className="absolute inset-0 bg-foreground/45" />
 
         {/* Safe Zone Superior (Topo): Identidade da Agência & Selo */}
         <div className="absolute top-16 left-14 right-14 flex items-center justify-between z-10">
@@ -51,7 +51,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
                 className="w-7 h-7 rounded-full object-cover"
               />
             ) : (
-              <Star className="w-5 h-5 text-amber-400" />
+              <Star className="w-5 h-5 text-warning-strong" />
             )}
             <span className="text-foreground text-lg font-semibold tracking-wide">
               {data.storeName || "Waesy Turismo"}
@@ -62,7 +62,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
           </div>
 
           {data.promoBadge && (
-            <div className="bg-amber-400 text-slate-950 text-base font-bold uppercase tracking-wider px-6 py-3 rounded-full shadow-lg">
+            <div className="bg-warning text-slate-950 text-base font-bold uppercase tracking-wider px-6 py-3 rounded-full ">
               {data.promoBadge}
             </div>
           )}
@@ -91,7 +91,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
           )}
 
           {/* Título Principal Editorial */}
-          <h1 className="text-4xl lg:text-[46px] font-black text-slate-950 leading-[1.1] tracking-tight line-clamp-2 mb-4">
+          <h1 className="text-4xl lg:text-[46px] font-black text-slate-950 leading-none tracking-tight line-clamp-2 mb-4">
             {data.title}
           </h1>
 
@@ -101,7 +101,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
               {data.highlights.slice(0, 3).map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-card border border-slate-200/80 shadow-sm px-4 py-2 rounded-lg text-slate-700 text-base font-medium"
+                  className="flex items-center gap-2 bg-card border border-slate-200/80  px-4 py-2 rounded-lg text-slate-700 text-base font-medium"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>{item}</span>
@@ -130,7 +130,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
           </div>
 
           {/* CTA Dinâmico com Ergonomia de Toque */}
-          <div className="bg-slate-950 hover:bg-slate-900 text-foreground px-8 py-5 rounded-lg shadow-xl flex items-center gap-3 transition-transform active:scale-95 shrink-0">
+          <div className="bg-slate-950 hover:bg-slate-900 text-foreground px-8 py-5 rounded-lg  flex items-center gap-3 transition-transform active:scale-95 shrink-0">
             <span className="text-xl font-bold tracking-wide">
               {data.ctaLabel || "Garantir Pacote"}
             </span>

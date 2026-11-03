@@ -112,14 +112,14 @@ export function CuratedHitsRailSection({
 
  {/* Badge de Ranking Numérico (#1, #2, #3) */}
  <div className="absolute top-2.5 left-2.5">
- <span className="size-7 rounded-full bg-foreground text-background font-bold text-xs flex items-center justify-center shadow-md font-mono">
+ <span className="size-7 rounded-full bg-foreground text-background font-bold text-xs flex items-center justify-center  font-mono">
  #{item.rank}
  </span>
  </div>
 
  {discount && (
  <div className="absolute top-2.5 right-2.5">
- <Badge className="bg-rose-500 text-foreground font-bold text-2xs shadow-sm">
+ <Badge className="bg-rose-500 text-foreground font-bold text-2xs ">
  -{discount}%
  </Badge>
  </div>
@@ -158,7 +158,7 @@ export function CuratedHitsRailSection({
  type="button"
  size="sm"
  onClick={() => onQuickAdd?.(item)}
- className="h-8 w-8 rounded-full p-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+ className="h-8 w-8 rounded-full p-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer min-h-11 sm:min-h-0"
  title="Adicionar à Sacola"
  >
  <Plus className="size-4" />

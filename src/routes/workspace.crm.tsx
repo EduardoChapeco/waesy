@@ -351,7 +351,7 @@ export default function WorkspaceCrmPage() {
         <Card className="p-4 rounded-lg bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">LTV Médio</span>
-            <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center">
               <DollarSign className="size-4" />
             </div>
           </div>

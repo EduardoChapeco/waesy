@@ -160,7 +160,7 @@ export function LoanSimulationSheet({
       <SheetContent
         side="bottom"
         className={cn(
-          "w-full max-w-lg mx-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 bg-card border-border/80 shadow-xl max-h-[92vh] overflow-y-auto no-scrollbar",
+          "w-full max-w-lg mx-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 bg-card border-border/80 shadow-overlay max-h-vh-92 overflow-y-auto no-scrollbar",
           className
         )}
       >
@@ -211,7 +211,7 @@ export function LoanSimulationSheet({
             </div>
 
             {/* Pílulas de Seleção Rápida */}
-            <div className="flex items-center justify-center gap-2 pt-1 overflow-x-auto no-scrollbar">
+            <div className="flex items-center justify-center gap-2 pt-1 overflow-x-auto scroll-area-carousel no-scrollbar">
               {QUICK_AMOUNTS.map((amt) => (
                 <button
                   key={amt}

@@ -154,7 +154,7 @@ export default function ReaccommodationPage() {
   const getPriorityBadge = (p: ReaccommodationPriority) => {
     switch (p) {
       case 'urgent': return 'bg-destructive/10 text-destructive border-destructive/20';
-      case 'high':   return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
+      case 'high':   return 'bg-warning/10 text-warning-strong border-warning/20';
       case 'normal': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
       default:       return 'bg-slate-500/10 text-slate-600 border-slate-500/20';
     }
@@ -171,7 +171,7 @@ export default function ReaccommodationPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <ShieldAlert className="size-5 text-amber-500" />
+            <ShieldAlert className="size-5 text-warning-strong" />
             Casos ANAC 400 e Reacomodação Aérea
           </h1>
           <p className="text-sm text-muted-foreground mt-1">

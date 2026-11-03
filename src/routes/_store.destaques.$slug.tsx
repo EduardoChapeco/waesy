@@ -46,8 +46,8 @@ const HOTPAGE_THEMES: Record<
  featuredRailTitle: "Promos com Turbo",
  },
  hits: {
- bgGradient: "bg-linear-to-b from-amber-500 via-orange-500 to-red-600",
- accentColor: "text-amber-600",
+ bgGradient: "bg-linear-to-b from-warning via-orange-500 to-red-600",
+ accentColor: "text-warning-strong",
  badgeBg: "bg-card text-warning",
  icon: Flame,
  defaultBadge: " hits",
@@ -56,9 +56,9 @@ const HOTPAGE_THEMES: Record<
  featuredRailTitle: "Top 10 Mais Pedidos",
  },
  ofertas: {
- bgGradient: "bg-linear-to-b from-red-600 via-rose-600 to-amber-600",
+ bgGradient: "bg-linear-to-b from-red-600 via-rose-600 to-warning",
  accentColor: "text-destructive",
- badgeBg: "bg-amber-400 text-foreground",
+ badgeBg: "bg-warning text-foreground",
  icon: Flame,
  defaultBadge: "️ Oferta Relâmpago",
  heroPills: ["️ até 50% OFF", "⏳ por tempo limitado", " entrega expressa"],
@@ -76,9 +76,9 @@ const HOTPAGE_THEMES: Record<
  featuredRailTitle: "Restaurantes com Entrega Grátis",
  },
  gastronomia: {
- bgGradient: "bg-linear-to-b from-amber-600 via-orange-600 to-red-600",
- accentColor: "text-amber-600",
- badgeBg: "bg-card text-amber-700",
+ bgGradient: "bg-linear-to-b from-warning via-orange-600 to-red-600",
+ accentColor: "text-warning-strong",
+ badgeBg: "bg-card text-warning-strong",
  icon: Flame,
  defaultBadge: " Sabor Local",
  heroPills: [" pizzas & burgers", " opções saudáveis", " doces & cafés"],
@@ -453,7 +453,7 @@ function DedicatedHotpageView() {
       <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-0 sm:px-4 md:px-0 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
  
         {/* ── 2.1. Sub-abas de Navegação por Nicho (Padrão Botão Grande) ── */}
-        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
+        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-area-carousel sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
           {activeChips.map((chip) => {
             const Icon = chip.icon;
             const isSelected = selectedSubCategory === chip.id;
@@ -492,7 +492,7 @@ function DedicatedHotpageView() {
  />
  </div>
 
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar">
  <button
  type="button"
  onClick={() => setSelectedFastFilter(selectedFastFilter === "desconto" ? null : "desconto")}
@@ -500,7 +500,7 @@ function DedicatedHotpageView() {
  selectedFastFilter === "desconto"
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-card border-border text-muted-foreground hover:text-foreground"
- } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
  >
  <Percent size={13} weight="bold" />
  <span>Com Desconto</span>
@@ -551,7 +551,7 @@ function DedicatedHotpageView() {
 
  <HorizontalRail hideHeader={true} title="Lojas">
  {relatedStores.map((store: any) => (
- <div key={store.id} className="min-w-[220px] sm:min-w-[250px] max-w-65 shrink-0">
+ <div key={store.id} className="min-w-55 sm:min-w-63 max-w-65 shrink-0">
  <StoreCard
  id={store.id}
  name={store.name}
@@ -648,7 +648,7 @@ function DedicatedHotpageView() {
  size="icon"
  disabled={isAdding}
  onClick={() => handleQuickAdd(p)}
- className="size-9 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors duration-200 cursor-pointer"
+ className="size-9 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Adicionar à Sacola"
  >
  <Plus size={16} weight="bold" />

@@ -317,7 +317,7 @@ function WorkspaceSessionsAndAuditPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => setSelectedPayloadLog(log)}
-                          className="h-7 px-3 rounded-lg text-xs gap-1 cursor-pointer"
+                          className="h-7 px-3 rounded-lg text-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
                         >
                           <Eye className="size-3" />
                           <span>Detalhes</span>
@@ -400,7 +400,7 @@ function WorkspaceSessionsAndAuditPage() {
                         variant="ghost"
                         disabled={actionLoadingId === dev.id}
                         onClick={() => handleRevokeDevice(dev.id)}
-                        className="h-7 text-xs text-destructive hover:bg-destructive/10 rounded-lg justify-start px-2 cursor-pointer mt-1"
+                        className="h-7 text-xs text-destructive hover:bg-destructive/10 rounded-lg justify-start px-2 cursor-pointer mt-1 min-h-11 sm:min-h-0"
                       >
                         <Trash2 className="size-3 mr-1" />
                         <span>Desconectar Sessão</span>
@@ -437,7 +437,7 @@ function WorkspaceSessionsAndAuditPage() {
                           className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
                             log.event_type === "login_success"
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                              : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                              : "bg-warning/10 text-warning-strong "
                           }`}
                         >
                           {log.event_type === "login_success" ? (
@@ -512,7 +512,7 @@ function WorkspaceSessionsAndAuditPage() {
                 </Badge>
               </div>
 
-              <div className="bg-muted/40 p-3 rounded-lg border border-border/60 overflow-x-auto max-h-80">
+              <div className="bg-muted/40 p-3 rounded-lg border border-border/60 overflow-x-auto scroll-area-carousel max-h-80">
                 <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap">
                   {JSON.stringify(selectedPayloadLog.payload_snapshot, null, 2)}
                 </pre>

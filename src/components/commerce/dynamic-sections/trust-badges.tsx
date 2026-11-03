@@ -69,7 +69,7 @@ export function TrustBadges({ content, design_tokens }: TrustBadgesProps) {
  {getIcon(badge.icon)}
  </div>
  <div>
- <h4 className="font-bold text-[15px] tracking-tight text-foreground">{badge.title}</h4>
+ <h4 className="font-bold text-base tracking-tight text-foreground">{badge.title}</h4>
  {(badge.description || badge.subtitle) && (
  <p className="text-xs leading-relaxed text-muted-foreground mt-2">
  {badge.description || badge.subtitle}

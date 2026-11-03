@@ -29,10 +29,10 @@ const ENTITY_TYPE_META: Record<string, { label: string; icon: React.ElementType;
  appointment: { label: "Atendimento", icon: Calendar, color: "text-cyan-500" },
  contract_signature: { label: "Contrato", icon: FileSignature, color: "text-orange-500" },
  group_tour_boarding: { label: "Embarque", icon: MapPin, color: "text-pink-500" },
- delivery_pin_generation: { label: "PIN Entrega", icon: Package, color: "text-amber-500" },
+ delivery_pin_generation: { label: "PIN Entrega", icon: Package, color: "text-warning-strong" },
  delivery_confirmation: { label: "Entrega", icon: CheckCircle2, color: "text-green-500" },
  credit_redemption: { label: "Crédito", icon: CreditCard, color: "text-emerald-500" },
- coupon_application: { label: "Cupom", icon: CreditCard, color: "text-yellow-500" },
+ coupon_application: { label: "Cupom", icon: CreditCard, color: "text-warning-strong" },
  gift_card_redemption: { label: "Gift Card", icon: CreditCard, color: "text-rose-500" },
  token_transfer: { label: "Tokens", icon: Cpu, color: "text-purple-500" },
  kyc_verification: { label: "KYC", icon: Shield, color: "text-indigo-500" },
@@ -42,7 +42,7 @@ function getRiskBadge(score: number, flagged: boolean) {
  if (flagged || score >= 70)
  return { label: "Alto Risco", variant: "destructive" as const, color: "bg-destructive/10 text-destructive border-destructive/20" };
  if (score >= 40)
- return { label: "Médio", variant: "secondary" as const, color: "bg-amber-500/10 text-amber-500 border-amber-500/20" };
+ return { label: "Médio", variant: "secondary" as const, color: "bg-warning/10 text-warning-strong border-warning/20" };
  return { label: "Normal", variant: "outline" as const, color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" };
 }
 
@@ -131,11 +131,11 @@ function TransactionCertificatesPage() {
  {[
  { label: "Total (carregados)", value: certs.length, icon: Shield, color: "text-primary" },
  { label: "Sinalizados auto", value: flaggedCount, icon: ShieldAlert, color: "text-destructive" },
- { label: "Alto risco (≥70)", value: highRiskCount, icon: AlertTriangle, color: "text-amber-500" },
+ { label: "Alto risco (≥70)", value: highRiskCount, icon: AlertTriangle, color: "text-warning-strong" },
  { label: "Válidos", value: certs.filter((c: any) => c.is_valid).length, icon: ShieldCheck, color: "text-green-500" },
  ].map((kpi) => (
  <div key={kpi.label} className="bg-card border border-border/50 rounded-lg p-4">
- <div className={cn("size-8 rounded-lg flex items-center justify-center mb-3", kpi.color === "text-primary" ? "bg-primary/10" : kpi.color === "text-destructive" ? "bg-destructive/10" : kpi.color === "text-amber-500" ? "bg-amber-500/10" : "bg-emerald-500/10")}>
+ <div className={cn("size-8 rounded-lg flex items-center justify-center mb-3", kpi.color === "text-primary" ? "bg-primary/10" : kpi.color === "text-destructive" ? "bg-destructive/10" : kpi.color === "text-warning-strong" ? "bg-warning/10" : "bg-emerald-500/10")}>
  <kpi.icon className={cn("size-4", kpi.color)} />
  </div>
  <div className="text-xl font-bold font-mono">{kpi.value}</div>
@@ -172,7 +172,7 @@ function TransactionCertificatesPage() {
  <Button
  variant={flaggedOnly ? "default" : "outline"}
  size="sm"
- className="text-xs gap-2 h-8"
+ className="text-xs gap-2 h-8 min-h-11 sm:min-h-0"
  onClick={() => setFlaggedOnly(!flaggedOnly)}
  id="cert-flagged-filter"
  >
@@ -183,7 +183,7 @@ function TransactionCertificatesPage() {
 
  {/* Table */}
  <div className="rounded-lg border border-border/50 overflow-hidden bg-card">
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <table className="w-full text-sm">
  <thead>
  <tr className="border-b border-border/50 bg-muted/30">
@@ -284,7 +284,7 @@ function TransactionCertificatesPage() {
  <Link
  to="/admin-master/seguranca/certificados/$id"
  params={{ id: cert.id }}
- className="size-7 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+ className="size-7 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  id={`view-cert-${cert.id}`}
  >
  <ExternalLink className="size-3.5 text-muted-foreground" />

@@ -189,12 +189,12 @@ export function UnifiedFeedCard({
         <>
           <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
             onClick={() => onPreviewMedia?.(primaryMedia)}
-            className="w-full max-h-[520px] bg-muted/20 overflow-hidden cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full max-h-130 bg-muted/20 overflow-hidden cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <img
               src={primaryMedia}
               alt={textContent ? textContent.slice(0, 60) : "Imagem da publicação"}
-              className="w-full h-auto max-h-[560px] object-contain sm:object-cover mx-auto"
+              className="w-full h-auto max-h-140 object-contain sm:object-cover mx-auto"
               loading="lazy"
             />
           </div>
@@ -208,7 +208,7 @@ export function UnifiedFeedCard({
         </>
       ) : (
         <div className="py-1">
-          <p className="text-sm sm:text-[15px] text-foreground font-medium leading-relaxed whitespace-pre-line tracking-tight">
+          <p className="text-sm sm:text-base text-foreground font-medium leading-relaxed whitespace-pre-line tracking-tight">
             {textContent}
           </p>
         </div>

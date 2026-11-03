@@ -114,7 +114,7 @@ export function CookieBanner() {
  <div className="flex shrink-0 gap-2 w-full sm:w-auto">
  <Button
  onClick={handleAccept}
- className="w-full sm:w-auto font-bold rounded-lg bg-primary text-primary-foreground text-xs h-9 px-5 hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200"
+ className="w-full sm:w-auto font-bold rounded-lg bg-primary text-primary-foreground text-xs h-9 px-5 hover:scale-102 active:scale-98 transition-transform duration-200 min-h-11 sm:min-h-0"
  >
  Entendi e Aceito
  </Button>

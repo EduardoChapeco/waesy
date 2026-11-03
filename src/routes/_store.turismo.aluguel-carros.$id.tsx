@@ -112,7 +112,7 @@ function CarRentalDetailPage() {
         </div>
 
         {/* Hero Card do Veículo */}
-        <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm space-y-6">
+        <div className="rounded-2xl border border-border/70 bg-card p-6  space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -163,7 +163,7 @@ function CarRentalDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <Label className="text-xs font-bold text-muted-foreground block mb-1">Duração da Reserva</Label>
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
                   {[1, 3, 5, 7].map((d) => (
                     <button
                       key={d}
@@ -183,7 +183,7 @@ function CarRentalDetailPage() {
 
               <div>
                 <Label className="text-xs font-bold text-muted-foreground block mb-1">Forma de Liquidação</Label>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setPaymentPreference("pay_at_pickup")}
@@ -255,11 +255,11 @@ function CarRentalDetailPage() {
 
             {/* Vantagens Inclusas */}
             <div className="p-3 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between flex-wrap gap-2 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5 text-foreground font-semibold">
+              <span className="flex items-center gap-2 text-foreground font-semibold">
                 <CheckCircle className="size-4 text-emerald-500" />
                 Cancelamento gratuito até 24h antes da retirada
               </span>
-              <span className="flex items-center gap-1.5 text-foreground font-semibold">
+              <span className="flex items-center gap-2 text-foreground font-semibold">
                 <ShieldCheck className="size-4 text-primary" />
                 Proteção básica contra colisão e roubo
               </span>

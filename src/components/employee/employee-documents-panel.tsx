@@ -20,7 +20,7 @@ const CATEGORY_CONFIG: Record<
   all: { label: "Todos", icon: FileText, color: "text-foreground" },
   politica: { label: "Políticas", icon: Shield, color: "text-primary" },
   manual: { label: "Manuais", icon: BookOpen, color: "text-blue-500" },
-  procedimento: { label: "Procedimentos", icon: Settings, color: "text-amber-500" },
+  procedimento: { label: "Procedimentos", icon: Settings, color: "text-warning-strong" },
   formulario: { label: "Formulários", icon: FileText, color: "text-emerald-500" },
 };
 
@@ -99,9 +99,9 @@ export function EmployeeDocumentsPanel({
     <div className="space-y-6">
       {/* Required Docs Alert */}
       {requiredCount > 0 && (
-        <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="p-4 rounded-lg bg-warning/10 border border-warning/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-600">
+            <div className="p-2 rounded-lg bg-warning/20 text-warning-strong">
               <AlertCircle className="size-5" />
             </div>
             <div>
@@ -117,7 +117,7 @@ export function EmployeeDocumentsPanel({
             size="sm"
             variant="outline"
             onClick={() => setSelectedCategory("all")}
-            className="rounded-lg h-8 px-3 text-xs border-amber-500/30 text-amber-700 dark:text-amber-300 shrink-0"
+            className="rounded-lg h-8 px-3 text-xs border-warning/30 text-warning-strong  shrink-0 min-h-11 sm:min-h-0"
           >
             Visualizar Pendentes
           </Button>
@@ -136,7 +136,7 @@ export function EmployeeDocumentsPanel({
           />
         </div>
 
-        <div className="flex flex-wrap gap-1 bg-muted/60 p-1 rounded-lg border border-border/70 w-full sm:w-auto overflow-x-auto no-scrollbar">
+        <div className="flex flex-wrap gap-1 bg-muted/60 p-1 rounded-lg border border-border/70 w-full sm:w-auto overflow-x-auto scroll-area-carousel no-scrollbar">
           {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => {
             const Icon = cfg.icon;
             const active = selectedCategory === key;
@@ -146,7 +146,7 @@ export function EmployeeDocumentsPanel({
                 type="button"
                 onClick={() => setSelectedCategory(key)}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "min-h-9 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
+                  "min-h-9 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 flex items-center gap-2 cursor-pointer min-h-11 sm:min-h-0",
                   active
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
@@ -244,7 +244,7 @@ export function EmployeeDocumentsPanel({
                     variant={doc.has_read ? "outline" : "default"}
                     onClick={() => void handleAcknowledge(doc)}
                     disabled={readingDocId === doc.id}
-                    className="rounded-lg h-8 px-3 text-xs gap-2 cursor-pointer"
+                    className="rounded-lg h-8 px-3 text-xs gap-2 cursor-pointer min-h-11 sm:min-h-0"
                   >
                     {readingDocId === doc.id ? (
                       <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />

@@ -75,7 +75,7 @@ export function MotionStudioPropsPanel({
             placeholder="ex: mais rapido, verde, headline: ..."
             className="h-8 text-xs rounded-lg bg-background border-border/80"
           />
-          <Button type="submit" size="sm" variant="secondary" className="h-8 px-3 rounded-lg text-xs shrink-0">
+          <Button type="submit" size="sm" variant="secondary" className="h-8 px-3 rounded-lg text-xs shrink-0 min-h-11 sm:min-h-0">
             Aplicar
           </Button>
         </form>
@@ -127,7 +127,7 @@ export function MotionStudioPropsPanel({
                   value={(val as string) || ""}
                   onChange={(e) => onChangeValue(field.id, e.target.value)}
                   placeholder={field.placeholder}
-                  className="min-h-[72px] text-xs rounded-lg bg-background resize-none"
+                  className="min-h-18 text-xs rounded-lg bg-background resize-none"
                 />
               </div>
             );
@@ -264,7 +264,7 @@ export function MotionStudioPropsPanel({
                 className={`text-2xs p-2 rounded-lg border flex items-start gap-2 ${
                   issue.level === "error"
                     ? "bg-rose-500/10 border-rose-500/20 text-rose-600"
-                    : "bg-amber-500/10 border-amber-500/20 text-amber-600"
+                    : "bg-warning/10 border-warning/20 text-warning-strong"
                 }`}
               >
                 <span className="font-bold shrink-0">{issue.label}:</span>

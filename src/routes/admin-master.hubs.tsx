@@ -264,7 +264,7 @@ function AdminMasterHubsPage() {
 
       {/* ── 2. Filtro por Módulo & Busca ── */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 ">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 ">
           {MODULES.map((m) => (
             <button
               key={m.id}

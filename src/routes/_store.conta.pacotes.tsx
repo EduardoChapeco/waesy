@@ -229,7 +229,7 @@ function CustomerPassesPage() {
 
         <div className="p-3 sm:p-4 rounded-xl bg-card border border-border/60">
           <span className="text-xs text-muted-foreground font-semibold block">Aulas Reservadas</span>
-          <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
+          <div className="text-xl sm:text-2xl font-black text-warning-strong  mt-1">
             {kpis.reservedCreditsTotal}
           </div>
           <span className="text-xs text-muted-foreground block mt-1">Na grade futura</span>
@@ -245,7 +245,7 @@ function CustomerPassesPage() {
       </div>
 
       {/* ── 3. Segmented Tabs Filter (B.39 - Linha Única Horizontal) ── */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-2 sm:px-0">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar px-2 sm:px-0">
         {(["todos", "ativos", "esgotados", "expirados"] as const).map((tab) => (
           <button
             key={tab}
@@ -396,7 +396,7 @@ function CustomerPassesPage() {
                       </div>
                       <div className="p-2 rounded-md bg-card/60 border border-border/40">
                         <span className="text-muted-foreground block text-2xs uppercase font-bold">Reservadas</span>
-                        <span className="font-black text-amber-600 dark:text-amber-400 text-xs">
+                        <span className="font-black text-warning-strong  text-xs">
                           {pass.reserved_credits}
                         </span>
                       </div>

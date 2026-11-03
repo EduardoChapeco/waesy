@@ -165,7 +165,7 @@ function GrowthValuationDashboard() {
         <div className="flex items-center gap-3">
           <Button 
             onClick={() => setIsRecordModalOpen(true)} 
-            className="gap-2 h-10 px-4 font-medium shadow-xs"
+            className="gap-2 h-10 px-4 font-medium shadow-xs min-h-11 sm:min-h-0"
           >
             <Plus className="w-4 h-4" />
             Novo Lançamento Financeiro
@@ -213,7 +213,7 @@ function GrowthValuationDashboard() {
                   variant={selectedStageKey === t.period_key ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSelectedStageKey(t.period_key)}
-                  className="text-xs h-9"
+                  className="text-xs h-9 min-h-11 sm:min-h-0"
                 >
                   {t.target_stores} Lojas ({t.target_clients / 1000}k Clientes)
                 </Button>
@@ -284,7 +284,7 @@ function GrowthValuationDashboard() {
             <Card className="border-border/50 bg-card/40">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">GMV Acumulado</CardTitle>
-                <TrendingUp className="w-4 h-4 text-amber-500" />
+                <TrendingUp className="w-4 h-4 text-warning-strong" />
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-baseline justify-between">
@@ -360,7 +360,7 @@ function GrowthValuationDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scroll-area-carousel">
                 <table className="w-full text-sm text-left border-collapse">
                   <thead>
                     <tr className="border-b border-border/60 text-xs uppercase text-muted-foreground font-semibold">
@@ -479,7 +479,7 @@ function GrowthValuationDashboard() {
                 <CardTitle className="text-base font-bold">Lançamentos Financeiros Auditados</CardTitle>
                 <CardDescription>Rastreabilidade de custos operacionais e capital de giro.</CardDescription>
               </div>
-              <Button size="sm" onClick={() => setIsRecordModalOpen(true)} className="gap-1 h-8 text-xs">
+              <Button size="sm" onClick={() => setIsRecordModalOpen(true)} className="gap-1 h-8 text-xs min-h-11 sm:min-h-0">
                 <Plus className="w-3.5 h-3.5" /> Adicionar
               </Button>
             </CardHeader>
@@ -489,7 +489,7 @@ function GrowthValuationDashboard() {
                   Nenhum lançamento financeiro registrado ainda. Clique em "Novo Lançamento" para cadastrar aportes ou gastos reais.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto scroll-area-carousel">
                   <table className="w-full text-sm text-left">
                     <thead>
                       <tr className="border-b border-border/40 text-xs uppercase text-muted-foreground">
@@ -524,7 +524,7 @@ function GrowthValuationDashboard() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteRecord(r.id)}
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600"
+                              className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-600 min-h-11 sm:min-h-0"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>

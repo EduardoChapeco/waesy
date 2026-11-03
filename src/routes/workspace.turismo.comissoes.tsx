@@ -695,9 +695,9 @@ function TravelSalesFinancialCompositionPage() {
         <div className="p-4 rounded-2xl border border-foreground/15 bg-foreground text-background space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>4. A Receber das Operadoras</span>
-            <Clock className="size-4 text-amber-500" />
+            <Clock className="size-4 text-warning-strong" />
           </div>
-          <p className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+          <p className="text-xl font-black text-warning-strong  font-mono tabular-nums">
             {formatMoney(Math.max(0, totals.expectedReceipt - totals.received))}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">

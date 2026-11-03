@@ -143,15 +143,15 @@ function FiscalNFePage() {
           {!config?.api_token && (
             <Badge
               variant="outline"
-              className="border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 text-xs font-semibold gap-2 py-2 px-3 rounded-lg"
+              className="border-warning/40 text-warning-strong  bg-warning/10 text-xs font-semibold gap-2 py-2 px-3 rounded-lg"
               title="Configurar Provedor Fiscal"
             >
-              <AlertCircle className="size-3.5 text-amber-600" />
+              <AlertCircle className="size-3.5 text-warning-strong" />
               Certificado Digital A1 / Provedor Pendente
             </Badge>
           )}
           <Button
-            className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background"
+            className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background min-h-11 sm:min-h-0"
             onClick={() => setIssueModalOpen(true)}
           >
             <Plus className="size-4 mr-1" /> Emitir NF-e
@@ -208,7 +208,7 @@ function FiscalNFePage() {
           </div>
 
           {/* Filtro de Tipo de Documento */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 text-xs">
             <button
               type="button"
               onClick={() => setDocTypeFilter("all")}
@@ -260,7 +260,7 @@ function FiscalNFePage() {
               </p>
               <Button
                 variant="outline"
-                className="mt-4 h-9 rounded-lg text-xs font-medium"
+                className="mt-4 h-9 rounded-lg text-xs font-medium min-h-11 sm:min-h-0"
                 onClick={() => setActiveTab("config")}
               >
                 Configurar Dados Fiscais
@@ -268,7 +268,7 @@ function FiscalNFePage() {
             </div>
           ) : (
             <div className="rounded-lg border border-border/70 overflow-hidden bg-card">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scroll-area-carousel">
                 <table className="w-full text-xs text-left">
                   <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-medium">
                     <tr>
@@ -495,7 +495,7 @@ function FiscalNFePage() {
                   Permita que seu contador acesse a DRE, notas e extratos diretamente pelo portal contábil.
                 </p>
               </div>
-              <Button asChild size="sm" variant="outline" className="rounded-lg h-8 text-xs font-semibold">
+              <Button asChild size="sm" variant="outline" className="rounded-lg h-8 text-xs font-semibold min-h-11 sm:min-h-0">
                 <Link to="/workspace/contador">
                   Abrir Portal do Contador
                 </Link>
@@ -516,7 +516,7 @@ function FiscalNFePage() {
 
           <div className="pt-4 flex justify-end">
             <Button
-              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background"
+              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background min-h-11 sm:min-h-0"
               onClick={handleSaveConfig}
               disabled={saveConfigMutation.isPending}
             >
@@ -650,13 +650,13 @@ function FiscalNFePage() {
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
             <Button
               variant="outline"
-              className="h-10 rounded-lg text-xs"
+              className="h-10 rounded-lg text-xs min-h-11 sm:min-h-0"
               onClick={() => setIssueModalOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background"
+              className="h-10 rounded-lg text-xs font-semibold bg-foreground text-background min-h-11 sm:min-h-0"
               onClick={handleEmit}
               disabled={emitInvoiceMutation.isPending}
             >

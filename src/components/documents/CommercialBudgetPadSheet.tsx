@@ -635,7 +635,7 @@ export function CommercialBudgetPadSheet({
                   </div>
 
                   {/* design-lint-ignore DL-30 reason:"Tabela horizontal do bloco de orcamento responsiva" expiry:"2030-01-01" */}
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto scroll-area-carousel">
                     <table className="w-full text-xs">
                       <thead className="bg-muted/20 text-muted-foreground border-b border-border/70">
                         <tr>

@@ -218,7 +218,7 @@ export function KanbanColumnCustomizerModal({
                     size="icon"
                     disabled={idx === 0}
                     onClick={() => handleMove(idx, "up")}
-                    className="size-7 rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="size-7 rounded-md text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     title="Mover para a esquerda"
                   >
                     <ArrowUp className="size-3.5" />
@@ -229,7 +229,7 @@ export function KanbanColumnCustomizerModal({
                     size="icon"
                     disabled={idx === stages.length - 1}
                     onClick={() => handleMove(idx, "down")}
-                    className="size-7 rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="size-7 rounded-md text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     title="Mover para a direita"
                   >
                     <ArrowDown className="size-3.5" />
@@ -243,7 +243,7 @@ export function KanbanColumnCustomizerModal({
                   size="icon"
                   onClick={() => handleToggleVisible(idx)}
                   className={cn(
-                    "size-7 rounded-md cursor-pointer",
+                    "size-7 rounded-md cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                     stage.is_visible
                       ? "text-muted-foreground hover:text-foreground"
                       : "text-rose-500 hover:text-rose-600"

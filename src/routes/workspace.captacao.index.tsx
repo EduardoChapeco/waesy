@@ -65,9 +65,9 @@ function WorkspaceCaptacaoHubPage() {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <Button asChild variant="outline" size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-semibold">
+          <Button asChild variant="outline" size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-semibold min-h-11 sm:min-h-0">
             <Link to="/workspace/captacao/ndas">
-              <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
+              <Lock className="size-3.5 text-warning-strong " />
               <span>Ver NDAs Assinados</span>
               <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0 h-4">
                 {ndas.length}
@@ -75,7 +75,7 @@ function WorkspaceCaptacaoHubPage() {
             </Link>
           </Button>
 
-          <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs">
+          <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs min-h-11 sm:min-h-0">
             <Link to="/conta/classificados/novo" search={{ tipo: "negocio" }}>
               <Plus className="size-3.5" />
               <span>Novo Anúncio de Negócio</span>
@@ -111,7 +111,7 @@ function WorkspaceCaptacaoHubPage() {
         <div className="bg-card rounded-lg border border-border/70 p-4 sm:p-5 flex flex-col justify-between space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">NDAs Assinados</span>
-            <Lock className="size-4 text-amber-500" />
+            <Lock className="size-4 text-warning-strong" />
           </div>
           <strong className="text-base sm:text-xl font-bold font-mono text-foreground">
             {ndas.length}
@@ -154,7 +154,7 @@ function WorkspaceCaptacaoHubPage() {
                 Publique sua empresa, franquia ou ponto comercial com proteção de sigilo por termo NDA e conecte-se a investidores qualificados.
               </p>
             </div>
-            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold">
+            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold min-h-11 sm:min-h-0">
               <Link to="/conta/classificados/novo" search={{ tipo: "negocio" }}>
                 <Plus className="size-3.5 mr-2" />
                 <span>Anunciar Empresa / Ponto</span>
@@ -189,7 +189,7 @@ function WorkspaceCaptacaoHubPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-bold text-sm text-foreground truncate">{item.title}</span>
                         {requiresNda && (
-                          <Badge variant="outline" className="text-xs font-medium border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-500/10">
+                          <Badge variant="outline" className="text-xs font-medium border-warning/30 text-warning-strong  bg-warning/10">
                             <Lock className="size-2.5 mr-1" />
                             NDA Ativo
                           </Badge>
@@ -234,14 +234,14 @@ function WorkspaceCaptacaoHubPage() {
 
                   {/* Ações Rápidas */}
                   <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-medium">
+                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-medium min-h-11 sm:min-h-0">
                       <Link to="/workspace/captacao/ndas">
-                        <Users className="size-3.5 mr-2 text-amber-600 dark:text-amber-400" />
+                        <Users className="size-3.5 mr-2 text-warning-strong " />
                         <span>Ver Assinaturas</span>
                       </Link>
                     </Button>
 
-                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-medium">
+                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-lg text-xs font-medium min-h-11 sm:min-h-0">
                       <Link to="/classificados/$id" params={{ id: item.id }}>
                         <Eye className="size-3.5 mr-2" />
                         <span>Vitrine</span>
@@ -249,7 +249,7 @@ function WorkspaceCaptacaoHubPage() {
                       </Link>
                     </Button>
 
-                    <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-medium">
+                    <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-medium min-h-11 sm:min-h-0">
                       <Link to="/conta/classificados/novo" search={{ tipo: "negocio", editId: item.id }}>
                         <span>Editar</span>
                       </Link>

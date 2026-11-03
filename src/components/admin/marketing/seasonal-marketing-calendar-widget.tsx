@@ -71,7 +71,7 @@ export function SeasonalMarketingCalendarWidget({
       case "extremo":
         return <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 text-xs">Impacto Extremo</Badge>;
       case "alto":
-        return <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs">Pico Comercial</Badge>;
+        return <Badge className="bg-warning/10 text-warning-strong  border-warning/20 text-xs">Pico Comercial</Badge>;
       default:
         return <Badge variant="secondary" className="text-xs">Oportunidade</Badge>;
     }
@@ -82,13 +82,13 @@ export function SeasonalMarketingCalendarWidget({
       {/* CABEÇALHO DO WIDGET */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+          <div className="size-8 rounded-lg bg-warning/10 text-warning-strong  flex items-center justify-center">
             <Calendar className="size-4" />
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <span>Calendário Sazonal</span>
-              <Star className="size-3 text-amber-500" />
+              <Star className="size-3 text-warning-strong" />
             </h3>
             <p className="text-xs text-foreground font-medium">
               Próximas datas comemorativas e picos de demanda
@@ -105,10 +105,10 @@ export function SeasonalMarketingCalendarWidget({
       </div>
 
       {/* EVENTO EM DESTAQUE (PRÓXIMA JANELA) */}
-      <div className="p-4 rounded-lg border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 rounded-lg border border-warning/20 bg-warning/5  flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
+            <span className="text-xs font-bold text-warning-strong ">
               {primaryEvent.days_until === 0 ? "Hoje" : `Em ${primaryEvent.days_until} dias`}
             </span>
             <span className="text-muted-foreground text-xs">•</span>
@@ -132,7 +132,7 @@ export function SeasonalMarketingCalendarWidget({
             </p>
           )}
           {primaryEvent.suggested_promotional_actions && primaryEvent.suggested_promotional_actions.length > 0 && (
-            <div className="flex items-center gap-2 pt-1 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 pt-1 overflow-x-auto scroll-area-carousel no-scrollbar">
               {primaryEvent.suggested_promotional_actions.map((act, i) => (
                 <span key={i} className="text-xs bg-background border border-border/40 text-muted-foreground px-2 py-1 rounded-full whitespace-nowrap">
                   {act}

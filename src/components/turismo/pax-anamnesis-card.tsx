@@ -109,7 +109,7 @@ export function PaxAnamnesisCard({
   };
 
   return (
-    <div className="p-5 rounded-lg border border-border bg-card space-y-4 shadow-sm">
+    <div className="p-5 rounded-lg border border-border bg-card space-y-4 ">
       {/* Header do Card */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
         <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ export function PaxAnamnesisCard({
 
       {/* Alertas de Voo / Prontidão */}
       {flightReadiness.warnings.length > 0 && (
-        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs space-y-1">
+        <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  text-xs space-y-1">
           <div className="font-semibold flex items-center gap-2">
             <AlertCircle className="size-4 shrink-0" />
             <span>Atenção Operacional da Companhia Aérea</span>

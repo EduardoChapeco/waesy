@@ -46,7 +46,7 @@ export function WorkspaceAccessDenied({
     <div className="flex-1 min-h-96 flex items-center justify-center p-4">
       <div className="max-w-md w-full p-6 sm:p-8 rounded-lg border border-border/70 bg-card text-center space-y-5 shadow-xs">
         {/* Ícone de Escudo em Camada Suave */}
-        <div className="size-14 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20">
+        <div className="size-14 rounded-lg bg-warning/10 text-warning-strong  flex items-center justify-center mx-auto border border-warning/20">
           <ShieldAlert className="size-7" />
         </div>
 

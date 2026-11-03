@@ -64,12 +64,12 @@ export function CompanyReputationCard({
       <div className="p-5 sm:p-6 rounded-lg bg-muted/30 border border-border/40 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex flex-col items-center justify-center size-20 rounded-lg bg-foreground text-background shrink-0 shadow-md">
+            <div className="flex flex-col items-center justify-center size-20 rounded-lg bg-foreground text-background shrink-0 ">
               <span className="text-3xl font-black font-display tracking-tight leading-none">
                 {avg.toFixed(1)}
               </span>
-              <div className="flex items-center gap-1 mt-1 text-amber-400">
-                <Star className="size-3 fill-amber-400" />
+              <div className="flex items-center gap-1 mt-1 text-warning-strong">
+                <Star className="size-3 fill-warning" />
               </div>
             </div>
 
@@ -105,7 +105,7 @@ export function CompanyReputationCard({
                   <span className="text-muted-foreground w-20 text-2xs shrink-0">{bar.label}</span>
                   <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full bg-amber-400 rounded-full transition-colors duration-200 duration-200"
+                      className="h-full bg-warning rounded-full transition-colors duration-200 duration-200"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -173,13 +173,13 @@ export function CompanyReputationCard({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 shrink-0 text-amber-400">
+                    <div className="flex items-center gap-1 shrink-0 text-warning-strong">
                       {[1, 2, 3, 4, 5].map((s) => (
                         <Star
                           key={s}
                           className={cn(
                             "size-3.5",
-                            s <= rev.rating ? "fill-amber-400" : "text-muted-foreground/30"
+                            s <= rev.rating ? "fill-warning" : "text-muted-foreground/30"
                           )}
                         />
                       ))}
@@ -207,12 +207,12 @@ export function CompanyReputationCard({
                           Resposta da Empresa
                         </span>
                         {rev.responded_at && (
-                          <span className="text-[9.5px] text-muted-foreground">
+                          <span className="text-3xs text-muted-foreground">
                             {new Date(rev.responded_at).toLocaleDateString("pt-BR")}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11.5px] text-muted-foreground leading-relaxed">
+                      <p className="text-xs text-muted-foreground leading-relaxed">
                         {rev.response_comment}
                       </p>
                     </div>
@@ -227,7 +227,7 @@ export function CompanyReputationCard({
                             value={replyText}
                             onChange={(e) => setReplyText(e.target.value)}
                             placeholder="Escreva sua resposta de agradecimento ou esclarecimento..."
-                            className="text-xs rounded-lg min-h-[70px] resize-none"
+                            className="text-xs rounded-lg min-h-18 resize-none"
                             maxLength={1000}
                           />
                           <div className="flex items-center justify-end gap-2">
@@ -239,7 +239,7 @@ export function CompanyReputationCard({
                                 setReplyingId(null);
                                 setReplyText("");
                               }}
-                              className="h-8 text-xs rounded-lg"
+                              className="h-8 text-xs rounded-lg min-h-11 sm:min-h-0"
                               disabled={isSubmittingReply}
                             >
                               Cancelar
@@ -248,7 +248,7 @@ export function CompanyReputationCard({
                               type="button"
                               size="sm"
                               onClick={() => handleSendReply(rev.id)}
-                              className="h-8 text-xs font-bold rounded-lg bg-foreground text-background hover:bg-foreground/90"
+                              className="h-8 text-xs font-bold rounded-lg bg-foreground text-background hover:bg-foreground/90 min-h-11 sm:min-h-0"
                               disabled={isSubmittingReply || !replyText.trim()}
                             >
                               {isSubmittingReply ? "Enviando..." : "Responder"}
@@ -264,7 +264,7 @@ export function CompanyReputationCard({
                             setReplyingId(rev.id);
                             setReplyText("");
                           }}
-                          className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 rounded-lg"
+                          className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 rounded-lg min-h-11 sm:min-h-0"
                         >
                           <Reply className="size-3" />
                           <span>Responder feedback</span>

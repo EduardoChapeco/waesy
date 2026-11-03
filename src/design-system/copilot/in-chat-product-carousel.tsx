@@ -38,7 +38,7 @@ export function InChatProductCarousel({
         <span className="text-3xs text-muted-foreground">{products.length} itens</span>
       </div>
 
-      <div className="flex items-stretch gap-3 overflow-x-auto scrollbar-none p-3">
+      <div className="flex items-stretch gap-3 overflow-x-auto scroll-area-carousel scrollbar-none p-3">
         {products.map((p) => (
           <div
             key={p.id}
@@ -74,7 +74,7 @@ export function InChatProductCarousel({
             <button
               type="button"
               onClick={() => onSelectProduct?.(p)}
-              className="w-full min-h-9 px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full min-h-9 px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
             >
               Ver Detalhes
             </button>

@@ -179,7 +179,7 @@ export default function TravelDocumentReviewPage() {
                   <div className="flex items-center gap-2"><ShieldCheck className="size-5 text-primary" /><h2 className="text-lg font-bold">{selected.file_name || "Documento OCR"}</h2></div>
                   <p className="mt-1 text-xs text-muted-foreground">Hash de conteúdo: {selected.content_sha256 || "não disponível"}</p>
                 </div>
-                <Badge className="bg-amber-500/10 text-amber-700 hover:bg-amber-500/10">Revisão humana obrigatória</Badge>
+                <Badge className="bg-warning/10 text-warning-strong hover:bg-warning/10">Revisão humana obrigatória</Badge>
               </div>
 
               <div className="grid gap-5 xl:grid-cols-3">

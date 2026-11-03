@@ -224,7 +224,7 @@ function CouriersListPage() {
               <span className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Entregadores Ativos ({filteredCouriers.length})
               </span>
-              <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-semibold">
+              <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-semibold min-h-11 sm:min-h-0">
                 <Link to="/workspace/pedidos/frota">
                   <Sliders className="size-3.5 mr-2" />
                   Painel de Despacho
@@ -269,7 +269,7 @@ function CouriersListPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-11 sm:size-9 rounded-lg hover:bg-muted/60 cursor-pointer"
+                              className="size-11 sm:size-9 rounded-lg hover:bg-muted/60 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                             >
                               <MoreVertical className="size-4 text-muted-foreground" />
                             </Button>
@@ -389,7 +389,7 @@ function CouriersListPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="size-9 rounded-lg hover:bg-muted/60"
+                                className="size-9 rounded-lg hover:bg-muted/60 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                               >
                                 <MoreVertical className="size-4 text-muted-foreground" />
                               </Button>

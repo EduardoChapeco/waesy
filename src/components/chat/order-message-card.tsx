@@ -107,7 +107,7 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  variant="outline"
  size="sm"
  onClick={onOpenRmaModal}
- className="h-8 text-xs font-bold rounded-lg border-destructive/40 text-destructive hover:bg-destructive/10"
+ className="h-8 text-xs font-bold rounded-lg border-destructive/40 text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0"
  >
  <AlertTriangle className="size-3.5 mr-1" />
  Troca / Ajuda
@@ -118,7 +118,7 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  asChild
  variant="secondary"
  size="sm"
- className="h-8 text-xs font-bold rounded-lg"
+ className="h-8 text-xs font-bold rounded-lg min-h-11 sm:min-h-0"
  >
  <Link to={`/conta/pedidos/${order.id}` as any}>
  Ver Detalhes

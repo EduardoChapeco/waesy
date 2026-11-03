@@ -63,7 +63,7 @@ function WorkspaceAnunciosErrorComponent({ error }: { error: any }) {
         <Button
           variant="default"
           size="sm"
-          className="rounded-lg text-xs h-10 px-5 font-bold cursor-pointer"
+          className="rounded-lg text-xs h-10 px-5 font-bold cursor-pointer min-h-11 sm:min-h-0"
           onClick={() => window.location.reload()}
         >
           Recarregar Página
@@ -872,7 +872,7 @@ function AnunciosWorkspacePage() {
                       toast.success("URL do Catálogo Meta copiada!");
                       setTimeout(() => setCopiedFeed(null), 2000);
                     }}
-                    className="h-9 text-xs gap-1"
+                    className="h-9 text-xs gap-1 min-h-11 sm:min-h-0"
                   >
                     {copiedFeed === "meta" ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
                     <span>{copiedFeed === "meta" ? "Copiado" : "Copiar Feed URL"}</span>
@@ -971,7 +971,7 @@ function AnunciosWorkspacePage() {
                       toast.success("URL do Feed Google copiada!");
                       setTimeout(() => setCopiedFeed(null), 2000);
                     }}
-                    className="h-9 text-xs gap-1"
+                    className="h-9 text-xs gap-1 min-h-11 sm:min-h-0"
                   >
                     {copiedFeed === "google" ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
                     <span>{copiedFeed === "google" ? "Copiado" : "Copiar Feed XML"}</span>
@@ -1047,7 +1047,7 @@ function AnunciosWorkspacePage() {
                         }
                         toast.success(`Conta ${acc.id} selecionada!`);
                       }}
-                      className="h-9 rounded-lg text-xs font-mono"
+                      className="h-9 rounded-lg text-xs font-mono min-h-11 sm:min-h-0"
                     >
                       {acc.name} ({acc.id})
                     </Button>
@@ -1067,7 +1067,7 @@ function AnunciosWorkspacePage() {
                             setMetaPixelId(px.id);
                             toast.success(`Pixel ${px.id} selecionado!`);
                           }}
-                          className="h-8 rounded-lg text-xs font-mono border border-border/50"
+                          className="h-8 rounded-lg text-xs font-mono border border-border/50 min-h-11 sm:min-h-0"
                         >
                           {px.name} ({px.id})
                         </Button>
@@ -1269,7 +1269,7 @@ function AnunciosWorkspacePage() {
                       navigator.clipboard.writeText(generatedUtmUrl);
                       toast.success("Link copiado para a área de transferência!");
                     }}
-                    className="h-7 text-xs gap-1"
+                    className="h-7 text-xs gap-1 min-h-11 sm:min-h-0"
                   >
                     <Copy className="size-3" />
                     <span>Copiar Link</span>
@@ -1308,7 +1308,7 @@ function AnunciosWorkspacePage() {
                   setDynamicBlock(null);
                   setMcpDiagnosticsReport(null);
                 }}
-                className="h-8 text-xs text-muted-foreground hover:text-foreground px-2"
+                className="h-8 text-xs text-muted-foreground hover:text-foreground px-2 min-h-11 sm:min-h-0"
               >
                 Fechar Painel MCP
               </Button>
@@ -1669,7 +1669,7 @@ function AnunciosWorkspacePage() {
                               className="h-11 px-3 text-xs font-semibold rounded-md gap-1 cursor-pointer"
                               title="Impulsionar anúncio com prioridade alta"
                             >
-                              <Zap className="size-3 text-amber-500" />
+                              <Zap className="size-3 text-warning-strong" />
                               <span>Boost</span>
                             </Button>
                             <Button

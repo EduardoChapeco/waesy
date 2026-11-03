@@ -435,7 +435,7 @@ function ContractEditorPage() {
                   <Button
                     type="button"
                     onClick={() => setActiveStep(2)}
-                    className="rounded-lg text-xs h-10 px-5 font-semibold"
+                    className="rounded-lg text-xs h-10 px-5 font-semibold min-h-11 sm:min-h-0"
                   >
                     Avançar para Posicionamento
                     <ArrowRight className="size-4 ml-2" />
@@ -448,7 +448,7 @@ function ContractEditorPage() {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Prévia de Leitura
                 </h3>
-                <div className="max-h-[500px] overflow-y-auto pr-2 text-xs font-serif leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert">
+                <div className="max-h-125 overflow-y-auto pr-2 text-xs font-serif leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert">
                   <ReactMarkdown>{contentMarkdown}</ReactMarkdown>
                 </div>
               </div>
@@ -457,7 +457,7 @@ function ContractEditorPage() {
 
           {/* PASSO 2: POSICIONAMENTO VISUAL DE TAGS (SignaturePositionerCanvas) */}
           {activeStep === 2 && (
-            <div className="h-[760px]">
+            <div className="h-190">
               <SignaturePositionerCanvas
                 signers={signers}
                 fields={signatureFields}
@@ -581,7 +581,7 @@ function ContractEditorPage() {
                         variant="outline"
                         size="sm"
                         onClick={addObserver}
-                        className="rounded-lg h-9 text-xs shrink-0"
+                        className="rounded-lg h-9 text-xs shrink-0 min-h-11 sm:min-h-0"
                       >
                         Adicionar
                       </Button>
@@ -605,7 +605,7 @@ function ContractEditorPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setActiveStep(2)}
-                    className="rounded-lg text-xs h-10 px-4"
+                    className="rounded-lg text-xs h-10 px-4 min-h-11 sm:min-h-0"
                   >
                     Voltar ao Posicionamento
                   </Button>

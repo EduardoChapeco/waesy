@@ -844,8 +844,8 @@ export function PreBoardingPresentationStudio({
             )}
 
             {currentSlide.alertBanner && (
-              <div className="p-4 rounded-lg border border-amber-500/40 bg-amber-500/10 flex items-start gap-3 text-xs">
-                <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-1" />
+              <div className="p-4 rounded-lg border border-warning/40 bg-warning/10 flex items-start gap-3 text-xs">
+                <AlertTriangle className="size-4 text-warning-strong shrink-0 mt-1" />
                 <div>
                   <span className="font-bold text-foreground block">
                     {currentSlide.alertBanner.level}

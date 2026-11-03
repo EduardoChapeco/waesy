@@ -243,7 +243,7 @@ function NegociacoesPage() {
       </div>
 
       {/* ── 2. Toolbar: Abas Rápidas com Física Horizontal Snap ── */}
-      <div className="flex items-center gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar py-1 px-4 sm:px-0 w-full">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel snap-x snap-mandatory scrollbar-hide no-scrollbar py-1 px-4 sm:px-0 w-full">
         <button
           type="button"
           onClick={() => setActiveTab("all")}
@@ -435,7 +435,7 @@ function NegociacoesPage() {
                     ) : deal.buyer_id === profile?.id ? (
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs text-muted-foreground flex items-center gap-2">
-                          <Clock className="size-3.5 text-amber-500" />
+                          <Clock className="size-3.5 text-warning-strong" />
                           Proposta enviada ao anunciante. Aguardando resposta.
                         </span>
                         <Button
@@ -648,7 +648,7 @@ function NegociacoesPage() {
           if (!open) setSelectedCompanionDeal(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-2xl">
+        <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-overlay">
           <DialogHeader className="sr-only">
             <DialogTitle>Guia Digital de Acompanhamento</DialogTitle>
           </DialogHeader>

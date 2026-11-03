@@ -34,7 +34,7 @@ export function IFoodSubcategoryPillRail({
     <nav
       aria-label="Subcategorias e Subnichos"
       className={cn(
-        "w-full flex items-center gap-3 overflow-x-auto no-scrollbar py-2 px-3 sm:px-4 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_92%,transparent_100%)]",
+        "w-full flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar py-2 px-3 sm:px-4 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_92%,transparent_100%)]",
         className,
       )}
       data-testid="ifood-subcategory-pill-rail"

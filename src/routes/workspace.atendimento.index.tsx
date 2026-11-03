@@ -900,11 +900,11 @@ function WorkspaceAtendimentoPage() {
               className={cn(
                 "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "busy"
-                  ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold"
+                  ? "bg-warning/15 text-warning-strong  font-bold"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <span className="size-2 rounded-full bg-amber-500" />
+              <span className="size-2 rounded-full bg-warning" />
               <span>Ocupado</span>
             </button>
             <button
@@ -1330,7 +1330,7 @@ function WorkspaceAtendimentoPage() {
                       className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                       title="Agendar envio de mensagem futura"
                     >
-                      <CalendarClock className="size-4 text-amber-500" />
+                      <CalendarClock className="size-4 text-warning-strong" />
                       <span className="hidden sm:inline">Agendar</span>
                     </Button>
                   )}
@@ -1508,9 +1508,9 @@ function WorkspaceAtendimentoPage() {
                     ) {
                       return (
                         <div key={msg.id} className="w-full flex justify-center my-2">
-                          <div className="max-w-lg w-full p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1 shadow-2xs">
+                          <div className="max-w-lg w-full p-3 rounded-lg bg-warning/10 border border-warning/30 text-warning-strong  text-xs space-y-1 shadow-2xs">
                             <div className="flex items-center justify-between text-xs font-bold">
-                              <span className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                              <span className="flex items-center gap-2 text-warning-strong ">
                                 <Lock className="size-4 shrink-0" />
                                 <span>Nota Interna da Equipe (Whisper)</span>
                               </span>
@@ -1647,11 +1647,11 @@ function WorkspaceAtendimentoPage() {
                       className={cn(
                         "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                         isWhisperMode
-                          ? "bg-amber-500/20 text-amber-800 dark:text-amber-200 shadow-2xs font-bold"
+                          ? "bg-warning/20 text-warning-strong  shadow-2xs font-bold"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
-                      <Lock className="size-3.5 text-amber-600" />
+                      <Lock className="size-3.5 text-warning-strong" />
                       <span>Nota Interna (Equipe)</span>
                     </button>
                   </div>
@@ -1669,9 +1669,9 @@ function WorkspaceAtendimentoPage() {
 
                 {/* Banner Modo Nota Interna (Whisper) com Design Âmbar Whaticket/Chatwoot */}
                 {isWhisperMode && (
-                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-950 dark:text-amber-100 text-xs font-semibold animate-in fade-in">
+                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-warning/15 border border-warning/40 text-warning-strong  text-xs font-semibold animate-in fade-in">
                     <div className="flex items-center gap-2">
-                      <Lock className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <Lock className="size-4 shrink-0 text-warning-strong " />
                       <span>Nota Interna Privada: Visível apenas para a equipe (NÃO é enviada ao WhatsApp).</span>
                     </div>
                     <Button
@@ -1679,7 +1679,7 @@ function WorkspaceAtendimentoPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsWhisperMode(false)}
-                      className="h-11 min-h-11 px-3 text-xs text-amber-900 dark:text-amber-200 hover:bg-amber-500/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-11 min-h-11 px-3 text-xs text-warning-strong  hover:bg-warning/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Voltar ao Chat
                     </Button>
@@ -1697,7 +1697,7 @@ function WorkspaceAtendimentoPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setQuickAnswersModalOpen(true)}
-                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-amber-500/30 text-amber-500 hover:bg-amber-500/10 cursor-pointer"
+                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-warning/30 text-warning-strong hover:bg-warning/10 cursor-pointer"
                     title="Gerenciar respostas rápidas personalizadas"
                   >
                     <Zap className="size-3.5" />
@@ -1757,7 +1757,7 @@ function WorkspaceAtendimentoPage() {
                         className={cn(
                           "min-h-11 max-h-32 text-xs rounded-lg resize-none p-3",
                           isWhisperMode
-                            ? "border-amber-500/50 bg-amber-500/5 placeholder:text-amber-700/60"
+                            ? "border-warning/50 bg-warning/5 placeholder:text-warning-strong/60"
                             : "bg-muted/30",
                         )}
                         rows={1}
@@ -1772,7 +1772,7 @@ function WorkspaceAtendimentoPage() {
                       onClick={() => setIsWhisperMode(!isWhisperMode)}
                       className={cn(
                         "size-11 rounded-lg shrink-0 cursor-pointer",
-                        isWhisperMode ? "bg-amber-600 hover:bg-amber-700 text-amber-50" : "",
+                        isWhisperMode ? "bg-warning hover:bg-warning-strong text-warning-strong" : "",
                       )}
                       title={
                         isWhisperMode
@@ -2155,7 +2155,7 @@ function WorkspaceAtendimentoPage() {
                                 className={cn(
                                   "text-2xs gap-1",
                                   ch.scope === "private"
-                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                    ? "bg-warning/10 text-warning-strong  border-warning/30"
                                     : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
                                 )}
                               >
@@ -2380,7 +2380,7 @@ function WorkspaceAtendimentoPage() {
                     onClick={() => setIntranetModalOverride("sticker")}
                     className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <Sparkles className="size-3.5 text-amber-500" />
+                    <Sparkles className="size-3.5 text-warning-strong" />
                     <span>Stickers</span>
                   </Button>
                 </div>
@@ -2523,7 +2523,7 @@ function WorkspaceAtendimentoPage() {
                         isReady
                           ? "border-emerald-500/40 bg-emerald-500/5 dark:bg-emerald-950/10"
                           : isWarm
-                          ? "border-amber-500/40 bg-amber-500/5 dark:bg-amber-950/10"
+                          ? "border-warning/40 bg-warning/5 "
                           : "border-border/70",
                       )}
                     >
@@ -2536,7 +2536,7 @@ function WorkspaceAtendimentoPage() {
                               isReady
                                 ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                                 : isWarm
-                                ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                ? "bg-warning/15 text-warning-strong  border-warning/30"
                                 : "bg-muted text-muted-foreground border border-border/60",
                             )}
                           >
@@ -2641,8 +2641,8 @@ function WorkspaceAtendimentoPage() {
             <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
               <span className="text-xs text-muted-foreground font-semibold">Satisfação (CSAT)</span>
               {Number(metrics?.avg_rating || 0) > 0 ? (
-                <p className="text-2xl font-bold font-mono text-amber-500 flex items-center gap-1">
-                  <Star className="size-5 fill-amber-500" />
+                <p className="text-2xl font-bold font-mono text-warning-strong flex items-center gap-1">
+                  <Star className="size-5 fill-warning" />
                   <span>{metrics.avg_rating} / 5.0</span>
                 </p>
               ) : (
@@ -2690,7 +2690,7 @@ function WorkspaceAtendimentoPage() {
                     "text-xs px-2 py-1 font-bold",
                     whatsappInstances.some((i) => i.is_active && i.status === "connected")
                       ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                      : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+                      : "bg-warning/15 text-warning-strong  border-warning/30",
                   )}
                 >
                   {whatsappInstances.some((i) => i.is_active && i.status === "connected")
@@ -2949,7 +2949,7 @@ function WorkspaceAtendimentoPage() {
                     selectedSdrSession.intent_classification === "ready_to_buy"
                       ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                       : selectedSdrSession.intent_classification === "warm"
-                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                      ? "bg-warning/15 text-warning-strong  border-warning/30"
                       : "bg-muted text-muted-foreground",
                   )}
                 >

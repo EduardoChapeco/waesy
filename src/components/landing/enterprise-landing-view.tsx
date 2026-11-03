@@ -448,11 +448,11 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
             className="lg:col-span-4 p-6 sm:p-8 rounded-lg border border-border/70 bg-card flex flex-col justify-between space-y-6 shadow-2xs hover:border-foreground/20 transition-colors"
           >
             <div className="space-y-4">
-              <div className="size-11 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <div className="size-11 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center">
                 <Layers className="size-5.5" />
               </div>
               <div className="space-y-1">
-                <span className="text-xs font-bold text-amber-600 uppercase tracking-wider font-mono">
+                <span className="text-xs font-bold text-warning-strong uppercase tracking-wider font-mono">
                   Presença e CMS Visual
                 </span>
                 <h3 className="text-xl sm:text-2xl font-bold text-foreground">

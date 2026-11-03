@@ -92,7 +92,7 @@ function KDSPage() {
  };
  }
  if (order.origin_type === "counter" || order.shipping_method === "pickup") {
- return { label: "Balcão", color: "bg-amber-500/10 text-amber-600 border-amber-500/30" };
+ return { label: "Balcão", color: "bg-warning/10 text-warning-strong border-warning/30" };
  }
  return { label: "Cardápio Próprio", color: "bg-purple-500/10 text-purple-600 border-purple-500/30" };
  };
@@ -474,7 +474,7 @@ function KDSPage() {
 
  {/* Chips de Canais Omnichannel */}
  {/* design-lint-ignore DL-30 reason:"Barra horizontal de chips de canais com scroll tátil elástico" expiry:"2027-10-30" */}
- <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+ <div className="flex items-center gap-1 overflow-x-auto scroll-area-carousel no-scrollbar py-1">
  {[
  { id: "all", label: "Todos os Canais" },
  { id: "ifood", label: "iFood" },
@@ -568,7 +568,7 @@ function KDSPage() {
  <p className="text-lg font-black text-foreground font-mono truncate">{formatMoney(kpis.avgTicket)}</p>
  </div>
  <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
- <span className="text-xs text-muted-foreground/75 font-bold text-amber-600 uppercase">TMP (Preparo)</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-warning-strong uppercase">TMP (Preparo)</span>
  <p className="text-xl font-black text-foreground font-mono">~{kpis.avgPrepTime}m</p>
  </div>
  <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
@@ -645,7 +645,7 @@ function KDSPage() {
  <div
  className={cn(
  "h-full transition-colors duration-200",
- isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
+ isLate ? "bg-rose-500" : elapsed > 20 ? "bg-warning" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
  />
@@ -744,7 +744,7 @@ function KDSPage() {
  <div
  className={cn(
  "h-full transition-colors duration-200",
- isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
+ isLate ? "bg-rose-500" : elapsed > 20 ? "bg-warning" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
  />
@@ -853,7 +853,7 @@ function KDSPage() {
  </div>
  ) : (
  /* Kanban Board */
- <main /* design-lint-ignore DL-30 reason:"Quadro Kanban de pedidos com colunas de rolagem horizontal contínua" expiry:"2027-10-30" */ className="flex-1 overflow-x-auto no-scrollbar p-4 flex gap-4 bg-muted/30 no-print">
+ <main /* design-lint-ignore DL-30 reason:"Quadro Kanban de pedidos com colunas de rolagem horizontal contínua" expiry:"2027-10-30" */ className="flex-1 overflow-x-auto scroll-area-carousel no-scrollbar p-4 flex gap-4 bg-muted/30 no-print">
  {columns.map((col) => {
  const isPrepCol = col.id === "processing";
  const colOrders = orders
@@ -985,7 +985,7 @@ function KDSPage() {
  elapsedMinutes > 30
  ? "bg-rose-500"
  : elapsedMinutes > 20
- ? "bg-amber-500"
+ ? "bg-warning"
  : "bg-emerald-500",
  )}
  style={{
@@ -1243,7 +1243,7 @@ function KDSPage() {
 
  {/* Observações da Comanda */}
  {selectedOrder.customer_snapshot?.notes && (
- <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 space-y-1">
+ <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  space-y-1">
  <span className="font-bold text-xs text-muted-foreground/75 uppercase">Observações do Cliente:</span>
  <p className="text-xs">{selectedOrder.customer_snapshot.notes}</p>
  </div>
@@ -1307,7 +1307,7 @@ function KDSPage() {
  Tipo de Atendimento
  </span>
  {selectedOrder.shipping_method === "pickup" ? (
- <div className="flex items-center gap-2 text-amber-600 font-bold">
+ <div className="flex items-center gap-2 text-warning-strong font-bold">
  <Users className="size-4" />
  <span>Retirada no Balcão da Loja</span>
  </div>
@@ -1391,7 +1391,7 @@ function KDSPage() {
  <span className={cn(
  "absolute -left-6 top-1 size-3.5 rounded-full border-2 border-background",
  selectedOrder.prep_started_at || selectedOrder.status !== "paid"
- ? "bg-amber-500"
+ ? "bg-warning"
  : "bg-muted-foreground/40",
  )} />
  <p className="font-bold text-foreground">Início do Preparo na Cozinha</p>

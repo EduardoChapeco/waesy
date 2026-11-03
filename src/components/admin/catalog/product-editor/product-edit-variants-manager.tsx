@@ -83,7 +83,7 @@ export function ProductEditVariantsManager({
             </div>
           </AccordionTrigger>
           <AccordionContent className="pt-4 pb-6">
-            <div className="mb-4 p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-md text-xs">
+            <div className="mb-4 p-3 bg-warning/10 text-warning-strong  border border-warning/20 rounded-md text-xs">
               <strong>Dica de Uso:</strong> Use o gerador para criar combinações em lote (ex: Tamanhos P, M, G combinados com Cores Preto, Branco).
             </div>
             <VariantOptionsBuilder product={product} />

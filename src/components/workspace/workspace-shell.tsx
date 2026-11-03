@@ -140,24 +140,27 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  const [targetPersonalPath, setTargetPersonalPath] = useState<string>("/conta");
 
  const [isSwitching, setIsSwitching] = useState(false);
- const memberships = (session?.memberships as any[]) || [];
- const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
- const queryStoreId = searchParams.get("storeId");
- const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
- const isQueryValid = queryStoreId && memberships.some((m) => m.store_id === queryStoreId);
- const isClientValid = clientTenant && memberships.some((m) => m.store_id === clientTenant);
+  const isPlatformAdmin = Boolean(
+    session?.user?.role === "platform_admin" ||
+    session?.role === "platform_admin" ||
+    session?.role === "master" ||
+    session?.user?.role === "master" ||
+    session?.user?.user_metadata?.role === "platform_admin"
+  );
 
- const activeStoreId =
-   (isQueryValid ? queryStoreId : null) ||
-   (isClientValid ? clientTenant : null) ||
-   session?.store_id ||
-   memberships[0]?.store_id;
- const activeStore = memberships.find((m) => m.store_id === activeStoreId) || memberships[0];
+  const memberships = (session?.memberships as any[]) || [];
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const queryStoreId = searchParams.get("storeId");
+  const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+  const isQueryValid = queryStoreId && (isPlatformAdmin || memberships.some((m) => m.store_id === queryStoreId));
+  const isClientValid = clientTenant && (isPlatformAdmin || memberships.some((m) => m.store_id === clientTenant));
 
- const isPlatformAdmin =
- session?.user?.role === "platform_admin" ||
- session?.role === "platform_admin" ||
- session?.user?.user_metadata?.role === "platform_admin";
+  const activeStoreId =
+    (isQueryValid ? queryStoreId : null) ||
+    (isClientValid ? clientTenant : null) ||
+    session?.store_id ||
+    memberships[0]?.store_id;
+  const activeStore = memberships.find((m) => m.store_id === activeStoreId) || memberships[0];
 
   const effectiveUserRole = isPlatformAdmin
     ? "owner"
@@ -168,7 +171,6 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     userRole: effectiveUserRole,
   });
   const currentSemantics = getNicheSemantics(activeStore);
-  const { themeClass } = getNicheTranslation(activeStore);
 
   // Governança Granular de RBAC: Verificação de Permissão de Acesso à Rota Ativa
   const isAuthorized = (() => {
@@ -330,7 +332,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
       const res = await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
       const storeName = res?.storeName || "Espaço";
       toast.success(`Espaço de trabalho alterado para ${storeName}`);
-      window.location.href = "/workspace";
+      window.location.href = `/workspace?storeId=${encodeURIComponent(storeId)}`;
     } catch {
       toast.error("Erro ao alternar loja.");
       setIsSwitching(false);
@@ -372,7 +374,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  className={cn(
  "w-full flex items-center justify-between px-3 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isMasterAllVerticals
- ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+ ? "bg-warning/10 text-warning-strong border-warning/30"
  : "bg-muted/40 text-muted-foreground border-border/40 hover:text-foreground"
  )}
  >
@@ -431,7 +433,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  );
 
   return (
-    <div className={cn("flex h-dvh w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative", themeClass)}>
+    <div className="flex h-dvh w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative">
       {/* ── 1. BARRA LATERAL CANÔNICA DO WORKSPACE (PADRÃO META STUDIO - FIXA) ── */}
       <aside className="hidden waesy-expanded-flex flex-col w-72 shrink-0 sticky top-0 h-dvh bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
         {/* Topo da Sidebar com altura exata h-14 (56px) alinhada continuamente à linha do Header */}

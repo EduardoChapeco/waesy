@@ -31,28 +31,28 @@ export const Route = createFileRoute("/workspace/financeiro/relatorios-canal")({
 });
 
 const CHANNEL_COLORS: Record<string, string> = {
-  mercadolivre: "bg-amber-400/15 text-amber-700 dark:text-amber-400 border-amber-400/30",
+  mercadolivre: "bg-warning/15 text-warning-strong  border-warning/30",
   amazon: "bg-orange-400/15 text-orange-700 dark:text-orange-400 border-orange-400/30",
   magalu: "bg-blue-400/15 text-blue-700 dark:text-blue-400 border-blue-400/30",
   shopee: "bg-orange-500/15 text-orange-800 dark:text-orange-300 border-orange-500/30",
   ifood: "bg-red-400/15 text-red-700 dark:text-red-400 border-red-400/30",
   rappi: "bg-emerald-400/15 text-emerald-700 dark:text-emerald-400 border-emerald-400/30",
   amodelivery: "bg-purple-400/15 text-purple-700 dark:text-purple-400 border-purple-400/30",
-  correios: "bg-yellow-400/15 text-yellow-700 dark:text-yellow-400 border-yellow-400/30",
+  correios: "bg-warning/15 text-warning-strong  border-warning/30",
   balcao_pos: "bg-slate-400/15 text-slate-700 dark:text-slate-300 border-slate-400/30",
   vitrine_online: "bg-sky-400/15 text-sky-700 dark:text-sky-300 border-sky-400/30",
   outros: "bg-zinc-400/15 text-zinc-600 dark:text-zinc-400 border-zinc-400/30",
 };
 
 const CHANNEL_BAR_COLORS: Record<string, string> = {
-  mercadolivre: "bg-amber-500",
+  mercadolivre: "bg-warning",
   amazon: "bg-orange-500",
   magalu: "bg-blue-500",
   shopee: "bg-orange-600",
   ifood: "bg-red-500",
   rappi: "bg-emerald-500",
   amodelivery: "bg-purple-500",
-  correios: "bg-yellow-500",
+  correios: "bg-warning",
   balcao_pos: "bg-slate-600",
   vitrine_online: "bg-sky-500",
   outros: "bg-zinc-500",
@@ -65,7 +65,7 @@ function MarginBadge({ value }: { value: number }) {
     <span
       className={cn(
         "inline-flex items-center gap-1 text-xs font-mono font-bold",
-        isGood ? "text-emerald-600 dark:text-emerald-400" : isWarn ? "text-amber-600 dark:text-amber-400" : "text-rose-600 dark:text-rose-400"
+        isGood ? "text-emerald-600 dark:text-emerald-400" : isWarn ? "text-warning-strong " : "text-rose-600 dark:text-rose-400"
       )}
     >
       {isGood ? (
@@ -247,7 +247,7 @@ function ChannelDREPage() {
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Star className="size-3.5 text-amber-500" />
+            <Star className="size-3.5 text-warning-strong" />
             Margem Média
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
@@ -353,7 +353,7 @@ function ChannelDREPage() {
         />
       ) : (
         <div className="bg-card rounded-lg border border-border/70 overflow-hidden shadow-2xs">
-          <div className="overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">

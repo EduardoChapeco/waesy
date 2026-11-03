@@ -185,7 +185,7 @@ export function CommunitySettingsModal({
                     coverMode === "gradient"
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } min-h-11 sm:min-h-0`}
                 >
                   Gradiente Mesh
                 </button>
@@ -196,7 +196,7 @@ export function CommunitySettingsModal({
                     coverMode === "image"
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  } min-h-11 sm:min-h-0`}
                 >
                   Foto Personalizada
                 </button>

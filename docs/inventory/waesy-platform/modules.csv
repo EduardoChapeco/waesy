@@ -1,0 +1,169 @@
+id,domain,name,routes_count,services_count,components_count
+"MOD-001","Admin Master","Gestão Central da Plataforma",38,47,38
+"MOD-002","API & Webhooks","Endpoints REST / Webhook",26,16,0
+"MOD-003","Geral","Raiz",26,16,26
+"MOD-004","Workspace Empresarial","advocacia",1,1,11
+"MOD-005","Workspace Empresarial","afiliados",1,1,2
+"MOD-006","Workspace Empresarial","agenda",3,2,22
+"MOD-007","Workspace Empresarial","atendimento",1,8,24
+"MOD-008","Workspace Empresarial","automacoes",1,1,10
+"MOD-009","Workspace Empresarial","avaliacoes",1,1,4
+"MOD-010","Workspace Empresarial","b2b",1,2,6
+"MOD-011","Workspace Empresarial","builder",1,3,2
+"MOD-012","Workspace Empresarial","captacao",2,1,5
+"MOD-013","Workspace Empresarial","catalogo",14,4,39
+"MOD-014","Workspace Empresarial","clientes",2,3,21
+"MOD-015","Workspace Empresarial","cms",6,5,16
+"MOD-016","Workspace Empresarial","comercial",1,4,22
+"MOD-017","Workspace Empresarial","configuracoes",12,25,35
+"MOD-018","Workspace Empresarial","contador",1,1,5
+"MOD-019","Workspace Empresarial","conteudo",1,1,6
+"MOD-020","Workspace Empresarial","contratos",3,2,23
+"MOD-021","Workspace Empresarial","copilot",1,2,7
+"MOD-022","Workspace Empresarial","crm",1,3,12
+"MOD-023","Workspace Empresarial","curriculo",1,0,0
+"MOD-024","Workspace Empresarial","design-system",1,0,11
+"MOD-025","Workspace Empresarial","doacoes",1,1,4
+"MOD-026","Workspace Empresarial","empregos",3,2,13
+"MOD-027","Workspace Empresarial","empresa",1,1,8
+"MOD-028","Workspace Empresarial","estoque",3,4,18
+"MOD-029","Workspace Empresarial","estudio",1,2,11
+"MOD-030","Workspace Empresarial","eventos",4,2,33
+"MOD-031","Workspace Empresarial","financeiro",13,14,21
+"MOD-032","Workspace Empresarial","fiscal",1,1,7
+"MOD-033","Workspace Empresarial","imoveis",1,1,9
+"MOD-034","Workspace Empresarial","index",1,4,6
+"MOD-035","Workspace Empresarial","integracoes",1,2,8
+"MOD-036","Workspace Empresarial","inteligencia",1,2,0
+"MOD-037","Workspace Empresarial","licitacoes",1,2,6
+"MOD-038","Workspace Empresarial","logistica",3,2,8
+"MOD-039","Workspace Empresarial","lojas",1,2,6
+"MOD-040","Workspace Empresarial","marketing",25,32,30
+"MOD-041","Workspace Empresarial","master",1,2,6
+"MOD-042","Workspace Empresarial","mining",1,1,2
+"MOD-043","Workspace Empresarial","moderacao",2,2,6
+"MOD-044","Workspace Empresarial","mural",1,2,8
+"MOD-045","Workspace Empresarial","noticias",2,3,13
+"MOD-046","Workspace Empresarial","notificacoes",1,1,2
+"MOD-047","Workspace Empresarial","onboarding",2,2,5
+"MOD-048","Workspace Empresarial","orcamentos",3,6,19
+"MOD-049","Workspace Empresarial","pacotes",1,2,12
+"MOD-050","Workspace Empresarial","pdv",3,7,16
+"MOD-051","Workspace Empresarial","pedidos",9,13,27
+"MOD-052","Workspace Empresarial","qualidade",1,1,7
+"MOD-053","Workspace Empresarial","relatorios",3,4,10
+"MOD-054","Workspace Empresarial","reservas",1,4,10
+"MOD-055","Workspace Empresarial","rh",1,1,6
+"MOD-056","Workspace Empresarial","simlab",1,3,5
+"MOD-057","Workspace Empresarial","simulacao",1,2,7
+"MOD-058","Workspace Empresarial","skills",1,1,5
+"MOD-059","Workspace Empresarial","squads",2,3,7
+"MOD-060","Workspace Empresarial","suporte",1,2,8
+"MOD-061","Workspace Empresarial","tarefas",1,3,10
+"MOD-062","Workspace Empresarial","tokens",1,1,9
+"MOD-063","Workspace Empresarial","tsx",1,3,4
+"MOD-064","Workspace Empresarial","turismo",28,31,71
+"MOD-065","Workspace Empresarial","viabilidade",1,2,3
+"MOD-066","Workspace Empresarial","whatsapp",1,2,8
+"MOD-067","Workspace Modal/Recibo","pedidos",1,2,1
+"MOD-068","Vitrines & Experiência Pública","about",1,0,2
+"MOD-069","Vitrines & Experiência Pública","acougue",1,4,6
+"MOD-070","Vitrines & Experiência Pública","aeroporto",1,1,1
+"MOD-071","Vitrines & Experiência Pública","afiliados",1,3,7
+"MOD-072","Vitrines & Experiência Pública","agenda",1,6,8
+"MOD-073","Vitrines & Experiência Pública","agendar",3,3,15
+"MOD-074","Vitrines & Experiência Pública","bebidas",1,4,6
+"MOD-075","Vitrines & Experiência Pública","beleza",1,5,14
+"MOD-076","Vitrines & Experiência Pública","bio",1,2,3
+"MOD-077","Vitrines & Experiência Pública","busca",1,0,0
+"MOD-078","Vitrines & Experiência Pública","buscar",1,3,8
+"MOD-079","Vitrines & Experiência Pública","c",1,2,6
+"MOD-080","Vitrines & Experiência Pública","cadastro",1,1,5
+"MOD-081","Vitrines & Experiência Pública","cadastroantecipado",1,1,2
+"MOD-082","Vitrines & Experiência Pública","cardapio",1,1,2
+"MOD-083","Vitrines & Experiência Pública","carrinho",1,1,7
+"MOD-084","Vitrines & Experiência Pública","casa",1,4,13
+"MOD-085","Vitrines & Experiência Pública","categoria",1,1,2
+"MOD-086","Vitrines & Experiência Pública","checkout",1,10,15
+"MOD-087","Vitrines & Experiência Pública","classificados",2,5,12
+"MOD-088","Vitrines & Experiência Pública","colecao",1,1,3
+"MOD-089","Vitrines & Experiência Pública","comunidades",1,1,3
+"MOD-090","Vitrines & Experiência Pública","concurso",1,1,4
+"MOD-091","Vitrines & Experiência Pública","concursos",1,1,4
+"MOD-092","Vitrines & Experiência Pública","construcao",1,5,13
+"MOD-093","Vitrines & Experiência Pública","conta",45,55,89
+"MOD-094","Vitrines & Experiência Pública","contact",1,0,2
+"MOD-095","Vitrines & Experiência Pública","contato",1,2,3
+"MOD-096","Vitrines & Experiência Pública","contrato",1,1,6
+"MOD-097","Vitrines & Experiência Pública","convite",1,1,5
+"MOD-098","Vitrines & Experiência Pública","copilot",1,2,8
+"MOD-099","Vitrines & Experiência Pública","criar-negocio",2,6,16
+"MOD-100","Vitrines & Experiência Pública","departamento",1,2,2
+"MOD-101","Vitrines & Experiência Pública","destaques",1,5,7
+"MOD-102","Vitrines & Experiência Pública","developers",1,0,0
+"MOD-103","Vitrines & Experiência Pública","diretorio",3,15,12
+"MOD-104","Vitrines & Experiência Pública","doacoes",1,1,7
+"MOD-105","Vitrines & Experiência Pública","docs",1,0,0
+"MOD-106","Vitrines & Experiência Pública","eletronicos",1,4,13
+"MOD-107","Vitrines & Experiência Pública","empregos",3,4,19
+"MOD-108","Vitrines & Experiência Pública","entrar",1,2,5
+"MOD-109","Vitrines & Experiência Pública","entrega",1,2,5
+"MOD-110","Vitrines & Experiência Pública","entregador",1,3,7
+"MOD-111","Vitrines & Experiência Pública","evento",1,4,10
+"MOD-112","Vitrines & Experiência Pública","eventos",1,4,5
+"MOD-113","Vitrines & Experiência Pública","explorar",1,13,13
+"MOD-114","Vitrines & Experiência Pública","f",1,1,2
+"MOD-115","Vitrines & Experiência Pública","faq",1,1,3
+"MOD-116","Vitrines & Experiência Pública","farmacia",1,4,7
+"MOD-117","Vitrines & Experiência Pública","fatura",1,1,5
+"MOD-118","Vitrines & Experiência Pública","feed",1,2,12
+"MOD-119","Vitrines & Experiência Pública","garcom",1,2,3
+"MOD-120","Vitrines & Experiência Pública","gastronomia",1,5,9
+"MOD-121","Vitrines & Experiência Pública","gift-card",1,2,3
+"MOD-122","Vitrines & Experiência Pública","gift-cards",1,1,9
+"MOD-123","Vitrines & Experiência Pública","imoveis",1,4,11
+"MOD-124","Vitrines & Experiência Pública","index",1,14,4
+"MOD-125","Vitrines & Experiência Pública","limpeza",1,4,12
+"MOD-126","Vitrines & Experiência Pública","livros",1,4,13
+"MOD-127","Vitrines & Experiência Pública","loja",2,12,5
+"MOD-128","Vitrines & Experiência Pública","mapa",1,1,7
+"MOD-129","Vitrines & Experiência Pública","marketplace",3,4,9
+"MOD-130","Vitrines & Experiência Pública","match-time",1,2,1
+"MOD-131","Vitrines & Experiência Pública","membro",1,3,22
+"MOD-132","Vitrines & Experiência Pública","mercado",1,5,9
+"MOD-133","Vitrines & Experiência Pública","meus-perfis",1,0,0
+"MOD-134","Vitrines & Experiência Pública","mobilidade",1,3,12
+"MOD-135","Vitrines & Experiência Pública","moda",1,4,12
+"MOD-136","Vitrines & Experiência Pública","motorista",1,1,2
+"MOD-137","Vitrines & Experiência Pública","mural",1,2,3
+"MOD-138","Vitrines & Experiência Pública","noticias",2,3,5
+"MOD-139","Vitrines & Experiência Pública","ofertas",1,3,6
+"MOD-140","Vitrines & Experiência Pública","orcamentos",1,1,3
+"MOD-141","Vitrines & Experiência Pública","paginas",1,1,4
+"MOD-142","Vitrines & Experiência Pública","patrocinador",1,1,1
+"MOD-143","Vitrines & Experiência Pública","pedido",1,3,6
+"MOD-144","Vitrines & Experiência Pública","pedidos",1,1,3
+"MOD-145","Vitrines & Experiência Pública","perfil-da-loja",1,10,2
+"MOD-146","Vitrines & Experiência Pública","personas",1,0,0
+"MOD-147","Vitrines & Experiência Pública","pet",1,4,6
+"MOD-148","Vitrines & Experiência Pública","places",2,3,3
+"MOD-149","Vitrines & Experiência Pública","politicas",1,2,3
+"MOD-150","Vitrines & Experiência Pública","portal-completo",1,2,7
+"MOD-151","Vitrines & Experiência Pública","privacidade",1,1,1
+"MOD-152","Vitrines & Experiência Pública","privacy",1,0,2
+"MOD-153","Vitrines & Experiência Pública","produto",1,7,18
+"MOD-154","Vitrines & Experiência Pública","proposta",1,1,6
+"MOD-155","Vitrines & Experiência Pública","publicacao",1,2,7
+"MOD-156","Vitrines & Experiência Pública","receitas",2,3,5
+"MOD-157","Vitrines & Experiência Pública","recuperar-senha",1,1,3
+"MOD-158","Vitrines & Experiência Pública","redefinir-senha",1,1,3
+"MOD-159","Vitrines & Experiência Pública","servicos",1,4,15
+"MOD-160","Vitrines & Experiência Pública","sobre",1,0,0
+"MOD-161","Vitrines & Experiência Pública","stories",1,0,0
+"MOD-162","Vitrines & Experiência Pública","termos",1,1,1
+"MOD-163","Vitrines & Experiência Pública","trocas-e-devolucoes",1,1,1
+"MOD-164","Vitrines & Experiência Pública","tsx",1,5,4
+"MOD-165","Vitrines & Experiência Pública","turismo",6,7,32
+"MOD-166","Vitrines & Experiência Pública","u",1,1,0
+"MOD-167","Vitrines & Experiência Pública","vendedora",1,1,1
+"MOD-168","Vitrines & Experiência Pública","voucher",1,1,3

@@ -184,7 +184,7 @@ export function BusFleetSelectorModal({
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-2xl">
+ <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-overlay">
  <DialogHeader className="p-5 border-b border-border/70 bg-muted/20">
  <div className="flex items-center gap-3">
  <div className="p-2 rounded-lg bg-primary/10 text-primary">
@@ -201,7 +201,7 @@ export function BusFleetSelectorModal({
  </div>
  </DialogHeader>
 
- <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar">
+ <div className="p-5 space-y-4 max-h-vh-70 overflow-y-auto no-scrollbar">
  <div className="relative">
  <Search className="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
  <Input
@@ -219,7 +219,7 @@ export function BusFleetSelectorModal({
  onClick={() => setSelectedId(v.id)}
  className={'p-4 rounded-lg border transition-colors duration-200 cursor-pointer space-y-3 ' + (
  selectedId === v.id
- ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary'
+ ? 'border-primary bg-primary/5 shadow-overlay ring-1 ring-primary'
  : 'border-border bg-card hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
@@ -266,7 +266,7 @@ export function BusFleetSelectorModal({
  <Button
  type="button"
  onClick={handleConfirm}
- className="rounded-lg bg-primary text-primary-foreground font-bold text-xs shadow-md px-5"
+ className="rounded-lg bg-primary text-primary-foreground font-bold text-xs shadow-overlay px-5"
  >
  Vincular Ônibus Selecionado
  </Button>

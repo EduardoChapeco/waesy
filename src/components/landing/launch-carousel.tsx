@@ -51,7 +51,7 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
 
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 px-0"
+        className="flex gap-3 overflow-x-auto scroll-area-carousel snap-x snap-mandatory scrollbar-none pb-2 pt-1 px-0"
       >
         {slides.map((slide) => (
           <div

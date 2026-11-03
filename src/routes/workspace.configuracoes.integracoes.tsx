@@ -201,7 +201,7 @@ function IntegrationCard({
                     variant="ghost"
                     size="sm"
                     onClick={() => onDelete(provider)}
-                    className="h-8 px-3 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                    className="h-8 px-3 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg min-h-11 sm:min-h-0"
                   >
                     <Trash2 className="size-3.5 mr-2" />
                     Remover
@@ -217,14 +217,14 @@ function IntegrationCard({
                     size="sm"
                     onClick={handleRunTest}
                     disabled={isTesting}
-                    className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer"
+                    className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <RefreshCw className={`size-3.5 mr-2 ${isTesting ? "animate-spin motion-reduce:animate-none" : ""}`} />
                     {isTesting ? "Testando..." : "Testar Conexão"}
                   </Button>
                 )}
 
-                <Button type="submit" size="sm" disabled={isSaving} className="h-8 px-3 text-xs rounded-lg font-bold cursor-pointer">
+                <Button type="submit" size="sm" disabled={isSaving} className="h-8 px-3 text-xs rounded-lg font-bold cursor-pointer min-h-11 sm:min-h-0">
                   <Save className="size-3.5 mr-2" />
                   {isSaving ? "Salvando..." : "Salvar"}
                 </Button>
@@ -357,7 +357,7 @@ function SecretVaultCard({
                     variant="ghost"
                     size="icon"
                     onClick={() => onDelete(existingSecret.id)}
-                    className="size-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                    className="size-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     title="Remover Chave"
                   >
                     <Trash2 className="size-3.5" />
@@ -420,13 +420,13 @@ function SecretVaultCard({
                     size="sm"
                     onClick={handleRunTest}
                     disabled={isTesting || (!secretKey.trim() && !existingSecret)}
-                    className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer"
+                    className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <RefreshCw className={`size-3.5 mr-2 ${isTesting ? "animate-spin motion-reduce:animate-none" : ""}`} />
                     {isTesting ? "Testando..." : "Testar Conexão"}
                   </Button>
                 )}
-                <Button type="submit" size="sm" disabled={isSaving} className="h-8 px-3 text-xs rounded-lg font-bold cursor-pointer">
+                <Button type="submit" size="sm" disabled={isSaving} className="h-8 px-3 text-xs rounded-lg font-bold cursor-pointer min-h-11 sm:min-h-0">
                   <Save className="size-3.5 mr-2" />
                   {isSaving ? "Salvando..." : "Salvar no Cofre"}
                 </Button>
@@ -490,7 +490,7 @@ function WhatsAppInstancesPanel({
   return <Card className="lg:col-span-2 border-primary/20">
     <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><CardTitle className="text-sm flex items-center gap-2"><MessageCircle className="size-4 text-primary" /> Instâncias WhatsApp e canais</CardTitle><CardDescription className="text-xs">Cada número tem credenciais, status e auditoria próprios. Meta oficial e conectores não oficiais permanecem separados.</CardDescription></div><div className="flex flex-wrap items-center gap-2"><Button type="button" size="sm" onClick={() => setQrModalOpen(true)} className="h-11 min-h-11 text-xs font-bold gap-2"><QrCode className="size-4" />Conectar via QR Code</Button><Button type="button" size="sm" variant="outline" onClick={() => setSectorsDrawerOpen(true)} className="h-11 min-h-11 text-xs gap-2"><Layers className="size-4" />Setores & Permissões</Button></div></CardHeader>
     <CardContent className="space-y-5">
-      <div className="grid gap-3">{instances.map((instance) => <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3"><div className="min-w-0"><div className="flex items-center gap-2"><span className="font-semibold text-sm truncate">{instance.display_name}</span><Badge variant={instance.is_active ? "default" : "secondary"}>{instance.status}</Badge><Badge variant="outline">{instance.connection_mode === "official" ? "Oficial" : "Não oficial"}</Badge></div><p className="text-2xs text-muted-foreground mt-1">{instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "identificador pendente"} · {instance.instance_key}</p></div><Button type="button" size="sm" variant={instance.is_active ? "outline" : "default"} disabled={saving} onClick={async () => { try { await toggleWorkspaceWhatsAppInstance({ data: { id: instance.id, active: !instance.is_active } }); await refresh(); } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao alterar instância."); } }} className="h-8 text-xs shrink-0">{instance.is_active ? "Desativar" : "Ativar"}</Button></div>)}{instances.length === 0 && <p className="text-xs text-muted-foreground border border-dashed rounded-lg p-4">Nenhuma instância cadastrada.</p>}</div>
+      <div className="grid gap-3">{instances.map((instance) => <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3"><div className="min-w-0"><div className="flex items-center gap-2"><span className="font-semibold text-sm truncate">{instance.display_name}</span><Badge variant={instance.is_active ? "default" : "secondary"}>{instance.status}</Badge><Badge variant="outline">{instance.connection_mode === "official" ? "Oficial" : "Não oficial"}</Badge></div><p className="text-2xs text-muted-foreground mt-1">{instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "identificador pendente"} · {instance.instance_key}</p></div><Button type="button" size="sm" variant={instance.is_active ? "outline" : "default"} disabled={saving} onClick={async () => { try { await toggleWorkspaceWhatsAppInstance({ data: { id: instance.id, active: !instance.is_active } }); await refresh(); } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao alterar instância."); } }} className="h-8 text-xs shrink-0 min-h-11 sm:min-h-0">{instance.is_active ? "Desativar" : "Ativar"}</Button></div>)}{instances.length === 0 && <p className="text-xs text-muted-foreground border border-dashed rounded-lg p-4">Nenhuma instância cadastrada.</p>}</div>
       <form onSubmit={save} className="grid md:grid-cols-2 gap-3 border-t border-border/60 pt-4">
         <div className="md:col-span-2"><Label className="text-xs">Nome da instância</Label><Input className="h-9 text-xs" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} /></div>
         <div><Label className="text-xs">Provedor</Label><select className="w-full h-9 rounded-md border bg-background px-2 text-xs" value={form.provider} onChange={(e) => setForm({ ...form, provider: e.target.value as typeof form.provider })}><option value="meta_cloud_api">Meta Cloud API (oficial)</option><option value="evolution_api">Evolution API</option><option value="wasender_api">WaSenderAPI</option><option value="render_bridge">Render bridge</option><option value="custom_webhook">Webhook customizado</option></select></div>
@@ -498,7 +498,7 @@ function WhatsAppInstancesPanel({
         <div><Label className="text-xs">Phone Number ID / Instance ID</Label><Input className="h-9 text-xs" value={form.provider === "meta_cloud_api" ? form.phoneNumberId : form.externalInstanceId} onChange={(e) => setForm({ ...form, ...(form.provider === "meta_cloud_api" ? { phoneNumberId: e.target.value } : { externalInstanceId: e.target.value }) })} /></div>
         <div><Label className="text-xs">Telefone exibido</Label><Input className="h-9 text-xs" value={form.displayPhoneNumber} onChange={(e) => setForm({ ...form, displayPhoneNumber: e.target.value })} /></div>
         {form.provider === "meta_cloud_api" && <><div><Label className="text-xs">WABA ID</Label><Input className="h-9 text-xs" value={form.businessAccountId} onChange={(e) => setForm({ ...form, businessAccountId: e.target.value })} /></div><div><Label className="text-xs">Access Token</Label><Input type="password" className="h-9 text-xs" value={form.accessToken} onChange={(e) => setForm({ ...form, accessToken: e.target.value })} /></div><div><Label className="text-xs">App Secret</Label><Input type="password" className="h-9 text-xs" value={form.appSecret} onChange={(e) => setForm({ ...form, appSecret: e.target.value })} /></div><div><Label className="text-xs">Verify Token</Label><Input type="password" className="h-9 text-xs" value={form.verifyToken} onChange={(e) => setForm({ ...form, verifyToken: e.target.value })} /></div></>}
-        <div className="md:col-span-2 flex justify-end"><Button type="submit" disabled={saving} size="sm" className="h-8 text-xs">{saving ? "Salvando..." : "Cadastrar instância pendente"}</Button></div>
+        <div className="md:col-span-2 flex justify-end"><Button type="submit" disabled={saving} size="sm" className="h-8 text-xs min-h-11 sm:min-h-0">{saving ? "Salvando..." : "Cadastrar instância pendente"}</Button></div>
       </form>
       {/* drawer-hook */}
     </CardContent>
@@ -840,7 +840,7 @@ function UnifiedIntegrationsHubPage() {
           </TabsTrigger>
 
           <TabsTrigger value="logistics" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Truck className="size-3.5 text-amber-500" />
+            <Truck className="size-3.5 text-warning-strong" />
             Logística
           </TabsTrigger>
 
@@ -1072,7 +1072,7 @@ function UnifiedIntegrationsHubPage() {
             <Badge variant="outline" className="text-xs border-primary/30 text-primary">
               Pool Ativo (Gemini / Groq / OpenAI)
             </Badge>
-            <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer gap-2 border-primary/30 text-primary hover:bg-primary/10">
+            <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer gap-2 border-primary/30 text-primary hover:bg-primary/10 min-h-11 sm:min-h-0">
               <Link to="/workspace/configuracoes/inteligencia-artificial">
                 <Bot className="size-3.5 text-primary" />
                 Modelos de IA
@@ -1172,7 +1172,7 @@ function UnifiedIntegrationsHubPage() {
         <TabsContent value="marketplaces" className="space-y-4 outline-none">
           <div className="flex items-center justify-between gap-4 pb-1">
             <h4 className="text-sm font-semibold text-foreground">Canais Integrados</h4>
-            <Button asChild size="sm" variant="outline" className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer">
+            <Button asChild size="sm" variant="outline" className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0">
               <Link to="/workspace/integracoes/marketplaces">
                 Gerenciar Conexões
                 <ExternalLink className="size-3 text-muted-foreground" />
@@ -1182,14 +1182,14 @@ function UnifiedIntegrationsHubPage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { id: "mercadolivre", name: "Mercado Livre", desc: "Maior e-commerce da América Latina", color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30" },
+              { id: "mercadolivre", name: "Mercado Livre", desc: "Maior e-commerce da América Latina", color: "bg-warning/10 text-warning-strong border-warning/30" },
               { id: "shopee", name: "Shopee", desc: "Vendas ágeis e frete com cupons", color: "bg-orange-500/10 text-orange-600 border-orange-500/30" },
               { id: "ifood", name: "iFood Merchant", desc: "Delivery gastronômico e mercado local", color: "bg-red-500/10 text-red-600 border-red-500/30" },
               { id: "magalu", name: "Magazine Luiza", desc: "Marketplace integrado ao ecossistema Magalu", color: "bg-blue-500/10 text-blue-600 border-blue-500/30" },
-              { id: "amazon", name: "Amazon Brasil", desc: "Catálogo unificado e alcance nacional", color: "bg-amber-500/10 text-amber-600 border-amber-500/30" },
+              { id: "amazon", name: "Amazon Brasil", desc: "Catálogo unificado e alcance nacional", color: "bg-warning/10 text-warning-strong border-warning/30" },
               { id: "shein", name: "Shein Marketplace", desc: "Moda e vestuário de alta rotação", color: "bg-purple-500/10 text-purple-600 border-purple-500/30" },
               { id: "rappi", name: "Rappi", desc: "Entregas sob demanda e conveniência", color: "bg-rose-500/10 text-rose-600 border-rose-500/30" },
-              { id: "99food", name: "99Food", desc: "Integração para restaurantes parceiros", color: "bg-amber-500/10 text-amber-600 border-amber-500/30" },
+              { id: "99food", name: "99Food", desc: "Integração para restaurantes parceiros", color: "bg-warning/10 text-warning-strong border-warning/30" },
             ].map((mkt) => {
               const conn = marketplaceConnectors.find((c: MarketplaceConnectorDTO) => c.platform === mkt.id);
               const isConnected = conn && conn.status === "connected";
@@ -1218,7 +1218,7 @@ function UnifiedIntegrationsHubPage() {
                         ? `Último sync: ${new Date(conn.last_sync_at).toLocaleDateString("pt-BR")}`
                         : "Sem sincronização"}
                     </span>
-                    <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs font-semibold text-primary">
+                    <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs font-semibold text-primary min-h-11 sm:min-h-0">
                       <Link to="/workspace/integracoes/marketplaces">
                         Configurar
                       </Link>
@@ -1620,7 +1620,7 @@ function UnifiedIntegrationsHubPage() {
                           size="sm"
                           disabled={isDisconnectingLinkedIn}
                           onClick={handleDisconnectLinkedIn}
-                          className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                          className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer min-h-11 sm:min-h-0"
                         >
                           Desconectar
                         </Button>

@@ -110,7 +110,7 @@ function AdminMasterPortalCompletoPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="h-9 rounded-lg text-xs gap-2">
+          <Button asChild variant="outline" size="sm" className="h-9 rounded-lg text-xs gap-2 min-h-11 sm:min-h-0">
             <a href="/portal-completo" target="_blank" rel="noreferrer">
               <span>Ver Landing Page Pública</span>
               <ExternalLink className="size-3.5" />
@@ -158,7 +158,7 @@ function AdminMasterPortalCompletoPage() {
             </div>
           ) : (
             <div className="bg-card rounded-lg border border-border/60 overflow-hidden shadow-2xs">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scroll-area-carousel">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider text-2xs border-b border-border/60">
                     <tr>
@@ -202,7 +202,7 @@ function AdminMasterPortalCompletoPage() {
                               className={`text-2xs font-bold ${
                                 isMigrated
                                   ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
-                                  : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                                  : "bg-warning/10 text-warning-strong border border-warning/20"
                               }`}
                             >
                               {isMigrated ? "Migrado para Pro" : "Aguardando Liberação"}
@@ -214,12 +214,12 @@ function AdminMasterPortalCompletoPage() {
                                 size="sm"
                                 onClick={() => handleMigrate(item.id, item.store_id)}
                                 disabled={migratingId === item.id}
-                                className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-2xs"
+                                className="h-8 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-2xs min-h-11 sm:min-h-0"
                               >
                                 {migratingId === item.id ? (
                                   <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
                                 ) : (
-                                  <Zap className="size-3.5 text-amber-300" />
+                                  <Zap className="size-3.5 text-warning-strong" />
                                 )}
                                 <span>Migrar em 1-Clique</span>
                               </Button>
@@ -292,7 +292,7 @@ function AdminMasterPortalCompletoPage() {
             <Button
               type="submit"
               disabled={isSavingContent}
-              className="h-10 px-5 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm"
+              className="h-10 px-5 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground  min-h-11 sm:min-h-0"
             >
               {isSavingContent ? (
                 <>

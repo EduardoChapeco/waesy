@@ -267,7 +267,7 @@ export function VitrineLateralMenuSheet({
         aria-modal="true"
         aria-label={greetingTitle}
         className={cn(
-          "fixed inset-y-0 left-0 lateral-sheet-width z-50 bg-background text-foreground border-r border-border/50 lateral-sheet-transition select-none flex flex-col shadow-2xl",
+          "fixed inset-y-0 left-0 lateral-sheet-width z-50 bg-background text-foreground border-r border-border/50 lateral-sheet-transition select-none flex flex-col shadow-overlay",
           open ? "translate-x-0" : "-translate-x-full",
           className,
         )}

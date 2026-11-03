@@ -357,8 +357,8 @@ export const InteractiveQuoteCalculator: React.FC<InteractiveQuoteCalculatorProp
               </div>
 
               {isSubmitted ? (
-                <div className="p-6 rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-center flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center justify-center">
+                <div className="p-6 rounded-lg border border-success/20 bg-success/10 text-center flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-success/20 text-success flex items-center justify-center">
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <h3 className="text-base font-bold text-foreground">
@@ -437,15 +437,9 @@ export const InteractiveQuoteCalculator: React.FC<InteractiveQuoteCalculatorProp
                     />
                   </div>
 
-                  {!hasValidWhatsApp && !onLeadSubmit && (
-                    <p className="text-2xs text-muted-foreground text-center">
-                      Destino de WhatsApp não configurado
-                    </p>
-                  )}
-
                   <Button
                     type="submit"
-                    disabled={isSubmitting || (!hasValidWhatsApp && !onLeadSubmit)}
+                    disabled={isSubmitting}
                     className="w-full h-11 min-h-11 font-bold text-sm flex items-center justify-center gap-2 mt-1"
                   >
                     {isSubmitting ? (

@@ -75,7 +75,7 @@ const ROLE_DEFINITIONS: Record<
  finance: {
  label: "Financeiro",
  description: "Extratos, fluxo de caixa, pagamentos e conciliação",
- color: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+ color: "bg-warning/15 text-warning-strong  border-warning/30",
  },
  stock: {
  label: "Estoque e Expedição",
@@ -491,7 +491,7 @@ export default function WorkspaceTeamPage() {
  variant="ghost"
  size="icon"
  onClick={() => setMemberToRemove(m)}
- className="size-8 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+ className="size-8 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Revogar Acesso"
  >
  <Trash2 className="size-4" />
@@ -645,7 +645,7 @@ export default function WorkspaceTeamPage() {
                     });
                     setIsContractorOpen(true);
                   }}
-                  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 >
                   <Edit3 className="size-3.5" />
                 </Button>
@@ -662,7 +662,7 @@ export default function WorkspaceTeamPage() {
                       toast.error(err?.message || "Erro ao excluir prestador.");
                     }
                   }}
-                  className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10"
+                  className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 >
                   <Trash2 className="size-3.5" />
                 </Button>

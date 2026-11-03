@@ -80,7 +80,7 @@ export function ExperienceMediaCarousel({
         </div>
 
         {/* Trilho Deslizante Snap (LinkedIn / Apple HIG Experience Rail) */}
-        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 scroll-smooth">
+        <div className="flex gap-3 overflow-x-auto scroll-area-carousel snap-x snap-mandatory scrollbar-none pb-2 pt-1 scroll-smooth">
           {normalizedItems.map((item, idx) => {
             const isPdf = item.type === "pdf" || item.url.toLowerCase().endsWith(".pdf");
 
@@ -100,7 +100,7 @@ export function ExperienceMediaCarousel({
       e.stopPropagation();
       setSelectedMediaIndex(idx);
     }}
-    className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50 hover:shadow-md transition-colors duration-200 duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="group relative shrink-0 w-44 sm:w-56 aspect-video rounded-lg overflow-hidden border border-border/60 bg-muted/20 snap-start shadow-xs hover:border-primary/50  transition-colors duration-200 duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {isPdf ? (
                   <div className="size-full flex flex-col items-center justify-center p-3 text-center bg-card">
@@ -154,7 +154,7 @@ export function ExperienceMediaCarousel({
     className="w-full max-w-5xl flex items-center justify-between text-foreground z-10 py-2 focus-visible:outline-none"
     onClick={(e) => e.stopPropagation()}
   >
-            <div className="space-y-1 max-w-[70%]">
+            <div className="space-y-1 max-w-7/10">
               <h4 className="text-sm sm:text-base font-bold truncate">
                 {activeItem.title || itemTitle || "Evidência Profissional"}
               </h4>
@@ -172,7 +172,7 @@ export function ExperienceMediaCarousel({
                 asChild
                 size="sm"
                 variant="ghost"
-                className="size-9 p-0 rounded-full text-foreground/80 hover:text-foreground hover:bg-card/10"
+                className="size-9 p-0 rounded-full text-foreground/80 hover:text-foreground hover:bg-card/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               >
                 <a
                   href={activeItem.url}
@@ -188,7 +188,7 @@ export function ExperienceMediaCarousel({
               <Button
                 size="sm"
                 variant="ghost"
-                className="size-9 p-0 rounded-full text-foreground/80 hover:text-foreground hover:bg-card/10"
+                className="size-9 p-0 rounded-full text-foreground/80 hover:text-foreground hover:bg-card/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 onClick={() => setSelectedMediaIndex(null)}
                 title="Fechar (ESC)"
               >
@@ -220,7 +220,7 @@ export function ExperienceMediaCarousel({
 
             {/* Conteúdo da Mídia */}
             {activeItem.type === "pdf" || activeItem.url.toLowerCase().endsWith(".pdf") ? (
-              <div className="w-full max-w-2xl h-[65vh] rounded-lg bg-card p-6 flex flex-col items-center justify-center text-center space-y-4 border border-border shadow-2xl">
+              <div className="w-full max-w-2xl h-vh-65 rounded-lg bg-card p-6 flex flex-col items-center justify-center text-center space-y-4 border border-border ">
                 <div className="size-16 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                   <FileText className="size-8" />
                 </div>
@@ -243,7 +243,7 @@ export function ExperienceMediaCarousel({
               <img
                 src={activeItem.url}
                 alt={activeItem.title || "Visualização ampliada"}
-                className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200"
+                className="max-h-vh-75 max-w-full object-contain rounded-lg  border border-white/10 animate-in zoom-in-95 duration-200"
               />
             )}
 
@@ -283,7 +283,7 @@ export function ExperienceMediaCarousel({
     type="button"
     onClick={() => setSelectedMediaIndex(dotIdx)}
     className={cn(
-      "size-2 rounded-full transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+      "size-2 rounded-full transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                       dotIdx === selectedMediaIndex
                         ? "bg-card w-5"
                         : "bg-card/30 hover:bg-card/60"

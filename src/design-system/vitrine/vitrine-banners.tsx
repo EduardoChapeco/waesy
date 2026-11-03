@@ -82,12 +82,15 @@ function mapLiveBannersToSlides(liveBanners?: Array<Record<string, unknown>>): V
     .map((raw, idx): VitrineBannerSlideItem | null => {
       const desktop =
         (typeof raw.image_desktop_url === "string" && raw.image_desktop_url) ||
+        (typeof raw.media_desktop_url === "string" && raw.media_desktop_url) ||
         (typeof raw.desktop_image_url === "string" && raw.desktop_image_url) ||
+        (typeof raw.media_url === "string" && raw.media_url) ||
         (typeof raw.image_url === "string" && raw.image_url) ||
         (typeof raw.imageUrl === "string" && raw.imageUrl) ||
         "";
       const mobile =
         (typeof raw.image_mobile_url === "string" && raw.image_mobile_url) ||
+        (typeof raw.media_mobile_url === "string" && raw.media_mobile_url) ||
         (typeof raw.mobile_image_url === "string" && raw.mobile_image_url) ||
         desktop;
       const videoUrl =
@@ -171,6 +174,7 @@ export function VitrineMetamorphicBanner({
     rounded === "none" ? "rounded-none" : rounded === "md" ? "rounded-md" : "rounded-lg";
 
   if (count === 0) {
+    if (!isEditorCanvas) return null;
     return (
       <section className={cn("w-full py-4", className)} aria-label={sectionTitle || "Banner"}>
         <div
@@ -416,6 +420,7 @@ export function VitrineBentoTetris({
   const { isMobile, isEditorCanvas } = useEffectiveViewport();
 
   if (!tiles || tiles.length === 0) {
+    if (!isEditorCanvas) return null;
     return (
       <section className={cn("w-full py-4", className)} aria-label={sectionTitle || "Grade Bento"}>
         <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 flex flex-col items-center justify-center text-center gap-2">

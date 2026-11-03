@@ -182,7 +182,7 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
 
         {/* Barra de Abas Horizontais com Scroll Tátil */}
         {/* design-lint-ignore DL-30 reason:"Barra horizontal de abas do CRM cliente requer rolagem suave no mobile" expiry:"2027-10-30" */}
-        <div className="flex items-center gap-2 overflow-x-auto border-b border-border px-6 py-2 bg-muted/20 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel border-b border-border px-6 py-2 bg-muted/20 scrollbar-none">
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -249,7 +249,7 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
                       {customer.client_lifetime_days ?? 120} dias
                     </p>
                   </div>
-                  <Award className="h-4 w-4 text-amber-500" />
+                  <Award className="h-4 w-4 text-warning-strong" />
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
                   <div>

@@ -293,7 +293,7 @@ export default function WorkspaceGroupToursIndexPage() {
                                 ? "bg-emerald-500"
                                 : occupancyPct >= 50
                                 ? "bg-primary"
-                                : "bg-amber-500"
+                                : "bg-warning"
                             }`}
                             style={{ width: `${occupancyPct}%` }}
                           />

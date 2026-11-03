@@ -290,10 +290,10 @@ function WorkspacePudoLogisticsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Boxes className="size-3.5 text-amber-600" />
+            <Boxes className="size-3.5 text-warning-strong" />
             Em Custódia
           </span>
-          <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-2xl font-mono font-bold text-warning-strong ">
             {kpis.ready}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
@@ -394,7 +394,7 @@ function WorkspacePudoLogisticsPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0">
           {[
             { id: "all", label: "Todos", count: packages.length },
             { id: "ready", label: "Aguardando", count: kpis.ready },
@@ -450,7 +450,7 @@ function WorkspacePudoLogisticsPage() {
                       pkg.status === "delivered_to_customer"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs font-bold"
                         : pkg.status === "ready_for_pickup"
-                        ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-xs font-bold"
+                        ? "bg-warning/10 text-warning-strong border-warning/30   text-xs font-bold"
                         : "bg-destructive/10 text-destructive border-destructive/30 text-xs font-bold"
                     }
                   >

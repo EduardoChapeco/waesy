@@ -14,6 +14,7 @@ export interface ContactFormDirectProps {
   className?: string;
   storeData?: any;
   pageSlug?: string;
+  activeSubstate?: string | null;
   onLeadSubmit?: (payload: {
     name: string;
     phone?: string;
@@ -29,6 +30,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
   className = "",
   storeData,
   pageSlug,
+  activeSubstate,
   onLeadSubmit,
 }) => {
   const [name, setName] = useState("");
@@ -37,6 +39,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const effectiveSubmitted = isSubmitted || activeSubstate === "submitted" || activeSubstate === "success";
   const whatsappDigits = (
     data.whatsappNumber ||
     storeData?.whatsapp ||
@@ -147,9 +150,9 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
             )}
           </div>
 
-          {isSubmitted ? (
+          {effectiveSubmitted ? (
             <div className="text-center py-12 flex flex-col items-center">
-              <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-4">
+              <div className="size-16 rounded-full bg-success/10 text-success flex items-center justify-center mb-4">
                 <CheckCircle2 className="size-8" />
               </div>
               <h3 className="text-xl font-bold text-foreground mb-2">
@@ -236,15 +239,9 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
                 </div>
               )}
 
-              {!hasValidWhatsApp && !onLeadSubmit && (
-                <p className="text-2xs text-muted-foreground text-center">
-                  Destino de WhatsApp não configurado
-                </p>
-              )}
-
               <Button
                 type="submit"
-                disabled={isSubmitting || (!hasValidWhatsApp && !onLeadSubmit)}
+                disabled={isSubmitting}
                 size="lg"
                 className="w-full h-12 min-h-11 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors motion-reduce:transition-none mt-2"
               >

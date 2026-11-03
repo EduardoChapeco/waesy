@@ -90,7 +90,7 @@ function ResetPasswordPage() {
  </div>
  ) : !hasActiveSession ? (
  <div className="text-center space-y-4 py-2">
- <div className="size-12 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
+ <div className="size-12 rounded-lg bg-warning/10 text-warning-strong  mx-auto flex items-center justify-center">
  <ShieldAlert className="size-6" />
  </div>
  <div className="space-y-1">

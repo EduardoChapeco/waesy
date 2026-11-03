@@ -107,7 +107,7 @@ export const INCIDENT_TYPE_LABELS: Record<TourismIncidentType, string> = {
 };
 
 export const INCIDENT_STATUS_LABELS: Record<TourismIncidentStatus, { label: string; className: string }> = {
-  open: { label: 'Aberto', className: 'bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-400' },
+  open: { label: 'Aberto', className: 'bg-warning/10 text-warning-strong border-warning/30 ' },
   in_analysis: { label: 'Em Análise', className: 'bg-sky-500/10 text-sky-700 border-sky-500/30 dark:text-sky-400' },
   awaiting_airline: { label: 'Aguardando CIA', className: 'bg-violet-500/10 text-violet-700 border-violet-500/30 dark:text-violet-400' },
   awaiting_client: { label: 'Aguardando Cliente', className: 'bg-orange-500/10 text-orange-700 border-orange-500/30 dark:text-orange-400' },

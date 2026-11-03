@@ -163,7 +163,7 @@ export function BannerHeroCarousel({
               <div className="max-w-xl space-y-2 sm:space-y-3 z-10 pointer-events-auto">
                 {currentBanner.show_badge === true && currentBanner.badge_text && (
                   <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-background/80 text-xs font-bold uppercase tracking-wider text-foreground border border-border/60">
-                    <Layers className="size-3 text-amber-300" />
+                    <Layers className="size-3 text-warning-strong" />
                     <span>{currentBanner.badge_text}</span>
                   </div>
                 )}
@@ -220,7 +220,7 @@ export function BannerHeroCarousel({
                   key={i}
                   className={`transition-colors duration-200 duration-300 rounded-full ${
                     i === currentIndex
-                      ? "w-5 h-1.5 bg-card shadow-sm"
+                      ? "w-5 h-1.5 bg-card "
                       : "w-1.5 h-1.5 bg-card/50"
                   }`}
                 />

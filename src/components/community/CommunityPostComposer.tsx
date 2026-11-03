@@ -350,13 +350,13 @@ export function CommunityPostComposer({
                   title="Marca-texto com cor selecionável"
                   aria-label="Marca-texto colorido"
                 >
-                  <Highlighter className="size-4 text-amber-500" />
+                  <Highlighter className="size-4 text-warning-strong" />
                 </button>
 
                 {isColorPickerOpen && (
-                  <div className="absolute left-0 top-12 z-50 p-2 rounded-xl bg-popover text-popover-foreground border border-border shadow-md flex items-center gap-1 animate-in fade-in-50 zoom-in-95">
+                  <div className="absolute left-0 top-12 z-50 p-2 rounded-xl bg-popover text-popover-foreground border border-border shadow-overlay flex items-center gap-1 animate-in fade-in-50 zoom-in-95">
                     {[
-                      { id: "yellow", name: "Amarelo", bg: "bg-amber-300" },
+                      { id: "yellow", name: "Amarelo", bg: "bg-warning/30" },
                       { id: "cyan", name: "Ciano", bg: "bg-cyan-300" },
                       { id: "pink", name: "Rosa", bg: "bg-pink-300" },
                       { id: "green", name: "Verde", bg: "bg-emerald-300" },
@@ -460,7 +460,7 @@ export function CommunityPostComposer({
                   <button
                     type="button"
                     onClick={() => removeMedia(idx)}
-                    className="absolute top-1 right-1 size-6 rounded-full bg-background/70 text-primary-foreground flex items-center justify-center hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="absolute top-1 right-1 size-6 rounded-full bg-background/70 text-primary-foreground flex items-center justify-center hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                   >
                     <X className="size-3.5" />
                   </button>

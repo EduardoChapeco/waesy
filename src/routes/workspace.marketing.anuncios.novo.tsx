@@ -302,7 +302,7 @@ function NovoAnuncioPage() {
  variant="outline"
  onClick={handleExtractWithAI}
  disabled={isAiExtracting}
- className="h-10 rounded-lg text-xs font-semibold px-4 cursor-pointer shrink-0"
+ className="h-10 rounded-lg text-xs font-semibold px-4 cursor-pointer shrink-0 min-h-11 sm:min-h-0"
  >
  {isAiExtracting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : "Estruturar"}
  </Button>

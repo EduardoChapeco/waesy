@@ -58,7 +58,7 @@ function Row({ label, value, mono = false, className }: { label: string; value: 
 
 // ─── Risk Gauge ────────────────────────────────────────────────────────────────
 function RiskGauge({ score }: { score: number }) {
- const color = score >= 70 ? "bg-destructive" : score >= 40 ? "bg-amber-500" : "bg-emerald-500";
+ const color = score >= 70 ? "bg-destructive" : score >= 40 ? "bg-warning" : "bg-emerald-500";
  const label = score >= 70 ? "Alto Risco" : score >= 40 ? "Médio Risco" : "Normal";
  return (
  <div className="space-y-2">
@@ -142,7 +142,7 @@ function CertificateDetailPage() {
  <div className="text-2xs text-muted-foreground">Cadeia</div>
  </div>
  <div className="text-center">
- <div className={cn("text-base font-bold", (timestamps.clock_drift_ms || 0) < 30000 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500")}>
+ <div className={cn("text-base font-bold", (timestamps.clock_drift_ms || 0) < 30000 ? "text-emerald-600 dark:text-emerald-400" : "text-warning-strong")}>
  {timestamps.clock_drift_ms != null ? `${(timestamps.clock_drift_ms / 1000).toFixed(1)}s` : "—"}
  </div>
  <div className="text-2xs text-muted-foreground">Clock Drift</div>
@@ -213,7 +213,7 @@ function CertificateDetailPage() {
  <span className={cn(
  "font-mono font-semibold",
  (timestamps.clock_drift_ms || 0) > 300000 ? "text-destructive" :
- (timestamps.clock_drift_ms || 0) > 30000 ? "text-amber-500" : "text-emerald-600 dark:text-emerald-400"
+ (timestamps.clock_drift_ms || 0) > 30000 ? "text-warning-strong" : "text-emerald-600 dark:text-emerald-400"
  )}>
  {timestamps.clock_drift_ms != null ? `${timestamps.clock_drift_ms.toLocaleString()}ms` : "—"}
  {(timestamps.clock_drift_ms || 0) > 300000 ? "  Suspeito" : ""}
@@ -227,7 +227,7 @@ function CertificateDetailPage() {
 
  {/* Payload Snapshot */}
  <Section title="Snapshot do Payload (Imutável)" icon={Eye}>
- <pre className="text-2xs font-mono bg-muted/50 rounded-lg p-4 overflow-x-auto no-scrollbar whitespace-pre-wrap text-muted-foreground max-h-72">
+ <pre className="text-2xs font-mono bg-muted/50 rounded-lg p-4 overflow-x-auto scroll-area-carousel no-scrollbar whitespace-pre-wrap text-muted-foreground max-h-72">
  {JSON.stringify(cert.payload_snapshot, null, 2)}
  </pre>
  </Section>
@@ -244,7 +244,7 @@ function CertificateDetailPage() {
  ev.severity === "critical" || ev.severity === "emergency"
  ? "bg-destructive/5 border-destructive/20"
  : ev.severity === "warning"
- ? "bg-amber-500/5 border-amber-500/20"
+ ? "bg-warning/5 border-warning/20"
  : "bg-muted/30 border-border/50"
  )}
  >
@@ -252,7 +252,7 @@ function CertificateDetailPage() {
  {ev.severity === "critical" || ev.severity === "emergency"
  ? <ShieldAlert className="size-3.5 text-destructive" />
  : ev.severity === "warning"
- ? <AlertTriangle className="size-3.5 text-amber-500" />
+ ? <AlertTriangle className="size-3.5 text-warning-strong" />
  : <Shield className="size-3.5 text-muted-foreground" />
  }
  </div>

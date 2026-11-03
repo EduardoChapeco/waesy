@@ -28,8 +28,8 @@ export function FluidNoiseSurface({
  : "from-sky-100/90 via-blue-50/70 to-background dark:from-sky-950/40 dark:via-slate-900/60 dark:to-background";
  case "sunset":
  return intensity === "vibrant"
- ? "from-amber-400 via-orange-500 to-rose-600 dark:from-amber-950 dark:via-orange-950 dark:to-slate-950"
- : "from-amber-100/90 via-orange-50/70 to-background dark:from-amber-950/40 dark:via-stone-900/60 dark:to-background";
+ ? "from-warning via-orange-500 to-rose-600  dark:via-orange-950 dark:to-slate-950"
+ : "from-warning/90 via-orange-50/70 to-background  dark:via-stone-900/60 dark:to-background";
  case "emerald":
  return intensity === "vibrant"
  ? "from-emerald-400 via-teal-500 to-cyan-600 dark:from-emerald-950 dark:via-teal-950 dark:to-slate-950"

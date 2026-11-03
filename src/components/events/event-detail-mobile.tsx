@@ -58,7 +58,7 @@ export function EventDetailMobile({
   return (
     <div className="w-full min-h-screen bg-background text-foreground pb-24 font-sans select-none antialiased">
       {/* ── 1. Hero Edge-to-Edge com Ações Flutuantes ── */}
-      <div className="relative w-full aspect-video sm:aspect-[16/9] bg-muted overflow-hidden">
+      <div className="relative w-full aspect-video sm:aspect-16/9 bg-muted overflow-hidden">
         {event.cover_image ? (
           <img
             src={event.cover_image}
@@ -77,7 +77,7 @@ export function EventDetailMobile({
         {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link
           to="/agenda"
-          className="absolute top-3 left-3 size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground flex items-center justify-center border border-foreground/20 active:scale-95 transition-transform z-20 shadow-md"
+          className="absolute top-3 left-3 size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground flex items-center justify-center border border-foreground/20 active:scale-95 transition-transform z-20 "
           aria-label="Voltar para Agenda"
         >
           <ArrowLeft size={20} weight="bold" />
@@ -88,13 +88,13 @@ export function EventDetailMobile({
           {isOwner && (
             <Link
               to="/workspace/eventos"
-              className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-amber-300 flex items-center justify-center border border-foreground/20 active:scale-95 transition-transform shadow-md"
+              className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-warning-strong flex items-center justify-center border border-foreground/20 active:scale-95 transition-transform "
               aria-label="Editar Evento"
             >
               <PencilSimple size={20} weight="bold" />
             </Link>
           )}
-          <div className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground flex items-center justify-center border border-foreground/20 shadow-md">
+          <div className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground flex items-center justify-center border border-foreground/20 ">
             <ContentActionsMenu
               entityType="event"
               entityId={event.id}
@@ -111,7 +111,7 @@ export function EventDetailMobile({
           <button
             type="button"
             onClick={onOpenStory}
-            className="absolute bottom-3 right-3 z-20 h-11 min-h-11 px-4 rounded-full bg-purple-600/90 text-foreground text-xs font-bold flex items-center gap-2 shadow-lg backdrop-blur-md active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="absolute bottom-3 right-3 z-20 h-11 min-h-11 px-4 rounded-full bg-purple-600/90 text-foreground text-xs font-bold flex items-center gap-2  backdrop-blur-md active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span>Ver Story</span>
           </button>
@@ -129,14 +129,14 @@ export function EventDetailMobile({
 
       {/* ── 2. Owner Mode Banner (se aplicável) ── */}
       {isOwner && (
-        <div className="bg-amber-500/10 border-b border-amber-500/25 px-4 py-2 flex items-center justify-between text-xs text-amber-950 dark:text-amber-200">
+        <div className="bg-warning/10 border-b border-warning/25 px-4 py-2 flex items-center justify-between text-xs text-warning-strong ">
           <div className="flex items-center gap-2">
-            <span className="inline-block size-2 rounded-full bg-amber-500" />
+            <span className="inline-block size-2 rounded-full bg-warning" />
             <span className="font-semibold">Modo Organizador Ativo</span>
           </div>
           <Link
             to="/workspace/eventos"
-            className="text-xs font-bold underline hover:text-amber-800 dark:hover:text-amber-100"
+            className="text-xs font-bold underline hover:text-warning-strong "
           >
             Gerenciar
           </Link>
@@ -269,7 +269,7 @@ export function EventDetailMobile({
               disabled={isSubmittingRsvp}
               className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-transform duration-200 min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 userRsvp === "going"
-                  ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
+                  ? "bg-primary/10 border-primary text-primary font-bold "
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
               }`}
             >
@@ -288,14 +288,14 @@ export function EventDetailMobile({
               disabled={isSubmittingRsvp}
               className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-transform duration-200 min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 userRsvp === "interested"
-                  ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold shadow-sm"
+                  ? "bg-warning/10 border-warning text-warning-strong  font-bold "
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
               }`}
             >
               <Star
                 size={18}
                 weight={userRsvp === "interested" ? "fill" : "regular"}
-                className={userRsvp === "interested" ? "text-amber-500" : "text-muted-foreground"}
+                className={userRsvp === "interested" ? "text-warning-strong" : "text-muted-foreground"}
               />
               <span className="text-xs mt-1">Interesse</span>
               <span className="text-xs text-muted-foreground font-mono">{rsvpCounts.interested}</span>
@@ -307,7 +307,7 @@ export function EventDetailMobile({
               disabled={isSubmittingRsvp}
               className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-transform duration-200 min-h-14 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 userRsvp === "not_going"
-                  ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold shadow-sm"
+                  ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold "
                   : "bg-background border-border/70 text-foreground hover:bg-muted/40"
               }`}
             >
@@ -330,7 +330,7 @@ export function EventDetailMobile({
               {event.is_external || event.is_external_ticket ? "Ingressos Oficiais" : "Lotes de Ingressos"}
             </h2>
             {(event.is_external || event.is_external_ticket) && (
-              <Badge variant="outline" className="text-xs font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
+              <Badge variant="outline" className="text-xs font-mono border-warning/30 text-warning-strong bg-warning/10">
                 {event.external_source ? `Oficial ${event.external_source}` : "Link Externo"}
               </Badge>
             )}
@@ -469,7 +469,7 @@ export function EventDetailMobile({
                   partner.nivel === "diamante"
                     ? "border-purple-500/30 text-purple-600 bg-purple-500/10"
                     : partner.nivel === "ouro"
-                    ? "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                    ? "border-warning/30 text-warning-strong bg-warning/10"
                     : partner.nivel === "bronze"
                     ? "border-orange-500/30 text-orange-600 bg-orange-500/10"
                     : "border-slate-500/30 text-slate-600 bg-slate-500/10";
@@ -545,7 +545,7 @@ export function EventDetailMobile({
       </div>
 
       {/* ── 9. Sticky Bottom Bar Anti-Jank (Safe-Area & Thumb Zone) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-overlay">
         <div className="min-w-0 flex-1">
           {lowestLotPrice !== null ? (
             <div>
@@ -582,7 +582,7 @@ export function EventDetailMobile({
             href={event.external_ticket_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors shadow-sm shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors  shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <span>Comprar</span>
             <ArrowSquareOut size={14} weight="bold" />
@@ -590,7 +590,7 @@ export function EventDetailMobile({
         ) : activeLots.length > 0 ? (
           <Button
             onClick={scrollToTickets}
-            className="h-12 px-5 rounded-lg font-bold text-xs shadow-sm shrink-0"
+            className="h-12 px-5 rounded-lg font-bold text-xs  shrink-0"
           >
             <Ticket size={16} weight="bold" className="mr-2" />
             <span>Ver Ingressos</span>
@@ -598,7 +598,7 @@ export function EventDetailMobile({
         ) : (
           <Button
             onClick={() => handleToggleRsvp("going")}
-            className="h-12 px-5 rounded-lg font-bold text-xs shadow-sm shrink-0"
+            className="h-12 px-5 rounded-lg font-bold text-xs  shrink-0"
             variant={userRsvp === "going" ? "secondary" : "default"}
           >
             <CheckCircle size={16} weight="bold" className="mr-2" />

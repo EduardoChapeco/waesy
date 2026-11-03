@@ -91,7 +91,7 @@ export function SignaturePad({ onSave, onClear }: SignaturePadProps) {
 
  return (
  <div className="space-y-2">
- <div className="relative w-full aspect-3/1 min-h-[140px] max-h-[200px] rounded-lg border-2 border-dashed border-border/80 bg-slate-50 touch-none overflow-hidden flex items-center justify-center">
+ <div className="relative w-full aspect-3/1 min-h-35 max-h-50 rounded-lg border-2 border-dashed border-border/80 bg-slate-50 touch-none overflow-hidden flex items-center justify-center">
  <canvas
  ref={canvasRef}
  width={600}
@@ -123,7 +123,7 @@ export function SignaturePad({ onSave, onClear }: SignaturePadProps) {
  size="sm"
  variant="ghost"
  onClick={handleClear}
- className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1"
+ className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1 min-h-11 sm:min-h-0"
  >
  <Trash className="size-3.5" /> Limpar
  </Button>

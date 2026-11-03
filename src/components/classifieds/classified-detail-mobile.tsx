@@ -483,7 +483,7 @@ export function ClassifiedDetailMobile({
       </header>
 
       {/* ── 2. HERO DE MÍDIA NATIVO FULL BLEED NO MOBILE ── */}
-      <div className="relative w-full aspect-[4/3] sm:aspect-video bg-muted/20 overflow-hidden">
+      <div className="relative w-full aspect-4/3 sm:aspect-video bg-muted/20 overflow-hidden">
         {images.length > 0 ? (
           <div className="relative size-full overflow-hidden flex items-center justify-center">
             {isVideoUrl(images[activeImage]) ? (
@@ -533,7 +533,7 @@ export function ClassifiedDetailMobile({
 
       {/* ── 2.1 MINIATURAS INICIANDO RENTE À MARGEM ESQUERDA (100% visíveis com px-4) ── */}
       {images.length > 1 && (
-        <div className="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar w-full">
+        <div className="px-4 py-2 flex gap-2 overflow-x-auto scroll-area-carousel no-scrollbar w-full">
           {images.map((imgUrl, idx) => (
             <button
               key={idx}
@@ -809,8 +809,8 @@ export function ClassifiedDetailMobile({
                         <span className="uppercase tracking-wider">Hospedagem & Hotel</span>
                       </div>
                       {travelDetails.hotelStars > 0 && (
-                        <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
-                          <Star className="size-3.5 fill-amber-500" />
+                        <div className="flex items-center gap-1 text-warning-strong font-bold text-xs">
+                          <Star className="size-3.5 fill-warning" />
                           <span>{travelDetails.hotelStars} estrelas</span>
                         </div>
                       )}
@@ -829,7 +829,7 @@ export function ClassifiedDetailMobile({
                     {travelDetails.hotelPhotos.length > 0 && (
                       <div className="space-y-1">
                         <span className="text-xs text-muted-foreground block font-medium">Fotos da Acomodação</span>
-                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 snap-x">
+                        <div className="flex gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 snap-x">
                           {travelDetails.hotelPhotos.map((photo, pIdx) => (
                             <button
                               key={pIdx}
@@ -1135,7 +1135,7 @@ export function ClassifiedDetailMobile({
                 </div>
                 {classified.rating && Number(classified.rating) > 0 ? (
                   <div className="flex items-center gap-2">
-                    <Star className="size-4 text-amber-500 fill-amber-500 shrink-0" />
+                    <Star className="size-4 text-warning-strong fill-warning shrink-0" />
                     <div>
                       <span className="text-muted-foreground block text-xs font-medium">Avaliação</span>
                       <span className="font-semibold text-foreground">
@@ -1190,7 +1190,7 @@ export function ClassifiedDetailMobile({
                     {similarAds.length} {similarAds.length === 1 ? "item" : "itens"}
                   </span>
                 </div>
-                <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 snap-x">
+                <div className="flex gap-3 overflow-x-auto scroll-area-carousel no-scrollbar pb-2 snap-x">
                   {similarAds.map((sim: any) => {
                     const simImg = sim.images?.[0] || sim.media?.[0] || null;
                     return (

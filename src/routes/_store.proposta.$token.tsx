@@ -193,7 +193,7 @@ function PublicTravelProposalPage() {
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-xs font-bold text-foreground line-clamp-1">{opt.name || `Opção ${idx + 1}`}</span>
                     {opt.is_recommended && (
-                      <Badge className="bg-amber-500 text-foreground text-3xs px-2 py-0 shrink-0 font-bold">
+                      <Badge className="bg-warning text-foreground text-3xs px-2 py-0 shrink-0 font-bold">
                         Recomendada
                       </Badge>
                     )}
@@ -250,9 +250,9 @@ function PublicTravelProposalPage() {
             size="sm"
             variant="outline"
             onClick={() => setIsAdvisorOpen(true)}
-            className="rounded-lg text-xs font-bold gap-2 h-10 border-amber-500/40 text-amber-700 bg-amber-50/50 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:text-amber-300 cursor-pointer"
+            className="rounded-lg text-xs font-bold gap-2 h-10 border-warning/40 text-warning-strong bg-warning/50 hover:bg-warning/60   cursor-pointer min-h-11 sm:min-h-0"
           >
-            <Star className="size-3.5 text-amber-600 dark:text-amber-400" />
+            <Star className="size-3.5 text-warning-strong " />
             <span>Consultor IA</span>
           </Button>
 
@@ -262,7 +262,7 @@ function PublicTravelProposalPage() {
             variant="outline"
             disabled={isExportingPdf}
             onClick={handleExportPdf}
-            className="rounded-lg text-xs font-bold gap-2 h-10 cursor-pointer"
+            className="rounded-lg text-xs font-bold gap-2 h-10 cursor-pointer min-h-11 sm:min-h-0"
           >
             <Download className="size-3.5" />
             <span>{isExportingPdf ? "Gerando..." : "Baixar PDF"}</span>
@@ -273,7 +273,7 @@ function PublicTravelProposalPage() {
               asChild
               size="sm"
               variant="outline"
-              className="rounded-lg text-xs font-bold gap-2 h-10 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 cursor-pointer"
+              className="rounded-lg text-xs font-bold gap-2 h-10 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 cursor-pointer min-h-11 sm:min-h-0"
             >
               <a
                 href={`https://wa.me/${cleanWhatsapp}?text=${waConfirmMessage}`}
@@ -327,9 +327,9 @@ function PublicTravelProposalPage() {
           type="button"
           variant="outline"
           onClick={() => setIsAdvisorOpen(true)}
-          className="h-11 px-3 rounded-lg text-xs font-bold shrink-0 border-amber-500/40 text-amber-700 bg-amber-50/50 cursor-pointer"
+          className="h-11 px-3 rounded-lg text-xs font-bold shrink-0 border-warning/40 text-warning-strong bg-warning/50 cursor-pointer"
         >
-          <Star className="size-4 text-amber-600 mr-1" />
+          <Star className="size-4 text-warning-strong mr-1" />
           <span>IA</span>
         </Button>
 
@@ -367,7 +367,7 @@ function PublicTravelProposalPage() {
         <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col h-full bg-background">
           <SheetHeader className="p-4 border-b border-border/60 shrink-0 bg-muted/20">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600">
+              <div className="h-9 w-9 rounded-lg bg-warning/10 border border-warning/30 flex items-center justify-center text-warning-strong">
                 <Star className="size-5" />
               </div>
               <div>
@@ -387,12 +387,12 @@ function PublicTravelProposalPage() {
                 className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {m.role === "assistant" && (
-                  <div className="h-7 w-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 text-amber-600 mt-1">
+                  <div className="h-7 w-7 rounded-lg bg-warning/10 border border-warning/20 flex items-center justify-center shrink-0 text-warning-strong mt-1">
                     <Bot className="size-4" />
                   </div>
                 )}
                 <div
-                  className={`p-3 rounded-lg text-xs leading-relaxed max-w-[85%] ${
+                  className={`p-3 rounded-lg text-xs leading-relaxed max-w-17/20 ${
                     m.role === "user"
                       ? "bg-foreground text-background font-medium rounded-tr-sm"
                       : "bg-muted/50 border border-border/60 text-foreground rounded-tl-sm space-y-2"
@@ -405,7 +405,7 @@ function PublicTravelProposalPage() {
 
             {advisorMutation.isPending && (
               <div className="flex gap-3 justify-start">
-                <div className="h-7 w-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 text-amber-600">
+                <div className="h-7 w-7 rounded-lg bg-warning/10 border border-warning/20 flex items-center justify-center shrink-0 text-warning-strong">
                   <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50 border border-border/60 text-xs text-muted-foreground">
@@ -466,7 +466,7 @@ function PublicTravelProposalPage() {
               type="submit"
               size="icon"
               disabled={!advisorInput.trim() || advisorMutation.isPending}
-              className="h-10 w-10 rounded-lg bg-primary hover:opacity-90 text-primary-foreground shrink-0 cursor-pointer"
+              className="h-10 w-10 rounded-lg bg-primary hover:opacity-90 text-primary-foreground shrink-0 cursor-pointer min-h-11 sm:min-h-0"
             >
               <Send className="size-4" />
             </Button>

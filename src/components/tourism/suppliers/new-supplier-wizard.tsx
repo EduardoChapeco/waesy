@@ -81,7 +81,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-2xl">
+ <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-overlay">
  <DialogHeader className="p-5 border-b border-border/70 bg-muted/20">
  <div className="flex items-center gap-3">
  <div className="p-2 rounded-lg bg-primary/10 text-primary">
@@ -98,7 +98,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  </div>
  </DialogHeader>
 
- <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto no-scrollbar">
+ <div className="p-5 space-y-4 max-h-vh-65 overflow-y-auto no-scrollbar">
  {step === 0 && (
  <div className="space-y-4">
  <div className="space-y-1">
@@ -277,7 +277,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  type="button"
  disabled={submitting}
  onClick={handleSubmit}
- className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1 shadow-md px-5"
+ className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1  px-5"
  >
  <Check className="size-3.5" />
  {submitting ? 'Salvando...' : 'Concluir Cadastro'}

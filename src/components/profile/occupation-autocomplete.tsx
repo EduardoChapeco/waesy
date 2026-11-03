@@ -113,7 +113,7 @@ export function OccupationAutocomplete({
 
       {/* Floating Suggestions Dropdown (Apple HIG Polish) */}
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg bg-popover/95 backdrop-blur-md border border-border shadow-xl p-2 space-y-1 max-h-64 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg bg-popover/95 backdrop-blur-md border border-border shadow-overlay p-2 space-y-1 max-h-64 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
           <div className="px-3 py-1 text-2xs uppercase font-bold tracking-wider text-muted-foreground flex items-center justify-between">
             <span>Cargos e Funções Sugeridos</span>
             <span className="font-normal lowercase">Toque para selecionar</span>

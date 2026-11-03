@@ -39,7 +39,7 @@ const NETWORK_META: Record<SocialNetwork, { label: string; icon: React.ElementTy
 
 const STATUS_BADGE: Record<SocialPostDTO["status"], { label: string; className: string; icon: React.ElementType }> = {
   draft: { label: "Rascunho", className: "text-muted-foreground border-border/60", icon: Globe },
-  scheduled: { label: "Agendado", className: "text-amber-700 border-amber-400/40 bg-amber-400/10", icon: Clock },
+  scheduled: { label: "Agendado", className: "text-warning-strong border-warning/40 bg-warning/10", icon: Clock },
   publishing: { label: "Publicando...", className: "text-blue-700 border-blue-400/40 bg-blue-400/10", icon: Send },
   published: { label: "Publicado", className: "text-emerald-700 border-emerald-400/40 bg-emerald-400/10", icon: CheckCircle2 },
   failed: { label: "Falhou", className: "text-red-700 border-red-400/40 bg-red-400/10", icon: AlertCircle },
@@ -130,15 +130,15 @@ function SocialPublicacoesPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold tracking-tight">Publicações</h1>
-        <Button size="sm" onClick={() => setIsOpen(true)} className="h-9 gap-2">
+        <Button size="sm" onClick={() => setIsOpen(true)} className="h-9 gap-2 min-h-11 sm:min-h-0">
           <Plus className="w-4 h-4" />
           Nova publicação
         </Button>
       </div>
 
       {/* Aviso de configuração OAuth */}
-      <div className="rounded-lg border border-amber-400/30 bg-amber-400/8 px-4 py-3 text-sm text-amber-800 flex items-start gap-3">
-        <AlertCircle className="w-4 h-4 mt-1 shrink-0 text-amber-600" />
+      <div className="rounded-lg border border-warning/30 bg-warning/8 px-4 py-3 text-sm text-warning-strong flex items-start gap-3">
+        <AlertCircle className="w-4 h-4 mt-1 shrink-0 text-warning-strong" />
         <span>
           Para publicar automaticamente, configure as credenciais OAuth de cada rede em{" "}
           <Link to="/workspace/configuracoes/integracoes" className="font-medium underline">
@@ -232,7 +232,7 @@ function SocialPublicacoesPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-8 text-xs gap-1"
+                      className="h-8 text-xs gap-1 min-h-11 sm:min-h-0"
                       onClick={() => publishMut.mutate(post.id)}
                       disabled={publishMut.isPending}
                     >
@@ -244,7 +244,7 @@ function SocialPublicacoesPage() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-red-600"
+                      className="h-8 w-8 text-muted-foreground hover:text-red-600 min-h-11 sm:min-h-0"
                       onClick={() => deleteMut.mutate(post.id)}
                     >
                       <Trash2 className="w-3.5 h-3.5" />

@@ -751,7 +751,7 @@ function MobilityPage() {
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             O que você precisa?
           </Label>
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
             {PRODUCT_TABS.map((tab) => {
               const Icon = tab.icon;
               const isSelected = selectedCategory === tab.id;
@@ -890,7 +890,7 @@ function MobilityPage() {
           </div>
 
           {/* Atalhos Rápidos de Destino */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
             {PRESET_PLACES.slice(0, 4).map((p, idx) => (
               <button
                 key={idx}

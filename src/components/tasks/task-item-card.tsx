@@ -14,7 +14,7 @@ interface TaskItemCardProps {
 
 const PRIORITY_CONFIG: Record<TaskPriority, { label: string; className: string }> = {
   urgent: { label: "Urgente", className: "bg-rose-500/10 text-rose-600 border-rose-500/30" },
-  high: { label: "Alta", className: "bg-amber-500/10 text-amber-600 border-amber-500/30" },
+  high: { label: "Alta", className: "bg-warning/10 text-warning-strong border-warning/30" },
   medium: { label: "Média", className: "bg-sky-500/10 text-sky-600 border-sky-500/30" },
   low: { label: "Baixa", className: "bg-muted text-muted-foreground border-border/80" },
 };
@@ -158,7 +158,7 @@ export function TaskItemCard({
         title={task.is_my_day ? "Remover de Meu Dia" : "Adicionar a Meu Dia"}
         className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
-        <Star className={cn("size-4", task.is_my_day && "fill-amber-500 text-amber-500")} />
+        <Star className={cn("size-4", task.is_my_day && "fill-warning text-warning-strong")} />
       </button>
     </div>
   );

@@ -255,7 +255,7 @@ function WorkspaceStoreHotpagesPage() {
                 onClick={() => handleOpenEdit(h)}
                 variant="outline"
                 size="sm"
-                className="h-8 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer shadow-2xs"
+                className="h-8 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer shadow-2xs min-h-11 sm:min-h-0"
               >
                 <Pencil className="size-3.5" /> Editar
               </Button>

@@ -35,7 +35,7 @@ const STATUS_CONFIG: Record<
 > = {
   draft: { label: "Rascunho", variant: "outline", icon: FileText, color: "border-border text-muted-foreground" },
   sent: { label: "Enviado", variant: "secondary", icon: Send, color: "border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10" },
-  negotiating: { label: "Em Negociação", variant: "secondary", icon: Clock, color: "border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10" },
+  negotiating: { label: "Em Negociação", variant: "secondary", icon: Clock, color: "border-warning/30 text-warning-strong  bg-warning/10" },
   approved: { label: "Aprovado", variant: "default", icon: CheckCircle2, color: "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" },
   rejected: { label: "Recusado", variant: "destructive", icon: XCircle, color: "border-destructive/30 text-destructive bg-destructive/10" },
   expired: { label: "Expirado", variant: "destructive", icon: AlertTriangle, color: "border-destructive/30 text-destructive bg-destructive/10" },
@@ -182,7 +182,7 @@ function QuotesListPage() {
               Crie propostas e orçamentos para enviar a clientes e negociar pedidos.
             </p>
           </div>
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0">
             <Link to="/workspace/orcamentos/novo">
               <Plus className="size-3.5 mr-1" />
               Criar Primeiro Orçamento
@@ -200,7 +200,7 @@ function QuotesListPage() {
       )}
 
       {!isLoading && !isError && quotes.length > 0 && viewMode === "kanban" && (
-        <div className="flex gap-4 items-stretch pb-2 overflow-x-auto no-scrollbar h-[calc(100dvh-10.5rem)] sm:h-[calc(100dvh-9.5rem)] select-none">
+        <div className="flex gap-4 items-stretch pb-2 overflow-x-auto scroll-area-carousel no-scrollbar h-[calc(100dvh-10.5rem)] sm:h-[calc(100dvh-9.5rem)] select-none">
           {KANBAN_COLUMNS.map((col) => {
             const colQuotes = quotes.filter((q: QuoteSummaryDTO) => col.statuses.includes(q.status));
             const colTotalCents = colQuotes.reduce((acc: number, q: QuoteSummaryDTO) => acc + q.total_cents, 0);
@@ -208,7 +208,7 @@ function QuotesListPage() {
             return (
               <div
                 key={col.id}
-                className="bg-card/60 border border-border/70 rounded-lg p-4 flex flex-col w-[310px] min-w-[310px] sm:w-[330px] sm:min-w-[330px] shrink-0 h-full shadow-2xs overflow-hidden"
+                className="bg-card/60 border border-border/70 rounded-lg p-4 flex flex-col w-78 min-w-78 sm:w-83 sm:min-w-83 shrink-0 h-full shadow-2xs overflow-hidden"
               >
                 {/* Header da Coluna */}
                 <div className="flex items-center justify-between pb-2 border-b border-border/50 shrink-0">
@@ -267,7 +267,7 @@ function QuotesListPage() {
                               size="sm"
                               disabled={updateStatusMutation.isPending}
                               onClick={() => updateStatusMutation.mutate({ quote_id: q.id, status: "sent" })}
-                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10 min-h-11 sm:min-h-0"
                             >
                               <span>Enviar</span>
                               <ArrowRight className="size-2.5" />
@@ -279,7 +279,7 @@ function QuotesListPage() {
                               size="sm"
                               disabled={updateStatusMutation.isPending}
                               onClick={() => updateStatusMutation.mutate({ quote_id: q.id, status: "negotiating" })}
-                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-warning-strong hover:text-warning-strong hover:bg-warning/10 min-h-11 sm:min-h-0"
                             >
                               <span>Negociar</span>
                               <ArrowRight className="size-2.5" />
@@ -359,7 +359,7 @@ function QuotesListPage() {
               label: "Em Negociação",
               value: negotiatingCount,
               total: Math.max(quotes.length, 1),
-              color: "bg-amber-500",
+              color: "bg-warning",
             },
             {
               label: "Enviados",
@@ -397,7 +397,7 @@ function QuoteRow({ quote }: { quote: QuoteSummaryDTO }) {
           <span className="text-xs font-mono font-bold text-foreground">{quote.quote_number}</span>
           <StatusBadge status={quote.status} />
           {isExpiring && (
-            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+            <span className="text-xs text-warning-strong  font-medium flex items-center gap-1">
               <AlertTriangle className="size-3" />
               Vence em breve
             </span>

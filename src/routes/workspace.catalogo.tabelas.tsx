@@ -199,7 +199,7 @@ function PriceTableItemsDesktopView({
                     variant="ghost"
                     size="icon"
                     onClick={() => onSaveInlineItem(item)}
-                    className="size-7 text-primary hover:bg-primary/10"
+                    className="size-7 text-primary hover:bg-primary/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     title="Salvar Preço (Enter)"
                   >
                     <Save className="size-3.5" />
@@ -418,7 +418,7 @@ function WorkspacePriceTablesPage() {
  </span>
  )}
  {tbl.adjustment_type === "percentage_markup" && (
- <span className="text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1">
+ <span className="text-warning-strong  font-bold flex items-center gap-1">
  <TrendingUp className="size-3.5" />
  +{tbl.adjustment_value}% Acréscimo
  </span>
@@ -434,7 +434,7 @@ function WorkspacePriceTablesPage() {
  e.stopPropagation();
  handleCopyLink(tbl.code);
  }}
- className="size-7 text-muted-foreground hover:text-foreground"
+ className="size-7 text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Copiar Link da Vitrine"
  >
  <Copy className="size-3.5" />
@@ -470,7 +470,7 @@ function WorkspacePriceTablesPage() {
  variant="outline"
  size="sm"
  onClick={() => handleCopyLink(selectedTable.code)}
- className="h-8 text-xs font-bold gap-2"
+ className="h-8 text-xs font-bold gap-2 min-h-11 sm:min-h-0"
  >
  <LinkIcon className="size-3.5" />
  Link da Vitrine

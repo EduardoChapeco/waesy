@@ -97,7 +97,7 @@ export function PWAInstallBanner({
  <div
  className={cn(
  "fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 z-40 sm:max-w-md",
- "p-4 rounded-lg bg-card/95 backdrop-blur-md border border-border/80 shadow-xl",
+ "p-4 rounded-lg bg-card/95 backdrop-blur-md border border-border/80 ",
  "flex items-center justify-between gap-3 animate-in slide-in-from-bottom-5 duration-300",
  className
  )}
@@ -150,13 +150,13 @@ export function PWAInstallBanner({
  {/* ── Modal Guia de Instalação no iOS Safari ── */}
  {showIOSGuide && (
  <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-4">
- <div className="w-full max-w-sm rounded-lg bg-card border border-border/80 p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom-6">
+ <div className="w-full max-w-sm rounded-lg bg-card border border-border/80 p-5 space-y-4  animate-in slide-in-from-bottom-6">
  <div className="flex items-center justify-between">
  <h3 className="text-sm font-bold text-foreground">Como instalar no iPhone</h3>
  <button
  type="button"
  onClick={() => setShowIOSGuide(false)}
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <X className="size-4" />
  </button>
@@ -192,7 +192,7 @@ export function PWAInstallBanner({
 
  <Button
  onClick={() => setShowIOSGuide(false)}
- className="w-full h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+ className="w-full h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground min-h-11 sm:min-h-0"
  >
  Entendido
  </Button>

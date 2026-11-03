@@ -643,7 +643,7 @@ export default function CompanyCorporateTravelPage() {
           <div className="p-4 rounded-xl border border-border bg-card space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Faturas B2B</span>
-              <Receipt className="size-3.5 text-amber-500" />
+              <Receipt className="size-3.5 text-warning-strong" />
             </div>
             <p className="text-2xl font-bold text-foreground">{invoices.length}</p>
             <p className="text-xs text-muted-foreground">Ciclo quinzenal / mensal ativo</p>

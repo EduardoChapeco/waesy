@@ -224,7 +224,7 @@ export function MasterHeroCards({
       {/* ── 1. Carrossel Horizontal de Cards de Destaque (Apenas se houver capas cadastradas) ── */}
       {hasValidHeroCards && (
         <div
-          className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none"
+          className="flex gap-3 sm:gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none"
           tabIndex={0}
           aria-label="Destaques Principais"
         >
@@ -239,7 +239,7 @@ export function MasterHeroCards({
  <Link
  key={card.id || card.slug}
  to={card.to as any}
- className="group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card shrink-0 snap-start w-80 sm:w-[420px] md:w-[500px] lg:w-[540px] h-[190px] sm:h-[240px] md:h-[280px] lg:h-[300px] transition-transform duration-200 duration-300 active:scale-[0.99] select-none block border border-border/60 hover:border-primary/60 shadow-md hover:shadow-xl"
+ className="group relative flex flex-col justify-end overflow-hidden rounded-lg bg-card shrink-0 snap-start w-80 sm:w-105 md:w-125 lg:w-135 h-48 sm:h-60 md:h-70 lg:h-75 transition-transform duration-200 duration-300 active:scale-99 select-none block border border-border/60 hover:border-primary/60  "
  >
  {card.isVideo && card.videoUrl ? (
  <video
@@ -284,7 +284,7 @@ export function MasterHeroCards({
                     {/* Título e Ícone (Apenas se explicitamente habilitado) */}
                     {card.showTitle && card.title && (
                       <div className="relative z-10 p-2 text-left w-full bg-linear-to-t from-black/80 via-black/20 to-transparent">
-                        <h3 className="text-2xs sm:text-xs font-bold text-foreground leading-tight drop-shadow-sm truncate">
+                        <h3 className="text-2xs sm:text-xs font-bold text-foreground leading-tight  truncate">
                           {card.title}
                         </h3>
                       </div>
@@ -297,7 +297,7 @@ export function MasterHeroCards({
 
         {/* ── 2. Botões / Chips de Supercategorias (Continuação - Ícones PNG Transparentes / Emojis / Rotas) ── */}
         <div
-          className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2 pt-1 w-full px-1 focus:outline-none"
+          className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-area-carousel no-scrollbar pb-2 pt-1 w-full px-1 focus:outline-none"
           tabIndex={0}
           aria-label="Supercategorias Rápidas"
         >

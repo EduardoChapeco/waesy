@@ -404,7 +404,7 @@ export function ChatQuickComposerModals({
               }}
               className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <div className="size-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
+              <div className="size-12 rounded-2xl bg-warning/10 text-warning-strong  flex items-center justify-center border border-warning/20">
                 <Smile className="size-5" />
               </div>
               <span className="text-xs font-semibold text-foreground text-center">

@@ -419,7 +419,7 @@ export default function WorkspaceSocialStudioPage() {
                     : "border-border hover:bg-muted/30 text-foreground"
                 )}
               >
-                <Layers className="size-4 text-amber-500" />
+                <Layers className="size-4 text-warning-strong" />
                 <span className="text-xs">Carrossel (5 Lâminas)</span>
               </button>
 

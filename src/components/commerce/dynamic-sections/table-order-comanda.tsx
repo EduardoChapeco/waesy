@@ -38,7 +38,7 @@ export function TableOrderComandaSection({
  <section className="py-10 bg-background w-full">
  <div className="max-w-md mx-auto px-4">
  {/* Cartão Físico / Digital de Comanda */}
- <div className="p-6 rounded-lg border border-border/80 bg-card shadow-lg text-center space-y-5 relative overflow-hidden">
+ <div className="p-6 rounded-lg border border-border/80 bg-card  text-center space-y-5 relative overflow-hidden">
  <div className="space-y-1">
  <Badge variant="outline" className="text-2xs font-mono border-border/80 text-muted-foreground uppercase">
  Autoatendimento no Salão
@@ -57,7 +57,7 @@ export function TableOrderComandaSection({
  </div>
 
  {/* QR Code Imersivo para Escaneamento */}
- <div className="p-4 rounded-lg bg-card border border-border/70 flex flex-col items-center justify-center space-y-2 max-w-[220px] mx-auto shadow-2xs">
+ <div className="p-4 rounded-lg bg-card border border-border/70 flex flex-col items-center justify-center space-y-2 max-w-55 mx-auto shadow-2xs">
  <img
  src={activeQrCode}
  alt={`QR Code da Mesa ${tableNumber}`}

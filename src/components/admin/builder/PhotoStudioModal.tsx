@@ -65,16 +65,76 @@ export function PhotoStudioModal({
 }: PhotoStudioModalProps) {
   const [adjustments, setAdjustments] = useState<PhotoAdjustments>(DEFAULT_ADJUSTMENTS);
   const [activeTab, setActiveTab] = useState<"adjust" | "crop" | "ai">("adjust");
+  const [isExporting, setIsExporting] = useState(false);
 
   const resetAll = () => {
     setAdjustments(DEFAULT_ADJUSTMENTS);
     toast.info("Ajustes redefinidos para os valores originais.");
   };
 
-  const handleSave = () => {
-    onSaveImage?.(imageUrl, adjustments);
-    toast.success("Ajustes de imagem aplicados com sucesso!");
-    onClose();
+  const handleSave = async () => {
+    if (!imageUrl) {
+      onClose();
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = imageUrl;
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("CORS or image load error"));
+      });
+
+      const canvas = document.createElement("canvas");
+      let sx = 0;
+      let sy = 0;
+      let sWidth = img.naturalWidth;
+      let sHeight = img.naturalHeight;
+
+      if (adjustments.aspectRatio !== "free") {
+        let desiredRatio = 1;
+        if (adjustments.aspectRatio === "16:9") desiredRatio = 16 / 9;
+        else if (adjustments.aspectRatio === "4:3") desiredRatio = 4 / 3;
+        else if (adjustments.aspectRatio === "1:1") desiredRatio = 1;
+        else if (adjustments.aspectRatio === "9:16") desiredRatio = 9 / 16;
+
+        const currentRatio = sWidth / sHeight;
+        if (currentRatio > desiredRatio) {
+          const newWidth = sHeight * desiredRatio;
+          sx = (sWidth - newWidth) / 2;
+          sWidth = newWidth;
+        } else {
+          const newHeight = sWidth / desiredRatio;
+          sy = (sHeight - newHeight) / 2;
+          sHeight = newHeight;
+        }
+      }
+
+      canvas.width = Math.round(sWidth);
+      canvas.height = Math.round(sHeight);
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        ctx.filter = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%) hue-rotate(${adjustments.temperature}deg)`;
+        ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        onSaveImage?.(dataUrl, adjustments);
+        toast.success("Imagem processada e salva com sucesso!");
+      } else {
+        onSaveImage?.(imageUrl, adjustments);
+        toast.success("Ajustes de imagem aplicados com sucesso!");
+      }
+    } catch {
+      onSaveImage?.(imageUrl, adjustments);
+      toast.success("Ajustes de imagem aplicados com sucesso!");
+    } finally {
+      setIsExporting(false);
+      onClose();
+    }
   };
 
   // Aplica filtro CSS em tempo real no preview
@@ -84,7 +144,7 @@ export function PhotoStudioModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-2xl">
+      <DialogContent className="max-w-5xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-overlay">
         {/* Header Superior */}
         <DialogHeader className="h-14 px-6 border-b border-border/80 flex flex-row items-center justify-between flex-none bg-card select-none">
           <div className="flex items-center gap-3">
@@ -119,11 +179,12 @@ export function PhotoStudioModal({
             <Button
               type="button"
               size="sm"
+              disabled={isExporting}
               onClick={handleSave}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer focus-visible:ring-2"
             >
               <Save className="size-3.5" />
-              <span>Salvar Imagem</span>
+              <span>{isExporting ? "Processando..." : "Salvar Imagem"}</span>
             </Button>
 
             <Button
@@ -143,12 +204,12 @@ export function PhotoStudioModal({
           {/* Coluna 1: Ferramentas & Sliders */}
           <aside className="w-80 border-r border-border/80 bg-muted/20 flex flex-col flex-none select-none overflow-y-auto p-4 gap-6">
             {/* Abas de Modo */}
-            <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-muted/60 border border-border/60">
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/60 border border-border/60">
               <button
                 type="button"
                 onClick={() => setActiveTab("adjust")}
                 className={cn(
-                  "py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "flex-1 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   activeTab === "adjust" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -159,7 +220,7 @@ export function PhotoStudioModal({
                 type="button"
                 onClick={() => setActiveTab("crop")}
                 className={cn(
-                  "py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "flex-1 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   activeTab === "crop" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -170,7 +231,7 @@ export function PhotoStudioModal({
                 type="button"
                 onClick={() => setActiveTab("ai")}
                 className={cn(
-                  "py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "flex-1 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   activeTab === "ai" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -184,7 +245,7 @@ export function PhotoStudioModal({
               <div className="space-y-5">
                 {/* Auto Enhance */}
                 <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-card/60">
-                  <div className="flex flex-col gap-0.5">
+                  <div className="flex flex-col gap-1">
                     <Label htmlFor="enhance" className="text-xs font-bold cursor-pointer">Auto Aprimoramento</Label>
                     <span className="text-2xs text-muted-foreground">Otimização inteligente de contraste</span>
                   </div>
@@ -321,7 +382,7 @@ export function PhotoStudioModal({
 
           {/* Coluna 2: Canvas de Visualização Central */}
           <main className="flex-1 bg-zinc-950/90 flex items-center justify-center p-8 overflow-hidden relative">
-            <div className="max-w-2xl max-h-modal flex items-center justify-center overflow-hidden rounded-2xl border border-border/40 shadow-2xl bg-zinc-900/50">
+            <div className="max-w-2xl max-h-modal flex items-center justify-center overflow-hidden rounded-2xl border border-border/40 shadow-overlay bg-zinc-900/50">
               {imageUrl ? (
                 <img
                   src={imageUrl}

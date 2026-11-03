@@ -176,7 +176,7 @@ export function MobilityReceiptModal({
                 </div>
                 {receipt.courier.rating && (
                   <div className="flex items-center gap-1 font-bold text-foreground">
-                    <Star className="size-3.5 fill-amber-400 text-amber-400" />
+                    <Star className="size-3.5 fill-warning text-warning-strong" />
                     <span>{receipt.courier.rating.toFixed(1)}</span>
                   </div>
                 )}

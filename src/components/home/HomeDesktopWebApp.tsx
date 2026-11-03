@@ -518,7 +518,7 @@ export function HomeDesktopWebApp({
                     <div className="px-4 py-2 flex items-center justify-between gap-2 border-t border-border/40 mt-auto min-h-12">
                       <div className="flex items-center gap-1 text-xs">
                         {item.rating && item.reviews_count > 0 ? (
-                          <div className="flex items-center gap-1 font-bold text-amber-500 font-mono">
+                          <div className="flex items-center gap-1 font-bold text-warning-strong font-mono">
                             <Star size={13} weight="fill" />
                             <span>{Number(item.rating).toFixed(1)}</span>
                             <span className="text-muted-foreground font-normal">({item.reviews_count})</span>

@@ -254,7 +254,7 @@ export function FileAttachmentUpload({
  variant="ghost"
  size="sm"
  asChild
- className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
  title="Abrir anexo em nova aba"
  >
  <a href={value!} target="_blank" rel="noopener noreferrer">
@@ -267,7 +267,7 @@ export function FileAttachmentUpload({
  variant="ghost"
  size="sm"
  onClick={handleClear}
- className="h-8 w-8 p-0 rounded-lg text-destructive hover:bg-destructive/10"
+ className="h-8 w-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0"
  title="Remover anexo"
  >
  <Trash2 className="size-4" />
@@ -297,7 +297,7 @@ export function FileAttachmentUpload({
  "rounded-lg border-2 border-dashed transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center text-center select-none",
  compact ? "p-4 gap-2" : "p-5 gap-3",
  isDragging
- ? "border-primary bg-primary/5 scale-[0.99]"
+ ? "border-primary bg-primary/5 scale-99"
  : "border-border/80 bg-muted/10 hover:bg-muted/30 hover:border-border",
  isUploading && "opacity-70 pointer-events-none"
  )}

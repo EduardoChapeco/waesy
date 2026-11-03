@@ -141,7 +141,7 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
               size="sm"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="text-xs h-8"
+              className="text-xs h-8 min-h-11 sm:min-h-0"
             >
               Substituir
             </Button>
@@ -151,7 +151,7 @@ export const DigitalFileDropzone: React.FC<DigitalFileDropzoneProps> = ({
               size="sm"
               onClick={handleRemove}
               disabled={isUploading}
-              className="text-xs h-8 text-muted-foreground hover:text-destructive"
+              className="text-xs h-8 text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0"
             >
               <X className="size-4" />
             </Button>

@@ -18,7 +18,10 @@ import { StatTile, SegmentedControl } from "@/design-system/components";
 
 export const Route = createFileRoute("/workspace/")({
   head: () => ({ meta: [{ title: "Operação | Workspace Waesy" }] }),
-  loader: async () => {
+  validateSearch: (search: Record<string, unknown>) => ({
+    storeId: typeof search.storeId === "string" ? search.storeId : undefined,
+  }),
+  loader: async ({ search }) => {
     try {
       let session: any = null;
       try {
@@ -28,11 +31,26 @@ export const Route = createFileRoute("/workspace/")({
       }
 
       const memberships = session?.memberships || [];
-      const activeStoreId = session?.store_id || memberships[0]?.store_id || null;
+      const isPlatformAdmin = Boolean(
+        session?.role === "platform_admin" ||
+        session?.role === "master" ||
+        session?.user?.role === "platform_admin" ||
+        session?.user?.user_metadata?.role === "platform_admin"
+      );
+      const queryStoreId = search?.storeId;
+      const isQueryValid = queryStoreId && (isPlatformAdmin || memberships.some((m: any) => m.store_id === queryStoreId));
+
+      const activeStoreId =
+        (isQueryValid ? queryStoreId : null) ||
+        session?.store_id ||
+        memberships[0]?.store_id ||
+        null;
+
       const activeStore = memberships.find((m: any) => m.store_id === activeStoreId) || memberships[0] || null;
+      const resolvedStoreId = activeStore?.store_id || activeStoreId;
 
       const [dashboardMetrics, workspaceKpis] = await Promise.all([
-        getDashboardData().catch(() => ({
+        getDashboardData({ data: { storeId: resolvedStoreId } }).catch(() => ({
           salesTodayCents: 0,
           salesMonthCents: 0,
           salesLastMonthCents: 0,
@@ -57,7 +75,7 @@ export const Route = createFileRoute("/workspace/")({
           setupChecklist: [],
           setupProgressPercentage: 100,
         } as DashboardMetrics)),
-        getWorkspaceDashboardKpisFn({ data: { period: "30d" } }).catch(() => null),
+        getWorkspaceDashboardKpisFn({ data: { period: "30d", storeId: resolvedStoreId } }).catch(() => null),
       ]);
 
       return {
@@ -262,7 +280,7 @@ export default function WorkspaceDashboardPage() {
         </div>
 
         {/* Quick Top Actions Contextuais */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0 sm:flex-wrap no-scrollbar">
           {/* Chave de Operação Instantânea "Loja Aberta / Pausada" */}
           <button
             type="button"

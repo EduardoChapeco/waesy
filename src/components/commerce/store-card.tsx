@@ -108,7 +108,7 @@ export function StoreCard({
         <div className="h-6 flex items-center justify-between text-xs text-muted-foreground pt-1">
           {hasRating ? (
             <div className="flex items-center gap-1 font-bold text-foreground">
-              <Star className="size-3.5 fill-amber-400 text-amber-400" />
+              <Star className="size-3.5 fill-warning text-warning-strong" />
               <span>{rating!.toFixed(1)}</span>
               <span className="text-muted-foreground font-normal">({review_count})</span>
             </div>

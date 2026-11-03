@@ -151,7 +151,7 @@ export function FlyerInteractiveViewerModal({
       <DialogContent
         className={cn(
           "max-w-4xl p-0 border-0 overflow-hidden  bg-foreground/95 text-foreground sm:rounded-lg flex flex-col h-full max-h-modal",
-          isRetro && "ring-4 ring-amber-400/80"
+          isRetro && "ring-4 ring-warning/80"
         )}
       >
         <DialogTitle className="sr-only">
@@ -163,13 +163,13 @@ export function FlyerInteractiveViewerModal({
           className={cn(
             "flex items-center justify-between px-4 sm:px-6 py-3 border-b z-20 shrink-0",
             isRetro
-              ? "bg-amber-400 text-red-950 border-amber-500 font-sans"
+              ? "bg-warning text-red-950 border-warning font-sans"
               : "bg-background/80 backdrop-blur-md text-foreground border-border/40"
           )}
         >
           <div className="flex items-center gap-3 min-w-0">
             {isRetro ? (
-              <span className="px-2 py-1 rounded bg-red-600 text-amber-100 text-2xs font-black uppercase tracking-wider shadow-xs animate-pulse motion-reduce:animate-none">
+              <span className="px-2 py-1 rounded bg-red-600 text-warning-strong text-2xs font-black uppercase tracking-wider shadow-xs animate-pulse motion-reduce:animate-none">
                 {currentFlyer.badge_text || "OFERTAÇO"}
               </span>
             ) : (
@@ -193,7 +193,7 @@ export function FlyerInteractiveViewerModal({
                   <span
                     className={cn(
                       "inline-flex items-center gap-1 font-semibold",
-                      isRetro ? "text-red-800" : "text-amber-600 dark:text-amber-400"
+                      isRetro ? "text-red-800" : "text-warning-strong "
                     )}
                   >
                     <Clock className="size-3" />
@@ -221,7 +221,7 @@ export function FlyerInteractiveViewerModal({
               title="Baixar Encarte em Alta Resolução"
               className={cn(
                 "size-11 min-h-11 min-w-11 rounded-full cursor-pointer",
-                isRetro ? "hover:bg-amber-300 text-red-950" : "hover:bg-accent text-foreground"
+                isRetro ? "hover:bg-warning/30 text-red-950" : "hover:bg-accent text-foreground"
               )}
             >
               <Download className="size-4" />
@@ -234,7 +234,7 @@ export function FlyerInteractiveViewerModal({
               title="Compartilhar Encarte"
               className={cn(
                 "size-11 min-h-11 min-w-11 rounded-full cursor-pointer",
-                isRetro ? "hover:bg-amber-300 text-red-950" : "hover:bg-accent text-foreground"
+                isRetro ? "hover:bg-warning/30 text-red-950" : "hover:bg-accent text-foreground"
               )}
             >
               <Share2 className="size-4" />
@@ -322,7 +322,7 @@ export function FlyerInteractiveViewerModal({
                       className={cn(
                         "relative flex items-center justify-center size-8 sm:size-9 rounded-full  font-black text-xs border-2 transition-colors duration-200",
                         isRetro
-                          ? "bg-red-600 text-amber-300 border-amber-300 shadow-red-950/80 hover:bg-red-700"
+                          ? "bg-red-600 text-warning-strong border-warning/30 shadow-red-950/80 hover:bg-red-700"
                           : "bg-card text-zinc-900 border-primary shadow-black/40 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-foreground"
                       )}
                     >

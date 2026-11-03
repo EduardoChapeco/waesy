@@ -527,7 +527,7 @@ export function NewClientWizard({
  type="button"
  size="sm"
  onClick={() => handleAddTag(tagInput)}
- className="h-9 rounded-lg text-xs"
+ className="h-9 rounded-lg text-xs min-h-11 sm:min-h-0"
  >
  Adicionar
  </Button>
@@ -591,7 +591,7 @@ export function NewClientWizard({
  <div className="space-y-4 animate-in fade-in duration-200">
  <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
  <div className="flex items-center gap-3">
- <div className="size-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-base shadow-sm">
+ <div className="size-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-base ">
  {fullName[0]?.toUpperCase() || "C"}
  </div>
  <div>
@@ -664,7 +664,7 @@ export function NewClientWizard({
  <Button
  type="button"
  onClick={handleNext}
- className="text-xs font-bold gap-2 px-5 h-9 rounded-lg"
+ className="text-xs font-bold gap-2 px-5 h-9 rounded-lg min-h-11 sm:min-h-0"
  >
  <span>Avançar</span>
  <ChevronRight className="size-3.5" />
@@ -674,7 +674,7 @@ export function NewClientWizard({
  type="button"
  disabled={submitting}
  onClick={handleSubmit}
- className="text-xs font-bold gap-2 px-6 h-9 rounded-lg bg-primary text-primary-foreground shadow-sm"
+ className="text-xs font-bold gap-2 px-6 h-9 rounded-lg bg-primary text-primary-foreground  min-h-11 sm:min-h-0"
  >
  {submitting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Check className="size-3.5" />}
  <span>Salvar Cliente na Carteira</span>

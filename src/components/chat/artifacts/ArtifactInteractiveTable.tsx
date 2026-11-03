@@ -152,7 +152,7 @@ export function ArtifactInteractiveTable({
 
       {/* Tabela Scrollável */}
       {/* design-lint-ignore DL-30 reason:"Tabela responsiva de dados com rolagem horizontal" expiry:"2027-12-31" */}
-      <div className="overflow-x-auto rounded border border-border/40 max-h-72">
+      <div className="overflow-x-auto scroll-area-carousel rounded border border-border/40 max-h-72">
         <table className="w-full text-xs text-left border-collapse">
           <thead className="bg-muted/40 border-b border-border/60 sticky top-0 z-10">
             <tr>

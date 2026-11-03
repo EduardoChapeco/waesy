@@ -158,7 +158,7 @@ function WorkspaceNewJobPage() {
         <div className="flex items-center gap-3">
           <Link
             to="/workspace/empregos"
-            className="size-9 rounded-lg border border-border/60 bg-muted/30 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            className="size-9 rounded-lg border border-border/60 bg-muted/30 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
           >
             <ArrowLeft className="size-4" />
           </Link>
@@ -178,7 +178,7 @@ function WorkspaceNewJobPage() {
           className={`text-xs px-3 py-1 font-bold ${
             isPro
               ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
-              : "border-amber-500/40 text-amber-600 bg-amber-500/10"
+              : "border-warning/40 text-warning-strong bg-warning/10"
           }`}
         >
           {isPro ? "Plano PRO Ativo " : "Plano Gratuito"}
@@ -318,7 +318,7 @@ function WorkspaceNewJobPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleAddRequirement}
-                className="h-9 rounded-lg text-xs font-bold px-3 shrink-0"
+                className="h-9 rounded-lg text-xs font-bold px-3 shrink-0 min-h-11 sm:min-h-0"
               >
                 <Plus className="size-3.5 mr-1" /> Adicionar
               </Button>
@@ -362,7 +362,7 @@ function WorkspaceNewJobPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleAddBenefit}
-                className="h-9 rounded-lg text-xs font-bold px-3 shrink-0"
+                className="h-9 rounded-lg text-xs font-bold px-3 shrink-0 min-h-11 sm:min-h-0"
               >
                 <Plus className="size-3.5 mr-1" /> Adicionar
               </Button>
@@ -432,7 +432,7 @@ function WorkspaceNewJobPage() {
                     Publicar simultaneamente no LinkedIn
                   </h3>
                   {!isPro ? (
-                    <Badge variant="outline" className="text-xs font-bold border-amber-500/40 text-amber-600 bg-amber-500/10 px-2 py-0 flex items-center gap-1">
+                    <Badge variant="outline" className="text-xs font-bold border-warning/40 text-warning-strong bg-warning/10 px-2 py-0 flex items-center gap-1">
                       <Lock className="size-2.5" />
                       <span>Plano PRO</span>
                     </Badge>
@@ -456,7 +456,7 @@ function WorkspaceNewJobPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsPaywallOpen(true)}
-                  className="rounded-lg text-xs font-bold gap-2 h-9 border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 cursor-pointer"
+                  className="rounded-lg text-xs font-bold gap-2 h-9 border-warning/40 text-warning-strong  bg-warning/10 hover:bg-warning/20 cursor-pointer min-h-11 sm:min-h-0"
                 >
                   <Lock className="size-3.5" />
                   <span>Desbloquear com PRO</span>
@@ -486,7 +486,7 @@ function WorkspaceNewJobPage() {
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="size-3.5 text-amber-500" />
+                    <AlertCircle className="size-3.5 text-warning-strong" />
                     <span>Nenhuma Company Page vinculada ao Workspace.</span>
                   </>
                 )}

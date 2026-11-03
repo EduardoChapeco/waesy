@@ -43,9 +43,12 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
     if (storeId) {
       setClientContextCookies({ context: "store", storeId });
       await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
+      toast.success("Acessando Workspace...");
+      window.location.href = `/workspace?storeId=${encodeURIComponent(storeId)}`;
+    } else {
+      toast.success("Acessando Workspace...");
+      window.location.href = "/workspace";
     }
-    toast.success("Acessando Workspace...");
-    window.location.href = "/workspace";
   };
 
   const memberships = (session?.memberships as any[]) || [];
@@ -107,11 +110,8 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
   let activeCreatorId: string | null = null;
 
   if (activeContext === "store") {
-    // Zero-Trust Civil Root: A vitrine pública nunca deve herdar perfil empresarial sem ação voluntária
+    // Zero-Trust Civil Root: Na vitrine pública o cabeçalho opera em apresentação civil sem purgar cookies corporativos
     activeContext = "civil";
-    if (typeof window !== "undefined") {
-      setClientContextCookies({ context: "civil" });
-    }
   } else if (activeContext === "creator") {
     if (creatorProfiles.length === 0) {
       activeContext = "civil";
@@ -160,7 +160,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
       await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
       toast.success("Acessando painel da empresa...");
       setIsAccountOpen(false);
-      window.location.href = "/workspace";
+      window.location.href = `/workspace?storeId=${encodeURIComponent(storeId)}`;
     } catch {
       toast.error("Erro ao alternar loja.");
       setIsSwitching(false);
@@ -285,7 +285,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                   <div className="p-2 rounded-lg bg-muted/60 border border-border/60 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2 px-1 min-w-0">
                       {activeContext === "creator" ? (
-                        <Award className="size-4 text-amber-500 shrink-0" />
+                        <Award className="size-4 text-warning-strong shrink-0" />
                       ) : (activeContext as string) === "store" ? (
                         <Store className="size-4 text-primary shrink-0" />
                       ) : (
@@ -316,7 +316,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                   {/* ── CONTEXTO 1: MODO CRIADOR ATIVO ── */}
                   {activeContext === "creator" && (
                     <>
-                      <div className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider px-3 py-1 flex items-center gap-2">
+                      <div className="text-xs font-bold text-warning-strong  uppercase tracking-wider px-3 py-1 flex items-center gap-2">
                         <Sparkles className="size-3.5" />
                         <span>Painel do Criador (@{activeCreatorId || "ativo"})</span>
                       </div>
@@ -327,7 +327,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                         className="w-full h-11 min-h-11 px-3 rounded-lg flex items-center justify-between hover:bg-muted/60 transition-colors text-xs font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <div className="flex items-center gap-3">
-                          <Award className="size-4 text-amber-500" />
+                          <Award className="size-4 text-warning-strong" />
                           <span>Minha Vitrine & Personas</span>
                         </div>
                         <ChevronRight className="size-4 text-muted-foreground/60" />
@@ -567,7 +567,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                             className="p-3 rounded-lg bg-card border border-border/60 hover:border-primary/40 hover:bg-muted/40 transition-colors flex flex-col justify-between min-h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           >
                             <div className="flex items-center justify-between w-full">
-                              <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                              <div className="size-8 rounded-lg bg-warning/10 text-warning-strong  flex items-center justify-center shrink-0">
                                 <Sparkles className="size-4" />
                               </div>
                               <ArrowUpRight className="size-3.5 text-muted-foreground/60" />

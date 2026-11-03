@@ -42,7 +42,7 @@ export function TravelHotelSlider({
       </div>
 
       {/* Carrossel Horizontal com Snap Scroll */}
-      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+      <div className="flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-2">
         {hotels.map((hotel) => (
           <div
             key={hotel.id}
@@ -58,7 +58,7 @@ export function TravelHotelSlider({
             className="w-72 sm:w-80 shrink-0 bg-card rounded-lg overflow-hidden border-0 hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-colors duration-200 cursor-pointer group flex flex-col"
           >
             {/* Imagem de Capa */}
-            <div className="relative aspect-[16/10] w-full bg-muted/40 overflow-hidden">
+            <div className="relative aspect-16/10 w-full bg-muted/40 overflow-hidden">
               <img
                 src={hotel.coverPhotoUrl}
                 alt={hotel.name}

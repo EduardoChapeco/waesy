@@ -18,7 +18,7 @@ export function DeliveryLocationPolicySheet({
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-6 rounded-lg border border-border/80 bg-background shadow-2xl">
+      <DialogContent className="max-w-lg p-6 rounded-lg border border-border/80 bg-background shadow-overlay">
         <DialogHeader className="space-y-2 text-left">
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -43,7 +43,7 @@ export function DeliveryLocationPolicySheet({
             <p className="text-muted-foreground leading-relaxed text-2xs">
               Por padrão de segurança urbana, as entregas ocorrem na portaria ou portão principal do condomínio. Caso você selecione a opção "Entregar na porta de casa/apartamento", uma taxa adicional do entregador é aplicada para cobrir o tempo de identificação e deslocamento interno.
             </p>
-            <p className="text-2xs text-amber-600 dark:text-amber-400 font-semibold">
+            <p className="text-2xs text-warning-strong  font-semibold">
               Importante: Se o regimento interno do condomínio proibir a entrada de entregadores, o valor da taxa não é estornável e a entrega será finalizada na portaria.
             </p>
           </div>

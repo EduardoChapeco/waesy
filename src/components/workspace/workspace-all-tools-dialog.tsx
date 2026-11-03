@@ -518,7 +518,7 @@ export function WorkspaceAllToolsDialog({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-4xl max-h-5/6 sm:max-h-160 p-0 rounded-lg border border-border/80 bg-background/98 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col">
+ <DialogContent className="sm:max-w-4xl max-h-5/6 sm:max-h-160 p-0 rounded-lg border border-border/80 bg-background/98 backdrop-blur-2xl shadow-overlay overflow-hidden flex flex-col">
  {/* ── 1. Top Header com Busca Ampla (Padrão Meta Studio) ── */}
  <div className="p-4 sm:p-6 pb-4 border-b border-border/60 bg-muted/15 shrink-0 space-y-3">
  <div className="flex items-center justify-between">
@@ -559,7 +559,7 @@ export function WorkspaceAllToolsDialog({
                 onClick={handleToggleVoice}
                 title={isListeningVoice ? "Ouvindo... clique para parar" : "Falar comando por voz"}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "size-7 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer",
+                  "size-7 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                   isListeningVoice
                     ? "bg-rose-500 text-foreground animate-pulse motion-reduce:animate-none"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -575,7 +575,7 @@ export function WorkspaceAllToolsDialog({
                     setSearchQuery("");
                     setMcpBlock(null);
                   }}
-                  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 >
                   <X className="size-3.5" />
                 </button>

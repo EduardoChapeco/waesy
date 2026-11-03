@@ -181,7 +181,7 @@ export default function NovaLojaPage() {
       </div>
 
       {/* ── Formulário Canônico de Criação ── */}
-      <Card className="p-5 sm:p-8 rounded-lg border border-border bg-card space-y-6 shadow-sm">
+      <Card className="p-5 sm:p-8 rounded-lg border border-border bg-card space-y-6 ">
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Nome da Loja */}
           <div className="space-y-2">

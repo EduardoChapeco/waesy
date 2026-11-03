@@ -30,7 +30,7 @@ const GRADIENT_CLASSES: Record<string, string> = {
  indigo: "bg-linear-to-r from-indigo-800 via-blue-700 to-sky-600 text-foreground",
  purple: "bg-linear-to-r from-purple-800 via-violet-700 to-fuchsia-700 text-foreground",
  emerald: "bg-linear-to-r from-emerald-800 via-teal-700 to-cyan-700 text-foreground",
- amber: "bg-linear-to-r from-amber-700 via-orange-600 to-rose-700 text-foreground",
+ amber: "bg-linear-to-r from-warning via-orange-600 to-rose-700 text-foreground",
  dark: "bg-linear-to-r from-zinc-900 via-zinc-800 to-black text-foreground",
  none: "bg-card text-foreground",
 };
@@ -75,7 +75,7 @@ export function SlimActionBanner({
  return (
  <div
  className={cn(
- "relative w-full rounded-lg overflow-hidden min-h-[110px] p-5 sm:p-6 transition-colors duration-200",
+ "relative w-full rounded-lg overflow-hidden min-h-28 p-5 sm:p-6 transition-colors duration-200",
  !hasMedia && bgClass,
  className,
  )}

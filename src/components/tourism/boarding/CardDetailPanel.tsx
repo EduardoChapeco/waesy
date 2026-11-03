@@ -35,7 +35,7 @@ const CATEGORY_COLORS: Record<ChecklistCategory, string> = {
   documentation: 'text-blue-600 bg-blue-500/10 border-blue-500/20',
   health: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20',
   insurance: 'text-violet-600 bg-violet-500/10 border-violet-500/20',
-  financial: 'text-amber-600 bg-amber-500/10 border-amber-500/20',
+  financial: 'text-warning-strong bg-warning/10 border-warning/20',
   logistics: 'text-orange-600 bg-orange-500/10 border-orange-500/20',
   communication: 'text-sky-600 bg-sky-500/10 border-sky-500/20',
   airline: 'text-indigo-600 bg-indigo-500/10 border-indigo-500/20',
@@ -273,7 +273,7 @@ export function CardDetailPanel({
           </div>
         ) : !departure ? (
           <div className="p-8 text-center space-y-3">
-            <AlertTriangle className="size-8 text-amber-500 mx-auto" />
+            <AlertTriangle className="size-8 text-warning-strong mx-auto" />
             <p className="text-sm font-bold text-foreground">Embarque não encontrado</p>
             <Button variant="outline" size="sm" onClick={onClose} className="rounded-lg">
               Fechar
@@ -300,7 +300,7 @@ export function CardDetailPanel({
                           daysUntilDeparture <= 1
                             ? 'bg-red-500/10 text-red-600 border-red-500/30'
                             : daysUntilDeparture <= 3
-                            ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                            ? 'bg-warning/10 text-warning-strong border-warning/30'
                             : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
                         }`}
                       >

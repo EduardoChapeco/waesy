@@ -81,7 +81,7 @@ export function ProfileBiolinkAnalytics({
             size="sm"
             onClick={() => setPeriod("today")}
             className={cn(
-              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-colors duration-200",
+              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-colors duration-200 min-h-11 sm:min-h-0",
               period === "today"
                 ? "bg-background text-foreground font-bold shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -95,7 +95,7 @@ export function ProfileBiolinkAnalytics({
             size="sm"
             onClick={() => setPeriod("7d")}
             className={cn(
-              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-colors duration-200",
+              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-colors duration-200 min-h-11 sm:min-h-0",
               period === "7d"
                 ? "bg-background text-foreground font-bold shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -109,7 +109,7 @@ export function ProfileBiolinkAnalytics({
             size="sm"
             onClick={() => setPeriod("30d")}
             className={cn(
-              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-colors duration-200",
+              "h-7 px-3 text-xs rounded-lg font-medium cursor-pointer transition-colors duration-200 min-h-11 sm:min-h-0",
               period === "30d"
                 ? "bg-background text-foreground font-bold shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -175,7 +175,7 @@ export function ProfileBiolinkAnalytics({
 
         <div className="p-4 rounded-lg border border-border/70 bg-card shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+            <div className="p-2 rounded-lg bg-warning/10 text-warning-strong">
               <Share2 className="size-4" />
             </div>
             <Badge variant="outline" className="text-3xs px-2 py-0 font-mono">
@@ -225,11 +225,11 @@ export function ProfileBiolinkAnalytics({
                 className="flex-1 flex flex-col items-center gap-1 h-full justify-end group relative"
               >
                 {/* Tooltip Hover */}
-                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-2xs font-bold px-2 py-1 rounded-lg border border-border shadow-md whitespace-nowrap pointer-events-none z-10">
+                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-2xs font-bold px-2 py-1 rounded-lg border border-border  whitespace-nowrap pointer-events-none z-10">
                   {d.visits} visitas / {d.clicks} cliques
                 </div>
 
-                <div className="w-full max-w-[24px] flex items-end justify-center gap-1 h-full">
+                <div className="w-full max-w-6 flex items-end justify-center gap-1 h-full">
                   <div
                     className="w-1/2 bg-blue-500/30 group-hover:bg-blue-500/60 transition-colors duration-200 rounded-t-md"
                     style={{ height: `${visitHeight}%` }}

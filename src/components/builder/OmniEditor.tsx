@@ -61,7 +61,23 @@ import {
 } from "@/components/admin/builder/BuilderWixStudioPanels";
 import { listStudioTemplateDrafts } from "@/services/studio-template-library.functions";
 import { listPublicArticles } from "@/services/news.functions";
-import { listExperienceDocuments } from "@/services/builder.functions";
+import {
+  createExperienceDocument,
+  duplicateExperienceDocument,
+  deleteExperienceDocument,
+  updateExperienceDocumentSettings,
+  listExperienceDocuments,
+} from "@/services/builder.functions";
+import {
+  listOmniDocumentVersions,
+  restoreOmniDocumentVersion,
+} from "@/services/omni-builder.functions";
+import {
+  resolveBlockBoundData,
+  getBlockDeviceVisibilityClass,
+  isBlockWithinSchedule,
+  shouldApplyCustomDocumentTheme,
+} from "@/lib/builder/block-data-resolver";
 import { CANONICAL_PLATFORM_SURFACES, openOrCreatePageExperienceDocument } from "@/services/surface-cms.functions";
 
 import {
@@ -76,6 +92,7 @@ import {
   Smartphone,
   Monitor,
   Eye,
+  EyeOff,
   Check,
   Palette,
   Calculator,
@@ -108,6 +125,8 @@ import {
   Redo2,
   Database,
   Menu as MenuIcon,
+  History,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,6 +141,7 @@ import {
   isVitrineAppBlock,
   VitrineBlockInspector,
 } from "./vitrine-block-inspector";
+import { UniversalBlockInspector } from "./universal-block-inspector";
 
 export type { WixBlockCategory } from "./registry";
 
@@ -2516,6 +2536,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const [isMenuManagerOpen, setIsMenuManagerOpen] = useState(false);
   const [isCmsTableModalOpen, setIsCmsTableModalOpen] = useState(false);
   const [isPhotoStudioOpen, setIsPhotoStudioOpen] = useState(false);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+  const [autosaveStatus, setAutosaveStatus] = useState<"saved" | "dirty" | "saving" | "error">("saved");
+  const lastSavedDocRef = React.useRef<string>(JSON.stringify(initialDocument));
+  const autosaveTimerRef = React.useRef<any>(null);
   const [historyPast, setHistoryPast] = useState<OmniPageDocument[]>([]);
   const [historyFuture, setHistoryFuture] = useState<OmniPageDocument[]>([]);
   const [sitePages, setSitePages] = useState<BuilderPageItem[]>(() => [
@@ -2531,14 +2555,14 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const [activePageId, setActivePageId] = useState<string>(initialDocument.id || "home");
   const [globalTheme, setGlobalTheme] = useState<GlobalThemeConfig>(() => ({
     // design-lint-ignore DL-01 reason:"Valores iniciais do contrato de estado de tema global" expiry:"2027-12-31"
-    primaryColor: "#09090b",
+    primaryColor: initialDocument.theme?.primaryColor || "#09090b",
     // design-lint-ignore DL-01 reason:"Valores iniciais do contrato de estado de tema global" expiry:"2027-12-31"
-    backgroundColor: "#ffffff",
+    backgroundColor: initialDocument.theme?.backgroundColor || "#ffffff",
     // design-lint-ignore DL-01 reason:"Valores iniciais do contrato de estado de tema global" expiry:"2027-12-31"
-    textColor: "#09090b",
-    headingFont: "Inter, sans-serif",
-    bodyFont: "Inter, sans-serif",
-    borderRadius: "xl",
+    textColor: initialDocument.theme?.textColor || "#09090b",
+    headingFont: initialDocument.theme?.headingFont || "Inter, sans-serif",
+    bodyFont: initialDocument.theme?.bodyFont || "Inter, sans-serif",
+    borderRadius: initialDocument.theme?.borderRadius || "xl",
     surfaceStyle: "clean",
   }));
   const [appNavConfig, setAppNavConfig] = useState<WixAppNavConfig>({
@@ -2560,10 +2584,24 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const [isAppMarketOpen, setIsAppMarketOpen] = useState(false);
   const [liveNewsArticles, setLiveNewsArticles] = useState<any[]>([]);
 
+  const commitDocumentMutation = (
+    mutator: (current: OmniPageDocument) => OmniPageDocument,
+  ) => {
+    setDocument((current) => {
+      const nextDoc = mutator(current);
+      if (nextDoc === current) return current;
+      setHistoryPast((prev) => [...prev.slice(-29), current]);
+      setHistoryFuture([]);
+      setAutosaveStatus("dirty");
+      return {
+        ...nextDoc,
+        updated_at: new Date().toISOString(),
+      };
+    });
+  };
+
   const commitDocumentChange = (nextDoc: OmniPageDocument) => {
-    setHistoryPast((prev) => [...prev.slice(-29), document]);
-    setHistoryFuture([]);
-    setDocument(nextDoc);
+    commitDocumentMutation(() => nextDoc);
   };
 
   const handleUndo = () => {
@@ -2572,6 +2610,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     setHistoryPast((prev) => prev.slice(0, -1));
     setHistoryFuture((prev) => [document, ...prev]);
     setDocument(previous);
+    setAutosaveStatus("dirty");
     toast.info("Ação desfeita (Undo).");
   };
 
@@ -2581,7 +2620,190 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     setHistoryFuture((prev) => prev.slice(1));
     setHistoryPast((prev) => [...prev, document]);
     setDocument(next);
+    setAutosaveStatus("dirty");
     toast.info("Ação refeita (Redo).");
+  };
+
+  // Atalhos de Teclado Globais (Ctrl+Z, Ctrl+Y, Escape)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isCtrlOrMeta = e.ctrlKey || e.metaKey;
+      if (isCtrlOrMeta && e.key.toLowerCase() === "z" && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      } else if (
+        (isCtrlOrMeta && e.key.toLowerCase() === "y") ||
+        (isCtrlOrMeta && e.key.toLowerCase() === "z" && e.shiftKey)
+      ) {
+        e.preventDefault();
+        handleRedo();
+      } else if (e.key === "Escape") {
+        setSelectedBlockId(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [historyPast, historyFuture, document]);
+
+  // Autosave Reativo Debounced (3500ms)
+  useEffect(() => {
+    if (!onSave || autosaveStatus !== "dirty") return;
+
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+    }
+
+    autosaveTimerRef.current = setTimeout(async () => {
+      const serialized = JSON.stringify(document);
+      if (serialized === lastSavedDocRef.current) {
+        setAutosaveStatus("saved");
+        return;
+      }
+
+      try {
+        setAutosaveStatus("saving");
+        await onSave({
+          ...document,
+          pages: sitePages,
+          updated_at: new Date().toISOString(),
+        } as any);
+        lastSavedDocRef.current = serialized;
+        setAutosaveStatus("saved");
+      } catch {
+        setAutosaveStatus("error");
+      }
+    }, 3500);
+
+    return () => {
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+      }
+    };
+  }, [document, sitePages, autosaveStatus, onSave]);
+
+  const handleSelectSitePage = async (pageId: string) => {
+    setActivePageId(pageId);
+    const target = sitePages.find((p) => p.id === pageId);
+    if (!target) return;
+    if (target.id === document.id) return;
+    if (typeof window !== "undefined") {
+      toast.info(`Carregando página "${target.title}" no editor...`);
+      window.location.href = `/workspace/builder/${target.id}/editor`;
+    }
+  };
+
+  const handleCreateSitePage = async (newPage: { title: string; slug: string; is_home: boolean }) => {
+    try {
+      const createdDoc = await createExperienceDocument({
+        data: {
+          store_id: document.store_id || undefined,
+          title: newPage.title,
+          slug: newPage.slug.replace(/^\//, ""),
+        },
+      });
+      if (createdDoc?.id) {
+        const item: BuilderPageItem = {
+          id: createdDoc.id,
+          title: createdDoc.title,
+          slug: createdDoc.slug?.startsWith("/") ? createdDoc.slug : `/${createdDoc.slug || ""}`,
+          is_home: false,
+          seo_title: `${createdDoc.title} | ${document.title || "Loja"}`,
+          seo_description: "Página oficial criada no Waesy Studio.",
+        };
+        setSitePages((prev) => [...prev, item]);
+        setActivePageId(createdDoc.id);
+        toast.success(`Página "${createdDoc.title}" criada no banco de dados!`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao criar página.");
+    }
+  };
+
+  const handleDuplicateSitePage = async (pageId: string) => {
+    try {
+      const dup = await duplicateExperienceDocument({
+        data: {
+          document_id: pageId,
+        },
+      });
+      if (dup?.id) {
+        const item: BuilderPageItem = {
+          id: dup.id,
+          title: dup.title,
+          slug: dup.slug?.startsWith("/") ? dup.slug : `/${dup.slug || ""}`,
+          is_home: false,
+          seo_title: `${dup.title} | ${document.title || "Loja"}`,
+          seo_description: "Cópia da página criada no Waesy Studio.",
+        };
+        setSitePages((prev) => [...prev, item]);
+        toast.success(`Página "${dup.title}" duplicada com sucesso!`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao duplicar página.");
+    }
+  };
+
+  const handleDeleteSitePage = async (pageId: string) => {
+    if (pageId === document.id) {
+      toast.error("Não é possível excluir a página que você está editando no momento.");
+      return;
+    }
+    try {
+      await deleteExperienceDocument({
+        data: {
+          document_id: pageId,
+        },
+      });
+      setSitePages((prev) => prev.filter((p) => p.id !== pageId));
+      toast.success("Página excluída do banco de dados.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao excluir página.");
+    }
+  };
+
+  const handleUpdateSitePageSeo = async (
+    pageId: string,
+    seo: { seo_title?: string; seo_description?: string },
+  ) => {
+    try {
+      await updateExperienceDocumentSettings({
+        data: {
+          document_id: pageId,
+          settings: {
+            seo: {
+              title: seo.seo_title,
+              description: seo.seo_description,
+            },
+          },
+        },
+      });
+      setSitePages((prev) =>
+        prev.map((p) => (p.id === pageId ? { ...p, ...seo } : p)),
+      );
+      toast.success("SEO da página atualizado no banco de dados!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar SEO da página.");
+    }
+  };
+
+  const handleUpdateTheme = (patch: Partial<GlobalThemeConfig>) => {
+    setGlobalTheme((prev) => {
+      const updated = { ...prev, ...patch };
+      commitDocumentMutation((curr) => ({
+        ...curr,
+        theme: {
+          ...curr.theme,
+          primaryColor: updated.primaryColor,
+          backgroundColor: updated.backgroundColor,
+          textColor: updated.textColor,
+          headingFont: updated.headingFont,
+          bodyFont: updated.bodyFont,
+          borderRadius: updated.borderRadius,
+          customThemeEnabled: true,
+        },
+      }));
+      return updated;
+    });
   };
 
   useEffect(() => {
@@ -2697,15 +2919,53 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     toast.success("Template aplicado como rascunho editável. Revise os findings antes de publicar.");
   };
 
-  const handleUpdateConfig = (key: string, value: any) => {
-    if (!selectedBlockId) return;
-    const updated = updateBlockInPage(document, selectedBlockId, { [key]: value });
-    commitDocumentChange(updated);
+  const handleUpdateConfig = (
+    keyOrPatch: string | Record<string, any>,
+    value?: any,
+    targetBlockId?: string,
+  ) => {
+    const blockId = targetBlockId || selectedBlockId;
+    if (!blockId) return;
+    const patch =
+      typeof keyOrPatch === "string"
+        ? { [keyOrPatch]: value }
+        : (keyOrPatch as Record<string, any>);
+    commitDocumentMutation((curr) => updateBlockInPage(curr, blockId, patch));
+  };
+
+  const handleUpdateStylingPatch = (
+    patch: Partial<OmniBlockStyling>,
+    targetBlockId?: string,
+  ) => {
+    const blockId = targetBlockId || selectedBlockId;
+    if (!blockId) return;
+    commitDocumentMutation((curr) => updateBlockInPage(curr, blockId, {}, patch));
+  };
+
+  const handleUpdateStyling = (stylingKey: keyof OmniBlockStyling, value: any) => {
+    handleUpdateStylingPatch({ [stylingKey]: value });
+  };
+
+  const handleToggleBlockHidden = (blockId: string) => {
+    commitDocumentMutation((curr) => ({
+      ...curr,
+      blocks: curr.blocks.map((b) =>
+        b.id === blockId ? { ...b, isHidden: !b.isHidden } : b,
+      ),
+    }));
+  };
+
+  const handleInlineTextUpdate = (
+    blockId: string,
+    fieldPath: string,
+    newValue: string,
+  ) => {
+    handleUpdateConfig(fieldPath, newValue, blockId);
   };
 
   const handleUpdateAssetRef = (asset: BuilderAssetRef) => {
     if (!selectedBlockId) return;
-    setDocument((current) => ({
+    commitDocumentMutation((current) => ({
       ...current,
       blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
         ...block,
@@ -2714,52 +2974,42 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           asset,
         ],
       }),
-      updated_at: new Date().toISOString(),
     }));
   };
 
   const handleClearAssetRef = (usageSlot?: string) => {
     if (!usageSlot) return;
     if (!selectedBlockId) return;
-    setDocument((current) => ({
+    commitDocumentMutation((current) => ({
       ...current,
       blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
         ...block,
         assetRefs: (block.assetRefs ?? []).filter((asset) => asset.usage_slot !== usageSlot),
       }),
-      updated_at: new Date().toISOString(),
     }));
   };
 
   const handleUpdateAssetAltText = (usageSlot: string, altText: string) => {
     if (!selectedBlockId) return;
-    setDocument((current) => ({
+    commitDocumentMutation((current) => ({
       ...current,
       blocks: current.blocks.map((block) => block.id !== selectedBlockId ? block : {
         ...block,
         assetRefs: (block.assetRefs ?? []).map((asset) => asset.usage_slot === usageSlot ? { ...asset, alt_text: altText } : asset),
       }),
-      updated_at: new Date().toISOString(),
     }));
   };
 
   const handleUpdateSectionAnchorId = (anchorId: string) => {
     if (!selectedBlockId) return;
-    setDocument((current) => ({
+    commitDocumentMutation((current) => ({
       ...current,
       blocks: current.blocks.map((block) =>
         block.id !== selectedBlockId
           ? block
           : { ...block, sectionAnchorId: anchorId || undefined },
       ),
-      updated_at: new Date().toISOString(),
     }));
-  };
-
-  const handleUpdateStyling = (stylingKey: keyof OmniBlockStyling, value: any) => {
-    if (!selectedBlockId) return;
-    const updated = updateBlockInPage(document, selectedBlockId, {}, { [stylingKey]: value });
-    commitDocumentChange(updated);
   };
 
   const handleMove = (index: number, direction: "up" | "down") => {
@@ -2929,9 +3179,25 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             >
               <Redo2 className="size-4" />
             </button>
-            <span className="px-2 py-1 rounded bg-muted/60 text-xs font-semibold text-muted-foreground">
-              Autosave ativo
-            </span>
+            <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/40 border border-border/50 text-xs font-medium">
+              <span
+                className={`size-2 rounded-full ${
+                  autosaveStatus === "saved"
+                    ? "bg-success"
+                    : autosaveStatus === "dirty"
+                      ? "bg-warning animate-pulse"
+                      : autosaveStatus === "saving"
+                        ? "bg-primary animate-ping"
+                        : "bg-destructive"
+                }`}
+              />
+              <span className="text-muted-foreground text-2xs">
+                {autosaveStatus === "saved" && "Salvo"}
+                {autosaveStatus === "dirty" && "Não salvo"}
+                {autosaveStatus === "saving" && "Salvando..."}
+                {autosaveStatus === "error" && "Erro no autosave"}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -3082,6 +3348,17 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           </Button>
 
           <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsVersionHistoryOpen(true)}
+            className="h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            title="Histórico de Versões do Documento"
+          >
+            <History className="size-4 sm:mr-2" />
+            <span className="hidden sm:inline">Histórico</span>
+          </Button>
+
+          <Button
             size="sm"
             onClick={handleSaveDocument}
             disabled={isSaving || isPublishing}
@@ -3097,7 +3374,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               size="sm"
               onClick={handlePublishDocument}
               disabled={isPublishing || isSaving}
-              className="h-11 min-h-11 px-3 sm:px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs transition-transform active:scale-95 shadow-sm focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 px-3 sm:px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs transition-transform active:scale-95  focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Send className="size-4 sm:mr-2" />
               <span>{isPublishing ? "Publicando..." : "Publicar"}</span>
@@ -3184,7 +3461,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               {leftTab === "blocks" ? (
                 <>
                   {/* Chips de Categorias Estilo Wix */}
-                  <div className="flex items-center gap-1 overflow-x-auto pb-2 mb-1 scrollbar-none">
+                  <div className="flex items-center gap-1 overflow-x-auto scroll-area-carousel pb-2 mb-1 scrollbar-none">
                     {WIX_CATEGORY_CONFIG.map((cat) => {
                       const CatIcon = cat.icon;
                       const isActive = activeBlockCategory === cat.id;
@@ -3309,21 +3586,36 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                     key={block.id}
                     className={`p-3 rounded-lg border transition-colors flex items-center justify-between gap-2 ${
                       isSelected ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-muted/40"
-                    }`}
+                    } ${block.isHidden ? "opacity-60 border-dashed" : ""}`}
                   >
                     <button
                       type="button"
                       onClick={() => setSelectedBlockId(block.id)}
                       className="flex-1 text-left min-w-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                     >
-                      <span className="text-xs font-mono text-muted-foreground block">
-                        #{idx + 1} • {block.sectionAnchorId ? `#${block.sectionAnchorId}` : def.category}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-muted-foreground block">
+                          #{idx + 1} • {block.sectionAnchorId ? `#${block.sectionAnchorId}` : def.category}
+                        </span>
+                        {block.isHidden && (
+                          <span className="text-2xs font-semibold px-1 rounded bg-muted text-muted-foreground">
+                            Oculto
+                          </span>
+                        )}
+                      </div>
                       <span className="text-xs font-bold text-foreground truncate block">
                         {(block.config as any)?.title || def.name}
                       </span>
                     </button>
                     <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleBlockHidden(block.id)}
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title={block.isHidden ? "Exibir seção" : "Ocultar seção"}
+                      >
+                        {block.isHidden ? <EyeOff className="size-3.5 text-warning" /> : <Eye className="size-3.5" />}
+                      </button>
                       <button
                         type="button"
                         disabled={idx === 0}
@@ -3342,6 +3634,22 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       >
                         <ChevronDown className="size-3.5" />
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDuplicate(block.id)}
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title="Duplicar seção"
+                      >
+                        <Copy className="size-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(block.id)}
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title="Remover seção"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
                     </div>
                   </div>
                 );
@@ -3357,37 +3665,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               <BuilderPagesPanel
                 pages={sitePages}
                 activePageId={activePageId}
-                onSelectPage={(id) => setActivePageId(id)}
-                onAddPage={(newPage) => {
-                  const created: BuilderPageItem = {
-                    id: `page_${Date.now()}`,
-                    ...newPage,
-                  };
-                  setSitePages((prev) => [...prev, created]);
-                  setActivePageId(created.id);
-                }}
-                onDeletePage={(id) => {
-                  setSitePages((prev) => prev.filter((p) => p.id !== id));
-                }}
-                onDuplicatePage={(id) => {
-                  const orig = sitePages.find((p) => p.id === id);
-                  if (!orig) return;
-                  setSitePages((prev) => [
-                    ...prev,
-                    {
-                      ...orig,
-                      id: `page_${Date.now()}`,
-                      title: `${orig.title} (Cópia)`,
-                      slug: `${orig.slug}-copia`,
-                      is_home: false,
-                    },
-                  ]);
-                }}
-                onUpdatePageSeo={(id, seo) => {
-                  setSitePages((prev) =>
-                    prev.map((p) => (p.id === id ? { ...p, ...seo } : p)),
-                  );
-                }}
+                onSelectPage={handleSelectSitePage}
+                onAddPage={handleCreateSitePage}
+                onDeletePage={handleDeleteSitePage}
+                onDuplicatePage={handleDuplicateSitePage}
+                onUpdatePageSeo={handleUpdateSitePageSeo}
                 onClose={() => setDockedPanel(null)}
               />
             </div>
@@ -3409,7 +3691,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           <div className="w-80 border-r border-border/80 bg-card flex flex-col shrink-0 overflow-y-auto">
             <BuilderGlobalThemePanel
               theme={globalTheme}
-              onChangeTheme={(patch) => setGlobalTheme((prev) => ({ ...prev, ...patch }))}
+              onChangeTheme={handleUpdateTheme}
               onClose={() => setDockedPanel(null)}
             />
             <div className="p-4 border-t border-border bg-muted/10">
@@ -3525,15 +3807,45 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 </div>
               ) : (
                 document.blocks.map((block, index) => {
+                  if (isPreviewMode && (block.isHidden || !isBlockWithinSchedule(block))) {
+                    return null;
+                  }
                   const def = getSiteBlockById(block.type);
                   const Component = def.component;
                   const isSelected = selectedBlockId === block.id && !isPreviewMode;
+                  const visibilityClass = getBlockDeviceVisibilityClass(block);
+                  const boundData = resolveBlockBoundData(block, {
+                    products,
+                    categories,
+                    collections,
+                    classifieds,
+                    posts,
+                    flyers,
+                    events,
+                    jobs,
+                    stores,
+                    banners,
+                    hotpages,
+                    newsArticles: liveNewsArticles,
+                  });
 
                   return (
                     <div
-                      key={block.id} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!isPreviewMode) setSelectedBlockId(block.id); } }} onClick={() => !isPreviewMode && setSelectedBlockId(block.id)} className={`relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                        isSelected ? "ring-2 ring-foreground ring-offset-2 ring-offset-background z-20" : ""
-                      }`}
+                      key={block.id}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          if (!isPreviewMode) setSelectedBlockId(block.id);
+                        }
+                      }}
+                      onClick={() => !isPreviewMode && setSelectedBlockId(block.id)}
+                      className={`relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                        isSelected
+                          ? "ring-2 ring-foreground ring-offset-2 ring-offset-background z-20"
+                          : ""
+                      } ${block.isHidden ? "opacity-60 border-dashed border border-muted-foreground/40" : ""} ${visibilityClass}`}
                     >
                       {/* Barra Flutuante de Ações no Bloco (Desktop Hover) */}
                       {!isPreviewMode && (
@@ -3541,6 +3853,17 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground px-2">
                             {def.name}
                           </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleBlockHidden(block.id);
+                            }}
+                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            title={block.isHidden ? "Exibir bloco" : "Ocultar bloco"}
+                          >
+                            {block.isHidden ? <EyeOff className="size-3.5 text-warning" /> : <Eye className="size-3.5" />}
+                          </button>
                           <button
                             type="button"
                             onClick={(e) => {
@@ -3608,12 +3931,24 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           id={block.id}
                           data={block.config}
                           styling={block.styling}
-                          isEditing={true}
-                          products={products}
-                          categories={categories}
-                          collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
+                          isEditing={!isPreviewMode}
+                          products={boundData.products}
+                          categories={boundData.categories}
+                          collections={boundData.collections}
+                          classifieds={boundData.classifieds}
+                          posts={boundData.posts}
+                          flyers={boundData.flyers}
+                          events={boundData.events}
+                          jobs={boundData.jobs}
+                          stores={boundData.stores}
+                          banners={boundData.banners}
+                          hotpages={boundData.hotpages}
                           storeData={storeData}
-                          newsArticles={liveNewsArticles}
+                          newsArticles={boundData.newsArticles}
+                          activeSubstate={block.activeSubstate}
+                          onUpdateInlineText={(fieldPath, newValue) => {
+                            handleInlineTextUpdate(block.id, fieldPath, newValue);
+                          }}
                         />
                       </BlockErrorBoundary>
                     </div>
@@ -3653,179 +3988,59 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           </BuilderViewportProvider>
         </main>
 
-        {/* Painel Direito: Inspector Profundo de 3 Abas (Conteúdo | Design & Posição | Animações & CMS) */}
+        {/* Painel Direito: Inspetor Universal Orientado a Capacidades (Wix Studio Standard) */}
         {!isPreviewMode && selectedBlock && (
-          <aside className="w-80 lg:w-96 border-l border-border/80 bg-card/60 backdrop-blur-md flex flex-col shrink-0">
-            {/* Breadcrumb de Hierarquia de Camadas (Página > Seção > Bloco) */}
-            <div className="px-4 py-2 border-b border-border/60 bg-muted/30 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1 text-muted-foreground truncate">
-                <span>Página</span>
-                <ChevronRight className="size-3 shrink-0" />
-                <span>Seção</span>
-                <ChevronRight className="size-3 shrink-0" />
-                <span className="font-bold text-foreground truncate">
-                  {getSiteBlockById(selectedBlock.type).name}
-                </span>
-              </div>
-            </div>
-
-            {/* 3 Abas do Inspector */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 p-2 border-b border-border/60 gap-1 bg-muted/20">
-              <button
-                type="button"
-                onClick={() => setInspectorTab("content")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
-                  inspectorTab === "content" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-              >
-                <Settings2 className="size-3.5" />
-                <span>Conteúdo</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setInspectorTab("styling")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
-                  inspectorTab === "styling" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-              >
-                <Palette className="size-3.5" />
-                <span>Design & Pos</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setInspectorTab("animation_cms")}
-                className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
-                  inspectorTab === "animation_cms" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-              >
-                <Sliders className="size-3.5" />
-                <span>Animação/CMS</span>
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {inspectorTab === "content" ? (
-                <div className="space-y-4">
-                  {/* Ações Rápidas Wix Studio: Photo Studio Pro + Gerenciar Menu + Matriz Hopp */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setIsPhotoStudioOpen(true)}
-                      className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <Image className="size-3.5 text-primary" />
-                      <span>Photo Studio</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setIsMenuManagerOpen(true)}
-                      className="h-11 min-h-11 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <MenuIcon className="size-3.5 text-primary" />
-                      <span>Gerenciar Menu</span>
-                    </Button>
-                  </div>
-
-                  <BlockContentFields
-                    selectedBlock={selectedBlock}
-                    onUpdateConfig={handleUpdateConfig}
-                    onUpdateAssetRef={handleUpdateAssetRef}
-                    onClearAssetRef={handleClearAssetRef}
-                    onUpdateAssetAltText={handleUpdateAssetAltText}
-                    unsplashUsageSlot={unsplashDecorativeSlot?.id}
-                    unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
-                    products={products}
-                    categories={categories}
-                    collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
-                  />
-                </div>
-              ) : inspectorTab === "styling" ? (
-                /* Aba 2: Design, Posição, Dimensionamento Fluido, Ancoragem 3x3 & Header Scroll */
-                <div className="space-y-4">
-                  <BidirectionalDeviceStylingFields
-                    styling={selectedBlock.styling}
-                    onUpdateStyling={handleUpdateStyling}
-                    sectionAnchorId={selectedBlock.sectionAnchorId}
-                    onUpdateSectionAnchorId={handleUpdateSectionAnchorId}
-                  />
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Espaçamento Vertical (Padding)
-                    </label>
-                    <select
-                      value={selectedBlock.styling?.paddingY || "md"}
-                      onChange={(e) => handleUpdateStyling("paddingY", e.target.value)}
-                      className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs"
-                    >
-                      <option value="none">Sem Espaçamento</option>
-                      <option value="sm">Pequeno (32px)</option>
-                      <option value="md">Médio (64px)</option>
-                      <option value="lg">Amplo (96px)</option>
-                      <option value="xl">Monumental (128px)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Arredondamento dos Cantos
-                    </label>
-                    <select
-                      value={selectedBlock.styling?.borderRadius || "xl"}
-                      onChange={(e) => handleUpdateStyling("borderRadius", e.target.value)}
-                      className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs"
-                    >
-                      <option value="none">Reto (0px)</option>
-                      <option value="sm">Pequeno (6px)</option>
-                      <option value="md">Médio (8px)</option>
-                      <option value="lg">Grande (12px)</option>
-                      <option value="xl">Extra Grande (16px)</option>
-                      <option value="2xl">Squircle Apple (24px)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Cor de Fundo Customizada
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={selectedBlock.styling?.backgroundColor || `${String.fromCharCode(35)}ffffff`}
-                        onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
-                        className="size-11 min-h-11 min-w-11 rounded-lg cursor-pointer border border-border"
-                      />
-                      <Input
-                        value={selectedBlock.styling?.backgroundColor || ""}
-                        onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
-                        placeholder="Padrão do tema"
-                        className="h-11 min-h-11 rounded-lg text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <WixScrollAnimationsAndDockingInspector
-                    section="layout"
-                    selectedBlock={selectedBlock}
-                    onUpdateConfig={handleUpdateConfig}
-                    onUpdateStyling={handleUpdateStyling}
-                  />
-                </div>
-              ) : (
-                /* Aba 3: 12 Animações de Rolagem Wix Studio & Conexão de Dataset CMS */
-                <WixScrollAnimationsAndDockingInspector
-                  section="animation_cms"
-                  selectedBlock={selectedBlock}
-                  onUpdateConfig={handleUpdateConfig}
-                  onUpdateStyling={handleUpdateStyling}
-                  onOpenCmsTable={() => setIsCmsTableModalOpen(true)}
-                />
-              )}
-            </div>
-          </aside>
+          <UniversalBlockInspector
+            selectedBlock={selectedBlock}
+            blockDef={getSiteBlockById(selectedBlock.type)}
+            onUpdateConfig={handleUpdateConfig}
+            onUpdateStyling={handleUpdateStylingPatch}
+            onUpdateBinding={(newBinding) => {
+              commitDocumentMutation((curr) => ({
+                ...curr,
+                blocks: curr.blocks.map((b) =>
+                  b.id === selectedBlock.id ? { ...b, dataBinding: newBinding } : b,
+                ),
+              }));
+            }}
+            onUpdateSubstate={(substate) => {
+              commitDocumentMutation((curr) => ({
+                ...curr,
+                blocks: curr.blocks.map((b) =>
+                  b.id === selectedBlock.id ? { ...b, activeSubstate: substate } : b,
+                ),
+              }));
+            }}
+            onUpdateSectionAnchorId={handleUpdateSectionAnchorId}
+            onToggleHidden={() => handleToggleBlockHidden(selectedBlock.id)}
+            onOpenPhotoStudio={() => setIsPhotoStudioOpen(true)}
+            onOpenCollectionSheet={() => setIsCmsTableModalOpen(true)}
+            onClose={() => setSelectedBlockId(null)}
+            contentSlot={
+              <BlockContentFields
+                selectedBlock={selectedBlock}
+                onUpdateConfig={handleUpdateConfig}
+                onUpdateAssetRef={handleUpdateAssetRef}
+                onClearAssetRef={handleClearAssetRef}
+                onUpdateAssetAltText={handleUpdateAssetAltText}
+                products={products}
+                categories={categories}
+                collections={collections}
+                classifieds={classifieds}
+                posts={posts}
+                flyers={flyers}
+                events={events}
+                jobs={jobs}
+                stores={stores}
+                banners={banners}
+                hotpages={hotpages}
+              />
+            }
+            products={products}
+            categories={categories}
+            collections={collections}
+            stores={stores}
+          />
         )}
       </div>
 
@@ -3848,9 +4063,27 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
         ) : (
           <div className="space-y-4 px-2 py-3">
             {document.blocks.map((block) => {
+              if (isPreviewMode && (block.isHidden || !isBlockWithinSchedule(block))) {
+                return null;
+              }
               const def = getSiteBlockById(block.type);
               const Component = def.component;
               const isSelected = selectedBlockId === block.id && !isPreviewMode;
+              const visibilityClass = getBlockDeviceVisibilityClass(block);
+              const boundData = resolveBlockBoundData(block, {
+                products,
+                categories,
+                collections,
+                classifieds,
+                posts,
+                flyers,
+                events,
+                jobs,
+                stores,
+                banners,
+                hotpages,
+                newsArticles: liveNewsArticles,
+              });
 
               return (
                 <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
@@ -3862,7 +4095,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   }}
                   className={`relative rounded-lg overflow-hidden transition-colors duration-200 ${
                     isSelected ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
-                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                  } ${block.isHidden ? "opacity-60 border-dashed border border-muted-foreground/40" : ""} ${visibilityClass} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   {/* Tag do Bloco Ativo no Mobile */}
                   {isSelected && (
@@ -3881,12 +4114,24 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       id={block.id}
                       data={block.config}
                       styling={block.styling}
-                      isEditing={true}
-                      products={products}
-                      categories={categories}
-                      collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
+                      isEditing={!isPreviewMode}
+                      products={boundData.products}
+                      categories={boundData.categories}
+                      collections={boundData.collections}
+                      classifieds={boundData.classifieds}
+                      posts={boundData.posts}
+                      flyers={boundData.flyers}
+                      events={boundData.events}
+                      jobs={boundData.jobs}
+                      stores={boundData.stores}
+                      banners={boundData.banners}
+                      hotpages={boundData.hotpages}
                       storeData={storeData}
-                      newsArticles={liveNewsArticles}
+                      newsArticles={boundData.newsArticles}
+                      activeSubstate={block.activeSubstate}
+                      onUpdateInlineText={(fieldPath, newValue) => {
+                        handleInlineTextUpdate(block.id, fieldPath, newValue);
+                      }}
                     />
                   </BlockErrorBoundary>
                 </div>
@@ -3897,7 +4142,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
         {/* Barra Inferior Flutuante (Floating Bottom Bar - 44px Touch Targets) */}
         {!isPreviewMode && (
-          <div className="fixed bottom-3 left-3 right-3 z-40 bg-card/95 backdrop-blur-xl border border-border/80 rounded-lg shadow-xl p-2 flex items-center justify-around">
+          <div className="fixed bottom-3 left-3 right-3 z-40 bg-card/95 backdrop-blur-xl border border-border/80 rounded-lg shadow-overlay p-2 flex items-center justify-around">
             <button
               onClick={() => setIsMobileAddOpen(true)}
               className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -3949,7 +4194,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           </SheetHeader>
 
           {/* Chips de filtro de categoria Wix no Mobile */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-2 scrollbar-none shrink-0">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-2 mb-2 scrollbar-none shrink-0">
             {WIX_CATEGORY_CONFIG.map((cat) => {
               const CatIcon = cat.icon;
               const isActive = activeBlockCategory === cat.id;
@@ -4001,127 +4246,64 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
       {/* ── MOBILE BOTTOM SHEET: EDITAR BLOCO SELECIONADO (85vh - CONTEÚDO & ESTILO) ── */}
       <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-        <SheetContent side="bottom" className="h-5/6 rounded-t-lg p-5 flex flex-col">
-          <SheetHeader className="mb-3">
-            <SheetTitle className="text-sm font-bold tracking-tight">
-              {selectedBlock ? getSiteBlockById(selectedBlock.type).name : "Editar Bloco"}
-            </SheetTitle>
-          </SheetHeader>
-
+        <SheetContent side="bottom" className="h-5/6 rounded-t-lg p-3 flex flex-col">
           {selectedBlock ? (
-            <div className="flex-1 overflow-y-auto space-y-4 pb-6">
-              {/* Abas Conteúdo / Estilo */}
-              <div className="grid grid-cols-2 p-1 bg-muted/40 rounded-lg border border-border/60 gap-1">
-                <button
-                  onClick={() => setMobileInspectorTab("content")}
-                  className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                    mobileInspectorTab === "content"
-                      ? "bg-background text-foreground shadow-xs"
-                      : "text-muted-foreground"
-                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-                >
-                  <Settings2 className="size-4" />
-                  Conteúdo
-                </button>
-                <button
-                  onClick={() => setMobileInspectorTab("styling")}
-                  className={`py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                    mobileInspectorTab === "styling"
-                      ? "bg-background text-foreground shadow-xs"
-                      : "text-muted-foreground"
-                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-                >
-                  <Palette className="size-4" />
-                  Estilo
-                </button>
-              </div>
-
-              {mobileInspectorTab === "content" ? (
-                <div className="pt-1">
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <UniversalBlockInspector
+                selectedBlock={selectedBlock}
+                blockDef={getSiteBlockById(selectedBlock.type)}
+                onUpdateConfig={handleUpdateConfig}
+                onUpdateStyling={handleUpdateStylingPatch}
+                onUpdateSectionAnchorId={handleUpdateSectionAnchorId}
+                onToggleHidden={() => handleToggleBlockHidden(selectedBlock.id)}
+                onOpenPhotoStudio={() => {
+                  setIsMobileSheetOpen(false);
+                  setIsPhotoStudioOpen(true);
+                }}
+                onUpdateBinding={(newBinding) => {
+                  commitDocumentMutation((curr) => ({
+                    ...curr,
+                    blocks: curr.blocks.map((b) =>
+                      b.id === selectedBlock.id ? { ...b, dataBinding: newBinding } : b,
+                    ),
+                  }));
+                }}
+                onUpdateSubstate={(substate) => {
+                  commitDocumentMutation((curr) => ({
+                    ...curr,
+                    blocks: curr.blocks.map((b) =>
+                      b.id === selectedBlock.id ? { ...b, activeSubstate: substate } : b,
+                    ),
+                  }));
+                }}
+                onOpenCollectionSheet={() => {
+                  setIsMobileSheetOpen(false);
+                  setIsCmsTableModalOpen(true);
+                }}
+                onClose={() => setIsMobileSheetOpen(false)}
+                products={products}
+                categories={categories}
+                collections={collections}
+                stores={stores}
+                contentSlot={
                   <BlockContentFields
-                    selectedBlock={selectedBlock}
+                    block={selectedBlock}
                     onUpdateConfig={handleUpdateConfig}
-                    onUpdateAssetRef={handleUpdateAssetRef}
-                    onClearAssetRef={handleClearAssetRef}
-                    onUpdateAssetAltText={handleUpdateAssetAltText}
-                    unsplashUsageSlot={unsplashDecorativeSlot?.id}
-                    unsplashDefaultQuery={unsplashDecorativeSlot?.searchHints[0] ?? activeStudioManifest?.niche.replace(/[-_]/g, " ")}
-                    products={products}
-                    categories={categories}
-                    collections={collections} classifieds={classifieds} posts={posts} flyers={flyers} events={events} jobs={jobs} stores={stores} banners={banners} hotpages={hotpages}
+                    onOpenAssetPicker={(field) => {
+                      setAssetPickerField(field);
+                      setIsAssetPickerOpen(true);
+                    }}
+                    onOpenPhotoStudio={() => {
+                      setIsMobileSheetOpen(false);
+                      setIsPhotoStudioOpen(true);
+                    }}
+                    onOpenMenuManager={() => {
+                      setIsMobileSheetOpen(false);
+                      setIsMenuManagerOpen(true);
+                    }}
                   />
-                </div>
-              ) : (
-                /* Aba de Estilo Mobile */
-                <div className="space-y-4 pt-1">
-                  <BidirectionalDeviceStylingFields
-                    styling={selectedBlock.styling}
-                    onUpdateStyling={handleUpdateStyling}
-                    sectionAnchorId={selectedBlock.sectionAnchorId}
-                    onUpdateSectionAnchorId={handleUpdateSectionAnchorId}
-                  />
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Espaçamento Vertical (Padding)
-                    </label>
-                    <select
-                      value={selectedBlock.styling?.paddingY || "md"}
-                      onChange={(e) => handleUpdateStyling("paddingY", e.target.value)}
-                      className="w-full h-10 rounded-lg border border-border bg-background px-3 text-xs"
-                    >
-                      <option value="none">Sem Espaçamento</option>
-                      <option value="sm">Pequeno (32px)</option>
-                      <option value="md">Médio (64px)</option>
-                      <option value="lg">Amplo (96px)</option>
-                      <option value="xl">Monumental (128px)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Arredondamento dos Cantos
-                    </label>
-                    <select
-                      value={selectedBlock.styling?.borderRadius || "xl"}
-                      onChange={(e) => handleUpdateStyling("borderRadius", e.target.value)}
-                      className="w-full h-10 rounded-lg border border-border bg-background px-3 text-xs"
-                    >
-                      <option value="none">Reto (0px)</option>
-                      <option value="sm">Discreto (8px)</option>
-                      <option value="md">Médio (12px)</option>
-                      <option value="xl">Arredondado (16px)</option>
-                      <option value="2xl">Padrão Apple (24px)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1">
-                      Cor de Fundo Customizada
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={selectedBlock.styling?.backgroundColor || `${String.fromCharCode(35)}ffffff`}
-                        onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
-                        className="size-10 rounded-lg cursor-pointer border border-border"
-                      />
-                      <Input
-                        value={selectedBlock.styling?.backgroundColor || ""}
-                        onChange={(e) => handleUpdateStyling("backgroundColor", e.target.value)}
-                        placeholder="Padrão do tema"
-                        className="h-10 rounded-lg text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <Button
-                onClick={() => setIsMobileSheetOpen(false)}
-                className="w-full h-11 rounded-lg bg-foreground text-background font-bold mt-4"
-              >
-                Concluir
-              </Button>
+                }
+              />
             </div>
           ) : (
             <div className="text-center py-12 text-xs text-muted-foreground">
@@ -4288,8 +4470,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           <HostingDomainConnectModal
             isOpen={isDomainModalOpen}
             onClose={() => setIsDomainModalOpen(false)}
-            storeSlug={document.slug}
-            storeName={document.title || "Minha Loja"}
+            storeSlug={storeData?.slug || document.slug}
+            storeName={storeData?.name || document.title || "Minha Loja"}
+            storeId={document.store_id || storeData?.id}
           />
         )}
 
@@ -4357,34 +4540,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           onClose={() => setIsVisualSitemapOpen(false)}
           pages={sitePages}
           activePageId={activePageId}
-          onSelectPage={(id) => setActivePageId(id)}
-          onAddPage={(newPage) => {
-            const created: BuilderPageItem = {
-              id: `page_${Date.now()}`,
-              ...newPage,
-            };
-            setSitePages((prev) => [...prev, created]);
-            setActivePageId(created.id);
-          }}
-          onDuplicatePage={(id) => {
-            const orig = sitePages.find((p) => p.id === id);
-            if (!orig) return;
-            setSitePages((prev) => [
-              ...prev,
-              {
-                ...orig,
-                id: `page_${Date.now()}`,
-                title: `${orig.title} (Cópia)`,
-                slug: `${orig.slug}-copia`,
-                is_home: false,
-              },
-            ]);
-          }}
-          onUpdatePageSeo={(id, seo) => {
-            setSitePages((prev) =>
-              prev.map((p) => (p.id === id ? { ...p, ...seo } : p)),
-            );
-          }}
+          onSelectPage={handleSelectSitePage}
+          onAddPage={handleCreateSitePage}
+          onDuplicatePage={handleDuplicateSitePage}
+          onDeletePage={handleDeleteSitePage}
+          onUpdatePageSeo={handleUpdateSitePageSeo}
           currentDocumentBlocks={document.blocks}
         />
       )}
@@ -4456,7 +4616,170 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           onUpdateBlockConfig={handleUpdateConfig}
         />
       )}
+
+      {/* ── MODAL / SHEET DE HISTÓRICO DE VERSÕES & ROLLBACK SEGURO ── */}
+      <VersionHistorySheet
+        isOpen={isVersionHistoryOpen}
+        onClose={() => setIsVersionHistoryOpen(false)}
+        documentId={document.id}
+        onRestoreVersion={(restoredDoc) => {
+          commitDocumentMutation(() => restoredDoc);
+          setIsVersionHistoryOpen(false);
+          toast.success("Versão restaurada com sucesso no Omni Builder!");
+        }}
+      />
     </div>
+  );
+};
+
+interface VersionHistorySheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+  documentId: string;
+  onRestoreVersion: (doc: OmniPageDocument) => void;
+}
+
+const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
+  isOpen,
+  onClose,
+  documentId,
+  onRestoreVersion,
+}) => {
+  const [versions, setVersions] = React.useState<
+    Array<{
+      id: string;
+      version_number: number;
+      title: string;
+      description: string;
+      created_at: string;
+      created_by?: string;
+      blocks_count: number;
+    }>
+  >([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [restoringId, setRestoringId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!isOpen || !documentId) return;
+    let isCancelled = false;
+    setIsLoading(true);
+
+    listOmniDocumentVersions({ data: { document_id: documentId } })
+      .then((res) => {
+        if (!isCancelled && res.success && Array.isArray(res.versions)) {
+          setVersions(res.versions);
+        }
+      })
+      .catch((err) => {
+        console.error("Erro ao listar versões do documento Omni Builder:", err);
+        toast.error("Não foi possível carregar as versões anteriores.");
+      })
+      .finally(() => {
+        if (!isCancelled) setIsLoading(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOpen, documentId]);
+
+  const handleRestore = async (versionId: string) => {
+    setRestoringId(versionId);
+    try {
+      const res = await restoreOmniDocumentVersion({
+        data: {
+          document_id: documentId,
+          version_id: versionId,
+        },
+      });
+
+      if (res.success && res.document) {
+        onRestoreVersion(res.document);
+      } else {
+        toast.error(res.error || "Falha ao restaurar versão selecionada.");
+      }
+    } catch (err) {
+      console.error("Erro ao restaurar versão:", err);
+      toast.error("Erro inesperado ao restaurar versão.");
+    } finally {
+      setRestoringId(null);
+    }
+  };
+
+  return (
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col bg-background">
+        <SheetHeader className="p-4 border-b border-border/80">
+          <SheetTitle className="text-sm font-semibold flex items-center gap-2">
+            <History className="size-4 text-primary" />
+            Histórico de Versões
+          </SheetTitle>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-20 rounded-lg border border-border/60 bg-muted/30 animate-pulse" />
+              ))}
+            </div>
+          ) : versions.length === 0 ? (
+            <div className="text-center py-12 px-4 border border-dashed border-border rounded-lg">
+              <History className="size-8 mx-auto text-muted-foreground/60 mb-2" />
+              <p className="text-xs font-medium text-foreground">Nenhuma versão anterior registrada</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Ao publicar ou criar marcos no Omni Builder, versões de recuperação são salvas automaticamente.
+              </p>
+            </div>
+          ) : (
+            versions.map((ver) => (
+              <div
+                key={ver.id}
+                className="p-4 rounded-lg border border-border/80 bg-card hover:bg-muted/30 transition-colors flex flex-col gap-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-foreground">
+                        v{ver.version_number}
+                      </span>
+                      <span className="text-2xs font-mono px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                        {ver.blocks_count} blocos
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {ver.title || "Publicação / Marco automático"}
+                    </p>
+                  </div>
+                  <span className="text-2xs text-muted-foreground shrink-0 font-mono">
+                    {new Date(ver.created_at).toLocaleString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-end pt-1 border-t border-border/40">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={restoringId === ver.id}
+                    onClick={() => handleRestore(ver.id)}
+                    className="h-11 min-h-11 px-3 text-xs flex items-center gap-2 focus-visible:ring-2"
+                  >
+                    <RotateCcw className="size-3.5" />
+                    {restoringId === ver.id ? "Restaurando..." : "Restaurar Esta Versão"}
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 

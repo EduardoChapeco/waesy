@@ -86,7 +86,7 @@ function SquadsPage() {
               }}
               className={`p-4 rounded-lg border text-left transition-colors duration-200 ${
                 isSelected
-                  ? "bg-card border-primary shadow-sm ring-1 ring-primary/20"
+                  ? "bg-card border-primary  ring-1 ring-primary/20"
                   : "bg-card/50 border-border/60 hover:border-border hover:bg-card"
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
@@ -179,7 +179,7 @@ function SquadsPage() {
                     },
                   })
                 }
-                className="rounded-lg text-xs h-10 px-5"
+                className="rounded-lg text-xs h-10 px-5 min-h-11 sm:min-h-0"
               >
                 {executeMutation.isPending ? (
                   <>

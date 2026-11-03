@@ -63,7 +63,7 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
           Não foi possível carregar esta página. Tente novamente ou volte ao início.
         </p>
         {normalizedError.message && (
-          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-left overflow-x-auto text-xs font-mono">
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-left overflow-x-auto scroll-area-carousel text-xs font-mono">
             <span className="font-bold block mb-1">Diagnóstico do Erro:</span>
             {normalizedError.message}
           </div>

@@ -767,7 +767,7 @@ export function EditorialShowcaseView({
 
       <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-0 sm:pt-4 space-y-4 animate-in fade-in duration-200">
         {isTravel && offerLifecycle.isExpired && offerLifecycle.publicBannerMessage && (
-          <div role="status" className="mx-3 sm:mx-0 p-4 rounded-lg border border-amber-500/40 bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div role="status" className="mx-3 sm:mx-0 p-4 rounded-lg border border-warning/40 bg-warning/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <p className="text-xs sm:text-sm font-bold text-foreground">Oferta expirada — consulte valor atualizado</p>
               <p className="text-xs text-muted-foreground">{offerLifecycle.publicBannerMessage}</p>
@@ -881,7 +881,7 @@ export function EditorialShowcaseView({
                 {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal (Início 100% visível na margem esquerda) */}
                 {images.length > 1 && (
                   /* design-lint-ignore DL-30 reason:"Trilho horizontal de miniaturas da galeria de fotos com overflow nativo" expiry:"2027-12-31" */
-                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 sm:px-0 py-2 w-full">
+                  <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar px-4 sm:px-0 py-2 w-full">
                     {images.slice(0, images.length > 10 ? 9 : 10).map((img, idx) => {
                       const isActive = activeImageIndex === idx;
                       return (
@@ -991,7 +991,7 @@ export function EditorialShowcaseView({
               )}
             </div>
             <div className="min-w-0 flex flex-col">
-              <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
                 <span className="font-extrabold text-xs sm:text-sm text-foreground break-words">
                   {advertiserName}
                 </span>
@@ -1052,7 +1052,7 @@ export function EditorialShowcaseView({
         {/* ── Abas Canônicas em Linha Única Horizontal Contínua (Invariante B.39) ── */}
         <div className="border-t border-border/40 pt-1 px-4 sm:px-0">
           {/* design-lint-ignore DL-30 reason:"Barra horizontal de abas canonicas em linha unica com overflow nativo" expiry:"2027-12-31" */}
-          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto no-scrollbar gap-1 pb-px w-full">
+          <div className="flex flex-nowrap items-center border-b border-border/40 overflow-x-auto scroll-area-carousel no-scrollbar gap-1 pb-px w-full">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1270,7 +1270,7 @@ export function EditorialShowcaseView({
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {lodging.stars ? (
-                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20">
+                                    <span className="text-xs font-bold text-warning-strong  bg-warning/10 px-2 py-1 rounded-md border border-warning/20">
                                       {lodging.stars} estrelas
                                     </span>
                                   ) : null}
@@ -1508,7 +1508,7 @@ export function EditorialShowcaseView({
                         {Array.isArray(item.meals_included) && item.meals_included.length > 0 && (
                           <div className="flex gap-2 flex-wrap pt-1">
                             {item.meals_included.map((m: string) => (
-                              <span key={m} className="text-xs px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+                              <span key={m} className="text-xs px-3 py-1 rounded-lg bg-warning/10 border border-warning/30 text-warning-strong  font-semibold flex items-center gap-1">
                                 {m === "breakfast" ? "Café da Manhã" : m === "lunch" ? "Almoço" : "Jantar"}
                               </span>
                             ))}
@@ -1746,7 +1746,7 @@ export function EditorialShowcaseView({
                         Gratuito (Doação)
                       </span>
                     ) : pricingType === "exchange_only" ? (
-                      <span className="text-xl sm:text-2xl font-black text-amber-600 tracking-tight font-display">
+                      <span className="text-xl sm:text-2xl font-black text-warning-strong tracking-tight font-display">
                         Somente Troca / Permuta
                       </span>
                     ) : pricingType === "price_range" && priceMinCents && priceMaxCents ? (
@@ -1904,7 +1904,7 @@ export function EditorialShowcaseView({
 
                     {acceptsBoletoInstallments && (
                       <div className="p-2 rounded-lg bg-background border border-border/50 flex items-center gap-2">
-                        <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                        <div className="size-8 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center shrink-0">
                           <FileSpreadsheet className="size-4.5" />
                         </div>
                         <div>
@@ -2009,7 +2009,7 @@ export function EditorialShowcaseView({
                           <span className="font-mono font-bold text-foreground">{flightDetails.arrival_iata}</span>
                           {flightDetails.airline && <span className="text-xs">• {flightDetails.airline}</span>}
                           {flightDetails.connections === 0 && <span className="text-xs text-emerald-600">• Direto</span>}
-                          {(flightDetails.connections ?? 0) > 0 && <span className="text-xs text-amber-600">• {flightDetails.connections} escala(s)</span>}
+                          {(flightDetails.connections ?? 0) > 0 && <span className="text-xs text-warning-strong">• {flightDetails.connections} escala(s)</span>}
                         </div>
                       )}
                       {(flightDetails.departure_time || flightDetails.arrival_time) && (
@@ -2122,7 +2122,7 @@ export function EditorialShowcaseView({
                       </div>
                       {/* Trecho 2: Transfer */}
                       <div className="flex items-center gap-2">
-                        <div className="size-7 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <div className="size-7 rounded-lg bg-warning/15  text-warning-strong  flex items-center justify-center shrink-0">
                           {(() => {
                             const v = flightDetails.transfer_vehicle || "";
                             if (v.includes("barco") || v.includes("lancha")) return <Ship className="size-3.5" />;
@@ -2371,7 +2371,7 @@ export function EditorialShowcaseView({
               ) : pricingType === "free" ? (
                 <span className="text-2xl sm:text-3xl font-black text-emerald-600">Gratuito</span>
               ) : pricingType === "exchange_only" ? (
-                <span className="text-2xl sm:text-3xl font-black text-amber-600">Somente Troca</span>
+                <span className="text-2xl sm:text-3xl font-black text-warning-strong">Somente Troca</span>
               ) : priceCents > 0 ? (
                 <>
                   {maxInstallments > 1 ? (
@@ -2533,7 +2533,7 @@ export function EditorialShowcaseView({
                 )}
               </div>
               <div className="min-w-0 flex flex-col">
-                <div className="flex items-center gap-1.5 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
                   <span className="font-bold text-sm text-foreground break-words">
                     {advertiserName}
                   </span>
@@ -2588,7 +2588,7 @@ export function EditorialShowcaseView({
               </div>
             ) : pricingType === "exchange_only" ? (
               <div className="flex items-center gap-1">
-                <span className="text-sm sm:text-base font-black text-amber-600 tracking-tight">Somente Troca</span>
+                <span className="text-sm sm:text-base font-black text-warning-strong tracking-tight">Somente Troca</span>
                 <ChevronUp className="size-3.5 text-muted-foreground" />
               </div>
             ) : priceCents > 0 ? (

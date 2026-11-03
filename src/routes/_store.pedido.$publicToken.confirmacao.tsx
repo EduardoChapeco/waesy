@@ -366,7 +366,7 @@ function ConfirmationPage() {
  <Button
  size="sm"
  variant="outline"
- className="rounded-lg text-xs h-9"
+ className="rounded-lg text-xs h-9 min-h-11 sm:min-h-0"
  onClick={() => {
  const msg = `Olá! Gostaria dos dados bancários para pagar o pedido #${order.public_token?.slice(0, 8).toUpperCase()}`;
  window.open(`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(msg)}`, "_blank");
@@ -429,7 +429,7 @@ function ConfirmationPage() {
  </div>
  )}
  {item.notes && (
- <span className="ml-7 text-xs text-amber-700 dark:text-amber-400 font-medium mt-1 inline-block">
+ <span className="ml-7 text-xs text-warning-strong  font-medium mt-1 inline-block">
  Obs: {item.notes}
  </span>
  )}
@@ -592,7 +592,7 @@ function ConfirmationPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 text-xs font-semibold rounded-md gap-2 cursor-pointer"
+                  className="h-8 text-xs font-semibold rounded-md gap-2 cursor-pointer min-h-11 sm:min-h-0"
                   onClick={() => {
                     navigator.clipboard.writeText(order.checkout_niche_metadata?.accessKey || `WAESY-${order.public_token.toUpperCase().slice(0, 8)}`);
                     toast.success("Chave copiada para a área de transferência!");
@@ -705,14 +705,14 @@ function ConfirmationPage() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {contractInfo.whatsappLink && (
-            <Button asChild size="sm" className="rounded-lg text-xs h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+            <Button asChild size="sm" className="rounded-lg text-xs h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold min-h-11 sm:min-h-0">
               <a href={contractInfo.whatsappLink} target="_blank" rel="noreferrer">
                 <MessageCircle className="size-3.5 mr-2" />
                 Assinar no WhatsApp
               </a>
             </Button>
           )}
-          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-9 px-4">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-9 px-4 min-h-11 sm:min-h-0">
             <Link to={contractInfo.signingUrl}>
               Assinar Agora
               <ArrowRight className="size-3.5 ml-2" />

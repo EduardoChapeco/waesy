@@ -256,7 +256,7 @@ function SignContractPage() {
             Termos e Cláusulas Contratuais
           </h2>
 
-          <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed max-h-[550px] overflow-y-auto rounded-lg p-4 sm:p-6 bg-muted/10 font-serif prose prose-sm dark:prose-invert max-w-none">
+          <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed max-h-138 overflow-y-auto rounded-lg p-4 sm:p-6 bg-muted/10 font-serif prose prose-sm dark:prose-invert max-w-none">
             <ReactMarkdown>{version?.content_markdown || ""}</ReactMarkdown>
           </div>
         </div>
@@ -273,7 +273,7 @@ function SignContractPage() {
                 A conclusão global depende de todas as assinaturas exigidas. Consulte o certificado público para acompanhar o estado do contrato.
               </p>
               {contract?.verification_code && (
-                <Button asChild size="sm" className="rounded-lg text-xs font-bold gap-2 mt-2 h-10 px-5">
+                <Button asChild size="sm" className="rounded-lg text-xs font-bold gap-2 mt-2 h-10 px-5 min-h-11 sm:min-h-0">
                   <Link to="/verify/document/$code" params={{ code: contract.verification_code }}>
                     <span>Ver Certificado Público de Autenticidade</span>
                     <ArrowRight className="size-3.5" />
@@ -347,7 +347,7 @@ function SignContractPage() {
                         type="button"
                         onClick={uploadSelfie}
                         disabled={isUploadingSelfie}
-                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                       >
                         {isUploadingSelfie ? "Confirmando..." : "Confirmar"}
                       </button>
@@ -355,7 +355,7 @@ function SignContractPage() {
                     <button
                       type="button"
                       onClick={retakeSelfie}
-                      className="h-8 px-3 rounded-lg text-xs font-semibold bg-muted text-foreground hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-8 px-3 rounded-lg text-xs font-semibold bg-muted text-foreground hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                     >
                       <RefreshCcw className="size-3 inline mr-1" />
                       Refazer
@@ -379,7 +379,7 @@ function SignContractPage() {
             <canvas ref={canvasRef} className="hidden" />
 
             {/* Pad de Assinatura Tátil & Consentimento Legal */}
-            <div className="border border-primary/30 bg-card rounded-lg p-5 sm:p-6 space-y-5 shadow-sm">
+            <div className="border border-primary/30 bg-card rounded-lg p-5 sm:p-6 space-y-5 ">
               {/* Card de Destaque: Assinatura Oficial GOV.BR (Exibido estritamente quando a API estiver configurada e ativa no Hub) */}
               {govBrConfig?.isGovBrEnabled && govBrConfig?.authUrl && (
                 <>
@@ -447,7 +447,7 @@ function SignContractPage() {
                       type="button"
                       size="sm"
                       variant="outline"
-                      className="rounded-lg text-xs font-semibold h-9 px-3 cursor-pointer"
+                      className="rounded-lg text-xs font-semibold h-9 px-3 cursor-pointer min-h-11 sm:min-h-0"
                       onClick={() => {
                         setSignatureImage(savedSig.savedSignature);
                         toast.success("Assinatura do seu perfil carregada com sucesso!");
@@ -501,7 +501,7 @@ function SignContractPage() {
                 <Button
                   onClick={handleSign}
                   disabled={!consent || signMutation.isPending}
-                  className="w-full sm:w-auto rounded-lg text-sm font-bold gap-2 h-12 px-8 min-h-12 bg-primary text-primary-foreground shadow-sm"
+                  className="w-full sm:w-auto rounded-lg text-sm font-bold gap-2 h-12 px-8 min-h-12 bg-primary text-primary-foreground "
                 >
                   {signMutation.isPending ? (
                     <>

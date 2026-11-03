@@ -288,13 +288,13 @@ export default function WorkspaceTendersPage() {
                 onClick={() => {
                   setFilterUnlockedOnly(!filterUnlockedOnly);
                 }}
-                className="h-9 px-3 text-xs gap-2"
+                className="h-9 px-3 text-xs gap-2 min-h-11 sm:min-h-0"
               >
                 <ShieldCheck className="size-3.5" />
                 Desbloqueados
               </Button>
 
-              <Button onClick={handleFilter} disabled={isLoading} className="h-9 px-4 text-xs font-semibold">
+              <Button onClick={handleFilter} disabled={isLoading} className="h-9 px-4 text-xs font-semibold min-h-11 sm:min-h-0">
                 {isLoading ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : "Filtrar"}
               </Button>
             </div>
@@ -371,7 +371,7 @@ export default function WorkspaceTendersPage() {
                       <Button
                         onClick={() => handleUnlockTender(t)}
                         variant={t.is_unlocked ? "secondary" : "outline"}
-                        className="gap-2 text-xs h-8 font-medium"
+                        className="gap-2 text-xs h-8 font-medium min-h-11 sm:min-h-0"
                       >
                         {t.is_unlocked ? (
                           <>
@@ -380,7 +380,7 @@ export default function WorkspaceTendersPage() {
                           </>
                         ) : (
                           <>
-                            <Star className="size-3 text-amber-500" />
+                            <Star className="size-3 text-warning-strong" />
                             Ver Dossiê IA
                             <span className="text-xs text-muted-foreground font-mono ml-1">
                               [ -100 Tokens ]
@@ -419,7 +419,7 @@ export default function WorkspaceTendersPage() {
                   onKeyDown={(e) => e.key === "Enter" && handleAddKeyword()}
                   className="h-9 text-xs"
                 />
-                <Button onClick={handleAddKeyword} variant="outline" className="h-9 text-xs">
+                <Button onClick={handleAddKeyword} variant="outline" className="h-9 text-xs min-h-11 sm:min-h-0">
                   Adicionar
                 </Button>
               </div>
@@ -440,7 +440,7 @@ export default function WorkspaceTendersPage() {
             </div>
 
             <div className="pt-3 border-t border-border/40 flex justify-end">
-              <Button onClick={handleSaveAlerts} disabled={isSavingAlert} className="text-xs font-semibold h-9">
+              <Button onClick={handleSaveAlerts} disabled={isSavingAlert} className="text-xs font-semibold h-9 min-h-11 sm:min-h-0">
                 {isSavingAlert ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 Salvar Configurações de Radar
               </Button>
@@ -486,7 +486,7 @@ export default function WorkspaceTendersPage() {
                   {/* Resumo Executivo */}
                   <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-2">
                     <span className="font-semibold text-foreground flex items-center gap-2">
-                      <Star className="size-3.5 text-amber-500" />
+                      <Star className="size-3.5 text-warning-strong" />
                       Resumo Executivo do Objeto
                     </span>
                     <p className="text-muted-foreground leading-relaxed">
@@ -550,8 +550,8 @@ export default function WorkspaceTendersPage() {
 
                   {/* Análise de Riscos */}
                   {selectedTender.ai_curated_digest.risk_assessment && (
-                    <div className="p-4 rounded-lg border border-amber-500/20 bg-amber-500/5 space-y-2">
-                      <span className="font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                    <div className="p-4 rounded-lg border border-warning/20 bg-warning/5 space-y-2">
+                      <span className="font-semibold text-warning-strong  flex items-center gap-2">
                         <AlertCircle className="size-3.5" />
                         Parecer de Risco do Edital
                       </span>
