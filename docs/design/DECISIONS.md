@@ -1,5 +1,29 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-418: Propagação Sistêmica de Reservas Atômicas, Eliminação Transversal de Check-then-Act e Compatibilidade de Cache em experience_documents
+- **Data:** 2026-11-03
+- **Contexto:**
+  1. Identificação de padrões de vulnerabilidade "ler -> decidir -> gravar" (Check-then-Act) em módulos críticos: dedução concorrente de passes de serviço (`customer_service_passes`), reserva concorrente no carrinho de compras (`cart.functions.ts`), aceite concorrente em classificados (`deals.functions.ts`) e liquidação concorrente de Pix via webhook (`financial-ledger.functions.ts`).
+  2. Erro no cache de schema de produção para requisições legadas buscando a coluna 'name' em vez de 'title' na tabela `experience_documents`.
+- **Decisão:**
+  1. **Compatibilidade Resiliente de Schema em `experience_documents`:**
+     - Migration `20261103080000_systemic_atomic_stock_and_cart_v7.sql` adicionou a coluna `name TEXT` sincronizada bidirecionalmente via trigger `trg_sync_experience_document_name_title` com a coluna `title`.
+  2. **Eliminação Transversal de Check-then-Act:**
+     - **Agendamento & Passes de Serviço (`booking.functions.ts`):** Inversão da ordem de operação para garantir o slot de tempo via `hold_resource_slot` antes de qualquer movimentação de saldo, e dedução atômica via RPC `consume_pass_credit_atomic` com predicado `remaining_credits >= 1`.
+     - **Classificados & Negociações P2P (`deals.functions.ts`):** Transição atômica via RPC `accept_deal_proposal_atomic` que bloqueia o anúncio com `FOR UPDATE` e impede aceite concorrente em classificados já reservados/concluídos.
+     - **Carrinho & Catálogo (`cart.functions.ts`):** Inserção atômica v7 (`add_to_cart_atomic_v7`) com lock de variante `FOR UPDATE`, cálculo de reservas universal ativas (`universal_reservations`) e reserva de 15 minutos em background.
+     - **Liquidação Pix & Webhooks Financeiros (`financial-ledger.functions.ts`):** Envelopamento via `executeWithIdempotency` garantindo idempotência estrita ("Carimbou PAGO, não paga de novo") com escopo `pix_deposit_settlement`.
+  3. **Verificação & Evidências:**
+     - 7/7 testes aprovados na nova suíte `src/services/__tests__/systemic-niche-atomic-stock.test.ts`.
+     - 16/16 testes aprovados em `src/services/__tests__/atomic-reservations-and-idempotency.test.ts`.
+     - `npm run check:schema`: 578 migrations consolidadas, 0 duplicidades.
+     - `npm run check:bff`: 641 tabelas referenciadas pelo BFF com declaração local (100% íntegro).
+     - `node scripts/design-lint.mjs --ratchet`: 0 violações P0, 18 violações reduzidas vs baseline.
+     - `npm run typecheck`: Exit code 0 (zero erros de tipagem).
+     - `npm run build`: Exit code 0 (geração de bundle e worker de produção aprovada).
+- **Fundamentação:** AGENTS.md Regras B.4, B.5, B.7, B.9, B.11, B.25, SPEC-006 e diretrizes de concorrência Zero-Trust.
+- **Consequências:** Erradicação de concorrência silenciosa e duplicidade transacional em todo o ecossistema Waesy.
+
 ## DEC-417: Motor Atômico de Reservas de 15 Minutos (Anti-Race Condition) e Carimbo da Lotérica (Idempotência Estrita — SPEC-006)
 - **Data:** 2026-11-02
 - **Contexto:**

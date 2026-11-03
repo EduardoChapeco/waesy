@@ -517,35 +517,7 @@ export const createAppointment = createServerFn({ method: "POST" })
  let apptStatus = "pending";
  let passRow: any = null;
 
- if (input.pass_id) {
- // Passe precisa pertencer ao cliente autenticado e à loja/serviço selecionados.
- if (!customer_id) throw new Error("Faça login para usar um passe de serviço.");
- const { data: pData } = await db
- .from("customer_service_passes")
- .select("id, remaining_credits, customer_id, store_id, service_id")
- .eq("id", input.pass_id)
- .eq("customer_id", customer_id)
- .eq("store_id", storeId)
- .eq("service_id", input.service_id)
- .single();
-
- passRow = pData;
- if (passRow && passRow.remaining_credits > 0) {
- const newBalance = passRow.remaining_credits - 1;
- await db
- .from("customer_service_passes")
- .update({
- remaining_credits: newBalance,
- status: newBalance === 0 ? "exhausted" : "active",
- updated_at: new Date().toISOString(),
- })
- .eq("id", input.pass_id);
-
- apptStatus = "confirmed";
- }
- }
-
- // Anti-Double Booking Enforcement via PostgreSQL Hold
+ // 1. Anti-Double Booking Enforcement via PostgreSQL Hold (Garante o slot antes de cobrar/debitar)
  const apptEnd = new Date(apptStart.getTime() + (service.duration_minutes || 60) * 60000);
  const { data: holdRes, error: holdErr } = await db.rpc("hold_resource_slot", {
  p_resource_id: input.resource_id || service.id,
@@ -559,6 +531,48 @@ export const createAppointment = createServerFn({ method: "POST" })
  (holdRes as any)?.message ||
  "Este horário já foi preenchido por outro cliente. Por favor, selecione outro horário."
  );
+ }
+
+ // 2. Dedução Atômica de Crédito de Passe (Zero Check-Then-Act & Zero Double Spending)
+ if (input.pass_id) {
+ if (!customer_id) throw new Error("Faça login para usar um passe de serviço.");
+ 
+ const { data: passRes, error: passErr } = await db.rpc("consume_pass_credit_atomic", {
+ p_pass_id: input.pass_id,
+ p_customer_id: customer_id,
+ p_store_id: storeId,
+ p_service_id: input.service_id,
+ });
+
+ if (!passErr && passRes && (passRes as any).success) {
+ passRow = passRes;
+ apptStatus = "confirmed";
+ } else {
+ // Fallback atômico relacional com trava estrita de predicado
+ const { data: atomicPass, error: updateErr } = await db
+ .from("customer_service_passes")
+ .update({
+ remaining_credits: (passRow?.remaining_credits ? passRow.remaining_credits - 1 : 0),
+ status: "active",
+ updated_at: new Date().toISOString(),
+ })
+ .eq("id", input.pass_id)
+ .eq("customer_id", customer_id)
+ .eq("store_id", storeId)
+ .eq("service_id", input.service_id)
+ .gte("remaining_credits", 1)
+ .select("id, remaining_credits, status")
+ .single();
+
+ if (updateErr || !atomicPass) {
+ throw new Error(
+ (passRes as any)?.message ||
+ "Créditos insuficientes no passe de serviço ou passe inválido para este agendamento."
+ );
+ }
+ passRow = atomicPass;
+ apptStatus = "confirmed";
+ }
  }
 
  const { data, error } = await db
