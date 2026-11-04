@@ -80,6 +80,9 @@ export interface WorkspaceCanonicalToolbarProps {
   secondaryActions?: WorkspaceCanonicalAction[];
   primaryAction?: React.ReactNode | WorkspaceCanonicalAction;
 
+  /** Seletor de Modo de Visualização Canônico (Tabela / Kanban / Cards) */
+  viewSwitcher?: React.ReactNode;
+
   className?: string;
   title?: string;
   children?: React.ReactNode;
@@ -130,6 +133,7 @@ export function WorkspaceCanonicalToolbar({
   secondaryAction,
   secondaryActions,
   primaryAction,
+  viewSwitcher,
   className,
   title,
   children,
@@ -150,6 +154,7 @@ export function WorkspaceCanonicalToolbar({
   const handleColumns = onConfigureColumns || onColumnsClick;
 
   const hasTabs = effectiveTabs.length > 0;
+  const hasTier1 = hasTabs || Boolean(viewSwitcher);
   const hasControls = Boolean(
     onSearchChange ||
       (filters && filters.length > 0) ||
@@ -164,62 +169,70 @@ export function WorkspaceCanonicalToolbar({
   return (
     <div className={cn("flex flex-col gap-3 py-1 select-none w-full", className)}>
       {/* ── TIER 1: Abas de Visualização (Segmented Control Apple HIG) + Utilitários de Visão ── */}
-      {hasTabs && (
+      {hasTier1 && (
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
           {/* LADO ESQUERDO: Abas Segmentadas */}
-          <div className="waesy-tab-strip flex items-center p-1 rounded-lg bg-muted/40 border border-border/60 shrink-0 gap-1 no-scrollbar max-w-full snap-x snap-mandatory">
-            {effectiveTabs.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentActive === item.id;
-              const iconColor = getSemanticIconColor(item.id, item.iconColor);
+          {hasTabs ? (
+            <div className="waesy-tab-strip flex items-center p-1 rounded-lg bg-muted/40 border border-border/60 shrink-0 gap-1 no-scrollbar max-w-full snap-x snap-mandatory">
+              {effectiveTabs.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentActive === item.id;
+                const iconColor = getSemanticIconColor(item.id, item.iconColor);
 
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => handleTabSelect?.(item.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-colors motion-reduce:transition-none cursor-pointer whitespace-nowrap shrink-0 snap-start min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                    isActive
-                      ? "bg-background text-foreground font-bold"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                  )}
-                >
-                  {Icon && (
-                    <Icon
-                      className={cn(
-                        "size-3.5 shrink-0 transition-colors",
-                        isActive ? iconColor : "text-muted-foreground"
-                      )}
-                    />
-                  )}
-                  <span>{item.label}</span>
-                  {item.count !== undefined && item.count > 0 && (
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        "ml-1 text-xs px-2 py-0 h-4 font-mono leading-none border-border/40",
-                        isActive ? "bg-muted text-foreground" : "bg-muted/60 text-muted-foreground"
-                      )}
-                    >
-                      {item.count}
-                    </Badge>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleTabSelect?.(item.id)}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-colors motion-reduce:transition-none cursor-pointer whitespace-nowrap shrink-0 snap-start min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                      isActive
+                        ? "bg-background text-foreground font-bold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                    )}
+                  >
+                    {Icon && (
+                      <Icon
+                        className={cn(
+                          "size-3.5 shrink-0 transition-colors",
+                          isActive ? iconColor : "text-muted-foreground"
+                        )}
+                      />
+                    )}
+                    <span>{item.label}</span>
+                    {item.count !== undefined && item.count > 0 && (
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          "ml-1 text-xs px-2 py-0 h-4 font-mono leading-none border-border/40",
+                          isActive ? "bg-muted text-foreground" : "bg-muted/60 text-muted-foreground"
+                        )}
+                      >
+                        {item.count}
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div />
+          )}
 
-          {/* LADO DIREITO DO TIER 1: Métricas & Customização de Colunas */}
-          {(handleDashboard || handleColumns) && (
-            <div className="hidden waesy-expanded-flex items-center gap-2 shrink-0 justify-end">
+          {/* LADO DIREITO DO TIER 1: View Switcher, Métricas & Customização de Colunas */}
+          {(viewSwitcher || handleDashboard || handleColumns) && (
+            <div className={cn(
+              "items-center gap-2 shrink-0 justify-end",
+              viewSwitcher ? "flex" : "hidden waesy-expanded-flex"
+            )}>
+              {viewSwitcher && <div className="shrink-0">{viewSwitcher}</div>}
               {handleColumns && (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={handleColumns}
-                  className="h-11 px-3 rounded-lg text-xs font-semibold border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none"
+                  className="hidden waesy-expanded-inline-flex h-11 px-3 rounded-lg text-xs font-semibold border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none"
                   title="Personalizar Colunas do Kanban"
                 >
                   <Settings2 className="size-3.5 text-muted-foreground" />
@@ -233,7 +246,7 @@ export function WorkspaceCanonicalToolbar({
                   variant="outline"
                   size="sm"
                   onClick={handleDashboard}
-                  className="h-11 px-4 rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none relative"
+                  className="hidden waesy-expanded-inline-flex h-11 px-4 rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none relative"
                 >
                   <BarChart3 className="size-3.5 text-primary" />
                   <span>{effectiveDashboardLabel}</span>

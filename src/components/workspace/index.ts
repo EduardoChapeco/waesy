@@ -13,3 +13,6 @@ export { NicheOperationalGuard } from './niche-operational-guard';
 export { StoreShareQrModal } from './store-share-qr-modal';
 export { WelcomeOnboardingModal } from './welcome-onboarding-modal';
 export { WorkspaceAccessDenied } from './workspace-access-denied';
+export { KpiMetricCard, type KpiMetricCardProps, type TrendDirection } from './kpi-metric-card';
+export { MiniSparkline, type MiniSparklineProps, type SparklineTrend } from './mini-sparkline';
+export * from './view-modes';

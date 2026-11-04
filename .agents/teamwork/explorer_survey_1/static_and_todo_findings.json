@@ -1,0 +1,2936 @@
+{
+  "emBreveOrTodo": [
+    {
+      "file": "admin-master.ads-network.tsx",
+      "matches": [
+        {
+          "line": 607,
+          "text": "Todos ({ledgerEntries.length})"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.auditoria-forense.tsx",
+      "matches": [
+        {
+          "line": 453,
+          "text": "<strong>Telemetria Inviolável:</strong> Todo evento financeiro armazena IP real, geolocalização e hash SHA-256 encadeado."
+        }
+      ]
+    },
+    {
+      "file": "admin-master.boost-payments.tsx",
+      "matches": [
+        {
+          "line": 191,
+          "text": "? \"Todos\""
+        }
+      ]
+    },
+    {
+      "file": "admin-master.botoes.tsx",
+      "matches": [
+        {
+          "line": 1252,
+          "text": "{/* Título: disponível para todos os tipos */}"
+        },
+        {
+          "line": 1261,
+          "text": "{/* Sombra Externa: para todos os tipos */}"
+        },
+        {
+          "line": 1270,
+          "text": "{/* Overlay: disponível para todos os tipos */}"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.carnes.tsx",
+      "matches": [
+        {
+          "line": 199,
+          "text": "Todos ({carnes.length})"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.convite.tsx",
+      "matches": [
+        {
+          "line": 337,
+          "text": "Todos"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.curadoria.tsx",
+      "matches": [
+        {
+          "line": 490,
+          "text": "Nenhum perfil customizado no banco. A inteligência SSOT atende todos os 7.314 aeroportos sob demanda."
+        }
+      ]
+    },
+    {
+      "file": "admin-master.entregadores.auditoria.tsx",
+      "matches": [
+        {
+          "line": 121,
+          "text": "{ id: \"all\", label: \"Todos os Cadastros\" },"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.hubs.tsx",
+      "matches": [
+        {
+          "line": 32,
+          "text": "{ id: \"all\", label: \"Todos\" },"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.imprensa.tsx",
+      "matches": [
+        {
+          "line": 146,
+          "text": "Todos ({totalCount})"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.integracoes.tsx",
+      "matches": [
+        {
+          "line": 535,
+          "text": "toast.error(\"Preencha todos os campos obrigatórios do prompt.\");"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.kyc.tsx",
+      "matches": [
+        {
+          "line": 114,
+          "text": "Todos ({initialList?.length || 0})"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.logs.tsx",
+      "matches": [
+        {
+          "line": 114,
+          "text": "if (!confirm(\"Tem certeza que deseja limpar todos os registros de erros do sistema?\")) return;"
+        },
+        {
+          "line": 305,
+          "text": "Todos ({logs.length})"
+        },
+        {
+          "line": 349,
+          "text": ": \"Nenhum erro pendente registrado no banco de dados. Todos os contratos de BFF, camadas de dados e interfaces estão operando com integridade máxima.\"}"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.lojas.tsx",
+      "matches": [
+        {
+          "line": 109,
+          "text": "Governança e auditoria de todos os negócios registrados na plataforma."
+        }
+      ]
+    },
+    {
+      "file": "admin-master.mining.tsx",
+      "matches": [
+        {
+          "line": 672,
+          "text": "<option value=\"all\">Todos os Tipos ({sourcesList.length})</option>"
+        },
+        {
+          "line": 1110,
+          "text": "{f === \"all\" ? \"Todos\" : f === \"pending_review\" ? \"Pendentes\" : f === \"published\" ? \"Publicados\" : \"Rejeitados\"}"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.modulos.tsx",
+      "matches": [
+        {
+          "line": 189,
+          "text": "Todos ({modules.length})"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.pre-cadastro.tsx",
+      "matches": [
+        {
+          "line": 272,
+          "text": "{ id: \"all\", label: \"Todos\" },"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.seguranca.certificados.tsx",
+      "matches": [
+        {
+          "line": 166,
+          "text": "<option value=\"all\">Todos os tipos</option>"
+        },
+        {
+          "line": 302,
+          "text": "Todos os certificados são imutáveis — nenhum UPDATE ou DELETE é possível após geração."
+        }
+      ]
+    },
+    {
+      "file": "admin-master.seguranca.index.tsx",
+      "matches": [
+        {
+          "line": 214,
+          "text": "<option value=\"all\">Todos os Eventos</option>"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.termos.tsx",
+      "matches": [
+        {
+          "line": 278,
+          "text": "Todos ({totalLogs})"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.tokens.tsx",
+      "matches": [
+        {
+          "line": 103,
+          "text": "toast.error(\"Preencha todos os campos.\");"
+        }
+      ]
+    },
+    {
+      "file": "admin-master.vitrines.tsx",
+      "matches": [
+        {
+          "line": 57,
+          "text": "{ id: \"all_products\", label: \"Todos os Produtos do Nicho\" },"
+        },
+        {
+          "line": 527,
+          "text": "<p className=\"text-xs text-primary-foreground/80 line-clamp-1\">Ver todos &gt;</p>"
+        }
+      ]
+    },
+    {
+      "file": "c.$storeSlug.tsx",
+      "matches": [
+        {
+          "line": 400,
+          "text": "Fique atento! Em breve novos encontros e lançamentos serão publicados aqui."
+        },
+        {
+          "line": 640,
+          "text": "<span>© {new Date().getFullYear()} {store.name}. Todos os direitos reservados.</span>"
+        }
+      ]
+    },
+    {
+      "file": "claim.reivindicar.$entityId.tsx",
+      "matches": [
+        {
+          "line": 32,
+          "text": "{ type: 'other', label: 'Outro Método', desc: 'Apresente documentação complementar personalizada', icon: Globe },"
+        },
+        {
+          "line": 163,
+          "text": "<Lock className=\"size-5 text-primary\" /> 2. Método de Validação de Propriedade"
+        }
+      ]
+    },
+    {
+      "file": "claim.reputacao.$entityId.tsx",
+      "matches": [
+        {
+          "line": 89,
+          "text": "Indicadores só serão exibidos quando houver evidência e método verificáveis."
+        },
+        {
+          "line": 179,
+          "text": "</div> : <p className=\"text-sm text-muted-foreground\">Distribuição de sentimento indisponível: não há uma amostra de avaliações com fonte e método registrados.</p>}"
+        }
+      ]
+    },
+    {
+      "file": "m.lead.$leadId.tsx",
+      "matches": [
+        {
+          "line": 211,
+          "text": "Nosso consultor entrará em contato em breve via WhatsApp para apresentar o roteiro e as melhores opções de voo e hospedagem."
+        }
+      ]
+    },
+    {
+      "file": "painel.tsx",
+      "matches": [
+        {
+          "line": 726,
+          "text": "<span>&copy; {new Date().getFullYear()} {brandName}. Todos os direitos reservados.</span>"
+        }
+      ]
+    },
+    {
+      "file": "portal.subpainel.$token.tsx",
+      "matches": [
+        {
+          "line": 536,
+          "text": "{/* Método de Pagamento */}"
+        }
+      ]
+    },
+    {
+      "file": "reclamar.novo.tsx",
+      "matches": [
+        {
+          "line": 45,
+          "text": "toast.error('Preencha todos os campos obrigatórios.');"
+        }
+      ]
+    },
+    {
+      "file": "sitemap-products[.]xml.ts",
+      "matches": [
+        {
+          "line": 14,
+          "text": "// Busca todos os produtos publicados de todas as lojas para indexação global"
+        }
+      ]
+    },
+    {
+      "file": "status.tsx",
+      "matches": [
+        {
+          "line": 107,
+          "text": "? \"Todos os sistemas operacionais\""
+        }
+      ]
+    },
+    {
+      "file": "viajante.viagem.$id.tsx",
+      "matches": [
+        {
+          "line": 766,
+          "text": "<span className=\"text-xs text-muted-foreground italic\">Disponível em breve</span>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.advocacia.index.tsx",
+      "matches": [
+        {
+          "line": 379,
+          "text": "Consulte em todos os tribunais e instâncias do país utilizando o nº do processo (CNJ)."
+        },
+        {
+          "line": 556,
+          "text": "Todos"
+        }
+      ]
+    },
+    {
+      "file": "workspace.agenda.recursos.tsx",
+      "matches": [
+        {
+          "line": 378,
+          "text": "Todos"
+        }
+      ]
+    },
+    {
+      "file": "workspace.agenda.servicos.index.tsx",
+      "matches": [
+        {
+          "line": 57,
+          "text": "gender_target: \"todos\","
+        },
+        {
+          "line": 144,
+          "text": "gender_target: service.gender_target || \"todos\","
+        },
+        {
+          "line": 165,
+          "text": "gender_target: \"todos\","
+        },
+        {
+          "line": 177,
+          "text": "toast.success(`Serviço \"${srv.name}\" importado. Todos os campos estão disponíveis para edição.`);"
+        },
+        {
+          "line": 381,
+          "text": "<SelectItem value=\"todos\" className=\"text-xs\">Todos (Unissex)</SelectItem>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.associacao.tsx",
+      "matches": [
+        {
+          "line": 312,
+          "text": "{st === \"all\" ? \"Todos\" : st === \"approved\" ? \"Aprovados\" : \"Pendentes\"}"
+        }
+      ]
+    },
+    {
+      "file": "workspace.atendimento.index.tsx",
+      "matches": [
+        {
+          "line": 387,
+          "text": "text: \"Todos os pedidos despachados já exibem o mini-mapa ao vivo e código de 4 dígitos para o cliente.\","
+        },
+        {
+          "line": 502,
+          "text": "{ id: \"qr_cardapio\", shortcut: \"cardapio\", title: \"Cardápio e Catálogo\", content: \"Confira todos os itens do nosso cardápio atualizado no link da vitrine!\", category: \"vendas\" }"
+        },
+        {
+          "line": 1087,
+          "text": "<SelectItem value=\"all\">Todos Setores</SelectItem>"
+        },
+        {
+          "line": 2038,
+          "text": "{/* Filtros de Escopo (Todos | Público | Privado) e Criador */}"
+        },
+        {
+          "line": 2042,
+          "text": "{ id: \"all\", label: \"Todos\" },"
+        },
+        {
+          "line": 2068,
+          "text": "<option value=\"all\">Criador: Todos</option>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.b2b.index.tsx",
+      "matches": [
+        {
+          "line": 60,
+          "text": "{ id: \"todos\", label: \"Tudo no Atacado\" },"
+        },
+        {
+          "line": 71,
+          "text": "const [selectedCategory, setSelectedCategory] = useState(\"todos\");"
+        },
+        {
+          "line": 97,
+          "text": "if (selectedCategory !== \"todos\") {"
+        }
+      ]
+    },
+    {
+      "file": "workspace.catalogo.colecoes.tsx",
+      "matches": [
+        {
+          "line": 210,
+          "text": "<SelectItem value=\"all\">Todos os Status</SelectItem>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.catalogo.produtos.index.tsx",
+      "matches": [
+        {
+          "line": 704,
+          "text": "aria-label=\"Selecionar todos os produtos\""
+        }
+      ]
+    },
+    {
+      "file": "workspace.clientes.$id.tsx",
+      "matches": [
+        {
+          "line": 249,
+          "text": "// Agrega todos os pax de leads vinculados + co-viajantes de viagens confirmadas"
+        }
+      ]
+    },
+    {
+      "file": "workspace.clientes.index.tsx",
+      "matches": [
+        {
+          "line": 179,
+          "text": "{ id: \"all\", label: `Todos (${t(\"clients\")})`, icon: Users, count: totalCount },"
+        },
+        {
+          "line": 221,
+          "text": "{ label: \"Todos os Status\", value: \"all\" },"
+        },
+        {
+          "line": 233,
+          "text": "{ label: \"Todos os Canais\", value: \"all\" },"
+        },
+        {
+          "line": 412,
+          "text": "<span>{c.docAlerts.soon} Vence em breve</span>"
+        },
+        {
+          "line": 630,
+          "text": "<span>{c.docAlerts.soon} Vence em breve</span>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.cms.calendario.tsx",
+      "matches": [
+        {
+          "line": 76,
+          "text": "toast.error(\"Preencha todos os campos.\");"
+        }
+      ]
+    },
+    {
+      "file": "workspace.configuracoes.inteligencia-artificial.tsx",
+      "matches": [
+        {
+          "line": 316,
+          "text": "Instruções globais que todos os agentes de IA (SDRs) da sua loja devem seguir. Defina o tom de voz, regras de negociação, políticas de devolução e garantias."
+        }
+      ]
+    },
+    {
+      "file": "workspace.configuracoes.sessoes.tsx",
+      "matches": [
+        {
+          "line": 74,
+          "text": "* Recarrega todos os registros diretamente do banco de dados (BFF)"
+        }
+      ]
+    },
+    {
+      "file": "workspace.contador.index.tsx",
+      "matches": [
+        {
+          "line": 129,
+          "text": "Baixe a planilha contábil completa com todos os XMLs e links DANFE do período."
+        }
+      ]
+    },
+    {
+      "file": "workspace.contratos.index.tsx",
+      "matches": [
+        {
+          "line": 85,
+          "text": "{ id: \"all\", label: \"Todos\", count: totalContracts },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.contratos.novo.tsx",
+      "matches": [
+        {
+          "line": 127,
+          "text": "O aluguel mensal é ajustado no valor de **{{valor_total}}**, com vencimento estipulado para todo dia **{{dia_vencimento_aluguel}}** de cada mês."
+        },
+        {
+          "line": 467,
+          "text": "toast.warning(\"Não foi possível identificar todos os dados. Preencha manualmente.\");"
+        },
+        {
+          "line": 610,
+          "text": "toast.error(\"Preencha o nome de todos os signatários.\");"
+        }
+      ]
+    },
+    {
+      "file": "workspace.crm.tsx",
+      "matches": [
+        {
+          "line": 420,
+          "text": "{ label: \"Todos os Status\", value: \"all\", icon: Users },"
+        },
+        {
+          "line": 432,
+          "text": "{ label: \"Todos os Canais\", value: \"all\", icon: Globe },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.empregos.candidatos.tsx",
+      "matches": [
+        {
+          "line": 489,
+          "text": "{ id: \"all\", label: \"Todos\", count: applications.length },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.estoque.alertas.tsx",
+      "matches": [
+        {
+          "line": 538,
+          "text": "Todos ({variants.length})"
+        },
+        {
+          "line": 578,
+          "text": "? \"Parabéns! Todos os produtos da loja estão com níveis de suprimento saudáveis.\""
+        }
+      ]
+    },
+    {
+      "file": "workspace.estoque.index.tsx",
+      "matches": [
+        {
+          "line": 453,
+          "text": "Todos os Armazéns"
+        },
+        {
+          "line": 479,
+          "text": "{ id: \"all\", label: \"Todos\", count: stock.length },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.estudio.index.tsx",
+      "matches": [
+        {
+          "line": 469,
+          "text": "{ id: \"all\", label: \"Todos\" },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.eventos.$id.tsx",
+      "matches": [
+        {
+          "line": 12,
+          "text": "import { EventoDocumentos } from \"@/components/eventos/evento-documentos\";"
+        },
+        {
+          "line": 636,
+          "text": "<EventoDocumentos eventId={event.id} />"
+        }
+      ]
+    },
+    {
+      "file": "workspace.eventos.index.tsx",
+      "matches": [
+        {
+          "line": 137,
+          "text": "{ id: \"all\", label: \"Todos os Eventos\", count: metrics.total },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.financeiro.caixa.index.tsx",
+      "matches": [
+        {
+          "line": 83,
+          "text": "description: \"Abra turnos com fundo de troco registrado. Todo lançamento em dinheiro, Pix ou cartão fica auditado por operador.\","
+        },
+        {
+          "line": 483,
+          "text": "{ id: \"all\", label: \"Todos os Canais\" },"
+        },
+        {
+          "line": 643,
+          "text": "<span className=\"text-xs text-muted-foreground uppercase font-semibold\">Método</span>"
+        },
+        {
+          "line": 686,
+          "text": "<TableHead className=\"font-bold text-xs uppercase tracking-wider text-muted-foreground py-4\">Método</TableHead>"
+        },
+        {
+          "line": 954,
+          "text": "Todos os débitos de campanhas publicitárias (Ad-Boost), fretes MotoLink e liquidações atômicas aparecem aqui."
+        }
+      ]
+    },
+    {
+      "file": "workspace.financeiro.caixa.lancamentos.tsx",
+      "matches": [
+        {
+          "line": 155,
+          "text": "const headers = [\"Data e Hora\", \"Tipo\", \"Descricao\", \"Canal\", \"Metodo\", \"Valor (BRL)\", \"Taxa Canal (BRL)\", \"Liquido (BRL)\"];"
+        },
+        {
+          "line": 161,
+          "text": "const metodo = translateMethod(entry.method);"
+        },
+        {
+          "line": 166,
+          "text": "return [formatDateTime(entry.created_at), tipo, desc, canal, metodo, valor, taxa, liquido].join(\";\");"
+        },
+        {
+          "line": 436,
+          "text": "placeholder=\"Buscar por descrição ou método...\""
+        },
+        {
+          "line": 451,
+          "text": "Todos ({register.recentEntries?.length || 0})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.financeiro.caixa.turnos.tsx",
+      "matches": [
+        {
+          "line": 277,
+          "text": "Todos ({shifts.length})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.financeiro.comprovantes.tsx",
+      "matches": [
+        {
+          "line": 197,
+          "text": "description=\"Todos os pagamentos manuais e transferências Pix já foram analisados e liberados.\""
+        }
+      ]
+    },
+    {
+      "file": "workspace.financeiro.contas-pagar.tsx",
+      "matches": [
+        {
+          "line": 881,
+          "text": "<SelectItem value=\"monthly\">Mensal (Todo mês na mesma data)</SelectItem>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.financeiro.funcionarios.tsx",
+      "matches": [
+        {
+          "line": 285,
+          "text": "Todos ({staffBalances.length})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.financeiro.pagamentos.tsx",
+      "matches": [
+        {
+          "line": 294,
+          "text": "Todos ({payments.length})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.financeiro.recebiveis.tsx",
+      "matches": [
+        {
+          "line": 608,
+          "text": "Todos ({carnes.length})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.fiscal.nfe.tsx",
+      "matches": [
+        {
+          "line": 220,
+          "text": "Todos ({invoices.length})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.imoveis.manutencoes.tsx",
+      "matches": [
+        {
+          "line": 301,
+          "text": "{ id: \"all\", label: \"Todos\", count: requests.length },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.index.tsx",
+      "matches": [
+        {
+          "line": 491,
+          "text": "Ver todos os registros"
+        }
+      ]
+    },
+    {
+      "file": "workspace.integracoes.marketplaces.tsx",
+      "matches": [
+        {
+          "line": 620,
+          "text": "Todos ({PLATFORMS_CATALOG.length})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.inteligencia.radar.tsx",
+      "matches": [
+        {
+          "line": 565,
+          "text": "Diretrizes semióticas, arquétipo de Jung e escala estética utilizadas por todos os squads de IA."
+        }
+      ]
+    },
+    {
+      "file": "workspace.logistica.faturas.tsx",
+      "matches": [
+        {
+          "line": 240,
+          "text": "Todos ({invoices.length})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.logistica.pudo.tsx",
+      "matches": [
+        {
+          "line": 134,
+          "text": "toast.error(\"Preencha todos os campos obrigatórios.\");"
+        },
+        {
+          "line": 399,
+          "text": "{ id: \"all\", label: \"Todos\", count: packages.length },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.afiliados.tsx",
+      "matches": [
+        {
+          "line": 166,
+          "text": "<option value=\"all\">Todos os Status</option>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.anuncios.novo.tsx",
+      "matches": [
+        {
+          "line": 175,
+          "text": "toast.error(\"Não foi possível estruturar todos os dados automaticamente.\", { id: \"ai-ad\" });"
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.anuncios.tsx",
+      "matches": [
+        {
+          "line": 742,
+          "text": "Conecte Meta Ads e Google Ads via OAuth 2.0, gere anúncios direto do seu catálogo e receba 50% de subsídio em todos os destaques internos da vitrine."
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.banners.tsx",
+      "matches": [
+        {
+          "line": 408,
+          "text": "Defina se este banner é focado nos clientes de uma cidade específica ou para todos os visitantes."
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.brand-kit.tsx",
+      "matches": [
+        {
+          "line": 1060,
+          "text": "Este é o preview do seu sistema de design. Todos os tokens, cores e fontes"
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.briefing.tsx",
+      "matches": [
+        {
+          "line": 540,
+          "text": "description=\"Palavras-chave que aparecem em todo conteúdo gerado (mín. 5).\""
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.canvas-bmc.tsx",
+      "matches": [
+        {
+          "line": 358,
+          "text": "Metodologia canônica de 9 blocos para visualização e evolução do modelo de negócio."
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.canvas-pecados.tsx",
+      "matches": [
+        {
+          "line": 79,
+          "text": "message: `Rascunho de copy criado com a lente criativa \"${sinToUse}\". Revise todos os fatos antes de publicar.`,"
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.encartes.tsx",
+      "matches": [
+        {
+          "line": 61,
+          "text": "const [activeTab, setActiveTab] = useState<\"ativos\" | \"agendados\" | \"expirados\" | \"todos\">(\"ativos\");"
+        },
+        {
+          "line": 93,
+          "text": "if (activeTab === \"todos\") return true;"
+        },
+        {
+          "line": 352,
+          "text": "{/* ─── Navegação por Abas (Ativos, Agendados, Expirados, Todos) ──── */}"
+        },
+        {
+          "line": 365,
+          "text": "<TabsTrigger value=\"todos\" className=\"rounded-lg text-xs font-bold gap-2 cursor-pointer\">"
+        },
+        {
+          "line": 366,
+          "text": "<span>Todos ({flyers.length})</span>"
+        },
+        {
+          "line": 517,
+          "text": "deleteConfirmDescription=\"Esta ação removerá permanentemente o encarte e todos os marcadores de produtos vinculados.\""
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.formularios.tsx",
+      "matches": [
+        {
+          "line": 1142,
+          "text": "{ label: \"Todos\", value: \"all\" },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.gift-cards.tsx",
+      "matches": [
+        {
+          "line": 299,
+          "text": "Todos"
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.publicacoes.tsx",
+      "matches": [
+        {
+          "line": 121,
+          "text": "{ key: \"all\", label: \"Todos\" },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.telemetria.tsx",
+      "matches": [
+        {
+          "line": 304,
+          "text": "<option value=\"all\">Todos os status</option>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.marketing.vitrine.tsx",
+      "matches": [
+        {
+          "line": 705,
+          "text": "{cat === \"all\" ? \"Todos\" : cat}"
+        }
+      ]
+    },
+    {
+      "file": "workspace.master.influencers.tsx",
+      "matches": [
+        {
+          "line": 105,
+          "text": "Todos ({creators.length})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.moderacao.index.tsx",
+      "matches": [
+        {
+          "line": 122,
+          "text": "<SelectItem value=\"all\">Todos os Status</SelectItem>"
+        },
+        {
+          "line": 135,
+          "text": "<SelectItem value=\"all\">Todos os Tipos</SelectItem>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.moderacao.kyc.tsx",
+      "matches": [
+        {
+          "line": 76,
+          "text": "<SelectItem value=\"all\">Todos</SelectItem>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.noticias.index.tsx",
+      "matches": [
+        {
+          "line": 593,
+          "text": "{selectedMinedIds.length === minedArticles.length ? \"Desmarcar Todos\" : \"Selecionar Todos\"}"
+        }
+      ]
+    },
+    {
+      "file": "workspace.onboarding.revisao.tsx",
+      "matches": [
+        {
+          "line": 317,
+          "text": "<span>Aprovar Todos ({items.length})</span>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.orcamentos.index.tsx",
+      "matches": [
+        {
+          "line": 136,
+          "text": "{ label: \"Todos os Status\", value: \"all\" },"
+        },
+        {
+          "line": 317,
+          "text": "description: \"Somatório de todos os orçamentos em aberto\","
+        },
+        {
+          "line": 402,
+          "text": "Vence em breve"
+        }
+      ]
+    },
+    {
+      "file": "workspace.orcamentos.novo.tsx",
+      "matches": [
+        {
+          "line": 333,
+          "text": "// 2. Atualiza todos os dados detalhados (voos, hotéis, roteiro, financeiro)"
+        },
+        {
+          "line": 2126,
+          "text": "Todos"
+        }
+      ]
+    },
+    {
+      "file": "workspace.pdv.cozinha.tsx",
+      "matches": [
+        {
+          "line": 339,
+          "text": "all: `Todos (${activeOrders.length})`,"
+        }
+      ]
+    },
+    {
+      "file": "workspace.pdv.index.tsx",
+      "matches": [
+        {
+          "line": 25,
+          "text": "description: \"Finalize a venda com cálculo automático de troco, geração de QR Code Pix na tela e divisão de contas em múltiplos métodos de pagamento.\","
+        },
+        {
+          "line": 1245,
+          "text": "Todos ({flatProducts.length})"
+        }
+      ]
+    },
+    {
+      "file": "workspace.pedidos.entregadores.index.tsx",
+      "matches": [
+        {
+          "line": 84,
+          "text": "{ id: \"all\", label: \"Todos\", count: courierList.length },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.pedidos.expedicao.tsx",
+      "matches": [
+        {
+          "line": 406,
+          "text": "{ch === \"all\" ? \"Todos\" : ch === \"mercadolivre\" ? \"Mercado Livre\" : ch === \"ifood\" ? \"iFood\" : \"Shopee\"}"
+        },
+        {
+          "line": 470,
+          "text": "? \"Desmarcar Todos\""
+        },
+        {
+          "line": 471,
+          "text": ": \"Selecionar Todos\"}"
+        }
+      ]
+    },
+    {
+      "file": "workspace.pedidos.frota.tsx",
+      "matches": [
+        {
+          "line": 113,
+          "text": "toast.error(\"Preencha todos os campos obrigatórios.\");"
+        }
+      ]
+    },
+    {
+      "file": "workspace.pedidos.gestor.tsx",
+      "matches": [
+        {
+          "line": 272,
+          "text": "statusMsg = \"seu pedido está sendo preparado com todo carinho pela nossa equipe!\";"
+        },
+        {
+          "line": 479,
+          "text": "{ id: \"all\", label: \"Todos os Canais\" },"
+        },
+        {
+          "line": 823,
+          "text": "{/* Vendas por Canal / Método */}"
+        }
+      ]
+    },
+    {
+      "file": "workspace.pedidos.index.tsx",
+      "matches": [
+        {
+          "line": 1074,
+          "text": "<p className=\"text-sm font-bold text-foreground\">Todos os pedidos foram separados!</p>"
+        },
+        {
+          "line": 1244,
+          "text": "{/* ── MODO 4: TABELA ANALÍTICA (DISPONÍVEL EM TODOS OS NICHOS) ── */}"
+        },
+        {
+          "line": 1256,
+          "text": "Todos ({orders.length})"
+        },
+        {
+          "line": 1280,
+          "text": "<option value=\"all\">Todos os Canais</option>"
+        },
+        {
+          "line": 1749,
+          "text": "{ label: \"Todos os Canais\", value: \"all\" },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.relatorios.metas.tsx",
+      "matches": [
+        {
+          "line": 522,
+          "text": "Receita total esperada no mês somando todos os pontos de contato da empresa."
+        }
+      ]
+    },
+    {
+      "file": "workspace.relatorios.tsx",
+      "matches": [
+        {
+          "line": 225,
+          "text": "description=\"Todos os produtos estão com estoque adequado no momento.\""
+        }
+      ]
+    },
+    {
+      "file": "workspace.simulacao.tsx",
+      "matches": [
+        {
+          "line": 74,
+          "text": "{ id: \"all\", label: \"Todos\" },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.squads.index.tsx",
+      "matches": [
+        {
+          "line": 180,
+          "text": "{ id: \"all\", label: \"Todos os Squads\", icon: Briefcase, count: squads.length },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.squads.tsx",
+      "matches": [
+        {
+          "line": 204,
+          "text": "<p className=\"text-xs text-muted-foreground\">Todos os critérios de aceite foram auditados.</p>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.suporte.tsx",
+      "matches": [
+        {
+          "line": 211,
+          "text": "{ id: \"all\", label: \"Todos\", icon: Headphones, count: tickets.length },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.tarefas.tsx",
+      "matches": [
+        {
+          "line": 4,
+          "text": "import { Plus, Sun, ListTodo, Kanban, CheckCircle2, Calendar, AlertCircle, Clock, Flame, CheckCheck } from \"lucide-react\";"
+        },
+        {
+          "line": 85,
+          "text": "const nextStatus: TaskStatus = task.status === \"done\" ? \"todo\" : \"done\";"
+        },
+        {
+          "line": 222,
+          "text": "{ id: \"list\", label: \"Lista\", icon: ListTodo, count: pendingTasks.length },"
+        },
+        {
+          "line": 249,
+          "text": "{ label: \"Todos os Contextos\", value: \"all\" },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.comissoes.tsx",
+      "matches": [
+        {
+          "line": 747,
+          "text": "<option value=\"ALL\">Status de Recebimento: Todos</option>"
+        },
+        {
+          "line": 761,
+          "text": "<option value=\"ALL\">Status de Nota Fiscal: Todos</option>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.contratos.index.tsx",
+      "matches": [
+        {
+          "line": 107,
+          "text": "{ id: \"all\", label: \"Todos os Contratos\", icon: FileText, count: totalCount },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.corporativo.tsx",
+      "matches": [
+        {
+          "line": 191,
+          "text": "toast.error(\"Preencha todos os campos obrigatórios (Passageiro, PNR e Bilhete).\");"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.cotacoes.tsx",
+      "matches": [
+        {
+          "line": 268,
+          "text": "{ label: \"Todos os Tipos\", value: \"all\" },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.destinos.tsx",
+      "matches": [
+        {
+          "line": 588,
+          "text": "{ id: \"all\", label: \"Todos os Destinos\", icon: Compass, count: destinations.length },"
+        },
+        {
+          "line": 916,
+          "text": "{/* Busca Global Instantânea em todos os 120+ Destinos */}"
+        },
+        {
+          "line": 1659,
+          "text": "<span className=\"font-semibold text-foreground\">{bestSeason || \"Ano Todo\"}</span>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.embarques.tsx",
+      "matches": [
+        {
+          "line": 534,
+          "text": "{ id: 'all', label: 'Todos' },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.fornecedores.tsx",
+      "matches": [
+        {
+          "line": 97,
+          "text": "{ id: 'all', label: 'Todos', icon: Building2, count: suppliers.length },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.frota.index.tsx",
+      "matches": [
+        {
+          "line": 190,
+          "text": "{ id: \"all\", label: \"Todos os Veículos\" },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.grupos.$id.embarque.tsx",
+      "matches": [
+        {
+          "line": 322,
+          "text": "Todos"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.hoteis.tsx",
+      "matches": [
+        {
+          "line": 768,
+          "text": "{ label: \"Todos os Destinos\", value: \"all\" },"
+        },
+        {
+          "line": 783,
+          "text": "{ label: \"Todos os Regimes\", value: \"all\" },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.incidentes.tsx",
+      "matches": [
+        {
+          "line": 221,
+          "text": "{ id: 'all', label: 'Todos', icon: FileWarning, count: incidents.length },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.index.tsx",
+      "matches": [
+        {
+          "line": 1022,
+          "text": "{ label: \"Todos os Responsáveis\", value: \"all\" },"
+        },
+        {
+          "line": 1230,
+          "text": "<span>Ver Todos</span>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.propostas.index.tsx",
+      "matches": [
+        {
+          "line": 23,
+          "text": "type ProposalListStatus = \"todos\" | \"draft\" | \"sent\" | \"approved\" | \"rejected\" | \"expired\";"
+        },
+        {
+          "line": 24,
+          "text": "const proposalListStatuses: readonly ProposalListStatus[] = [\"todos\", \"draft\", \"sent\", \"approved\", \"rejected\", \"expired\"];"
+        },
+        {
+          "line": 66,
+          "text": "const [selectedStatus, setSelectedStatus] = useState<ProposalListStatus>(\"todos\");"
+        },
+        {
+          "line": 146,
+          "text": "status: selectedStatus !== \"todos\" ? selectedStatus : undefined,"
+        },
+        {
+          "line": 220,
+          "text": "{ id: \"todos\", label: \"Todas\", icon: FileText, count: totalCount },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.radar.tsx",
+      "matches": [
+        {
+          "line": 278,
+          "text": "{ id: 'all', label: 'Todos os Continentes', icon: Globe, count: destinations.length },"
+        },
+        {
+          "line": 430,
+          "text": "Melhor época: {dest.peak_season || 'Ano todo'}"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.viagens.$id.tsx",
+      "matches": [
+        {
+          "line": 1006,
+          "text": "toast.success(`Vouchers emitidos e atualizados para todos os ${aggregate.passengers.length} viajantes! Disponíveis na Carteira Digital.`);"
+        },
+        {
+          "line": 1011,
+          "text": "<span>Emitir Vouchers para Todos ({aggregate.passengers.length})</span>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.vistos.tsx",
+      "matches": [
+        {
+          "line": 506,
+          "text": "{ id: \"all\", label: \"Todos\", count: kpis.total },"
+        }
+      ]
+    },
+    {
+      "file": "workspace.turismo.vouchers.index.tsx",
+      "matches": [
+        {
+          "line": 222,
+          "text": "{ id: \"all\", label: \"Todos os Vouchers\", icon: Ticket, count: vouchers.length },"
+        }
+      ]
+    },
+    {
+      "file": "_store.acougue.tsx",
+      "matches": [
+        {
+          "line": 34,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: Flame },"
+        },
+        {
+          "line": 93,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 101,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        }
+      ]
+    },
+    {
+      "file": "_store.agenda.tsx",
+      "matches": [
+        {
+          "line": 32,
+          "text": "{ id: \"todos\", label: \"Toda a Agenda\", icon: CalendarBlank },"
+        },
+        {
+          "line": 69,
+          "text": "const [selectedFilter, setSelectedFilter] = useState(\"todos\");"
+        },
+        {
+          "line": 74,
+          "text": "// 1. Busca Eventos Públicos da Comunidade (Disponível para todos os visitantes)"
+        },
+        {
+          "line": 157,
+          "text": "// Consolidação Canônica de Todos os Cards com Imagem Obrigatória"
+        },
+        {
+          "line": 293,
+          "text": "if (selectedFilter !== \"todos\" && item.category !== selectedFilter) {"
+        },
+        {
+          "line": 473,
+          "text": "{/* Todos */}"
+        },
+        {
+          "line": 484,
+          "text": "Todos os dias"
+        },
+        {
+          "line": 595,
+          "text": "setSelectedFilter(\"todos\");"
+        }
+      ]
+    },
+    {
+      "file": "_store.agendar.$id.tsx",
+      "matches": [
+        {
+          "line": 202,
+          "text": ": \"Unissex (Todos os Públicos)\";"
+        }
+      ]
+    },
+    {
+      "file": "_store.agendar.index.tsx",
+      "matches": [
+        {
+          "line": 69,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: Tag },"
+        },
+        {
+          "line": 93,
+          "text": "const [selectedCategory, setSelectedCategory] = useState(\"todos\");"
+        },
+        {
+          "line": 113,
+          "text": "category: selectedCategory === \"todos\" ? undefined : selectedCategory,"
+        },
+        {
+          "line": 287,
+          "text": "actionLabel=\"Ver todos\""
+        }
+      ]
+    },
+    {
+      "file": "_store.bebidas.tsx",
+      "matches": [
+        {
+          "line": 38,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: BeerBottle },"
+        },
+        {
+          "line": 96,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 104,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        }
+      ]
+    },
+    {
+      "file": "_store.beleza.tsx",
+      "matches": [
+        {
+          "line": 44,
+          "text": "{ id: \"todos\", label: \"Tudo em Beleza e Saúde\", icon: Tag },"
+        },
+        {
+          "line": 102,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 110,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        },
+        {
+          "line": 156,
+          "text": "if (activeDepartment === \"todos\") return isBeautyItem;"
+        }
+      ]
+    },
+    {
+      "file": "_store.bio.$slug.tsx",
+      "matches": [
+        {
+          "line": 324,
+          "text": "{ icon: \"insurance\", title: \"Seguro viagem\", subtitle: \"Coberturas para todos os destinos.\" },"
+        },
+        {
+          "line": 375,
+          "text": "<p className=\"text-xs font-bold text-primary-foreground\">{block.hoursText || \"Todos os dias — 08h às 18h\"}</p>"
+        }
+      ]
+    },
+    {
+      "file": "_store.buscar.tsx",
+      "matches": [
+        {
+          "line": 55,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: Layers as any },"
+        },
+        {
+          "line": 484,
+          "text": "const [activeType, setActiveType] = useState<string>(\"todos\");"
+        },
+        {
+          "line": 641,
+          "text": "const filteredProducts = activeType === \"todos\" || activeType === \"product\" ? (result?.products ?? []) : [];"
+        },
+        {
+          "line": 642,
+          "text": "const filteredEvents = activeType === \"todos\" || activeType === \"event\" ? (result?.events ?? []) : [];"
+        },
+        {
+          "line": 644,
+          "text": "activeType === \"todos\" || activeType === \"classified\" ? (result?.classifieds ?? []) : [];"
+        },
+        {
+          "line": 645,
+          "text": "const filteredStores = activeType === \"todos\" || activeType === \"store\" ? (result?.stores ?? []) : [];"
+        },
+        {
+          "line": 646,
+          "text": "const filteredRecipes = activeType === \"todos\" || activeType === \"recipe\" ? (result?.recipes ?? []) : [];"
+        }
+      ]
+    },
+    {
+      "file": "_store.cadastroantecipado.tsx",
+      "matches": [
+        {
+          "line": 23,
+          "text": "\"Garanta sua vaga como Membro Fundador no Circuito Internacional Waesy Chapeco e Sao Miguel do Oeste. Shows nacionais e internacionais, feira de tecnologia, workshops e sorteio de viagens durante todo o ano de 2027.\","
+        }
+      ]
+    },
+    {
+      "file": "_store.cardapio.tsx",
+      "matches": [
+        {
+          "line": 94,
+          "text": "const [activeCategory, setActiveCategory] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 110,
+          "text": "return [\"todos\", ...Array.from(set)];"
+        },
+        {
+          "line": 125,
+          "text": "if (activeCategory && activeCategory !== \"todos\") {"
+        },
+        {
+          "line": 237,
+          "text": "categoria: cat === \"todos\" ? undefined : cat,"
+        },
+        {
+          "line": 248,
+          "text": "{cat === \"todos\" ? \"Todos os Pratos\" : cat}"
+        }
+      ]
+    },
+    {
+      "file": "_store.casa.tsx",
+      "matches": [
+        {
+          "line": 42,
+          "text": "{ id: \"todos\", label: \"Tudo para Casa\", icon: Tag },"
+        },
+        {
+          "line": 93,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 101,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        },
+        {
+          "line": 143,
+          "text": "if (activeDepartment === \"todos\") return isHomeItem;"
+        }
+      ]
+    },
+    {
+      "file": "_store.categoria.$slug.tsx",
+      "matches": [
+        {
+          "line": 155,
+          "text": "<Link to=\"/mercado\">Ver todos os produtos</Link>"
+        }
+      ]
+    },
+    {
+      "file": "_store.checkout.tsx",
+      "matches": [
+        {
+          "line": 340,
+          "text": "const [deliveryToDoor, setDeliveryToDoor] = useState(false);"
+        },
+        {
+          "line": 727,
+          "text": "const doorFeeCents = (!isPhysicalDelivery) ? 0 : (formData.shippingMethod !== \"pickup\" && deliveryToDoor) ? doorDeliveryFeeCents : 0;"
+        },
+        {
+          "line": 828,
+          "text": "toast.error(\"Preencha todos os campos obrigatórios do endereço de entrega.\");"
+        },
+        {
+          "line": 843,
+          "text": "toast.error(\"Preencha todos os campos do Cartão de Crédito.\");"
+        },
+        {
+          "line": 907,
+          "text": "deliveryToDoor: isPhysicalDelivery ? deliveryToDoor : false,"
+        },
+        {
+          "line": 908,
+          "text": "doorDeliveryFeeCents: (isPhysicalDelivery && deliveryToDoor) ? doorDeliveryFeeCents : 0,"
+        },
+        {
+          "line": 909,
+          "text": "deliveryLocationType: isPhysicalDelivery ? (deliveryToDoor ? \"apartment_door\" : \"apartment_reception\") : undefined,"
+        },
+        {
+          "line": 2157,
+          "text": "checked={deliveryToDoor}"
+        },
+        {
+          "line": 2158,
+          "text": "onChange={(e) => setDeliveryToDoor(e.target.checked)}"
+        },
+        {
+          "line": 2163,
+          "text": "{deliveryToDoor && ("
+        },
+        {
+          "line": 2926,
+          "text": "{formData.shippingMethod !== \"pickup\" && deliveryToDoor && ("
+        }
+      ]
+    },
+    {
+      "file": "_store.classificados.index.tsx",
+      "matches": [
+        {
+          "line": 186,
+          "text": "if (catId !== \"real_estate\") catalog.setSelectedDealType(\"todos\");"
+        },
+        {
+          "line": 209,
+          "text": "catalog.setSelectedDealType(\"todos\");"
+        }
+      ]
+    },
+    {
+      "file": "_store.colecao.$slug.tsx",
+      "matches": [
+        {
+          "line": 42,
+          "text": "<Link to=\"/mercado\">Ver todos os produtos</Link>"
+        }
+      ]
+    },
+    {
+      "file": "_store.concurso.$id.tsx",
+      "matches": [
+        {
+          "line": 46,
+          "text": "<Link to=\"/concursos\">Voltar para Todos os Sorteios</Link>"
+        },
+        {
+          "line": 111,
+          "text": "aria-label=\"Todos os Sorteios\""
+        },
+        {
+          "line": 115,
+          "text": "<span className=\"hidden sm:inline\">Todos os Sorteios</span>"
+        }
+      ]
+    },
+    {
+      "file": "_store.concursos.tsx",
+      "matches": [
+        {
+          "line": 157,
+          "text": "Todos os Sorteios"
+        }
+      ]
+    },
+    {
+      "file": "_store.construcao.tsx",
+      "matches": [
+        {
+          "line": 43,
+          "text": "{ id: \"todos\", label: \"Tudo na Obra\", icon: Tag },"
+        },
+        {
+          "line": 99,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 127,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        },
+        {
+          "line": 167,
+          "text": "if (activeDepartment === \"todos\") return isConstructionItem;"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.carnes.tsx",
+      "matches": [
+        {
+          "line": 324,
+          "text": "Todos ({carnes.length})"
+        },
+        {
+          "line": 373,
+          "text": "{activeTab === \"pending\" && \"Nenhum carnê ou parcela em aberto no momento. Todos os seus compromissos estão em dia!\"}"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.classificados.index.tsx",
+      "matches": [
+        {
+          "line": 164,
+          "text": "{ id: \"all\", label: \"Todos os Anúncios\" },"
+        },
+        {
+          "line": 580,
+          "text": "<span className=\"font-bold\">Impulsionamento temporariamente indisponível.</span> Estamos aprimorando os métodos de pagamento locais. Suas publicações e tráfego orgânico continuam ativos normalmente."
+        },
+        {
+          "line": 1318,
+          "text": "{ id: \"all\", label: \"Todos os Status\" },"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.classificados.novo.tsx",
+      "matches": [
+        {
+          "line": 808,
+          "text": "Todos"
+        },
+        {
+          "line": 4542,
+          "text": ": \"Descreva todos os detalhes, histórico, diferenciais e informações importantes...\""
+        },
+        {
+          "line": 6083,
+          "text": "<SelectItem value=\"Livre\">Livre para todos os públicos</SelectItem>"
+        },
+        {
+          "line": 6421,
+          "text": "<SelectItem value=\"coming_soon\">Agendado / Em Breve</SelectItem>"
+        },
+        {
+          "line": 10271,
+          "text": "<SelectItem value=\"monthly\">Mensal (Todo mês)</SelectItem>"
+        },
+        {
+          "line": 10361,
+          "text": "{/* Destaques & Diferenciais Livres (Disponível para todos os outros nichos) */}"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.classificados.performance.tsx",
+      "matches": [
+        {
+          "line": 109,
+          "text": "<p className=\"text-xs text-muted-foreground mt-1\">Visão consolidada de audiência, alcance, leads e conversão de todos os anúncios</p>"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.comissoes.tsx",
+      "matches": [
+        {
+          "line": 161,
+          "text": "toast.error(\"Preencha todos os campos.\");"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.contratos.tsx",
+      "matches": [
+        {
+          "line": 3,
+          "text": "* Exibe todos os contratos do usuário (assinados e pendentes), com reconciliação automática por CPF."
+        },
+        {
+          "line": 49,
+          "text": "Todos ({contracts.length})"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.creditos.tsx",
+      "matches": [
+        {
+          "line": 92,
+          "text": "Todos os seus saldos, cortesias, cashback e fidelidade foram consolidados na economia oficial $WZ."
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.curriculo.tsx",
+      "matches": [
+        {
+          "line": 1558,
+          "text": "<p className=\"text-xs text-muted-foreground\">Integração oficial sem scraping ou métodos não autorizados.</p>"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.entregador.tsx",
+      "matches": [
+        {
+          "line": 977,
+          "text": "<option value=\"all\">Todos os Canais</option>"
+        },
+        {
+          "line": 1254,
+          "text": "<option value=\"all\">Todos os Passageiros</option>"
+        },
+        {
+          "line": 1550,
+          "text": "Sua avaliação ajuda a manter a comunidade Waesy Go segura e respeitosa para todos os condutores."
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.eventos.tsx",
+      "matches": [
+        {
+          "line": 387,
+          "text": "Todos ({eventsList.length})"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.financas.tsx",
+      "matches": [
+        {
+          "line": 871,
+          "text": "{ label: \"Todos\", value: \"ALL\" },"
+        },
+        {
+          "line": 1217,
+          "text": "Seu dinheiro rende automaticamente todos os dias úteis a 100% do CDI com liquidez diária e segurança no Waesy Bank."
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.ingressos.tsx",
+      "matches": [
+        {
+          "line": 32,
+          "text": "{ id: \"todos\", label: \"Todos\" },"
+        },
+        {
+          "line": 291,
+          "text": "const [activeFilter, setActiveFilter] = useState(\"todos\");"
+        },
+        {
+          "line": 321,
+          "text": "todos: tickets.length,"
+        },
+        {
+          "line": 409,
+          "text": "if (count === 0 && chip.id !== \"todos\") return null;"
+        },
+        {
+          "line": 457,
+          "text": "onClick={() => setActiveFilter(\"todos\")}"
+        },
+        {
+          "line": 460,
+          "text": "Ver Todos os Ingressos"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.notificacoes.tsx",
+      "matches": [
+        {
+          "line": 359,
+          "text": "description=\"Você está em dia com todos os seus alertas e novidades da comunidade.\""
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.pacotes.tsx",
+      "matches": [
+        {
+          "line": 50,
+          "text": "const [filterTab, setFilterTab] = useState<\"todos\" | \"ativos\" | \"esgotados\" | \"expirados\">(\"todos\");"
+        },
+        {
+          "line": 249,
+          "text": "{([\"todos\", \"ativos\", \"esgotados\", \"expirados\"] as const).map((tab) => ("
+        },
+        {
+          "line": 260,
+          "text": "{tab === \"todos\""
+        },
+        {
+          "line": 261,
+          "text": "? \"Todos os Pacotes\""
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.pagamentos.tsx",
+      "matches": [
+        {
+          "line": 425,
+          "text": "<span>Métodos & Saldo</span>"
+        },
+        {
+          "line": 490,
+          "text": "Todos"
+        },
+        {
+          "line": 659,
+          "text": "<TableHead className=\"text-xs\">Método</TableHead>"
+        },
+        {
+          "line": 1095,
+          "text": "{/* ── 6. Conteúdo da Aba 4: [ Métodos & Saldo ] ── */}"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.pedidos.$id.tsx",
+      "matches": [
+        {
+          "line": 751,
+          "text": "A equipe está confirmando seu pagamento. Você será notificado em breve."
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.pedidos.index.tsx",
+      "matches": [
+        {
+          "line": 88,
+          "text": "{ id: \"todos\", label: \"Todos\" },"
+        },
+        {
+          "line": 446,
+          "text": "const [activeFilter, setActiveFilter] = useState(\"todos\");"
+        },
+        {
+          "line": 451,
+          "text": "if (!filterChip || filterChip.id === \"todos\") return orders;"
+        },
+        {
+          "line": 477,
+          "text": "if (chip.id === \"todos\") {"
+        },
+        {
+          "line": 918,
+          "text": "if (count === 0 && chip.id !== \"todos\") return null;"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.perfil.tsx",
+      "matches": [
+        {
+          "line": 1375,
+          "text": "Ao solicitar a exclusão, todos os seus dados pessoais, histórico de navegação e acessos serão revogados."
+        },
+        {
+          "line": 1403,
+          "text": "todos os vínculos profissionais serão encerrados."
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.salvos.tsx",
+      "matches": [
+        {
+          "line": 56,
+          "text": "{ id: \"all\", label: \"Todos\", icon: Layers },"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.tokens.tsx",
+      "matches": [
+        {
+          "line": 88,
+          "text": "{ id: \"all\", label: \"Todos\" },"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.trocas.tsx",
+      "matches": [
+        {
+          "line": 81,
+          "text": "const [filterTab, setFilterTab] = useState<\"todos\" | \"andamento\" | \"concluidas\" | \"rejeitadas\">(\"todos\");"
+        },
+        {
+          "line": 296,
+          "text": "{([\"todos\", \"andamento\", \"concluidas\", \"rejeitadas\"] as const).map((tab) => ("
+        },
+        {
+          "line": 308,
+          "text": "{tab === \"todos\""
+        },
+        {
+          "line": 324,
+          "text": "description=\"Quando você pedir uma troca, devolução ou garantia de um produto, poderá acompanhar todo o processo por aqui.\""
+        }
+      ]
+    },
+    {
+      "file": "_store.contato.tsx",
+      "matches": [
+        {
+          "line": 48,
+          "text": "toast.error(\"Por favor, preencha todos os campos obrigatórios.\");"
+        }
+      ]
+    },
+    {
+      "file": "_store.convite.tsx",
+      "matches": [
+        {
+          "line": 276,
+          "text": "<span>Ver Todos os Sorteios</span>"
+        }
+      ]
+    },
+    {
+      "file": "_store.departamento.tsx",
+      "matches": [
+        {
+          "line": 54,
+          "text": "content: `Confira todos os itens e ofertas de ${deptTitle} com entrega rápida.`,"
+        }
+      ]
+    },
+    {
+      "file": "_store.destaques.$slug.tsx",
+      "matches": [
+        {
+          "line": 102,
+          "text": "{ id: \"todos\", label: \"Todos os Roteiros\", icon: Tag },"
+        },
+        {
+          "line": 109,
+          "text": "{ id: \"todos\", label: \"Todas as Vagas\", icon: Tag },"
+        },
+        {
+          "line": 116,
+          "text": "{ id: \"todos\", label: \"Todas as Bebidas\", icon: Tag },"
+        },
+        {
+          "line": 123,
+          "text": "{ id: \"todos\", label: \"Todos os Cortes\", icon: Tag },"
+        },
+        {
+          "line": 130,
+          "text": "{ id: \"todos\", label: \"Todas as Peças\", icon: Tag },"
+        },
+        {
+          "line": 137,
+          "text": "{ id: \"todos\", label: \"Toda a Linha Tech\", icon: Tag },"
+        },
+        {
+          "line": 144,
+          "text": "{ id: \"todos\", label: \"Tudo para Pets\", icon: Tag },"
+        },
+        {
+          "line": 151,
+          "text": "{ id: \"todos\", label: \"Todos os Serviços\", icon: Tag },"
+        },
+        {
+          "line": 158,
+          "text": "{ id: \"todos\", label: \"Todos os Imóveis\", icon: Tag },"
+        },
+        {
+          "line": 165,
+          "text": "{ id: \"todos\", label: \"Todos os Materiais\", icon: Tag },"
+        },
+        {
+          "line": 172,
+          "text": "{ id: \"todos\", label: \"Tudo para Casa\", icon: Tag },"
+        },
+        {
+          "line": 179,
+          "text": "{ id: \"todos\", label: \"Todos os Cuidados\", icon: Tag },"
+        },
+        {
+          "line": 186,
+          "text": "{ id: \"todos\", label: \"Toda a Linha\", icon: Tag },"
+        },
+        {
+          "line": 193,
+          "text": "{ id: \"todos\", label: \"Todo o Catálogo\", icon: Tag },"
+        },
+        {
+          "line": 200,
+          "text": "{ id: \"todos\", label: \"Todos os Serviços\", icon: Tag },"
+        },
+        {
+          "line": 207,
+          "text": "{ id: \"todos\", label: \"Todas as Ofertas\", icon: Tag },"
+        },
+        {
+          "line": 216,
+          "text": "{ id: \"todos\", label: \"Explorar\", icon: Tag },"
+        },
+        {
+          "line": 277,
+          "text": "const [selectedSubCategory, setSelectedSubCategory] = useState(\"todos\");"
+        }
+      ]
+    },
+    {
+      "file": "_store.developers.tsx",
+      "matches": [
+        {
+          "line": 147,
+          "text": "<th className=\"px-4 py-3 font-semibold\">Metodo e Caminho</th>"
+        }
+      ]
+    },
+    {
+      "file": "_store.diretorio.index.tsx",
+      "matches": [
+        {
+          "line": 27,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: Tag },"
+        },
+        {
+          "line": 80,
+          "text": "const [selectedCategory, setSelectedCategory] = useState(\"todos\");"
+        },
+        {
+          "line": 92,
+          "text": "category: selectedCategory === \"todos\" ? undefined : selectedCategory,"
+        },
+        {
+          "line": 263,
+          "text": "setSelectedCategory(\"todos\");"
+        },
+        {
+          "line": 268,
+          "text": "Ver todo o diretório"
+        }
+      ]
+    },
+    {
+      "file": "_store.doacoes.tsx",
+      "matches": [
+        {
+          "line": 37,
+          "text": "id: \"todos\","
+        },
+        {
+          "line": 142,
+          "text": "const [activeCategory, setActiveCategory] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 160,
+          "text": "if (activeCategory !== \"todos\") {"
+        },
+        {
+          "line": 186,
+          "text": "categoria: catId === \"todos\" ? undefined : catId,"
+        },
+        {
+          "line": 387,
+          "text": "{DOACOES_CATEGORIES.filter((c) => c.id !== \"todos\").map((cat) => {"
+        },
+        {
+          "line": 395,
+          "text": "handleCategoryChange(isSelected ? \"todos\" : cat.id)"
+        },
+        {
+          "line": 444,
+          "text": "{DOACOES_CATEGORIES.filter((c) => c.id !== \"todos\").map((cat) => {"
+        },
+        {
+          "line": 452,
+          "text": "handleCategoryChange(isSelected ? \"todos\" : cat.id)"
+        },
+        {
+          "line": 690,
+          "text": "{DOACOES_CATEGORIES.filter((c) => c.id !== \"todos\").map("
+        }
+      ]
+    },
+    {
+      "file": "_store.docs.tsx",
+      "matches": [
+        {
+          "line": 49,
+          "text": "JSON-RPC 2.0. Suporta os metodos <code>initialize</code>, <code>ping</code>,{' '}"
+        }
+      ]
+    },
+    {
+      "file": "_store.eletronicos.tsx",
+      "matches": [
+        {
+          "line": 42,
+          "text": "{ id: \"todos\", label: \"Tudo em Eletrônicos e Tech\", icon: Tag },"
+        },
+        {
+          "line": 93,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 101,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        },
+        {
+          "line": 275,
+          "text": "onClick={() => handleDepartmentChange(\"todos\")}"
+        },
+        {
+          "line": 278,
+          "text": "Ver todos os eletrônicos"
+        }
+      ]
+    },
+    {
+      "file": "_store.empregos.index.tsx",
+      "matches": [
+        {
+          "line": 26,
+          "text": "{ id: \"todos\", label: \"Todas\", icon: Tag },"
+        },
+        {
+          "line": 76,
+          "text": "const [selectedCategory, setSelectedCategory] = useState(\"todos\");"
+        },
+        {
+          "line": 79,
+          "text": "const isDefaultFilter = selectedCategory === \"todos\" && !search;"
+        },
+        {
+          "line": 87,
+          "text": "category: selectedCategory !== \"todos\" ? selectedCategory : undefined,"
+        },
+        {
+          "line": 266,
+          "text": "setSelectedCategory(\"todos\");"
+        }
+      ]
+    },
+    {
+      "file": "_store.entregador.cadastro.tsx",
+      "matches": [
+        {
+          "line": 411,
+          "text": "toast.error(\"Preencha todos os campos obrigatórios e anexe a foto da CNH.\");"
+        }
+      ]
+    },
+    {
+      "file": "_store.eventos.tsx",
+      "matches": [
+        {
+          "line": 110,
+          "text": "searchParams?.categoria || \"todos\""
+        },
+        {
+          "line": 170,
+          "text": "if (selectedCategory !== \"todos\") {"
+        },
+        {
+          "line": 297,
+          "text": "const counts: Record<string, number> = { todos: events?.length || 0 };"
+        },
+        {
+          "line": 386,
+          "text": "categoryKey: \"todos\","
+        },
+        {
+          "line": 462,
+          "text": "{selectedCategory !== \"todos\" ? ("
+        },
+        {
+          "line": 467,
+          "text": "onBackToAll={() => setSelectedCategory(\"todos\")}"
+        }
+      ]
+    },
+    {
+      "file": "_store.explorar.tsx",
+      "matches": [
+        {
+          "line": 94,
+          "text": "{ id: \"todos\", label: \"Todos os Anúncios\", icon: Tag },"
+        },
+        {
+          "line": 296,
+          "text": "const [activeCategory, setActiveCategory] = useState(\"todos\");"
+        },
+        {
+          "line": 424,
+          "text": "(activeCategory === \"todos\" || activeCategory === \"afiliados\" ? 1 : 0);"
+        },
+        {
+          "line": 441,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"marketplace\") {"
+        },
+        {
+          "line": 457,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"places\") {"
+        },
+        {
+          "line": 475,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"classificados\") {"
+        },
+        {
+          "line": 499,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"feed\") {"
+        },
+        {
+          "line": 516,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"noticias\") {"
+        },
+        {
+          "line": 532,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"empregos\") {"
+        },
+        {
+          "line": 549,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"eventos\") {"
+        },
+        {
+          "line": 566,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"agenda\") {"
+        },
+        {
+          "line": 583,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"afiliados\") {"
+        },
+        {
+          "line": 597,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"concursos\") {"
+        },
+        {
+          "line": 713,
+          "text": "{(activeCategory === \"todos\" || activeCategory === \"places\") && filteredPlaces.length > 0 && ("
+        },
+        {
+          "line": 799,
+          "text": "{(activeCategory === \"todos\" || activeCategory === \"marketplace\") && ("
+        },
+        {
+          "line": 822,
+          "text": "Novos produtos de empresas parceiras serão listados em breve."
+        },
+        {
+          "line": 829,
+          "text": "{(activeCategory === \"todos\" || activeCategory === \"classificados\") && filteredClassifieds.length > 0 && ("
+        },
+        {
+          "line": 833,
+          "text": "actionLabel=\"Ver todos\""
+        },
+        {
+          "line": 892,
+          "text": "{(activeCategory === \"todos\" || activeCategory === \"feed\") && filteredFeed.length > 0 && ("
+        },
+        {
+          "line": 960,
+          "text": "{(activeCategory === \"todos\" || activeCategory === \"noticias\") && filteredNews.length > 0 && ("
+        },
+        {
+          "line": 978,
+          "text": "{(activeCategory === \"todos\" || activeCategory === \"empregos\") && filteredJobs.length > 0 && ("
+        },
+        {
+          "line": 1037,
+          "text": "{(activeCategory === \"todos\" || activeCategory === \"eventos\") && filteredEvents.length > 0 && ("
+        },
+        {
+          "line": 1041,
+          "text": "actionLabel=\"Ver todos\""
+        },
+        {
+          "line": 1097,
+          "text": "{(activeCategory === \"todos\" || activeCategory === \"agenda\") && filteredEvents.length > 0 && ("
+        }
+      ]
+    },
+    {
+      "file": "_store.farmacia.tsx",
+      "matches": [
+        {
+          "line": 41,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: Pill },"
+        },
+        {
+          "line": 104,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 112,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        }
+      ]
+    },
+    {
+      "file": "_store.gastronomia.tsx",
+      "matches": [
+        {
+          "line": 45,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: ForkKnife },"
+        },
+        {
+          "line": 126,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 135,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        }
+      ]
+    },
+    {
+      "file": "_store.imoveis.tsx",
+      "matches": [
+        {
+          "line": 28,
+          "text": "tipo: z.enum([\"todos\", \"aluguel\", \"temporada\", \"venda\", \"comercial\", \"terreno\", \"rural\"]).default(\"todos\").optional(),"
+        },
+        {
+          "line": 36,
+          "text": "{ id: \"todos\", label: \"Todos\", icon: Tag },"
+        },
+        {
+          "line": 106,
+          "text": "const [activeCategory, setActiveCategory] = useState(search.tipo || \"todos\");"
+        },
+        {
+          "line": 114,
+          "text": "tipo: catId === \"todos\" ? undefined : (catId as any),"
+        },
+        {
+          "line": 136,
+          "text": "if (activeCategory !== \"todos\") {"
+        }
+      ]
+    },
+    {
+      "file": "_store.index.tsx",
+      "matches": [
+        {
+          "line": 49,
+          "text": "{ id: \"todos\", label: \"Todos os Anúncios\", icon: Globe },"
+        },
+        {
+          "line": 291,
+          "text": "const [activeCategory, setActiveCategory] = useState(\"todos\");"
+        },
+        {
+          "line": 392,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"marketplace\") {"
+        },
+        {
+          "line": 408,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"places\") {"
+        },
+        {
+          "line": 426,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"classificados\") {"
+        },
+        {
+          "line": 450,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"feed\") {"
+        },
+        {
+          "line": 467,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"noticias\") {"
+        },
+        {
+          "line": 483,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"empregos\") {"
+        },
+        {
+          "line": 500,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"eventos\") {"
+        },
+        {
+          "line": 517,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"agenda\") {"
+        },
+        {
+          "line": 534,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"afiliados\") {"
+        },
+        {
+          "line": 548,
+          "text": "if (activeCategory === \"todos\" || activeCategory === \"concursos\") {"
+        }
+      ]
+    },
+    {
+      "file": "_store.limpeza.tsx",
+      "matches": [
+        {
+          "line": 41,
+          "text": "{ id: \"todos\", label: \"Tudo em Limpeza e Higiene\", icon: Tag },"
+        },
+        {
+          "line": 91,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 99,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        },
+        {
+          "line": 245,
+          "text": "onAction={() => handleDepartmentChange(\"todos\")}"
+        },
+        {
+          "line": 272,
+          "text": "onClick={() => handleDepartmentChange(\"todos\")}"
+        },
+        {
+          "line": 275,
+          "text": "Ver todos os produtos"
+        }
+      ]
+    },
+    {
+      "file": "_store.livros.tsx",
+      "matches": [
+        {
+          "line": 42,
+          "text": "{ id: \"todos\", label: \"Tudo em Livros e Papelaria\", icon: Tag },"
+        },
+        {
+          "line": 93,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 101,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        },
+        {
+          "line": 139,
+          "text": "if (activeDepartment === \"todos\") return isBookItem;"
+        }
+      ]
+    },
+    {
+      "file": "_store.mapa.tsx",
+      "matches": [
+        {
+          "line": 45,
+          "text": "{ id: \"all\", label: \"Todos\", icon: Tag },"
+        }
+      ]
+    },
+    {
+      "file": "_store.marketplace.index.tsx",
+      "matches": [
+        {
+          "line": 51,
+          "text": "{ id: \"todos\", label: \"Todas as Vitrines\", icon: Storefront, targetRoute: \"/marketplace\" },"
+        },
+        {
+          "line": 106,
+          "text": "const activeNiche = search.niche && search.niche !== \"todos\" ? search.niche : undefined;"
+        },
+        {
+          "line": 219,
+          "text": "const [activeNiche, setActiveNiche] = useState<string>(search.niche || \"todos\");"
+        },
+        {
+          "line": 266,
+          "text": "niche: nicheId === \"todos\" ? undefined : nicheId,"
+        },
+        {
+          "line": 314,
+          "text": "{activeNiche !== \"todos\" && activeNicheConfig.targetRoute && ("
+        },
+        {
+          "line": 370,
+          "text": "{activeNiche === \"todos\""
+        },
+        {
+          "line": 386,
+          "text": "{(activeNiche !== \"todos\" || searchTerm.trim()) && ("
+        },
+        {
+          "line": 390,
+          "text": "handleNicheChange(\"todos\");"
+        },
+        {
+          "line": 422,
+          "text": "{(activeNiche !== \"todos\" || searchTerm.trim()) && ("
+        },
+        {
+          "line": 426,
+          "text": "handleNicheChange(\"todos\");"
+        }
+      ]
+    },
+    {
+      "file": "_store.match-time.tsx",
+      "matches": [
+        {
+          "line": 96,
+          "text": "Você percorreu todos os produtos exibidos nesta sessão. Volte ao catálogo para continuar navegando."
+        }
+      ]
+    },
+    {
+      "file": "_store.membro.$id.tsx",
+      "matches": [
+        {
+          "line": 1397,
+          "text": "<span>{showAllProjects ? \"Recolher projetos\" : `Exibir todos os ${projects.length} projetos `}</span>"
+        }
+      ]
+    },
+    {
+      "file": "_store.mercado.tsx",
+      "matches": [
+        {
+          "line": 64,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: Storefront },"
+        },
+        {
+          "line": 151,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 165,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        },
+        {
+          "line": 229,
+          "text": "if (activeDepartment && activeDepartment !== \"todos\" && activeDepartment !== \"ofertas\") {"
+        }
+      ]
+    },
+    {
+      "file": "_store.moda.tsx",
+      "matches": [
+        {
+          "line": 41,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: Tag },"
+        },
+        {
+          "line": 93,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 101,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        },
+        {
+          "line": 121,
+          "text": "if (activeDepartment === \"todos\") return base;"
+        }
+      ]
+    },
+    {
+      "file": "_store.ofertas.tsx",
+      "matches": [
+        {
+          "line": 32,
+          "text": "{ id: \"todos\", label: \"Todas as Ofertas\" },"
+        },
+        {
+          "line": 52,
+          "text": "\"Descubra as melhores promoções e descontos de todos os segmentos: gastronomia, mercado, farmácia, moda, eletrônicos, beleza, pet shop e mais.\","
+        },
+        {
+          "line": 57,
+          "text": "content: \"As melhores promoções de todos os segmentos da plataforma Waesy em um só lugar.\","
+        },
+        {
+          "line": 68,
+          "text": "data: nicho && nicho !== \"todos\" ? { nicheFilter: nicho, limit: 10 } : { limit: 8 },"
+        },
+        {
+          "line": 88,
+          "text": "const activeNiche = search.nicho || \"todos\";"
+        },
+        {
+          "line": 94,
+          "text": "nicho: nichoId === \"todos\" ? undefined : nichoId,"
+        }
+      ]
+    },
+    {
+      "file": "_store.pedidos.tsx",
+      "matches": [
+        {
+          "line": 132,
+          "text": "Veja todos os seus pedidos de mercados, restaurantes e lojas em um só lugar."
+        }
+      ]
+    },
+    {
+      "file": "_store.pet.tsx",
+      "matches": [
+        {
+          "line": 38,
+          "text": "{ id: \"todos\", label: \"Tudo\", icon: PawPrint },"
+        },
+        {
+          "line": 97,
+          "text": "const [activeDepartment, setActiveDepartment] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 105,
+          "text": "categoria: depId === \"todos\" ? undefined : depId,"
+        }
+      ]
+    },
+    {
+      "file": "_store.servicos.tsx",
+      "matches": [
+        {
+          "line": 46,
+          "text": "id: \"todos\","
+        },
+        {
+          "line": 47,
+          "text": "name: \"Todos os Serviços\","
+        },
+        {
+          "line": 50,
+          "text": "tags: [\"todos\"],"
+        },
+        {
+          "line": 183,
+          "text": "const [activeCategory, setActiveCategory] = useState(search.categoria || \"todos\");"
+        },
+        {
+          "line": 201,
+          "text": "categoria: catId === \"todos\" ? undefined : catId,"
+        },
+        {
+          "line": 211,
+          "text": "category: activeCategory !== \"todos\" ? SERVICE_CATEGORIES.find((c) => c.id === activeCategory)?.name : undefined,"
+        },
+        {
+          "line": 238,
+          "text": "if (activeCategory === \"todos\") {"
+        }
+      ]
+    },
+    {
+      "file": "_store.termos.tsx",
+      "matches": [
+        {
+          "line": 26,
+          "text": "Todos os softwares, marcas, logotipos e conteúdos nativos da Waesy são de propriedade exclusiva da plataforma ou de seus licenciadores, sendo vedada sua reprodução sem autorização prévia."
+        }
+      ]
+    },
+    {
+      "file": "_store.trocas-e-devolucoes.tsx",
+      "matches": [
+        {
+          "line": 27,
+          "text": "O produto deve ser devolvido em sua embalagem original (quando aplicável), acompanhado da respectiva nota fiscal e de todos os manuais e acessórios que o acompanham."
+        }
+      ]
+    },
+    {
+      "file": "_store.turismo.index.tsx",
+      "matches": [
+        {
+          "line": 104,
+          "text": "{ id: \"todos\", label: \"Tudo\" },"
+        },
+        {
+          "line": 117,
+          "text": "{ id: \"todos\", label: \"Todas as Saídas\" },"
+        },
+        {
+          "line": 130,
+          "text": "const [selectedCategory, setSelectedCategory] = useState(\"todos\");"
+        },
+        {
+          "line": 133,
+          "text": "const [selectedAirport, setSelectedAirport] = useState<string>(\"todos\");"
+        },
+        {
+          "line": 163,
+          "text": "category: selectedCategory !== \"todos\" && selectedCategory !== \"corporativo\" ? selectedCategory : undefined,"
+        },
+        {
+          "line": 175,
+          "text": "if (selectedAirport !== \"todos\") {"
+        },
+        {
+          "line": 296,
+          "text": "activeChannel={selectedCategory === \"todos\" ? \"pacotes\" : selectedCategory}"
+        },
+        {
+          "line": 380,
+          "text": "{(selectedCategory === \"aluguel\" || selectedCategory === \"todos\") && ("
+        },
+        {
+          "line": 386,
+          "text": "selectedAirport !== \"todos\""
+        },
+        {
+          "line": 394,
+          "text": "{(selectedCategory === \"onibus\" || selectedCategory === \"todos\") && ("
+        },
+        {
+          "line": 397,
+          "text": "originCity={selectedAirport !== \"todos\" ? selectedAirport : undefined}"
+        },
+        {
+          "line": 407,
+          "text": "{selectedCategory === \"todos\""
+        },
+        {
+          "line": 443,
+          "text": "setSelectedAirport(\"todos\");"
+        },
+        {
+          "line": 444,
+          "text": "setSelectedCategory(\"todos\");"
+        },
+        {
+          "line": 537,
+          "text": "actionLabel=\"Ver todos\""
+        }
+      ]
+    }
+  ],
+  "localStateWithoutBff": [
+    "workspace.estudio.index.tsx"
+  ],
+  "routesWithoutLoader": [
+    "reclamar.novo.tsx",
+    "sitemap-classificados[.]xml.ts",
+    "sitemap-empresas[.]xml.ts",
+    "sitemap-index[.]xml.ts",
+    "sitemap-news[.]xml.ts",
+    "sitemap-products[.]xml.ts",
+    "sitemap-produtos[.]xml.ts",
+    "sitemap[.]xml.ts",
+    "status.tsx",
+    "verificar.$serial.tsx",
+    "viajante.carteira.tsx",
+    "workspace.afiliados.conciliacao.tsx",
+    "workspace.agenda.index.tsx",
+    "workspace.agenda.recursos.tsx",
+    "workspace.agenda.servicos.index.tsx",
+    "workspace.catalogo.colecoes.novo.tsx",
+    "workspace.configuracoes.ai.tsx",
+    "workspace.configuracoes.conformidade.tsx",
+    "workspace.configuracoes.pwa.tsx",
+    "workspace.design-system.tsx",
+    "workspace.empresa.viagens.tsx",
+    "workspace.eventos.$id.subpaineis.tsx",
+    "workspace.logistica.faturas.tsx",
+    "workspace.marketing.fidelidade.tsx",
+    "workspace.moderacao.index.tsx",
+    "workspace.noticias.novo.tsx",
+    "workspace.onboarding.revisao.tsx",
+    "workspace.pacotes.index.tsx",
+    "workspace.pedidos.entregadores.novo.tsx",
+    "workspace.pedidos.expedicao.tsx",
+    "workspace.rh.ponto.tsx",
+    "workspace.skills.tsx",
+    "workspace.squads.tsx",
+    "workspace.turismo.corporativo.tsx",
+    "workspace.turismo.documentos-ocr.tsx",
+    "_store.about.tsx",
+    "_store.cadastro.tsx",
+    "_store.conta.classificados.index.tsx",
+    "_store.conta.classificados.performance.tsx",
+    "_store.conta.negociacoes.tsx",
+    "_store.conta.pacotes.tsx",
+    "_store.contact.tsx",
+    "_store.developers.tsx",
+    "_store.docs.tsx",
+    "_store.loja.$slug.senha.tsx",
+    "_store.privacy.tsx",
+    "_store.recuperar-senha.tsx",
+    "_store.sobre.tsx"
+  ],
+  "noServerActionInForm": [],
+  "staticRoutes": []
+}

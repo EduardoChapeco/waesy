@@ -1,7 +1,7 @@
-# BRIEFING — 2026-10-05T04:29:00Z
+# BRIEFING — 2026-11-04T11:15:00Z
 
 ## Mission
-Independently audit Milestone 1 implementation (`supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`) with adversarial rigor, multi-tenant security verification, RLS Deny-by-Default checks, B-tree indexing analysis, and Supabase Postgres best practices.
+Independently audit Milestone M1 implementation (Features 1-5: Belasis KPI Primitives, UniversalViewManager, ViewModeSwitcher, Supabase Migration `workspace_user_view_preferences`, BFF `workspace-view-preferences.functions.ts`, and Vitest test suite) with adversarial rigor, design-lint validation (DL-01 to DL-32), WCAG 2.2 AA compliance, Zero-Trust RLS verification, parameter destructuring (Invariante B.25), and 4-state matrix analysis.
 
 ## 🔒 My Identity
 - Archetype: reviewer, critic
@@ -12,6 +12,8 @@ Independently audit Milestone 1 implementation (`supabase/migrations/20270105000
 - Instance: 2 of 2
 - Milestone (New Cycle): Milestone 1 (Telemetria 360º & Migração Supabase)
 - Parent (New Cycle): 1806a73b-398b-4f3e-97cd-ac161a06e58f
+- Milestone (Current Cycle): M1 (Ultraminimalist Foundations, Design System & View Primitives)
+- Parent (Current Cycle): 71cb6393-bf04-4e51-946b-1dd9ac61e734
 
 ## 🔒 Key Constraints
 - Review-only — do NOT modify implementation code
@@ -19,36 +21,40 @@ Independently audit Milestone 1 implementation (`supabase/migrations/20270105000
 - Adhere to AGENTS.md rules and design gates (DL-01 to DL-30)
 - Enforce Supabase Postgres best practices and RLS Deny-by-Default
 - Never execute npm run typecheck or npm run build
+- Actively verify design lint DL-01 to DL-32, WCAG 2.2 AA floor, touch targets >=44px, keyboard navigation, Zero-Trust RLS, parameter destructuring (B.25), and 4-state matrix
 
 ## Current Parent
-- Conversation ID: 1806a73b-398b-4f3e-97cd-ac161a06e58f
-- Updated: 2026-10-05T04:22:19Z
+- Conversation ID: 71cb6393-bf04-4e51-946b-1dd9ac61e734
+- Updated: 2026-11-04T11:12:11Z
 
 ## Review Scope
-- **Files to review**: `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`
-- **Interface contracts**: `PROJECT.md`, `ORIGINAL_REQUEST.md` (R1), `AGENTS.md`, `supabase-postgres-best-practices`
-- **Review criteria**: Multi-tenant boundaries, RLS Deny-by-Default, audit log immutability, foreign key indexing, (SELECT auth.uid()) caching, search_path security, integrity & anti-cheating verification.
+- **Files to review**:
+  - `src/components/workspace/mini-sparkline.tsx`
+  - `src/components/workspace/kpi-metric-card.tsx`
+  - `src/components/workspace/view-modes/universal-view-manager.tsx`
+  - `src/components/workspace/view-modes/view-mode-switcher.tsx`
+  - `src/components/workspace/view-modes/use-workspace-view-mode.ts`
+  - `src/components/workspace/view-modes/index.ts`
+  - `src/components/workspace/workspace-canonical-toolbar.tsx`
+  - `supabase/migrations/20270220030000_workspace_user_view_preferences.sql`
+  - `src/services/workspace-view-preferences.functions.ts`
+  - `src/services/__tests__/workspace-view-preferences.test.ts`
+- **Interface contracts**: `PROJECT.md`, `ORIGINAL_REQUEST.md`, `AGENTS.md`
+- **Review criteria**: Design lint DL-01 to DL-32, single sovereign surface (DL-31), touch targets (DL-14), focus visible (DL-15), WCAG 2.2 AA contrast, 4-state matrix, Zero-Trust RLS, B.25 parameter destructuring, integrity & anti-cheating check.
 
 ## Key Decisions Made
-- Executed Worker M1 test suite: `node .agents/teamwork/worker_m1/test_sql_migration.mjs` (All passed).
-- Executed independent adversarial suite: `node .agents/teamwork/reviewer_m1_2/verify_migration_adversarial.mjs` (51 checks passed).
-- Executed deep statement tokenizer and syntax validator: `node .agents/teamwork/reviewer_m1_2/verify_statements.mjs` (92 statements verified).
-- Validated design-lint ratchet: `node scripts/design-lint.mjs --ratchet` (0 regressions, debt reduced by 12).
-- Validated absence of any integrity violations or shortcuts.
-- Issued verdict: APPROVE.
+- [In progress] Commenced independent review of Worker M1 deliverables.
 
 ## Artifact Index
 - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\reviewer_m1_2\handoff.md` — Final review report
 - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\reviewer_m1_2\progress.md` — Liveness heartbeat
-- `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\reviewer_m1_2\verify_migration_adversarial.mjs` — Independent audit script
-- `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\reviewer_m1_2\verify_statements.mjs` — Statement verification script
 
 ## Review Checklist
-- **Items reviewed**: `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`, Worker M1 handoff, Challenger M1_1 handoff
-- **Verdict**: APPROVE
-- **Unverified claims**: None remaining
+- **Items reviewed**: Pending
+- **Verdict**: Pending
+- **Unverified claims**: All claims from worker_m1 handoff pending verification
 
 ## Attack Surface
-- **Hypotheses tested**: Multi-tenant bypass, operator spoofing in audit log, unprivileged UPDATE/DELETE, per-row auth.uid() execution, missing FK indexes, search_path hijacking, 32-bit monetary integer overflow, unbalanced parentheses/quotes.
-- **Vulnerabilities found**: None in the migration file.
-- **Untested angles**: Execution on live remote cluster (intentional caveat, migration is declarative for orchestrated CI/CD release).
+- **Hypotheses tested**: Pending
+- **Vulnerabilities found**: Pending
+- **Untested angles**: Pending

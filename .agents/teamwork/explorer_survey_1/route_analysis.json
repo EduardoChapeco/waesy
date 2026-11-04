@@ -1,0 +1,6078 @@
+{
+  "total": 446,
+  "byPrefix": {},
+  "mockDataFound": [
+    {
+      "file": "_store.criar-negocio.avancado.tsx",
+      "mocks": [
+        "const stepsList = [\r\n {"
+      ],
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "_store.criar-negocio.tsx",
+      "mocks": [
+        "const stepsList = [\r\n {"
+      ],
+      "hasLoader": true,
+      "hasServerFunctions": true
+    }
+  ],
+  "operationalManagementRoutes": [
+    {
+      "file": "workspace.advocacia.index.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.agenda.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.agenda.recursos.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.agenda.servicos.index.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.atendimento.index.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.b2b.index.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.clientes.$id.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.clientes.index.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.comercial.tsx",
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.contratos.$id.editor.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.contratos.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.contratos.novo.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.crm.tsx",
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.estoque.alertas.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.estoque.index.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.estoque.movimentos.tsx",
+      "viewModes": [
+        "table"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.eventos.$id.checkin.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.eventos.$id.subpaineis.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.eventos.$id.tsx",
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.eventos.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.imoveis.manutencoes.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.orcamentos.$id.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.orcamentos.index.tsx",
+      "viewModes": [
+        "kanban",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.orcamentos.novo.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pdv.comandas.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pdv.cozinha.tsx",
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pdv.index.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pedidos.$id.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pedidos.entregadores.$id.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pedidos.entregadores.index.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pedidos.entregadores.novo.tsx",
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pedidos.expedicao.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pedidos.frota.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pedidos.gestor.tsx",
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pedidos.index.tsx",
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.pedidos.trocas.tsx",
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.rh.ponto.tsx",
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.squads.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.squads.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.tarefas.tsx",
+      "viewModes": [
+        "kanban",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.aereos.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.comissoes.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.contratos.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.corporativo.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.cotacoes.tsx",
+      "viewModes": [
+        "kanban",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.destinos.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.documentos-ocr.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.embarques.tsx",
+      "viewModes": [
+        "kanban",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.fornecedores.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.frota.$id.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.frota.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.grupos.$id.embarque.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.grupos.$id.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.grupos.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.hoteis.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.incidentes.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.index.tsx",
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.oportunidades.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.projetos.$id.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.propostas.$id.tsx",
+      "viewModes": [
+        "table"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.propostas.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.propostas.novo.tsx",
+      "viewModes": [],
+      "hasViewModeToggle": false,
+      "hasLoader": false,
+      "hasServerFunctions": false
+    },
+    {
+      "file": "workspace.turismo.radar.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.reacomodacao.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.viagens.$id.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.viagens.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.vistos.tsx",
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace.turismo.vouchers.index.tsx",
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    },
+    {
+      "file": "workspace_.pedidos.$id.recibo.tsx",
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false,
+      "hasLoader": true,
+      "hasServerFunctions": true
+    }
+  ],
+  "routesList": [
+    {
+      "file": "admin-master.ads-network.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "admin-master.algoritmo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.auditoria-forense.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.banners.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "admin-master.boost-payments.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.botoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.carnes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.convite.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.crescimento.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.curadoria.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.denuncias.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.entregadores.auditoria.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.faturas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.home-editor.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "admin-master.hubs.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.imprensa.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.integracoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "admin-master.kyc.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.logistica.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "admin-master.logs.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.lojas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.marca.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.mining.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.modulos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.onboarding.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.portal-completo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.pre-cadastro.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.seguranca.certificados.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.seguranca.certificados.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.seguranca.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.seguranca.telemetria.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.simlabs.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.termos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.tokens.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.usuarios.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "admin-master.vitrines.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.ai.stream.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.auth.ads.callback.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.auth.callback.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.auth.confirm.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.auth.govbr.callback.ts",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.auth.linkedin.callback.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "api.auth.marketplace.callback.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.cron.mining-worker.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.feed.meta[.]csv.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.feed.xml.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.internal.whatsapp-outbox-worker.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.mcp.v1.tools.call.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.mining.worker.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "api.openapi[.]json.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.pwa.manifest[.]json.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.security-telemetry.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.v1.public.discovery.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.webhooks.marketplaces.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.webhooks.meta-ads.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "api.webhooks.payments.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.webhooks.pix.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.webhooks.shipment.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.webhooks.whatsapp.evolution.$instance.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.webhooks.whatsapp.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.webhooks.whatsapp.wasender.$instance.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "api.webmcp[.]json.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "assinar.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "assinatura.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "c.$storeSlug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "claim.reivindicar.$entityId.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "claim.reputacao.$entityId.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "copilot-thread-isolation.test.ts",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "home.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "m.excursao.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "m.lead.$leadId.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "painel.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "portal.subpainel.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "reclamar.novo.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "sitemap-classificados[.]xml.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "sitemap-empresas[.]xml.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "sitemap-index[.]xml.ts",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "sitemap-news[.]xml.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "sitemap-products[.]xml.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "sitemap-produtos[.]xml.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "sitemap[.]xml.ts",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "status.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "verificar.$serial.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "verify.document.$code.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "viajante.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "viajante.carteira.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "viajante.viagem.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "waesynews.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.advocacia.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.afiliados.conciliacao.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.agenda.index.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.agenda.recursos.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.agenda.servicos.index.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.associacao.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.atendimento.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.automacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.avaliacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.b2b.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.builder.$documentId.editor.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.captacao.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.captacao.ndas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.atributos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.categorias.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.categorias.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.categorias.novo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.colecoes.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.colecoes.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.colecoes.novo.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.colecoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.index.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.produtos.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.produtos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.produtos.novo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.catalogo.tabelas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.catalogo.tipos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.clientes.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.clientes.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.cms.avaliacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.cms.bio.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.cms.calendario.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.cms.navegacao.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.cms.paginas.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.cms.stories.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.comercial.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.ai.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.conformidade.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.equipe.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.fretes.cotacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.configuracoes.integracoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.configuracoes.inteligencia-artificial.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.loja.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.parceiros.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.privacidade-loja.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.pwa.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.configuracoes.sessoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.contador.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.conteudo.receitas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.contratos.$id.editor.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.contratos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.contratos.novo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.copilot.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.crm.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.curriculo.editor.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.design-system.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.doacoes.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.empregos.candidatos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.empregos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.empregos.novo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.empresa.viagens.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "kanban",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.estoque.alertas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.estoque.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.estoque.movimentos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.estudio.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.eventos.$id.checkin.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.eventos.$id.subpaineis.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.eventos.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.eventos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.afiliados.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.caixa.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.caixa.lancamentos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.caixa.turnos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.comissoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.comprovantes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.contas-pagar.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.faturas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.financeiro.funcionarios.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.index.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.pagamentos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.recebiveis.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.financeiro.relatorios-canal.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.fiscal.nfe.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.imoveis.manutencoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.integracoes.marketplaces.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.inteligencia.radar.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.licitacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.logistica.faturas.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.logistica.pudo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.logistica.tabelas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.lojas.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.afiliados.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.anuncios.novo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.anuncios.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.marketing.banners.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.brand-kit.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.briefing.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.canvas-bmc.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.canvas-pecados.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.carrinhos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.concursos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.encartes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.marketing.fidelidade.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.formularios.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.gift-cards.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.hotpages.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.patrocinadores.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.pixels.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.promocoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.publicacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.social.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.stories.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.studio.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.swot.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.telemetria.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.marketing.vitrine.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.master.influencers.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.mining.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.moderacao.index.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.moderacao.kyc.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.mural.novo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.noticias.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.noticias.novo.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.notificacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.onboarding.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.onboarding.revisao.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.orcamentos.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.orcamentos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.orcamentos.novo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.pacotes.index.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.pdv.comandas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.pdv.cozinha.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.pdv.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.pedidos.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.pedidos.entregadores.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.pedidos.entregadores.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.pedidos.entregadores.novo.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.pedidos.expedicao.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.pedidos.frota.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.pedidos.gestor.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.pedidos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.pedidos.trocas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.qualidade.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.relatorios.gastronomia.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.relatorios.metas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.relatorios.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.reservas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.rh.ponto.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.simlab.focus-group.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.simulacao.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.skills.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.squads.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.squads.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.suporte.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.tarefas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.tokens.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.aereos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.comissoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.turismo.contratos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.corporativo.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.cotacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.turismo.destinos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.documentos-ocr.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.embarques.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.turismo.fornecedores.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.frota.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.frota.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.grupos.$id.embarque.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.grupos.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.grupos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.hoteis.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.turismo.incidentes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "kanban",
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.turismo.oportunidades.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.projetos.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.propostas.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.propostas.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.propostas.novo.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.radar.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.reacomodacao.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.viagens.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.viagens.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.vistos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.turismo.vouchers.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace.viabilidade.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "workspace.whatsapp.automacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "workspace_.pedidos.$id.recibo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.about.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.acougue.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.aeroporto.$iata.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.afiliados.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.agenda.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.agendar.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.agendar.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.agendar.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.bebidas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.beleza.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.bio.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.busca.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.buscar.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.c.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.cadastro.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.cadastroantecipado.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.cardapio.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.carrinho.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.casa.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.categoria.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.checkout.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.classificados.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.classificados.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.colecao.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.comunidades.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.concurso.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.concursos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.construcao.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.conta.agendamentos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.atividade.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.avaliacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.candidaturas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.carnes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.classificados.index.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.classificados.novo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.conta.classificados.performance.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.colaborador.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.comissoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.concursos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.contratos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.conversas.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.conversas.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.creditos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.criadores.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.curriculo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.empresa.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.enderecos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.entregador.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.eventos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.financas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.gift-cards.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.ingressos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.lojas.nova.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.lojas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.metricas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.mobilidade.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.negociacoes.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.notificacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.pacotes.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.pagamentos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.pedidos.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.pedidos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.conta.perfil.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.processos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.salvos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.seguranca.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.suporte.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.tokens.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.trocas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.verificacao.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.conta.viagens.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.contact.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.contato.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.contrato.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.convite.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.copilot.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.criar-negocio.avancado.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": [
+        "const stepsList = [\r\n {"
+      ],
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.criar-negocio.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": [
+        "const stepsList = [\r\n {"
+      ],
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.departamento.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.destaques.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.developers.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.diretorio.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.diretorio.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.diretorio.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.doacoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.docs.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.eletronicos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.empregos.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.empregos.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.empregos.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.entrar.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.entrega.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.entregador.cadastro.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.evento.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.eventos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.explorar.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.f.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.faq.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.farmacia.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.fatura.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.feed.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.garcom.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.gastronomia.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.gift-card.$claimToken.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.gift-cards.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.imoveis.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.limpeza.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.livros.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.loja.$slug.senha.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.loja.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.mapa.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.marketplace.$storeSlug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.marketplace.checkout.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.marketplace.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.match-time.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.membro.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.mercado.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.meus-perfis.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.mobilidade.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.moda.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.motorista.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.mural.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.noticias.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.noticias.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.ofertas.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.orcamentos.$bundleSlug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.paginas.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.patrocinador.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.pedido.$publicToken.confirmacao.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.pedidos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.perfil-da-loja.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.personas.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.pet.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.pillar-isolation.test.ts",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.places.$placeSlug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.places.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.politicas.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.portal-completo.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.privacidade.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.privacy.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.produto.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.proposta.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.publicacao.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "calendar",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.receitas.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.receitas.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.recuperar-senha.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.redefinir-senha.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.servicos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.sobre.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.stories.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.termos.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.trocas-e-devolucoes.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.turismo.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.turismo.aluguel-carros.$id.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.turismo.destinos.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "calendar"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.turismo.hoteis.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.turismo.index.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "_store.turismo.tsx",
+      "hasLoader": false,
+      "hasServerFunctions": false,
+      "mockMatches": null,
+      "isOp": true,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.u.$username.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.vendedora.$slug.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [],
+      "hasViewModeToggle": false
+    },
+    {
+      "file": "_store.voucher.$token.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "table",
+        "cards/grid",
+        "list"
+      ],
+      "hasViewModeToggle": true
+    },
+    {
+      "file": "__root.tsx",
+      "hasLoader": true,
+      "hasServerFunctions": true,
+      "mockMatches": null,
+      "isOp": false,
+      "viewModes": [
+        "list"
+      ],
+      "hasViewModeToggle": false
+    }
+  ]
+}

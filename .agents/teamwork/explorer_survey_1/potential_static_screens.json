@@ -1,0 +1,264 @@
+[
+  {
+    "file": "admin-master.marca.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: ACCENT_PRESETS",
+    "hardcodedArrays": [
+      "ACCENT_PRESETS"
+    ]
+  },
+  {
+    "file": "status.tsx",
+    "type": "NO_BACKEND_CONNECTION",
+    "reason": "No imports from @/services/ and no supabase client referenced",
+    "hardcodedArrays": []
+  },
+  {
+    "file": "workspace.agenda.recursos.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: DAYS",
+    "hardcodedArrays": [
+      "DAYS"
+    ]
+  },
+  {
+    "file": "workspace.automacoes.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: WORKFLOW_PREVIEW_NODES",
+    "hardcodedArrays": [
+      "WORKFLOW_PREVIEW_NODES"
+    ]
+  },
+  {
+    "file": "workspace.b2b.index.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: B2B_CATEGORIES",
+    "hardcodedArrays": [
+      "B2B_CATEGORIES"
+    ]
+  },
+  {
+    "file": "workspace.cms.paginas.index.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: TEMPLATE_OPTIONS",
+    "hardcodedArrays": [
+      "TEMPLATE_OPTIONS"
+    ]
+  },
+  {
+    "file": "workspace.comercial.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: POPULAR_TAGS, DEFAULT_CHECKLIST_TEMPLATE",
+    "hardcodedArrays": [
+      "POPULAR_TAGS",
+      "DEFAULT_CHECKLIST_TEMPLATE"
+    ]
+  },
+  {
+    "file": "workspace.design-system.tsx",
+    "type": "NO_BACKEND_CONNECTION",
+    "reason": "No imports from @/services/ and no supabase client referenced",
+    "hardcodedArrays": []
+  },
+  {
+    "file": "workspace.financeiro.caixa.lancamentos.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: COMMON_PRESETS",
+    "hardcodedArrays": [
+      "COMMON_PRESETS"
+    ]
+  },
+  {
+    "file": "workspace.marketing.anuncios.novo.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: AD_FORMATS, AD_OBJECTIVES",
+    "hardcodedArrays": [
+      "AD_FORMATS",
+      "AD_OBJECTIVES"
+    ]
+  },
+  {
+    "file": "workspace.marketing.anuncios.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: QUICK_FORMATS",
+    "hardcodedArrays": [
+      "QUICK_FORMATS"
+    ]
+  },
+  {
+    "file": "workspace.marketing.briefing.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: dimensions",
+    "hardcodedArrays": [
+      "dimensions"
+    ]
+  },
+  {
+    "file": "workspace.simulacao.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: NICHES",
+    "hardcodedArrays": [
+      "NICHES"
+    ]
+  },
+  {
+    "file": "workspace.skills.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: CATEGORIES",
+    "hardcodedArrays": [
+      "CATEGORIES"
+    ]
+  },
+  {
+    "file": "workspace.turismo.cotacoes.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: TRIP_TYPE_OPTIONS",
+    "hardcodedArrays": [
+      "TRIP_TYPE_OPTIONS"
+    ]
+  },
+  {
+    "file": "workspace.turismo.embarques.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: rules, emergencyContacts",
+    "hardcodedArrays": [
+      "rules",
+      "emergencyContacts"
+    ]
+  },
+  {
+    "file": "workspace.turismo.index.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: POPULAR_TAGS, DEFAULT_CHECKLIST_TEMPLATE",
+    "hardcodedArrays": [
+      "POPULAR_TAGS",
+      "DEFAULT_CHECKLIST_TEMPLATE"
+    ]
+  },
+  {
+    "file": "workspace.turismo.oportunidades.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: stages, temps",
+    "hardcodedArrays": [
+      "stages",
+      "temps"
+    ]
+  },
+  {
+    "file": "_store.about.tsx",
+    "type": "NO_BACKEND_CONNECTION",
+    "reason": "No imports from @/services/ and no supabase client referenced",
+    "hardcodedArrays": []
+  },
+  {
+    "file": "_store.conta.classificados.novo.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: DESAPEGO_TAXONOMY",
+    "hardcodedArrays": [
+      "DESAPEGO_TAXONOMY"
+    ]
+  },
+  {
+    "file": "_store.conta.curriculo.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: ACCENT_OPTIONS",
+    "hardcodedArrays": [
+      "ACCENT_OPTIONS"
+    ]
+  },
+  {
+    "file": "_store.conta.lojas.nova.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: BUSINESS_SEGMENTS",
+    "hardcodedArrays": [
+      "BUSINESS_SEGMENTS"
+    ]
+  },
+  {
+    "file": "_store.conta.pedidos.$id.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: rules, emergencyContacts",
+    "hardcodedArrays": [
+      "rules",
+      "emergencyContacts"
+    ]
+  },
+  {
+    "file": "_store.contact.tsx",
+    "type": "NO_BACKEND_CONNECTION",
+    "reason": "No imports from @/services/ and no supabase client referenced",
+    "hardcodedArrays": []
+  },
+  {
+    "file": "_store.destaques.$slug.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: DEFAULT_QUICK_CHIPS",
+    "hardcodedArrays": [
+      "DEFAULT_QUICK_CHIPS"
+    ]
+  },
+  {
+    "file": "_store.developers.tsx",
+    "type": "NO_BACKEND_CONNECTION",
+    "reason": "No imports from @/services/ and no supabase client referenced",
+    "hardcodedArrays": []
+  },
+  {
+    "file": "_store.docs.tsx",
+    "type": "NO_BACKEND_CONNECTION",
+    "reason": "No imports from @/services/ and no supabase client referenced",
+    "hardcodedArrays": []
+  },
+  {
+    "file": "_store.explorar.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: CANONICAL_EXPLORAR_SHORTCUTS",
+    "hardcodedArrays": [
+      "CANONICAL_EXPLORAR_SHORTCUTS"
+    ]
+  },
+  {
+    "file": "_store.marketplace.index.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: MARKETPLACE_NICHES",
+    "hardcodedArrays": [
+      "MARKETPLACE_NICHES"
+    ]
+  },
+  {
+    "file": "_store.mobilidade.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: PRESET_PLACES",
+    "hardcodedArrays": [
+      "PRESET_PLACES"
+    ]
+  },
+  {
+    "file": "_store.ofertas.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: NICHE_CHIPS",
+    "hardcodedArrays": [
+      "NICHE_CHIPS"
+    ]
+  },
+  {
+    "file": "_store.privacy.tsx",
+    "type": "NO_BACKEND_CONNECTION",
+    "reason": "No imports from @/services/ and no supabase client referenced",
+    "hardcodedArrays": []
+  },
+  {
+    "file": "_store.sobre.tsx",
+    "type": "NO_BACKEND_CONNECTION",
+    "reason": "No imports from @/services/ and no supabase client referenced",
+    "hardcodedArrays": []
+  },
+  {
+    "file": "_store.turismo.index.tsx",
+    "type": "HARDCODED_DATA_ARRAY",
+    "reason": "Hardcoded data array(s) detected: REGIONAL_AIRPORTS",
+    "hardcodedArrays": [
+      "REGIONAL_AIRPORTS"
+    ]
+  }
+]

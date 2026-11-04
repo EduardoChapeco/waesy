@@ -1,7 +1,7 @@
-# BRIEFING — 2026-10-05T04:28:00Z
+# BRIEFING — 2026-11-04T11:15:00Z
 
 ## Mission
-Independent quality and adversarial review of Supabase Migration `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql` produced by Worker M1 for Milestone 1 (360º Telemetry & Governance).
+Full objective and adversarial review of Milestone M1 (Waesy Ultraminimalist Platform Re-Engineering & End-to-End Architecture: Belasis KPI Primitives, Sovereign Surface, UniversalViewManager, View Preferences Migration & BFF Contract, Vitest Suite, Design-Lint).
 
 ## 🔒 My Identity
 - Archetype: teamwork_preview_reviewer
@@ -13,6 +13,8 @@ Independent quality and adversarial review of Supabase Migration `supabase/migra
 - Current parent: 1806a73b-398b-4f3e-97cd-ac161a06e58f
 - Current Milestone: M1 Supabase Telemetry & Governance Migration (20270105000000_master_360_telemetry_and_governance.sql)
 - Instance: Reviewer M1_1
+- Active Parent: 71cb6393-bf04-4e51-946b-1dd9ac61e734
+- Active Milestone: M1 Waesy Ultraminimalist Platform Re-Engineering & View Preferences (Features 1 to 5)
 
 ## 🔒 Key Constraints
 - Review-only — do NOT modify implementation code
@@ -21,58 +23,52 @@ Independent quality and adversarial review of Supabase Migration `supabase/migra
 - Use send_message to report back to parent orchestrator
 - Adversarial critic: stress-test assumptions, find failure modes, propose counter-examples
 - If integrity violation detected: verdict MUST be REQUEST_CHANGES tagged INTEGRITY VIOLATION
+- Never write code/tests in .agents/teamwork/
 
 ## Current Parent
-- Conversation ID: 1806a73b-398b-4f3e-97cd-ac161a06e58f
-- Updated: 2026-10-05T04:22:19Z
+- Conversation ID: 71cb6393-bf04-4e51-946b-1dd9ac61e734
+- Updated: 2026-11-04T11:12:01Z
 
 ## Review Scope
 - **Files to review**:
-  - `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`
+  - `src/components/workspace/mini-sparkline.tsx`
+  - `src/components/workspace/kpi-metric-card.tsx`
+  - `src/components/workspace/view-modes/universal-view-manager.tsx`
+  - `src/components/workspace/view-modes/view-mode-switcher.tsx`
+  - `src/components/workspace/view-modes/use-workspace-view-mode.ts`
+  - `src/components/workspace/view-modes/index.ts`
+  - `src/components/workspace/workspace-canonical-toolbar.tsx`
+  - `src/components/workspace/index.ts`
+  - `supabase/migrations/20270220030000_workspace_user_view_preferences.sql`
+  - `src/services/workspace-view-preferences.functions.ts`
+  - `src/services/__tests__/workspace-view-preferences.test.ts`
+  - `tests/e2e/tier1-features/tier1-design-foundations.test.ts`
+  - `tests/e2e/tier1-features/tier1-view-preferences.test.ts`
 - **Interface contracts**:
-  - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md` (## 2026-10-05T04:01:31Z, R1)
-  - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\orchestrator_6\PROJECT.md`
-  - `.agents/teamwork/worker_m1/handoff.md`
+  - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md`
+  - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\PROJECT.md`
+  - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\worker_m1\handoff.md`
+  - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\TEST_READY.md`
 - **Review criteria**:
-  - Correctness, completeness, syntax of all 4 tables
-  - RLS Deny-by-Default policies, user isolation, store isolation, performance optimization `(SELECT auth.uid())`
-  - Foreign keys, check constraints, indexes, triggers, and UNIQUE constraint `(customer_id, store_id)`
-  - Integrity violation checks
+  - Correctness, completeness, robust design, token compliance, B.25 compliance
+  - Adversarial robustness: boundary values, negative inputs, race conditions, keyboard accessibility
+  - Verification runs: vitest suite, design-lint ratchet, E2E tests, typecheck
 
 ## Key Decisions Made
-- Executed independent empirical checks via `test_sql_migration.mjs`, `adversarial_audit.mjs` and `semantic_simulation_test.mjs`.
-- Confirmed zero integrity violations (no mocks, no facades, no shortcuts, no hardcoded values).
-- Validated all 4 tables, 13 foreign keys, 16 RLS policies, 4 triggers, and 26 B-tree indexes.
-- Confirmed performance optimization: 100% of `auth.uid()` calls wrapped in `(SELECT auth.uid())`.
-- Confirmed search_path hardening: `SET search_path = public` on all PL/pgSQL triggers.
-- Issued verdict: APPROVE.
+- Starting independent empirical verification and adversarial stress-testing.
 
 ## Artifact Index
 - `.agents/teamwork/reviewer_m1_1/DISPATCH.md` — Dispatch log
 - `.agents/teamwork/reviewer_m1_1/BRIEFING.md` — Persistent agent memory
 - `.agents/teamwork/reviewer_m1_1/progress.md` — Liveness and task status
-- `.agents/teamwork/reviewer_m1_1/adversarial_audit.mjs` — Independent adversarial audit script
-- `.agents/teamwork/reviewer_m1_1/semantic_simulation_test.mjs` — Semantic trigger simulation test
 - `.agents/teamwork/reviewer_m1_1/handoff.md` — Final review and handoff report
 
 ## Review Checklist
-- **Items reviewed**:
-  - `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`
-  - `.agents/teamwork/worker_m1/handoff.md`
-  - `.agents/teamwork/worker_m1/test_sql_migration.mjs`
-  - `.agents/teamwork/explorer_survey_db/report.md`
-  - `.agents/teamwork/explorer_survey_bff/report.md`
-- **Verdict**: APPROVE
-- **Unverified claims**: None. All claims independently reproduced and empirically proven.
+- **Items reviewed**: Pending inspection
+- **Verdict**: Pending
+- **Unverified claims**: Worker M1 test pass claims, design-lint ratchet claims, E2E test suite claims
 
 ## Attack Surface
-- **Hypotheses tested**:
-  - Unwrapped `auth.uid()` causing O(N) performance degradation: DISPROVEN (6 of 6 wrapped in subqueries).
-  - Search path hijacking in security definer functions: PREVENTED (`SET search_path = public` present on all 4 functions).
-  - Anonymous data exfiltration via SELECT on audit logs or carts: BLOCKED (0 anonymous SELECT policies exist).
-  - Cross-tenant employee audit log forgery: PREVENTED (`store_id = ANY (public.auth_user_store_ids())` checked on INSERT).
-  - Client-side tampering of VIP level or revenue affinity: BLOCKED (customer only has SELECT on `customer_store_affinity`).
-  - Integer overflow in cumulative revenue: PREVENTED (`BIGINT` utilized for `total_revenue_cents` and `total_spent_cents`).
-  - Unbalanced parentheses or malformed string literals: NONE (balanced depth = 0).
-- **Vulnerabilities found**: None.
-- **Untested angles**: Execution on live remote Supabase instance (deferred to orchestration release cycle).
+- **Hypotheses tested**: Pending
+- **Vulnerabilities found**: None yet
+- **Untested angles**: All Milestone M1 deliverables

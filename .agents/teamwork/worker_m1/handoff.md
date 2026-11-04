@@ -1,103 +1,137 @@
-# Relatório de Handoff — Worker M1 (Supabase 360º Telemetry & Governance Migration)
+# Handoff Report: Worker M1 — Foundations, Primitives & View Preferences Implementation
 
-**Data**: 2026-10-05T04:22:00Z  
-**Autor**: Worker M1  
-**Destinatário**: Orquestrador (Parent Conversation ID: `1806a73b-398b-4f3e-97cd-ac161a06e58f`)  
-**Arquivo Criado com Posse Exclusiva**: `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`  
+**Data**: 2026-11-04  
+**Worker**: Worker M1 (`.agents/teamwork/worker_m1`)  
+**Parent**: Orchestrator (Conversation ID: `71cb6393-bf04-4e51-946b-1dd9ac61e734`)  
+**Milestone**: M1 (Features 1 a 5)  
+**Status**: Concluído (Hard Handoff)
 
 ---
 
 ## 1. Observation
 
-1. **Estado Anterior da Sequência de Migrações**:
-   - A última migração no topo da esteira do Supabase era `supabase/migrations/20270104000000_waesy_go_courier_governance_and_ratings.sql` (117 linhas, criada para o Waesy Go).
-   - Não existia o arquivo `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql` nem qualquer uma das 4 tabelas especificadas no Requisito R1:
-     - `public.user_form_submissions_log`
-     - `public.user_cart_telemetry`
-     - `public.employee_tenant_audit_logs`
-     - `public.customer_store_affinity`
+### 1.1 Artefatos Criados e Modificados
+1. **Feature 1 & 2 (Belasis KPI Primitives & Single Sovereign Surface)**:
+   - `src/components/workspace/mini-sparkline.tsx`:
+     - Componente SVG matemático nativo com curvas cúbicas Bezier contínuas (`M ... C ...`), preenchimento em gradiente linear translúcido (`useId()`), zero dependências externas (sem Chart.js/Recharts).
+     - Resolução de cores estritamente por variáveis CSS/tokens (`var(--color-success)`, `var(--color-destructive)`, `var(--primary)`), sem cores hexadecimais literais (DL-01 compliance).
+     - Altura canônica `h-9` (36px) e tratamento de borda para valores idênticos (`max === min ? 1 : max - min`) para evitar `NaN`.
+   - `src/components/workspace/kpi-metric-card.tsx`:
+     - Casca soberana única (`p-5 rounded-2xl bg-card border border-border/60 flex flex-col justify-between gap-3 text-left transition-colors duration-200 select-none`), sem cartões aninhados (DL-31 compliance).
+     - Eliminação de sombras decorativas em favor de borda nítida de 1px (DL-07 compliance).
+     - Tipografia tabular em destaque: `text-2xl sm:text-3xl font-bold font-mono tabular-nums tracking-tight text-foreground leading-none`.
+     - Tooltip button resiliente com área de toque mínima de 44x44px (`size-11 min-h-11 min-w-11`) e anel de foco `focus-visible:ring-2` (DL-14 e DL-15 compliance).
+     - Badge em pill para tendências (`TrendingUp`, `TrendingDown`, `Minus`) com contraste aprovado WCAG 2.2 AA (`text-emerald-700 dark:text-emerald-400`, `text-rose-700 dark:text-rose-400`).
+     - Matriz de estado completa com Skeleton isomórfico 1:1 (`aria-busy="true"` e DL-11 compliance).
+   - `src/components/workspace/index.ts`:
+     - Adição cirúrgica de exportações públicas para `KpiMetricCard`, `MiniSparkline` e `export * from './view-modes'`.
 
-2. **Requisitos Normativos e Contratos de Interface**:
-   - O documento `ORIGINAL_REQUEST.md` (seção `## 2026-10-05T04:01:31Z`, R1) estipulava a criação da migração `20270105000000` contendo:
-     - Registro de formulários preenchidos com rota, payload higienizado, IP, VPN e User-Agent.
-     - Telemetria de carrinho e abandonos por loja e produto.
-     - Registro de auditoria corporativa com vínculo físico ao CPF do operador.
-     - Métricas agregadas de afinidade cliente-loja com constraint UNIQUE (`customer_id`, `store_id`).
-     - Políticas RLS Deny-by-Default com acesso total para `platform_admin` e acesso contextual para o usuário (`(SELECT auth.uid())`) e a loja parceira (`public.auth_user_store_ids()`).
-   - O relatório do Explorer 1 (`.agents/teamwork/explorer_survey_db/report.md`, linhas 120-405) e do Explorer 2 (`.agents/teamwork/explorer_survey_bff/report.md`, linhas 200-280) definiram as colunas, tipos e constraints complementares consumidas pelas Server Functions de R2 (`src/services/admin-360-governance.functions.ts`).
+2. **Feature 3 (UniversalViewManager, ViewModeSwitcher, useWorkspaceViewMode & Toolbar)**:
+   - `src/components/workspace/view-modes/universal-view-manager.tsx`:
+     - Componente polimórfico genérico `<T>` que gerencia a alternância entre `table`, `kanban` e `cards`.
+     - Matriz de 4 estados completa: `data`, `isLoading` (com esqueletos padrão isomórficos para tabela, kanban com tag `tab-list` e cards), `emptyState` (com `EmptyState` honesto e minimalista DL-12), e `isError` (com `ErrorState` e callback `onRetry` DL-13).
+     - Casca condutora desadornada sem wrapper containers redundantes (DL-31 compliance).
+   - `src/components/workspace/view-modes/view-mode-switcher.tsx`:
+     - Seletor segmentado em estilo Apple HIG com ícones `List`, `Kanban`, `LayoutGrid`.
+     - Atalhos de teclado instantâneos (`1` para Tabela, `2` para Kanban, `3` para Cards) com guarda estrita: bloqueado durante digitação em `input`, `textarea`, `select`, `contenteditable` ou com teclas modificadoras (`Ctrl`, `Cmd`, `Alt`, `Shift`).
+     - Alvos de toque móveis com dimensão mínima de 44x44px (`min-h-11 min-w-11`), badge desktop `<kbd>` e anéis de foco `focus-visible:ring-2` (DL-14 e DL-15).
+   - `src/components/workspace/view-modes/use-workspace-view-mode.ts`:
+     - Hook de sincronização de preferências na hierarquia: `URL Query (?view=...) > localStorage (waesy_view_pref_*) > defaultMode`.
+     - Sincronização com `navigate({ search: ..., replace: true })` para não poluir o histórico do navegador.
+   - `src/components/workspace/view-modes/index.ts`:
+     - Exportações canônicas do módulo `view-modes`.
+   - `src/components/workspace/workspace-canonical-toolbar.tsx`:
+     - Mutação cirúrgica adicionando a prop opcional `viewSwitcher?: React.ReactNode` e sua renderização no Tier 1 (lado direito) em harmonia com métricas e colunas.
 
-3. **Arquivo Gerado**:
-   - `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql` (437 linhas, 21.937 bytes).
-   - Contém DDL completo das 4 tabelas com constraints, chaves estrangeiras com integridade referencial (`auth.users`, `public.profiles`, `public.stores`, `public.carts`, `public.products`, `public.product_variants`), índices B-Tree compostos, triggers de compatibilidade e atualização, e 16 políticas de segurança RLS (Deny-by-Default).
-
-4. **Resultado da Verificação Automatizada**:
-   - Execução do script `test_sql_migration.mjs` via Node.js (`node .agents/teamwork/worker_m1/test_sql_migration.mjs`):
-     ```
-     Verifying migration file: C:\Users\Eduardo Antônio Ramo\Documents\waesy\supabase\migrations\20270105000000_master_360_telemetry_and_governance.sql
-     File size: 21937 bytes, lines: 437
-     PASS: All 4 tables present.
-     PASS: UNIQUE constraint uq_customer_store_affinity present.
-     PASS: operator_cpf present.
-     PASS: RLS enabled on all 4 tables.
-     Found 6 instances of (SELECT auth.uid())
-     PASS: All auth.uid() calls are properly wrapped in (SELECT auth.uid()).
-     PASS: public.is_platform_admin() and public.auth_user_store_ids() are used.
-     PASS: updated_at trigger is present.
-     PASS: Parentheses are completely balanced.
-
-     ALL VERIFICATIONS PASSED SUCCESSFULLY!
-     ```
-   - Código de saída: `0`.
+3. **Feature 4 & 5 (Database Migration, BFF Contract & Vitest Suite)**:
+   - `supabase/migrations/20270220030000_workspace_user_view_preferences.sql`:
+     - Criação da tabela `workspace_user_view_preferences` com colunas `id`, `store_id`, `user_id`, `module`, `view_mode`, `column_settings`, `sort_field`, `sort_direction`, `filters`, `created_at`, `updated_at`.
+     - Chave de unicidade `CONSTRAINT uq_workspace_user_view_pref UNIQUE (store_id, user_id, module)`.
+     - 3 índices de alta performance (`idx_workspace_user_view_pref_lookup`, `idx_workspace_user_view_pref_store`, `idx_workspace_user_view_pref_user`).
+     - Trigger `trg_workspace_user_view_preferences_updated_at` chamando `public.set_updated_at()`.
+     - Políticas RLS Zero-Trust com deny-by-default (revogado anon e public; concedido authenticated).
+     - Isolamento multi-tenant garantido: `user_id = auth.uid()` AND verificação de membro ativo na loja em `store_members` ou `workspace_members`.
+   - `src/services/workspace-view-preferences.functions.ts`:
+     - Schemas Zod: `WorkspaceModuleEnum`, `WorkspaceViewModeEnum`, `WorkspaceViewPreferenceSchema`, `GetWorkspaceViewPreferenceSchema`, `SaveWorkspaceViewPreferenceSchema`, `ResetWorkspaceViewPreferenceSchema`.
+     - Server Functions BFF `@tanstack/react-start`: `getWorkspaceViewPreference`, `saveWorkspaceViewPreference`, `resetWorkspaceViewPreference`.
+     - Conformidade plena com **Invariante B.25**: 100% de desestruturação de parâmetros no corpo dos handlers e tratamento defensivo para opcionais/nulos.
+   - `src/services/__tests__/workspace-view-preferences.test.ts`:
+     - Suíte completa de 15 testes unitários Vitest cobrindo:
+       - Validação de todos os módulos operacionais e modos de visualização.
+       - Rejeição de store_id não-UUID, módulo desconhecido, view_mode inválido e sort_direction fora de asc/desc.
+       - Desestruturação de parâmetros presentes, opcionais omitidos e nulos explícitos (Invariante B.25).
+       - Fallback padrão de fábrica para módulos sem preferência salva.
+       - Idempotência de upsert sucessivo (sem duplicação de registros).
+       - Redefinição para defaults de layout (reset).
+       - Bloqueio Zero-Trust para usuário anônimo e para loja não autorizada (Store B).
+       - Isolamento de preferências entre Alice e Bob na mesma loja (Store A).
 
 ---
 
 ## 2. Logic Chain
 
-1. **Continuidade Cronológica**:
-   - Dado que o último arquivo no diretório `supabase/migrations/` correspondia a `20270104000000`, a especificação canônica determinou `20270105000000_master_360_telemetry_and_governance.sql` como próximo marco contíguo na linha de tempo do banco de dados (Observação 1.1).
+1. **Atendimento aos Requisitos R1, R2, R3 e R4**:
+   - `R1 (Ultraminimalismo & Single Sovereign Surface)`: Cada cartão de KPI (`KpiMetricCard`) e layout de visualização (`UniversalViewManager`) agora opera sob exatamente 1 casca soberana com bordas limpas e zero sombras redundantes, eliminando o defeito DL-31 (Containeritis).
+   - `R2 (Modalidades Flexíveis de Visualização)`: O conjunto `UniversalViewManager` + `ViewModeSwitcher` + `useWorkspaceViewMode` estabelece a infraestrutura reutilizável para que as telas operacionais alternem entre Tabela, Kanban e Cards com atalhos de teclado `1`, `2`, `3` e persistência integrada.
+   - `R3 (Implementação End-to-End & Preservação Funcional)`: A migração SQL e os contratos BFF conectam o estado da interface a dados relacionais persistidos com integridade multi-tenant via Supabase, sem uso de fallbacks sintéticos.
+   - `R4 (Integridade Arquitetural & Invariante B.25)`: Todos os parâmetros dos contratos BFF são integralmente validados por Zod e desestruturados, garantindo ausência de erros de runtime ou valores undefined silenciosos.
 
-2. **Estrutura das Tabelas & Harmonização com a Camada BFF**:
-   - Para atender plenamente a ambos os relatórios (Explorer 1 e Explorer 2) e prevenir incompatibilidades de chave ou nome de coluna entre o banco e as Server Functions:
-     - `user_form_submissions_log`: suporta `route` e `route_path` sincronizados via trigger bi-direcional `trg_sync_form_submissions_route_aliases`.
-     - `user_cart_telemetry`: suporta `session_token` e `session_id`, `payload` e `metadata`, além da união completa de eventos no check constraint (`item_added`, `item_removed`, `quantity_updated`, `cart_abandoned`, `cart_cleared`, `checkout_started`, `cart_restored`, `add`, `remove`, `update_quantity`, `abandon`, `checkout_start`).
-     - `employee_tenant_audit_logs`: possui `operator_cpf` indexado, `module`, `action`, `details` e `metadata` sincronizados via trigger.
-     - `customer_store_affinity`: possui a constraint canônica `CONSTRAINT uq_customer_store_affinity UNIQUE (customer_id, store_id)`, `affinity_level` com check constraint nos 5 níveis (`lead`, `visitor`, `buyer`, `fan`, `vip`), paridade de métricas (`total_visits` e `visits_count`, `total_revenue_cents` e `total_spent_cents`) sincronizadas via trigger, e trigger `customer_store_affinity_updated_at` invocando a função nativa `public.set_updated_at()`.
-
-3. **Performance e Segurança RLS (Supabase & Postgres Best Practices)**:
-   - Conforme orientado na skill `supabase-postgres-best-practices`:
-     - Todas as 4 tabelas ativam `ENABLE ROW LEVEL SECURITY`.
-     - Toda referência a `auth.uid()` em políticas RLS foi encapsulada como subconsulta escalar `(SELECT auth.uid())`, permitindo que o planejador de consultas do Postgres faça cache do resultado da chamada de sessão uma única vez por query ($O(1)$) em vez de recalcular por tupla ($O(N)$).
-     - Políticas para Master Admins invocam `public.is_platform_admin()`.
-     - Políticas para Lojas Parceiras utilizam `store_id = ANY (public.auth_user_store_ids())`.
-     - Índices B-Tree foram criados para todas as colunas de chaves estrangeiras e campos de filtro frequente (`user_id`, `store_id`, `created_at DESC`, `operator_cpf`, etc).
+2. **Resolução Mecânica de Design Lint (Zero Regressões)**:
+   - A auditoria inicial detectou violações de espaçamento fora da grade de 4px (`gap-2.5`, `space-y-1.5`, `px-2.5`), estilo inline (`style={{ height }}`) e alvos táteis `< 44px`.
+   - Todas as ocorrências foram cirurgicamente ajustadas:
+     - `gap-2.5` -> `gap-2` (8px, múltiplo de 4px).
+     - `space-y-1.5` -> `space-y-2` (8px, múltiplo de 4px).
+     - `px-2.5 py-1.5` -> `px-3 py-2` (12px e 8px).
+     - `style={{ height }}` -> `h-9` (36px).
+     - Botão de tooltip -> `size-11 min-h-11 min-w-11` (44px) com ícone centralizado.
+     - Esqueleto kanban -> inclusão da classe `tab-list` para conformidade com DL-30.
+   - Resultado: A catraca mecânica `node scripts/design-lint.mjs --ratchet` foi executada e **aprovada com sucesso** (694 violações = baseline congelada idêntica, 0 P0 e 0 novas violações).
 
 ---
 
 ## 3. Caveats
 
-- A migração é declarativa para aplicação no catálogo do Supabase (`supabase db push` ou execução via migração gerenciada). A execução direta contra o cluster remoto não foi disparada nesta etapa para preservar o ciclo de release controlado pelo orquestrador.
-- Nenhuma modificação foi feita em arquivos fora do escopo de posse exclusiva.
+1. **Execução no Windows PowerShell**:
+   - Políticas de segurança do PowerShell (`PSSecurityException`) impedem execução direta de scripts `.ps1`. Comandos devem ser prefixados com `cmd /c`.
+2. **Ambiente de Testes sem RouterProvider**:
+   - O hook `useWorkspaceViewMode` encapsula o `useNavigate()` defensivamente com fallback para `window.location` / `window.history.replaceState`, garantindo que não lance exceção caso utilizado em componentes testados isoladamente sem `RouterProvider`.
 
 ---
 
 ## 4. Conclusion
 
-A migração `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql` foi implementada de forma completa, robusta e genuína, atendendo a 100% dos critérios do Requisito R1 e do despacho de Worker M1. A persistência está pronta para suportar a camada BFF (Worker M2) e as interfaces de visualização no Master Admin (Worker M3) e na Conta do Cliente (Worker M4).
+O Milestone M1 está plenamente implementado, testado e com qualidade comprovada:
+- **5 Features do Milestone M1 entregues com código genuíno.**
+- **15/15 testes Vitest passando** em `src/services/__tests__/workspace-view-preferences.test.ts`.
+- **Catraca de Design Lint aprovada** (`node scripts/design-lint.mjs --ratchet`) com 0 novas violações P0/P1.
+- **Zero erros TypeScript** e layout de código em total conformidade com `PROJECT.md` e `AGENTS.md`.
 
 ---
 
 ## 5. Verification Method
 
-Para verificação independente pelo auditor e pelo orquestrador:
-1. Inspecionar visualmente o arquivo:
-   `view_file AbsolutePath="supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql"`
-2. Executar a suíte de verificação sintática e de invariantes:
-   ```powershell
-   node .agents/teamwork/worker_m1/test_sql_migration.mjs
+Para verificação independente dos resultados:
+
+1. **Executar Suíte de Testes Vitest do Contrato**:
+   ```cmd
+   cmd /c npx vitest run src/services/__tests__/workspace-view-preferences.test.ts
    ```
-   Critério de aprovação: Exit Code `0`, 4 tabelas validadas, constraint UNIQUE confirmada, zero chamadas de `auth.uid()` sem subconsulta `(SELECT ...)`, e parênteses 100% balanceados.
-3. Verificar isolamento de repositório:
-   ```powershell
-   git status --short
+   *Evidência esperada*: 15 passed (15), Exit Code 0.
+
+2. **Executar Catraca Mecânica de Design Lint**:
+   ```cmd
+   node scripts/design-lint.mjs --ratchet
    ```
-   Critério de aprovação: O único arquivo novo adicionado pela tarefa sob responsabilidade de M1 é `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`.
+   *Evidência esperada*: "CATRACA APROVADA: Zero regressões visuais em relação à baseline congelada.", Exit Code 0.
+
+3. **Executar TypeScript Typecheck**:
+   ```cmd
+   cmd /c npm run typecheck
+   ```
+   *Evidência esperada*: Exit Code 0, zero erros de tipo.
+
+4. **Executar Build de Produção**:
+   ```cmd
+   cmd /c npm run build
+   ```
+   *Evidência esperada*: Assets e worker gerados com sucesso, Exit Code 0.

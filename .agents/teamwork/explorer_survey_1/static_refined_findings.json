@@ -1,0 +1,152 @@
+{
+  "emBreveOrEmDesenvolvimento": [
+    {
+      "file": "c.$storeSlug.tsx",
+      "matches": [
+        {
+          "line": 400,
+          "text": "Fique atento! Em breve novos encontros e lançamentos serão publicados aqui."
+        }
+      ]
+    },
+    {
+      "file": "m.lead.$leadId.tsx",
+      "matches": [
+        {
+          "line": 211,
+          "text": "Nosso consultor entrará em contato em breve via WhatsApp para apresentar o roteiro e as melhores opções de voo e hospedagem."
+        }
+      ]
+    },
+    {
+      "file": "viajante.viagem.$id.tsx",
+      "matches": [
+        {
+          "line": 766,
+          "text": "<span className=\"text-xs text-muted-foreground italic\">Disponível em breve</span>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.clientes.index.tsx",
+      "matches": [
+        {
+          "line": 412,
+          "text": "<span>{c.docAlerts.soon} Vence em breve</span>"
+        },
+        {
+          "line": 630,
+          "text": "<span>{c.docAlerts.soon} Vence em breve</span>"
+        }
+      ]
+    },
+    {
+      "file": "workspace.orcamentos.index.tsx",
+      "matches": [
+        {
+          "line": 402,
+          "text": "Vence em breve"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.classificados.novo.tsx",
+      "matches": [
+        {
+          "line": 6421,
+          "text": "<SelectItem value=\"coming_soon\">Agendado / Em Breve</SelectItem>"
+        }
+      ]
+    },
+    {
+      "file": "_store.conta.pedidos.$id.tsx",
+      "matches": [
+        {
+          "line": 751,
+          "text": "A equipe está confirmando seu pagamento. Você será notificado em breve."
+        }
+      ]
+    },
+    {
+      "file": "_store.explorar.tsx",
+      "matches": [
+        {
+          "line": 822,
+          "text": "Novos produtos de empresas parceiras serão listados em breve."
+        }
+      ]
+    }
+  ],
+  "explicitTodo": [],
+  "routesWithoutLoader": [
+    "reclamar.novo.tsx",
+    "sitemap-classificados[.]xml.ts",
+    "sitemap-empresas[.]xml.ts",
+    "sitemap-index[.]xml.ts",
+    "sitemap-news[.]xml.ts",
+    "sitemap-products[.]xml.ts",
+    "sitemap-produtos[.]xml.ts",
+    "sitemap[.]xml.ts",
+    "status.tsx",
+    "verificar.$serial.tsx",
+    "viajante.carteira.tsx",
+    "workspace.afiliados.conciliacao.tsx",
+    "workspace.agenda.index.tsx",
+    "workspace.agenda.recursos.tsx",
+    "workspace.agenda.servicos.index.tsx",
+    "workspace.catalogo.colecoes.novo.tsx",
+    "workspace.configuracoes.ai.tsx",
+    "workspace.configuracoes.conformidade.tsx",
+    "workspace.configuracoes.pwa.tsx",
+    "workspace.design-system.tsx",
+    "workspace.empresa.viagens.tsx",
+    "workspace.eventos.$id.subpaineis.tsx",
+    "workspace.logistica.faturas.tsx",
+    "workspace.marketing.fidelidade.tsx",
+    "workspace.moderacao.index.tsx",
+    "workspace.noticias.novo.tsx",
+    "workspace.onboarding.revisao.tsx",
+    "workspace.pacotes.index.tsx",
+    "workspace.pedidos.entregadores.novo.tsx",
+    "workspace.pedidos.expedicao.tsx",
+    "workspace.rh.ponto.tsx",
+    "workspace.skills.tsx",
+    "workspace.squads.tsx",
+    "workspace.turismo.corporativo.tsx",
+    "workspace.turismo.documentos-ocr.tsx",
+    "_store.about.tsx",
+    "_store.cadastro.tsx",
+    "_store.conta.classificados.index.tsx",
+    "_store.conta.classificados.performance.tsx",
+    "_store.conta.negociacoes.tsx",
+    "_store.conta.pacotes.tsx",
+    "_store.contact.tsx",
+    "_store.developers.tsx",
+    "_store.docs.tsx",
+    "_store.loja.$slug.senha.tsx",
+    "_store.privacy.tsx",
+    "_store.recuperar-senha.tsx",
+    "_store.sobre.tsx"
+  ],
+  "emptyOrMockLoaders": [
+    {
+      "file": "assinatura.$token.tsx",
+      "loaderSnippet": "loader: async ({ params }) => {\n   try {\n throw redirect({\n to: \"/assinar/$token\",\n params: { token: params.token },\n })"
+    },
+    {
+      "file": "workspace.turismo.propostas.$id.tsx",
+      "loaderSnippet": "loader: async ({ params }) => {\n    if (params.id === \"novo\" || params.id === \"new\") {\n      throw redirect({\n        to: \"/workspace/turismo/proposta"
+    },
+    {
+      "file": "_store.marketplace.$storeSlug.tsx",
+      "loaderSnippet": "loader: ({ params }) => {\n    throw redirect({\n      to: \"/loja/$slug\",\n      params: { slug: params.storeSlug },\n    })"
+    },
+    {
+      "file": "_store.stories.tsx",
+      "loaderSnippet": "loader: async () => {\n    try {\n    throw redirect({ to: \"/noticias\" });\n    } catch (err) {\n      if (isRedirect(err)) throw err;\n      console.error"
+    }
+  ],
+  "localStateWithoutBff": [
+    "workspace.estudio.index.tsx"
+  ]
+}

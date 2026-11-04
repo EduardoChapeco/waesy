@@ -1,12 +1,12 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-11-04T03:04:15.085Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-11-04T11:20:21.162Z`
 
 ## 1. Resumo Executivo
 
 | Métrica | Atual | Baseline Congelada | Status Catraca |
 | :--- | :--- | :--- | :--- |
-| **Total de Arquivos** | 2605 | 2605 | Estável |
+| **Total de Arquivos** | 2613 | 2605 | Estável |
 | **Arquivos com Débito** | 230 | 230 | Monitorado |
 | **Total de Violações** | **694** | **694** | PASS (<= Baseline) |
 | **P0 (Bloqueia Entrega)** | **0** | 0 | PASS |
