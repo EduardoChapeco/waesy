@@ -1425,20 +1425,20 @@ export default function WorkspaceTurismoCockpitPage() {
                 <div
                   key={stage.id}
                   className={cn(
-                    "flex-none w-full sm:w-80 snap-start bg-muted/40 border border-border/60 rounded-3xl flex flex-col min-h-96 sm:h-full overflow-hidden",
+                    "flex-none w-full sm:w-80 snap-start rounded-2xl bg-muted/20 hover:bg-muted/30 border border-transparent hover:border-border/40 transition-colors flex flex-col min-h-96 sm:h-full overflow-hidden",
                     isMobileHidden && "hidden sm:flex"
                   )}
                 >
                   {/* Barra Superior Colorida de Fase */}
-                  <div className={cn("h-1.5 w-full shrink-0", stage.dotColor)} />
+                  <div className={cn("h-1 w-full shrink-0", stage.dotColor)} />
 
                   {/* Cabeçalho da Coluna com Somatório Tabular e Ação Rápida */}
-                  <div className="p-3 border-b border-border/50 bg-card/60 flex items-center justify-between shrink-0 gap-2">
+                  <div className="p-3 bg-transparent flex items-center justify-between shrink-0 gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-xs font-bold tracking-tight text-foreground truncate" title={stage.title}>
                         {stage.title}
                       </span>
-                      <span className="text-2xs font-mono tabular-nums font-semibold px-2 py-1 rounded-full bg-muted text-muted-foreground shrink-0">
+                      <span className="text-2xs font-mono tabular-nums font-semibold px-2 py-1 rounded-full bg-muted/60 text-muted-foreground shrink-0">
                         {stageLeads.length}
                       </span>
                     </div>
@@ -1468,8 +1468,8 @@ export default function WorkspaceTurismoCockpitPage() {
                   {/* Área de Rolagem Isolada dos Cards */}
                   <div className="p-3 space-y-2 overflow-y-auto flex-1 min-h-0 [scrollbar-width:thin]">
                     {stageLeads.length === 0 ? (
-                      <div className="p-6 text-center text-xs text-muted-foreground border border-dashed border-border/50 rounded-2xl space-y-3 bg-card/40 my-auto">
-                        <div className="size-8 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+                      <div className="p-6 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-xl space-y-3 bg-transparent my-auto">
+                        <div className="size-8 rounded-full bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
                           <Users className="size-4" />
                         </div>
                         <p className="font-medium text-2xs">Nenhum contato nesta fase</p>
@@ -1654,41 +1654,33 @@ export default function WorkspaceTurismoCockpitPage() {
       {/* ── FICHA COMPLETA DO LEAD (DOSSIÊ 360° 3 COLUNAS + 9 ABAS) ── */}
       {selectedLead && (
         <Sheet open={Boolean(selectedLead)} onOpenChange={() => setSelectedLead(null)}>
-          <SheetContent side="right" size="dossier" className="p-4 sm:p-6 overflow-y-auto space-y-4 no-scrollbar">
-            <SheetHeader className="border-b border-border/50 pb-4 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <SheetTitle className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
-                      {editLeadForm.name || selectedLead.full_name || "Oportunidade Comercial"}
-                    </SheetTitle>
-                    <Badge variant="outline" className="font-mono text-xs bg-muted/50">
-                      Fase atual: {TOURISM_STAGES.find((s) => s.id === (editLeadForm.status || selectedLead.status))?.title || (editLeadForm.status || selectedLead.status)}
-                    </Badge>
-                  </div>
-                  <SheetDescription className="text-xs text-muted-foreground">
-                    Dossiê 360° do Lead: Dados Principais à esquerda, Módulos da Fase ao centro e Transição de Fase à direita
-                  </SheetDescription>
-                </div>
-
-                {/* Metadados Rápidos do Lead */}
-                <div className="flex items-center gap-2 flex-wrap text-2xs">
-                  <Badge variant="secondary" className="font-mono px-3 py-1 rounded-lg">
+          <SheetContent side="right" size="dossier" className="p-0 flex flex-col h-full bg-background border-l border-border/60 overflow-hidden">
+            {/* Header Fixo com Título, Metadados e Abas Flat */}
+            <SheetHeader className="px-6 py-4 border-b border-border/50 shrink-0 space-y-3 bg-background">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <SheetTitle className="text-xl font-bold tracking-tight text-foreground">
+                    {editLeadForm.name || selectedLead.full_name || "Oportunidade Comercial"}
+                  </SheetTitle>
+                  <Badge variant="outline" className="font-mono text-xs bg-muted/40">
+                    Fase atual: {TOURISM_STAGES.find((s) => s.id === (editLeadForm.status || selectedLead.status))?.title || (editLeadForm.status || selectedLead.status)}
+                  </Badge>
+                  <Badge variant="secondary" className="font-mono text-xs px-3 py-1 rounded-lg">
                     {editLeadForm.destination || "Destino a definir"}
                   </Badge>
-                  <Badge variant="outline" className="font-mono tabular-nums font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10 px-3 py-1 rounded-lg">
+                  <Badge variant="outline" className="font-mono tabular-nums font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-xs px-3 py-1 rounded-lg">
                     {formatMoney(editLeadForm.estimated_value_cents || 0)}
                   </Badge>
                 </div>
               </div>
 
-              {/* Navegação por Abas Especializadas */}
-              <div className="tab-list flex items-center gap-2 pt-1 overflow-x-auto no-scrollbar">
+              {/* Navegação por Abas Especializadas Flat em Linha */}
+              <div className="tab-list flex items-center gap-6 overflow-x-auto no-scrollbar border-b border-border/60">
                 {[
                   { id: "viagem", label: "Visão Geral & Cotações" },
                   { id: "onboarding", label: "Pastas de Viajantes" },
                   { id: "checklist", label: "Checklists" },
-                  { id: "contratos", label: "Contratos (5 Etapas)" },
+                  { id: "contratos", label: "Contratos" },
                   { id: "pagamento", label: "Pagamento" },
                   { id: "reuniao", label: "Reuniões" },
                   { id: "anamnese", label: "Anamnese" },
@@ -1699,11 +1691,12 @@ export default function WorkspaceTurismoCockpitPage() {
                     key={t.id}
                     type="button"
                     onClick={() => setLeadDrawerTab(t.id as any)}
-                    className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-xl border transition-colors cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    className={cn(
+                      "h-11 min-h-11 px-1 text-xs font-semibold border-b-2 whitespace-nowrap cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       leadDrawerTab === t.id
-                        ? "bg-foreground text-background border-foreground font-bold"
-                        : "bg-card border-border/60 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                    }`}
+                        ? "border-primary text-foreground font-bold"
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60"
+                    )}
                   >
                     {t.label}
                   </button>
@@ -1711,10 +1704,10 @@ export default function WorkspaceTurismoCockpitPage() {
               </div>
             </SheetHeader>
 
-            {/* Layout Balanceado em 3 Colunas (3 + 6 + 3 = 12) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-              {/* COLUNA ESQUERDA (3/12): Formulário Inicial & Histórico de Fases */}
-              <div className="lg:col-span-3 p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3 text-xs">
+            {/* Layout Balanceado em 3 Colunas com Scroll Central Independente */}
+            <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden divide-y lg:divide-y-0 lg:divide-x divide-border/40">
+              {/* COLUNA ESQUERDA: Formulário Inicial com Scroll Próprio (Estreita e Compacta) */}
+              <div className="w-full lg:w-64 xl:w-72 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/5">
                 <div className="flex items-center justify-between border-b border-border/40 pb-2">
                   <span className="font-bold text-foreground">Formulário Inicial</span>
                   <span className="text-2xs font-mono text-muted-foreground">
@@ -1779,36 +1772,30 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
               </div>
 
-              {/* COLUNA CENTRAL (6/12): Conteúdo da Aba Selecionada com Respiro Generoso */}
-              <div className="lg:col-span-6 space-y-4">
+              {/* COLUNA CENTRAL: Conteúdo da Aba com Scroll Interno Independente (Ampla e Dominante) */}
+              <div className="flex-1 min-w-0 p-6 overflow-y-auto space-y-6 [scrollbar-width:thin] bg-background">
 
             {/* 1. ABA VIAGEM & COTAÇÃO COM EDIÇÃO PLENA */}
             {leadDrawerTab === "viagem" && (
-              <div className="space-y-4 text-xs">
+              <div className="space-y-6 text-xs">
                 {/* Status de Consentimento LGPD + Origem */}
-                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
-                    <div>
-                      <span className="font-bold text-foreground block">
-                        Consentimento LGPD Ativo
-                      </span>
-                      <span className="text-2xs text-muted-foreground">
-                        Origem verificada: {(editLeadForm.source || selectedLead.source) === "whatsapp" ? "Via WhatsApp" : "Via Formulário Web"}
-                      </span>
-                    </div>
+                <div className="flex items-center justify-between pb-3 border-b border-border/40 text-xs">
+                  <div className="flex items-center gap-2 text-emerald-600 font-semibold">
+                    <ShieldCheck className="size-4 shrink-0" />
+                    <span>Consentimento LGPD Ativo</span>
+                    <span className="text-2xs font-normal text-muted-foreground">({(editLeadForm.source || selectedLead.source) === "whatsapp" ? "Origem: WhatsApp" : "Origem: Formulário Web"})</span>
                   </div>
-                  <Badge variant="outline" className="text-2xs font-mono text-emerald-600 border-emerald-500/30">
-                    {(editLeadForm.source || selectedLead.source) === "whatsapp" ? "Via WhatsApp" : "Via Formulário Web"}
+                  <Badge variant="outline" className="text-2xs font-mono text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+                    LGPD Verificado
                   </Badge>
                 </div>
 
                 {/* Bloco 1: Contato do Passageiro */}
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
-                  <h4 className="font-bold text-foreground flex items-center gap-2">
-                    <Users className="size-3.5 text-primary" />
-                    <span>Titular do Atendimento</span>
-                  </h4>
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <div className="flex items-center gap-2 pb-1">
+                    <Users className="size-4 text-primary" />
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Titular do Atendimento</h4>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label className="text-2xs text-muted-foreground font-semibold">Nome Completo</Label>
@@ -1839,13 +1826,13 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
 
                 {/* Bloco 2: Especificações da Viagem */}
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
-                  <h4 className="font-bold text-foreground flex items-center gap-2">
-                    <MapPin className="size-3.5 text-primary" />
-                    <span>Roteiro & Datas</span>
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <div className="flex items-center gap-2 pb-1">
+                    <MapPin className="size-4 text-primary" />
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Roteiro & Datas</h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div className="space-y-1 lg:col-span-2">
                       <Label className="text-2xs text-muted-foreground font-semibold">Destino Principal</Label>
                       <Input
                         value={editLeadForm.destination}
@@ -1854,7 +1841,7 @@ export default function WorkspaceTurismoCockpitPage() {
                         className="h-10 text-xs rounded-lg"
                       />
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 lg:col-span-2">
                       <Label className="text-2xs text-muted-foreground font-semibold">Período Flexível</Label>
                       <Input
                         value={editLeadForm.interest_period}
@@ -1911,11 +1898,11 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
 
                 {/* Bloco 3: Passageiros Estruturados */}
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
-                  <h4 className="font-bold text-foreground flex items-center gap-2">
-                    <Plane className="size-3.5 text-primary" />
-                    <span>Composição de Passageiros</span>
-                  </h4>
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <div className="flex items-center gap-2 pb-1">
+                    <Plane className="size-4 text-primary" />
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Composição de Passageiros</h4>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <Label className="text-2xs text-muted-foreground font-semibold">Adultos (ADT)</Label>
@@ -1960,7 +1947,11 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
 
                 {/* Bloco 4: Consultor, Origem & Tags */}
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <div className="flex items-center gap-2 pb-1">
+                    <FileText className="size-4 text-primary" />
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Consultor, Origem & Tags</h4>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label className="text-2xs text-muted-foreground font-semibold">Consultor Responsável</Label>
@@ -2066,10 +2057,10 @@ export default function WorkspaceTurismoCockpitPage() {
                         p.customer_name.toLowerCase() === selectedLead.full_name.toLowerCase()),
                   );
                   return (
-                    <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h4 className="font-bold text-foreground flex items-center gap-2">
-                          <FileText className="size-3.5 text-primary" />
+                    <div className="space-y-3 pt-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/40">
+                        <h4 className="font-bold text-xs uppercase tracking-wide text-foreground flex items-center gap-2">
+                          <FileText className="size-4 text-primary" />
                           <span>Propostas & Cenários Enviados ({leadProposals.length})</span>
                         </h4>
                         <div className="flex items-center gap-2 flex-wrap">
@@ -2139,7 +2130,7 @@ export default function WorkspaceTurismoCockpitPage() {
                           {leadProposals.map((lp: any, idx: number) => (
                             <div
                               key={lp.id}
-                              className="p-3 rounded-lg border border-border/50 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                              className="p-3 rounded-lg border border-border/40 bg-muted/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                             >
                               <div className="space-y-1 min-w-0">
                                 <div className="flex items-center gap-2">
@@ -2189,14 +2180,14 @@ export default function WorkspaceTurismoCockpitPage() {
 
             {/* 2. ABA CLIENTE 360° */}
             {leadDrawerTab === "cliente360" && (
-              <div className="space-y-4 text-xs">
+              <div className="space-y-6 text-xs">
                 {isLoading360 ? (
                   <div className="p-8 text-center text-xs text-muted-foreground">
                     Carregando dossiê 360° do cliente...
                   </div>
                 ) : customer360Data?.customer ? (
-                  <div className="space-y-3">
-                    <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
+                  <div className="space-y-5">
+                    <div className="space-y-3 pb-5 border-b border-border/40">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-foreground text-sm">
                           {customer360Data.customer.full_name || customer360Data.customer.legal_name || customer360Data.customer.name}
@@ -2217,12 +2208,12 @@ export default function WorkspaceTurismoCockpitPage() {
 
                     {/* Viagens Confirmadas do Cliente */}
                     {Array.isArray(customer360Data.trips) && customer360Data.trips.length > 0 && (
-                      <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
-                        <span className="font-bold text-foreground block">Viagens Confirmadas & Histórico</span>
+                      <div className="space-y-3 pb-5 border-b border-border/40">
+                        <span className="font-bold text-xs uppercase tracking-wide text-foreground block">Viagens Confirmadas & Histórico</span>
                         {customer360Data.trips.map((tr: any) => (
                           <div
                             key={tr.id}
-                            className="p-3 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-between gap-2"
+                            className="p-3 rounded-lg border border-border/40 bg-muted/10 flex items-center justify-between gap-2"
                           >
                             <div>
                               <span className="font-semibold text-foreground block">{tr.title || tr.destination}</span>
@@ -2248,12 +2239,12 @@ export default function WorkspaceTurismoCockpitPage() {
 
                     {/* Chamados de Suporte / Incidentes do Cliente */}
                     {Array.isArray(customer360Data.incidents) && customer360Data.incidents.length > 0 && (
-                      <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
-                        <span className="font-bold text-foreground block">Tickets de Suporte / SOS Viagem</span>
+                      <div className="space-y-3 pb-5 border-b border-border/40">
+                        <span className="font-bold text-xs uppercase tracking-wide text-foreground block">Tickets de Suporte / SOS Viagem</span>
                         {customer360Data.incidents.map((inc: any) => (
                           <div
                             key={inc.id}
-                            className="p-3 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-between gap-2"
+                            className="p-3 rounded-lg border border-border/40 bg-muted/10 flex items-center justify-between gap-2"
                           >
                             <div>
                               <span className="font-semibold text-foreground block">{inc.title}</span>
@@ -2300,11 +2291,11 @@ export default function WorkspaceTurismoCockpitPage() {
 
             {/* 3. ABA CONTRATOS DIGITAIS */}
             {leadDrawerTab === "contratos" && (
-              <div className="space-y-4 text-xs">
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
-                  <div className="flex items-center gap-2">
+              <div className="space-y-6 text-xs">
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <div className="flex items-center gap-2 pb-1">
                     <FileSignature className="size-4 text-primary" />
-                    <span className="font-bold text-foreground">Emitir Novo Contrato Digital</span>
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Emitir Novo Contrato Digital</h4>
                   </div>
 
                   <div className="space-y-1">
@@ -2349,7 +2340,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     type="button"
                     disabled={isIssuingContract}
                     onClick={handleIssueContract}
-                    className="w-full h-11 min-h-11 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full h-11 min-h-11 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                   >
                     {isIssuingContract ? "Gerando Contrato..." : "Gerar Contrato com Assinatura Digital"}
                   </Button>
@@ -2431,14 +2422,14 @@ export default function WorkspaceTurismoCockpitPage() {
 
             {/* 4. ABA ONBOARDING COMERCIAL & PASTAS POR PASSAGEIRO */}
             {leadDrawerTab === "onboarding" && (
-              <div className="space-y-4 text-xs">
+              <div className="space-y-6 text-xs">
                 {/* Envio de Ficha Rápida ao Passageiro */}
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/50 space-y-3">
-                  <div className="flex items-center gap-2">
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <div className="flex items-center gap-2 pb-1">
                     <Share2 className="size-4 text-emerald-600" />
-                    <span className="font-bold text-foreground">Coleta Autônoma de Dados do Passageiro</span>
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Coleta Autônoma de Dados do Passageiro</h4>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-2xs text-muted-foreground leading-relaxed">
                     Envie o formulário de anamnese para o WhatsApp do viajante. Ele preenche os dados cadastrais, preferências de voo, quartos e documentos de forma 100% autônoma.
                   </p>
 
@@ -2464,11 +2455,11 @@ export default function WorkspaceTurismoCockpitPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                     <Button
                       type="button"
                       onClick={handleSendOnboardingFormWhatsApp}
-                      className="h-11 min-h-11 text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-11 min-h-11 text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                     >
                       <MessageSquare className="size-3.5" />
                       <span>Enviar via WhatsApp (1 Clique)</span>
@@ -2478,7 +2469,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       type="button"
                       variant="outline"
                       onClick={handleCopyOnboardingFormLink}
-                      className="h-11 min-h-11 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-11 min-h-11 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                     >
                       <Copy className="size-3.5" />
                       <span>Copiar Link da Ficha</span>
@@ -2487,19 +2478,22 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
 
                 {/* Magic Link Autônomo */}
-                <div className="p-4 rounded-lg bg-card border border-border/60 space-y-2">
-                  <span className="font-bold text-foreground block">Link Mágico Autônomo do Viajante</span>
-                  <p className="text-2xs text-muted-foreground">
-                    Link exclusivo que permite ao cliente acompanhar o status da proposta e atualizar documentos dos passageiros sem precisar de login.
-                  </p>
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="font-bold text-xs text-foreground block">Link Mágico Autônomo do Viajante</span>
+                    <p className="text-2xs text-muted-foreground">
+                      Link exclusivo que permite ao cliente acompanhar o status da proposta e atualizar documentos sem login.
+                    </p>
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
+                    size="sm"
                     onClick={handleCopyMagicLink}
-                    className="h-11 min-h-11 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <ExternalLink className="size-3.5" />
-                    <span>Copiar Link Mágico do Lead</span>
+                    <span>Copiar Link Mágico</span>
                   </Button>
                 </div>
 
@@ -2508,6 +2502,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   tripId={selectedLead.id}
                   initialFullName={editLeadForm.full_name || selectedLead.full_name || ""}
                   initialDocumentNumber={editLeadForm.cpf || selectedLead.cpf || ""}
+                  className="border border-border/40 bg-muted/10"
                   onVerificationComplete={(res) => {
                     if (res.correctedName) {
                       setEditLeadForm((prev: any) => ({ ...prev, full_name: res.correctedName! }));
@@ -2517,12 +2512,12 @@ export default function WorkspaceTurismoCockpitPage() {
                 />
 
                 {/* Pastas Hierárquicas por Passageiro (Documentação & Passaportes) */}
-                <div className="p-4 rounded-lg bg-card border border-border/60 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/40">
                     <div>
-                      <span className="font-bold text-foreground block">Pastas Documentais por Passageiro</span>
+                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground block">Pastas Documentais por Passageiro</h4>
                       <span className="text-2xs text-muted-foreground">
-                        RG, CPF, Passaporte e controle automático de validade (alerta de 6 meses antes do embarque)
+                        RG, CPF, Passaporte e controle de validade (alerta de 6 meses antes do embarque)
                       </span>
                     </div>
                     <Button
@@ -2548,7 +2543,7 @@ export default function WorkspaceTurismoCockpitPage() {
                           ],
                         }));
                       }}
-                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-1"
+                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Plus className="size-3.5" />
                       <span>Nova Pasta</span>
@@ -2565,7 +2560,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       const isExpiringSoon = diffMonths !== null && diffMonths < 6;
 
                       return (
-                        <div key={pax.id || idx} className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-2">
+                        <div key={pax.id || idx} className="p-3 rounded-lg border border-border/40 bg-muted/10 space-y-2">
                           <div className="flex items-center justify-between gap-2">
                             <Badge variant="secondary" className="text-2xs font-mono">
                               Pasta #{idx + 1} · {idx === 0 ? "Titular" : pax.role || `Acompanhante ${idx}`}
@@ -2642,7 +2637,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       type="button"
                       disabled={isUpdatingLead}
                       onClick={handleSaveLeadDetails}
-                      className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground"
+                      className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {isUpdatingLead ? "Salvando Pastas..." : "Salvar Pastas de Passageiros"}
                     </Button>
@@ -2654,30 +2649,42 @@ export default function WorkspaceTurismoCockpitPage() {
             {/* 5. ABA CHECKLIST OPERACIONAL */}
             {leadDrawerTab === "checklist" && (
               <div className="space-y-4 text-xs">
-                <div className="space-y-2">
-                  <span className="font-bold text-foreground block">Etapas de Qualificação & Checklist</span>
+                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="size-4 text-primary" />
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Etapas de Qualificação & Checklist</h4>
+                  </div>
+                  <span className="text-2xs font-mono text-muted-foreground">
+                    {(editLeadForm.checklist || []).filter((i: any) => i.done).length} de {(editLeadForm.checklist || []).length} concluídos
+                  </span>
+                </div>
+
+                <div className="divide-y divide-border/40 rounded-xl border border-border/50 overflow-hidden bg-muted/5">
                   {(editLeadForm.checklist || []).map((item: any) => (
                     <button
                       key={item.id}
                       type="button"
                       onClick={() => handleToggleChecklist(item.id)}
-                      className={`w-full p-3 rounded-lg border text-left flex items-center justify-between transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
+                      className={`w-full p-3 text-left flex items-center justify-between transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
                         item.done
-                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
-                          : "bg-card border-border/60 text-foreground hover:bg-muted/40"
+                          ? "bg-emerald-500/5 text-muted-foreground hover:bg-emerald-500/10"
+                          : "hover:bg-muted/30 text-foreground"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         {item.done ? (
                           <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
                         ) : (
                           <Square className="size-4 text-muted-foreground shrink-0" />
                         )}
-                        <span className={`text-xs ${item.done ? "line-through opacity-80" : "font-medium"}`}>
+                        <span className={`text-xs ${item.done ? "line-through opacity-75" : "font-medium"}`}>
                           {item.text}
                         </span>
                       </div>
-                      <Badge variant="outline" className="text-2xs font-mono">
+                      <Badge
+                        variant={item.done ? "outline" : "secondary"}
+                        className={`text-2xs font-mono ${item.done ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10" : ""}`}
+                      >
                         {item.done ? "Concluído" : "Pendente"}
                       </Badge>
                     </button>
@@ -2685,7 +2692,7 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
 
                 {/* Adicionar Item ao Checklist */}
-                <div className="flex items-center gap-2 pt-2">
+                <div className="flex items-center gap-2 pt-1">
                   <Input
                     value={newChecklistItemText}
                     onChange={(e) => setNewChecklistItemText(e.target.value)}
@@ -2702,7 +2709,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     type="button"
                     variant="outline"
                     onClick={handleAddChecklistItem}
-                    className="h-11 min-h-11 px-3 text-xs font-semibold shrink-0"
+                    className="h-11 min-h-11 px-4 text-xs font-semibold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Plus className="size-3.5 mr-1" />
                     <span>Adicionar</span>
@@ -2713,87 +2720,85 @@ export default function WorkspaceTurismoCockpitPage() {
 
             {/* 6. ABA ANAMNESE & PREFERÊNCIAS */}
             {leadDrawerTab === "anamnese" && (
-              <div className="space-y-3 text-xs">
-                <div className="p-3 rounded-lg border border-border/40 bg-muted/20 space-y-3">
-                  <div>
-                    <span className="text-xs font-semibold text-foreground block mb-1">Estilo de Viagem</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {["Econômica", "Conforto", "Premium / Luxo"].map((style) => {
-                        const isSelected = (editLeadForm.notes || "").includes(style);
-                        return (
-                          <button
-                            type="button"
-                            key={style}
-                            onClick={() => {
-                              const updatedNotes = `${editLeadForm.notes || ""}\nEstilo: ${style}`.trim();
-                              setEditLeadForm((prev: any) => ({ ...prev, notes: updatedNotes }));
-                              toast.success(`Estilo selecionado: ${style}`);
-                            }}
-                            className={`h-11 min-h-11 p-2 rounded-lg border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
-                              isSelected
-                                ? "border-primary bg-primary/10 text-primary font-bold"
-                                : "border-border/60 bg-background text-foreground hover:bg-muted/40"
-                            }`}
-                          >
-                            {style}
-                          </button>
-                        );
-                      })}
-                    </div>
+              <div className="space-y-6 text-xs">
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <span className="text-xs font-bold uppercase tracking-wide text-foreground block">Estilo de Viagem</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {["Econômica", "Conforto", "Premium / Luxo"].map((style) => {
+                      const isSelected = (editLeadForm.notes || "").includes(style);
+                      return (
+                        <button
+                          type="button"
+                          key={style}
+                          onClick={() => {
+                            const updatedNotes = `${editLeadForm.notes || ""}\nEstilo: ${style}`.trim();
+                            setEditLeadForm((prev: any) => ({ ...prev, notes: updatedNotes }));
+                            toast.success(`Estilo selecionado: ${style}`);
+                          }}
+                          className={`h-11 min-h-11 p-2 rounded-lg border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+                            isSelected
+                              ? "border-primary bg-primary/10 text-primary font-bold"
+                              : "border-border/60 bg-card text-foreground hover:bg-muted/40"
+                          }`}
+                        >
+                          {style}
+                        </button>
+                      );
+                    })}
                   </div>
+                </div>
 
-                  <div>
-                    <span className="text-xs font-semibold text-foreground block mb-1">Preferência de Hospedagem</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {["Hotel Central", "Resort All-Inclusive", "Pousada Boutique"].map((h) => {
-                        const isSelected = (editLeadForm.notes || "").includes(h);
-                        return (
-                          <button
-                            type="button"
-                            key={h}
-                            onClick={() => {
-                              const updatedNotes = `${editLeadForm.notes || ""}\nHospedagem: ${h}`.trim();
-                              setEditLeadForm((prev: any) => ({ ...prev, notes: updatedNotes }));
-                              toast.success(`Hospedagem selecionada: ${h}`);
-                            }}
-                            className={`h-11 min-h-11 p-2 rounded-lg border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
-                              isSelected
-                                ? "border-primary bg-primary/10 text-primary font-bold"
-                                : "border-border/60 bg-background text-foreground hover:bg-muted/40"
-                            }`}
-                          >
-                            {h}
-                          </button>
-                        );
-                      })}
-                    </div>
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <span className="text-xs font-bold uppercase tracking-wide text-foreground block">Preferência de Hospedagem</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {["Hotel Central", "Resort All-Inclusive", "Pousada Boutique"].map((h) => {
+                      const isSelected = (editLeadForm.notes || "").includes(h);
+                      return (
+                        <button
+                          type="button"
+                          key={h}
+                          onClick={() => {
+                            const updatedNotes = `${editLeadForm.notes || ""}\nHospedagem: ${h}`.trim();
+                            setEditLeadForm((prev: any) => ({ ...prev, notes: updatedNotes }));
+                            toast.success(`Hospedagem selecionada: ${h}`);
+                          }}
+                          className={`h-11 min-h-11 p-2 rounded-lg border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+                            isSelected
+                              ? "border-primary bg-primary/10 text-primary font-bold"
+                              : "border-border/60 bg-card text-foreground hover:bg-muted/40"
+                          }`}
+                        >
+                          {h}
+                        </button>
+                      );
+                    })}
                   </div>
+                </div>
 
-                  <div>
-                    <span className="text-xs font-semibold text-foreground block mb-1">Preferência de Voo & Bagagem</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {["Assento Janela", "Assento Corredor", "Bagagem Despachada (23kg)"].map((p) => {
-                        const isSelected = (editLeadForm.notes || "").includes(p);
-                        return (
-                          <button
-                            type="button"
-                            key={p}
-                            onClick={() => {
-                              const updatedNotes = `${editLeadForm.notes || ""}\nPreferencia: ${p}`.trim();
-                              setEditLeadForm((prev: any) => ({ ...prev, notes: updatedNotes }));
-                              toast.success(`Preferência selecionada: ${p}`);
-                            }}
-                            className={`h-11 min-h-11 p-2 rounded-lg border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
-                              isSelected
-                                ? "border-primary bg-primary/10 text-primary font-bold"
-                                : "border-border/60 bg-background text-foreground hover:bg-muted/40"
-                            }`}
-                          >
-                            {p}
-                          </button>
-                        );
-                      })}
-                    </div>
+                <div className="space-y-3">
+                  <span className="text-xs font-bold uppercase tracking-wide text-foreground block">Preferência de Voo & Bagagem</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {["Assento Janela", "Assento Corredor", "Bagagem Despachada (23kg)"].map((p) => {
+                      const isSelected = (editLeadForm.notes || "").includes(p);
+                      return (
+                        <button
+                          type="button"
+                          key={p}
+                          onClick={() => {
+                            const updatedNotes = `${editLeadForm.notes || ""}\nPreferencia: ${p}`.trim();
+                            setEditLeadForm((prev: any) => ({ ...prev, notes: updatedNotes }));
+                            toast.success(`Preferência selecionada: ${p}`);
+                          }}
+                          className={`h-11 min-h-11 p-2 rounded-lg border text-center text-xs font-medium cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+                            isSelected
+                              ? "border-primary bg-primary/10 text-primary font-bold"
+                              : "border-border/60 bg-card text-foreground hover:bg-muted/40"
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -2801,27 +2806,27 @@ export default function WorkspaceTurismoCockpitPage() {
 
             {/* 7. ABA REUNIÃO */}
             {leadDrawerTab === "reuniao" && (
-              <div className="space-y-3 text-xs">
-                <div className="p-4 rounded-lg border border-border/40 bg-muted/20 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
+              <div className="space-y-6 text-xs">
+                <div className="space-y-4 pb-5 border-b border-border/40">
+                  <div className="flex items-center justify-between gap-2 pb-1">
                     <div className="flex items-center gap-2">
                       <Calendar className="size-4 text-primary" />
-                      <span className="text-xs font-bold text-foreground">Agendar Reunião ou Alinhamento com Cliente</span>
+                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Agendar Reunião ou Alinhamento com Cliente</h4>
                     </div>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={handleCopyMagicLink}
-                      className="h-11 min-h-11 px-3 text-2xs font-semibold gap-1"
+                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <Copy className="size-3" />
+                      <Copy className="size-3.5" />
                       <span>Link Mágico de Confirmação</span>
                     </Button>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-2xs font-semibold text-muted-foreground block">Assunto da Reunião</label>
+                    <Label className="text-2xs font-semibold text-muted-foreground block">Assunto da Reunião</Label>
                     <Input
                       value={meetingTitle}
                       onChange={(e) => setMeetingTitle(e.target.value)}
@@ -2831,7 +2836,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-2xs font-semibold text-muted-foreground block">Pauta / Objetivo da Reunião</label>
+                    <Label className="text-2xs font-semibold text-muted-foreground block">Pauta / Objetivo da Reunião</Label>
                     <Textarea
                       rows={2}
                       value={meetingObjective}
@@ -2843,7 +2848,7 @@ export default function WorkspaceTurismoCockpitPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-2xs font-semibold text-muted-foreground block">Data e Horário</label>
+                      <Label className="text-2xs font-semibold text-muted-foreground block">Data e Horário</Label>
                       <Input
                         type="datetime-local"
                         value={meetingDate}
@@ -2852,7 +2857,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-2xs font-semibold text-muted-foreground block">Tipo de Encontro</label>
+                      <Label className="text-2xs font-semibold text-muted-foreground block">Tipo de Encontro</Label>
                       <select
                         value={meetingType}
                         onChange={(e) => setMeetingType(e.target.value as any)}
@@ -2866,7 +2871,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-2xs font-semibold text-muted-foreground block">Link da Sala (Google Meet ou Zoom)</label>
+                    <Label className="text-2xs font-semibold text-muted-foreground block">Link da Sala (Google Meet ou Zoom)</Label>
                     <Input
                       value={meetingRoomUrl}
                       onChange={(e) => setMeetingRoomUrl(e.target.value)}
@@ -2914,7 +2919,7 @@ export default function WorkspaceTurismoCockpitPage() {
                           setIsSavingMeeting(false);
                         }
                       }}
-                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg bg-primary text-primary-foreground cursor-pointer"
+                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {isSavingMeeting ? "Agendando..." : "Confirmar Agendamento"}
                     </Button>
@@ -2923,10 +2928,10 @@ export default function WorkspaceTurismoCockpitPage() {
 
                 {/* Lista de Reuniões Agendadas */}
                 {Array.isArray(customer360Data?.meetings) && customer360Data.meetings.length > 0 && (
-                  <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
+                  <div className="space-y-2">
                     <span className="font-bold text-foreground block">Reuniões Programadas ({customer360Data.meetings.length})</span>
                     {customer360Data.meetings.map((m: any) => (
-                      <div key={m.id} className="p-3 rounded-lg border border-border/40 bg-muted/20 flex items-center justify-between gap-2">
+                      <div key={m.id} className="p-3 rounded-lg border border-border/40 bg-muted/10 flex items-center justify-between gap-2">
                         <div className="space-y-1">
                           <span className="font-bold text-foreground block">{m.title}</span>
                           {m.description && (
@@ -2948,18 +2953,18 @@ export default function WorkspaceTurismoCockpitPage() {
 
             {/* 8. ABA LGPD */}
             {leadDrawerTab === "lgpd" && (
-              <div className="space-y-3 text-xs">
-                <div className="p-4 rounded-lg border border-border/40 bg-muted/20 space-y-3">
-                  <div className="flex items-center gap-2">
+              <div className="space-y-4 text-xs">
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <div className="flex items-center gap-2 pb-1">
                     <ShieldCheck className="size-4 text-emerald-600" />
-                    <span className="text-xs font-bold text-foreground">Governança LGPD (Lei 13.709/2018)</span>
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Governança LGPD (Lei 13.709/2018)</h4>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
+                  <p className="text-2xs text-muted-foreground leading-relaxed">
                     Consentimento de coleta e tratamento de dados cadastrais, emissão de bilhetes e compartilhamento estritamente necessário com companhias aéreas, hotéis e operadoras parceiras.
                   </p>
-                  <div className="p-3 rounded bg-background border border-border/50 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-foreground">Termo de Consentimento</span>
-                    <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30 font-mono">
+                  <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">Termo de Consentimento Comercial</span>
+                    <Badge variant="outline" className="text-2xs text-emerald-600 border-emerald-500/30 bg-emerald-500/10 font-mono">
                       Consentido / Ativo
                     </Badge>
                   </div>
@@ -2970,20 +2975,20 @@ export default function WorkspaceTurismoCockpitPage() {
             {/* 9. ABA PLANEJAMENTO DE PAGAMENTO */}
             {leadDrawerTab === "pagamento" && (
               <div className="space-y-4 text-xs">
-                <div className="p-4 rounded-lg border border-border/50 bg-muted/20 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
+                <div className="space-y-3 pb-5 border-b border-border/40">
+                  <div className="flex items-center justify-between gap-2 pb-1">
                     <div className="flex items-center gap-2">
-                      <DollarSign className="size-4 text-primary" />
-                      <span className="font-bold text-foreground">Decomposição Tarifária & Custos Planejados</span>
+                      <DollarSign className="size-4 text-emerald-600" />
+                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Decomposição Tarifária & Custos</h4>
                     </div>
-                    <Badge variant="outline" className="font-mono text-xs">
+                    <Badge variant="outline" className="font-mono text-xs text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
                       Total: {formatMoney(editLeadForm.estimated_value_cents || 0)}
                     </Badge>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold"> Aéreo / Passagens (R$)</Label>
+                      <Label className="text-2xs text-muted-foreground font-semibold">Aéreo / Passagens (R$)</Label>
                       <CurrencyField
                         value={editLeadForm.payment_plan?.flight_cents || 0}
                         onChange={(val: any) =>
@@ -3051,8 +3056,8 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
 
                 {/* Modalidade de Pagamento Planejada */}
-                <div className="p-4 rounded-lg border border-border/60 bg-card space-y-3">
-                  <span className="font-bold text-foreground block">Modalidade de Pagamento Planejada</span>
+                <div className="space-y-3">
+                  <h4 className="font-bold text-xs uppercase tracking-wide text-foreground block">Modalidade de Pagamento Planejada</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
                       { id: "pix_cash", label: "PIX à Vista (Desconto)" },
@@ -3072,8 +3077,8 @@ export default function WorkspaceTurismoCockpitPage() {
                           }
                           className={`h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
                             active
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-border/60 bg-muted/20 text-foreground hover:bg-muted/40"
+                              ? "border-primary bg-primary/10 text-primary font-bold"
+                              : "border-border/60 bg-card text-foreground hover:bg-muted/40"
                           }`}
                         >
                           {m.label}
@@ -3107,7 +3112,7 @@ export default function WorkspaceTurismoCockpitPage() {
                         await navigator.clipboard.writeText(url);
                         toast.success("Link de aprovação do plano de pagamento copiado!");
                       }}
-                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-2"
+                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Copy className="size-3.5" />
                       <span>Copiar Link para Aprovação do Cliente</span>
@@ -3117,7 +3122,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       type="button"
                       disabled={isUpdatingLead}
                       onClick={handleSaveLeadDetails}
-                      className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground"
+                      className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {isUpdatingLead ? "Salvando..." : "Salvar Plano de Pagamento"}
                     </Button>
@@ -3128,8 +3133,8 @@ export default function WorkspaceTurismoCockpitPage() {
 
               </div>
 
-              {/* COLUNA DIREITA (3/12): Mover para Fase & Ações Rápidas */}
-              <div className="lg:col-span-3 p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-4 text-xs">
+              {/* COLUNA DIREITA: Mover para Fase & Ações Rápidas com Scroll Próprio (Compacta) */}
+              <div className="w-full lg:w-56 xl:w-60 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/5 border-l border-border/40">
                 <div className="space-y-2">
                   <span className="font-bold text-foreground block">Mover para fase</span>
                   <div className="space-y-2">

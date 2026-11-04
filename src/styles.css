@@ -951,6 +951,23 @@
   width: 70vw;
 }
 
+@utility sheet-page-dossier {
+  width: 100%;
+  max-width: 100%;
+  @media (min-width: 1024px) {
+    width: 88vw;
+    max-width: 88vw;
+  }
+}
+
+@utility max-w-88vw {
+  max-width: 88vw;
+}
+
+@utility w-88vw {
+  width: 88vw;
+}
+
 /* ── Anti-Jank Protocol & Viewport Lock (WAESY DESIGN SYSTEM 4.0) ────────── */
 @utility native-scroll {
   overflow-y: auto;

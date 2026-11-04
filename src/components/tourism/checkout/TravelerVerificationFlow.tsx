@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   verifyTravelerDocumentMatch,
   submitTravelerKycAndFace,
@@ -32,6 +33,7 @@ interface TravelerVerificationFlowProps {
   initialBirthDate?: string;
   productType?: "flight" | "hotel" | "bus" | "package";
   paymentMethod?: "pix" | "cash" | "credit_card" | "faturado";
+  className?: string;
   onVerificationComplete: (result: {
     verified: boolean;
     correctedName?: string;
@@ -48,6 +50,7 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
   initialBirthDate = "1990-01-01",
   productType = "flight",
   paymentMethod = "credit_card",
+  className,
   onVerificationComplete,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -172,7 +175,7 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
   };
 
   return (
-    <Card className="p-5 border-border/80 bg-card space-y-5 rounded-lg text-xs">
+    <Card className={cn("p-5 border-border/80 bg-card space-y-5 rounded-lg text-xs", className)}>
       {/* Header do Fluxo */}
       <div className="flex items-center justify-between border-b border-border/60 pb-3">
         <div className="flex items-center gap-2">

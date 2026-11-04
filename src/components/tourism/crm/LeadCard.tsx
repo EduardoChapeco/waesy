@@ -221,27 +221,20 @@ export function LeadCard({
           : 'border-border/60'
       )}
     >
-      {/* Topo do Card: Chip de Temperatura + Categoria + SLA Temporal + Ações Rápidas */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 min-w-0 flex-wrap">
-          <span
-            className={cn(
-              'inline-flex items-center px-2 py-1 rounded-md text-2xs font-bold border',
-              temperatureMeta.className
-            )}
-          >
-            {temperatureMeta.label}
-          </span>
-          <Badge variant="secondary" className="px-2 py-1 text-2xs font-medium rounded-md bg-muted text-muted-foreground border-border/50">
-            {categoryLabel}
-          </Badge>
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/50 text-muted-foreground font-mono tabular-nums text-2xs">
-            <Clock className="size-3 shrink-0" />
-            <span>{stageTimer}</span>
-          </span>
+      {/* Topo do Card: Nome em Destaque + WhatsApp 1-Clique + Menu Contextual */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h4 className="font-bold text-sm text-foreground tracking-tight leading-snug break-words group-hover:text-primary transition-colors">
+            {lead.full_name}
+          </h4>
+          {lead.phone && (
+            <p className="text-2xs text-muted-foreground font-mono tabular-nums mt-1">
+              {lead.phone}
+            </p>
+          )}
         </div>
 
-        {/* Menu de Ações e WhatsApp */}
+        {/* Ações Rápidas de Topo */}
         <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
           {whatsappUrl && (
             <a
@@ -338,28 +331,16 @@ export function LeadCard({
         </div>
       </div>
 
-      {/* Corpo Estruturado: Título Sólido + Metadados sem Containeritis */}
+      {/* Corpo Estruturado: Roteiro, Datas e Valores Financeiros */}
       <div className="space-y-2">
-        <div>
-          <h4 className="font-semibold text-sm text-foreground tracking-tight leading-snug break-words group-hover:text-primary transition-colors">
-            {lead.full_name}
-          </h4>
-          {lead.phone && (
-            <p className="text-2xs text-muted-foreground font-mono tabular-nums mt-1">
-              {lead.phone}
-            </p>
-          )}
-        </div>
-
-        {/* Metadados Diretos do Contato */}
-        <div className="space-y-1 pt-1 text-2xs">
-          <div className="flex items-center gap-2 text-foreground font-medium">
-            <MapPin className="size-3.5 text-muted-foreground shrink-0" />
-            <span className="break-words">{lead.destination || 'Destino a definir'}</span>
+        <div className="space-y-1 text-xs">
+          <div className="flex items-center gap-2 text-foreground font-semibold">
+            <MapPin className="size-3.5 text-primary shrink-0" />
+            <span className="truncate">{lead.destination || 'Destino a definir'}</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
-            <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
+          <div className="flex flex-wrap items-center gap-3 text-2xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
               <Users className="size-3 text-muted-foreground shrink-0" />
               <span>{paxBreakdown.total}</span>
             </span>
@@ -404,44 +385,24 @@ export function LeadCard({
         </div>
       )}
 
-      {/* Rodapé Operacional: Status LGPD, Contadores, Avatar Responsável e Avanço 44px */}
-      <div className="flex items-center justify-between gap-2 pt-2 text-2xs border-t border-border/40">
+      {/* Rodapé Operacional: Chips Semânticos + SLA + Avanço de Etapa */}
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40 text-2xs">
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           <span
             className={cn(
-              'inline-flex items-center gap-1 px-2 py-1 rounded-md font-medium border text-3xs',
-              isLgpdActive
-                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                : 'bg-warning/10 text-warning-strong border-warning/20'
+              'inline-flex items-center px-2 py-1 rounded-md text-2xs font-bold border',
+              temperatureMeta.className
             )}
-            title={isLgpdActive ? 'Consentimento LGPD Ativo' : 'Consentimento LGPD Pendente'}
           >
-            <ShieldCheck className="size-3 shrink-0" />
-            <span>{isLgpdActive ? 'LGPD' : 'Pendente'}</span>
+            {temperatureMeta.label}
           </span>
-
-          <span className="inline-flex items-center gap-1 text-muted-foreground font-mono tabular-nums" title="Observações e interações">
-            <MessageSquare className="size-3" />
-            <span>{counters.comments}</span>
+          <Badge variant="secondary" className="px-2 py-1 text-2xs font-medium rounded-md bg-muted text-muted-foreground">
+            {categoryLabel}
+          </Badge>
+          <span className="inline-flex items-center gap-1 text-muted-foreground font-mono tabular-nums text-2xs">
+            <Clock className="size-3 shrink-0" />
+            <span>{stageTimer}</span>
           </span>
-
-          <span className="inline-flex items-center gap-1 text-muted-foreground font-mono tabular-nums" title="Documentos e passageiros vinculados">
-            <Paperclip className="size-3" />
-            <span>{counters.attachments}</span>
-          </span>
-
-          {checklistStats.total > 0 && (
-            <span
-              className={cn(
-                'font-mono tabular-nums inline-flex items-center gap-1',
-                checklistStats.done === checklistStats.total ? 'text-emerald-600 font-bold' : 'text-muted-foreground'
-              )}
-              title="Checklist operacional"
-            >
-              <CheckCircle2 className="size-3" />
-              <span>{checklistStats.done}/{checklistStats.total}</span>
-            </span>
-          )}
         </div>
 
         {/* Avatar do Responsável + Botões de Avanço Rápido 44px */}

@@ -13,7 +13,7 @@ export interface SheetPageProps {
  description?: React.ReactNode;
  children: React.ReactNode;
  footer?: React.ReactNode;
- size?: "sm" | "default" | "lg" | "xl" | "2xl" | "wide" | "70" | "full";
+ size?: "sm" | "default" | "lg" | "xl" | "2xl" | "dossier" | "wide" | "70" | "full";
  className?: string;
  contentClassName?: string;
  side?: "top" | "bottom" | "left" | "right";
@@ -45,6 +45,7 @@ export function SheetPage({
     lg: "w-full sm:max-w-3xl md:max-w-5xl lg:sheet-page-70",
     xl: "w-full sm:max-w-4xl md:max-w-6xl lg:sheet-page-70",
     "2xl": "w-full sm:max-w-4xl md:max-w-6xl lg:sheet-page-70 xl:max-w-7xl",
+    dossier: "w-full lg:sheet-page-dossier",
     wide: "w-full sm:max-w-3xl md:max-w-5xl lg:sheet-page-70",
     "70": "w-full sm:max-w-3xl md:max-w-5xl lg:sheet-page-70",
     full: "w-screen max-w-full",
