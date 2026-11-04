@@ -41,12 +41,12 @@ export function SheetPage({
 
  const sizeClasses = {
     sm: "w-full sm:max-w-xl md:max-w-2xl",
-    default: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl",
-    lg: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl",
-    xl: "w-full sm:max-w-3xl md:max-w-5xl lg:max-w-5xl xl:max-w-6xl",
-    "2xl": "w-full sm:max-w-3xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl",
-    wide: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl",
-    "70": "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl",
+    default: "w-full sm:max-w-3xl md:max-w-5xl lg:sheet-page-70",
+    lg: "w-full sm:max-w-3xl md:max-w-5xl lg:sheet-page-70",
+    xl: "w-full sm:max-w-4xl md:max-w-6xl lg:sheet-page-70",
+    "2xl": "w-full sm:max-w-4xl md:max-w-6xl lg:sheet-page-70 xl:max-w-7xl",
+    wide: "w-full sm:max-w-3xl md:max-w-5xl lg:sheet-page-70",
+    "70": "w-full sm:max-w-3xl md:max-w-5xl lg:sheet-page-70",
     full: "w-screen max-w-full",
  }[size];
 
@@ -61,7 +61,7 @@ export function SheetPage({
  )}
  >
  {/* Header Fixo */}
- <SheetHeader className="px-6 py-4 text-left bg-card/60 shrink-0">
+ <SheetHeader className="px-6 py-4 text-left border-b border-border/40 shrink-0">
  <SheetTitle className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
  {title}
  </SheetTitle>
@@ -73,13 +73,13 @@ export function SheetPage({
  </SheetHeader>
 
  {/* Corpo Scrollável Natural */}
- <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-5 space-y-5">
+ <div className={cn("flex-1 overflow-y-auto no-scrollbar px-6 py-5 space-y-5", contentClassName)}>
  {children}
  </div>
 
  {/* Rodapé Fixo */}
  {footer && (
- <SheetFooter className="px-6 py-4 bg-card/80 flex items-center justify-end gap-2 shrink-0">
+ <SheetFooter className="px-6 py-4 border-t border-border/40 flex items-center justify-end gap-2 shrink-0">
  {footer}
  </SheetFooter>
  )}

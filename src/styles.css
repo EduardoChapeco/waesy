@@ -933,6 +933,24 @@
   height: 100dvh;
 }
 
+/* ── 70% Viewport Sheet Utilities (Waesy BigTech Spec) ──────────────────── */
+@utility sheet-page-70 {
+  width: 100%;
+  max-width: 100%;
+  @media (min-width: 1024px) {
+    width: 70vw;
+    max-width: 70vw;
+  }
+}
+
+@utility max-w-70vw {
+  max-width: 70vw;
+}
+
+@utility w-70vw {
+  width: 70vw;
+}
+
 /* ── Anti-Jank Protocol & Viewport Lock (WAESY DESIGN SYSTEM 4.0) ────────── */
 @utility native-scroll {
   overflow-y: auto;

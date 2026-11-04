@@ -135,10 +135,11 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
     <Sheet open={isSheetOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-3xl p-0 flex flex-col bg-background border-l border-border"
+        size="70"
+        className="p-0 flex flex-col bg-background border-l border-border"
       >
         {/* Header do Cliente */}
-        <div className="border-b border-border p-6 flex items-start justify-between bg-card">
+        <div className="border-b border-border/60 p-6 flex items-start justify-between bg-background">
           <div className="flex items-center gap-4">
             <div className="h-14 w-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg select-none">
               {displayName.slice(0, 2).toUpperCase()}
@@ -182,17 +183,18 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
 
         {/* Barra de Abas Horizontais com Scroll Tátil */}
         {/* design-lint-ignore DL-30 reason:"Barra horizontal de abas do CRM cliente requer rolagem suave no mobile" expiry:"2027-10-30" */}
-        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel border-b border-border px-6 py-2 bg-muted/20 scrollbar-none">
+        <div className="flex items-center gap-6 overflow-x-auto scroll-area-carousel border-b border-border/60 px-6 bg-background scrollbar-none">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`h-11 min-h-11 px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={cn(
+                "h-11 min-h-11 px-1 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === tab.key
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-              }`}
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60"
+              )}
             >
               {tab.label}
             </button>

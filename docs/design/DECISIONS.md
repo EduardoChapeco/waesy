@@ -1,5 +1,22 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-435: Reengenharia Visual Sistêmica V2: SheetPages com 70% da Largura, Abas Flat em Linha, Hierarquia de Botões e Kanban Ultraminimalista
+- **Data:** 2026-11-04
+- **Contexto:**
+  1. Painéis laterais (`SheetPage` e `Sheet`) possuíam largura travada em `max-w-6xl` (1152px) ou `sm:max-w-3xl` (768px), espremendo gavetas operacionais complexas como o `CustomerDrawer360` (com 13 abas), dossiês e cadastros densos.
+  2. Uso excessivo de contêineres encapsulados com fundos cinza artificiais (`bg-muted p-1 rounded-lg`) em abas (`TabsList`), toolbars e colunas de kanban (`bg-muted/40 border border-border/60 rounded-3xl`), gerando containeritis e ruído visual.
+  3. Variante `outline` de `Button` estava idêntica a `secondary` (sem borda real de 1px e com fundo cinza opaco).
+- **Decisão:**
+  1. Criação dos utilitários semânticos canônicos `@utility sheet-page-70`, `@utility max-w-70vw` e `@utility w-70vw` em `src/styles.css` (100% de largura no mobile e 70vw no desktop >= 1024px).
+  2. Atualização dos contratos de `SheetPage` (`src/components/ui/sheet-page.tsx`) e `Sheet` (`src/components/ui/sheet.tsx`) para consumir `sheet-page-70` nos tamanhos `default`, `lg`, `xl`, `wide` e `70`, com cabeçalho e rodapé limpos (`bg-background` e divisores sutis de 1px).
+  3. Refatoração do `CustomerDrawer360.tsx` com `size="70"` e abas em linha diretamente na superfície da página, sem encapsulamento cinza artificial.
+  4. Suporte a abas flat em linha (`variant="line"`) e fundo suave `bg-muted/40` em `src/components/ui/tabs.tsx`.
+  5. Refinamento de `src/components/ui/button.tsx`: borda nítida de 1px em `outline` e `pillowOutline` sobre fundo transparente, fundo suave em `secondary` e transparência total em `ghost`.
+  6. Reengenharia de `FullViewportKanban`: colunas minimalistas estilo Trello (`bg-muted/20 border-transparent hover:border-border/40`), cabeçalho sem divisórias duras e cartões como superfícies soberanas.
+  7. Aprovação total na catraca de CI (`0` P0, `674` violações totais), aprovação de 145/145 testes Vitest e build de produção sem erros.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.26, B.31; Apple HIG & Linear/Trello Flat UI Guidelines.
+- **Consequências:** Fim do confinamento visual de gavetas no desktop, interface fluida e ultraminimalista com máxima área útil e preservação de 100% das regras e lógicas de negócio.
+
 ## DEC-434: Remediação Integral de Limites de Cloudflare Pages e Supabase, Micro-Cache Single-Flight nas Vitrines Públicas e Proteção Anti-Jank de Polling
 - **Data:** 2026-11-04
 - **Contexto:**

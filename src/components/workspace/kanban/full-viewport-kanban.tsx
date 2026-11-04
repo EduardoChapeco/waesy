@@ -49,24 +49,23 @@ export function FullViewportKanban<T = any>({
         <div
           key={col.id}
           className={cn(
-            "flex flex-col h-full shrink-0 rounded-3xl border border-border/60 bg-muted/40 overflow-hidden",
+            "flex flex-col h-full shrink-0 rounded-2xl bg-muted/20 hover:bg-muted/30 border border-transparent hover:border-border/40 transition-colors overflow-hidden",
             columnWidthClass
           )}
         >
           {/* ── Header da Coluna (Fixo no topo da coluna) ── */}
-          <div className={cn("h-1.5 w-full shrink-0", getColumnColorClass(col.color))} />
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-card/60 shrink-0">
+          <div className={cn("h-1 w-full shrink-0", getColumnColorClass(col.color))} />
+          <div className="flex items-center justify-between px-4 py-3 bg-transparent shrink-0">
             <div className="flex items-center gap-2 min-w-0">
               {col.color && (
                 <span
-
                   className={cn("size-2 rounded-full shrink-0", getColumnColorClass(col.color))}
                 />
               )}
               <h3 className="text-xs font-bold text-foreground truncate">
                 {col.title}
               </h3>
-              <span className="text-2xs font-mono tabular-nums font-semibold text-muted-foreground bg-muted px-2 py-1 rounded-full shrink-0">
+              <span className="text-2xs font-mono tabular-nums font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full shrink-0">
                 {col.count ?? col.items.length}
               </span>
             </div>
@@ -85,7 +84,7 @@ export function FullViewportKanban<T = any>({
             ))}
 
             {col.items.length === 0 && (
-              <div className="h-full min-h-44 flex flex-col items-center justify-center p-4 text-center rounded-lg border border-dashed border-border/50 text-muted-foreground/60 text-xs gap-2">
+              <div className="h-full min-h-44 flex flex-col items-center justify-center p-4 text-center rounded-xl border border-dashed border-border/40 text-muted-foreground/60 text-xs gap-2">
                 {col.emptyState || <span>Nenhum item nesta etapa</span>}
               </div>
             )}
@@ -93,7 +92,7 @@ export function FullViewportKanban<T = any>({
 
           {/* ── Footer da Coluna (Fixo no rodapé da coluna) ── */}
           {col.footerAction && (
-            <div className="p-2 border-t border-border/50 bg-muted/10 shrink-0">
+            <div className="p-2 border-t border-border/40 bg-transparent shrink-0">
               {col.footerAction}
             </div>
           )}
