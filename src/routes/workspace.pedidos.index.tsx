@@ -606,7 +606,7 @@ function AdminOrdersPage() {
  <div className="space-y-3">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-emerald-500" />
+ <span className="size-2.5 rounded-full bg-success" />
  <h3 className="text-sm font-bold text-foreground">Vouchers Emitidos</h3>
  </div>
  <Badge variant="secondary" className="font-bold text-xs">
@@ -631,7 +631,7 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
+ <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-success/10 text-success-strong uppercase">
  Pronto p/ Embarque
  </span>
  </div>
@@ -931,7 +931,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 text-success-strong border-success/30 hover:bg-success/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Baixar DANFE (PDF da Nota Fiscal)"
  >
  <a href={(order as any).danfe_pdf_url} target="_blank" rel="noopener noreferrer">
@@ -950,7 +950,7 @@ function AdminOrdersPage() {
  <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-emerald-500" />
+ <span className="size-2.5 rounded-full bg-success" />
  <h3 className="text-sm font-bold text-foreground">Prontos / Em Rota</h3>
  </div>
  <Badge variant="secondary" className="font-bold text-xs">
@@ -979,7 +979,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-success/10 text-success-strong uppercase">
  {order.status === "ready_for_pickup"
  ? "Aguardando Retirada"
  : "Entregador a Caminho"}
@@ -1144,7 +1144,7 @@ function AdminOrdersPage() {
     }
     className={`flex items-center justify-between p-3 rounded-lg border transition-colors duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isChecked
- ? "bg-emerald-500/10 border-emerald-500/30 text-foreground"
+ ? "bg-success/10 border-success/30 text-foreground"
  : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/60"
  }`}
  >
@@ -1152,7 +1152,7 @@ function AdminOrdersPage() {
  <div
  className={`size-5 rounded-md border flex items-center justify-center transition-colors shrink-0 ${
  isChecked
- ? "bg-emerald-600 border-emerald-600 text-foreground"
+ ? "bg-success border-success text-foreground"
  : "border-border bg-card"
  }`}
  >
@@ -1209,7 +1209,7 @@ function AdminOrdersPage() {
  disabled={isProcessing}
  className={`flex-1 rounded-lg font-bold text-xs h-10 transition-colors duration-200 ${
  isAllChecked
- ? "bg-emerald-600 hover:bg-emerald-700 text-foreground"
+ ? "bg-success hover:bg-success/90 text-foreground"
  : "bg-foreground text-background"
  } min-h-11 sm:min-h-0`}
  >

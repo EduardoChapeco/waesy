@@ -159,7 +159,7 @@ export function BannerHeroCarousel({
             currentBanner.subtitle ||
             currentBanner.badge_text ||
             currentBanner.cta_label) && (
-            <div className="absolute inset-0 bg-black/60 flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-foreground pointer-events-none z-10">
+            <div className="absolute inset-0 bg-background/80 flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-foreground pointer-events-none z-10">
               <div className="max-w-xl space-y-2 sm:space-y-3 z-10 pointer-events-auto">
                 {currentBanner.show_badge === true && currentBanner.badge_text && (
                   <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3 sm:py-1 rounded-full bg-background/80 text-xs font-bold uppercase tracking-wider text-foreground border border-border/60">
@@ -175,7 +175,7 @@ export function BannerHeroCarousel({
                 )}
 
                 {currentBanner.show_description === true && currentBanner.subtitle && (
-                  <p className="text-xs sm:text-sm text-zinc-200 line-clamp-2 leading-relaxed max-w-lg">
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed max-w-lg">
                     {currentBanner.subtitle}
                   </p>
                 )}
@@ -184,7 +184,7 @@ export function BannerHeroCarousel({
                   <div className="pt-2 sm:pt-2">
                     <Link
                       to={targetLink as any}
-                      className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-3 rounded-lg bg-card text-foreground font-bold text-xs sm:text-sm hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-transform"
+                      className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-3 rounded-lg bg-card text-foreground font-bold text-xs sm:text-sm hover:bg-muted hover:scale-105 active:scale-95 transition-transform"
                     >
                       <span>{currentBanner.cta_label || "Conferir"}</span>
                       <ArrowRight className="size-3.5 sm:size-4" />

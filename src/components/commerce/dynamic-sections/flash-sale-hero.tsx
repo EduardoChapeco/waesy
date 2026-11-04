@@ -79,232 +79,225 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
  "";
 
  const designTokens = props.design_tokens || {};
- const customBg = designTokens.backgroundColor;
- const customText = designTokens.textColor;
- const accentColor = designTokens.accentColor || "#f59e0b"; // Padrão âmbar
+  const customBg = designTokens.backgroundColor;
+  const customText = designTokens.textColor;
+  const accentColor = designTokens.accentColor;
 
- const [copied, setCopied] = useState(false);
- const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [copied, setCopied] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
- useEffect(() => {
- const calculateTime = () => {
- const target = new Date(endDate).getTime();
- const now = new Date().getTime();
- const diff = Math.max(0, target - now);
+  useEffect(() => {
+    const calculateTime = () => {
+      const target = new Date(endDate).getTime();
+      const now = new Date().getTime();
+      const diff = Math.max(0, target - now);
 
- setTimeLeft({
- days: Math.floor(diff / (1000 * 60 * 60 * 24)),
- hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
- minutes: Math.floor((diff / 1000 / 60) % 60),
- seconds: Math.floor((diff / 1000) % 60),
- });
- };
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / 1000 / 60) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+      });
+    };
 
- calculateTime();
- const interval = setInterval(calculateTime, 1000);
- return () => clearInterval(interval);
- }, [endDate]);
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
+    return () => clearInterval(interval);
+  }, [endDate]);
 
- const handleCopyCoupon = (e: React.MouseEvent) => {
- e.stopPropagation();
- if (!couponCode) return;
- navigator.clipboard.writeText(couponCode);
- setCopied(true);
- toast.success(`Cupom "${couponCode}" copiado com sucesso!`);
- setTimeout(() => setCopied(false), 2500);
- };
+  const handleCopyCoupon = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!couponCode) return;
+    navigator.clipboard.writeText(couponCode);
+    setCopied(true);
+    toast.success(`Cupom "${couponCode}" copiado com sucesso!`);
+    setTimeout(() => setCopied(false), 2500);
+  };
 
- return (
- <div
- className="relative w-full overflow-hidden py-12 md:py-20"
- style={{
- backgroundColor: customBg || "#09090b",
- color: customText || "#ffffff",
- }}
- >
- {/* Background Image com Overlay Escuro */}
- {bgImageUrl && (
- <div className="absolute inset-0 z-0 pointer-events-none">
- <img
- src={bgImageUrl}
- alt={title}
- className="h-full w-full object-cover opacity-25"
- />
- <div className="absolute inset-0 bg-zinc-950/80" />
- </div>
- )}
+  const rootStyle: React.CSSProperties = {};
+  if (customBg) rootStyle.backgroundColor = customBg;
+  if (customText) rootStyle.color = customText;
 
- {/* Gradiente sutil com a cor de destaque */}
- <div
- className="absolute inset-0 pointer-events-none opacity-20"
- style={{
- background: `radial-gradient(ellipse at top, ${accentColor} 0%, transparent 70%)`,
- }}
- />
+  const accentStyle: React.CSSProperties = {};
+  if (accentColor) accentStyle.color = accentColor;
 
- <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
- {/* Lado Esquerdo: Mensagem e Oferta */}
- <div className="space-y-6 lg:col-span-7">
- {badge && (
- <div
- className="inline-flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-bold backdrop-blur-md"
- style={{
- borderColor: `${accentColor}55`,
- backgroundColor: `${accentColor}20`,
- color: accentColor,
- }}
- >
- <Flame className="size-3.5 animate-pulse motion-reduce:animate-none" style={{ color: accentColor }} />
- <span>{badge}</span>
- </div>
- )}
+  return (
+    <div
+      className="relative w-full overflow-hidden py-12 md:py-20 bg-background text-foreground"
+      style={Object.keys(rootStyle).length > 0 ? rootStyle : undefined}
+    >
+      {/* Background Image com Overlay */}
+      {bgImageUrl && (
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <img
+            src={bgImageUrl}
+            alt={title}
+            className="h-full w-full object-cover opacity-25"
+          />
+          <div className="absolute inset-0 bg-background/80" />
+        </div>
+      )}
 
- <div className="space-y-2">
- <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
- {title}{" "}
- {discountPercentage && (
- <span
- className="underline decoration-2"
- style={{
- color: accentColor,
- textDecorationColor: `${accentColor}80`,
- }}
- >
- {discountPercentage}
- </span>
- )}
- </h1>
- {subtitle && (
- <p className="text-sm sm:text-base text-zinc-300 max-w-lg leading-relaxed">
- {subtitle}
- </p>
- )}
- </div>
+      {/* Gradiente sutil com a cor de destaque */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-20"
+        style={
+          accentColor
+            ? { background: `radial-gradient(ellipse at top, ${accentColor} 0%, transparent 70%)` }
+            : undefined
+        }
+      />
 
- {/* Cupom 1-Toque (exibido se preenchido ou se em modo de edição) */}
- {(couponCode || props.isEditing) && (
- <div
- className="flex items-center gap-3 p-3 rounded-lg border max-w-md backdrop-blur-sm"
- style={{
- backgroundColor: "rgba(24, 24, 27, 0.85)",
- borderColor: `${accentColor}40`,
- }}
- >
- <div className="space-y-1 min-w-0 flex-1">
- <p className="text-2xs uppercase font-bold" style={{ color: accentColor }}>
- Cupom de Desconto
- </p>
- <p className="font-mono text-sm font-bold text-foreground tracking-widest truncate">
- {couponCode || "SEM CUPOM DEFINIDO"}
- </p>
- </div>
- {couponCode && (
- <Button
- type="button"
- onClick={handleCopyCoupon}
- size="sm"
- className={cn(
- "h-8 px-3 rounded-lg text-xs font-bold gap-2 transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0",
- copied
- ? "bg-emerald-500 text-foreground"
- : "text-zinc-950 font-bold hover:brightness-110"
- )}
- style={
- !copied
- ? {
- backgroundColor: accentColor,
- }
- : undefined
- }
- >
- {copied ? (
- <>
- <Check className="size-3.5" />
- <span>Copiado</span>
- </>
- ) : (
- <>
- <Copy className="size-3.5" />
- <span>Copiar Cupom</span>
- </>
- )}
- </Button>
- )}
- </div>
- )}
- </div>
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Lado Esquerdo: Mensagem e Oferta */}
+          <div className="space-y-6 lg:col-span-7">
+            {badge && (
+              <div
+                className="inline-flex items-center gap-2 rounded-full border border-warning/30 bg-warning/10 px-4 py-1 text-xs font-bold text-warning-strong backdrop-blur-md"
+                style={
+                  accentColor
+                    ? {
+                        borderColor: `${accentColor}55`,
+                        backgroundColor: `${accentColor}20`,
+                        color: accentColor,
+                      }
+                    : undefined
+                }
+              >
+                <Flame className="size-3.5 animate-pulse motion-reduce:animate-none text-warning-strong" style={accentStyle} />
+                <span>{badge}</span>
+              </div>
+            )}
 
- {/* Lado Direito: Temporizador Regressivo & CTA */}
- <div className="lg:col-span-5">
- <div
- className="rounded-lg border p-6 sm:p-8  backdrop-blur-xl text-center space-y-6"
- style={{
- backgroundColor: "rgba(24, 24, 27, 0.88)",
- borderColor: `${accentColor}40`,
- }}
- >
- <div className="space-y-1">
- <div
- className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider"
- style={{ color: accentColor }}
- >
- <Clock className="size-4" />
- <span>A Oferta Encerra Em:</span>
- </div>
- </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+                {title}{" "}
+                {discountPercentage && (
+                  <span
+                    className="underline decoration-2 text-warning-strong decoration-warning/60"
+                    style={accentColor ? { color: accentColor, textDecorationColor: `${accentColor}80` } : undefined}
+                  >
+                    {discountPercentage}
+                  </span>
+                )}
+              </h1>
+              {subtitle && (
+                <p className="text-sm sm:text-base text-muted-foreground max-w-lg leading-relaxed">
+                  {subtitle}
+                </p>
+              )}
+            </div>
 
- {/* Blocos de Contagem */}
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
- {[
- { value: timeLeft.days, label: "Dias" },
- { value: timeLeft.hours, label: "Horas" },
- { value: timeLeft.minutes, label: "Min" },
- { value: timeLeft.seconds, label: "Seg" },
- ].map((item, idx) => (
- <div
- key={idx}
- className="p-3 rounded-lg bg-zinc-800/80 border border-zinc-700/60 flex flex-col items-center"
- >
- <span
- className="text-2xl sm:text-3xl font-mono font-black"
- style={{ color: accentColor }}
- >
- {String(item.value).padStart(2, "0")}
- </span>
- <span className="text-2xs font-semibold text-zinc-400 uppercase mt-1">
- {item.label}
- </span>
- </div>
- ))}
- </div>
+            {/* Cupom 1-Toque */}
+            {(couponCode || props.isEditing) && (
+              <div
+                className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card/90 max-w-md backdrop-blur-sm"
+                style={accentColor ? { borderColor: `${accentColor}40` } : undefined}
+              >
+                <div className="space-y-1 min-w-0 flex-1">
+                  <p className="text-2xs uppercase font-bold text-warning-strong" style={accentStyle}>
+                    Cupom de Desconto
+                  </p>
+                  <p className="font-mono text-sm font-bold text-foreground tracking-widest truncate">
+                    {couponCode || "SEM CUPOM DEFINIDO"}
+                  </p>
+                </div>
+                {couponCode && (
+                  <Button
+                    type="button"
+                    onClick={handleCopyCoupon}
+                    size="sm"
+                    className={cn(
+                      "h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold gap-2 transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                      copied
+                        ? "bg-success text-success-foreground"
+                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    )}
+                    style={!copied && accentColor ? { backgroundColor: accentColor } : undefined}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="size-3.5" />
+                        <span>Copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-3.5" />
+                        <span>Copiar Cupom</span>
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
 
- <Button
- asChild
- className="w-full h-11 rounded-lg text-xs sm:text-sm font-bold gap-2 text-zinc-950  cursor-pointer transition-transform hover:scale-102"
- style={{
- background: `linear-gradient(135deg, ${accentColor}, #f97316)`,
- }}
- >
- <a className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
- href={props.isEditing ? "#" : targetLink}
- onClick={(e) => {
- if (props.isEditing) {
- e.preventDefault();
- }
- }}
- >
- <Zap className="size-4 fill-current" />
- <span>{buttonText}</span>
- <ArrowRight className="size-4" />
- </a>
- </Button>
- </div>
- </div>
- </div>
- </div>
- </div>
- );
+          {/* Lado Direito: Temporizador Regressivo & CTA */}
+          <div className="lg:col-span-5">
+            <div
+              className="rounded-lg border border-border bg-card/90 p-6 sm:p-8 backdrop-blur-xl text-center space-y-6"
+              style={accentColor ? { borderColor: `${accentColor}40` } : undefined}
+            >
+              <div className="space-y-1">
+                <div
+                  className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-warning-strong"
+                  style={accentStyle}
+                >
+                  <Clock className="size-4" />
+                  <span>A Oferta Encerra Em:</span>
+                </div>
+              </div>
+
+              {/* Blocos de Contagem */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { value: timeLeft.days, label: "Dias" },
+                  { value: timeLeft.hours, label: "Horas" },
+                  { value: timeLeft.minutes, label: "Min" },
+                  { value: timeLeft.seconds, label: "Seg" },
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-lg bg-muted border border-border/60 flex flex-col items-center"
+                  >
+                    <span
+                      className="text-2xl sm:text-3xl font-mono font-black text-foreground"
+                      style={accentStyle}
+                    >
+                      {String(item.value).padStart(2, "0")}
+                    </span>
+                    <span className="text-2xs font-semibold text-muted-foreground uppercase mt-1">
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                asChild
+                className="w-full h-11 min-h-11 rounded-lg text-xs sm:text-sm font-bold gap-2 cursor-pointer transition-transform hover:scale-102 focus-visible:ring-2 focus-visible:ring-ring"
+                style={accentColor ? { backgroundColor: accentColor } : undefined}
+              >
+                <a
+                  href={props.isEditing ? "#" : targetLink}
+                  onClick={(e) => {
+                    if (props.isEditing) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
+                  <Zap className="size-4 fill-current" />
+                  <span>{buttonText}</span>
+                  <ArrowRight className="size-4" />
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default FlashSaleHero;

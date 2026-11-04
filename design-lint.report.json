@@ -1,21 +1,21 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-04T02:45:04.009Z",
+  "timestamp": "2026-11-04T03:04:15.085Z",
   "inspectedFiles": 2605,
-  "totalViolations": 723,
+  "totalViolations": 694,
   "summary": {
-    "totalViolations": 723,
+    "totalViolations": 694,
     "bySeverity": {
       "P0": 0,
-      "P1": 717,
+      "P1": 688,
       "P2": 6,
       "P3": 0
     },
     "byRule": {
-      "DL-02": 140,
-      "DL-18": 46,
-      "DL-05": 51,
-      "DL-01": 430,
+      "DL-02": 137,
+      "DL-18": 45,
+      "DL-05": 42,
+      "DL-01": 414,
       "DL-13": 9,
       "DL-12": 26,
       "DL-11": 15,
@@ -23,9 +23,9 @@
     },
     "byModule": {
       "components/app": {
-        "total": 251,
+        "total": 222,
         "P0": 0,
-        "P1": 251,
+        "P1": 222,
         "P2": 0,
         "P3": 0
       },
@@ -121,7 +121,7 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 234,
+    "filesWithViolations": 230,
     "filesCount": 2605
   },
   "config": {
@@ -484,17 +484,6 @@
       "message": "Cor literal hardcoded \"text-white\". Use tokens semânticos text-foreground/bg-background."
     },
     {
-      "id": "DL-18",
-      "rule": "DL-18",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/banner-hero-carousel.tsx",
-      "module": "components/app",
-      "line": 162,
-      "column": 46,
-      "severity": "P1",
-      "match": "bg-black",
-      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
-    },
-    {
       "id": "DL-02",
       "rule": "DL-02",
       "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-media-chip.tsx",
@@ -537,314 +526,6 @@
       "severity": "P1",
       "match": "useQuery sem error state",
       "message": "Superfície assíncrona sem captura e diagnóstico de erro (isError / ErrorBoundary)."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 95,
-      "column": 31,
-      "severity": "P1",
-      "match": "#ffffff",
-      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 96,
-      "column": 30,
-      "severity": "P1",
-      "match": "#fff",
-      "message": "Cor hexadecimal literal \"#fff\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 99,
-      "column": 40,
-      "severity": "P1",
-      "match": "#09090b",
-      "message": "Cor hexadecimal literal \"#09090b\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 99,
-      "column": 52,
-      "severity": "P1",
-      "match": "#ffffff",
-      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 100,
-      "column": 39,
-      "severity": "P1",
-      "match": "#09090b",
-      "message": "Cor hexadecimal literal \"#09090b\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 100,
-      "column": 51,
-      "severity": "P1",
-      "match": "rgba(255, 255, 255, 0.12)",
-      "message": "Cor RGB/HSL literal \"rgba(255, 255, 255, 0.12)\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 101,
-      "column": 43,
-      "severity": "P1",
-      "match": "#ffffff",
-      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 101,
-      "column": 55,
-      "severity": "P1",
-      "match": "#ffffff",
-      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
-    },
-    {
-      "id": "DL-05",
-      "rule": "DL-05",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 115,
-      "column": 2,
-      "severity": "P1",
-      "match": "style={{ color: customText || defaultTextColor }}",
-      "message": "Atributo style inline contendo propriedades visuais proibidas."
-    },
-    {
-      "id": "DL-05",
-      "rule": "DL-05",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 135,
-      "column": 2,
-      "severity": "P1",
-      "match": "style={{ color: customText || defaultTextColor }}",
-      "message": "Atributo style inline contendo propriedades visuais proibidas."
-    },
-    {
-      "id": "DL-05",
-      "rule": "DL-05",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 149,
-      "column": 2,
-      "severity": "P1",
-      "match": "style={{ color: customText || defaultTextColor }}",
-      "message": "Atributo style inline contendo propriedades visuais proibidas."
-    },
-    {
-      "id": "DL-05",
-      "rule": "DL-05",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 163,
-      "column": 2,
-      "severity": "P1",
-      "match": "style={{ color: customText || defaultTextColor }}",
-      "message": "Atributo style inline contendo propriedades visuais proibidas."
-    },
-    {
-      "id": "DL-05",
-      "rule": "DL-05",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/countdown-timer.tsx",
-      "module": "components/app",
-      "line": 212,
-      "column": 2,
-      "severity": "P1",
-      "match": "style={{ color: textColor }}",
-      "message": "Atributo style inline contendo propriedades visuais proibidas."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 84,
-      "column": 51,
-      "severity": "P1",
-      "match": "#f59e0b",
-      "message": "Cor hexadecimal literal \"#f59e0b\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 121,
-      "column": 32,
-      "severity": "P1",
-      "match": "#09090b",
-      "message": "Cor hexadecimal literal \"#09090b\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 122,
-      "column": 24,
-      "severity": "P1",
-      "match": "#ffffff",
-      "message": "Cor hexadecimal literal \"#ffffff\" fora da camada de token."
-    },
-    {
-      "id": "DL-05",
-      "rule": "DL-05",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 158,
-      "column": 71,
-      "severity": "P1",
-      "match": "style={{ color: accentColor }}",
-      "message": "Atributo style inline contendo propriedades visuais proibidas."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 190,
-      "column": 20,
-      "severity": "P1",
-      "match": "rgba(24, 24, 27, 0.85)",
-      "message": "Cor RGB/HSL literal \"rgba(24, 24, 27, 0.85)\" fora da camada de token."
-    },
-    {
-      "id": "DL-05",
-      "rule": "DL-05",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 195,
-      "column": 46,
-      "severity": "P1",
-      "match": "style={{ color: accentColor }}",
-      "message": "Atributo style inline contendo propriedades visuais proibidas."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 243,
-      "column": 20,
-      "severity": "P1",
-      "match": "rgba(24, 24, 27, 0.88)",
-      "message": "Cor RGB/HSL literal \"rgba(24, 24, 27, 0.88)\" fora da camada de token."
-    },
-    {
-      "id": "DL-05",
-      "rule": "DL-05",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 250,
-      "column": 2,
-      "severity": "P1",
-      "match": "style={{ color: accentColor }}",
-      "message": "Atributo style inline contendo propriedades visuais proibidas."
-    },
-    {
-      "id": "DL-05",
-      "rule": "DL-05",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 271,
-      "column": 2,
-      "severity": "P1",
-      "match": "style={{ color: accentColor }}",
-      "message": "Atributo style inline contendo propriedades visuais proibidas."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/flash-sale-hero.tsx",
-      "module": "components/app",
-      "line": 286,
-      "column": 55,
-      "severity": "P1",
-      "match": "#f97316",
-      "message": "Cor hexadecimal literal \"#f97316\" fora da camada de token."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/hero-carousel.tsx",
-      "module": "components/app",
-      "line": 58,
-      "column": 25,
-      "severity": "P1",
-      "match": "aspect-[2.4/1]",
-      "message": "Classe arbitrária com colchetes \"aspect-[2.4/1]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/hero-carousel.tsx",
-      "module": "components/app",
-      "line": 147,
-      "column": 72,
-      "severity": "P1",
-      "match": "#1a1a2e",
-      "message": "Cor hexadecimal literal \"#1a1a2e\" fora da camada de token."
-    },
-    {
-      "id": "DL-01",
-      "rule": "DL-01",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/hero-carousel.tsx",
-      "module": "components/app",
-      "line": 147,
-      "column": 85,
-      "severity": "P1",
-      "match": "#16213e",
-      "message": "Cor hexadecimal literal \"#16213e\" fora da camada de token."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/hero-carousel.tsx",
-      "module": "components/app",
-      "line": 147,
-      "column": 66,
-      "severity": "P1",
-      "match": "from-[#1a1a2e]",
-      "message": "Classe arbitrária com colchetes \"from-[#1a1a2e]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/commerce/dynamic-sections/hero-carousel.tsx",
-      "module": "components/app",
-      "line": 147,
-      "column": 81,
-      "severity": "P1",
-      "match": "to-[#16213e]",
-      "message": "Classe arbitrária com colchetes \"to-[#16213e]\". Use tokens canônicos."
     },
     {
       "id": "DL-01",
@@ -2022,6 +1703,325 @@
       "severity": "P1",
       "match": "max-w-[calc(100vw-2rem)]",
       "message": "Classe arbitrária com colchetes \"max-w-[calc(100vw-2rem)]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-05",
+      "rule": "DL-05",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/pwa/PwaSplashPreview.tsx",
+      "module": "components/app",
+      "line": 24,
+      "column": 7,
+      "severity": "P1",
+      "match": "style={{ backgroundColor }}",
+      "message": "Atributo style inline contendo propriedades visuais proibidas."
+    },
+    {
+      "id": "DL-05",
+      "rule": "DL-05",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/pwa/PwaSplashPreview.tsx",
+      "module": "components/app",
+      "line": 43,
+      "column": 13,
+      "severity": "P1",
+      "match": "style={{ backgroundColor: themeColor }}",
+      "message": "Atributo style inline contendo propriedades visuais proibidas."
+    },
+    {
+      "id": "DL-05",
+      "rule": "DL-05",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/pwa/PwaSplashPreview.tsx",
+      "module": "components/app",
+      "line": 58,
+      "column": 13,
+      "severity": "P1",
+      "match": "style={{ backgroundColor: themeColor }}",
+      "message": "Atributo style inline contendo propriedades visuais proibidas."
+    },
+    {
+      "id": "DL-05",
+      "rule": "DL-05",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/pwa/PwaSplashPreview.tsx",
+      "module": "components/app",
+      "line": 68,
+      "column": 13,
+      "severity": "P1",
+      "match": "style={{ backgroundColor: themeColor }}",
+      "message": "Atributo style inline contendo propriedades visuais proibidas."
+    },
+    {
+      "id": "DL-05",
+      "rule": "DL-05",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/pwa/PwaSplashPreview.tsx",
+      "module": "components/app",
+      "line": 78,
+      "column": 13,
+      "severity": "P1",
+      "match": "style={{ backgroundColor: themeColor }}",
+      "message": "Atributo style inline contendo propriedades visuais proibidas."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/pwa/QuickCheckoutButton.tsx",
+      "module": "components/app",
+      "line": 16,
+      "column": 17,
+      "severity": "P1",
+      "match": "#0F172A",
+      "message": "Cor hexadecimal literal \"#0F172A\" fora da camada de token."
+    },
+    {
+      "id": "DL-05",
+      "rule": "DL-05",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/pwa/QuickCheckoutButton.tsx",
+      "module": "components/app",
+      "line": 27,
+      "column": 9,
+      "severity": "P1",
+      "match": "style={{ backgroundColor: themeColor }}",
+      "message": "Atributo style inline contendo propriedades visuais proibidas."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/recipes/recipe-story-modal.tsx",
+      "module": "components/app",
+      "line": 47,
+      "column": 27,
+      "severity": "P1",
+      "match": "#09090b",
+      "message": "Cor hexadecimal literal \"#09090b\" fora da camada de token."
+    },
+    {
+      "id": "DL-18",
+      "rule": "DL-18",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/recipes/recipe-story-modal.tsx",
+      "module": "components/app",
+      "line": 117,
+      "column": 48,
+      "severity": "P1",
+      "match": "bg-black",
+      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/shell/places-highlight-badge.tsx",
+      "module": "components/app",
+      "line": 20,
+      "column": 100,
+      "severity": "P1",
+      "match": "text-[0.82em]",
+      "message": "Classe arbitrária com colchetes \"text-[0.82em]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/shell/utility-cluster.tsx",
+      "module": "components/app",
+      "line": 850,
+      "column": 68,
+      "severity": "P1",
+      "match": "top-[20%]",
+      "message": "Classe arbitrária com colchetes \"top-[20%]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-11",
+      "rule": "DL-11",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/shell/utility-cluster.tsx",
+      "module": "components/app",
+      "line": 1,
+      "column": 1,
+      "severity": "P1",
+      "match": "useQuery sem loading/skeleton",
+      "message": "Superfície de consulta assíncrona sem verificação de isLoading ou componente Skeleton."
+    },
+    {
+      "id": "DL-18",
+      "rule": "DL-18",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/GastronomyTemplate.tsx",
+      "module": "components/app",
+      "line": 42,
+      "column": 42,
+      "severity": "P1",
+      "match": "bg-black",
+      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateEditorialGrid.tsx",
+      "module": "components/app",
+      "line": 48,
+      "column": 65,
+      "severity": "P1",
+      "match": "#f1f5f9",
+      "message": "Cor hexadecimal literal \"#f1f5f9\" fora da camada de token."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateEditorialGrid.tsx",
+      "module": "components/app",
+      "line": 48,
+      "column": 61,
+      "severity": "P1",
+      "match": "bg-[#f1f5f9]",
+      "message": "Classe arbitrária com colchetes \"bg-[#f1f5f9]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateLuxuryDarkGlass.tsx",
+      "module": "components/app",
+      "line": 44,
+      "column": 85,
+      "severity": "P1",
+      "match": "tracking-[0.25em]",
+      "message": "Classe arbitrária com colchetes \"tracking-[0.25em]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateLuxuryDarkGlass.tsx",
+      "module": "components/app",
+      "line": 53,
+      "column": 79,
+      "severity": "P1",
+      "match": "shadow-[0_20px_60px_rgba(0,0,0,0.9)]",
+      "message": "Classe arbitrária com colchetes \"shadow-[0_20px_60px_rgba(0,0,0,0.9)]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-18",
+      "rule": "DL-18",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateLuxuryDarkGlass.tsx",
+      "module": "components/app",
+      "line": 61,
+      "column": 42,
+      "severity": "P1",
+      "match": "bg-black",
+      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateMinimalHero.tsx",
+      "module": "components/app",
+      "line": 42,
+      "column": 65,
+      "severity": "P1",
+      "match": "#070b12",
+      "message": "Cor hexadecimal literal \"#070b12\" fora da camada de token."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateMinimalHero.tsx",
+      "module": "components/app",
+      "line": 42,
+      "column": 61,
+      "severity": "P1",
+      "match": "bg-[#070b12]",
+      "message": "Classe arbitrária com colchetes \"bg-[#070b12]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-18",
+      "rule": "DL-18",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateMinimalHero.tsx",
+      "module": "components/app",
+      "line": 54,
+      "column": 55,
+      "severity": "P1",
+      "match": "bg-black",
+      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateSeasonRentalGrid.tsx",
+      "module": "components/app",
+      "line": 24,
+      "column": 32,
+      "severity": "P1",
+      "match": "#F9F7E8",
+      "message": "Cor hexadecimal literal \"#F9F7E8\" fora da camada de token."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateSeasonRentalGrid.tsx",
+      "module": "components/app",
+      "line": 24,
+      "column": 28,
+      "severity": "P1",
+      "match": "bg-[#F9F7E8]",
+      "message": "Classe arbitrária com colchetes \"bg-[#F9F7E8]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateSeasonRentalGrid.tsx",
+      "module": "components/app",
+      "line": 33,
+      "column": 42,
+      "severity": "P1",
+      "match": "#48BB78",
+      "message": "Cor hexadecimal literal \"#48BB78\" fora da camada de token."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateSeasonRentalGrid.tsx",
+      "module": "components/app",
+      "line": 33,
+      "column": 38,
+      "severity": "P1",
+      "match": "bg-[#48BB78]",
+      "message": "Classe arbitrária com colchetes \"bg-[#48BB78]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateSeasonRentalGrid.tsx",
+      "module": "components/app",
+      "line": 52,
+      "column": 58,
+      "severity": "P1",
+      "match": "#48BB78",
+      "message": "Cor hexadecimal literal \"#48BB78\" fora da camada de token."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateSeasonRentalGrid.tsx",
+      "module": "components/app",
+      "line": 52,
+      "column": 54,
+      "severity": "P1",
+      "match": "bg-[#48BB78]",
+      "message": "Classe arbitrária com colchetes \"bg-[#48BB78]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateSeasonRentalGrid.tsx",
+      "module": "components/app",
+      "line": 59,
+      "column": 29,
+      "severity": "P1",
+      "match": "#48BB78",
+      "message": "Cor hexadecimal literal \"#48BB78\" fora da camada de token."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Eduardo Antônio Ramo/Documents/waesy/src/components/social-templates/imoveis/RealEstateSeasonRentalGrid.tsx",
+      "module": "components/app",
+      "line": 59,
+      "column": 25,
+      "severity": "P1",
+      "match": "bg-[#48BB78]",
+      "message": "Classe arbitrária com colchetes \"bg-[#48BB78]\". Use tokens canônicos."
     }
   ]
 }

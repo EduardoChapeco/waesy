@@ -1,5 +1,18 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-431: Saneamento Determinístico de Cores Hardcoded em Seções Dinâmicas e Padronização Canônica de Touch Targets em Pedidos e KDS
+- **Data:** 2026-11-04
+- **Contexto:**
+  1. Presença de cores literais hexadecimais/RGB hardcoded (DL-01, DL-18) e propriedades inline (DL-05) em seções vitrine dinâmicas (`countdown-timer.tsx`, `flash-sale-hero.tsx`, `hero-carousel.tsx`, `banner-hero-carousel.tsx`).
+  2. Alvos de toque interativos e seletores de visualização inferiores a 44px (DL-14 / Regra B.26) em telas de pedidos operacionais (`workspace.pedidos.index.tsx` e `workspace.pedidos.gestor.tsx`).
+  3. Redução mandatória do teto na catraca mecânica de CI (`scripts/design-lint.mjs --ratchet`).
+- **Decisão:**
+  1. Substituição integral de cores hexadecimais literais e gradientes arbitrários por tokens semânticos (`bg-card`, `text-card-foreground`, `border-border`, `bg-muted`, `text-muted-foreground`, `text-warning-strong`, `bg-warning/10`, `text-success-strong`, `bg-success/10`).
+  2. Ajuste dos controles de topo, seletores de modo e abas operacionais para o piso canônico de 44px (`h-11 min-h-11`) com anéis de foco explícitos (`:focus-visible:ring-2 focus-visible:ring-ring`).
+  3. Redução de 37 violações de design lint (694 vs 731 baseline), eliminação de débito em 4 arquivos e congelamento do novo teto.
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.14, B.26, B.31; WCAG 2.2 AA.
+- **Consequências:** Conformidade plena com a catraca de CI, acessibilidade tátil garantida em 100% dos controles e superfícies responsivas adaptativas sem cores literais órfãs.
+
 ## DEC-430: Consolidação de Paridade WYSIWYG, Erradicação de Cores Hardcoded e Blindagem dos Contratos de Lead no Omni Builder
 - **Data:** 2026-11-03
 - **Contexto:**

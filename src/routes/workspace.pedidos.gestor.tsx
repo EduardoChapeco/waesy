@@ -80,21 +80,21 @@ function KDSPage() {
 
  const getChannelInfo = (order: any) => {
  if (order.channel_origin === "ifood") {
- return { label: "iFood", color: "bg-rose-500/10 text-rose-600 border-rose-500/30" };
+ return { label: "iFood", color: "bg-destructive/10 text-destructive border-destructive/30" };
  }
  if (order.channel_origin === "whatsapp") {
- return { label: "WhatsApp", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" };
+ return { label: "WhatsApp", color: "bg-success/10 text-success border-success/30" };
  }
  if (order.origin_type === "table" || order.table_identifier) {
  return {
  label: `Mesa ${order.table_identifier || ""}`,
- color: "bg-blue-500/10 text-blue-600 border-blue-500/30",
+ color: "bg-info/10 text-info border-info/30",
  };
  }
  if (order.origin_type === "counter" || order.shipping_method === "pickup") {
  return { label: "Balcão", color: "bg-warning/10 text-warning-strong border-warning/30" };
  }
- return { label: "Cardápio Próprio", color: "bg-purple-500/10 text-purple-600 border-purple-500/30" };
+ return { label: "Cardápio Próprio", color: "bg-primary/10 text-primary border-primary/30" };
  };
 
  const delayedOrders = useMemo(() => {
@@ -428,7 +428,7 @@ function KDSPage() {
             Ativar Áudio
           </Badge>
         )}
- <Button variant="outline" size="sm" onClick={toggleFullscreen} className="gap-2 text-xs font-bold">
+ <Button variant="outline" size="sm" onClick={toggleFullscreen} className="h-11 min-h-11 sm:h-9 px-3 gap-2 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
  <Maximize className="size-3.5" />
  {isFullscreen ? "Sair" : "Tela Cheia"}
  </Button>
@@ -443,7 +443,7 @@ function KDSPage() {
  type="button"
  onClick={() => setTimingTab("now")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
+ "h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
  timingTab === "now"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -488,7 +488,7 @@ function KDSPage() {
  type="button"
  onClick={() => setChannelFilter(ch.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border",
+ "h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border flex items-center justify-center",
  channelFilter === ch.id
  ? "bg-foreground text-background border-foreground"
  : "bg-background text-muted-foreground border-border hover:text-foreground hover:border-foreground/40",
@@ -505,7 +505,7 @@ function KDSPage() {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar cliente, pedido, rua..."
- className="h-8 text-xs rounded-lg pl-3 pr-8 bg-background border-border/80"
+ className="h-11 min-h-11 sm:h-9 text-xs rounded-lg pl-3 pr-8 bg-background border-border/80"
  />
  {searchQuery && (
  <button
