@@ -254,20 +254,7 @@ function RootShell({ children }: { children: ReactNode }) {
           />
         )}
 
-        {/* Speculation Rules API para navegações instantâneas (Skill web-performance) */}
-        <script
-          type="speculationrules"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              prerender: [
-                {
-                  where: { href_matches: "/*" },
-                  eagerness: "moderate",
-                },
-              ],
-            }),
-          }}
-        />
+        {/* Speculation Rules: prerender irrestrito desativado (SPEC-20261104) para evitar sobrecarga de SSR em background */}
 
         {/* Inject Google Analytics if configured */}
         {gaPixel && (

@@ -58,8 +58,8 @@
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| 1 | M1: Fundação Ultraminimalista, Design System & Primitivos de Visualização | Features 1, 2, 3, 4, 5: Single Sovereign Surface, KpiMetricCard, UniversalViewManager, migration workspace_user_view_preferences, BFF e testes unitários | none | IN_PROGRESS |
-| 2 | M2: Modalidades Flexíveis de Visualização nos Fluxos Operacionais (R2) | Features 6, 7, 8, 9, 10: Integração de Table/Kanban/Cards na Agenda, Clientes, Pedidos e Tarefas, mais estágios padrão de Kanban | M1 | PLANNED |
+| 1 | M1: Fundação Ultraminimalista, Design System & Primitivos de Visualização | Features 1, 2, 3, 4, 5: Single Sovereign Surface, KpiMetricCard, UniversalViewManager, migration workspace_user_view_preferences, BFF e testes unitários | none | COMPLETED |
+| 2 | M2: Modalidades Flexíveis de Visualização nos Fluxos Operacionais (R2) | Features 6, 7, 8, 9, 10: Integração de Table/Kanban/Cards na Agenda, Clientes, Pedidos e Tarefas, mais estágios padrão de Kanban | M1 | COMPLETED |
 | 3 | M3: Saneamento de Componentes Estáticos, Contratos BFF & Persistência Real (R3) | Features 11, 12, 13, 14, 15: Eliminação de dados hardcoded em 34 telas, hotpages dinâmicas, auditoria de agendamentos, picking real e KDS | M1 | PLANNED |
 | 4 | M4: Bifurcação Congelada Mobile Native (<640px) vs Desktop Native (>=840px) | Features 16, 17, 18, 19: Alvos táteis de 44px (DL-14), Bottom Sheets de 100dvh, thumb zone inferior mobile e eliminação de duplicação de DOM | M2, M3 | PLANNED |
 | 5 | M5: Suíte E2E, Quality Gate Final & Prova de Integridade Forense | Features 20, 21, 22, 23, 24: Testes E2E (Tiers 1-4), typecheck limpo, build limpo, design-lint ratchet, Tier 5 adversarial e Victory Audit | M1, M2, M3, M4 | PLANNED |

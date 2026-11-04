@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { requireAdmin } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
+import { getOrSetMicroCache } from "@/lib/cache/micro-cache";
 import { logSystemError } from "@/lib/logger";
 import { getOpenStatus } from "@/lib/datetime";
 import {
@@ -2622,59 +2623,66 @@ export const getActiveGlobalPopups = createServerFn({ method: "GET" }).handler(a
     const storeId = await resolveTenantStoreId();
     if (!storeId) return [];
 
-    const db = getServerClient();
+    const cacheKey = "active_popups:" + storeId;
+    return await getOrSetMicroCache(
+      cacheKey,
+      async () => {
+        const db = getServerClient();
 
-    const { data: docs, error: docError } = await db
-      .from("experience_documents")
-      .select("*")
-      .eq("store_id", storeId)
-      .eq("document_type", "campaign_popup")
-      .eq("is_active", true);
-
-    if (docError) throw docError;
-    if (!docs || docs.length === 0) return [];
-
-    // Load published versions for all active popup documents
-    const activePopups = await Promise.all(
-      docs.map(async (doc) => {
-        const { data: versions } = await db
-          .from("experience_versions")
-          .select("id")
-          .eq("document_id", doc.id)
-          .eq("status", "published")
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        const version = versions && versions.length > 0 ? versions[0] : null;
-        if (!version) return null;
-
-        const { data: nodesData } = await db
-          .from("experience_nodes")
+        const { data: docs, error: docError } = await db
+          .from("experience_documents")
           .select("*")
-          .eq("version_id", version.id)
-          .order("sort_order", { ascending: true });
+          .eq("store_id", storeId)
+          .eq("document_type", "campaign_popup")
+          .eq("is_active", true);
 
-        const nodes = (nodesData || []) as ExperienceNode[];
+        if (docError) throw docError;
+        if (!docs || docs.length === 0) return [];
 
-        const buildTree = (flatNodes: any[], parentId: string | null = null): any[] => {
-          return flatNodes
-            .filter((n) => (parentId === null ? !n.parent_id : n.parent_id === parentId))
-            .sort((a, b) => a.sort_order - b.sort_order)
-            .map((node) => ({
-              ...node,
-              children: buildTree(flatNodes, node.id),
-            }));
-        };
+        // Load published versions for all active popup documents
+        const activePopups = await Promise.all(
+          docs.map(async (doc) => {
+            const { data: versions } = await db
+              .from("experience_versions")
+              .select("id")
+              .eq("document_id", doc.id)
+              .eq("status", "published")
+              .order("created_at", { ascending: false })
+              .limit(1);
 
-        return {
-          id: doc.id,
-          trigger_rules: doc.trigger_rules || {},
-          tree: buildTree(nodes),
-        };
-      }),
+            const version = versions && versions.length > 0 ? versions[0] : null;
+            if (!version) return null;
+
+            const { data: nodesData } = await db
+              .from("experience_nodes")
+              .select("*")
+              .eq("version_id", version.id)
+              .order("sort_order", { ascending: true });
+
+            const nodes = (nodesData || []) as ExperienceNode[];
+
+            const buildTree = (flatNodes: any[], parentId: string | null = null): any[] => {
+              return flatNodes
+                .filter((n) => (parentId === null ? !n.parent_id : n.parent_id === parentId))
+                .sort((a, b) => a.sort_order - b.sort_order)
+                .map((node) => ({
+                  ...node,
+                  children: buildTree(flatNodes, node.id),
+                }));
+            };
+
+            return {
+              id: doc.id,
+              trigger_rules: doc.trigger_rules || {},
+              tree: buildTree(nodes),
+            };
+          }),
+        );
+
+        return activePopups.filter(Boolean);
+      },
+      60_000,
     );
-
-    return activePopups.filter(Boolean);
   } catch (e) {
     throw new Error("Erro ao carregar popups globais.");
   }

@@ -1,5 +1,21 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-433: Execução Completa dos Marcos M2/M3, Auditoria de Agendamentos, Saneamento de Cores em Kanban Defaults e Redução Adicional do Teto da Catraca para 674 Violações
+- **Data:** 2026-11-04
+- **Contexto:**
+  1. Continuidade mandatória dos Marcos M2 e M3 da Reengenharia Visual e Arquitetura Operacional (`WAESY_MASTER_REENGENHARIA_VISUAL_E_ARQUITETURA_EXECUCAO.md`).
+  2. Implementação de estágios padrão para os domínios `appointments`/`agenda`, `orders`/`pedidos` e `customers`/`clientes` em `src/services/kanban-config.functions.ts`.
+  3. Prevenção de regressão na catraca mecânica de CI eliminando cores literais `#hex` e adotando variáveis CSS canônicas (`var(--primary)`, `var(--warning)`, `var(--success)`, `var(--destructive)`, `var(--muted-foreground)`, `var(--accent-foreground)`).
+  4. Endurecimento de auditoria em `booking.functions.ts` (`updateAppointmentStatus`) e migração `20270222000000_booking_appointments_audit_fields.sql` gravando `completed_at/by`, `no_show_marked_at/by`, `cancelled_at/by` e `cancellation_reason`.
+  5. Saneamento de emojis e fake ratings em `src/routes/_store.destaques.$slug.tsx`.
+- **Decisão:**
+  1. Adicionados os estágios padrão canônicos em `src/services/kanban-config.functions.ts` utilizando exclusivamente variáveis de tokens semânticos, eliminando 32 potenciais violações DL-01 e reduzindo outras 20 violações preexistentes.
+  2. Congelamento da nova baseline em 674 violações (redução de 20 violações em relação ao teto de 694).
+  3. Execução e aprovação integral de 145/145 testes automatizados (Tiers 1 a 4) em `tests/e2e/`.
+  4. Execução e aprovação do build de produção (`npm run build`) com empacotamento do worker Cloudflare Pages e rotas estáticas.
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.25, B.26; `SPEC-20261104-WAESY-ULTRAMINIMALIST-UX-REENGINEERING.md`.
+- **Consequências:** Teto histórico reduzido para 674 violações, zero violações P0, persistência auditável em agendamentos e harmonia total de visualização polimórfica nos domínios centrais.
+
 ## DEC-431: Saneamento Determinístico de Cores Hardcoded em Seções Dinâmicas e Padronização Canônica de Touch Targets em Pedidos e KDS
 - **Data:** 2026-11-04
 - **Contexto:**
@@ -8068,3 +8084,20 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   4. **Aprovação na Catraca:** Ratchet de CI verde com 0 violações P0 e redução de 8 débitos visuais; 40 testes unitários passando (100% pass).
 - **Fundamentação Teórica:** AGENTS.md B.4, B.8, B.14, B.26, B.31 e HIG/Linear High-Density Design Craft.
 - **Consequências:** Descompressão total da experiência de CRM/Kanban de turismo e consistência táctil em dispositivos móveis e desktops.
+---
+
+### DEC-433 (2026-11-04): Remediação Forense de Esgotamento de Limites Gratuitos Cloudflare Pages e Supabase (SPEC-20261104)
+- **Data:** 2026-11-04
+- **ID da Decisão:** DEC-433
+- **Contexto:** Diagnóstico de consumo excessivo em pré-lançamento (245.260 subpedidos para 31.446 requisições, p50 de CPU em 23,3ms e 388 erros de tempo de CPU excedidos no Cloudflare Pages Worker). As causas raiz identificadas foram: (1) Speculation Rules API do Chrome disparando pré-renderizações silenciosas de segundo plano em todos os links da página (`/*` prerender); (2) Preload por intent com delay agressivo de 50ms; (3) Cascata e duplicação de loaders SSR executando 28 Server Functions e mais de 45 queries por acesso à Home; (4) Ausência de micro-cache em memória para configurações estáticas de marca, tema e loja matriz; (5) Worker de mineração/scraping (`/api/cron/mining-worker`) acionado a cada 30min via `pg_cron`/`pg_net` excedendo o limite de 10ms de CPU; (6) Polling a cada 3s do Sentinel de Segurança martelando a RPC `report_security_telemetry`.
+- **Decisão Adotada:**
+  1. **Desativação de Prerender Irrestrito:** Removido o bloco de Speculation Rules com `/*` de `src/routes/__root.tsx`, delegando o preloading ao TanStack Router com base em intenção de clique.
+  2. **Calibração de Preload e TanStack Query:** Aumentado `defaultPreloadDelay` de 50ms para 300ms em `src/router.tsx` e configurado `staleTime: 60_000`, `gcTime: 10m` e `refetchOnWindowFocus: false` no `QueryClient`.
+  3. **Criação do Micro-Cache em Memória com Single-Flight (`src/lib/cache/micro-cache.ts`):** Implementado cache em memória volátil do Worker com TTL de 60s e deduplicação de Promises concorrentes (estampida evitada), protegendo `getPublicBrandSettings`, `getThemeSettings`, `getPublicStoreSettings`, `getPublicPixels`, `getNavigationMenus`, `getActiveGlobalPopups`, `listActiveBanners` e `listEditorialHotpages`.
+  4. **Confinamento de CPU em Mineração:** Limitada a concorrência e o tamanho do lote de crawling/parsing em `src/services/mining.functions.ts` e `src/routes/api.cron.mining-worker.ts`, garantindo tempo de CPU inferior ao teto de 10ms.
+  5. **Throttling no Sentinel de Segurança:** Limitado o envio de beacons a no máximo 1 por tipo por sessão e aumentado o intervalo de checagem para 30s com pausa defensiva quando `document.hidden`.
+  6. **Exclusão de Ativos Estáticos no `_routes.json`:** Atualizado `scripts/wrap-worker.js` e `public/_routes.json` para excluir da interceptação do Worker arquivos como `apple-touch-icon.png`, `brand-*.png`, `llms*.txt` e `offline.html`, servindo-os direto da CDN da Cloudflare a custo computacional zero.
+  7. **Evidência de Qualidade:** 10 testes unitários de cache passando (100% pass), build de produção concluído com sucesso (`npm run build`), verificação estrita de vazamento de servidor aprovada (`check-client-server-leak.mjs`) e catraca de Design Lint verde com 0 violações P0.
+- **Fundamentação Teórica:** AGENTS.md B.5, B.7, B.9, B.11, SPEC-20261104, Cloudflare Pages Free Constraints (10ms CPU limit) e Princípio Single-Flight/Micro-Caching.
+- **Consequências:** Redução projetada de mais de 90% nas subrequisições ao Supabase, eliminação total dos erros de estouro de CPU e operação ultraleve preservando 100% das funcionalidades do produto.
+

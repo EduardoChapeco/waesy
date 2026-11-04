@@ -172,7 +172,7 @@ export async function _updateOrderStatus(
    p_order_id: orderId,
    p_store_id: store_id,
    p_new_status: status,
-   p_reason: status === "cancelled" ? "Cancelado pelo administrador." : null,
+   p_reason: null,
    p_actor_id: null,
    p_idempotency_key: `order-status-${orderId}-${status}`,
   });

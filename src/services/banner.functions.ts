@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getOrSetMicroCache, invalidateMicroCachePrefix } from "@/lib/cache/micro-cache";
 
 export type BannerPlacement =
   | "home"
@@ -113,90 +114,97 @@ export const listActiveBanners = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data: { placement, city, storeId } }): Promise<BannerDTO[]> => {
-    const supabase = getAnonServerClient();
+    const cacheKey = `banners:${placement || "all"}:${city || "all"}:${storeId || "all"}`;
+    return await getOrSetMicroCache(
+      cacheKey,
+      async () => {
+        const supabase = getAnonServerClient();
 
-    let query = supabase
-      .from("banners")
-      .select("*")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: false });
+        let query = supabase
+          .from("banners")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true })
+          .order("created_at", { ascending: false });
 
-    // Tratamento de sinônimos e isolamento canônico
-    if (placement && placement !== "all") {
-      if (placement === "events" || placement === "eventos" || placement === "agenda") {
-        query = query.in("placement", ["eventos", "events", "agenda"]);
-      } else if (placement === "marketplace" || placement === "mercado") {
-        query = query.in("placement", ["mercado", "marketplace"]);
-      } else if (placement === "classificados" || placement === "classifieds") {
-        query = query.in("placement", ["classificados", "classifieds"]);
-      } else {
-        query = query.eq("placement", placement);
-      }
-    }
-
-    // Se for banner de loja específica
-    if (storeId) {
-      query = query.eq("store_id", storeId);
-    }
-
-    // Filtro avançado de localidade / cidade (GPS e Seleção do Usuário)
-    const cleanCity =
-      city &&
-      city !== "Global" &&
-      city !== "all" &&
-      city !== "Todas" &&
-      city !== "Todas as Cidades"
-        ? city.trim()
-        : null;
-
-    if (cleanCity) {
-      query = query.or(`city_filter.eq."${cleanCity}",city_filter.is.null,city_filter.eq.all`);
-    }
-
-    const { data, error } = await query;
-    if (error || !data) {
-      return [];
-    }
-
-    const now = Date.now();
-    const active = data
-      .filter((b: any) => {
-        if (b.starts_at) {
-          const s = new Date(b.starts_at).getTime();
-          if (!isNaN(s) && s > now) return false;
+        // Tratamento de sinônimos e isolamento canônico
+        if (placement && placement !== "all") {
+          if (placement === "events" || placement === "eventos" || placement === "agenda") {
+            query = query.in("placement", ["eventos", "events", "agenda"]);
+          } else if (placement === "marketplace" || placement === "mercado") {
+            query = query.in("placement", ["mercado", "marketplace"]);
+          } else if (placement === "classificados" || placement === "classifieds") {
+            query = query.in("placement", ["classificados", "classifieds"]);
+          } else {
+            query = query.eq("placement", placement);
+          }
         }
-        if (b.ends_at) {
-          const e = new Date(b.ends_at).getTime();
-          if (!isNaN(e) && e < now) return false;
-        }
-        if (b.auto_archive_at) {
-          const a = new Date(b.auto_archive_at).getTime();
-          if (!isNaN(a) && a < now) return false;
-        }
-        return true;
-      })
-      .map((b: any) => ({
-        ...b,
-        show_title: b.show_title === true,
-        show_description: b.show_description === true,
-        show_overlay: b.show_overlay === true,
-        show_badge: b.show_badge === true,
-        show_cta: b.show_cta === true,
-      })) as BannerDTO[];
 
-    // Priorização de localidade: se o usuário está numa cidade específica, anúncios direcionados àquela cidade vêm primeiro
-    if (cleanCity) {
-      active.sort((a, b) => {
-        const aMatches = a.city_filter?.toLowerCase() === cleanCity.toLowerCase();
-        const bMatches = b.city_filter?.toLowerCase() === cleanCity.toLowerCase();
-        if (aMatches && !bMatches) return -1;
-        if (!aMatches && bMatches) return 1;
-        return (a.sort_order || 0) - (b.sort_order || 0);
-      });
-    }
+        // Se for banner de loja específica
+        if (storeId) {
+          query = query.eq("store_id", storeId);
+        }
 
-    return active;
+        // Filtro avançado de localidade / cidade (GPS e Seleção do Usuário)
+        const cleanCity =
+          city &&
+          city !== "Global" &&
+          city !== "all" &&
+          city !== "Todas" &&
+          city !== "Todas as Cidades"
+            ? city.trim()
+            : null;
+
+        if (cleanCity) {
+          query = query.or(`city_filter.eq."${cleanCity}",city_filter.is.null,city_filter.eq.all`);
+        }
+
+        const { data, error } = await query;
+        if (error || !data) {
+          return [];
+        }
+
+        const now = Date.now();
+        const active = data
+          .filter((b: any) => {
+            if (b.starts_at) {
+              const s = new Date(b.starts_at).getTime();
+              if (!isNaN(s) && s > now) return false;
+            }
+            if (b.ends_at) {
+              const e = new Date(b.ends_at).getTime();
+              if (!isNaN(e) && e < now) return false;
+            }
+            if (b.auto_archive_at) {
+              const a = new Date(b.auto_archive_at).getTime();
+              if (!isNaN(a) && a < now) return false;
+            }
+            return true;
+          })
+          .map((b: any) => ({
+            ...b,
+            show_title: b.show_title === true,
+            show_description: b.show_description === true,
+            show_overlay: b.show_overlay === true,
+            show_badge: b.show_badge === true,
+            show_cta: b.show_cta === true,
+          })) as BannerDTO[];
+
+        // Priorização de localidade: se o usuário está numa cidade específica, anúncios direcionados àquela cidade vêm primeiro
+        if (cleanCity) {
+          active.sort((a, b) => {
+            const aMatches = a.city_filter?.toLowerCase() === cleanCity.toLowerCase();
+            const bMatches = b.city_filter?.toLowerCase() === cleanCity.toLowerCase();
+            if (aMatches && !bMatches) return -1;
+            if (!aMatches && bMatches) return 1;
+            return (a.sort_order || 0) - (b.sort_order || 0);
+          });
+        }
+
+        return active;
+      },
+      60_000,
+    );
   });
 
 export const createBanner = createServerFn({ method: "POST" })
@@ -267,6 +275,7 @@ export const createBanner = createServerFn({ method: "POST" })
       throw new Error(`Erro ao criar banner: ${error.message}`);
     }
 
+    invalidateMicroCachePrefix("banners:");
     return banner as BannerDTO;
   });
 
@@ -331,6 +340,7 @@ export const updateBanner = createServerFn({ method: "POST" })
     if (error) {
       throw new Error(`Erro ao atualizar banner: ${error.message}`);
     }
+    invalidateMicroCachePrefix("banners:");
     return updated as BannerDTO;
   });
 
@@ -358,5 +368,6 @@ export const deleteBanner = createServerFn({ method: "POST" })
     if (error) {
       throw new Error(`Falha ao excluir banner: ${error.message}`);
     }
+    invalidateMicroCachePrefix("banners:");
     return { success: true };
   });

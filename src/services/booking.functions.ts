@@ -955,80 +955,104 @@ export const deleteBookingService = createServerFn({ method: "POST" })
  });
 
 export const updateAppointmentStatus = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid(),
- status: z.enum([
- "pending",
- "confirmed",
- "cancelled",
- "completed",
- "checked_in",
- "no_show",
- "in_service",
- ]),
- }),
- )
- .handler(async ({ data: { id, status } }) => {
-  try {
-   const identity = await getServerIdentity();
-   assertStoreAccess(identity, ["owner", "admin", "manager", "professional"]);
-   const storeId = await resolveTenantStoreId();
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      status: z.enum([
+        "pending",
+        "confirmed",
+        "cancelled",
+        "completed",
+        "checked_in",
+        "no_show",
+        "in_service",
+      ]),
+      completed_by: z.string().uuid().optional(),
+      no_show_marked_by: z.string().uuid().optional(),
+      cancelled_by: z.string().uuid().optional(),
+      cancellation_reason: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: { id, status, completed_by, no_show_marked_by, cancelled_by, cancellation_reason } }) => {
+    try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "professional"]);
+      const storeId = await resolveTenantStoreId();
 
-   const db = getServerClient();
+      const db = getServerClient();
 
-   // Se for cancelado, estorno automático do passe de sessões se houver pass_id
-   if (status === "cancelled") {
-    const { data: appt } = await db
-     .from("booking_appointments")
-     .select("id, pass_id, status")
-     .eq("id", id)
-     .eq("store_id", storeId)
-     .maybeSingle();
+      // Se for cancelado, estorno automático do passe de sessões se houver pass_id
+      if (status === "cancelled") {
+        const { data: appt } = await db
+          .from("booking_appointments")
+          .select("id, pass_id, status")
+          .eq("id", id)
+          .eq("store_id", storeId)
+          .maybeSingle();
 
-    if (appt && appt.status !== "cancelled" && appt.pass_id) {
-     const { data: passRow } = await db
-      .from("customer_service_passes")
-      .select("id, remaining_credits, total_credits")
-      .eq("id", appt.pass_id)
-      .maybeSingle();
+        if (appt && appt.status !== "cancelled" && appt.pass_id) {
+          const { data: passRow } = await db
+            .from("customer_service_passes")
+            .select("id, remaining_credits, total_credits")
+            .eq("id", appt.pass_id)
+            .maybeSingle();
 
-     if (passRow) {
-      const restoredBalance = Math.min(passRow.total_credits, passRow.remaining_credits + 1);
-      await db
-       .from("customer_service_passes")
-       .update({
-        remaining_credits: restoredBalance,
-        status: "active",
-        updated_at: new Date().toISOString(),
-       })
-       .eq("id", appt.pass_id);
+          if (passRow) {
+            const restoredBalance = Math.min(passRow.total_credits, passRow.remaining_credits + 1);
+            await db
+              .from("customer_service_passes")
+              .update({
+                remaining_credits: restoredBalance,
+                status: "active",
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", appt.pass_id);
 
-      await db.from("service_pass_ledger").insert({
-       pass_id: appt.pass_id,
-       appointment_id: appt.id,
-       movement_type: "session_cancelled_refund",
-       credits_delta: 1,
-       balance_after: restoredBalance,
-       reason: "Reembolso automático de crédito por cancelamento do agendamento pela recepção",
-      });
-     }
+            await db.from("service_pass_ledger").insert({
+              pass_id: appt.pass_id,
+              appointment_id: appt.id,
+              movement_type: "session_cancelled_refund",
+              credits_delta: 1,
+              balance_after: restoredBalance,
+              reason: cancellation_reason || "Reembolso automático de crédito por cancelamento do agendamento pela recepção",
+            });
+          }
+        }
+      }
+
+      const nowIso = new Date().toISOString();
+      const updatePayload: Record<string, any> = {
+        status,
+        updated_at: nowIso,
+      };
+
+      if (status === "completed") {
+        updatePayload.completed_at = nowIso;
+        updatePayload.completed_by = completed_by || identity?.id || null;
+      } else if (status === "no_show") {
+        updatePayload.no_show_marked_at = nowIso;
+        updatePayload.no_show_marked_by = no_show_marked_by || identity?.id || null;
+      } else if (status === "cancelled") {
+        updatePayload.cancelled_at = nowIso;
+        updatePayload.cancelled_by = cancelled_by || identity?.id || null;
+        if (cancellation_reason) {
+          updatePayload.cancellation_reason = cancellation_reason;
+        }
+      }
+
+      const { error } = await db
+        .from("booking_appointments")
+        .update(updatePayload)
+        .eq("id", id)
+        .eq("store_id", storeId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (e: unknown) {
+      console.error("[booking] updateAppointmentStatus error:", e);
+      throw new Error("Erro ao atualizar status do agendamento.");
     }
-   }
-
-   const { error } = await db
-    .from("booking_appointments")
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .eq("store_id", storeId);
-
-   if (error) throw error;
-   return { success: true };
-  } catch (e: unknown) {
-   console.error("[booking] updateAppointmentStatus error:", e);
-   throw new Error("Erro ao atualizar status do agendamento.");
-  }
- });
+  });
 
 export const addClinicalRecord = createServerFn({ method: "POST" })
  .validator(

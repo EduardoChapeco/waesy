@@ -21,80 +21,80 @@ import { useCartContext } from "@/lib/cart-context";
 import { toast } from "sonner";
 import type { ProductCardDTO } from "@/types/catalog";
 
-// ── TEMPLATES & ESTILOS VISUAIS CANÔNICOS (PADRÃO IFOOD TURBO / HITS / RETROSPECTIVA) ──
+// ── TEMPLATES & ESTILOS VISUAIS CANÔNICOS (PADRÃO WAESY SILENCIOSO) ──
 const HOTPAGE_THEMES: Record<
- string,
- {
- bgGradient: string;
- accentColor: string;
- badgeBg: string;
- icon: any;
- defaultBadge: string;
- heroPills: string[];
- tagLine: string;
- featuredRailTitle: string;
- }
+  string,
+  {
+    bgGradient: string;
+    accentColor: string;
+    badgeBg: string;
+    icon: any;
+    defaultBadge: string;
+    heroPills: string[];
+    tagLine: string;
+    featuredRailTitle: string;
+  }
 > = {
- turbo: {
- bgGradient: "bg-linear-to-b from-pink-600 via-rose-600 to-fuchsia-700",
- accentColor: "text-primary",
- badgeBg: "bg-card text-primary",
- icon: Lightning,
- defaultBadge: " #turbo",
- heroPills: [" apenas + R$ 3,99", "⏱️ em até 20 min", " ou R$ 5 de volta"],
- tagLine: "Lista de ofertas que chegam rapidinho na sua porta",
- featuredRailTitle: "Promos com Turbo",
- },
- hits: {
- bgGradient: "bg-linear-to-b from-warning via-orange-500 to-red-600",
- accentColor: "text-warning-strong",
- badgeBg: "bg-card text-warning",
- icon: Flame,
- defaultBadge: " hits",
- heroPills: [" os mais amados", " entrega grátis", "⭐ nota 4.8+"],
- tagLine: "Os pratos e lanches mais pedidos da cidade",
- featuredRailTitle: "Top 10 Mais Pedidos",
- },
- ofertas: {
- bgGradient: "bg-linear-to-b from-red-600 via-rose-600 to-warning",
- accentColor: "text-destructive",
- badgeBg: "bg-warning text-foreground",
- icon: Flame,
- defaultBadge: "️ Oferta Relâmpago",
- heroPills: ["️ até 50% OFF", "⏳ por tempo limitado", " entrega expressa"],
- tagLine: "Descontos imperdíveis nos melhores estabelecimentos",
- featuredRailTitle: "Ofertas em Destaque",
- },
- "frete-gratis": {
- bgGradient: "bg-linear-to-b from-emerald-600 via-teal-600 to-cyan-700",
- accentColor: "text-emerald-600",
- badgeBg: "bg-card text-emerald-700",
- icon: Truck,
- defaultBadge: " Frete Grátis",
- heroPills: [" taxa R$ 0,00", " raio de até 5km", " sem valor mínimo"],
- tagLine: "Taxa zero de entrega para economizar no seu pedido",
- featuredRailTitle: "Restaurantes com Entrega Grátis",
- },
- gastronomia: {
- bgGradient: "bg-linear-to-b from-warning via-orange-600 to-red-600",
- accentColor: "text-warning-strong",
- badgeBg: "bg-card text-warning-strong",
- icon: Flame,
- defaultBadge: " Sabor Local",
- heroPills: [" pizzas & burgers", " opções saudáveis", " doces & cafés"],
- tagLine: "Pizzas, burgers, lanches e cafés especiais selecionados",
- featuredRailTitle: "Cardápios Recomendados",
- },
- mercado: {
- bgGradient: "bg-linear-to-b from-emerald-700 via-green-600 to-teal-700",
- accentColor: "text-emerald-700",
- badgeBg: "bg-card text-emerald-800",
- icon: Storefront,
- defaultBadge: " Feira & Hortifruti",
- heroPills: [" frescos do dia", " carnes nobres", " padaria colonial"],
- tagLine: "Alimentos frescos, mercearia e produtos da região",
- featuredRailTitle: "Supermercados & Empórios",
- },
+  turbo: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: Lightning,
+    defaultBadge: "Turbo",
+    heroPills: ["Taxa fixa", "Em até 20 min", "Entrega ágil"],
+    tagLine: "Ofertas que chegam com agilidade ao seu endereço",
+    featuredRailTitle: "Promos com Turbo",
+  },
+  hits: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: Flame,
+    defaultBadge: "Hits",
+    heroPills: ["Mais pedidos", "Alta demanda", "Seleção local"],
+    tagLine: "Os pratos e produtos mais requisitados da cidade",
+    featuredRailTitle: "Mais Pedidos",
+  },
+  ofertas: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: Flame,
+    defaultBadge: "Oferta Especial",
+    heroPills: ["Preço reduzido", "Tempo limitado", "Estoque restrito"],
+    tagLine: "Descontos nos estabelecimentos participantes",
+    featuredRailTitle: "Ofertas em Destaque",
+  },
+  "frete-gratis": {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-success",
+    badgeBg: "bg-success/10 text-success border border-success/20",
+    icon: Truck,
+    defaultBadge: "Entrega Grátis",
+    heroPills: ["Taxa zero", "Raio local", "Sem valor mínimo"],
+    tagLine: "Taxa zero de entrega para economizar no seu pedido",
+    featuredRailTitle: "Estabelecimentos com Entrega Grátis",
+  },
+  gastronomia: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: ForkKnife,
+    defaultBadge: "Gastronomia Local",
+    heroPills: ["Refeições e lanches", "Opções artesanais", "Cafés e doces"],
+    tagLine: "Cardápios, porções e cafés selecionados",
+    featuredRailTitle: "Cardápios Recomendados",
+  },
+  mercado: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: Storefront,
+    defaultBadge: "Mercearia e Feira",
+    heroPills: ["Frescos do dia", "Hortifruti", "Padaria e empório"],
+    tagLine: "Alimentos frescos, mercearia e produtos da região",
+    featuredRailTitle: "Supermercados e Empórios",
+  },
 };
 
 const MODULE_CHIPS_MAP: Record<string, Array<{ id: string; label: string; icon: any }>> = {

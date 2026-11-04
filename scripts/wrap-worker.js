@@ -121,10 +121,17 @@ const cleanRoutesJson = {
   exclude: [
     "/assets/*",
     "/favicon.ico",
+    "/favicon.svg",
     "/manifest.json",
     "/robots.txt",
     "/sw.js",
-    "/icons/*"
+    "/icons/*",
+    "/apple-touch-icon.png",
+    "/brand-favicon.png",
+    "/brand-logo.png",
+    "/offline.html",
+    "/llms.txt",
+    "/llms-full.txt"
   ]
 };
 fs.writeFileSync(routesJsonPath, JSON.stringify(cleanRoutesJson, null, 2));

@@ -5,6 +5,7 @@ import { z } from "zod";
 import crypto from "node:crypto";
 import { DEFAULT_BRAND_NAME } from "@/lib/brand";
 import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
+import { getOrSetMicroCache, invalidateMicroCache } from "@/lib/cache/micro-cache";
 
 /**
  * Validates that the current user is a Platform Admin (Master).
@@ -918,78 +919,80 @@ export async function resolvePlatformRootStore(db: any) {
  * Acesso livre para renderização no Super App, cabeçalhos, rodapés e página de contato.
  */
 export const getPublicBrandSettings = createServerFn({ method: "GET" }).handler(async () => {
-  const db = getServerClient();
+  return getOrSetMicroCache("public_brand_settings", async () => {
+    const db = getServerClient();
 
-  // 1. Tenta ler da tabela canônica de marca
-  const { data: brandRow } = await db
-    .from("platform_brand_settings")
-    .select("*")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    // 1. Tenta ler da tabela canônica de marca
+    const { data: brandRow } = await db
+      .from("platform_brand_settings")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
-  if (brandRow) {
+    if (brandRow) {
+      return {
+        store_id: null,
+        platform_name: brandRow.platform_name || DEFAULT_BRAND_NAME,
+        logo_url: brandRow.logo_url || null,
+        favicon_url: brandRow.favicon_url || null,
+        show_name: brandRow.show_name !== false,
+        show_logo: brandRow.show_logo !== false,
+        support_email: brandRow.support_email || "contato@usewaesy.com",
+        support_whatsapp: brandRow.support_whatsapp || null,
+        support_hours: brandRow.support_hours || "Segunda a Sexta, das 08h às 18h",
+        login_split_image_url: brandRow.login_split_image_url || null,
+        login_bg_desktop_url: brandRow.login_bg_desktop_url || null,
+        login_bg_tablet_url: brandRow.login_bg_tablet_url || null,
+        login_bg_mobile_url: brandRow.login_bg_mobile_url || null,
+        social_instagram: brandRow.social_instagram || null,
+        social_facebook: brandRow.social_facebook || null,
+        social_linkedin: brandRow.social_linkedin || null,
+        address: brandRow.address || null,
+        city: brandRow.city || null,
+        state: brandRow.state || null,
+        seo_title: brandRow.seo_title || "Waesy",
+        seo_description: brandRow.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
+        primary_color: brandRow.primary_color || "#09090b",
+        accent_color: brandRow.accent_color || "#0066FF",
+        secondary_color: brandRow.secondary_color || "#0052CC",
+        theme_style: brandRow.theme_style || "azure_minimal",
+      };
+    }
+
+    // 2. Fallback resiliente para a loja raiz
+    const store = await resolvePlatformRootStore(db);
+    const settings = (store?.settings as Record<string, any>) || {};
+    const storeName = store?.name || DEFAULT_BRAND_NAME;
+
     return {
-      store_id: null,
-      platform_name: brandRow.platform_name || DEFAULT_BRAND_NAME,
-      logo_url: brandRow.logo_url || null,
-      favicon_url: brandRow.favicon_url || null,
-      show_name: brandRow.show_name !== false,
-      show_logo: brandRow.show_logo !== false,
-      support_email: brandRow.support_email || "contato@usewaesy.com",
-      support_whatsapp: brandRow.support_whatsapp || null,
-      support_hours: brandRow.support_hours || "Segunda a Sexta, das 08h às 18h",
-      login_split_image_url: brandRow.login_split_image_url || null,
-      login_bg_desktop_url: brandRow.login_bg_desktop_url || null,
-      login_bg_tablet_url: brandRow.login_bg_tablet_url || null,
-      login_bg_mobile_url: brandRow.login_bg_mobile_url || null,
-      social_instagram: brandRow.social_instagram || null,
-      social_facebook: brandRow.social_facebook || null,
-      social_linkedin: brandRow.social_linkedin || null,
-      address: brandRow.address || null,
-      city: brandRow.city || null,
-      state: brandRow.state || null,
-      seo_title: brandRow.seo_title || "Waesy",
-      seo_description: brandRow.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
-      primary_color: brandRow.primary_color || "#09090b",
-      accent_color: brandRow.accent_color || "#0066FF",
-      secondary_color: brandRow.secondary_color || "#0052CC",
-      theme_style: brandRow.theme_style || "azure_minimal",
+      store_id: store?.id || null,
+      platform_name: storeName,
+      logo_url: settings.logoUrl || settings.logo_url || null,
+      favicon_url: settings.faviconUrl || settings.favicon_url || null,
+      show_name: settings.show_name !== false,
+      show_logo: settings.show_logo !== false,
+      support_email: settings.support_email || "contato@usewaesy.com",
+      support_whatsapp: settings.support_whatsapp || null,
+      support_hours: settings.support_hours || "Segunda a Sexta, das 08h às 18h",
+      login_split_image_url: settings.login_split_image_url || null,
+      login_bg_desktop_url: settings.login_bg_desktop_url || settings.login_split_image_url || null,
+      login_bg_tablet_url: settings.login_bg_tablet_url || settings.login_split_image_url || null,
+      login_bg_mobile_url: settings.login_bg_mobile_url || settings.login_split_image_url || null,
+      social_instagram: settings.social_instagram || null,
+      social_facebook: settings.social_facebook || null,
+      social_linkedin: settings.social_linkedin || null,
+      address: store?.address || null,
+      city: store?.city || null,
+      state: store?.state || null,
+      seo_title: store?.seo_title || "Waesy",
+      seo_description: store?.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
+      primary_color: settings.primary_color || settings.primaryColor || "#09090b",
+      accent_color: settings.accent_color || settings.accentColor || "#0066FF",
+      secondary_color: settings.secondary_color || settings.secondaryColor || "#0052CC",
+      theme_style: settings.theme_style || "azure_minimal",
     };
-  }
-
-  // 2. Fallback resiliente para a loja raiz
-  const store = await resolvePlatformRootStore(db);
-  const settings = (store?.settings as Record<string, any>) || {};
-  const storeName = store?.name || DEFAULT_BRAND_NAME;
-
-  return {
-    store_id: store?.id || null,
-    platform_name: storeName,
-    logo_url: settings.logoUrl || settings.logo_url || null,
-    favicon_url: settings.faviconUrl || settings.favicon_url || null,
-    show_name: settings.show_name !== false,
-    show_logo: settings.show_logo !== false,
-    support_email: settings.support_email || "contato@usewaesy.com",
-    support_whatsapp: settings.support_whatsapp || null,
-    support_hours: settings.support_hours || "Segunda a Sexta, das 08h às 18h",
-    login_split_image_url: settings.login_split_image_url || null,
-    login_bg_desktop_url: settings.login_bg_desktop_url || settings.login_split_image_url || null,
-    login_bg_tablet_url: settings.login_bg_tablet_url || settings.login_split_image_url || null,
-    login_bg_mobile_url: settings.login_bg_mobile_url || settings.login_split_image_url || null,
-    social_instagram: settings.social_instagram || null,
-    social_facebook: settings.social_facebook || null,
-    social_linkedin: settings.social_linkedin || null,
-    address: store?.address || null,
-    city: store?.city || null,
-    state: store?.state || null,
-    seo_title: store?.seo_title || "Waesy",
-    seo_description: store?.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
-    primary_color: settings.primary_color || settings.primaryColor || "#09090b",
-    accent_color: settings.accent_color || settings.accentColor || "#0066FF",
-    secondary_color: settings.secondary_color || settings.secondaryColor || "#0052CC",
-    theme_style: settings.theme_style || "azure_minimal",
-  };
+  }, 60_000);
 });
 
 /**
@@ -1202,6 +1205,8 @@ export const updatePlatformBrandSettings = createServerFn({ method: "POST" })
       .from("stores")
       .update(updatePayload)
       .eq("id", store.id);
+
+    invalidateMicroCache("public_brand_settings");
 
     return { success: true, settings: updatedSettings };
   });
