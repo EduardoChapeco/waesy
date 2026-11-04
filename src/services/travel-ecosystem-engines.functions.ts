@@ -58,6 +58,12 @@ export interface OperatorPaymentCampaignRule {
   boletoMinDownpaymentPct: number;
   maxCardInstallments: number;
   pixCashDiscountPct: number;
+  hasDownpayment?: boolean;
+  downpaymentType?: "percentage" | "fixed_cents";
+  downpaymentFixedCents?: number;
+  firstBoletoDueDays?: number;
+  firstBoletoDueDescription?: string;
+  customConditionsText?: string;
 }
 
 export interface CalculatedRoomBreakdown {
@@ -417,7 +423,13 @@ export function calculateMultiRoomQuoteBreakdown(
 ): MultiRoomQuoteCalculationResult {
   const maxBoleto = Math.max(1, campaign.maxBoletoInstallments || 15);
   const maxCard = Math.max(1, campaign.maxCardInstallments || 10);
-  const downpaymentPct = Math.max(0, Math.min(90, campaign.boletoMinDownpaymentPct ?? 20));
+  const hasDownpayment =
+    campaign.hasDownpayment !== undefined
+      ? campaign.hasDownpayment
+      : (campaign.boletoMinDownpaymentPct > 0);
+  const downpaymentPct = hasDownpayment
+    ? Math.max(0, Math.min(90, campaign.boletoMinDownpaymentPct ?? 0))
+    : 0;
   const pixDiscountPct = Math.max(0, Math.min(30, campaign.pixCashDiscountPct ?? 5));
 
   const calculatedRooms: CalculatedRoomBreakdown[] = rooms.map((room, index) => {
@@ -436,7 +448,15 @@ export function calculateMultiRoomQuoteBreakdown(
     const roomAddonsCents = addons.reduce((acc, item) => acc + Math.max(0, item.priceCents || 0), 0);
     const roomTotalCents = roomBaseCents + roomAddonsCents;
 
-    const boletoDownpaymentCents = Math.round((roomTotalCents * downpaymentPct) / 100);
+    let boletoDownpaymentCents = 0;
+    if (hasDownpayment) {
+      if (campaign.downpaymentType === "fixed_cents" && (campaign.downpaymentFixedCents || 0) > 0) {
+        boletoDownpaymentCents = Math.round((campaign.downpaymentFixedCents || 0) / Math.max(1, rooms.length));
+      } else {
+        boletoDownpaymentCents = Math.round((roomTotalCents * downpaymentPct) / 100);
+      }
+    }
+
     const financedBalance = Math.max(0, roomTotalCents - boletoDownpaymentCents);
     const remainingInstallments = Math.max(1, maxBoleto - (boletoDownpaymentCents > 0 ? 1 : 0));
     const boletoInstallmentCents = Math.round(financedBalance / remainingInstallments);

@@ -1468,25 +1468,8 @@ export default function WorkspaceTurismoCockpitPage() {
                   {/* Área de Rolagem Isolada dos Cards */}
                   <div className="p-3 space-y-2 overflow-y-auto flex-1 min-h-0 [scrollbar-width:thin]">
                     {stageLeads.length === 0 ? (
-                      <div className="p-6 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-xl space-y-3 bg-transparent my-auto">
-                        <div className="size-8 rounded-full bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
-                          <Users className="size-4" />
-                        </div>
-                        <p className="font-medium text-2xs">Nenhum contato nesta fase</p>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setNewLeadTargetStage(stage.id);
-                            setIsNewLeadOpen(true);
-                          }}
-                          /* design-lint-ignore DL-14 reason:"Botao de acao secundaria compacta no interior de card vazio" expiry:"2027-12-31" */
-                          className="h-9 px-3 rounded-xl text-2xs font-semibold gap-2 mx-auto cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          <Plus className="size-3" />
-                          <span>Adicionar Lead</span>
-                        </Button>
+                      <div className="py-8 px-4 text-center text-xs text-muted-foreground border border-dashed border-border/30 rounded-xl space-y-1 bg-transparent my-auto select-none">
+                        <p className="font-medium text-2xs">Nenhum contato nesta etapa</p>
                       </div>
                     ) : (
                       stageLeads.map((lead: any) => (
@@ -1675,15 +1658,11 @@ export default function WorkspaceTurismoCockpitPage() {
               {/* Navegação por Abas Especializadas Flat em Linha */}
               <div className="tab-list flex items-center gap-6 overflow-x-auto no-scrollbar border-b border-border/60">
                 {[
-                  { id: "viagem", label: "Visão Geral & Cotações" },
-                  { id: "onboarding", label: "Pastas de Viajantes" },
-                  { id: "checklist", label: "Checklists" },
+                  { id: "viagem", label: "Atendimento & Cotações" },
+                  { id: "onboarding", label: "Passageiros & Onboarding" },
                   { id: "contratos", label: "Contratos" },
-                  { id: "pagamento", label: "Pagamento" },
+                  { id: "pagamento", label: "Pagamento & Custos" },
                   { id: "reuniao", label: "Reuniões" },
-                  { id: "anamnese", label: "Anamnese" },
-                  { id: "cliente360", label: "Cliente 360°" },
-                  { id: "lgpd", label: "LGPD" },
                 ].map((t) => (
                   <button
                     key={t.id}
@@ -1691,7 +1670,9 @@ export default function WorkspaceTurismoCockpitPage() {
                     onClick={() => setLeadDrawerTab(t.id as any)}
                     className={cn(
                       "h-11 min-h-11 px-1 text-xs font-semibold border-b-2 whitespace-nowrap cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      leadDrawerTab === t.id
+                      leadDrawerTab === t.id ||
+                        (t.id === "viagem" && (leadDrawerTab === "checklist" || leadDrawerTab === "cliente360" || leadDrawerTab === "lgpd")) ||
+                        (t.id === "onboarding" && leadDrawerTab === "anamnese")
                         ? "border-primary text-foreground font-bold"
                         : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60"
                     )}
@@ -1705,7 +1686,7 @@ export default function WorkspaceTurismoCockpitPage() {
             {/* Layout Balanceado em 3 Colunas com Scroll Central Independente */}
             <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden divide-y lg:divide-y-0 lg:divide-x divide-border/40">
               {/* COLUNA ESQUERDA: Formulário Inicial com Scroll Próprio (Estreita e Compacta) */}
-              <div className="w-full lg:w-56 xl:w-60 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/5">
+              <div className="w-full lg:w-56 xl:w-60 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/10 border-r border-border/40">
                 <div className="flex items-center justify-between border-b border-border/40 pb-2">
                   <span className="font-bold text-foreground">Formulário Inicial</span>
                   <span className="text-2xs font-mono text-muted-foreground">
@@ -1713,36 +1694,81 @@ export default function WorkspaceTurismoCockpitPage() {
                   </span>
                 </div>
 
-                <div className="space-y-2 text-2xs">
+                <div className="space-y-3 text-2xs">
                   <div>
-                    <span className="text-muted-foreground block">Contato Principal</span>
-                    <span className="font-semibold text-foreground text-xs">{editLeadForm.name || selectedLead.full_name}</span>
+                    <span className="text-muted-foreground block text-2xs">Contato Principal</span>
+                    <span className="font-bold text-foreground text-sm">{editLeadForm.name || selectedLead.full_name}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block">Telefone / WhatsApp</span>
-                    <span className="font-mono text-foreground">{editLeadForm.phone || "Não informado"}</span>
+                    <span className="text-muted-foreground block text-2xs">WhatsApp / Telefone</span>
+                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                      <span className="font-mono text-foreground font-semibold text-xs">{editLeadForm.phone || "Não informado"}</span>
+                      {cleanPhone && (
+                        <a
+                          href={whatsappUrl || `https://wa.me/55${cleanPhone}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-emerald-600 hover:bg-emerald-500/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          title="Iniciar conversa no WhatsApp"
+                        >
+                          <MessageSquare className="size-3.5" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block">E-mail</span>
-                    <span className="text-foreground">{editLeadForm.email || "Não informado"}</span>
+                    <span className="text-muted-foreground block text-2xs">E-mail</span>
+                    <span className="text-foreground break-all">{editLeadForm.email || "Não informado"}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block">Destino & Período</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="text-muted-foreground block text-2xs">Destino & Período</span>
+                    <span className="font-semibold text-foreground text-xs block leading-snug">
                       {editLeadForm.destination || "A definir"} · {editLeadForm.interest_period || editLeadForm.travel_start || "Datas flexíveis"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block">Passageiros</span>
-                    <span className="font-mono text-foreground">
+                    <span className="text-muted-foreground block text-2xs">Passageiros</span>
+                    <span className="font-mono text-foreground font-semibold text-xs">
                       {editLeadForm.pax_adults || 1} ADT · {editLeadForm.pax_children || 0} CHD · {editLeadForm.pax_infants || 0} INF
                     </span>
+                    {editLeadForm.pax_ages_str && (
+                      <span className="text-2xs text-muted-foreground block font-mono">
+                        Idades: {editLeadForm.pax_ages_str}
+                      </span>
+                    )}
                   </div>
+                  {editLeadForm.estimated_value_cents > 0 && (
+                    <div>
+                      <span className="text-muted-foreground block text-2xs">Orçamento Estimado</span>
+                      <span className="font-mono tabular-nums font-bold text-sm text-foreground">
+                        {formatMoney(editLeadForm.estimated_value_cents)}
+                      </span>
+                    </div>
+                  )}
                   <div>
-                    <span className="text-muted-foreground block">Observações do Lead</span>
-                    <p className="text-foreground whitespace-pre-line break-words bg-background p-2 rounded-lg border border-border/40 mt-1">
+                    <span className="text-muted-foreground block text-2xs">Observações do Lead</span>
+                    <p className="text-foreground whitespace-pre-line break-words bg-background/80 p-2.5 rounded-lg border border-border/40 mt-1 text-2xs">
                       {editLeadForm.notes || "Nenhuma observação inicial registrada."}
                     </p>
+                  </div>
+
+                  {/* Selo LGPD e Ação Carteira 360 */}
+                  <div className="pt-2 border-t border-border/40 space-y-2">
+                    <div className="flex items-center gap-2 text-2xs text-emerald-600 font-medium">
+                      <CheckCircle2 className="size-3.5 shrink-0" />
+                      <span>Consentimento LGPD Ativo</span>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePromoteToCustomer(selectedLead.id)}
+                      className="w-full h-9 rounded-lg text-2xs font-semibold gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <UserCheck className="size-3.5 text-primary" />
+                      <span>Promover a Cliente 360°</span>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -1750,318 +1776,119 @@ export default function WorkspaceTurismoCockpitPage() {
               {/* COLUNA CENTRAL: Conteúdo da Aba com Scroll Interno Independente (Ampla e Dominante) */}
               <div className="flex-1 min-w-0 p-6 overflow-y-auto space-y-6 [scrollbar-width:thin] bg-background">
 
-            {/* 1. ABA VIAGEM & COTAÇÃO COM EDIÇÃO PLENA */}
-            {leadDrawerTab === "viagem" && (
-              <div className="space-y-6 text-xs">
-                {/* Bloco 1: Contato do Passageiro */}
-                <div className="space-y-3 pb-5 border-b border-border/40">
-                  <div className="flex items-center gap-2 pb-1">
-                    <Users className="size-4 text-primary" />
-                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Titular do Atendimento</h4>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Nome Completo</Label>
-                      <Input
-                        value={editLeadForm.name}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, name: e.target.value }))}
-                        className="h-10 text-xs rounded-lg"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">WhatsApp / Telefone</Label>
-                      <Input
-                        value={editLeadForm.phone}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, phone: e.target.value }))}
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1 sm:col-span-2">
-                      <Label className="text-2xs text-muted-foreground font-semibold">E-mail</Label>
-                      <Input
-                        type="email"
-                        value={editLeadForm.email}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, email: e.target.value }))}
-                        className="h-10 text-xs rounded-lg"
-                      />
-                    </div>
-                  </div>
-                </div>
+            {/* 1. ABA ATENDIMENTO & COTAÇÕES (WORKFLOW CANÔNICO ESTILO PIPEFY) */}
+            {(leadDrawerTab === "viagem" || leadDrawerTab === "checklist" || leadDrawerTab === "cliente360" || leadDrawerTab === "lgpd") && (() => {
+              const currentStageIdx = TOURISM_STAGES.findIndex((s) => s.id === (editLeadForm.status || selectedLead.status));
+              const currentStageItem = TOURISM_STAGES[currentStageIdx] || TOURISM_STAGES[0];
+              const nextStageItem = currentStageIdx >= 0 && currentStageIdx < TOURISM_STAGES.length - 1 ? TOURISM_STAGES[currentStageIdx + 1] : null;
+              const leadProposals = proposals.filter(
+                (p: any) =>
+                  p.lead_id === selectedLead.id ||
+                  p.quote_id === selectedLead.id ||
+                  (selectedLead.full_name &&
+                    p.customer_name &&
+                    p.customer_name.toLowerCase() === selectedLead.full_name.toLowerCase()),
+              );
 
-                {/* Bloco 2: Especificações da Viagem */}
-                <div className="space-y-3 pb-5 border-b border-border/40">
-                  <div className="flex items-center gap-2 pb-1">
-                    <MapPin className="size-4 text-primary" />
-                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Roteiro & Datas</h4>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div className="space-y-1 lg:col-span-2">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Destino Principal</Label>
-                      <Input
-                        value={editLeadForm.destination}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, destination: e.target.value }))}
-                        placeholder="Ex: Paris, Cancún, Maceió"
-                        className="h-10 text-xs rounded-lg"
-                      />
-                    </div>
-                    <div className="space-y-1 lg:col-span-2">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Período Flexível</Label>
-                      <Input
-                        value={editLeadForm.interest_period}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, interest_period: e.target.value }))}
-                        placeholder="Ex: Julho/2026, Réveillon"
-                        className="h-10 text-xs rounded-lg"
-                      />
-                    </div>
+              return (
+                <div className="space-y-6 text-xs">
+                  {/* Bloco 1: Header de Etapa Ativa (Padrão Pipefy) */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
                     <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Data Ida Estimada</Label>
-                      <Input
-                        type="date"
-                        value={editLeadForm.travel_start}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, travel_start: e.target.value }))}
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
+                      <span className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold">Etapa Atual do Atendimento</span>
+                      <div className="flex items-center gap-2">
+                        <span className={cn("size-2.5 rounded-full shrink-0", currentStageItem.dotColor)} />
+                        <h3 className="font-bold text-sm text-foreground">{currentStageItem.title}</h3>
+                      </div>
+                      <p className="text-2xs text-muted-foreground">{currentStageItem.description}</p>
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Data Volta Estimada</Label>
-                      <Input
-                        type="date"
-                        value={editLeadForm.travel_end}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, travel_end: e.target.value }))}
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Tipo de Pacote / Interesse</Label>
-                      <Select
-                        value={editLeadForm.interest_type || "package_flight"}
-                        onValueChange={(val) => setEditLeadForm((prev: any) => ({ ...prev, interest_type: val }))}
+                    {nextStageItem && (
+                      <Button
+                        type="button"
+                        onClick={() => handleMoveStage(selectedLead.id, nextStageItem.id)}
+                        className="h-10 min-h-10 px-4 text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <SelectTrigger className="h-10 text-xs rounded-lg">
-                          <SelectValue placeholder="Selecione o tipo..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {INTEREST_TYPES.map((t) => (
-                            <SelectItem key={t.value} value={t.value}>
-                              {t.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Orçamento Estimado (R$)</Label>
-                      <CurrencyField
-                        value={editLeadForm.estimated_value_cents}
-                        onChange={(val: any) => setEditLeadForm((prev: any) => ({ ...prev, estimated_value_cents: val || 0 }))}
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bloco 3: Passageiros Estruturados */}
-                <div className="space-y-3 pb-5 border-b border-border/40">
-                  <div className="flex items-center gap-2 pb-1">
-                    <Plane className="size-4 text-primary" />
-                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Composição de Passageiros</h4>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Adultos (ADT)</Label>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={editLeadForm.pax_adults}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, pax_adults: parseInt(e.target.value) || 1 }))}
-                        className="h-10 text-xs rounded-lg font-mono text-center"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Crianças (2-11)</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={editLeadForm.pax_children}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, pax_children: parseInt(e.target.value) || 0 }))}
-                        className="h-10 text-xs rounded-lg font-mono text-center"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Bebês (0-2)</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={editLeadForm.pax_infants}
-                        onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, pax_infants: parseInt(e.target.value) || 0 }))}
-                        className="h-10 text-xs rounded-lg font-mono text-center"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Idades das Crianças (separadas por vírgula)</Label>
-                    <Input
-                      value={editLeadForm.pax_ages_str}
-                      onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, pax_ages_str: e.target.value }))}
-                      placeholder="Ex: 4, 8"
-                      className="h-10 text-xs rounded-lg font-mono"
-                    />
-                  </div>
-                </div>
-
-                {/* Bloco 4: Consultor, Origem & Tags */}
-                <div className="space-y-3 pb-5 border-b border-border/40">
-                  <div className="flex items-center gap-2 pb-1">
-                    <FileText className="size-4 text-primary" />
-                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Consultor, Origem & Tags</h4>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Consultor Responsável</Label>
-                      <Select
-                        value={editLeadForm.assigned_to || ""}
-                        onValueChange={(val) => setEditLeadForm((prev: any) => ({ ...prev, assigned_to: val }))}
-                      >
-                        <SelectTrigger className="h-10 text-xs rounded-lg">
-                          <SelectValue placeholder="Selecione consultor..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Não atribuído</SelectItem>
-                          {team.map((m: any) => (
-                            <SelectItem key={m.profile_id || m.id} value={m.profile_id || m.id}>
-                              {m.full_name || m.name || "Membro"}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Canal / Origem</Label>
-                      <Select
-                        value={editLeadForm.source || "whatsapp"}
-                        onValueChange={(val) => setEditLeadForm((prev: any) => ({ ...prev, source: val }))}
-                      >
-                        <SelectTrigger className="h-10 text-xs rounded-lg">
-                          <SelectValue placeholder="Origem..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LEAD_SOURCES.map((s) => (
-                            <SelectItem key={s.value} value={s.value}>
-                              {s.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        <span>Avançar para {nextStageItem.title}</span>
+                        <ChevronRight className="size-4" />
+                      </Button>
+                    )}
                   </div>
 
-                  {/* Tags Populares */}
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Tags Rápidas</Label>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {POPULAR_TAGS.map((t) => {
-                        const hasTag = (editLeadForm.tags || []).includes(t.name);
-                        return (
-                          <button
-                            key={t.name}
-                            type="button"
-                            onClick={() => {
-                              const cur = editLeadForm.tags || [];
-                              const updated = hasTag ? cur.filter((x: string) => x !== t.name) : [...cur, t.name];
-                              setEditLeadForm((prev: any) => ({ ...prev, tags: updated }));
-                            }}
-                            /* design-lint-ignore DL-14 reason:"Chip secundario de tag em formulario denso" expiry:"2027-12-31" */
-                            className={`px-3 py-1 rounded-md text-2xs font-semibold border transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
-                              hasTag
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "bg-card border-border/60 text-muted-foreground hover:bg-muted"
-                            }`}
-                          >
-                            {t.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Anotações */}
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Anotações da Abordagem</Label>
-                    <Textarea
-                      rows={3}
-                      value={editLeadForm.notes}
-                      onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, notes: e.target.value }))}
-                      placeholder="Desejos específicos, hotel preferido, restrições..."
-                      className="text-xs rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                {/* Botão de Salvar Alterações */}
-                <div className="pt-2 flex justify-end">
-                  <Button
-                    type="button"
-                    disabled={isUpdatingLead}
-                    onClick={handleSaveLeadDetails}
-                    className="h-11 min-h-11 px-6 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {isUpdatingLead ? "Salvando..." : "Salvar"}
-                  </Button>
-                </div>
-
-                {/* Bloco 5: Múltiplas Propostas & Cenários vinculados a este Lead */}
-                {(() => {
-                  const leadProposals = proposals.filter(
-                    (p: any) =>
-                      p.lead_id === selectedLead.id ||
-                      p.quote_id === selectedLead.id ||
-                      (selectedLead.full_name &&
-                        p.customer_name &&
-                        p.customer_name.toLowerCase() === selectedLead.full_name.toLowerCase()),
-                  );
-                  return (
-                    <div className="space-y-3 pt-2">
-                      <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/40">
-                        <h4 className="font-bold text-xs uppercase tracking-wide text-foreground flex items-center gap-2">
-                          <FileText className="size-4 text-primary" />
-                          <span>Propostas ({leadProposals.length})</span>
-                        </h4>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {leadProposals.length >= 1 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              disabled={isBundlingProposals}
-                              onClick={async () => {
-                                setIsBundlingProposals(true);
-                                try {
-                                  const res = await bundleTravelProposalsIntoSingleLink({
-                                    data: {
-                                      proposalIds: leadProposals.map((p: any) => p.id),
-                                      bundleTitle: `Comparativo de Viagem (${leadProposals.length} Opções) — ${editLeadForm.destination || editLeadForm.name}`,
-                                    },
-                                  });
-                                  const unifiedUrl = `${window.location.origin}/p/${res.publicToken}`;
-                                  await navigator.clipboard.writeText(unifiedUrl);
-                                  toast.success(`Link copiado!`);
-                                } catch (err: any) {
-                                  toast.error(err?.message || "Erro ao unificar propostas em link único.");
-                                } finally {
-                                  setIsBundlingProposals(false);
-                                }
-                              }}
-                              className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 text-primary border-primary/30 hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"
-                            >
-                              <Copy className="size-3.5" />
-                              <span>{isBundlingProposals ? "Unificando..." : "Copiar Link Comparativo"}</span>
-                            </Button>
-                          )}
-
+                  {/* Bloco 2: Propostas Comerciais & Cotações (Coração da Operação) */}
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-border/30">
+                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground flex items-center gap-2">
+                        <FileText className="size-4 text-primary" />
+                        <span>Propostas Comerciais ({leadProposals.length})</span>
+                      </h4>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {leadProposals.length >= 1 && (
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
+                            disabled={isBundlingProposals}
+                            onClick={async () => {
+                              setIsBundlingProposals(true);
+                              try {
+                                const res = await bundleTravelProposalsIntoSingleLink({
+                                  data: {
+                                    proposalIds: leadProposals.map((p: any) => p.id),
+                                    bundleTitle: `Comparativo de Viagem (${leadProposals.length} Opções) — ${editLeadForm.destination || editLeadForm.name}`,
+                                  },
+                                });
+                                const unifiedUrl = `${window.location.origin}/p/${res.publicToken}`;
+                                await navigator.clipboard.writeText(unifiedUrl);
+                                toast.success(`Link copiado!`);
+                              } catch (err: any) {
+                                toast.error(err?.message || "Erro ao unificar propostas em link único.");
+                              } finally {
+                                setIsBundlingProposals(false);
+                              }
+                            }}
+                            className="h-10 min-h-10 px-3 text-xs font-semibold gap-2 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <Copy className="size-3.5" />
+                            <span>{isBundlingProposals ? "Unificando..." : "Copiar Link Comparativo"}</span>
+                          </Button>
+                        )}
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            const leadData = {
+                              id: selectedLead.id,
+                              fullName: editLeadForm.name || selectedLead.full_name,
+                              phone: editLeadForm.phone || selectedLead.phone,
+                              email: editLeadForm.email || selectedLead.email,
+                              destination: editLeadForm.destination || selectedLead.destination,
+                              estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
+                              passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
+                            };
+                            setSelectedLead(null);
+                            setProposalLead(leadData);
+                          }}
+                          className="h-10 min-h-10 px-3 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Plus className="size-3.5" />
+                          <span>Nova Proposta</span>
+                        </Button>
+                      </div>
+                    </div>
+
+                    {leadProposals.length === 0 ? (
+                      <div className="p-6 text-center rounded-xl border border-dashed border-border/40 bg-muted/5 space-y-3">
+                        <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                          <FileText className="size-4" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-xs text-foreground">Nenhuma proposta montada para este atendimento</p>
+                          <p className="text-2xs text-muted-foreground">Monte opções de voo e hospedagem para enviar um link interativo ao viajante.</p>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
+                          <Button
+                            type="button"
                             onClick={() => {
                               const leadData = {
                                 id: selectedLead.id,
@@ -2069,77 +1896,371 @@ export default function WorkspaceTurismoCockpitPage() {
                                 phone: editLeadForm.phone || selectedLead.phone,
                                 email: editLeadForm.email || selectedLead.email,
                                 destination: editLeadForm.destination || selectedLead.destination,
-                                estimated_value_cents:
-                                  editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
-                                passenger_count:
-                                  (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
+                                estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
+                                passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
                               };
+                              setSelectedLead(null);
                               setProposalLead(leadData);
                             }}
-                            className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-10 min-h-10 px-4 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
                           >
-                            <Plus className="size-3.5" />
-                            <span>Nova Proposta</span>
+                            <FileText className="size-3.5" />
+                            <span>Montar Primeira Proposta</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setFlightLead(selectedLead)}
+                            className="h-10 min-h-10 px-3 text-xs font-semibold gap-2 cursor-pointer"
+                          >
+                            <Plane className="size-3.5 text-sky-500" />
+                            <span>Buscar Voos</span>
                           </Button>
                         </div>
                       </div>
-
-                      {leadProposals.length === 0 ? (
-                        <p className="text-2xs text-muted-foreground">
-                          Nenhuma proposta gerada.
-                        </p>
-                      ) : (
-                        <div className="space-y-2">
-                          {leadProposals.map((lp: any, idx: number) => (
-                            <div
-                              key={lp.id}
-                              className="p-3 rounded-lg border border-border/40 bg-muted/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-                            >
-                              <div className="space-y-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-2xs font-mono text-muted-foreground">
-                                    #{idx + 1}
-                                  </span>
-                                  <span className="font-bold text-foreground truncate">
-                                    {lp.title || lp.destination_city || "Proposta"}
-                                  </span>
-                                </div>
-                                <div className="text-2xs text-muted-foreground font-mono">
-                                  {formatMoney(lp.pricing?.total_price_cents || 0)} · Status: {lp.status}
-                                </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {leadProposals.map((lp: any, idx: number) => (
+                          <div
+                            key={lp.id}
+                            className="p-3 rounded-lg border border-border/40 bg-muted/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                          >
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xs font-mono text-muted-foreground">
+                                  #{idx + 1}
+                                </span>
+                                <span className="font-bold text-foreground truncate">
+                                  {lp.title || lp.destination_city || "Proposta"}
+                                </span>
                               </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleConvertProposalToTrip(lp.id)}
-                                  className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 text-emerald-600 hover:text-emerald-700 focus-visible:ring-2 focus-visible:ring-ring"
-                                >
-                                  <CheckCircle2 className="size-3.5" />
-                                  <span>Confirmar Viagem</span>
-                                </Button>
-                                <Button
-                                  asChild
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 focus-visible:ring-2 focus-visible:ring-ring"
-                                >
-                                  <Link to="/workspace/turismo/propostas/$id" params={{ id: lp.id }}>
-                                    <Eye className="size-3.5" />
-                                    <span>Studio</span>
-                                  </Link>
-                                </Button>
+                              <div className="text-2xs text-muted-foreground font-mono">
+                                {formatMoney(lp.pricing?.total_price_cents || 0)} · Status: {lp.status}
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      )}
+                            <div className="flex items-center gap-2 shrink-0">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleConvertProposalToTrip(lp.id)}
+                                className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 text-emerald-600 hover:text-emerald-700 focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                <CheckCircle2 className="size-3.5" />
+                                <span>Confirmar Viagem</span>
+                              </Button>
+                              <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                <Link to="/workspace/turismo/propostas/$id" params={{ id: lp.id }}>
+                                  <Eye className="size-3.5" />
+                                  <span>Studio</span>
+                                </Link>
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bloco 3: Checklist Operacional da Etapa (Integrado) */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between pb-1 border-b border-border/30">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="size-4 text-emerald-600" />
+                        <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Checklist de Atendimento</h4>
+                      </div>
+                      <span className="text-2xs font-mono text-muted-foreground">
+                        {(editLeadForm.checklist || []).filter((i: any) => i.done).length} de {(editLeadForm.checklist || []).length} concluídos
+                      </span>
                     </div>
-                  );
-                })()}
-              </div>
-            )}
+
+                    <div className="divide-y divide-border/40 rounded-xl border border-border/50 overflow-hidden bg-muted/5">
+                      {(editLeadForm.checklist || []).map((item: any) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => handleToggleChecklist(item.id)}
+                          className={cn(
+                            "w-full p-2.5 text-left flex items-center justify-between transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                            item.done
+                              ? "bg-emerald-500/5 text-muted-foreground hover:bg-emerald-500/10"
+                              : "hover:bg-muted/30 text-foreground"
+                          )}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            {item.done ? (
+                              <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+                            ) : (
+                              <Square className="size-4 text-muted-foreground shrink-0" />
+                            )}
+                            <span className={cn("text-xs", item.done ? "line-through text-muted-foreground" : "font-medium text-foreground")}>
+                              {item.text}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Adicionar Item ao Checklist */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <Input
+                        value={newChecklistItemText}
+                        onChange={(e) => setNewChecklistItemText(e.target.value)}
+                        placeholder="Adicionar tarefa específica para este cliente..."
+                        className="h-10 text-xs rounded-lg flex-1"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddChecklistItem();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleAddChecklistItem}
+                        className="h-10 min-h-10 px-3 text-xs font-semibold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Plus className="size-3.5 mr-1" />
+                        <span>Adicionar</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Bloco 4: Anotações da Abordagem */}
+                  <div className="space-y-2 pt-2">
+                    <div className="flex items-center gap-2 pb-1 border-b border-border/30">
+                      <Edit3 className="size-4 text-primary" />
+                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Anotações da Abordagem</h4>
+                    </div>
+                    <Textarea
+                      rows={3}
+                      value={editLeadForm.notes}
+                      onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Desejos específicos, hotel preferido, restrições..."
+                      className="text-xs rounded-lg"
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        disabled={isUpdatingLead}
+                        onClick={handleSaveLeadDetails}
+                        className="h-10 min-h-10 px-5 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {isUpdatingLead ? "Salvando..." : "Salvar Anotações"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Bloco 5: Ficha Cadastral da Viagem (Colapsável / Sob Demanda) */}
+                  <details className="border border-border/40 rounded-xl p-4 bg-muted/5 group">
+                    <summary className="flex items-center justify-between cursor-pointer text-xs font-bold text-foreground select-none">
+                      <span className="flex items-center gap-2">
+                        <Users className="size-3.5 text-muted-foreground" />
+                        <span>Editar Ficha Cadastral & Roteiro Completo</span>
+                      </span>
+                      <ChevronRight className="size-4 text-muted-foreground transition-transform group-open:rotate-90" />
+                    </summary>
+                    <div className="pt-4 space-y-4">
+                      {/* Bloco: Titular do Atendimento */}
+                      <div className="space-y-3 pb-4 border-b border-border/40">
+                        <h5 className="font-bold text-2xs uppercase tracking-wide text-muted-foreground">Titular do Atendimento</h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Nome Completo</Label>
+                            <Input
+                              value={editLeadForm.name}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, name: e.target.value }))}
+                              className="h-10 text-xs rounded-lg"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">WhatsApp / Telefone</Label>
+                            <Input
+                              value={editLeadForm.phone}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, phone: e.target.value }))}
+                              className="h-10 text-xs rounded-lg font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1 sm:col-span-2">
+                            <Label className="text-2xs text-muted-foreground font-semibold">E-mail</Label>
+                            <Input
+                              type="email"
+                              value={editLeadForm.email}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, email: e.target.value }))}
+                              className="h-10 text-xs rounded-lg"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bloco: Roteiro & Datas */}
+                      <div className="space-y-3 pb-4 border-b border-border/40">
+                        <h5 className="font-bold text-2xs uppercase tracking-wide text-muted-foreground">Roteiro & Datas</h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                          <div className="space-y-1 lg:col-span-2">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Destino Principal</Label>
+                            <Input
+                              value={editLeadForm.destination}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, destination: e.target.value }))}
+                              placeholder="Ex: Paris, Cancún, Maceió"
+                              className="h-10 text-xs rounded-lg"
+                            />
+                          </div>
+                          <div className="space-y-1 lg:col-span-2">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Período Flexível</Label>
+                            <Input
+                              value={editLeadForm.interest_period}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, interest_period: e.target.value }))}
+                              placeholder="Ex: Julho/2026, Réveillon"
+                              className="h-10 text-xs rounded-lg"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Data Ida</Label>
+                            <Input
+                              type="date"
+                              value={editLeadForm.travel_start}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, travel_start: e.target.value }))}
+                              className="h-10 text-xs rounded-lg font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Data Volta</Label>
+                            <Input
+                              type="date"
+                              value={editLeadForm.travel_end}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, travel_end: e.target.value }))}
+                              className="h-10 text-xs rounded-lg font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Tipo de Pacote</Label>
+                            <Select
+                              value={editLeadForm.interest_type || "package_flight"}
+                              onValueChange={(val) => setEditLeadForm((prev: any) => ({ ...prev, interest_type: val }))}
+                            >
+                              <SelectTrigger className="h-10 text-xs rounded-lg">
+                                <SelectValue placeholder="Selecione o tipo..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {INTEREST_TYPES.map((t) => (
+                                  <SelectItem key={t.value} value={t.value}>
+                                    {t.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Orçamento Estimado (R$)</Label>
+                            <CurrencyField
+                              value={editLeadForm.estimated_value_cents}
+                              onChange={(val: any) => setEditLeadForm((prev: any) => ({ ...prev, estimated_value_cents: val || 0 }))}
+                              className="h-10 text-xs rounded-lg font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bloco: Passageiros */}
+                      <div className="space-y-3 pb-4 border-border/40">
+                        <h5 className="font-bold text-2xs uppercase tracking-wide text-muted-foreground">Composição de Passageiros</h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Adultos (ADT)</Label>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={editLeadForm.pax_adults}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, pax_adults: parseInt(e.target.value) || 1 }))}
+                              className="h-10 text-xs rounded-lg font-mono text-center"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Crianças (2-11)</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              value={editLeadForm.pax_children}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, pax_children: parseInt(e.target.value) || 0 }))}
+                              className="h-10 text-xs rounded-lg font-mono text-center"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Bebês (0-2)</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              value={editLeadForm.pax_infants}
+                              onChange={(e) => setEditLeadForm((prev: any) => ({ ...prev, pax_infants: parseInt(e.target.value) || 0 }))}
+                              className="h-10 text-xs rounded-lg font-mono text-center"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bloco: Consultor e Origem */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2 border-t border-border/40 pt-3">
+                        <div className="space-y-1">
+                          <Label className="text-2xs text-muted-foreground font-semibold">Consultor Responsável</Label>
+                          <Select
+                            value={editLeadForm.assigned_to || ""}
+                            onValueChange={(val) => setEditLeadForm((prev: any) => ({ ...prev, assigned_to: val }))}
+                          >
+                            <SelectTrigger className="h-10 text-xs rounded-lg">
+                              <SelectValue placeholder="Selecione consultor..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Não atribuído</SelectItem>
+                              {team.map((m: any) => (
+                                <SelectItem key={m.profile_id || m.id} value={m.profile_id || m.id}>
+                                  {m.full_name || m.name || "Membro"}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-2xs text-muted-foreground font-semibold">Canal / Origem</Label>
+                          <Select
+                            value={editLeadForm.source || "whatsapp"}
+                            onValueChange={(val) => setEditLeadForm((prev: any) => ({ ...prev, source: val }))}
+                          >
+                            <SelectTrigger className="h-10 text-xs rounded-lg">
+                              <SelectValue placeholder="Origem..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {LEAD_SOURCES.map((s) => (
+                                <SelectItem key={s.value} value={s.value}>
+                                  {s.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end pt-2">
+                        <Button
+                          type="button"
+                          disabled={isUpdatingLead}
+                          onClick={handleSaveLeadDetails}
+                          className="h-10 min-h-10 px-5 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {isUpdatingLead ? "Salvando..." : "Salvar Ficha Completa"}
+                        </Button>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+              );
+            })()}
 
             {/* 2. ABA CLIENTE 360° */}
             {leadDrawerTab === "cliente360" && (
@@ -3056,81 +3177,119 @@ export default function WorkspaceTurismoCockpitPage() {
 
               </div>
 
-              {/* COLUNA DIREITA: Fases do Funil & Ações Rápidas (Compacta) */}
-              <div className="w-full lg:w-52 xl:w-56 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/5 border-l border-border/40">
-                <div className="space-y-2">
-                  <span className="font-bold text-foreground block pb-1 border-b border-border/40 text-xs">Fase do Atendimento</span>
-                  <div className="space-y-1 pt-1">
-                    {TOURISM_STAGES.map((st) => {
-                      const isCurrent = (editLeadForm.status || selectedLead.status) === st.id;
-                      return (
-                        <button
-                          key={st.id}
+              {/* COLUNA DIREITA: Fases do Funil & Ações Rápidas (Compacta e Operacional) */}
+              {(() => {
+                const currentStageIdx = TOURISM_STAGES.findIndex((s) => s.id === (editLeadForm.status || selectedLead.status));
+                const nextStageItem = currentStageIdx >= 0 && currentStageIdx < TOURISM_STAGES.length - 1 ? TOURISM_STAGES[currentStageIdx + 1] : null;
+                const prevStageItem = currentStageIdx > 0 ? TOURISM_STAGES[currentStageIdx - 1] : null;
+
+                return (
+                  <div className="w-full lg:w-52 xl:w-56 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/10 border-l border-border/40">
+                    {/* Ação Primária de Próxima Fase (Padrão Pipefy) */}
+                    <div className="space-y-2">
+                      <span className="text-2xs uppercase tracking-wider text-muted-foreground font-bold block pb-1 border-b border-border/40">
+                        Mover Atendimento
+                      </span>
+                      {nextStageItem && (
+                        <Button
                           type="button"
-                          disabled={isCurrent}
-                          onClick={() => handleMoveStage(selectedLead.id, st.id)}
-                          className={cn(
-                            "w-full h-11 min-h-11 px-3 rounded-lg text-xs font-medium flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            isCurrent
-                              ? "bg-muted text-foreground font-semibold cursor-default"
-                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                          )}
+                          onClick={() => handleMoveStage(selectedLead.id, nextStageItem.id)}
+                          className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer shadow-sm focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          <span className="flex items-center gap-2 min-w-0">
-                            <span className={cn("size-2 rounded-full shrink-0", st.dotColor)} />
-                            <span className="truncate">{st.title}</span>
-                          </span>
-                          {isCurrent && <Check className="size-3.5 text-primary shrink-0" />}
-                        </button>
-                      );
-                    })}
+                          <span>{nextStageItem.title}</span>
+                          <ChevronRight className="size-4" />
+                        </Button>
+                      )}
+                      {prevStageItem && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleMoveStage(selectedLead.id, prevStageItem.id)}
+                          className="w-full h-9 rounded-lg text-2xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
+                        >
+                          <ChevronLeft className="size-3.5" />
+                          <span>Voltar para {prevStageItem.title}</span>
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="pt-2 border-t border-border/40 space-y-1">
+                      <span className="text-2xs uppercase tracking-wider text-muted-foreground font-bold block pb-1">
+                        Todas as Etapas
+                      </span>
+                      {TOURISM_STAGES.map((st) => {
+                        const isCurrent = (editLeadForm.status || selectedLead.status) === st.id;
+                        return (
+                          <button
+                            key={st.id}
+                            type="button"
+                            disabled={isCurrent}
+                            onClick={() => handleMoveStage(selectedLead.id, st.id)}
+                            className={cn(
+                              "w-full h-9 px-2.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                              isCurrent
+                                ? "bg-muted text-foreground font-bold cursor-default"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                            )}
+                          >
+                            <span className="flex items-center gap-2 min-w-0">
+                              <span className={cn("size-2 rounded-full shrink-0", st.dotColor)} />
+                              <span className="truncate">{st.title}</span>
+                            </span>
+                            {isCurrent && <Check className="size-3.5 text-primary shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="pt-3 border-t border-border/40 space-y-2">
+                      <span className="text-2xs uppercase tracking-wider text-muted-foreground font-bold block">
+                        Ações Rápidas
+                      </span>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          const leadData = {
+                            id: selectedLead.id,
+                            fullName: editLeadForm.name || selectedLead.full_name,
+                            phone: editLeadForm.phone || selectedLead.phone,
+                            email: editLeadForm.email || selectedLead.email,
+                            destination: editLeadForm.destination || selectedLead.destination,
+                            estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
+                            passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
+                          };
+                          setSelectedLead(null);
+                          setProposalLead(leadData);
+                        }}
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <FileText className="size-4" />
+                        <span>Montar Proposta</span>
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setFlightLead(selectedLead)}
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                      >
+                        <Plane className="size-3.5 text-sky-500" />
+                        <span>Malha Aérea & Voos</span>
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setCalculatorLead(selectedLead)}
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                      >
+                        <Calculator className="size-3.5 text-warning-strong" />
+                        <span>Simular Markup</span>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-
-                <div className="pt-3 border-t border-border/40 space-y-2">
-                  <span className="font-bold text-foreground block">Ações Rápidas</span>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      const leadData = {
-                        id: selectedLead.id,
-                        fullName: editLeadForm.name || selectedLead.full_name,
-                        phone: editLeadForm.phone || selectedLead.phone,
-                        email: editLeadForm.email || selectedLead.email,
-                        destination: editLeadForm.destination || selectedLead.destination,
-                        estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
-                        passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
-                      };
-                      setSelectedLead(null);
-                      setProposalLead(leadData);
-                    }}
-                    className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <FileText className="size-4" />
-                    <span>Montar Proposta</span>
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setFlightLead(selectedLead)}
-                    className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
-                  >
-                    <Plane className="size-3.5 text-sky-500" />
-                    <span>Malha Aérea & Voos</span>
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setCalculatorLead(selectedLead)}
-                    className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
-                  >
-                    <Calculator className="size-3.5 text-warning-strong" />
-                    <span>Simular Markup</span>
-                  </Button>
-                </div>
-              </div>
+                );
+              })()}
             </div>
           </SheetContent>
         </Sheet>

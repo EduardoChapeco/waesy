@@ -193,21 +193,25 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
       {/* PASSO 1: FOTO DO DOCUMENTO OFICIAL */}
       {step === 1 && (
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="font-semibold text-foreground">
-              Tipo de Documento Oficial com Foto *
+          <div className="space-y-1.5">
+            <Label className="font-semibold text-foreground text-xs">
+              Documento de Identificação *
             </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1 p-1 rounded-lg bg-muted/30 border border-border/40">
               {(["cnh", "rg", "passport"] as const).map((t) => (
-                <Button
+                <button
                   key={t}
                   type="button"
-                  variant={docType === t ? "default" : "outline"}
                   onClick={() => setDocType(t)}
-                  className="h-11 min-h-11 text-xs uppercase font-bold rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  className={cn(
+                    "h-9 px-3 rounded-md text-xs uppercase font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    docType === t
+                      ? "bg-background text-foreground shadow-xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
                 >
-                  {t}
-                </Button>
+                  {t === "passport" ? "Passaporte" : t}
+                </button>
               ))}
             </div>
           </div>
@@ -407,9 +411,7 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
             Verificação de Identidade Concluída!
           </h4>
           <p className="text-muted-foreground text-xs leading-relaxed max-w-md mx-auto">
-            {paymentMethod === "pix" || paymentMethod === "cash"
-              ? "Pagamento à vista confirmado! Sua emissão está programada com janela de segurança de 1 hora para conferência preventiva de malha aérea."
-              : "Tríade de Confiança validada com sucesso! Seu bilhete foi aprovado para emissão imediata sem retenções."}
+            Documentação e biometria conferidas com sucesso. O cadastro foi validado para emissão de bilhetes e reservas.
           </p>
           <div className="pt-2">
             <span className="font-mono text-xs text-muted-foreground">

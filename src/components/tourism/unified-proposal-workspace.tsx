@@ -23,6 +23,7 @@ import {
   Check,
   Eye,
   Loader2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -38,6 +39,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { CurrencyField } from "@/components/ui/currency-field";
 import { formatMoney } from "@/lib/money";
 import { createTravelProposal, type TravelProposalDTO, type ProposalCanvasFormat } from "@/services/travel-proposal.functions";
 import { createAgencyTravelQuote } from "@/services/tourism.functions";
@@ -86,46 +88,22 @@ export interface UnifiedProposalWorkspaceProps {
   onCreated?: (result: { proposalId?: string; quoteId?: string; proposal?: TravelProposalDTO }) => void;
 }
 
-export const CANONICAL_OPERATOR_CAMPAIGNS: OperatorPaymentCampaignRule[] = [
-  {
-    operatorSlug: "orinter",
-    operatorDisplayName: "Orinter Tour & Travel (InfoTravel v1)",
-    maxBoletoInstallments: 12,
-    boletoMinDownpaymentPct: 20,
-    maxCardInstallments: 10,
-    pixCashDiscountPct: 5,
-  },
-  {
-    operatorSlug: "incomum",
-    operatorDisplayName: "Incomum Operadora (InfoTravel v1)",
-    maxBoletoInstallments: 15,
-    boletoMinDownpaymentPct: 20,
-    maxCardInstallments: 10,
-    pixCashDiscountPct: 5,
-  },
-  {
-    operatorSlug: "frt",
-    operatorDisplayName: "FRT Operadora (InfoTravel v1)",
-    maxBoletoInstallments: 12,
-    boletoMinDownpaymentPct: 25,
-    maxCardInstallments: 10,
-    pixCashDiscountPct: 4,
-  },
-  {
-    operatorSlug: "santander",
-    operatorDisplayName: "Financiamento Santander + Pix Agência",
-    maxBoletoInstallments: 18,
-    boletoMinDownpaymentPct: 25,
-    maxCardInstallments: 12,
-    pixCashDiscountPct: 6,
-  },
+export const POPULAR_OPERATOR_PRESETS = [
+  "Orinter Tour & Travel",
+  "Incomum Operadora",
+  "FRT Operadora",
+  "CVC Corp",
+  "Azul Viagens",
+  "ViagensPromo",
+  "Financiamento Santander",
+  "Operadora Própria",
 ];
 
-export const CANONICAL_ROOM_ADDONS = [
-  { code: "child_seat", label: "Bebê Conforto / Cadeirinha no Transfer", priceCents: 18000 },
-  { code: "checked_bag_23", label: "Bagagem Despachada 23kg (Ida e Volta)", priceCents: 29000 },
-  { code: "travel_insurance", label: "Seguro Viagem Cobertura Integral", priceCents: 24000 },
-  { code: "vip_transfer", label: "Upgrade para Transfer Privativo", priceCents: 35000 },
+export const SUGGESTED_ROOM_ADDONS = [
+  { code: "checked_bag_23", label: "Bagagem Despachada 23kg" },
+  { code: "travel_insurance", label: "Seguro Viagem" },
+  { code: "vip_transfer", label: "Transfer Privativo" },
+  { code: "child_seat", label: "Bebê Conforto / Cadeirinha" },
 ];
 
 export const COMMON_INCLUSIONS_TAGS = [
@@ -344,8 +322,25 @@ export function UnifiedProposalWorkspace({
     },
   ]);
 
-  // Operadora & Regras
-  const [selectedOperatorSlug, setSelectedOperatorSlug] = useState<string>("orinter");
+  // Operadora & Condições de Pagamento Flexíveis (100% Customizáveis pelo Agente)
+  const [operatorName, setOperatorName] = useState<string>("Orinter Tour & Travel");
+  const [enableBoleto, setEnableBoleto] = useState<boolean>(true);
+  const [boletoInstallments, setBoletoInstallments] = useState<number>(12);
+  const [hasBoletoDownpayment, setHasBoletoDownpayment] = useState<boolean>(false); // Zero entrada por padrão!
+  const [downpaymentType, setDownpaymentType] = useState<"percentage" | "fixed_cents">("percentage");
+  const [downpaymentPct, setDownpaymentPct] = useState<number>(20);
+  const [downpaymentFixedCents, setDownpaymentFixedCents] = useState<number>(0);
+  const [firstBoletoDue, setFirstBoletoDue] = useState<string>("Primeiro boleto para 30 dias");
+
+  const [enableCard, setEnableCard] = useState<boolean>(true);
+  const [cardInstallments, setCardInstallments] = useState<number>(10);
+
+  const [enablePixDiscount, setEnablePixDiscount] = useState<boolean>(true);
+  const [pixDiscountPct, setPixDiscountPct] = useState<number>(5);
+
+  const [customPaymentTermsText, setCustomPaymentTermsText] = useState<string>("");
+  const [isTermsCustomized, setIsTermsCustomized] = useState<boolean>(false);
+
   const [supplierNetCostPct, setSupplierNetCostPct] = useState<number>(88);
   const [notes, setNotes] = useState("");
   const [infotravelOperatorFilter, setInfotravelOperatorFilter] = useState<InfoTravelOperatorSlug>("orinter");
@@ -366,17 +361,92 @@ export function UnifiedProposalWorkspace({
 
   const isInfotravelConfigured = !isLoadingInfotravelStatus && Boolean(infotravelStatus?.isConfigured);
 
-  const activeCampaign = useMemo(
-    () =>
-      CANONICAL_OPERATOR_CAMPAIGNS.find((c) => c.operatorSlug === selectedOperatorSlug) ||
-      CANONICAL_OPERATOR_CAMPAIGNS[0],
-    [selectedOperatorSlug]
-  );
+  const activeCampaign: OperatorPaymentCampaignRule = useMemo(() => {
+    return {
+      operatorSlug: operatorName.toLowerCase().replace(/[^a-z0-9]/g, "_") || "custom",
+      operatorDisplayName: operatorName.trim() || "Fornecedor",
+      maxBoletoInstallments: enableBoleto ? Math.max(1, boletoInstallments) : 1,
+      boletoMinDownpaymentPct: hasBoletoDownpayment ? (downpaymentType === "percentage" ? downpaymentPct : 0) : 0,
+      hasDownpayment: hasBoletoDownpayment,
+      downpaymentType,
+      downpaymentFixedCents: hasBoletoDownpayment && downpaymentType === "fixed_cents" ? downpaymentFixedCents : 0,
+      maxCardInstallments: enableCard ? Math.max(1, cardInstallments) : 1,
+      pixCashDiscountPct: enablePixDiscount ? pixDiscountPct : 0,
+      firstBoletoDueDescription: firstBoletoDue,
+    };
+  }, [
+    operatorName,
+    enableBoleto,
+    boletoInstallments,
+    hasBoletoDownpayment,
+    downpaymentType,
+    downpaymentPct,
+    downpaymentFixedCents,
+    enableCard,
+    cardInstallments,
+    enablePixDiscount,
+    pixDiscountPct,
+    firstBoletoDue,
+  ]);
 
   const calculation = useMemo(
     () => calculateMultiRoomQuoteBreakdown(rooms, activeCampaign),
     [rooms, activeCampaign]
   );
+
+  const generatedTermsText = useMemo(() => {
+    const parts: string[] = [];
+    if (enableBoleto) {
+      if (hasBoletoDownpayment) {
+        const downpaymentStr =
+          downpaymentType === "fixed_cents"
+            ? formatMoney(downpaymentFixedCents)
+            : `${downpaymentPct}% (${formatMoney(Math.round((calculation.grandTotalCents * downpaymentPct) / 100))})`;
+        const remaining = Math.max(1, boletoInstallments - 1);
+        const remainingVal = Math.round(
+          (calculation.grandTotalCents -
+            (downpaymentType === "fixed_cents"
+              ? downpaymentFixedCents
+              : Math.round((calculation.grandTotalCents * downpaymentPct) / 100))) /
+            remaining
+        );
+        parts.push(
+          `Boleto: Entrada de ${downpaymentStr} + ${remaining}x de ${formatMoney(remainingVal)}`
+        );
+      } else {
+        const monthlyVal = Math.round(
+          calculation.grandTotalCents / Math.max(1, boletoInstallments)
+        );
+        parts.push(
+          `Boleto: Até ${boletoInstallments}x de ${formatMoney(monthlyVal)} sem entrada (${firstBoletoDue})`
+        );
+      }
+    }
+    if (enableCard) {
+      const cardVal = Math.round(
+        calculation.grandTotalCents / Math.max(1, cardInstallments)
+      );
+      parts.push(`Cartão: Até ${cardInstallments}x de ${formatMoney(cardVal)} sem juros`);
+    }
+    if (enablePixDiscount && pixDiscountPct > 0) {
+      const pixVal = Math.round(calculation.grandTotalCents * (1 - pixDiscountPct / 100));
+      parts.push(`À Vista no Pix: ${formatMoney(pixVal)} (${pixDiscountPct}% de desconto)`);
+    }
+    return parts.join(" | ");
+  }, [
+    enableBoleto,
+    hasBoletoDownpayment,
+    downpaymentType,
+    downpaymentFixedCents,
+    downpaymentPct,
+    boletoInstallments,
+    firstBoletoDue,
+    enableCard,
+    cardInstallments,
+    enablePixDiscount,
+    pixDiscountPct,
+    calculation.grandTotalCents,
+  ]);
 
   // Manipulação de Quartos
   const handleAddRoom = () => {
@@ -794,10 +864,9 @@ export function UnifiedProposalWorkspace({
               },
             ],
             payment_terms:
-              `Campanha ${activeCampaign.operatorDisplayName}: ` +
-              `Entrada de ${formatMoney(calculation.campaignSummary.boletoDownpaymentCents)} + ` +
-              `${activeCampaign.maxBoletoInstallments - 1}x de ${formatMoney(calculation.campaignSummary.boletoMonthlyInstallmentCents)} no Boleto, ` +
-              `ou até ${activeCampaign.maxCardInstallments}x de ${formatMoney(calculation.campaignSummary.cardMonthlyInstallmentCents)} no Cartão.`,
+              isTermsCustomized && customPaymentTermsText.trim()
+                ? customPaymentTermsText.trim()
+                : generatedTermsText,
           },
           includes: selectedInclusions,
           excludes: matchedPkgTemplate?.excludes || [
@@ -906,10 +975,10 @@ export function UnifiedProposalWorkspace({
                 </span>
                 <div>
                   <SheetTitle className="text-base sm:text-lg font-bold text-foreground">
-                    Construtor Unificado de Propostas
+                    Nova Proposta
                   </SheetTitle>
-                  <SheetDescription className="text-xs text-muted-foreground">
-                    Cotação multi-quartos, campanhas de operadoras e exportação em 1 clique
+                  <SheetDescription className="sr-only">
+                    Elaboração e envio de proposta comercial
                   </SheetDescription>
                 </div>
               </div>
@@ -1182,52 +1251,9 @@ export function UnifiedProposalWorkspace({
                     <Input
                       value={destinationQuery}
                       onChange={(e) => setDestinationQuery(e.target.value)}
-                      placeholder="Ex: Buenos Aires, Maceió, Santiago..."
+                      placeholder="Ex: Buenos Aires, Maceió, Paris, Cancún..."
                       className="h-11 min-h-11 rounded-lg text-xs font-semibold"
                     />
-                    <div className="flex flex-wrap gap-1 pt-1">
-                      {TRAVEL_PACKAGE_TEMPLATES.map((tpl) => (
-                        <button
-                          key={tpl.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedPackageTemplateId(tpl.id);
-                            setDestinationQuery(tpl.destinationCity);
-                            setCustomTitle(tpl.title);
-                            setCanvasFormat(tpl.canvasFormat);
-                            setTemplateTheme(tpl.templateTheme);
-                            if (tpl.includes?.length) setSelectedInclusions(tpl.includes);
-                            if (tpl.suggestedPriceCents > 0) {
-                              const perAdult = Math.round(tpl.suggestedPriceCents / 2);
-                              setRooms((prev) =>
-                                prev.map((r, i) =>
-                                  i === 0 ? { ...r, baseAdultPriceCents: perAdult } : r,
-                                ),
-                              );
-                              setBundleOptions((prev) =>
-                                prev.map((o, i) =>
-                                  i === 0
-                                    ? {
-                                        ...o,
-                                        hotelName: tpl.hotels?.[0]?.hotel_name || o.hotelName,
-                                        adultPriceCents: perAdult,
-                                      }
-                                    : o,
-                                ),
-                              );
-                            }
-                            toast.success(`Template "${tpl.destinationCity}" aplicado com roteiro, hotel e valores!`);
-                          }}
-                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer ${
-                            selectedPackageTemplateId === tpl.id
-                              ? "bg-primary text-primary-foreground font-bold"
-                              : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          {tpl.destinationCity}
-                        </button>
-                      ))}
-                    </div>
                   </div>
                 </div>
 
@@ -1424,27 +1450,109 @@ export function UnifiedProposalWorkspace({
                       </div>
                     </div>
 
-                    {/* Add-ons Opcionais do Quarto */}
-                    <div className="pt-2 border-t border-border/20">
-                      <Label className="text-xs text-muted-foreground">Adicionais Opcionais para este Quarto:</Label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                        {CANONICAL_ROOM_ADDONS.map((addon) => {
-                          const isChecked = room.addons.some((a) => a.code === addon.code);
+                    {/* Adicionais deste Quarto (100% livres e editáveis pelo agente) */}
+                    <div className="pt-3 border-t border-border/20 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-semibold text-foreground">
+                          Adicionais deste Quarto
+                        </Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const newAddon = {
+                              code: `addon-${Date.now()}`,
+                              label: "",
+                              priceCents: 0,
+                            };
+                            handleUpdateRoom(room.roomNumber, {
+                              addons: [...room.addons, newAddon],
+                            });
+                          }}
+                          className="h-8 px-2 text-2xs text-primary font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Plus className="size-3" />
+                          <span>Adicionar Item</span>
+                        </Button>
+                      </div>
+
+                      {/* Lista de Adicionais Adicionados */}
+                      {room.addons.length > 0 && (
+                        <div className="space-y-2">
+                          {room.addons.map((ad, adIdx) => (
+                            <div
+                              key={ad.code || adIdx}
+                              className="flex items-center gap-2 p-2 rounded-lg bg-muted/20 border border-border/40"
+                            >
+                              <Input
+                                value={ad.label}
+                                onChange={(e) => {
+                                  const updated = [...room.addons];
+                                  updated[adIdx] = { ...updated[adIdx], label: e.target.value };
+                                  handleUpdateRoom(room.roomNumber, { addons: updated });
+                                }}
+                                placeholder="Descrição do adicional (ex: Bagagem 23kg, Seguro Viagem...)"
+                                className="h-9 text-xs flex-1 rounded-md"
+                              />
+                              <div className="w-32 shrink-0">
+                                <CurrencyField
+                                  value={ad.priceCents || 0}
+                                  onChange={(val: any) => {
+                                    const updated = [...room.addons];
+                                    updated[adIdx] = { ...updated[adIdx], priceCents: val || 0 };
+                                    handleUpdateRoom(room.roomNumber, { addons: updated });
+                                  }}
+                                  className="h-9 text-xs font-mono rounded-md"
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  const updated = room.addons.filter((_, i) => i !== adIdx);
+                                  handleUpdateRoom(room.roomNumber, { addons: updated });
+                                }}
+                                className="size-8 rounded-md text-muted-foreground hover:text-destructive cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                title="Remover adicional"
+                              >
+                                <X className="size-3.5" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Sugestões Rápidas (Zero Valores Hardcoded) */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <span className="text-2xs text-muted-foreground mr-1">Sugestões rápidas:</span>
+                        {SUGGESTED_ROOM_ADDONS.map((sug) => {
+                          const alreadyAdded = room.addons.some(
+                            (a) => a.label.toLowerCase() === sug.label.toLowerCase()
+                          );
                           return (
                             <button
-                              key={addon.code}
+                              key={sug.code}
                               type="button"
-                              onClick={() => handleToggleRoomAddon(room.roomNumber, addon)}
-                              className={`h-11 min-h-11 px-3 rounded-lg border text-xs text-left flex items-center justify-between gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                                isChecked
-                                  ? "bg-primary/10 border-primary text-foreground font-semibold"
-                                  : "border-border/60 hover:bg-muted/40 text-muted-foreground"
+                              disabled={alreadyAdded}
+                              onClick={() => {
+                                const newAddon = {
+                                  code: `addon-${Date.now()}-${sug.code}`,
+                                  label: sug.label,
+                                  priceCents: 0,
+                                };
+                                handleUpdateRoom(room.roomNumber, {
+                                  addons: [...room.addons, newAddon],
+                                });
+                              }}
+                              className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                                alreadyAdded
+                                  ? "bg-muted text-muted-foreground/60 cursor-default"
+                                  : "bg-muted/40 hover:bg-muted text-foreground border border-border/30 hover:border-border/60"
                               }`}
                             >
-                              <span className="truncate">{addon.label}</span>
-                              <Badge variant="outline" className="font-mono text-2xs shrink-0">
-                                +{formatMoney(addon.priceCents)}
-                              </Badge>
+                              + {sug.label}
                             </button>
                           );
                         })}
@@ -1562,29 +1670,238 @@ export function UnifiedProposalWorkspace({
               </div>
             )}
 
-            {/* ETAPA 4: CONDIÇÕES & OPERADORA */}
+            {/* ETAPA 4: CONDIÇÕES & FORNECEDOR (100% PERSONALIZÁVEL) */}
             {stepTab === "pagamento" && (
-              <div className="space-y-4">
+              <div className="space-y-5">
+                {/* 1. Operadora / Fornecedor */}
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium text-foreground">Regra Comercial da Operadora / Fornecedor</Label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {CANONICAL_OPERATOR_CAMPAIGNS.map((camp) => (
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-foreground">Operadora / Fornecedor</Label>
+                    <span className="text-2xs text-muted-foreground">Selecione ou digite livremente</span>
+                  </div>
+                  <Input
+                    value={operatorName}
+                    onChange={(e) => setOperatorName(e.target.value)}
+                    placeholder="Ex: Orinter, Incomum, FRT, CVC, Azul Viagens..."
+                    className="h-11 min-h-11 rounded-lg text-xs font-medium"
+                  />
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {POPULAR_OPERATOR_PRESETS.map((op) => (
                       <button
-                        key={camp.operatorSlug}
+                        key={op}
                         type="button"
-                        onClick={() => setSelectedOperatorSlug(camp.operatorSlug)}
-                        className={`p-3 rounded-lg border text-xs text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                          selectedOperatorSlug === camp.operatorSlug
-                            ? "bg-primary/10 border-primary text-foreground font-semibold"
-                            : "border-border/60 hover:bg-muted/40 text-muted-foreground"
+                        onClick={() => setOperatorName(op)}
+                        className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          operatorName === op
+                            ? "bg-primary text-primary-foreground font-bold"
+                            : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/30"
                         }`}
                       >
-                        <div className="font-bold text-foreground">{camp.operatorDisplayName}</div>
-                        <div className="text-2xs text-muted-foreground mt-1">
-                          Até {camp.maxBoletoInstallments}x no Boleto ({camp.boletoMinDownpaymentPct}% entrada) ou {camp.maxCardInstallments}x no Cartão · {camp.pixCashDiscountPct}% desc. Pix
-                        </div>
+                        {op}
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* 2. Formas de Pagamento & Parcelamento (Totalmente Livres) */}
+                <div className="space-y-4 p-4 rounded-xl border border-border/50 bg-muted/10">
+                  <span className="text-xs font-bold text-foreground block pb-1 border-b border-border/30">
+                    Condições Comerciais & Parcelamento
+                  </span>
+
+                  {/* Boleto Bancário */}
+                  <div className="space-y-3 p-3 rounded-lg bg-background border border-border/40">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={enableBoleto}
+                          onChange={(e) => setEnableBoleto(e.target.checked)}
+                          className="size-4 rounded border-border text-primary cursor-pointer"
+                        />
+                        <span className="text-xs font-bold text-foreground">Boleto Bancário Faturado</span>
+                      </label>
+                      {enableBoleto && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xs text-muted-foreground">Exigir Entrada?</span>
+                          <button
+                            type="button"
+                            onClick={() => setHasBoletoDownpayment(!hasBoletoDownpayment)}
+                            className={`h-7 px-2.5 rounded-full text-2xs font-bold transition-colors cursor-pointer ${
+                              hasBoletoDownpayment
+                                ? "bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {hasBoletoDownpayment ? "Com Entrada" : "Sem Entrada (Livre)"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {enableBoleto && (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/20">
+                        <div className="space-y-1">
+                          <Label className="text-2xs text-muted-foreground font-semibold">Qtd. Parcelas</Label>
+                          <select
+                            value={boletoInstallments}
+                            onChange={(e) => setBoletoInstallments(Number(e.target.value))}
+                            className="w-full h-10 rounded-lg bg-background border border-border px-2 text-xs font-medium text-foreground"
+                          >
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 18, 24].map((n) => (
+                              <option key={n} value={n}>
+                                Até {n}x {hasBoletoDownpayment ? `(Entrada + ${n - 1}x)` : "no Boleto"}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {hasBoletoDownpayment ? (
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Valor da Entrada</Label>
+                            <div className="flex items-center gap-1">
+                              <select
+                                value={downpaymentType}
+                                onChange={(e) => setDownpaymentType(e.target.value as any)}
+                                className="h-10 rounded-lg bg-background border border-border px-1.5 text-2xs text-foreground"
+                              >
+                                <option value="percentage">%</option>
+                                <option value="fixed_cents">R$</option>
+                              </select>
+                              {downpaymentType === "percentage" ? (
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  max={90}
+                                  value={downpaymentPct}
+                                  onChange={(e) => setDownpaymentPct(Number(e.target.value))}
+                                  className="h-10 rounded-lg text-xs font-mono"
+                                  placeholder="%"
+                                />
+                              ) : (
+                                <CurrencyField
+                                  value={downpaymentFixedCents}
+                                  onChange={(val: any) => setDownpaymentFixedCents(val || 0)}
+                                  className="h-10 rounded-lg text-xs font-mono"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Vencimento do 1º Boleto</Label>
+                            <Input
+                              value={firstBoletoDue}
+                              onChange={(e) => setFirstBoletoDue(e.target.value)}
+                              placeholder="Ex: 30 dias da emissão"
+                              className="h-10 rounded-lg text-xs"
+                            />
+                          </div>
+                        )}
+
+                        <div className="space-y-1">
+                          <Label className="text-2xs text-muted-foreground font-semibold">
+                            {hasBoletoDownpayment ? "Vencimento 1º Boleto" : "Condição / Carência"}
+                          </Label>
+                          <Input
+                            value={hasBoletoDownpayment ? firstBoletoDue : "Sem juros operadora"}
+                            onChange={(e) => setFirstBoletoDue(e.target.value)}
+                            placeholder="Ex: 30 dias após entrada"
+                            className="h-10 rounded-lg text-xs"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cartão de Crédito */}
+                  <div className="space-y-3 p-3 rounded-lg bg-background border border-border/40">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={enableCard}
+                          onChange={(e) => setEnableCard(e.target.checked)}
+                          className="size-4 rounded border-border text-primary cursor-pointer"
+                        />
+                        <span className="text-xs font-bold text-foreground">Cartão de Crédito</span>
+                      </label>
+                      {enableCard && (
+                        <div className="flex items-center gap-2">
+                          <Label className="text-2xs text-muted-foreground">Parcelas sem Juros:</Label>
+                          <select
+                            value={cardInstallments}
+                            onChange={(e) => setCardInstallments(Number(e.target.value))}
+                            className="h-9 rounded-lg bg-background border border-border px-2 text-xs font-medium text-foreground"
+                          >
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 18].map((n) => (
+                              <option key={n} value={n}>
+                                Até {n}x sem juros
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* À Vista no Pix */}
+                  <div className="space-y-3 p-3 rounded-lg bg-background border border-border/40">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={enablePixDiscount}
+                          onChange={(e) => setEnablePixDiscount(e.target.checked)}
+                          className="size-4 rounded border-border text-primary cursor-pointer"
+                        />
+                        <span className="text-xs font-bold text-foreground">À Vista no Pix / Transferência</span>
+                      </label>
+                      {enablePixDiscount && (
+                        <div className="flex items-center gap-2">
+                          <Label className="text-2xs text-muted-foreground">Desconto (%):</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={30}
+                            value={pixDiscountPct}
+                            onChange={(e) => setPixDiscountPct(Number(e.target.value))}
+                            className="h-8 w-20 rounded-lg text-xs font-mono text-center"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Texto Final das Condições Comerciais (100% Livre e Editável) */}
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-foreground">
+                        Texto de Apresentação das Condições ao Cliente
+                      </Label>
+                      {isTermsCustomized && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsTermsCustomized(false);
+                            setCustomPaymentTermsText("");
+                          }}
+                          className="text-2xs text-primary hover:underline cursor-pointer"
+                        >
+                          Restaurar cálculo automático
+                        </button>
+                      )}
+                    </div>
+                    <Textarea
+                      rows={2}
+                      value={isTermsCustomized ? customPaymentTermsText : generatedTermsText}
+                      onChange={(e) => {
+                        setIsTermsCustomized(true);
+                        setCustomPaymentTermsText(e.target.value);
+                      }}
+                      placeholder="Texto comercial que sairá na proposta do passageiro..."
+                      className="text-xs rounded-lg"
+                    />
                   </div>
                 </div>
 
@@ -1695,16 +2012,28 @@ export function UnifiedProposalWorkspace({
                     </div>
                   </div>
 
-                  <div className="p-3 rounded bg-muted/40 border border-border/40 text-2xs text-muted-foreground space-y-1">
-                    <div>
-                      <strong className="text-foreground">Opção Boleto:</strong> Entrada de {formatMoney(calculation.campaignSummary.boletoDownpaymentCents)} + {activeCampaign.maxBoletoInstallments - 1}x de {formatMoney(calculation.campaignSummary.boletoMonthlyInstallmentCents)}
-                    </div>
-                    <div>
-                      <strong className="text-foreground">Opção Cartão:</strong> Até {activeCampaign.maxCardInstallments}x de {formatMoney(calculation.campaignSummary.cardMonthlyInstallmentCents)}
-                    </div>
-                    <div>
-                      <strong className="text-foreground">À Vista no Pix:</strong> {formatMoney(Math.round(calculation.grandTotalCents * (1 - activeCampaign.pixCashDiscountPct / 100)))} ({activeCampaign.pixCashDiscountPct}% off)
-                    </div>
+                  <div className="p-3 rounded bg-muted/40 border border-border/40 text-2xs text-muted-foreground space-y-1.5">
+                    {enableBoleto && (
+                      <div>
+                        <strong className="text-foreground">Opção Boleto:</strong>{" "}
+                        {hasBoletoDownpayment
+                          ? `Entrada de ${formatMoney(calculation.campaignSummary.boletoDownpaymentCents)} + ${Math.max(1, boletoInstallments - 1)}x de ${formatMoney(calculation.campaignSummary.boletoMonthlyInstallmentCents)}`
+                          : `Até ${boletoInstallments}x de ${formatMoney(calculation.campaignSummary.boletoMonthlyInstallmentCents)} sem entrada (${firstBoletoDue})`}
+                      </div>
+                    )}
+                    {enableCard && (
+                      <div>
+                        <strong className="text-foreground">Opção Cartão:</strong> Até {cardInstallments}x de{" "}
+                        {formatMoney(calculation.campaignSummary.cardMonthlyInstallmentCents)} sem juros
+                      </div>
+                    )}
+                    {enablePixDiscount && pixDiscountPct > 0 && (
+                      <div>
+                        <strong className="text-foreground">À Vista no Pix:</strong>{" "}
+                        {formatMoney(Math.round(calculation.grandTotalCents * (1 - pixDiscountPct / 100)))}{" "}
+                        ({pixDiscountPct}% off)
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
