@@ -881,7 +881,7 @@ export function WorkspaceViabilityPage() {
                     <ul className="space-y-2 text-xs text-foreground">
                       {(activeStudy.simlab_synthesis.topObjections || []).map((obj, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <AlertCircle className="size-4 text-amber-500 shrink-0 mt-1" />
+                          <AlertCircle className="size-4 text-warning-strong shrink-0 mt-1" />
                           <span>{obj}</span>
                         </li>
                       ))}
@@ -1105,8 +1105,8 @@ export function WorkspaceViabilityPage() {
                   />
                 </div>
 
-                <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-2">
-                  <span className="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 block">
+                <div className="p-4 rounded-lg border border-warning/30 bg-warning/5 space-y-2">
+                  <span className="text-xs font-bold uppercase text-warning-strong  block">
                     Pontos a Melhorar
                   </span>
                   <textarea

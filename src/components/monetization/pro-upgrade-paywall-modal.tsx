@@ -30,10 +30,10 @@ export function ProUpgradePaywallModal({
       <DialogContent className="sm:max-w-md rounded-lg bg-card border border-border/70 p-5 sm:p-6 space-y-4">
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            <span className="p-2 rounded-lg bg-warning/10 text-warning-strong  border border-warning/20">
               <Lock className="size-4" />
             </span>
-            <Badge variant="outline" className="text-2xs font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
+            <Badge variant="outline" className="text-2xs font-mono border-warning/30 text-warning-strong bg-warning/10">
               RECURSO CORPORATIVO PRO
             </Badge>
           </div>

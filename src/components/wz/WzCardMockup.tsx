@@ -64,10 +64,10 @@ export function WzCardMockup({
     switch (cardDesignId) {
       case "aniversario":
         return {
-          bg: "bg-slate-900 border border-amber-900/40",
-          border: "border-amber-500/30",
-          accent: "text-amber-400",
-          badge: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+          bg: "bg-slate-900 border border-warning/40",
+          border: "border-warning/30",
+          accent: "text-warning-strong",
+          badge: "bg-warning/20 text-warning-strong border-warning/30",
           badgeText: "Feliz Aniversário ",
         };
       case "natal":
@@ -98,9 +98,9 @@ export function WzCardMockup({
       default:
         return {
           bg: "bg-zinc-900 border border-zinc-800",
-          border: "border-amber-400/40",
-          accent: "text-amber-400",
-          badge: "bg-amber-400/10 text-amber-300 border-amber-400/30",
+          border: "border-warning/40",
+          accent: "text-warning-strong",
+          badge: "bg-warning/10 text-warning-strong border-warning/30",
           badgeText: "Vale-Presente Oficial",
         };
     }
@@ -110,7 +110,7 @@ export function WzCardMockup({
     <div className={cn("relative w-full max-w-sm mx-auto select-none perspective-1000", className)}>
       <div
         className={cn(
-          "relative w-full aspect-[16/10] rounded-2xl transition-colors duration-200 duration-200 transform-style-3d shadow-xl",
+          "relative w-full aspect-16/10 rounded-2xl transition-colors duration-200 duration-200 transform-style-3d ",
           isFlipped ? "rotate-y-180" : ""
         )}
       >
@@ -213,7 +213,7 @@ export function WzCardMockup({
 
           {/* Regras de Uso e Escopo */}
           <div className="space-y-2 py-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+            <div className="flex items-center gap-2 text-xs font-bold text-warning-strong">
               <ShieldCheck className="size-4 shrink-0" />
               <span>Regras de Utilização do Ativo</span>
             </div>

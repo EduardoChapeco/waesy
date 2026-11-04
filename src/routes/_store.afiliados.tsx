@@ -576,7 +576,7 @@ function AfiliadosPage() {
                   </div>
 
                   <div className="p-4 rounded-lg border border-border/60 bg-card space-y-2">
-                    <div className="size-11 min-size-11 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                    <div className="size-11 min-size-11 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center">
                       <Coins className="size-4" />
                     </div>
                     <h4 className="text-xs font-bold text-foreground">Bônus por Indicação</h4>
@@ -1479,7 +1479,7 @@ function AfiliadosPage() {
               </div>
 
               <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
-                <div className="size-11 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                <div className="size-11 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center">
                   <Coins className="size-5" />
                 </div>
                 <h3 className="text-xs font-bold text-foreground">Liquidação via Pix</h3>

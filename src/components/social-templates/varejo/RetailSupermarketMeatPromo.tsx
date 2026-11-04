@@ -28,7 +28,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
           <span className="text-3xl font-black italic tracking-tight text-foreground block">
             {data.storeName || "Supermercados & Carnes"}
           </span>
-          <span className="text-sm uppercase tracking-widest text-amber-200 font-bold block mt-1">
+          <span className="text-sm uppercase tracking-widest text-warning-strong font-bold block mt-1">
             QUALIDADE GARANTIDA DO PRODUTOR
           </span>
         </div>
@@ -41,7 +41,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
       </div>
 
       {/* ── 2. Centro: Polígono Amarelo Chanfrado (Estilo Encarte de Carnes El Zonda) ── */}
-      <div className="relative my-4 flex-1 flex flex-col items-center justify-between bg-[#FEE101] text-slate-950 rounded-3xl border-8 border-slate-950 p-8 shadow-2xl overflow-hidden">
+      <div className="relative my-4 flex-1 flex flex-col items-center justify-between bg-[#FEE101] text-slate-950 rounded-3xl border-8 border-slate-950 p-8  overflow-hidden">
         {/* Título Principal no Topo do Card Amarelo */}
         <div className="w-full text-center pb-4 border-b-4 border-slate-950">
           <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-tight text-slate-950 leading-tight">
@@ -57,7 +57,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
         {/* Imagem Central dos Cortes */}
         <div className="relative w-full flex-1 flex items-center justify-center my-4">
           {data.backgroundImageUrl ? (
-            <div className="w-[480px] h-[340px] rounded-2xl overflow-hidden shadow-2xl bg-card border-4 border-slate-950 flex items-center justify-center p-4">
+            <div className="w-120 h-85 rounded-2xl overflow-hidden  bg-card border-4 border-slate-950 flex items-center justify-center p-4">
               <img
                 src={data.backgroundImageUrl}
                 alt={data.title}
@@ -66,7 +66,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
               />
             </div>
           ) : (
-            <div className="w-full h-48 bg-amber-200/50 rounded-xl flex items-center justify-center text-xl font-bold text-slate-700">
+            <div className="w-full h-48 bg-warning/50 rounded-xl flex items-center justify-center text-xl font-bold text-slate-700">
               Cortes Nobres Selecionados
             </div>
           )}
@@ -77,7 +77,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
               <div className="relative flex items-center justify-center w-64 h-64">
                 {/* SVG Estrela Dentada / Carimbo */}
                 <svg
-                  className="absolute inset-0 w-full h-full text-foreground drop-shadow-xl"
+                  className="absolute inset-0 w-full h-full text-foreground "
                   viewBox="0 0 100 100"
                   fill="currentColor"
                 >
@@ -104,7 +104,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
               data.highlights.slice(0, 4).map((h, i) => (
                 <div
                   key={i}
-                  className="bg-card border-2 border-slate-950 px-4 py-2 rounded-lg text-lg font-black uppercase text-slate-950 shadow-sm"
+                  className="bg-card border-2 border-slate-950 px-4 py-2 rounded-lg text-lg font-black uppercase text-slate-950 "
                 >
                   • {h}
                 </div>

@@ -206,7 +206,7 @@ export function CommercialShowcaseTemplate({
             </span>
           </div>
 
-          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
+          <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
             {products.map((p: any) => (
               <div key={p.id} className="w-60 sm:w-68 shrink-0 snap-start">
                 <OfferCard

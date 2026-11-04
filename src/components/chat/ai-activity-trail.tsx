@@ -142,7 +142,7 @@ export function AIActivityTrail({
               variant="ghost"
               size="sm"
               onClick={onCancel}
-              className="h-6 px-2 text-3xs font-semibold text-destructive hover:bg-destructive/10 rounded shrink-0 gap-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
+              className="h-6 px-2 text-3xs font-semibold text-destructive hover:bg-destructive/10 rounded shrink-0 gap-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive min-h-11 sm:min-h-0"
               title="Cancelar execução"
             >
               <Square className="size-2.5 fill-destructive" />

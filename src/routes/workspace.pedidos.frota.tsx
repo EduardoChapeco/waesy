@@ -505,7 +505,7 @@ function FrotaEntregasPage() {
  <Copy className="size-3.5" />
  Copiar Link Mágico
  </Button>
- <Button asChild variant="ghost" size="icon" className="rounded-lg size-11 sm:size-9 cursor-pointer">
+ <Button asChild variant="ghost" size="icon" className="rounded-lg size-11 sm:size-9 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0">
  <Link to="/entrega/$token" params={{ token: d.delivery_token }} target="_blank">
  <ExternalLink className="size-4" />
  </Link>
@@ -668,7 +668,7 @@ function FrotaEntregasPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleDeletePriceTable(tbl.id)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Remover tabela de tarifa"
  >
  <Trash2 className="size-4" />

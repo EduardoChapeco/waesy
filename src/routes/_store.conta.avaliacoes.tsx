@@ -61,7 +61,7 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
         <Star
           key={i}
           className={`${sizeClass} ${
-            i < rating ? "fill-amber-400 text-amber-400" : "text-border"
+            i < rating ? "fill-warning text-warning-strong" : "text-border"
           }`}
           aria-hidden="true"
         />
@@ -268,7 +268,7 @@ function CustomerReviewsPage() {
                     <div key={star} className="flex-1 flex flex-col items-center gap-1">
                       <div className="w-full h-1 rounded-full bg-border/50 overflow-hidden">
                         <div
-                          className="h-full bg-amber-400 rounded-full transition-transform"
+                          className="h-full bg-warning rounded-full transition-transform"
                           style={{ width: `${pct}%` }}
                         />
                       </div>

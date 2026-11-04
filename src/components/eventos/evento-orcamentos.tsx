@@ -252,7 +252,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
                 className={
                   selectedBudget.status === "aprovado"
                     ? "bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 text-xs font-bold"
-                    : "bg-amber-500/15 text-amber-600 border border-amber-500/30 text-xs font-bold"
+                    : "bg-warning/15 text-warning-strong border border-warning/30 text-xs font-bold"
                 }
               >
                 {selectedBudget.status === "aprovado" ? "Aprovado" : "Rascunho"}

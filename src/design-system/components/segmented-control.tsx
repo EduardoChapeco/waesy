@@ -46,10 +46,10 @@ export function SegmentedControl({
             aria-selected={isSelected}
             onClick={() => onChange(opt.id)}
             className={cn(
-              "items-center justify-center gap-1.5 px-3 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer",
+              "items-center justify-center gap-2 px-3 rounded-lg text-xs font-semibold transition duration-150 cursor-pointer",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               isFull ? "flex-1 flex" : "inline-flex",
-              size === "sm" ? "py-1 min-h-7" : "py-2 min-h-9",
+              size === "sm" ? "py-1 min-h-7 min-h-11 sm:min-h-0" : "py-2 min-h-9",
               isSelected
                 ? "bg-background text-foreground font-bold shadow-xs"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/30"

@@ -81,7 +81,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="sm" onClick={loadLogs} className="gap-2 h-9">
+          <Button variant="outline" size="sm" onClick={loadLogs} className="gap-2 h-9 min-h-11 sm:min-h-0">
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin motion-reduce:animate-none" : ""}`} />
             Atualizar
           </Button>
@@ -115,7 +115,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
             <CardTitle className="text-xs font-semibold text-muted-foreground">Gestão de Lotes</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-bold text-amber-600">
+            <div className="text-2xl font-bold text-warning-strong">
               {logs.filter((l) => l.entity_type === "ticket_lots" || l.entity_type === "event_store_products").length}
             </div>
           </CardContent>
@@ -145,7 +145,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scroll-area-carousel">
             <table className="w-full text-xs text-left">
               <thead className="text-2xs text-muted-foreground uppercase bg-muted/40 border-b border-border/40">
                 <tr>

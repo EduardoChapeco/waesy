@@ -249,7 +249,7 @@ function VehicleLayoutsListPage() {
  : "Avião"}
  </Badge>
  {layout.is_double_decker && (
- <Badge variant="secondary" className="text-xs bg-amber-500/10 text-amber-600 border-none">
+ <Badge variant="secondary" className="text-xs bg-warning/10 text-warning-strong border-none">
  2 Andares (DD)
  </Badge>
  )}

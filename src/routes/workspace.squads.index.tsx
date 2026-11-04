@@ -223,7 +223,7 @@ export function SquadsWorkspacePage() {
             variant="ghost"
             size="sm"
             onClick={() => setFeedback(null)}
-            className="text-xs h-7"
+            className="text-xs h-7 min-h-11 sm:min-h-0"
           >
             Fechar
           </Button>

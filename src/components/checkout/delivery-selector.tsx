@@ -219,7 +219,7 @@ export function DeliverySelector({
                           <span>Previsão estimada: {displayEstimate}</span>
                         </p>
                         {rate.notice && (
-                          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                          <p className="text-xs text-warning-strong  font-medium">
                             {rate.notice}
                           </p>
                         )}

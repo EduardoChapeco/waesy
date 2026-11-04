@@ -289,6 +289,7 @@
 
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-strong: var(--warning-strong);
 
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
@@ -388,16 +389,17 @@
   --accent: oklch(0.96 0 0);
   --accent-foreground: oklch(0.12 0 0);
 
-  --destructive: oklch(0.6 0.15 25); /* Vermelho erro focado */
+  --destructive: oklch(0.55 0.19 25); /* Vermelho erro focado (texto branco >= 4.5:1) */
   --destructive-foreground: oklch(1 0 0);
 
-  --success: oklch(0.65 0.15 150); /* Verde agradável */
+  --success: oklch(0.5 0.13 150); /* Verde operacional (texto branco >= 4.5:1) */
   --success-foreground: oklch(1 0 0);
 
   --warning: oklch(0.8 0.15 80); /* Amarelo ouro */
   --warning-foreground: oklch(0.12 0 0);
+  --warning-strong: oklch(0.48 0.11 70); /* texto de aviso sobre fundo claro (>= 5:1) */
 
-  --info: oklch(0.6 0.1 240); /* Azul sutil */
+  --info: oklch(0.52 0.13 240); /* Azul informativo (texto branco >= 4.5:1) */
   --info-foreground: oklch(1 0 0);
 
   --border: oklch(0.93 0 0); /* Borda clarinha, clean */
@@ -469,151 +471,149 @@
 }
 
 /* ===========================================================================
- * DARK THEME — Operacional Escuro
+ * DARK THEME — Operacional Escuro (Apple HIG & Linear Sovereign Depth)
  * ===========================================================================*/
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --background: oklch(0.12 0 0); /* #0A0A0A Fundo escuro puro */
-    --foreground: oklch(0.96 0 0);
+    --background: oklch(0.10 0 0); /* #09090b True Dark Profundo */
+    --foreground: oklch(0.97 0 0); /* #f4f4f5 Texto Primário (17:1) */
 
-    --card: oklch(0.16 0 0); /* Superfície sutilmente elevada */
-    --card-foreground: oklch(0.96 0 0);
+    --card: oklch(0.16 0 0); /* #141416 Superfície Elevada Nível 1 */
+    --card-foreground: oklch(0.97 0 0);
 
-    --popover: oklch(0.16 0 0);
-    --popover-foreground: oklch(0.96 0 0);
+    --popover: oklch(0.20 0 0); /* #1f1f23 Superfície Flutuante Nível 2 */
+    --popover-foreground: oklch(0.97 0 0);
 
     --primary: var(--magic-accent-primary);
     --primary-foreground: #ffffff;
 
-    --secondary: oklch(0.20 0 0);
-    --secondary-foreground: oklch(0.96 0 0);
+    --secondary: oklch(0.18 0 0); /* #1a1a1d */
+    --secondary-foreground: oklch(0.97 0 0);
 
-    --muted: oklch(0.20 0 0);
-    --muted-foreground: oklch(0.7 0 0);
+    --muted: oklch(0.18 0 0); /* #1a1a1d */
+    --muted-foreground: oklch(0.70 0 0); /* #a1a1aa (7.2:1) */
 
     --accent: oklch(0.20 0 0);
-    --accent-foreground: oklch(0.96 0 0);
+    --accent-foreground: oklch(0.97 0 0);
 
-    --destructive: oklch(0.6 0.15 25);
-    --destructive-foreground: oklch(0.96 0 0);
+    --destructive: oklch(0.65 0.20 25);
+    --destructive-foreground: oklch(0.10 0 0);
 
-    --border: oklch(0.22 0 0);
-    --input: oklch(0.22 0 0);
-    --ring: #a78bfa;
+    --success: oklch(0.68 0.18 145);
+    --success-foreground: oklch(0.10 0 0);
+
+    --warning: oklch(0.78 0.16 75);
+    --warning-foreground: oklch(0.10 0 0);
+    --warning-strong: oklch(0.82 0.14 82); /* texto de aviso sobre fundo escuro (>= 9:1) */
+
+    --info: oklch(0.70 0.16 230);
+    --info-foreground: oklch(0.10 0 0);
+
+    --border: oklch(0.26 0 0); /* #27272a Borda nítida de contenção */
+    --input: oklch(0.26 0 0);
+    --ring: var(--magic-accent-primary);
 
     /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
     --canvas: oklch(0.10 0 0);
-    --surface: oklch(0.14 0 0);
-    --surface-raised: oklch(0.18 0 0);
-    --surface-subtle: oklch(0.16 0 0);
-    --surface-hover: oklch(0.20 0 0);
-    --surface-active: oklch(0.24 0 0);
+    --surface: oklch(0.16 0 0);
+    --surface-raised: oklch(0.20 0 0);
+    --surface-subtle: oklch(0.18 0 0);
+    --surface-hover: oklch(0.22 0 0);
+    --surface-active: oklch(0.26 0 0);
+    --surface-card: oklch(0.16 0 0);
+    --surface-muted: oklch(0.18 0 0);
 
-    --text-primary: oklch(0.96 0 0);
+    --text-primary: oklch(0.97 0 0);
     --text-secondary: oklch(0.70 0 0);
-    --text-tertiary: oklch(0.55 0 0);
-    --text-disabled: oklch(0.40 0 0);
+    --text-tertiary: oklch(0.58 0 0);
+    --text-disabled: oklch(0.42 0 0);
     --text-inverse: oklch(0.10 0 0);
+    --text-muted: oklch(0.70 0 0);
 
-    --border-subtle: oklch(0.20 0 0);
-    --border-default: oklch(0.25 0 0);
+    --border-subtle: oklch(0.22 0 0);
+    --border-default: oklch(0.26 0 0);
     --border-strong: oklch(0.38 0 0);
-    --border-control: oklch(0.22 0 0);
+    --border-control: oklch(0.26 0 0);
     --border-focus: var(--magic-accent-primary);
 
-    --accent-soft: rgba(10, 132, 255, 0.18);
+    --accent-soft: rgba(0, 102, 255, 0.18);
+
+    --feedback-danger: var(--destructive);
+    --feedback-warning: var(--warning);
+    --feedback-success: var(--success);
+    --feedback-info: var(--info);
   }
 }
 
-.dark {
-  --background: oklch(0.12 0 0); /* #0A0A0A */
-  --foreground: oklch(0.96 0 0);
+.dark,
+[data-theme="dark"] {
+  --background: oklch(0.10 0 0); /* #09090b True Dark Profundo */
+  --foreground: oklch(0.97 0 0); /* #f4f4f5 Texto Primário (17:1) */
 
-  --card: oklch(0.16 0 0);
-  --card-foreground: oklch(0.96 0 0);
+  --card: oklch(0.16 0 0); /* #141416 Superfície Elevada Nível 1 */
+  --card-foreground: oklch(0.97 0 0);
 
-  --popover: oklch(0.16 0 0);
-  --popover-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.20 0 0); /* #1f1f23 Superfície Flutuante Nível 2 */
+  --popover-foreground: oklch(0.97 0 0);
 
   --primary: var(--magic-accent-primary);
   --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.20 0 0);
-  --secondary-foreground: oklch(0.96 0 0);
+  --secondary: oklch(0.18 0 0); /* #1a1a1d */
+  --secondary-foreground: oklch(0.97 0 0);
 
-  --muted: oklch(0.20 0 0);
-  --muted-foreground: oklch(0.7 0 0);
+  --muted: oklch(0.18 0 0); /* #1a1a1d */
+  --muted-foreground: oklch(0.70 0 0); /* #a1a1aa (7.2:1) */
 
   --accent: oklch(0.20 0 0);
-  --accent-foreground: oklch(0.96 0 0);
+  --accent-foreground: oklch(0.97 0 0);
 
-  --destructive: oklch(0.6 0.15 25);
-  --destructive-foreground: oklch(0.96 0 0);
+  --destructive: oklch(0.65 0.20 25);
+  --destructive-foreground: oklch(0.10 0 0);
 
-  --border: oklch(0.25 0 0);
-  --input: oklch(0.25 0 0);
+  --success: oklch(0.68 0.18 145);
+  --success-foreground: oklch(0.10 0 0);
+
+  --warning: oklch(0.78 0.16 75);
+  --warning-foreground: oklch(0.10 0 0);
+    --warning-strong: oklch(0.82 0.14 82); /* texto de aviso sobre fundo escuro (>= 9:1) */
+
+  --info: oklch(0.70 0.16 230);
+  --info-foreground: oklch(0.10 0 0);
+
+  --border: oklch(0.26 0 0); /* #27272a */
+  --input: oklch(0.26 0 0);
   --ring: var(--magic-accent-primary);
 
   /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
   --canvas: oklch(0.10 0 0);
-  --surface: oklch(0.14 0 0);
-  --surface-raised: oklch(0.18 0 0);
-  --surface-subtle: oklch(0.16 0 0);
-  --surface-hover: oklch(0.20 0 0);
-  --surface-active: oklch(0.24 0 0);
+  --surface: oklch(0.16 0 0);
+  --surface-raised: oklch(0.20 0 0);
+  --surface-subtle: oklch(0.18 0 0);
+  --surface-hover: oklch(0.22 0 0);
+  --surface-active: oklch(0.26 0 0);
+  --surface-card: oklch(0.16 0 0);
+  --surface-muted: oklch(0.18 0 0);
 
-  --text-primary: oklch(0.96 0 0);
+  --text-primary: oklch(0.97 0 0);
   --text-secondary: oklch(0.70 0 0);
-  --text-tertiary: oklch(0.55 0 0);
-  --text-disabled: oklch(0.40 0 0);
+  --text-tertiary: oklch(0.58 0 0);
+  --text-disabled: oklch(0.42 0 0);
   --text-inverse: oklch(0.10 0 0);
+  --text-muted: oklch(0.70 0 0);
 
-  --border-subtle: oklch(0.20 0 0);
-  --border-default: oklch(0.25 0 0);
+  --border-subtle: oklch(0.22 0 0);
+  --border-default: oklch(0.26 0 0);
   --border-strong: oklch(0.38 0 0);
-  --border-control: oklch(0.25 0 0);
+  --border-control: oklch(0.26 0 0);
   --border-focus: var(--magic-accent-primary);
 
-  --accent-soft: rgba(10, 132, 255, 0.18);
-}
+  --accent-soft: rgba(0, 102, 255, 0.18);
 
-/* Theme selector bridge: existing .dark remains supported. */
-[data-theme="dark"] {
-  --background: oklch(0.12 0 0);
-  --foreground: oklch(0.96 0 0);
-  --card: oklch(0.16 0 0);
-  --card-foreground: oklch(0.96 0 0);
-  --popover: oklch(0.16 0 0);
-  --popover-foreground: oklch(0.96 0 0);
-  --primary: var(--magic-accent-primary);
-  --primary-foreground: #ffffff;
-  --muted: oklch(0.20 0 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --border: oklch(0.25 0 0);
-  --input: oklch(0.25 0 0);
-  --ring: var(--magic-accent-primary);
-
-  /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
-  --canvas: oklch(0.10 0 0);
-  --surface: oklch(0.14 0 0);
-  --surface-raised: oklch(0.18 0 0);
-  --surface-subtle: oklch(0.16 0 0);
-  --surface-hover: oklch(0.20 0 0);
-  --surface-active: oklch(0.24 0 0);
-
-  --text-primary: oklch(0.96 0 0);
-  --text-secondary: oklch(0.70 0 0);
-  --text-tertiary: oklch(0.55 0 0);
-  --text-disabled: oklch(0.40 0 0);
-  --text-inverse: oklch(0.10 0 0);
-
-  --border-subtle: oklch(0.20 0 0);
-  --border-default: oklch(0.25 0 0);
-  --border-strong: oklch(0.38 0 0);
-  --border-control: oklch(0.25 0 0);
-  --border-focus: var(--magic-accent-primary);
-
-  --accent-soft: rgba(10, 132, 255, 0.18);
+  --feedback-danger: var(--destructive);
+  --feedback-warning: var(--warning);
+  --feedback-success: var(--success);
+  --feedback-info: var(--info);
 }
 
 /* ===========================================================================
@@ -630,12 +630,12 @@
 }
 
 .theme-luxury {
-  --primary: oklch(0.72 0.14 85);
-  --primary-foreground: oklch(0.12 0 0);
-  --color-primary: #d4af37;
-  --radius-master: 0px;
-  --radius: 0px;
-  --font-master: "Playfair Display", Georgia, serif;
+  --primary: var(--magic-accent-primary);
+  --primary-foreground: #ffffff;
+  --color-primary: var(--magic-accent-primary);
+  --radius-master: 0.75rem;
+  --radius: 0.75rem;
+  --font-master: var(--font-sans);
 }
 
 .theme-creator {
@@ -1047,6 +1047,37 @@
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
+}
+
+/* Alturas em viewport dinâmica (substitui h-[Nvh] arbitrário) */
+@utility h-vh-* {
+  height: calc(--value(integer) * 1dvh);
+}
+
+@utility min-h-vh-* {
+  min-height: calc(--value(integer) * 1dvh);
+}
+
+@utility max-h-vh-* {
+  max-height: calc(--value(integer) * 1dvh);
+}
+
+/* Espessuras de traço de ícones (substitui stroke-[N] arbitrário) */
+@utility stroke-thin {
+  stroke-width: 1.5;
+}
+
+@utility stroke-regular {
+  stroke-width: 2.2;
+}
+
+@utility stroke-bold {
+  stroke-width: 2.5;
+}
+
+/* Elevação restrita a overlays (modais, popovers, toasts) */
+@utility shadow-overlay {
+  box-shadow: var(--elevation-3);
 }
 
 @utility max-h-sheet {

@@ -355,7 +355,7 @@ function AdminMasterBannersPage() {
 
       {/* Clean Niche Tabs */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
           {PLACEMENT_OPTIONS.map((opt) => {
             const count =
               opt.id === "all"
@@ -479,7 +479,7 @@ function AdminMasterBannersPage() {
                 )}
 
                 {/* Placement & City Tags */}
-                <div className="absolute top-2 left-2 z-10 flex items-center gap-2 flex-wrap max-w-[85%]">
+                <div className="absolute top-2 left-2 z-10 flex items-center gap-2 flex-wrap max-w-17/20">
                   <span className="bg-foreground/75 text-foreground backdrop-blur-md text-xs font-mono px-2 py-1 rounded-md border border-white/10">
                     {banner.placement.toUpperCase()}
                   </span>
@@ -510,7 +510,7 @@ function AdminMasterBannersPage() {
                   size="icon"
                   variant="destructive"
                   onClick={() => handleDelete(banner.id)}
-                  className="absolute top-2 right-2 z-10 size-11 sm:size-8 rounded-md cursor-pointer opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                  className="absolute top-2 right-2 z-10 size-11 sm:size-8 rounded-md cursor-pointer opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                   title="Remover banner"
                 >
                   <Trash2 className="size-4 sm:size-3.5" />
@@ -541,7 +541,7 @@ function AdminMasterBannersPage() {
                         asChild
                         size="sm"
                         variant="ghost"
-                        className="size-11 sm:size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="size-11 sm:size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                         title="Ver destino"
                       >
                         <a href={banner.target_url} target="_blank" rel="noopener noreferrer">
@@ -553,7 +553,7 @@ function AdminMasterBannersPage() {
                       size="sm"
                       variant="ghost"
                       onClick={() => handleOpenEdit(banner)}
-                      className="size-11 sm:size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="size-11 sm:size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Editar"
                     >
                       <Pencil className="size-4 sm:size-3.5" />

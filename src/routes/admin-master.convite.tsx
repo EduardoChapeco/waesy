@@ -281,7 +281,7 @@ function AdminConvitePage() {
           onClick={() => setActiveTab("sorteios")}
           className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-colors duration-200 ${
             activeTab === "sorteios"
-              ? "bg-foreground text-background shadow-sm"
+              ? "bg-foreground text-background "
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
           } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
@@ -292,7 +292,7 @@ function AdminConvitePage() {
           onClick={() => setActiveTab("premios")}
           className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-colors duration-200 ${
             activeTab === "premios"
-              ? "bg-foreground text-background shadow-sm"
+              ? "bg-foreground text-background "
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
           } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
@@ -303,7 +303,7 @@ function AdminConvitePage() {
           onClick={() => setActiveTab("conversoes")}
           className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-colors duration-200 ${
             activeTab === "conversoes"
-              ? "bg-foreground text-background shadow-sm"
+              ? "bg-foreground text-background "
               : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
           } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
         >
@@ -360,7 +360,7 @@ function AdminConvitePage() {
             <Button
               type="button"
               onClick={() => setIsRaffleSheetOpen(true)}
-              className="h-9 rounded-lg text-xs font-mono gap-2 shrink-0"
+              className="h-9 rounded-lg text-xs font-mono gap-2 shrink-0 min-h-11 sm:min-h-0"
             >
               <Plus className="size-3.5" />
               <span>Novo Sorteio</span>
@@ -461,7 +461,7 @@ function AdminConvitePage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenTickets(raffle)}
-                        className="h-9 rounded-lg text-xs font-mono gap-2"
+                        className="h-9 rounded-lg text-xs font-mono gap-2 min-h-11 sm:min-h-0"
                       >
                         <Eye className="size-3.5" />
                         <span>Ver Cupons ({raffle.totalTickets})</span>
@@ -473,7 +473,7 @@ function AdminConvitePage() {
                             type="button"
                             disabled={drawingRaffleId === raffle.id || raffle.totalTickets === 0}
                             onClick={() => setRaffleToDraw(raffle)}
-                            className="h-9 rounded-lg text-xs font-mono font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+                            className="h-9 rounded-lg text-xs font-mono font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground min-h-11 sm:min-h-0"
                           >
                             {drawingRaffleId === raffle.id ? (
                               <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
@@ -488,7 +488,7 @@ function AdminConvitePage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleCancelRaffle(raffle.id, raffle.title)}
-                            className="h-9 rounded-lg text-xs text-destructive hover:bg-destructive/10"
+                            className="h-9 rounded-lg text-xs text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0"
                           >
                             <Ban className="size-3.5" />
                           </Button>
@@ -513,7 +513,7 @@ function AdminConvitePage() {
             <Button
               type="button"
               onClick={openNewRewardModal}
-              className="h-9 rounded-lg text-xs font-mono gap-2"
+              className="h-9 rounded-lg text-xs font-mono gap-2 min-h-11 sm:min-h-0"
             >
               <Plus className="size-3.5" />
               <span>Adicionar Prêmio</span>
@@ -554,7 +554,7 @@ function AdminConvitePage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => openEditRewardModal(reward)}
-                      className="h-8 px-3 rounded-lg text-xs gap-1"
+                      className="h-8 px-3 rounded-lg text-xs gap-1 min-h-11 sm:min-h-0"
                     >
                       <Pencil className="size-3" />
                       <span>Editar</span>
@@ -564,7 +564,7 @@ function AdminConvitePage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteReward(reward.id)}
-                      className="h-8 px-3 rounded-lg text-xs gap-1 text-destructive hover:bg-destructive/10"
+                      className="h-8 px-3 rounded-lg text-xs gap-1 text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0"
                     >
                       <Trash2 className="size-3" />
                       <span>Excluir</span>
@@ -749,14 +749,14 @@ function AdminConvitePage() {
               type="button"
               variant="outline"
               onClick={() => setIsRaffleSheetOpen(false)}
-              className="h-10 rounded-lg text-xs px-4"
+              className="h-10 rounded-lg text-xs px-4 min-h-11 sm:min-h-0"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isSavingRaffle}
-              className="h-10 rounded-lg text-xs font-mono font-bold px-5"
+              className="h-10 rounded-lg text-xs font-mono font-bold px-5 min-h-11 sm:min-h-0"
             >
               {isSavingRaffle ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
               Cadastrar Sorteio
@@ -834,14 +834,14 @@ function AdminConvitePage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsRewardModalOpen(false)}
-                className="h-9 rounded-lg text-xs"
+                className="h-9 rounded-lg text-xs min-h-11 sm:min-h-0"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSavingReward}
-                className="h-9 rounded-lg text-xs font-mono font-bold"
+                className="h-9 rounded-lg text-xs font-mono font-bold min-h-11 sm:min-h-0"
               >
                 {isSavingReward ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 {editingRewardId ? "Salvar Alterações" : "Cadastrar Prêmio"}

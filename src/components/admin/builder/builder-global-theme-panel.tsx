@@ -16,6 +16,7 @@ export interface GlobalThemeConfig {
  bodyFont: string;
  borderRadius: string; // 'sm' | 'md' | 'xl' | '2xl' | 'full'
  surfaceStyle: string; // 'clean' | 'flat' | 'zine'
+ customThemeEnabled?: boolean;
 }
 
 export interface BuilderGlobalThemePanelProps {
@@ -85,6 +86,7 @@ export function BuilderGlobalThemePanel({
  bodyFont: "Inter, sans-serif",
  borderRadius: "xl",
  surfaceStyle: "clean",
+ customThemeEnabled: false,
  });
  toast.info("Tema restaurado para o padrão limpo.");
  }}
@@ -99,7 +101,7 @@ export function BuilderGlobalThemePanel({
  {/* Presets Rápidos de Paleta */}
  <div className="space-y-2">
  <Label className="text-xs font-bold flex items-center gap-2 text-foreground">
- <Layers className="size-3.5 text-amber-500" />
+ <Layers className="size-3.5 text-warning-strong" />
  Paletas Consagradas da Indústria
  </Label>
 

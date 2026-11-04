@@ -72,11 +72,11 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
             >
               <div>
                 {/* Estrelas de Avaliação */}
-                <div className="flex items-center gap-1 mb-5 text-amber-500">
+                <div className="flex items-center gap-1 mb-5 text-warning-strong">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`size-4 ${i < t.rating ? "fill-amber-500 text-amber-500" : "text-muted"}`}
+                      className={`size-4 ${i < t.rating ? "fill-warning text-warning-strong" : "text-muted"}`}
                     />
                   ))}
                 </div>

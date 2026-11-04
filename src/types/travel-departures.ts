@@ -25,7 +25,7 @@ export interface DepartureCardDTO {
 export const DEPARTURE_STAGES: Array<{ id: DepartureStage; label: string; color: string; desc: string }> = [
  { id: 'booked', label: '1. Reserva Confirmada', color: 'border-slate-500/40 text-slate-600 dark:text-slate-400', desc: 'Aguardando vouchers e emissão' },
  { id: 'vouchers_ready', label: '2. Vouchers Emitidos', color: 'border-blue-500/40 text-blue-600 dark:text-blue-400', desc: 'Vouchers enviados ao cliente' },
- { id: 'checkin_48h', label: '3. Check-in Aberto (48h)', color: 'border-amber-500/40 text-amber-600 dark:text-amber-400', desc: 'Horário de check-in e assentos' },
+ { id: 'checkin_48h', label: '3. Check-in Aberto (48h)', color: 'border-warning/40 text-warning-strong ', desc: 'Horário de check-in e assentos' },
  { id: 'traveling', label: '4. Em Viagem (Suporte)', color: 'border-emerald-500/40 text-emerald-600 dark:text-emerald-400', desc: 'Passageiro em trânsito' },
  { id: 'post_trip', label: '5. Pós-Venda & NPS', color: 'border-purple-500/40 text-purple-600 dark:text-purple-400', desc: 'Coleta de feedback e avaliação' },
 ];

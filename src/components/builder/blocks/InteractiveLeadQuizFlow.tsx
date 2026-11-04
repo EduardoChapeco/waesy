@@ -221,7 +221,7 @@ export const InteractiveLeadQuizFlow: React.FC<InteractiveLeadQuizFlowProps> = (
           ) : isSubmitted ? (
             /* Success confirmation */
             <div className="text-center py-10 flex flex-col items-center">
-              <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-4">
+              <div className="size-16 rounded-full bg-success/10 text-success flex items-center justify-center mb-4">
                 <CheckCircle2 className="size-8" />
               </div>
               <h3 className="text-xl font-bold text-foreground mb-2">
@@ -416,12 +416,6 @@ export const InteractiveLeadQuizFlow: React.FC<InteractiveLeadQuizFlowProps> = (
                 />
               </div>
 
-              {!hasValidWhatsApp && !onLeadSubmit && (
-                <p className="text-2xs text-muted-foreground text-center">
-                  Destino de WhatsApp ou integração de leads não configurada
-                </p>
-              )}
-
               <div className="flex items-center justify-between pt-4 border-t border-border/40 gap-3">
                 <Button
                   type="button"
@@ -434,7 +428,7 @@ export const InteractiveLeadQuizFlow: React.FC<InteractiveLeadQuizFlowProps> = (
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || (!hasValidWhatsApp && !onLeadSubmit)}
+                  disabled={isSubmitting}
                   className="h-11 min-h-11 px-6 font-semibold bg-foreground text-background hover:bg-foreground/90 transition-colors motion-reduce:transition-none"
                 >
                   <span className="flex items-center justify-center gap-2">

@@ -48,16 +48,16 @@ export function EventDetailDesktop({
     <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-4 space-y-6 pb-16 font-sans">
       {/* ── Rule 23: Owner Edit Mode Banner ── */}
       {isOwner && (
-        <div className="bg-amber-500/10 border border-amber-500/25 rounded-lg px-4 py-3 flex items-center justify-between text-xs text-amber-950 dark:text-amber-200">
+        <div className="bg-warning/10 border border-warning/25 rounded-lg px-4 py-3 flex items-center justify-between text-xs text-warning-strong ">
           <div className="flex items-center gap-2">
-            <span className="inline-block size-2 rounded-full bg-amber-500" />
+            <span className="inline-block size-2 rounded-full bg-warning" />
             <span className="font-semibold">Modo Organizador: Você é o responsável por este evento.</span>
           </div>
           <Button
             asChild
             size="sm"
             variant="outline"
-            className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-amber-500/40 hover:bg-amber-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-warning/40 hover:bg-warning/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Link to="/workspace/eventos">
               <PencilSimple size={14} className="mr-2" />
@@ -198,7 +198,7 @@ export function EventDetailDesktop({
                 <Link
                   to="/noticias/$slug"
                   params={{ slug: linkedNews.slug }}
-                  className="block group p-4 rounded-lg border border-border/80 bg-card hover:border-primary/50 transition-colors duration-200 shadow-sm"
+                  className="block group p-4 rounded-lg border border-border/80 bg-card hover:border-primary/50 transition-colors duration-200 "
                 >
                   <div className="flex gap-4 items-center">
                     {linkedNews.cover_media_url && (
@@ -246,7 +246,7 @@ export function EventDetailDesktop({
                       partner.nivel === "diamante"
                         ? "border-purple-500/30 text-purple-600 bg-purple-500/10"
                         : partner.nivel === "ouro"
-                        ? "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                        ? "border-warning/30 text-warning-strong bg-warning/10"
                         : partner.nivel === "bronze"
                         ? "border-orange-500/30 text-orange-600 bg-orange-500/10"
                         : "border-slate-500/30 text-slate-600 bg-slate-500/10";
@@ -329,7 +329,7 @@ export function EventDetailDesktop({
         {/* Coluna Direita: Ingressos & RSVP (Sticky) */}
         <div className="col-span-4 space-y-5 sticky top-24">
           {/* ── Card 1: Confirmação de Presença (RSVP) ── */}
-          <div className="p-6 rounded-lg border border-border/80 bg-card space-y-4 shadow-sm">
+          <div className="p-6 rounded-lg border border-border/80 bg-card space-y-4 ">
             <div className="flex items-center justify-between pb-3 border-b border-border/40">
               <div className="flex items-center gap-2">
                 <Users size={18} weight="bold" className="text-primary" />
@@ -347,7 +347,7 @@ export function EventDetailDesktop({
                 disabled={isSubmittingRsvp}
                 className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-colors duration-200 min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   userRsvp === "going"
-                    ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
+                    ? "bg-primary/10 border-primary text-primary font-bold "
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
                 }`}
               >
@@ -366,14 +366,14 @@ export function EventDetailDesktop({
                 disabled={isSubmittingRsvp}
                 className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-colors duration-200 min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   userRsvp === "interested"
-                    ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold shadow-sm"
+                    ? "bg-warning/10 border-warning text-warning-strong  font-bold "
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
                 }`}
               >
                 <Star
                   size={20}
                   weight={userRsvp === "interested" ? "fill" : "regular"}
-                  className={userRsvp === "interested" ? "text-amber-500" : "text-muted-foreground"}
+                  className={userRsvp === "interested" ? "text-warning-strong" : "text-muted-foreground"}
                 />
                 <span className="text-xs mt-1">Interesse</span>
                 <span className="text-xs text-muted-foreground font-mono">{rsvpCounts.interested}</span>
@@ -385,7 +385,7 @@ export function EventDetailDesktop({
                 disabled={isSubmittingRsvp}
                 className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-colors duration-200 min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   userRsvp === "not_going"
-                    ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold shadow-sm"
+                    ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold "
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
                 }`}
               >
@@ -401,14 +401,14 @@ export function EventDetailDesktop({
           </div>
 
           {/* ── Card 2: Ingressos ── */}
-          <div className="p-6 rounded-lg border border-border/80 bg-card space-y-5 shadow-sm">
+          <div className="p-6 rounded-lg border border-border/80 bg-card space-y-5 ">
             <div className="flex items-center gap-3 pb-3 border-b border-border/40">
               <Ticket size={20} weight="bold" className="text-primary" />
               <h2 className="text-base md:text-lg font-bold text-foreground tracking-tight">
                 {event.is_external || event.is_external_ticket ? "Ingressos Oficiais" : "Ingressos Disponíveis"}
               </h2>
               {(event.is_external || event.is_external_ticket) && (
-                <Badge variant="outline" className="text-xs font-mono border-amber-500/30 text-amber-600 bg-amber-500/10">
+                <Badge variant="outline" className="text-xs font-mono border-warning/30 text-warning-strong bg-warning/10">
                   {event.external_source ? `Oficial ${event.external_source}` : "Link Externo"}
                 </Badge>
               )}

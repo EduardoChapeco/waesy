@@ -720,7 +720,7 @@ function SearchPage() {
                         e.stopPropagation();
                         removeRecentSearch(term);
                       }}
-                      className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Remover termo"
                     >
                       <X className="size-3" />
@@ -928,7 +928,7 @@ function SearchPage() {
  {/* Visualização de Radar no Mapa quando viewMode === "feed" */}
  {hasResults && viewMode === "feed" && (
  <div className="space-y-4">
- <div className="h-[460px] w-full rounded-lg overflow-hidden border border-border/60 relative">
+ <div className="h-115 w-full rounded-lg overflow-hidden border border-border/60 relative">
  <MapLibreCanvas
  markers={mapMarkers}
  selectedMarkerId={selectedStoreMarker?.id}
@@ -956,7 +956,7 @@ function SearchPage() {
  </div>
  </div>
 
- <Button size="sm" asChild className="text-xs h-8 font-semibold shrink-0">
+ <Button size="sm" asChild className="text-xs h-8 font-semibold shrink-0 min-h-11 sm:min-h-0">
  <Link to="/bio/$slug" params={{ slug: selectedStoreMarker.slug }}>
  Ver Loja
  </Link>

@@ -110,7 +110,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
             <Button
               type="submit"
               disabled={isProcessing}
-              className="w-full sm:w-auto h-10 px-4 text-xs font-semibold gap-2 shrink-0"
+              className="w-full sm:w-auto h-10 px-4 text-xs font-semibold gap-2 shrink-0 min-h-11 sm:min-h-0"
             >
               {isProcessing ? (
                 <>
@@ -206,25 +206,25 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
           {/* Atalhos Rápidos para os Módulos Criados */}
           <div className="pt-3 border-t border-border/60 grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start min-h-11 sm:min-h-0">
               <Link to="/workspace/marketing/brand-kit">
                 <Palette className="size-3.5 text-primary" />
                 <span>Brand Kit</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start min-h-11 sm:min-h-0">
               <Link to="/workspace/marketing/canvas-bmc">
                 <LayoutGrid className="size-3.5 text-primary" />
                 <span>Modelo BMC</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start min-h-11 sm:min-h-0">
               <Link to="/workspace/marketing/swot">
                 <Compass className="size-3.5 text-primary" />
                 <span>Matriz SWOT</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start">
+            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start min-h-11 sm:min-h-0">
               <Link to="/workspace/marketing/canvas-pecados">
                 <Flame className="size-3.5 text-primary" />
                 <span>7 Pecados</span>

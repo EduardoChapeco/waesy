@@ -112,7 +112,7 @@ function ClaimReputacaoPage() {
  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
  <div className="p-5 rounded-lg border border-border bg-card flex flex-col gap-1">
  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
- <Award className="size-4 text-amber-500" /> Score de Reputação
+ <Award className="size-4 text-warning-strong" /> Score de Reputação
  </span>
  <div className="flex items-baseline gap-2 mt-2">
  <span className="text-3xl font-black text-foreground">{intel.reputation_score ?? "Sem dados"}</span>
@@ -163,7 +163,7 @@ function ClaimReputacaoPage() {
  <TabsContent value="overview" className="space-y-4">
  <div className="p-6 rounded-lg border border-border bg-card space-y-4">
  <h2 className="text-base font-bold flex items-center gap-2">
- <Star className="size-4 text-amber-500" /> Distribuição de Sentimento do Consumidor
+ <Star className="size-4 text-warning-strong" /> Distribuição de Sentimento do Consumidor
  </h2>
  {intel.sentiment.positive !== null && intel.sentiment.neutral !== null && intel.sentiment.negative !== null ? <div className="space-y-2">
  <div className="flex justify-between text-xs font-semibold">
@@ -173,7 +173,7 @@ function ClaimReputacaoPage() {
  </div>
  <div className="h-3 rounded-full bg-muted/40 overflow-hidden flex">
  <div style={{ width: `${intel.sentiment.positive}%` }} className="bg-emerald-500" />
- <div style={{ width: `${intel.sentiment.neutral}%` }} className="bg-amber-400" />
+ <div style={{ width: `${intel.sentiment.neutral}%` }} className="bg-warning" />
  <div style={{ width: `${intel.sentiment.negative}%` }} className="bg-rose-500" />
  </div>
  </div> : <p className="text-sm text-muted-foreground">Distribuição de sentimento indisponível: não há uma amostra de avaliações com fonte e método registrados.</p>}

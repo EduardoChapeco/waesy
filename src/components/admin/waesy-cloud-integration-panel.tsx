@@ -302,7 +302,7 @@ export function WaesyCloudIntegrationPanel({
                   overallStatus === "healthy"
                     ? "bg-emerald-500"
                     : overallStatus === "degraded"
-                    ? "bg-amber-500"
+                    ? "bg-warning"
                     : "bg-destructive"
                 }`}
               />
@@ -433,7 +433,7 @@ export function WaesyCloudIntegrationPanel({
                     size="sm"
                     variant="ghost"
                     onClick={() => copyToClipboard(generatedAnon, "Anon Key")}
-                    className="h-7 text-xs gap-1 cursor-pointer"
+                    className="h-7 text-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <Copy className="size-3" /> Copiar
                   </Button>
@@ -450,7 +450,7 @@ export function WaesyCloudIntegrationPanel({
                     size="sm"
                     variant="ghost"
                     onClick={() => copyToClipboard(generatedService, "Service Role Key")}
-                    className="h-7 text-xs gap-1 cursor-pointer"
+                    className="h-7 text-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <Copy className="size-3" /> Copiar
                   </Button>

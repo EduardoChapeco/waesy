@@ -22,6 +22,7 @@ import { usePrometheePortalController } from "@/components/news/promethee-portal
 import { PrometheeNewsStudioModal } from "@/components/news/promethee-news-studio-modal";
 import { EditorialAdSlot } from "@/components/news/editorial-ad-slot";
 import { listArticleComments, submitArticleComment } from "@/services/news.functions";
+import { toast } from "sonner";
 
 export interface PrometheeNewsArticleReaderBlockProps extends BaseSiteBlockProps {
   data: PrometheeNewsArticleReaderBlockData;
@@ -55,14 +56,9 @@ export function PrometheeNewsArticleReaderBlock({
   const [urlSlug, setUrlSlug] = useState<string | null>(null);
 
   const normalizedPool = useMemo<NormalizedPrometheeArticle[]>(() => {
-    const raw =
-      Array.isArray(newsArticles) && newsArticles.length > 0
-        ? newsArticles
-        : Array.isArray(products)
-          ? products
-          : [];
+    const raw = Array.isArray(newsArticles) ? newsArticles : [];
     return [...portal.citizenArticles, ...raw.map((r, i) => normalizePrometheeArticle(r, i))];
-  }, [newsArticles, portal.citizenArticles, products]);
+  }, [newsArticles, portal.citizenArticles]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -153,6 +149,12 @@ export function PrometheeNewsArticleReaderBlock({
     const text = commentInput.trim();
     if (text.length < 3) return;
 
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(article.id);
+    if (!isUuid) {
+      toast.error("Comentários disponíveis apenas para artigos publicados.");
+      return;
+    }
+
     const optimistic: ReaderCommentItem = {
       id: `local_${Date.now()}`,
       authorName: "Leitor da Região",
@@ -162,13 +164,12 @@ export function PrometheeNewsArticleReaderBlock({
     setComments((prev) => [optimistic, ...prev]);
     setCommentInput("");
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(article.id);
-    if (isUuid) {
-      try {
-        await submitArticleComment({ data: { articleId: article.id, contentText: text } });
-      } catch {
-        // Mantém comentário local para visitantes não autenticados
-      }
+    try {
+      await submitArticleComment({ data: { articleId: article.id, contentText: text } });
+    } catch (err: any) {
+      setComments((prev) => prev.filter((c) => c.id !== optimistic.id));
+      setCommentInput(text);
+      toast.error(err?.message || "Não foi possível publicar o comentário. Faça login e tente novamente.");
     }
   };
 
@@ -370,7 +371,11 @@ export function PrometheeNewsArticleReaderBlock({
       </div>
 
       {/* Pílula Inferior Flutuante Discreta (z-30 < z-50 de Modais — Invariante B.34) */}
-      <div className="fixed bottom-4 inset-x-0 z-30 flex justify-center px-4 pointer-events-none">
+      <div
+        className={`${
+          isEditing ? "sticky bottom-4 mt-4" : "fixed bottom-4 inset-x-0"
+        } z-30 flex justify-center px-4 pointer-events-none`}
+      >
         <div className="pointer-events-auto rounded-full border border-border bg-background/95 backdrop-blur-md px-3 py-1 flex items-center gap-2">
           <button
             type="button"

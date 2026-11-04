@@ -22,7 +22,7 @@ function WeatherIcon({ condition, className }: { condition: WeatherDay["conditio
   if (condition === "rain") return <CloudRain className={cn("text-blue-400", className)} />;
   if (condition === "cloud") return <Cloud className={cn("text-gray-400", className)} />;
   if (condition === "wind") return <Wind className={cn("text-cyan-400", className)} />;
-  return <Sun className={cn("text-amber-500", className)} />;
+  return <Sun className={cn("text-warning-strong", className)} />;
 }
 
 export function WeatherWidget({ city, className, compact = false }: WeatherWidgetProps) {
@@ -64,7 +64,7 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
     <div className={cn("p-4 rounded-lg bg-muted/40 border border-border/40 space-y-3", className)}>
       <div className="flex items-center justify-between">
         <h4 className="font-bold text-xs text-foreground flex items-center gap-2">
-          <Sun className="size-4 text-amber-500" />
+          <Sun className="size-4 text-warning-strong" />
           <span>Clima Previsto</span>
         </h4>
         <span className="text-xs text-muted-foreground font-medium truncate max-w-30">
@@ -86,7 +86,7 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
 
       {error && !loading && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
-          <AlertTriangle className="size-4 text-amber-500 shrink-0" />
+          <AlertTriangle className="size-4 text-warning-strong shrink-0" />
           <span>{error} — verifique o nome da cidade</span>
         </div>
       )}

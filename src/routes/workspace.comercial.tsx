@@ -82,8 +82,8 @@ const STAGES: StageColConfig[] = [
   {
     id: "contacted",
     title: "Primeiro Contato",
-    dotColor: "bg-amber-500",
-    badgeClass: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    dotColor: "bg-warning",
+    badgeClass: "bg-warning/10 text-warning-strong border-warning/20",
     description: "Abordagem iniciada por WhatsApp, e-mail ou telefone",
   },
   {
@@ -817,7 +817,7 @@ function WorkspaceComercialPage() {
       />
 
       {/* ── SELETOR MOBILE RÁPIDO DE ETAPAS (TOUCH ERGONÔMICO) ── */}
-      <div className="sm:hidden flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
+      <div className="sm:hidden flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 snap-x snap-mandatory">
         {STAGES.map((s) => {
           const count = filteredLeads.filter((l: any) =>
             s.id === "won"
@@ -843,7 +843,7 @@ function WorkspaceComercialPage() {
       </div>
 
       {/* ── KANBAN BOARD FULL VERTICAL & HORIZONTAL (ENTERPRISE STANDARD) ── */}
-      <div className="flex-1 flex gap-4 overflow-x-auto no-scrollbar pb-6 pt-1 items-stretch snap-x snap-mandatory [scrollbar-width:thin] scrollbar-thumb-border/60 scrollbar-track-transparent">
+      <div className="flex-1 flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-6 pt-1 items-stretch snap-x snap-mandatory [scrollbar-width:thin] scrollbar-thumb-border/60 scrollbar-track-transparent">
         {STAGES.map((stage, stageIndex) => {
           const stageLeads = filteredLeads.filter((l: any) => {
             if (stage.id === "won") return l.status === "won" || l.status === "converted";
@@ -882,7 +882,7 @@ function WorkspaceComercialPage() {
                         setNewLeadTargetStage(stage.id);
                         setIsNewLeadOpen(true);
                       }}
-                      className="size-6 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-6 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title={`Novo lead em ${stage.title}`}
                     >
                       <Plus className="size-3" />
@@ -910,7 +910,7 @@ function WorkspaceComercialPage() {
                         setNewLeadTargetStage(stage.id);
                         setIsNewLeadOpen(true);
                       }}
-                      className="h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold gap-2 border-border/60 hover:bg-muted cursor-pointer mt-1"
+                      className="h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold gap-2 border-border/60 hover:bg-muted cursor-pointer mt-1 min-h-11 sm:min-h-0"
                     >
                       <Plus className="size-3" />
                       <span>Adicionar Lead</span>
@@ -1338,7 +1338,7 @@ function WorkspaceComercialPage() {
                 </div>
 
                 {/* Abas da Ficha 360° */}
-                <div className="flex border-b border-border/50 gap-2 overflow-x-auto scrollbar-none pb-1">
+                <div className="flex border-b border-border/50 gap-2 overflow-x-auto scroll-area-carousel scrollbar-none pb-1">
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("viagem")}
@@ -1867,7 +1867,7 @@ function WorkspaceComercialPage() {
                                     "text-xs font-mono",
                                     ctr.status === "signed"
                                       ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
-                                      : "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                                      : "border-warning/30 text-warning-strong bg-warning/10"
                                   )}
                                 >
                                   {ctr.status === "signed" ? "Assinado" : "Aguardando"}
@@ -1885,7 +1885,7 @@ function WorkspaceComercialPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleCopyContractLink(ctr.public_token)}
-                                  className="h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold gap-1 cursor-pointer"
+                                  className="h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold gap-1 cursor-pointer min-h-11 sm:min-h-0"
                                 >
                                   <Copy className="size-3" />
                                   <span>Copiar Link</span>
@@ -1894,7 +1894,7 @@ function WorkspaceComercialPage() {
                                   to="/viajante/$token"
                                   params={{ token: ctr.public_token }}
                                   target="_blank"
-                                  className="inline-flex items-center gap-1 h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold border border-border/60 hover:bg-muted/50 transition-colors"
+                                  className="inline-flex items-center gap-1 h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold border border-border/60 hover:bg-muted/50 transition-colors min-h-11 sm:min-h-0"
                                 >
                                   <ExternalLink className="size-3" />
                                   <span>Abrir</span>
@@ -2028,7 +2028,7 @@ function WorkspaceComercialPage() {
                         type="button"
                         size="sm"
                         onClick={handleAddChecklistItem}
-                        className="h-8 px-3 rounded-lg text-xs font-bold"
+                        className="h-8 px-3 rounded-lg text-xs font-bold min-h-11 sm:min-h-0"
                       >
                         <Plus className="size-3 mr-1" />
                         <span>Adicionar</span>

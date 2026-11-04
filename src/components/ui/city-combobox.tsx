@@ -31,7 +31,7 @@ const DrawerContent = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-lg border border-border/60 bg-background pb-safe",
-        "max-h-[80dvh]",
+        "max-h-vh-80",
         className,
       )}
       {...props}
@@ -107,7 +107,7 @@ function CityPickerPanel({
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="absolute right-7 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="absolute right-7 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
           >
             <X className="size-4" />
           </button>
@@ -116,14 +116,14 @@ function CityPickerPanel({
 
       {/* Quick-access chips */}
       {!searchQuery && (
-        <div className="px-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="px-4 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
           {quickCities.map((city) => (
             <button
               key={city.id}
               type="button"
               onClick={() => { onSelect(city); onClose(); }}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "shrink-0 h-8 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer",
+                "shrink-0 h-8 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0",
                 selectedCity?.id === city.id
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-card text-foreground border-border/70 hover:border-primary/50 hover:bg-primary/5"
@@ -321,7 +321,7 @@ export function CityCombobox({
             <DrawerPrimitive.Trigger asChild>
               <TriggerButton onClick={() => setMobileOpen(true)} />
             </DrawerPrimitive.Trigger>
-            <DrawerContent className="pb-[env(safe-area-inset-bottom)] min-h-[60dvh]">
+            <DrawerContent className="pb-[env(safe-area-inset-bottom)] min-h-vh-60">
               <div className="px-4 pb-2 pt-1">
                 <DrawerPrimitive.Title className="text-base font-bold text-foreground">
                   Selecionar Cidade
@@ -348,7 +348,7 @@ export function CityCombobox({
             <div
               className={cn(
                 "absolute left-0 right-0 top-[calc(100%+6px)] z-50",
-                "bg-popover border border-border/80 rounded-lg shadow-xl",
+                "bg-popover border border-border/80 rounded-lg ",
                 "overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150",
               )}
             >
@@ -364,7 +364,7 @@ export function CityCombobox({
                   />
                 </div>
                 {/* Chips */}
-                <div className="flex items-center gap-2 mt-2 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex items-center gap-2 mt-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
                   {QUICK_CITIES_IDS.map((id) => {
                     const city = CANONICAL_CITIES.find((c) => c.id === id);
                     if (!city) return null;
@@ -374,7 +374,7 @@ export function CityCombobox({
                         type="button"
                         onClick={() => { handleSelectCity(city); setDesktopOpen(false); }}
                         className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                          "shrink-0 h-7 px-3 rounded-lg text-2xs font-semibold border transition-colors duration-200 cursor-pointer",
+                          "shrink-0 h-7 px-3 rounded-lg text-2xs font-semibold border transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0",
                           selectedCity?.id === id
                             ? "bg-primary text-primary-foreground border-primary"
                             : "bg-muted text-foreground border-border hover:border-primary/50"

@@ -96,7 +96,7 @@ export function FinancialHeroCard({
   return (
     <div
       className={cn(
-        "w-full rounded-b-[36px] sm:rounded-b-[44px] bg-lime-400 text-zinc-950 pt-safe pt-4 px-4 sm:px-6 pb-6 shadow-sm relative overflow-hidden select-none transition-colors",
+        "w-full rounded-b-[36px] sm:rounded-b-[44px] bg-warning text-zinc-950 pt-safe pt-4 px-4 sm:px-6 pb-6  relative overflow-hidden select-none transition-colors",
         className
       )}
     >
@@ -114,7 +114,7 @@ export function FinancialHeroCard({
                 }}
               />
             ) : (
-              <span className="text-lime-400 font-extrabold text-sm uppercase">
+              <span className="text-warning-strong font-extrabold text-sm uppercase">
                 {userName.charAt(0) || "U"}
               </span>
             )}
@@ -139,7 +139,7 @@ export function FinancialHeroCard({
             className="size-11 min-h-11 min-w-11 rounded-full bg-background/10 hover:bg-background/15 active:bg-background/20 text-zinc-950 flex items-center justify-center relative cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
           >
             <Bell className="size-4" />
-            <span className="size-2 rounded-full bg-rose-600 absolute top-2.5 right-2.5 ring-2 ring-lime-400" />
+            <span className="size-2 rounded-full bg-rose-600 absolute top-2.5 right-2.5 ring-2 ring-warning" />
           </button>
 
           <button

@@ -66,7 +66,7 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  <button
  type="button"
  onClick={onClose}
- className="absolute top-3 right-3 size-8 rounded-full bg-foreground/60 backdrop-blur-md text-foreground flex items-center justify-center hover:bg-foreground/80 transition-colors duration-200 cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-3 right-3 size-8 rounded-full bg-foreground/60 backdrop-blur-md text-foreground flex items-center justify-center hover:bg-foreground/80 transition-colors duration-200 cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Fechar momento"
  >
  <X size={16} weight="bold" />
@@ -123,8 +123,8 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
 
  {/* Banner de Mesa Aberta para Dividir Conta */}
  {moment.is_bill_split_open && (
- <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 space-y-2">
- <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs">
+ <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 space-y-2">
+ <div className="flex items-center gap-2 text-warning-strong  font-bold text-xs">
  <BeerBottle size={16} weight="fill" />
  <span>Mesa Aberta para Dividir Conta!</span>
  </div>
@@ -156,7 +156,7 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  isLiked
  ? "bg-rose-500 text-foreground hover:bg-rose-600 border-rose-500"
  : "border-border hover:border-rose-500/50 hover:text-rose-500"
- }`}
+ } min-h-11 sm:min-h-0`}
  >
  <Heart size={16} weight={isLiked ? "fill" : "regular"} className={isLiked ? "animate-bounce motion-reduce:animate-none" : ""} />
  <span>{likesCount} Curtidas</span>
@@ -168,7 +168,7 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  asChild
  size="sm"
  variant="outline"
- className="h-9 px-3 rounded-lg text-xs font-bold border-border gap-2 flex-1"
+ className="h-9 px-3 rounded-lg text-xs font-bold border-border gap-2 flex-1 min-h-11 sm:min-h-0"
  >
  <a
  href={`https://www.google.com/maps/dir/?api=1&destination=${moment.lat},${moment.lng}`}
@@ -187,7 +187,7 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  variant="outline"
  size="icon"
  onClick={handleShare}
- className="size-9 rounded-lg border-border shrink-0 cursor-pointer"
+ className="size-9 rounded-lg border-border shrink-0 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Compartilhar momento"
  >
  <ShareNetwork size={16} weight="bold" />

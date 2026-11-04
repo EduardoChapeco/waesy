@@ -266,7 +266,7 @@ export function WhatsAppQrConnectModal({
                 "text-xs px-3 py-1 font-semibold",
                 connectionStatus === "connected"
                   ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
-                  : "bg-amber-500/15 text-amber-600 border-amber-500/30",
+                  : "bg-warning/15 text-warning-strong border-warning/30",
               )}
             >
               {connectionStatus === "connected" ? "Aparelho Conectado" : "Aguardando Pareamento"}
@@ -291,7 +291,7 @@ export function WhatsAppQrConnectModal({
               <span
                 className={cn(
                   "size-2 rounded-full",
-                  inst.status === "connected" ? "bg-emerald-500" : "bg-amber-500",
+                  inst.status === "connected" ? "bg-emerald-500" : "bg-warning",
                 )}
               />
               <span>{inst.display_name}</span>

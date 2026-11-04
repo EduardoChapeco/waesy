@@ -108,6 +108,7 @@ export function getBrowserClient(): SupabaseClient {
         storageKey: "waesy-auth-token",
       },
       cookieOptions: {
+        name: "waesy-auth-token",
         maxAge: 60 * 60 * 24 * 365, // 1 ano — sessão PWA nunca expira por tempo
         sameSite: "lax",
         secure:

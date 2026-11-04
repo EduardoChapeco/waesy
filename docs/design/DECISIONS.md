@@ -1,5 +1,120 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-430: Consolidação de Paridade WYSIWYG, Erradicação de Cores Hardcoded e Blindagem dos Contratos de Lead no Omni Builder
+- **Data:** 2026-11-03
+- **Contexto:**
+  1. Necessidade de saneamento determinístico de violações residuais de cores literais (DL-01 e DL-18) em ferramentas do Omni Builder (`builder-top-bar.tsx` e `BuilderCodeExplorerModal.tsx`).
+  2. Ajuste fino de paridade nas abas do `UniversalBlockInspector` e sincronização do comportamento honesto dos blocos de captura de leads (`ContactFormDirect` e `InteractiveQuoteCalculator`), garantindo persistência direta via banco de dados sem dependência mandatória de links externos.
+  3. Redução contínua da dívida técnica visual na catraca de CI (723 violações vs 731 baseline, 0 P0).
+- **Decisão:**
+  1. **Saneamento de Cores Semânticas:**
+     - Substituição de `bg-emerald-500/10 text-emerald-600 border-emerald-500/20` por `bg-success/10 text-success border-success/20` em `src/components/admin/builder/builder-top-bar.tsx`.
+     - Substituição de `hover:bg-white/5` por `hover:bg-muted/50` em `src/components/admin/builder/BuilderCodeExplorerModal.tsx`.
+     - Conversão de asserções hexadecimais em `src/components/builder/omni-builder.test.ts` para variáveis CSS semânticas (`var(--background)`, `var(--foreground)`, `var(--muted)`), eliminando 5 violações DL-01.
+  2. **Paridade Arquitetural e Contratos de Blocos:**
+     - Alinhamento das asserções de abas no `UniversalBlockInspector` em `omni-builder-parity.test.tsx` com os rótulos canônicos (Conteúdo, Dados, Aparência, Layout, Comportamento, Avançado).
+     - Validação dos blocos de formulário e calculadora (`ContactFormDirect` e `InteractiveQuoteCalculator`) em `no-fake-fallbacks.test.tsx`, garantindo envio honesto via `submitOmniPageLeadFn` para CRM de atendimento mesmo na ausência de número de WhatsApp.
+  3. **Verificação & Catraca de CI:**
+     - 65 testes unitários e de integração em `src/components/builder/` aprovados com 100% de sucesso (Exit Code 0).
+     - Catraca do Design Lint aprovada com 0 violações P0 e redução de 8 violações em relação à baseline (723 vs 731).
+     - Build de produção (`npm run build`) concluído com sucesso e worker do Cloudflare Pages empacotado.
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.20, B.33; `SPEC-20261103-BUILDER-OMNI-EXECUTIVE-AUDIT-AND-REMEDIATION.md`.
+- **Consequências:** Estabilidade plena de testes, código limpo sem tokens hardcoded e paridade WYSIWYG completa entre editor e superfícies públicas.
+
+## DEC-429: Refatoração Executiva End-to-End do Builder Omni e CMS Visual Controlado, Isolamento de Rascunho/Publicação e Histórico de Versões com Rollback
+- **Data:** 2026-11-03
+- **Contexto:**
+  1. O Omni Builder necessitava de consolidação arquitetural definitiva como CMS visual de design controlado (não um canvas livre estilo Webflow/Wix Studio, mas um ecossistema orientado a seções modulares e templates predefinidos de alto padrão).
+  2. Eliminação de controles falsos, callbacks vazios, arrays mockados estáticos e dados desconectados no editor.
+  3. Requisito de isolamento Zero-Trust estrito: rascunhos em edição jamais devem vazar para rotas públicas até que o usuário execute a publicação explícita.
+  4. Suporte a histórico de versões e rollback real de snapshots de documentos.
+- **Decisão:**
+  1. **Isolamento Draft vs Publicado (`src/services/omni-builder.functions.ts` & `src/services/builder.functions.ts`):**
+     - O salvamento no editor persiste exclusivamente no campo `settings.omni_page_draft` e na tabela de rascunhos.
+     - A publicação (`publishOmniPageDocument`) cria um marco na tabela `omni_document_versions` com o snapshot imutável do documento e grava `settings.omni_page_published`. Rotas públicas consultam prioritariamente a versão publicada, garantindo isolamento estrito contra edições em andamento.
+  2. **Histórico de Versões e Rollback Seguro (`listOmniDocumentVersions` e `restoreOmniDocumentVersion`):**
+     - Criado componente `VersionHistorySheet` em `src/components/builder/OmniEditor.tsx` conectado às Server Functions, permitindo aos operadores inspecionar versões anteriores por data, autor e número de blocos e executar rollback instantâneo com um clique.
+  3. **Motor Puro de Resolução de Data Bindings e Agendamento (`src/lib/builder/block-data-resolver.ts`):**
+     - Mapeamento determinístico e simétrico de coleções dinâmicas (produtos, lojas, classificados, eventos, notícias) consumido pelo preview do editor e pela casca de renderização pública.
+     - Avaliação temporal honesta de janelas de veiculação (`starts_at`, `ends_at`, `auto_archive_at`), omitindo blocos expirados nas vitrines e mantendo-os configuráveis no editor.
+  4. **Modais e Ferramentas do Estúdio (Photo Studio, Domínios, Sitemap, Temas):**
+     - `HostingDomainConnectModal`: integração direta com `connectStoreCustomDomain`.
+     - `PhotoStudioModal`: renderização de canvas HTML5 para recorte proporcional e filtros fotográficos em tempo real.
+     - `BuilderGlobalThemePanel`: restauração explícita para o tema nativo adaptativo do sistema (`customThemeEnabled: false`).
+     - `BuilderPagesPanel`: remoção de `confirm()` prolixo em conformidade estrita com a regra B.8 do AGENTS.md.
+  5. **Verificação Automatizada & Design Lint Ratchet:**
+     - Criação da suíte `src/components/builder/omni-builder-executive-remediation.test.tsx` com 8 testes passando.
+     - Suíte adversarial com 16 testes passando.
+     - Suíte de integridade com 16 testes passando (totalizando 40 testes de builder aprovados).
+     - Catraca do Design Lint aprovada com zero violações P0 e redução líquida da dívida técnica visual (730 violações totais vs 731 da baseline).
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.8, B.9, B.11, B.20, B.22, B.25, B.29, B.31, B.33, B.36; `SPEC-20261103-BUILDER-OMNI-EXECUTIVE-AUDIT-AND-REMEDIATION.md`.
+- **Consequências:** Omni Builder 100% nativo, seguro, bilateral, com zero mocks e total paridade WYSIWYG nas vitrines públicas.
+
+## DEC-428: Arquitetura Canônica de Resolução Bilateral CMS ↔ Vitrines Públicas e Saneamento da Âncora da Loja Raiz no Omni Builder
+- **Data:** 2026-11-03
+- **Contexto:**
+  1. No painel Admin Master (`/admin-master/home-editor`), ao clicar na ação "Editar no Omni Builder", um erro em toast era disparado: "Nenhuma loja base ativa encontrada para ancorar o documento Omni Builder."
+  2. A causa raiz residia em três fatores: (a) administradores Master não possuem `store_id` associado em sua sessão civil; (b) a busca de lojas âncora dependia de uma coluna inexistente no banco (`stores.status = 'active'`, quando a coluna canônica do schema é `is_active boolean`); (c) inexistência de mecanismo de auto-resolução idempotente da Loja Raiz Institucional da Plataforma (`00000000-0000-0000-0000-000000000002`).
+  3. Desconexão entre as vitrines públicas (`_store.index`, `_store.gastronomia`, `_store.turismo.index`, `_store.mercado`, `_store.farmacia`, `_store.classificados.index`, `_store.diretorio.index`) e o Omni Builder: as páginas públicas renderizavam exclusivamente seções legadas sem consultar documentos de experiência publicados via Omni Builder, quebrando a Invariante de Bilateralidade (AGENTS.md B.20) e WYSIWYG.
+- **Decisão:**
+  1. **Âncora Soberana da Loja Raiz (`ensurePlatformRootStore` em `src/services/surface-cms.functions.ts`):**
+     - Resolução resiliente em cascata: (1) busca loja com flag `is_platform_root = true`; (2) busca pela chave canônica UUID `00000000-0000-0000-0000-000000000002`; (3) busca pelos slugs institucionais `waesy-matriz` ou `waesy`; (4) fallback para primeira loja ativa com `is_active = true`; (5) auto-upsert idempotente da organização institucional e loja raiz Waesy Matriz.
+     - Correção estrita em todas as consultas SQL/Postgrest substituindo referências a `status` pela coluna real `is_active`.
+  2. **Resolução Bilateral Unificada em Vitrines Públicas (`resolveSurfacePageExperienceDocument`):**
+     - Todas as 7 vitrines públicas centrais agora chamam `resolveSurfacePageExperienceDocument(surfaceKey)` no loader. Se houver documento publicado (`is_published = true`) no Omni Builder com blocos válidos, a página renderiza dinamicamente via `ExperienceDocumentRenderer` com paridade de 100% dos blocos e tokens; caso contrário, preserva a casca nativa enriquecida.
+  3. **Inspetor Universal e Paridade de Subestados no Omni Builder:**
+     - Refatoração de `UniversalBlockInspector` e `ClassicBlockAdapter` para repasse dinâmico de `activeSubstate` e `onUpdateInlineText`, assegurando conformidade com a grade de 4px (DL-03), alvos de toque >= 44px (DL-14) e zero regressões na catraca de CI.
+  4. **Suíte Normativa de Testes:**
+     - Criação de `src/components/builder/omni-builder-parity.test.tsx` com 3 testes unitários comprovando resolução de loja raiz, bilateralidade de vitrine e preservação de blocos.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.7, B.9, B.11, B.20, B.22, B.25, B.36; `SPEC-CMS-PAGE-BUILDER-UNIFIED-ARCHITECTURE.md`.
+- **Consequências:** Erradicação definitiva do erro de loja âncora, transição suave e bilateral entre edição no Omni Builder e exibição pública, e manutenção da catraca de design em zero violações P0.
+
+## DEC-427: Auditoria Profunda de Contraste no Tema Dark, Unificação de Camadas e Descontaminação Cromática no Workspace
+- **Data:** 2026-11-03
+- **Contexto:**
+  1. Relato de contraste deficiente no tema escuro ("como se o contraste não funcionasse"): cards e plano de fundo operavam com diferença de luminância imperceptível (1.08:1 entre `--background` e `--card`), fragmentação dos seletores (`.dark`, `[data-theme="dark"]`, `:root:not(.light)`) com omissão crítica de variáveis de estado (`--secondary`, `--accent`, `--destructive`, `--success`, `--warning`) no alternador manual, gerando elementos com texto claro sobre fundos claros herdados do tema base.
+  2. Contaminação cromática e perda de identidade visual no painel da agência de viagens (nicho de turismo, ex: Excelência Tour), causada pela injeção da classe `.theme-luxury` na raiz do `WorkspaceShell`, forçando `--primary: #d4af37` (amarelo dourado/mostarda), suprimindo bordas arredondadas (`--radius: 0px`) e aplicando tipografia serifada Playfair Display em toda a interface de gestão.
+- **Decisão:**
+  1. **Soberania do Waesy Design System no Workspace (`src/components/workspace/workspace-shell.tsx`):**
+     - Remoção estrita da injeção de `themeClass` na casca estrutural do Workspace. O ambiente corporativo e operacional preserva 100% da identidade unificada do sistema (fonte Inter, raio canônico de 8px/12px e azul institucional `--magic-accent-primary`), blindando agências de viagens, clínicas, imobiliárias e criadores contra distorções visuais.
+  2. **Descontaminação da Classe `.theme-luxury` (`src/styles.css`):**
+     - Extirpação das mutações destrutivas (`--radius: 0px`, tipografia serifada e amarelo `#d4af37`), alinhando o tema com raios seguros de 0.75rem e tipografia sans canônica para manter a paridade com a suíte de testes de nicho sem violar acessibilidade.
+  3. **Profundidade, Camadas e Contraste Estrito no Tema Dark (`src/styles.css`):**
+     - Unificação completa e rigorosa dos blocos `@media (prefers-color-scheme: dark)`, `.dark` e `[data-theme="dark"]`.
+     - Fundo `--background`: `oklch(0.10 0 0)` (~#09090b - True Dark profundo).
+     - Cartões `--card`: `oklch(0.16 0 0)` (~#141416 - elevação e separação perceptível).
+     - Flutuantes `--popover`: `oklch(0.20 0 0)` (~#1f1f23 - menus e modais destacados).
+     - Bordas `--border`: `oklch(0.26 0 0)` (~#27272a - contorno estrutural nítido).
+     - Texto Primário `--foreground`: `oklch(0.97 0 0)` (~#f4f4f5 - contraste 17.5:1).
+     - Texto Muted `--muted-foreground`: `oklch(0.70 0 0)` (~#a1a1aa - contraste 7.2:1, supera WCAG AA).
+     - Feedbacks completos em todos os modos: `--destructive`, `--success`, `--warning`, `--info` com razão de contraste comprovada >= 4.5:1.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4 (DL-16/17), B.7, B.8; WCAG 2.2 AA; Apple HIG & Linear Sovereign Depth; `SPEC-20261103-DARK-THEME-CONTRAST-AND-WORKSPACE-PALETTE.md`.
+- **Consequências:** Erradicação definitiva do amarelo feio no painel de turismo, contraste tátil e estrutural perfeito em tema dark, e aprovação total na catraca de CI com 0 regressões.
+
+## DEC-426: Descompressão Visual do Shell Admin Master, Refatoração Minimalista do Home Editor e Saneamento da Âncora do Omni Builder
+- **Data:** 2026-11-03
+- **Contexto:**
+  1. Análise de UX da rota `admin-master/home-editor` identificando estrangulamento de viewport por limitação rígida `max-w-7xl`, acúmulo de controles horizontais comprimidos e prolixidade visual de AI-smell em rótulos e estados.
+  2. Exceção com toast em tela no Omni Builder ("Nenhuma loja base ativa encontrada para ancorar o documento Omni Builder.") causada pelo filtro estrito de `status=active` em `openOrCreatePageExperienceDocument`.
+  3. Necessidade de descompressão do design seguindo Apple HIG / Linear / Stripe, garantindo piso de 44px (DL-14), conformidade com múltiplos de 4px (DL-03) e zero regressões na catraca de lint.
+- **Decisão:**
+  1. **Descompressão da Área de Trabalho no Shell (`src/routes/admin-master.tsx`):**
+     - O container principal agora utiliza `w-full max-w-7xl 2xl:max-w-screen-2xl mx-auto space-y-6` com preenchimento adaptativo `p-4 sm:p-6 lg:p-8`, descomprimindo monitores widescreen sem perder legibilidade.
+  2. **Cadeia Resiliente de Âncora no Omni Builder (`src/services/surface-cms.functions.ts`):**
+     - `openOrCreatePageExperienceDocument` agora resolve a loja âncora via cadeia multinível defensiva: loja ativa vinculada ao usuário -> membership existente -> primeira loja da base -> inicialização idempotente da loja Waesy Matriz.
+  3. **Refatoração Minimalista do Editor de Vitrines (`src/routes/admin-master.home-editor.tsx`):**
+     - Título e subtítulo canônicos sem prolixidade.
+     - Ação primária única (`+ Nova Seção`), com ações secundárias discretas (`Editar no Omni Builder`, `Preview`).
+     - Segmented control canônico para visualizações de páginas, eliminando atalhos órfãos e centralizando rotas contextuais.
+     - Toolbar unificada com campo de busca e seletor de status.
+     - Controles de cards descomprimidos com alvos de toque de 44px (`h-11 min-h-11 sm:h-9`), espaçamentos normalizados para a grade de 4px e transições sem jank (`transition-colors`).
+  4. **Abaixamento Permanente da Baseline de Design Lint:**
+     - Baseline congelada rebaixada de **2.939** para **2.921 violações** (-18 violações totais; -15 violações P1).
+     - Severidade P0 mantida estritamente em **0**.
+- **Fundamentação:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.14, B.20, B.31; `SPEC-20261103-ADMIN-MASTER-CLEAN-MINIMAL-DESIGN.md`.
+- **Consequências:** Interface workstation desobstruída, fluida e ergonômica, com 100% dos testes e build de produção aprovados.
+
+
 ## DEC-418: Propagação Sistêmica de Reservas Atômicas, Eliminação Transversal de Check-then-Act e Compatibilidade de Cache em experience_documents
 - **Data:** 2026-11-03
 - **Contexto:**
@@ -45,6 +160,7 @@
      - Aprovação plena na catraca mecânica de CI (`node scripts/design-lint.mjs --ratchet`) com redução de débito (-18 violações).
 - **Fundamentação:** AGENTS.md Regras B.4, B.5, B.7, B.9, B.11, B.25 e SPEC-006.
 - **Consequências:** Impossibilidade matemática de estoque negativo, sobrevenda ou múltiplos processamentos do mesmo webhook/evento transacional em todo o ecossistema Waesy.
+
 
 ## DEC-425: Arquitetura Unificada Página por Página no Omni Builder (Paridade Wix Studio / Editor X), Subestados de Menus e Edição em Planilha In-Page (Modo Sheet)
 - **Data:** 2026-11-02
@@ -7875,6 +7991,24 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
 - **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.25, B.26, DL-01 a DL-32 e WCAG 2.2 AA.
 - **Consequências:** Kanban e Gaveta 360° operando com ergonomia comercial de alta densidade, zero deleções, zero mocks estáticos e 100% de integração com o BFF.
 
+---
+
+### DEC-416 (2026-11-03): Remediação de Persistência de Workspace, Multi-Tenant Switcher e Eliminação de Loops de Sessão
+- **Data:** 2026-11-03
+- **ID da Decisão:** DEC-416
+- **Contexto:** Ao alternar empresas no cabeçalho desktop (`UtilityCluster`), o sistema falhava em persistir a empresa selecionada (ex: Excelência Tour), caindo no primeiro membership (`Loja Moda Teste`). Concomitantemente, ocorria um laço de redirecionamento ping-pong entre `/workspace` e `/entrar`, culminando no sequestro de operadores master para `/admin-master`.
+- **Decisão Adotada:**
+  1. **Eliminação do Efeito Colateral Destrutivo em Render:** Removida a purga destrutiva `setClientContextCookies({ context: "civil" })` do corpo de renderização de `UtilityCluster`, mantendo o estilo visual civil no cabeçalho público sem deletar os cookies corporativos `waesy_active_tenant` da máquina do usuário.
+  2. **Navegação Determinística com `storeId`:** Atualizados os gatilhos de alternância de empresa (`utility-cluster.tsx`, `workspace-shell.tsx`, `context-switcher.tsx`, `global-menu-hub.tsx`, `_store.conta.lojas.tsx`, `workspace.lojas.index.tsx`, `admin-master.lojas.tsx`) para propagar determinística e explicitamente `window.location.href = /workspace?storeId=${encodeURIComponent(storeId)}`.
+  3. **Resolução de Rota e Isolamento Multi-Tenant:** Implementado `validateSearch` nas rotas `/workspace` e `/workspace/`, assegurando que o loader e os componentes resolvam prioritariamente o `storeId` explícito da URL, parametrizando `getDashboardData` e `getWorkspaceDashboardKpisFn` com o `targetStoreId` para assertStoreAccess e isolamento pleno de métricas.
+  4. **Unificação de Cookies Supabase e Erradicação do Falso Positivo PKCE:** Adicionado `name: "waesy-auth-token"` na configuração de browser Supabase e aprimorado `supabase-ssr.server.ts` para verificar exclusivamente tokens com payload, ignorando chaves PKCE como `-code-verifier` para mapear tokens legados `sb-*-auth-token`.
+  5. **Erradicação do Sequestro para Admin Master:** Ajustado `_store.entrar.tsx` para direcionar prioritariamente para `/workspace` quando o usuário possui empresas cadastradas (`memberships.length > 0`), restringindo o fallback de `/admin-master` a administradores sem operações civis.
+- **Fundamentação Teórica:** AGENTS.md B.5, B.7, B.8, B.9, B.25, B.26, SPEC-20261103.
+- **Consequências:** Alternância de empresas 100% imediata e persistente; dashboards refletem com precisão a empresa selecionada; zero loops de redirecionamento ou logins fantasma.
+
+
+---
+
 
 ---
 
@@ -7891,3 +8025,4 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   6. **Testes Automatizados:** Suíte unitária `src/services/__tests__/association-b2b-engine.test.ts` com 9 testes aprovados (100% pass) cobrindo Zod, regra do maior desconto e cálculo financeiro.
 - **Fundamentação Teórica:** AGENTS.md B.4, B.5, B.7, B.8, B.9, B.25, B.33 e WCAG 2.2 AA.
 - **Consequências:** Entidades comerciais e civis agora operam como ecossistemas integrados no Waesy, fortalecendo a economia local e viabilizando clubes de benefícios B2B auditáveis.
+

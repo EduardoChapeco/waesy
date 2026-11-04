@@ -142,7 +142,7 @@ export default function WorkspaceOnboardingPage() {
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="text-xs font-semibold gap-1">
-                  <Clock className="size-3 text-amber-500" />
+                  <Clock className="size-3 text-warning-strong" />
                   Em Configuração
                 </Badge>
               )}

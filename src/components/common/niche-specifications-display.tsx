@@ -380,7 +380,7 @@ export function NicheSpecificationsDisplay({
                     </span>
                   </div>
                   <span className={cn(
-                    "text-xs sm:text-sm font-bold text-foreground leading-tight break-normal text-wrap hyphens-none text-right max-w-[55%]",
+                    "text-xs sm:text-sm font-bold text-foreground leading-tight break-normal text-wrap hyphens-none text-right max-w-11/20",
                     isNum ? "font-mono" : "font-sans"
                   )}>
                     {item.value}

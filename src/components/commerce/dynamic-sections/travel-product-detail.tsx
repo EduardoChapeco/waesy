@@ -157,7 +157,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
       {/* ── 2. GALERIA MASONRY DE FOTOS ── */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         /* design-lint-ignore DL-02 reason:"Altura panorâmica de 280px mobile e 420px desktop para galeria de fotos de hotel" expiry:"2027-12-31" */
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 h-[280px] sm:h-[420px] rounded-lg overflow-hidden border border-border/80 relative">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 h-70 sm:h-105 rounded-lg overflow-hidden border border-border/80 relative">
           {/* Foto Principal Esquerda (7 colunas) */}
           <div className="md:col-span-7 h-full relative group cursor-pointer overflow-hidden">
             <img
@@ -206,9 +206,9 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
             {/* Header com Nome, Estrelas e Mapa */}
             <div className="space-y-2">
               {typeof starsCount === "number" && starsCount > 0 ? (
-                <div className="flex items-center gap-1 text-amber-500">
+                <div className="flex items-center gap-1 text-warning-strong">
                   {Array.from({ length: starsCount }).map((_, i) => (
-                    <Star key={i} className="size-4 fill-amber-500" />
+                    <Star key={i} className="size-4 fill-warning" />
                   ))}
                 </div>
               ) : null}
@@ -360,7 +360,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             {/* design-lint-ignore DL-02 reason:"Teto de visualização de 80vh para modal de foto de hotel" expiry:"2027-12-31" */}
-            <img src={selectedImage} alt={hotelName} className="w-full h-auto object-contain max-h-[80vh]" />
+            <img src={selectedImage} alt={hotelName} className="w-full h-auto object-contain max-h-vh-80" />
             <button
               type="button"
               onClick={() => setSelectedImage(null)}

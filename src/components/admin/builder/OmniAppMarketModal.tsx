@@ -84,7 +84,7 @@ export function OmniAppMarketModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-2xl">
+      <DialogContent className="max-w-4xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-overlay">
         {/* Header Superior */}
         <DialogHeader className="h-14 px-6 border-b border-border/80 flex flex-row items-center justify-between flex-none bg-card select-none">
           <div className="flex items-center gap-3">
@@ -214,10 +214,10 @@ export function OmniAppMarketModal({
                       <span className="text-2xs font-mono text-muted-foreground">/{p.slug}</span>
                     </div>
                     <span className="text-2xs text-muted-foreground leading-normal">{p.seo.description}</span>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <Badge variant="outline" className="text-2xs py-0 px-1.5">{p.pageType}</Badge>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-2xs py-0 px-2">{p.pageType}</Badge>
                       {p.isHome && (
-                        <Badge className="text-2xs py-0 px-1.5 bg-amber-500/10 text-amber-600 border-amber-500/20">
+                        <Badge className="text-2xs py-0 px-2 bg-warning/10 text-warning-strong border-warning/20">
                           Página Inicial
                         </Badge>
                       )}

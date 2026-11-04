@@ -137,7 +137,7 @@ function PublicTravelContractSignaturePage() {
  variant="outline"
  disabled={isExportingPdf}
  onClick={handleExportPdf}
- className="rounded-lg text-xs font-bold gap-2 h-9"
+ className="rounded-lg text-xs font-bold gap-2 h-9 min-h-11 sm:min-h-0"
  >
  <Download className="size-3.5" />
  <span>{isExportingPdf ? "Gerando..." : "Baixar PDF"}</span>
@@ -148,7 +148,7 @@ function PublicTravelContractSignaturePage() {
  {/* ── 2. CORPO DO CONTRATO EDITORIAL ── */}
  <div
  id="contract-document-view"
- className="p-6 sm:p-10 rounded-lg bg-card text-slate-900 border border-slate-200 shadow-sm space-y-8"
+ className="p-6 sm:p-10 rounded-lg bg-card text-slate-900 border border-slate-200  space-y-8"
  >
  {/* Cabeçalho do Instrumento Particular */}
  <div className="text-center space-y-2 pb-6 border-b border-slate-200">
@@ -260,7 +260,7 @@ function PublicTravelContractSignaturePage() {
 
  {/* ── 3. FORMULÁRIO DE ASSINATURA ELETRÔNICA MOBILE ── */}
  {!isAlreadySigned && (
- <div className="p-6 rounded-lg bg-card border border-border/80 space-y-5 shadow-sm">
+ <div className="p-6 rounded-lg bg-card border border-border/80 space-y-5 ">
  <div className="space-y-1">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Lock className="size-4 text-primary" />

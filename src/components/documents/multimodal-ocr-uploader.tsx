@@ -167,7 +167,7 @@ export function MultimodalOcrUploader({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* ── SELETOR RÁPIDO DE NICHO ── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 scrollbar-none">
         <span className="text-2xs font-bold text-muted-foreground shrink-0 mr-1">
           Modo:
         </span>
@@ -180,7 +180,7 @@ export function MultimodalOcrUploader({
               selectedNiche === n.id
                 ? "bg-primary text-primary-foreground shadow-2xs"
                 : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
-            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
           >
             {n.label}
           </button>
@@ -274,7 +274,7 @@ export function MultimodalOcrUploader({
                     e.stopPropagation();
                     removeFile(f.id);
                   }}
-                  className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 >
                   <Trash2 className="size-3.5" />
                 </button>
@@ -320,7 +320,7 @@ export function MultimodalOcrUploader({
       {/* ── MODAL DE PREVIEW INSTANTÂNEO 9:16 (SE ATIVADO) ── */}
       {showPreviewModal && (
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-2xl">
+          <DialogContent className="max-w-4xl max-h-(--spacing-screen-90,90vh) overflow-y-auto p-4 sm:p-6 rounded-lg bg-background border border-border shadow-overlay">
             <DialogHeader className="sr-only">
               <DialogTitle>Documento Digital Reconhecido</DialogTitle>
             </DialogHeader>
@@ -352,7 +352,7 @@ export function MultimodalOcrUploader({
                             setIsSavingToDb(false);
                           }
                         }}
-                        className="h-8 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground cursor-pointer shadow-2xs"
+                        className="h-8 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground cursor-pointer shadow-2xs min-h-11 sm:min-h-0"
                       >
                         {isSavingToDb ? (
                           <>
@@ -372,7 +372,7 @@ export function MultimodalOcrUploader({
                       size="sm"
                       variant="outline"
                       onClick={() => setPreviewOpen(false)}
-                      className="h-8 rounded-lg text-xs cursor-pointer"
+                      className="h-8 rounded-lg text-xs cursor-pointer min-h-11 sm:min-h-0"
                     >
                       Fechar Prévia
                     </Button>

@@ -6,7 +6,7 @@ function getColumnColorClass(color?: string): string {
   if (color.startsWith("bg-")) return color;
   const normalized = color.toLowerCase();
   if (normalized.includes("blue") || normalized.includes("info")) return "bg-blue-500";
-  if (normalized.includes("amber") || normalized.includes("yellow") || normalized.includes("warning")) return "bg-amber-500";
+  if (normalized.includes("amber") || normalized.includes("yellow") || normalized.includes("warning")) return "bg-warning";
   if (normalized.includes("green") || normalized.includes("emerald") || normalized.includes("success")) return "bg-emerald-500";
   if (normalized.includes("purple") || normalized.includes("indigo")) return "bg-indigo-500";
   if (normalized.includes("orange")) return "bg-orange-500";

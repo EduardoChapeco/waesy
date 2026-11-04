@@ -182,7 +182,7 @@ export function GlobalQuickCreateModal({
       />
 
       {/* Sheet / Dialog Surface */}
-      <div className="relative z-10 w-full sm:max-w-md bg-background text-foreground rounded-t-3xl sm:rounded-2xl border-t sm:border border-border/60 shadow-2xl overflow-hidden pb-safe animate-in slide-in-from-bottom-4 duration-200">
+      <div className="relative z-10 w-full sm:max-w-md bg-background text-foreground rounded-t-3xl sm:rounded-2xl border-t sm:border border-border/60 shadow-overlay overflow-hidden pb-safe animate-in slide-in-from-bottom-4 duration-200">
         {/* Handle bar mobile */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <div className="w-10 h-1 rounded-full bg-border" />

@@ -192,7 +192,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  variant="outline"
  size="sm"
  onClick={() => openNewEntry("inflow")}
- className="h-9 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer text-emerald-600 hover:text-emerald-700"
+ className="h-9 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer text-emerald-600 hover:text-emerald-700 min-h-11 sm:min-h-0"
  >
  <ArrowDownLeft className="size-3.5" /> Adicionar Suprimento
  </Button>
@@ -201,7 +201,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  type="button"
  size="sm"
  onClick={() => openNewEntry("outflow")}
- className="h-9 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
+ className="h-9 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" /> Lançar Despesa
  </Button>
@@ -361,7 +361,7 @@ export function GroupTourCashLedger({ tourId, storeId }: GroupTourCashLedgerProp
  <Button
  type="submit"
  disabled={submitting || !description.trim() || !amountStr.trim()}
- className="w-full h-10 rounded-lg text-xs font-bold cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold cursor-pointer min-h-11 sm:min-h-0"
  >
  {submitting ? "Registrando..." : "Confirmar Lançamento"}
  </Button>

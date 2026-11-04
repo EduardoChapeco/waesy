@@ -106,17 +106,17 @@ export function EventTopHeroCover({
             <img
               src={partnerLogoUrl}
               alt="Parceria Ingressos"
-              className="h-8 max-w-36 object-contain drop-shadow-sm mb-1"
+              className="h-8 max-w-36 object-contain  mb-1"
             />
           ) : (
             <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-card/20 backdrop-blur-md border border-white/30 text-primary-foreground mb-1 shadow-xs">
-              <Ticket size={14} weight="fill" className="text-amber-300" />
+              <Ticket size={14} weight="fill" className="text-warning-strong" />
               <span className="text-2xs font-black tracking-wider uppercase">
                 Waesy + Ingressos
               </span>
             </div>
           )}
-          <p className="text-xs font-bold text-primary-foreground drop-shadow-md leading-tight flex items-center gap-1">
+          <p className="text-xs font-bold text-primary-foreground  leading-tight flex items-center gap-1">
             <Sparkle size={13} weight="fill" className="text-purple-300 shrink-0" />
             <span>{calloutTitle}</span>
           </p>
@@ -135,7 +135,7 @@ export function EventTopHeroCover({
 
         {/* LADO DIREITO: Pílula de Localização Minimalista (Branca Sólida / Card - Semitransparência Zero) */}
         <div className="pointer-events-auto">
-          <LocationMasterPill className="bg-card h-11 min-h-11 px-4 rounded-full border border-border/80 shadow-md shadow-black/10 flex items-center gap-2 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground font-bold text-xs" />
+          <LocationMasterPill className="bg-card h-11 min-h-11 px-4 rounded-full border border-border/80  shadow-black/10 flex items-center gap-2 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground font-bold text-xs" />
         </div>
       </div>
     </div>

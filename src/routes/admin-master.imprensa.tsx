@@ -119,10 +119,10 @@ function AdminMasterImprensaPage() {
         </div>
 
         <div className="p-4 rounded-lg bg-card border space-y-1">
-          <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+          <span className="text-xs font-bold text-warning-strong ">
             Aguardando Aprovação
           </span>
-          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">
+          <p className="text-2xl font-black text-warning-strong  font-mono">
             {pendingCount}
           </p>
         </div>
@@ -156,7 +156,7 @@ function AdminMasterImprensaPage() {
           <button
             onClick={() => setFilterTab("pending")}
             className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ${
-              filterTab === "pending" ? "bg-background text-amber-600 shadow-xs" : "text-muted-foreground"
+              filterTab === "pending" ? "bg-background text-warning-strong shadow-xs" : "text-muted-foreground"
             } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Pendentes ({pendingCount})
@@ -212,7 +212,7 @@ function AdminMasterImprensaPage() {
                         isApproved
                           ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                           : isPending
-                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                          ? "bg-warning/15 text-warning-strong  border border-warning/30"
                           : isRevoked
                           ? "bg-destructive/15 text-destructive border border-destructive/30"
                           : "bg-muted text-muted-foreground"
@@ -263,7 +263,7 @@ function AdminMasterImprensaPage() {
                         size="sm"
                         disabled={isUpdating}
                         onClick={() => handleUpdateStatus(st.id, "revoked")}
-                        className="h-8 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10"
+                        className="h-8 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0"
                       >
                         {isUpdating ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-1" /> : <XCircle className="size-3.5 mr-1" />}
                         <span>Revogar</span>
@@ -274,7 +274,7 @@ function AdminMasterImprensaPage() {
                         size="sm"
                         disabled={isUpdating}
                         onClick={() => handleUpdateStatus(st.id, "approved")}
-                        className="h-8 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground"
+                        className="h-8 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground min-h-11 sm:min-h-0"
                       >
                         {isUpdating ? (
                           <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-1" />
@@ -291,14 +291,14 @@ function AdminMasterImprensaPage() {
                         size="sm"
                         disabled={isUpdating}
                         onClick={() => handleUpdateStatus(st.id, "pending")}
-                        className="h-8 rounded-lg text-xs font-bold"
+                        className="h-8 rounded-lg text-xs font-bold min-h-11 sm:min-h-0"
                       >
                         <span>Analisar</span>
                       </Button>
                     )}
                   </div>
 
-                  <Button asChild variant="ghost" size="icon" className="size-8 rounded-lg">
+                  <Button asChild variant="ghost" size="icon" className="size-8 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0">
                     <Link to="/c/$storeSlug" params={{ storeSlug: st.slug }} target="_blank">
                       <ExternalLink className="size-3.5" />
                     </Link>

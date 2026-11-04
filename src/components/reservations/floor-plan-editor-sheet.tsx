@@ -139,7 +139,7 @@ export function FloorPlanEditorSheet({
  variant="outline"
  size="sm"
  onClick={handleResetDefaults}
- className="h-8 px-3 rounded-lg text-xs font-semibold"
+ className="h-8 px-3 rounded-lg text-xs font-semibold min-h-11 sm:min-h-0"
  >
  Padrão
  </Button>
@@ -147,7 +147,7 @@ export function FloorPlanEditorSheet({
  type="button"
  size="sm"
  onClick={handleAddTable}
- className="h-8 px-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1 shadow-2xs"
+ className="h-8 px-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1 shadow-2xs min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Mesa</span>
@@ -217,7 +217,7 @@ export function FloorPlanEditorSheet({
  variant="ghost"
  size="sm"
  onClick={() => handleRemoveTable(t.id)}
- className="size-9 p-0 text-muted-foreground hover:text-destructive rounded-lg"
+ className="size-9 p-0 text-muted-foreground hover:text-destructive rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-4" />
  </Button>

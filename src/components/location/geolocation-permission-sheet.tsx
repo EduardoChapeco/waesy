@@ -147,7 +147,7 @@ export function GeolocationPermissionSheet() {
  </div>
 
  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
- <div className="size-8 rounded-lg bg-background text-amber-500 flex items-center justify-center shrink-0 shadow-xs">
+ <div className="size-8 rounded-lg bg-background text-warning-strong flex items-center justify-center shrink-0 shadow-xs">
  <Compass className="size-4" />
  </div>
  <div>

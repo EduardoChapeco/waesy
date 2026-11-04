@@ -24,13 +24,29 @@ export function getSectionStyle(styling?: OmniBlockStyling, isMobile = false): {
     xl: "py-28 sm:py-36",
   };
 
+  const paddingTopMap: Record<string, string> = {
+    none: "pt-0",
+    sm: "pt-8 sm:pt-10",
+    md: "pt-16 sm:pt-20",
+    lg: "pt-20 sm:pt-28",
+    xl: "pt-28 sm:pt-36",
+  };
+
+  const paddingBottomMap: Record<string, string> = {
+    none: "pb-0",
+    sm: "pb-8 sm:pb-10",
+    md: "pb-16 sm:pb-20",
+    lg: "pb-20 sm:pb-28",
+    xl: "pb-28 sm:pb-36",
+  };
+
   const roundedMap: Record<string, string> = {
     none: "rounded-none",
     sm: "rounded-sm",
     md: "rounded-md",
     lg: "rounded-lg",
-    xl: "rounded-lg",
-    "2xl": "rounded-lg",
+    xl: "rounded-xl",
+    "2xl": "rounded-2xl",
     full: "rounded-full",
   };
 
@@ -52,22 +68,37 @@ export function getSectionStyle(styling?: OmniBlockStyling, isMobile = false): {
 
   const activePaddingKey =
     isMobile && styling.mobilePaddingY ? styling.mobilePaddingY : styling.paddingY || "md";
-  const pyClass = paddingYMap[activePaddingKey] || "py-20 lg:py-28";
-  const roundedClass = roundedMap[styling.borderRadius || "xl"] || "";
+  const hasGranularPadding = Boolean(styling.paddingTop || styling.paddingBottom);
+  const pyClass = hasGranularPadding
+    ? [
+        paddingTopMap[styling.paddingTop || activePaddingKey] || "",
+        paddingBottomMap[styling.paddingBottom || activePaddingKey] || "",
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : paddingYMap[activePaddingKey] || "py-20 lg:py-28";
+  const roundedClass = styling.borderRadius ? roundedMap[styling.borderRadius] || "" : "";
   const surfaceClass = styling.surfacePreset ? surfaceMap[styling.surfacePreset] || "" : "";
   const widthClass = styling.maxWidth ? maxWidthMap[styling.maxWidth] || "" : "";
   const borderClass = styling.border ? "border border-border/70" : "";
+  const legacyTwBgClass =
+    styling.backgroundColor && styling.backgroundColor.startsWith("bg-")
+      ? styling.backgroundColor
+      : "";
 
   const style: React.CSSProperties = {};
-  if (styling.backgroundColor) {
+  if (styling.backgroundColor && !styling.backgroundColor.startsWith("bg-")) {
     style.backgroundColor = styling.backgroundColor;
   }
-  if (styling.textColor) {
+  if (styling.textColor && !styling.textColor.startsWith("text-")) {
     style.color = styling.textColor;
+  }
+  if (typeof styling.animationDelayMs === "number" && styling.animationDelayMs > 0) {
+    style.animationDelay = `${styling.animationDelayMs}ms`;
   }
 
   return {
-    className: [pyClass, roundedClass, surfaceClass, widthClass, borderClass]
+    className: [pyClass, roundedClass, surfaceClass, legacyTwBgClass, widthClass, borderClass]
       .filter(Boolean)
       .join(" ")
       .trim(),

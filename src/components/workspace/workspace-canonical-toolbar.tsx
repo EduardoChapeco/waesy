@@ -92,7 +92,7 @@ export interface WorkspaceCanonicalToolbarProps {
 function getSemanticIconColor(id: string, customColor?: string): string {
   if (customColor) return customColor;
   const key = id.toLowerCase();
-  if (key.includes("my-day") || key.includes("dia") || key.includes("foco")) return "text-amber-500";
+  if (key.includes("my-day") || key.includes("dia") || key.includes("foco")) return "text-warning-strong";
   if (key.includes("list") || key.includes("lista")) return "text-blue-500";
   if (key.includes("kanban") || key.includes("board") || key.includes("quadro")) return "text-emerald-500";
   if (key.includes("cal") || key.includes("agenda")) return "text-purple-500";

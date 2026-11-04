@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
-import { getUserSession } from "@/services/auth.functions";
+import { requirePlatformAdmin } from "@/lib/server-access";
 import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
 
 export type HomeLayoutVariant =
@@ -1296,10 +1296,11 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
     }
   });
 
-// ── 2. LISTAGEM ADMINISTRATIVA DE SEÇÕES COM TODOS OS ITENS ──
+// ── 2. LISTAGEM ADMINISTRATIVA DE SEÇÕES COM TODOS OS ITENS (RESTRITA A ADMIN MASTER) ──
 export const listAdminHomePageSections = createServerFn({ method: "GET" })
   .validator(z.object({}).optional())
   .handler(async (): Promise<HomePageSectionDTO[]> => {
+    await requirePlatformAdmin();
     try {
       const supabase = getServerClient();
 
@@ -1530,11 +1531,8 @@ const UpsertSectionSchema = z.object({
 export const upsertHomePageSection = createServerFn({ method: "POST" })
   .validator(UpsertSectionSchema)
   .handler(async ({ data: payload }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) {
-      throw new Error("Não autenticado.");
-    }
 
     const {
       id,
@@ -1613,9 +1611,8 @@ export const upsertHomePageSection = createServerFn({ method: "POST" })
 export const deleteHomePageSection = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().min(1) }))
   .handler(async ({ data: { id } }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     if (id.startsWith("canonical-")) {
       const { realSectionId } = await ensureCanonicalHomeSectionMaterialized(supabase, id);
@@ -1661,9 +1658,8 @@ const UpsertItemSchema = z.object({
 export const upsertHomeSectionItem = createServerFn({ method: "POST" })
   .validator(UpsertItemSchema)
   .handler(async ({ data: payload }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     const {
       id,
@@ -1747,9 +1743,8 @@ export const upsertHomeSectionItem = createServerFn({ method: "POST" })
 export const deleteHomeSectionItem = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().min(1) }))
   .handler(async ({ data: { id } }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     if (id.startsWith("item-")) {
       const canonicalSec = CANONICAL_DEFAULT_HOME_SECTIONS.find((s) =>
@@ -1778,9 +1773,8 @@ export const deleteHomeSectionItem = createServerFn({ method: "POST" })
 export const reorderHomeSections = createServerFn({ method: "POST" })
   .validator(z.object({ sectionIds: z.array(z.string()) }))
   .handler(async ({ data: { sectionIds } }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     for (let index = 0; index < sectionIds.length; index++) {
       const rawId = sectionIds[index];
@@ -1797,9 +1791,8 @@ export const reorderHomeSections = createServerFn({ method: "POST" })
 export const reorderHomeSectionItems = createServerFn({ method: "POST" })
   .validator(z.object({ itemIds: z.array(z.string()) }))
   .handler(async ({ data: { itemIds } }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     for (let index = 0; index < itemIds.length; index++) {
       const rawItemId = itemIds[index];

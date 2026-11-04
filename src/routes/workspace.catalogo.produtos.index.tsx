@@ -693,7 +693,7 @@ function AdminProductsPage() {
               ) : (
                 <div className="flex flex-col rounded-xl overflow-hidden bg-card border border-border/70 shadow-2xs flex-1 min-h-0">
                   {/* VISÃO DESKTOP: DataGrid / Tabela de Alta Densidade */}
-            <div className="overflow-x-auto overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
+            <div className="overflow-x-auto scroll-area-carousel overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/30">

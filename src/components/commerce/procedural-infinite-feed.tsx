@@ -152,7 +152,7 @@ export function ProceduralInfiniteFeed({
                 actionTo={section.action_to}
               >
                 {section.items.map((store: any) => (
-                  <div key={store.id} className="w-72 sm:w-[310px] shrink-0 snap-start">
+                  <div key={store.id} className="w-72 sm:w-78 shrink-0 snap-start">
                     <StoreCard {...store} />
                   </div>
                 ))}
@@ -176,7 +176,7 @@ export function ProceduralInfiniteFeed({
                     key={item.id}
                     to="/classificados/$id"
                     params={{ id: item.id }}
-                    className="min-w-[250px] sm:min-w-72 max-w-[290px] shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 shadow-2xs select-none"
+                    className="min-w-63 sm:min-w-72 max-w-73 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 shadow-2xs select-none"
                   >
                     <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/30">
                       {item.cover_image ? (

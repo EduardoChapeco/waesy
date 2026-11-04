@@ -53,7 +53,7 @@ function ContaConcursosPage() {
 
         <Button
           asChild
-          className="h-10 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-primary text-primary-foreground"
+          className="h-10 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-primary text-primary-foreground min-h-11 sm:min-h-0"
         >
           <Link to="/concursos">
             <Ticket className="size-4" />
@@ -75,7 +75,7 @@ function ContaConcursosPage() {
           <span className="text-2xs font-mono text-muted-foreground uppercase block">
             Saldo de Pontos
           </span>
-          <span className="text-2xl font-black font-mono text-amber-500">
+          <span className="text-2xl font-black font-mono text-warning-strong">
             {overview?.totalPoints || 0} pts
           </span>
         </div>
@@ -92,9 +92,9 @@ function ContaConcursosPage() {
 
       {/* â”€â”€ ALERTA DE PRÃŠMIO CONQUISTADO â”€â”€ */}
       {winningEntries.length > 0 && (
-        <div className="rounded-lg border-2 border-amber-500/50 bg-amber-500/10 p-5 space-y-2">
+        <div className="rounded-lg border-2 border-warning/50 bg-warning/10 p-5 space-y-2">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-lg bg-warning/20 text-warning-strong flex items-center justify-center shrink-0">
               <Trophy className="size-6" />
             </div>
             <div>
@@ -144,7 +144,7 @@ function ContaConcursosPage() {
                 key={raffle.id}
                 className={`rounded-lg border p-5 sm:p-6 space-y-4 transition-colors duration-200 ${
                   isWinner
-                    ? "border-amber-500/60 bg-amber-500/5 shadow-sm"
+                    ? "border-warning/60 bg-warning/5 "
                     : "border-border/70 bg-card"
                 }`}
               >
@@ -154,7 +154,7 @@ function ContaConcursosPage() {
                       <Badge
                         className={
                           isWinner
-                            ? "bg-amber-500 text-amber-950 font-bold font-mono text-2xs uppercase"
+                            ? "bg-warning text-warning-strong font-bold font-mono text-2xs uppercase"
                             : isCompleted
                             ? "bg-muted text-muted-foreground text-2xs"
                             : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-2xs font-bold"
@@ -182,7 +182,7 @@ function ContaConcursosPage() {
                       Sorteio: {drawDateFormatted}
                     </span>
 
-                    <Button asChild variant="ghost" size="sm" className="h-8 px-2 rounded-lg text-xs">
+                    <Button asChild variant="ghost" size="sm" className="h-8 px-2 rounded-lg text-xs min-h-11 sm:min-h-0">
                       <Link to="/concurso/$id" params={{ id: raffle.id }}>
                         <ChevronRight className="size-4" />
                       </Link>
@@ -205,7 +205,7 @@ function ContaConcursosPage() {
                           key={t.id}
                           className={`px-3 py-2 rounded-lg border text-xs font-mono flex items-center gap-2 ${
                             isWinningTicket
-                              ? "bg-amber-500 text-amber-950 border-amber-400 font-black shadow-xs"
+                              ? "bg-warning text-warning-strong border-warning font-black shadow-xs"
                               : "bg-muted/40 border-border text-foreground font-bold"
                           }`}
                         >
@@ -222,8 +222,8 @@ function ContaConcursosPage() {
                 {isCompleted && (
                   <div className="pt-2">
                     {isWinner ? (
-                      <div className="rounded-lg bg-amber-500/20 border border-amber-500/30 p-4 space-y-2">
-                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs">
+                      <div className="rounded-lg bg-warning/20 border border-warning/30 p-4 space-y-2">
+                        <div className="flex items-center gap-2 text-warning-strong  font-bold text-xs">
                           <CheckCircle2 className="size-4" />
                           <span>Seu cupom #{raffle.winnerTicketNumber} foi o vencedor!</span>
                         </div>

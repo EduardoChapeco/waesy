@@ -62,7 +62,7 @@ export function EventProducersRail({
         </Link>
       </div>
 
-      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
+      <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
         {producers.map((prod) => {
           const isFav = favorites[prod.id] || false;
           const targetUrl = prod.slug ? `/places/${prod.slug}` : `/buscar?q=${encodeURIComponent(prod.name)}`;

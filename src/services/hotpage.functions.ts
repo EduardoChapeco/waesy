@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getAnonServerClient, getServerClient } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/server-access";
+import { requirePlatformAdmin } from "@/lib/server-access";
 
 export type HotpageModule =
  | "home"
@@ -489,7 +489,7 @@ export const createHotpage = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
- await requireAdmin();
+ await requirePlatformAdmin();
  const supabase = getServerClient();
  const sanitized = sanitizeHotpagePayload({
       slug: data.slug,
@@ -597,9 +597,11 @@ export const updateHotpage = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data: { id, ...patch } }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const sanitized = sanitizeHotpagePayload(patch);
+    const { data: existingRow } = await supabase.from("hotpages").select("filter_rules").eq("id", id).maybeSingle();
+    const existingRules = existingRow?.filter_rules && typeof existingRow.filter_rules === "object" ? (existingRow.filter_rules as Record<string, any>) : {};
+    const sanitized = sanitizeHotpagePayload({ ...patch, filter_rules: { ...existingRules, ...(patch.filter_rules && typeof patch.filter_rules === "object" ? patch.filter_rules : {}) } });
     let { data: updated, error } = await supabase
       .from("hotpages")
       .update(sanitized)
@@ -627,7 +629,7 @@ export const updateHotpage = createServerFn({ method: "POST" })
 export const deleteHotpage = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid(), soft: z.boolean().optional() }))
   .handler(async ({ data: { id, soft = true } }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
     if (soft) {
       const { error } = await supabase
@@ -645,7 +647,7 @@ export const deleteHotpage = createServerFn({ method: "POST" })
 export const toggleHotpageActive = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid(), is_active: z.boolean() }))
   .handler(async ({ data: { id, is_active } }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
     const { error } = await supabase
       .from("hotpages")
@@ -705,7 +707,7 @@ export const saveHotpage = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data }) => {
- await requireAdmin();
+ await requirePlatformAdmin();
  if (data.id) {
  return updateHotpage({ data: { id: data.id, ...data } });
  } else {
@@ -1260,7 +1262,7 @@ export const listDrawerModules = createServerFn({ method: "GET" })
 
 export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
   async () => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     // ── 1. CARDS HERÓI DE MÓDULOS PRINCIPAIS (SEPARADOS E SEM FALLBACKS EXTERNOS) ──

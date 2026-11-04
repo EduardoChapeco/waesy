@@ -684,7 +684,7 @@ function NovoContratoPage() {
                   size="sm"
                   onClick={() => setSigningOrder("parallel")} /* focus-visible:ring-2 */
                   className={cn(
-                    "h-7 px-3 py-1 text-xs rounded-md font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "h-7 px-3 py-1 text-xs rounded-md font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0",
                     signingOrder === "parallel"
                       ? "bg-card text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -698,7 +698,7 @@ function NovoContratoPage() {
                   size="sm"
                   onClick={() => setSigningOrder("sequential")} /* focus-visible:ring-2 */
                   className={cn(
-                    "h-7 px-3 py-1 text-xs rounded-md font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "h-7 px-3 py-1 text-xs rounded-md font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0",
                     signingOrder === "sequential"
                       ? "bg-card text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -790,7 +790,7 @@ function NovoContratoPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => removeSigner(index)} /* focus-visible:ring-2 */
-                        className="text-muted-foreground hover:text-destructive size-7 rounded-md hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="text-muted-foreground hover:text-destructive size-7 rounded-md hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                         title="Remover signatário"
                       >
                         <Trash2 className="size-4" />
@@ -862,7 +862,7 @@ function NovoContratoPage() {
                 variant="outline"
                 size="sm"
                 onClick={addSigner} /* focus-visible:ring-2 */
-                className="w-full h-10 rounded-lg text-xs font-semibold border-dashed focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full h-10 rounded-lg text-xs font-semibold border-dashed focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
               >
                 <Plus className="size-3.5 mr-2" />
                 Adicionar Signatário
@@ -1012,7 +1012,7 @@ function NovoContratoPage() {
                         size="icon"
                         onClick={() => setPreviewDevice("mobile")} /* focus-visible:ring-2 */
                         className={cn(
-                          "size-7 p-1 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "size-7 p-1 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                           previewDevice === "mobile"
                             ? "bg-primary text-primary-foreground"
                             : "text-muted-foreground hover:text-foreground"
@@ -1027,7 +1027,7 @@ function NovoContratoPage() {
                         size="icon"
                         onClick={() => setPreviewDevice("desktop")} /* focus-visible:ring-2 */
                         className={cn(
-                          "size-7 p-1 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "size-7 p-1 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                           previewDevice === "desktop"
                             ? "bg-primary text-primary-foreground"
                             : "text-muted-foreground hover:text-foreground"

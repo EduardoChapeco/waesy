@@ -364,7 +364,7 @@ function AdminResourcesPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => applyPreset("weekdays")}
-                    className="text-xs h-7 rounded-lg px-2"
+                    className="text-xs h-7 rounded-lg px-2 min-h-11 sm:min-h-0"
                   >
                     Seg-Sex
                   </Button>
@@ -373,7 +373,7 @@ function AdminResourcesPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => applyPreset("allweek")}
-                    className="text-xs h-7 rounded-lg px-2"
+                    className="text-xs h-7 rounded-lg px-2 min-h-11 sm:min-h-0"
                   >
                     Todos
                   </Button>
@@ -390,7 +390,7 @@ function AdminResourcesPage() {
                       key={d.id}
                       className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/20 text-xs"
                     >
-                      <label className="flex items-center gap-2 font-medium cursor-pointer select-none min-w-[130px]">
+                      <label className="flex items-center gap-2 font-medium cursor-pointer select-none min-w-33">
                         <input
                           type="checkbox"
                           checked={isChecked}

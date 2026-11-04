@@ -18,9 +18,9 @@ function testResolveAnimationClasses(designTokens?: Record<string, any>, layoutR
  }
 
  if (anim.hover === "lift") {
- classes.push("hover:-translate-y-1.5 hover:shadow-xl transition-transform duration-200 duration-300");
+ classes.push("hover:-translate-y-1.5 hover:shadow-overlay transition-transform duration-200 duration-300");
  } else if (anim.hover === "glow") {
- classes.push("hover:ring-2 hover:ring-primary/40 hover:shadow-lg transition-colors duration-200 duration-300");
+ classes.push("hover:ring-2 hover:ring-primary/40 hover:shadow-overlay transition-colors duration-200 duration-300");
  }
 
  return classes.join(" ");
@@ -51,7 +51,7 @@ describe('[FASE 7 AUDIT] Wix Studio Standard Animation Engine & Builder Inspecto
  animation: { trigger: "fade_up", hover: "lift" }
  });
  expect(liftHoverClasses).toContain("hover:-translate-y-1.5");
- expect(liftHoverClasses).toContain("hover:shadow-xl");
+ expect(liftHoverClasses).toContain("hover:shadow-overlay");
 
  const glowHoverClasses = testResolveAnimationClasses({
  animation: { trigger: "parallax", hover: "glow" }

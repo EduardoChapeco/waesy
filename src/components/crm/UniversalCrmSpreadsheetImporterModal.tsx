@@ -135,9 +135,9 @@ export function UniversalCrmSpreadsheetImporterModal({
           {/* Bloco 1: Sincronização Direta InfoTravel com Bloqueio Estrito se Não Configurado */}
           <div className="space-y-3">
             {!isInfotravelConfigured && (
-              <div className="p-4 rounded-lg border border-amber-500/40 bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-4 rounded-lg border border-warning/40 bg-warning/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-1" />
+                  <AlertTriangle className="size-4 text-warning-strong shrink-0 mt-1" />
                   <div className="space-y-1">
                     <span className="font-bold text-foreground block">
                       Integração InfoTravel Inativa (Zero Dados Fakes)
@@ -150,7 +150,7 @@ export function UniversalCrmSpreadsheetImporterModal({
                 <Link
                   to="/workspace/configuracoes/integracoes"
                   onClick={() => onOpenChange(false)}
-                  className="h-11 min-h-11 px-4 rounded-lg border border-amber-500/50 bg-background hover:bg-muted text-foreground font-bold flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-11 min-h-11 px-4 rounded-lg border border-warning/50 bg-background hover:bg-muted text-foreground font-bold flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Settings className="size-4 text-primary" />
                   <span>Configurar Chave no Hub de Integrações</span>

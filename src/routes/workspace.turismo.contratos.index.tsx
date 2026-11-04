@@ -191,7 +191,7 @@ export default function WorkspaceContractsIndexPage() {
                         className={`text-xs font-bold uppercase tracking-wider ${
                           isSigned
                             ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-amber-600 dark:text-amber-400"
+                            : "text-warning-strong "
                         }`}
                       >
                         {isSigned ? "Assinado" : "Pendente"}

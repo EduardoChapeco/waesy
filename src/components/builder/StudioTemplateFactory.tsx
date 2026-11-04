@@ -290,7 +290,7 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
                 <h3 className="text-xs font-semibold">Meus drafts salvos</h3>
               {isLoadingLibrary && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none text-muted-foreground" />}
               </div>
-              {libraryMessage && <p role="status" className="text-xs text-amber-700 dark:text-amber-300">{libraryMessage}</p>}
+              {libraryMessage && <p role="status" className="text-xs text-warning-strong ">{libraryMessage}</p>}
               {library.length === 0 && !isLoadingLibrary ? <p className="text-xs text-muted-foreground">Nenhum draft salvo nesta loja ainda.</p> : null}
               <div className="max-h-48 space-y-1 overflow-y-auto">
                 {library.map((item) => (

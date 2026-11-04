@@ -606,7 +606,7 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
         nicho: "pet",
         label: "Pet Shop",
         emoji: "",
-        color: "from-amber-600 to-orange-600",
+        color: "from-warning to-orange-600",
         to: "/pet",
       },
       {
@@ -620,7 +620,7 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
         nicho: "bebidas",
         label: "Bebidas e Adega",
         emoji: "",
-        color: "from-yellow-600 to-amber-600",
+        color: "from-warning to-warning",
         to: "/bebidas",
       },
       {

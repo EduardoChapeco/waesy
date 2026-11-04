@@ -169,7 +169,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     onContextChange?.(state);
     toast.success(`Workspace ativo: ${store.name}`);
     setIsOpen(false);
-    window.location.href = "/workspace";
+    window.location.href = `/workspace?storeId=${encodeURIComponent(store.store_id)}`;
   };
 
   // ── 4. Alternar para o Modo Condutor / Waesy Go ──
@@ -231,7 +231,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               ) : currentContextType === "store" ? (
                 <Building2 className="size-4 text-primary" />
               ) : currentContextType === "creator" ? (
-                <Star className="size-4 text-amber-500" />
+                <Star className="size-4 text-warning-strong" />
               ) : (
                 <User className="size-4 text-foreground" />
               )}
@@ -255,7 +255,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               ) : currentContextType === "store" ? (
                 <Building2 className="size-4 text-primary" />
               ) : currentContextType === "creator" ? (
-                <Star className="size-4 text-amber-500" />
+                <Star className="size-4 text-warning-strong" />
               ) : (
                 <User className="size-4 text-foreground" />
               )}
@@ -268,7 +268,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
 
       <DropdownMenuContent
         align="end"
-        className="w-80 p-2 rounded-lg bg-card border border-border/80 shadow-2xl font-sans animate-in fade-in zoom-in-95 duration-100 z-50"
+        className="w-80 p-2 rounded-lg bg-card border border-border/80 shadow-overlay font-sans animate-in fade-in zoom-in-95 duration-100 z-50"
       >
         <div className="px-3 py-2 flex items-center justify-between border-b border-border/40 mb-1">
           <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -342,7 +342,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               </div>
             </div>
             {currentContextType === "civil" && (
-              <Check className="size-4 text-primary shrink-0 stroke-[2.5]" />
+              <Check className="size-4 text-primary shrink-0 stroke-bold" />
             )}
           </DropdownMenuItem>
         </div>
@@ -368,12 +368,12 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                   className={cn(
                     "p-3 rounded-lg cursor-pointer flex items-center justify-between gap-3 transition-colors",
                     isSelected
-                      ? "bg-amber-500/10 text-amber-600 font-bold border border-amber-500/20"
+                      ? "bg-warning/10 text-warning-strong font-bold border border-warning/20"
                       : "hover:bg-muted/60 text-foreground"
                   )}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="size-9 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="size-9 rounded-lg bg-warning/10 text-warning-strong border border-warning/20 flex items-center justify-center shrink-0 overflow-hidden">
                       {persona.avatarUrl ? (
                         <img src={persona.avatarUrl} alt={persona.name} className="size-full object-cover" />
                       ) : (
@@ -385,7 +385,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                         <span className="text-xs font-bold truncate text-foreground">{persona.name}</span>
                         <Badge
                           variant="outline"
-                          className="text-3xs px-1 py-0 font-medium text-amber-600 border-amber-500/30"
+                          className="text-3xs px-1 py-0 font-medium text-warning-strong border-warning/30"
                         >
                           Criador
                         </Badge>
@@ -396,7 +396,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                     </div>
                   </div>
                   {isSelected && (
-                    <Check className="size-4 text-amber-600 shrink-0 stroke-[2.5]" />
+                    <Check className="size-4 text-warning-strong shrink-0 stroke-bold" />
                   )}
                 </DropdownMenuItem>
               );
@@ -450,7 +450,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                     </div>
                   </div>
                   {isSelected && (
-                    <Check className="size-4 text-primary shrink-0 stroke-[2.5]" />
+                    <Check className="size-4 text-primary shrink-0 stroke-bold" />
                   )}
                 </DropdownMenuItem>
               );
@@ -499,7 +499,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               </div>
             </div>
             {currentContextType === "courier" ? (
-              <Check className="size-4 text-emerald-600 shrink-0 stroke-[2.5]" />
+              <Check className="size-4 text-emerald-600 shrink-0 stroke-bold" />
             ) : (
               <ArrowRight className="size-4 text-muted-foreground shrink-0" />
             )}
@@ -530,7 +530,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             }}
             className="p-2 rounded-lg text-xs font-semibold text-muted-foreground hover:bg-muted/60 cursor-pointer flex items-center gap-2"
           >
-            <Star className="size-4 text-amber-500" />
+            <Star className="size-4 text-warning-strong" />
             <span>+ Criar Nova Persona de Criador</span>
           </DropdownMenuItem>
         </div>

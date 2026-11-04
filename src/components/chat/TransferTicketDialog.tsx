@@ -142,7 +142,7 @@ export function TransferTicketDialog({
               required
               className="text-xs rounded-lg resize-none p-3 bg-muted/20"
             />
-            <div className="flex items-center gap-2 text-2xs text-amber-700 dark:text-amber-300">
+            <div className="flex items-center gap-2 text-2xs text-warning-strong ">
               <ShieldAlert className="size-3.5 shrink-0" />
               <span>Esta nota será registrada como nota interna (whisper) e ficará visível apenas para os atendentes.</span>
             </div>

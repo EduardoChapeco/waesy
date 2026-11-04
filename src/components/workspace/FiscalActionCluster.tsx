@@ -163,7 +163,7 @@ export function FiscalActionCluster({
 
   return (
     <>
-      <div className="flex items-center gap-1.5" role="group" aria-label="Ações fiscais individuais">
+      <div className="flex items-center gap-2" role="group" aria-label="Ações fiscais individuais">
         {renderFiscalButton("S", "NFSe", nfse)}
         {renderFiscalButton("P", "NFe", nfe)}
         {renderFiscalButton("C", "NFCe", nfce)}
@@ -182,7 +182,7 @@ export function FiscalActionCluster({
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">Código LC 116 / Serviço</Label>
               <Input
                 value={lc116Code}
@@ -191,7 +191,7 @@ export function FiscalActionCluster({
                 className="h-11"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-medium">CNAE da Atividade</Label>
               <Input
                 value={cnaeCode}

@@ -308,7 +308,7 @@ function WorkspacePromotionsPage() {
                     Crie sua primeira oferta relâmpago para aparecer em destaque na vitrine e atrair mais pedidos.
                   </p>
                 </div>
-                <Button onClick={() => setIsPromoOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
+                <Button onClick={() => setIsPromoOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0">
                   <Plus className="size-3.5 mr-1" />
                   Criar Primeira Promoção
                 </Button>
@@ -323,7 +323,7 @@ function WorkspacePromotionsPage() {
                     <div
                       className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${
                         promo.type === "flash_offer"
-                          ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                          ? "bg-warning/10 text-warning-strong border border-warning/20"
                           : "bg-primary/10 text-primary border border-primary/20"
                       }`}
                     >
@@ -409,7 +409,7 @@ function WorkspacePromotionsPage() {
             <Button
               onClick={() => setIsCouponOpen(true)}
               size="sm"
-              className="gap-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground h-9 px-4 cursor-pointer"
+              className="gap-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground h-9 px-4 cursor-pointer min-h-11 sm:min-h-0"
             >
               <Plus className="size-4" />
               <span>Novo Cupom</span>
@@ -425,7 +425,7 @@ function WorkspacePromotionsPage() {
                   <p className="text-sm font-semibold text-foreground">Nenhum cupom cadastrado</p>
                   <p className="text-xs text-muted-foreground">Crie cupons de desconto fixo, percentual ou frete grátis para sua loja.</p>
                 </div>
-                <Button onClick={() => setIsCouponOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
+                <Button onClick={() => setIsCouponOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0">
                   <Plus className="size-3.5 mr-1" />
                   Criar Primeiro Cupom
                 </Button>

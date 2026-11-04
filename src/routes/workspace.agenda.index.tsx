@@ -98,7 +98,7 @@ function ClinicalRecordDrawer({
  className="h-20 text-xs rounded-lg"
  />
  <Button
- className="w-full h-10 rounded-lg text-xs font-bold"
+ className="w-full h-10 rounded-lg text-xs font-bold min-h-11 sm:min-h-0"
  disabled={!content.trim() || addMutation.isPending}
  onClick={() => addMutation.mutate(content)}
  >
@@ -276,7 +276,7 @@ function AdminAppointmentsPage() {
  case "pending":
  case "confirmed":
  return (
- <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs font-bold">
+ <Badge variant="outline" className="bg-warning/10 text-warning-strong border-warning/20 text-xs font-bold">
  Agendado
  </Badge>
  );
@@ -327,7 +327,7 @@ function AdminAppointmentsPage() {
  size="sm"
  variant={viewMode === "daily" ? "default" : "ghost"}
  onClick={() => setViewMode("daily")}
- className="h-9 px-3 rounded-md text-xs font-bold gap-1.5 cursor-pointer"
+ className="h-9 px-3 rounded-md text-xs font-bold gap-2 cursor-pointer"
  >
  <CalendarIcon className="size-3.5" />
  <span>Diário</span>
@@ -336,7 +336,7 @@ function AdminAppointmentsPage() {
  size="sm"
  variant={viewMode === "heatmap" ? "default" : "ghost"}
  onClick={() => setViewMode("heatmap")}
- className="h-9 px-3 rounded-md text-xs font-bold gap-1.5 cursor-pointer"
+ className="h-9 px-3 rounded-md text-xs font-bold gap-2 cursor-pointer"
  >
  <Clock className="size-3.5" />
  <span>Heatmap</span>
@@ -381,7 +381,7 @@ function AdminAppointmentsPage() {
  <ChevronLeft className="size-4" />
  </Button>
 
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 justify-center py-1">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar flex-1 justify-center py-1">
  {weekDays.map((d, idx) => {
  const isSelected = isSameDay(d, selectedDate);
  const isToday = isSameDay(d, new Date());
@@ -467,7 +467,7 @@ function AdminAppointmentsPage() {
  </p>
  </div>
  ) : (
- <div className="flex-1 overflow-x-auto no-scrollbar pb-4">
+ <div className="flex-1 overflow-x-auto scroll-area-carousel no-scrollbar pb-4">
  <div className="flex gap-4 min-w-max items-start">
  {Object.keys(groupedAppointments).map((resourceName) => (
  <div

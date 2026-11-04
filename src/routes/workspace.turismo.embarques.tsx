@@ -75,7 +75,7 @@ const CATEGORY_COLORS: Record<ChecklistCategory, string> = {
   documentation: 'text-blue-600 bg-blue-500/10',
   health: 'text-emerald-600 bg-emerald-500/10',
   insurance: 'text-violet-600 bg-violet-500/10',
-  financial: 'text-amber-600 bg-amber-500/10',
+  financial: 'text-warning-strong bg-warning/10',
   logistics: 'text-orange-600 bg-orange-500/10',
   communication: 'text-sky-600 bg-sky-500/10',
   airline: 'text-primary bg-indigo-500/10',
@@ -86,7 +86,7 @@ const CATEGORY_COLORS: Record<ChecklistCategory, string> = {
 const STAGE_BAR_COLORS: Record<string, string> = {
   booked: 'bg-blue-500',
   vouchers_ready: 'bg-indigo-500',
-  checkin_48h: 'bg-amber-500',
+  checkin_48h: 'bg-warning',
   traveling: 'bg-emerald-500',
   post_trip: 'bg-purple-500',
 };
@@ -670,7 +670,7 @@ function WorkspaceBoardingPage() {
                               className={`text-xs font-medium px-2 py-1 rounded truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                                 days <= 0 ? 'bg-emerald-500/15 text-emerald-700' :
                                 days <= 2 ? 'bg-red-500/15 text-red-700' :
-                                days <= 7 ? 'bg-amber-500/15 text-amber-700' :
+                                days <= 7 ? 'bg-warning/15 text-warning-strong' :
                                 'bg-primary/10 text-primary'
                               }`}
                             >
@@ -1090,7 +1090,7 @@ function DepartureCard({
   const urgencyClass =
     daysUntil <= 0 ? 'border-emerald-500/40 bg-emerald-500/5' :
     daysUntil <= 2 ? 'border-red-500/40 bg-red-500/5' :
-    daysUntil <= 7 ? 'border-amber-500/30 bg-amber-500/5' :
+    daysUntil <= 7 ? 'border-warning/30 bg-warning/5' :
     'border-border bg-card';
 
   const pct = card.checklist_completed_pct || 0;
@@ -1120,7 +1120,7 @@ function DepartureCard({
         <span className={`text-xs font-mono font-bold px-2 py-1 rounded shrink-0 ${
           daysUntil <= 0 ? 'bg-emerald-500/20 text-emerald-700' :
           daysUntil <= 2 ? 'bg-red-500/20 text-red-700' :
-          daysUntil <= 7 ? 'bg-amber-500/20 text-amber-700' :
+          daysUntil <= 7 ? 'bg-warning/20 text-warning-strong' :
           'bg-muted text-muted-foreground'
         }`}>
           {daysUntil <= 0 ? ' Hoje/Passado' : `em ${daysUntil}d`}
@@ -1145,11 +1145,11 @@ function DepartureCard({
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Checklist</span>
-              <span className={pct === 100 ? 'text-emerald-600 font-semibold' : pct < 50 ? 'text-red-600 font-semibold' : 'text-amber-600 font-semibold'}>{pct}%</span>
+              <span className={pct === 100 ? 'text-emerald-600 font-semibold' : pct < 50 ? 'text-red-600 font-semibold' : 'text-warning-strong font-semibold'}>{pct}%</span>
             </div>
             <div className="h-1 bg-muted rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full ${pct === 100 ? 'bg-emerald-500' : pct < 50 ? 'bg-red-500' : 'bg-amber-500'}`}
+                className={`h-full rounded-full ${pct === 100 ? 'bg-emerald-500' : pct < 50 ? 'bg-red-500' : 'bg-warning'}`}
                 style={{ width: `${pct}%` }}
               />
             </div>

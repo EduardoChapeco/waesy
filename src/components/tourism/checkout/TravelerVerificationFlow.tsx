@@ -196,8 +196,8 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
       </div>
 
       {/* Alerta Preventivo de Multas ANAC */}
-      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 flex items-start gap-2">
-        <AlertTriangle className="size-4 shrink-0 mt-1 text-amber-600" />
+      <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  flex items-start gap-2">
+        <AlertTriangle className="size-4 shrink-0 mt-1 text-warning-strong" />
         <div className="space-y-1">
           <span className="font-bold block">
             Atenção: Grafia do Nome para Embarque IATA / ANAC

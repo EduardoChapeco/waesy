@@ -132,7 +132,7 @@ function DriverDirectPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-lg bg-muted/40 text-center">
           <div>
             <div className="flex items-center justify-center gap-1 font-bold text-sm text-foreground font-mono">
-              <Star className="size-4 fill-amber-400 text-amber-400" />
+              <Star className="size-4 fill-warning text-warning-strong" />
               <span>{courier.rating.toFixed(1)}</span>
             </div>
             <span className="text-xs text-muted-foreground">Avaliação</span>
@@ -205,7 +205,7 @@ function DriverDirectPage() {
                       <Star
                         key={i}
                         className={`size-4 ${
-                          i < rev.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
+                          i < rev.rating ? "fill-warning text-warning-strong" : "text-muted-foreground/30"
                         }`}
                       />
                     ))}

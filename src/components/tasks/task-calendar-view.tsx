@@ -122,7 +122,7 @@ export function TaskCalendarView({
  }, [tasks]);
 
  return (
- <div className="flex flex-col h-full bg-card rounded-lg border border-border/70 overflow-hidden shadow-sm">
+ <div className="flex flex-col h-full bg-card rounded-lg border border-border/70 overflow-hidden ">
  {/* Barra de Controles do Calendário */}
  <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-muted/20">
  <div className="flex items-center gap-3">
@@ -136,7 +136,7 @@ export function TaskCalendarView({
  variant="outline"
  size="sm"
  onClick={handleToday}
- className="h-8 px-3 text-xs rounded-lg cursor-pointer ml-2"
+ className="h-8 px-3 text-xs rounded-lg cursor-pointer ml-2 min-h-11 sm:min-h-0"
  >
  Hoje
  </Button>
@@ -147,7 +147,7 @@ export function TaskCalendarView({
  variant="ghost"
  size="sm"
  onClick={handlePrevMonth}
- className="size-8 p-0 rounded-lg cursor-pointer"
+ className="size-8 p-0 rounded-lg cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Mês anterior"
  >
  <ChevronLeft className="size-4" />
@@ -156,7 +156,7 @@ export function TaskCalendarView({
  variant="ghost"
  size="sm"
  onClick={handleNextMonth}
- className="size-8 p-0 rounded-lg cursor-pointer"
+ className="size-8 p-0 rounded-lg cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Próximo mês"
  >
  <ChevronRight className="size-4" />
@@ -174,7 +174,7 @@ export function TaskCalendarView({
  </div>
 
  {/* Grade de Células de Dias */}
- <div className="grid sm:grid-cols-7 flex-1 auto-rows-fr divide-x divide-y divide-border/50 overflow-y-auto no-scrollbar min-h-[550px]">
+ <div className="grid sm:grid-cols-7 flex-1 auto-rows-fr divide-x divide-y divide-border/50 overflow-y-auto no-scrollbar min-h-138">
  {calendarDays.map((cell) => {
  const dayTasks = tasksByDate.get(cell.dateStr) || [];
  const dayNumber = cell.date.getDate();
@@ -183,7 +183,7 @@ export function TaskCalendarView({
  <div
  key={cell.dateStr}
  className={cn(
- "min-h-[110px] p-2 flex flex-col transition-colors group relative",
+ "min-h-28 p-2 flex flex-col transition-colors group relative",
  !cell.isCurrentMonth && "bg-muted/10 text-muted-foreground/50 opacity-60",
  cell.isToday && "bg-primary/5",
  "hover:bg-muted/20"
@@ -206,7 +206,7 @@ export function TaskCalendarView({
  <button
  type="button"
  onClick={() => onAddTaskOnDate(cell.dateStr)}
- className="size-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-muted text-muted-foreground hover:text-foreground transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-muted text-muted-foreground hover:text-foreground transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title={`Criar tarefa para ${cell.dateStr}`}
  >
  <Plus className="size-3" />
@@ -229,7 +229,7 @@ export function TaskCalendarView({
  : task.priority === "urgent"
  ? "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30 hover:bg-rose-500/20"
  : task.priority === "high"
- ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
+ ? "bg-warning/10 text-warning-strong  border-warning/30 hover:bg-warning/20"
  : "bg-background text-foreground border-border hover:border-primary/40"
  )}
  title={`${task.title} (${task.priority})`}
@@ -243,7 +243,7 @@ export function TaskCalendarView({
  <span className="truncate flex-1">{task.title}</span>
 
  {task.is_my_day && (
- <Star className="size-2.5 text-amber-500 fill-amber-500 shrink-0" />
+ <Star className="size-2.5 text-warning-strong fill-warning shrink-0" />
  )}
  {task.recurrence && task.recurrence !== "none" && (
  <Repeat className="size-2.5 text-purple-500 shrink-0" />

@@ -163,7 +163,7 @@ export function SignaturePositionerCanvas({
             type="button"
             variant="outline"
             size="sm"
-            className="h-8 px-3 rounded-lg text-xs"
+            className="h-8 px-3 rounded-lg text-xs min-h-11 sm:min-h-0"
             disabled={currentPage <= 1}
             onClick={() => onPageChange(currentPage - 1)}
           >
@@ -176,7 +176,7 @@ export function SignaturePositionerCanvas({
             type="button"
             variant="outline"
             size="sm"
-            className="h-8 px-3 rounded-lg text-xs"
+            className="h-8 px-3 rounded-lg text-xs min-h-11 sm:min-h-0"
             disabled={currentPage >= pageCount}
             onClick={() => onPageChange(currentPage + 1)}
           >
@@ -239,7 +239,7 @@ export function SignaturePositionerCanvas({
                     type="button"
                     disabled={readOnly}
                     onClick={() => handleAddTag(tag.type)}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-border/80 bg-card hover:bg-muted/60 transition-colors duration-200 text-left text-xs sm:text-sm font-semibold text-foreground hover:border-primary/40 active:scale-[0.98] min-h-11 cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border/80 bg-card hover:bg-muted/60 transition-colors duration-200 text-left text-xs sm:text-sm font-semibold text-foreground hover:border-primary/40 active:scale-98 min-h-11 cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Icon className="size-4 text-primary shrink-0" />
                     <span className="truncate">{tag.label}</span>
@@ -265,7 +265,7 @@ export function SignaturePositionerCanvas({
           {/* Folha A4 Representativa */}
           <div
             ref={containerRef}
-            className="relative w-full max-w-[700px] aspect-[1/1.414] bg-card text-card-foreground rounded-lg shadow-md border border-border/80 p-8 flex flex-col justify-between overflow-hidden"
+            className="relative w-full max-w-175 aspect-[1/1.414] bg-card text-card-foreground rounded-lg  border border-border/80 p-8 flex flex-col justify-between overflow-hidden"
           >
             {/* Header Simulado da Página */}
             <div className="border-b border-border/40 pb-3 flex items-center justify-between text-2xs text-muted-foreground">
@@ -313,7 +313,7 @@ export function SignaturePositionerCanvas({
                     borderColor: signer.colorCode || "#2563eb",
                   }}
                   className={`absolute border-2 rounded-lg flex items-center justify-between px-2 cursor-move transition-colors duration-200 bg-card/95 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    isSelected ? "ring-2 ring-primary/40 shadow-md" : "hover:border-primary"
+                    isSelected ? "ring-2 ring-primary/40 " : "hover:border-primary"
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -360,7 +360,7 @@ export function SignaturePositionerCanvas({
               variant="outline"
               size="sm"
               onClick={onChangeFile}
-              className="h-10 px-4 rounded-lg text-xs"
+              className="h-10 px-4 rounded-lg text-xs min-h-11 sm:min-h-0"
             >
               <RefreshCw className="size-3.5 mr-2" />
               Trocar arquivo
@@ -372,7 +372,7 @@ export function SignaturePositionerCanvas({
               variant="outline"
               size="sm"
               onClick={onMergeFile}
-              className="h-10 px-4 rounded-lg text-xs"
+              className="h-10 px-4 rounded-lg text-xs min-h-11 sm:min-h-0"
             >
               <Layers className="size-3.5 mr-2" />
               Mesclar arquivo
@@ -433,7 +433,7 @@ export function SignaturePositionerCanvas({
               variant="outline"
               size="sm"
               onClick={() => setRepeatModalOpen(false)}
-              className="rounded-lg text-xs h-10"
+              className="rounded-lg text-xs h-10 min-h-11 sm:min-h-0"
             >
               Cancelar
             </Button>
@@ -441,7 +441,7 @@ export function SignaturePositionerCanvas({
               type="button"
               size="sm"
               onClick={applyRepeatModal}
-              className="rounded-lg text-xs h-10 font-semibold"
+              className="rounded-lg text-xs h-10 font-semibold min-h-11 sm:min-h-0"
             >
               Aplicar
             </Button>

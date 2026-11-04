@@ -114,13 +114,13 @@ function AdminSimLabsPage() {
           <p className="text-2xs text-muted-foreground">Workspace: {storeId ? "ativo" : "não identificado"}</p>
         </header>
 
-        <nav className="flex gap-2 overflow-x-auto border-b border-border/60 pb-3">
+        <nav className="flex gap-2 overflow-x-auto scroll-area-carousel border-b border-border/60 pb-3">
           {([
             ["sessions", `Histórico (${sessions.length})`, ChartBar],
             ["personas", `Perfis (${personas.length})`, Users],
             ["new_sim", "Nova exploração", Play],
           ] as const).map(([tab, label, Icon]) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`h-10 shrink-0 rounded-lg px-4 text-xs font-semibold ${activeTab === tab ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}>
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`h-10 shrink-0 rounded-lg px-4 text-xs font-semibold ${activeTab === tab ? "bg-primary text-primary-foreground" : "bg-muted/40 text-muted-foreground"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}>
               <Icon className="mr-2 inline size-4" />{label}
             </button>
           ))}
@@ -134,7 +134,7 @@ function AdminSimLabsPage() {
                   <div><Badge variant="outline">{session.evidence_level === "exploratory_synthetic" ? "Exploração sintética" : "Legado · origem não verificada"}</Badge><h2 className="mt-2 text-sm font-bold">{session.title}</h2><p className="text-xs text-muted-foreground">{session.objective}</p></div>
                   <Badge variant={session.status === "completed" ? "secondary" : "outline"}>{session.status}</Badge>
                 </div>
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">{session.summary_insight}</div>
+                <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-xs text-muted-foreground">{session.summary_insight}</div>
                 {session.execution_results?.length > 0 && <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{session.execution_results.map((item: any, index: number) => <div key={index} className="rounded-lg border border-border/60 p-3 space-y-2"><div className="flex items-center justify-between gap-2"><strong className="text-xs">{item.persona_name}</strong><Badge variant="outline" className="text-2xs">{item.response_origin === "llm_synthetic" ? "IA · sintético" : "origem desconhecida"}</Badge></div><p className="text-xs text-muted-foreground">{item.feedback}</p></div>)}</div>}
               </article>
             ))}
@@ -171,7 +171,7 @@ function AdminSimLabsPage() {
               <div className="space-y-2"><label className="text-xs font-semibold">Hipótese, descrição e contexto</label><textarea value={objective} onChange={(event) => setObjective(event.target.value)} rows={4} required maxLength={4000} className="w-full rounded-lg border border-input bg-background p-3 text-xs" placeholder="Descreva o produto, a mensagem, a região pretendida e o que deseja explorar qualitativamente." /></div>
               <Field label="Perfis curados a consultar (não é amostra probabilística)"><select value={personasCount} onChange={(event) => setPersonasCount(event.target.value)}>{[3, 5, 10, 12, 20, 50].map((count) => <option key={count} value={count}>{count} perfis sintéticos</option>)}</select></Field>
               <Button type="submit" disabled={isPending || !storeId} className="gap-2"><Play className="size-4" />{isPending ? "Gerando reações…" : "Executar exploração"}</Button>
-              {!storeId && <p className="flex items-center gap-2 text-xs text-amber-600"><AlertTriangle className="size-4" />Sem workspace ativo; execução desabilitada.</p>}
+              {!storeId && <p className="flex items-center gap-2 text-xs text-warning-strong"><AlertTriangle className="size-4" />Sem workspace ativo; execução desabilitada.</p>}
             </form>
           </section>
         )}

@@ -214,7 +214,7 @@ export function ProductModifiersModal({
  : "border-border bg-background"
  }`}
  >
- {isSelected && <Check className="size-3.5 stroke-[3]" />}
+ {isSelected && <Check className="size-3.5 stroke-3" />}
  </span>
  <span className="font-medium text-sm text-foreground">{mod.title}</span>
  </span>
@@ -245,7 +245,7 @@ export function ProductModifiersModal({
  onChange={(e) => setNotes(e.target.value)}
  placeholder={semantics.modifierNotesPlaceholder}
  rows={3}
- className="rounded-lg text-sm bg-background resize-none min-h-[80px]"
+ className="rounded-lg text-sm bg-background resize-none min-h-20"
  />
  </div>
  </div>

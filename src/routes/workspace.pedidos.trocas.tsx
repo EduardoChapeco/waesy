@@ -61,7 +61,7 @@ function getExchangeChannelBadge(channel?: string) {
   switch (channel) {
     case "mercadolivre":
       return (
-        <Badge variant="outline" className="text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
+        <Badge variant="outline" className="text-xs font-medium bg-warning/10 text-warning-strong  border-warning/30">
           Mercado Livre
         </Badge>
       );
@@ -450,7 +450,7 @@ function ExchangesDashboardPage() {
             <Button
               size="sm"
               variant="default"
-              className="rounded-lg h-8 text-xs font-semibold cursor-pointer"
+              className="rounded-lg h-8 text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
               onClick={() => handleUpdateStatus(exchange.id, "approved")}
               disabled={processingId === exchange.id}
             >
@@ -459,7 +459,7 @@ function ExchangesDashboardPage() {
             <Button
               size="sm"
               variant="outline"
-              className="rounded-lg h-8 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+              className="rounded-lg h-8 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0"
               onClick={() => handleUpdateStatus(exchange.id, "rejected")}
               disabled={processingId === exchange.id}
             >
@@ -471,7 +471,7 @@ function ExchangesDashboardPage() {
           <Button
             size="sm"
             variant="outline"
-            className="rounded-lg h-8 text-xs font-semibold bg-emerald-600 text-foreground hover:bg-emerald-700 cursor-pointer"
+            className="rounded-lg h-8 text-xs font-semibold bg-emerald-600 text-foreground hover:bg-emerald-700 cursor-pointer min-h-11 sm:min-h-0"
             onClick={() => setResolvingExchange(exchange)}
             disabled={processingId === exchange.id}
           >
@@ -523,9 +523,9 @@ function ExchangesDashboardPage() {
 
       {/* ── ALERTA DE SOLICITAÇÕES PENDENTES ── */}
       {kpis.pendingCount > 0 && (
-        <div className="flex items-center justify-between p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-warning/10 border border-warning/30 text-warning-strong  text-xs">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="size-4 shrink-0 text-amber-600" />
+            <AlertTriangle className="size-4 shrink-0 text-warning-strong" />
             <span>
               <strong>Atenção operacional:</strong> Você possui <strong>{kpis.pendingCount} solicitação(ões) de troca/devolução</strong> aguardando análise de recebimento ou resolução.
             </span>
@@ -550,10 +550,10 @@ function ExchangesDashboardPage() {
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Clock className="size-3.5 text-amber-500" />
+            <Clock className="size-3.5 text-warning-strong" />
             Em Triagem / Pendentes
           </span>
-          <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-2xl font-mono font-bold text-warning-strong ">
             {kpis.pendingCount}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
@@ -663,7 +663,7 @@ function ExchangesDashboardPage() {
           </Table>
         </div>
       ) : (
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 items-start min-h-128">
+        <div className="flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-4 items-start min-h-128">
           {KANBAN_COLUMNS.map((col) => {
             const columnExchanges = filteredExchanges.filter((r: any) => r.status === col.id);
             return (

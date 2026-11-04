@@ -341,7 +341,7 @@ function CustomerTripsPage() {
 
       {/* ── 2B. Régua de Abas Horizontal Contínua (Invariante B.39) ── */}
       {hasAnyItem && (
-        <div className="flex flex-nowrap overflow-x-auto no-scrollbar gap-2 border-b border-border/50 pb-2">
+        <div className="flex flex-nowrap overflow-x-auto scroll-area-carousel no-scrollbar gap-2 border-b border-border/50 pb-2">
           <button
             type="button"
             onClick={() => setActiveTab("all")}

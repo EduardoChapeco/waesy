@@ -15,7 +15,7 @@ describe("Community Feed Experience Suite", () => {
   it("RichPostContent renderiza marca-texto cromático (amarelo padrão e cores específicas)", () => {
     const html1 = renderToStaticMarkup(<RichPostContent content="Este é um ==texto destacado==" />);
     expect(html1).toContain("texto destacado");
-    expect(html1).toContain("bg-amber-300");
+    expect(html1).toContain("bg-warning/30");
 
     const html2 = renderToStaticMarkup(<RichPostContent content="Novidade ==cyan:estilo moderno== na área" />);
     expect(html2).toContain("estilo moderno");

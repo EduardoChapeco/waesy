@@ -121,7 +121,7 @@ export function TaskDetailSheet({
         className={cn(
           "overflow-y-auto bg-card text-card-foreground border-border/70 p-6 flex flex-col gap-6",
           side === "bottom"
-            ? "max-h-dvh sm:max-h-4/5 rounded-t-lg border-t shadow-2xl"
+            ? "max-h-dvh sm:max-h-4/5 rounded-t-lg border-t shadow-overlay"
             : "sm:max-w-xl border-l"
         )}
       >

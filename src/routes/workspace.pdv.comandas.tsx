@@ -58,9 +58,9 @@ const STATUS_CONFIG: Record<
  awaiting_payment: {
  label: "Conta Solicitada",
  badgeVariant: "secondary",
- cardClass: "border-amber-500/50 bg-amber-500/10 hover:border-amber-500/80 animate-pulse motion-reduce:animate-none",
- textClass: "text-amber-700 dark:text-amber-400",
- dotClass: "bg-amber-500",
+ cardClass: "border-warning/50 bg-warning/10 hover:border-warning/80 animate-pulse motion-reduce:animate-none",
+ textClass: "text-warning-strong ",
+ dotClass: "bg-warning",
  },
  delayed: {
  label: "Atraso (>40m)",
@@ -212,7 +212,7 @@ function PdvComandasPage() {
  <Button
  size="sm"
  variant={activeView === "grid" ? "default" : "ghost"}
- className="h-7 px-3 text-xs font-semibold rounded-lg gap-2"
+ className="h-7 px-3 text-xs font-semibold rounded-lg gap-2 min-h-11 sm:min-h-0"
  onClick={() => setActiveView("grid")}
  >
  <LayoutGrid className="size-3.5" />
@@ -221,7 +221,7 @@ function PdvComandasPage() {
  <Button
  size="sm"
  variant={activeView === "list" ? "default" : "ghost"}
- className="h-7 px-3 text-xs font-semibold rounded-lg gap-2"
+ className="h-7 px-3 text-xs font-semibold rounded-lg gap-2 min-h-11 sm:min-h-0"
  onClick={() => setActiveView("list")}
  >
  <ListFilter className="size-3.5" />
@@ -232,7 +232,7 @@ function PdvComandasPage() {
  <Button
  variant="outline"
  size="sm"
- className="h-9 gap-2 rounded-lg border-border/80 bg-card hover:bg-muted font-bold text-xs shadow-2xs cursor-pointer"
+ className="h-9 gap-2 rounded-lg border-border/80 bg-card hover:bg-muted font-bold text-xs shadow-2xs cursor-pointer min-h-11 sm:min-h-0"
  onClick={() => setQrModalOpen(true)}
  >
  <QrCode className="size-4 text-primary" />
@@ -266,11 +266,11 @@ function PdvComandasPage() {
  <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Pediram Conta</span>
- <p className="text-xl font-black text-amber-600 dark:text-amber-400">
+ <p className="text-xl font-black text-warning-strong ">
  {summary?.awaiting_payment_count || 0}
  </p>
  </div>
- <div className="size-2.5 rounded-full bg-amber-500 ring-4 ring-amber-500/20" />
+ <div className="size-2.5 rounded-full bg-warning ring-4 ring-warning/20" />
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
@@ -308,7 +308,7 @@ function PdvComandasPage() {
  type="button"
  onClick={() => handleTableClick(table)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "relative flex flex-col justify-between p-4 sm:p-4 rounded-lg border text-left transition-colors duration-200 cursor-pointer min-h-[120px] select-none group active:scale-98",
+ "relative flex flex-col justify-between p-4 sm:p-4 rounded-lg border text-left transition-colors duration-200 cursor-pointer min-h-30 select-none group active:scale-98",
  config.cardClass,
  )}
  >
@@ -532,7 +532,7 @@ function PdvComandasPage() {
                   {selectedTable.status !== "awaiting_payment" && (
                     <Button
                       variant="outline"
-                      className="w-full font-bold text-xs h-11 rounded-lg text-amber-600 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+                      className="w-full font-bold text-xs h-11 rounded-lg text-warning-strong border-warning/30 hover:bg-warning/10 cursor-pointer"
                       onClick={() => requestBillMutation.mutate(selectedTable.table_number)}
                       disabled={requestBillMutation.isPending}
                     >
@@ -606,7 +606,7 @@ function PdvComandasPage() {
  </div>
 
  <Button
- className="w-full font-bold text-xs h-10 rounded-lg"
+ className="w-full font-bold text-xs h-10 rounded-lg min-h-11 sm:min-h-0"
  onClick={() => openTableMutation.mutate(selectedTable.table_number)}
  >
  Acomodar Cliente e Iniciar Comanda
@@ -757,7 +757,7 @@ function PdvComandasPage() {
  type="button"
  size="sm"
  variant={qrTableNumber === num ? "default" : "outline"}
- className="h-7 px-2 text-xs font-mono rounded-lg"
+ className="h-7 px-2 text-xs font-mono rounded-lg min-h-11 sm:min-h-0"
  onClick={() => setQrTableNumber(num)}
  >
  {num}
@@ -860,7 +860,7 @@ function PdvComandasPage() {
  <Button
  variant="outline"
  size="sm"
- className="gap-2 text-xs font-bold rounded-lg h-10 px-4"
+ className="gap-2 text-xs font-bold rounded-lg h-10 px-4 min-h-11 sm:min-h-0"
  onClick={() => {
  const link = document.createElement("a");
  link.href = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(publicMenuTableUrl)}`;
@@ -875,7 +875,7 @@ function PdvComandasPage() {
  </Button>
  <Button
  size="sm"
- className="gap-2 text-xs font-bold rounded-lg h-10 px-4"
+ className="gap-2 text-xs font-bold rounded-lg h-10 px-4 min-h-11 sm:min-h-0"
  onClick={() => window.print()}
  >
  <Printer className="size-3.5" />

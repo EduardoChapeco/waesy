@@ -833,7 +833,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                           onClick={() => setCancelTargetRowId(row.id)}
                           className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-1 cursor-pointer"
                         >
-                          <Calculator className="size-3.5 text-amber-600" />
+                          <Calculator className="size-3.5 text-warning-strong" />
                           <span>Multa / Crédito / Cancelar</span>
                         </Button>
                         <Button
@@ -861,7 +861,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
 
       {/* ── 2. SIMULADOR DE CANCELAMENTO, MULTA CONTRATUAL, CARTA DE CRÉDITO & PROTEÇÃO DE COMISSÃO ── */}
       {activeCancelRow && cancelSimulation && (
-        <div className="p-5 rounded-lg border border-amber-500/40 bg-amber-500/5 space-y-4">
+        <div className="p-5 rounded-lg border border-warning/40 bg-warning/5 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <Badge variant="secondary" className="text-xs font-bold">
@@ -1003,7 +1003,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
             </div>
             <div className="p-3 rounded-lg bg-card border border-border">
               <span className="text-xs text-muted-foreground block">Status do Financiamento</span>
-              <strong className="text-xs font-bold text-amber-600 dark:text-amber-400 block mt-1">
+              <strong className="text-xs font-bold text-warning-strong  block mt-1">
                 {cancelSimulation.clientMustKeepPayingFinancing
                   ? "OBRIGAÇÃO ATIVA: Cliente continua pagando o financiamento"
                   : "Quitado / Conciliado"}

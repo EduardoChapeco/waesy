@@ -116,7 +116,7 @@ export function ResumeAnalysisCard({
                 {c.passed ? (
                   <CheckCircle2 className="size-4 text-emerald-500 shrink-0 mt-1" />
                 ) : (
-                  <AlertCircle className="size-4 text-amber-500 shrink-0 mt-1" />
+                  <AlertCircle className="size-4 text-warning-strong shrink-0 mt-1" />
                 )}
                 <div>
                   <span className={c.passed ? "font-semibold text-foreground" : "font-medium text-muted-foreground"}>
@@ -160,7 +160,7 @@ export function ResumeAnalysisCard({
             {isAtsFriendly ? (
               <CheckCircle2 className="size-4 text-emerald-500" />
             ) : (
-              <AlertCircle className="size-4 text-amber-500" />
+              <AlertCircle className="size-4 text-warning-strong" />
             )}
             <span>
               {isAtsFriendly ? "Template Linear / ATS Ativo" : "Template Visual Multicoluna"}

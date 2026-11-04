@@ -483,7 +483,7 @@ export function HomeMobileNativeApp({
         <div
           role="tablist"
           aria-label="Modo de descoberta"
-          className="grid grid-cols-3 w-full bg-muted/50 p-1 rounded-xl"
+          className="flex items-center w-full bg-muted/50 p-1 rounded-xl"
         >
           {(
             [
@@ -501,7 +501,7 @@ export function HomeMobileNativeApp({
                 aria-selected={active}
                 onClick={() => handleSelectPillar(tab.id)}
                 className={cn(
-                  "w-full h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center justify-center transition-all truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "w-full h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center justify-center transition truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   active
                     ? "bg-background text-foreground font-bold shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
@@ -1012,7 +1012,7 @@ export function HomeMobileNativeApp({
                     <div className="px-4 py-2 flex items-center justify-between gap-2 border-t border-border/40 mt-auto min-h-12">
                       <div className="flex items-center gap-1 text-xs">
                         {item.rating && item.reviews_count > 0 ? (
-                          <div className="flex items-center gap-1 font-bold text-amber-500 font-mono">
+                          <div className="flex items-center gap-1 font-bold text-warning-strong font-mono">
                             <Star size={13} weight="fill" />
                             <span>{Number(item.rating).toFixed(1)}</span>
                             <span className="text-muted-foreground font-normal">({item.reviews_count})</span>

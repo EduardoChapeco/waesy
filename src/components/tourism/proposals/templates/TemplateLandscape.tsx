@@ -187,7 +187,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             <div>
               <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
                 <div className="flex items-center gap-3">
-                  <Hotel className="w-6 h-6 text-amber-500" />
+                  <Hotel className="w-6 h-6 text-warning-strong" />
                   <h2 className="text-2xl font-black tracking-tight text-foreground">
                     Onde você vai ficar
                   </h2>
@@ -235,7 +235,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                           </div>
                         </div>
                       </div>
-                      <div className="bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700/60 text-center text-xs font-bold text-amber-400 self-start mt-2">
+                      <div className="bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700/60 text-center text-xs font-bold text-warning-strong self-start mt-2">
                         Regime: {h.meal_plan || "Café da Manhã"}
                       </div>
                     </div>
@@ -417,7 +417,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                 {formatCurrency(vm.totals.total, p.currency)}
               </div>
               {p.valid_until && (
-                <span className="text-xs font-bold text-amber-500 block pt-2">
+                <span className="text-xs font-bold text-warning-strong block pt-2">
                   * Tarifa garantida até {formatDate(p.valid_until)}
                 </span>
               )}

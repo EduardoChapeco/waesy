@@ -100,7 +100,7 @@ const STATUS_CONFIG: Record<
   searching: {
     label: "Procurando Parceiro",
     badgeVariant: "secondary",
-    colorClass: "bg-amber-500/10 text-amber-950 dark:text-amber-300 border-amber-500/20",
+    colorClass: "bg-warning/10 text-warning-strong  border-warning/20",
   },
   accepted: {
     label: "Motorista a Caminho",
@@ -430,7 +430,7 @@ function CustomerMobilityDashboardPage() {
       )}
 
       {/* ── 3. NAVEGAÇÃO PRINCIPAL TRIFURCADA (Agora | Agendados | Histórico | Caronas) ── */}
-      <div className="flex items-center gap-2 border-b border-border/60 pb-1 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 border-b border-border/60 pb-1 overflow-x-auto scroll-area-carousel no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveTab("active")}
@@ -636,8 +636,8 @@ function CustomerMobilityDashboardPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs flex items-center gap-3 text-amber-950 dark:text-amber-200">
-                        <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-amber-600 shrink-0" />
+                      <div className="p-4 rounded-lg bg-warning/10 border border-warning/20 text-xs flex items-center gap-3 text-warning-strong ">
+                        <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-warning-strong shrink-0" />
                         <span>Conectando com motoristas parceiros próximos na região...</span>
                       </div>
                     )}
@@ -936,7 +936,7 @@ function CustomerMobilityDashboardPage() {
                               onClick={() => openRating(req)}
                               className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border-border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                             >
-                              <Star className="size-4 mr-2 text-amber-500" />
+                              <Star className="size-4 mr-2 text-warning-strong" />
                               <span>Avaliar</span>
                             </Button>
 

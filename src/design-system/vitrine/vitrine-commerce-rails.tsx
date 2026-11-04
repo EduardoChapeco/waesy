@@ -96,36 +96,66 @@ function mapLiveProductsToShelfItems(
       const rawPrice =
         typeof raw.price_cents === "number"
           ? raw.price_cents
-          : typeof raw.price === "number"
-            ? raw.price
-            : 0;
+          : typeof raw.priceCents === "number"
+            ? raw.priceCents
+            : typeof raw.price === "number"
+              ? raw.price
+              : 0;
       const origPrice =
         typeof raw.compare_at_price_cents === "number"
           ? raw.compare_at_price_cents
-          : typeof raw.original_price_cents === "number"
-            ? raw.original_price_cents
-            : 0;
+          : typeof raw.compare_at_cents === "number"
+            ? raw.compare_at_cents
+            : typeof raw.compareAtCents === "number"
+              ? raw.compareAtCents
+              : typeof raw.original_price_cents === "number"
+                ? raw.original_price_cents
+                : 0;
       const imagesArr = Array.isArray(raw.images) ? raw.images : [];
+      const mediaArr = Array.isArray(raw.media)
+        ? raw.media
+        : Array.isArray(raw.product_media)
+          ? raw.product_media
+          : [];
+      const firstMediaObj =
+        mediaArr[0] && typeof mediaArr[0] === "object"
+          ? (mediaArr[0] as Record<string, unknown>)
+          : null;
       const firstImg =
         typeof imagesArr[0] === "string"
           ? imagesArr[0]
-          : typeof raw.cover_image === "string"
-            ? raw.cover_image
-            : typeof raw.image_url === "string"
-              ? raw.image_url
-              : "";
+          : firstMediaObj && typeof firstMediaObj.url === "string"
+            ? firstMediaObj.url
+            : typeof raw.cover_image === "string"
+              ? raw.cover_image
+              : typeof raw.coverUrl === "string"
+                ? raw.coverUrl
+                : typeof raw.image_url === "string"
+                  ? raw.image_url
+                  : typeof raw.imageUrl === "string"
+                    ? raw.imageUrl
+                    : "";
       const cat =
         typeof raw.category_slug === "string"
           ? raw.category_slug
           : typeof raw.category === "string"
             ? raw.category
             : "";
+      const storeRel =
+        raw.stores && typeof raw.stores === "object" && !Array.isArray(raw.stores)
+          ? (raw.stores as Record<string, unknown>)
+          : null;
+      const resolvedStoreName =
+        (typeof raw.store_name === "string" && raw.store_name) ||
+        (typeof raw.storeName === "string" && raw.storeName) ||
+        (storeRel && typeof storeRel.name === "string" && storeRel.name) ||
+        undefined;
 
       return {
         id,
         title,
         slug,
-        storeName: typeof raw.store_name === "string" ? raw.store_name : undefined,
+        storeName: resolvedStoreName,
         priceCents: rawPrice,
         originalPriceCents: origPrice > rawPrice ? origPrice : undefined,
         badge: typeof raw.mechanic_label === "string" ? raw.mechanic_label : undefined,
@@ -190,6 +220,7 @@ export function VitrineProductShelf({
   const safeViewAllHref = isEditorCanvas ? undefined : resolveSafeLinkHref(viewAllHref);
 
   if (resolvedProducts.length === 0) {
+    if (!isEditorCanvas) return null;
     return (
       <section className={cn("w-full py-4", className)} aria-label={sectionTitle}>
         <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 flex flex-col items-center justify-center text-center gap-2">
@@ -685,6 +716,7 @@ export function VitrineClassifiedsRail({
   const safeViewAllHref = isEditorCanvas ? undefined : resolveSafeLinkHref(viewAllHref);
 
   if (resolvedAds.length === 0) {
+    if (!isEditorCanvas) return null;
     return (
       <section className={cn("w-full py-4", className)} aria-label={sectionTitle}>
         <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 flex flex-col items-center justify-center text-center gap-2">

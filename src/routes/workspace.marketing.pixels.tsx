@@ -140,7 +140,7 @@ export default function WorkspaceMarketingPixelsPage() {
             asChild
             variant="ghost"
             size="sm"
-            className="size-9 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+            className="size-9 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
           >
             <Link to="/workspace/marketing/telemetria">
               <ArrowLeft className="size-4" />
@@ -164,7 +164,7 @@ export default function WorkspaceMarketingPixelsPage() {
             className="rounded-lg text-xs font-semibold gap-2 cursor-pointer"
           >
             <Link to="/workspace/marketing/studio">
-              <Star className="size-3.5 text-amber-500" />
+              <Star className="size-3.5 text-warning-strong" />
               <span>Social Studio</span>
             </Link>
           </Button>
@@ -261,19 +261,19 @@ export default function WorkspaceMarketingPixelsPage() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-              <div className="p-2.5 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
                 <span className="text-muted-foreground">E-mail (SHA-256)</span>
                 <span className="text-emerald-600 font-bold">100%</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
                 <span className="text-muted-foreground">Telefone (E.164)</span>
                 <span className="text-emerald-600 font-bold">100%</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
                 <span className="text-muted-foreground">Client IP & UA</span>
                 <span className="text-emerald-600 font-bold">Ativo</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
                 <span className="text-muted-foreground">Cookies _fbp / _fbc</span>
                 <span className="text-emerald-600 font-bold">Coletado</span>
               </div>
@@ -388,7 +388,7 @@ export default function WorkspaceMarketingPixelsPage() {
             <div className="p-4 rounded-lg bg-muted/20 border border-border/40 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                  <GoogleLogo size={16} weight="bold" className="text-amber-500" />
+                  <GoogleLogo size={16} weight="bold" className="text-warning-strong" />
                   Google Merchant Center (Feed RSS XML)
                 </span>
                 <Badge variant="outline" className="text-xs uppercase font-mono">XML 2.0</Badge>
@@ -403,7 +403,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="h-8 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
+                  className="h-8 px-3 rounded-lg text-xs shrink-0 cursor-pointer min-h-11 sm:min-h-0"
                   onClick={() => {
                     if (config?.store_id) {
                       const url = `${window.location.origin}/api/feed/xml?store=${config.store_id}`;
@@ -420,7 +420,7 @@ export default function WorkspaceMarketingPixelsPage() {
                     type="button"
                     size="sm"
                     variant="ghost"
-                    className="h-8 px-2 rounded-lg text-xs shrink-0 cursor-pointer"
+                    className="h-8 px-2 rounded-lg text-xs shrink-0 cursor-pointer min-h-11 sm:min-h-0"
                     onClick={() => window.open(`/api/feed/xml?store=${config.store_id}`, "_blank")}
                   >
                     <ExternalLink className="size-3.5" />
@@ -447,7 +447,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="h-8 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
+                  className="h-8 px-3 rounded-lg text-xs shrink-0 cursor-pointer min-h-11 sm:min-h-0"
                   onClick={() => {
                     if (config?.store_id) {
                       const url = `${window.location.origin}/api/feed/meta.csv?store=${config.store_id}`;
@@ -464,7 +464,7 @@ export default function WorkspaceMarketingPixelsPage() {
                     type="button"
                     size="sm"
                     variant="ghost"
-                    className="h-8 px-2 rounded-lg text-xs shrink-0 cursor-pointer"
+                    className="h-8 px-2 rounded-lg text-xs shrink-0 cursor-pointer min-h-11 sm:min-h-0"
                     onClick={() => window.open(`/api/feed/meta.csv?store=${config.store_id}`, "_blank")}
                   >
                     <ExternalLink className="size-3.5" />
@@ -605,7 +605,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
+                  className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer min-h-11 sm:min-h-0"
                   onClick={() => {
                     const feedUrl = `${window.location.origin}/api/feed/meta.csv?store=${config?.store_id}`;
                     navigator.clipboard.writeText(feedUrl);
@@ -637,7 +637,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
+                  className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer min-h-11 sm:min-h-0"
                   onClick={() => {
                     const feedUrl = `${window.location.origin}/api/feed/xml?store=${config?.store_id}`;
                     navigator.clipboard.writeText(feedUrl);
@@ -669,7 +669,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
+                  className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer min-h-11 sm:min-h-0"
                   onClick={() => {
                     const mcpUrl = `${window.location.origin}/api/webmcp.json`;
                     navigator.clipboard.writeText(mcpUrl);
@@ -789,7 +789,7 @@ export default function WorkspaceMarketingPixelsPage() {
           <Button
             asChild
             variant="outline"
-            className="rounded-lg text-xs h-10 px-4 cursor-pointer"
+            className="rounded-lg text-xs h-10 px-4 cursor-pointer min-h-11 sm:min-h-0"
           >
             <Link to="/workspace/marketing/telemetria">Voltar</Link>
           </Button>
@@ -797,7 +797,7 @@ export default function WorkspaceMarketingPixelsPage() {
           <Button
             type="submit"
             disabled={isSaving}
-            className="rounded-lg text-xs h-10 px-6 font-bold bg-primary text-primary-foreground cursor-pointer"
+            className="rounded-lg text-xs h-10 px-6 font-bold bg-primary text-primary-foreground cursor-pointer min-h-11 sm:min-h-0"
           >
             {isSaving ? "Salvando..." : "Salvar Configurações"}
           </Button>

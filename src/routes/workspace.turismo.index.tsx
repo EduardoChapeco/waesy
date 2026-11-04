@@ -158,8 +158,8 @@ const TOURISM_STAGES: TourismStageConfig[] = [
   {
     id: "qualified",
     title: "Cotação em Andamento",
-    dotColor: "bg-amber-500",
-    badgeClass: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    dotColor: "bg-warning",
+    badgeClass: "bg-warning/10 text-warning-strong border-warning/20",
     description: "Destino, passageiros e datas alinhados",
   },
   {
@@ -1307,7 +1307,7 @@ export default function WorkspaceTurismoCockpitPage() {
             <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Atenção Check-in</span>
-                <AlertTriangle className="size-3.5 text-amber-600" />
+                <AlertTriangle className="size-3.5 text-warning-strong" />
               </div>
               <div className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-foreground">
                 {documentationAlerts.length}
@@ -1603,7 +1603,7 @@ export default function WorkspaceTurismoCockpitPage() {
           {/* Trilho Horizontal Widescreen Desktop + Coluna Ativa Mobile */}
           {/* design-lint-ignore DL-27 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */}
           {/* design-lint-ignore DL-30 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */}
-          <div className="flex gap-4 overflow-x-auto pb-4 pt-1 items-stretch snap-x snap-mandatory scroll-smooth w-full flex-1 min-h-0 select-none waesy-kanban-strip">
+          <div className="flex gap-4 overflow-x-auto scroll-area-carousel pb-4 pt-1 items-stretch snap-x snap-mandatory scroll-smooth w-full flex-1 min-h-0 select-none waesy-kanban-strip">
             {TOURISM_STAGES.map((stage, stageIndex) => {
               const stageLeads = leadsByStage[stage.id] || [];
               const stageTotalCents = stageLeads.reduce(
@@ -3390,7 +3390,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     onClick={() => setCalculatorLead(selectedLead)}
                     className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
                   >
-                    <Calculator className="size-3.5 text-amber-500" />
+                    <Calculator className="size-3.5 text-warning-strong" />
                     <span>Simular Markup / Comissão</span>
                   </Button>
                 </div>

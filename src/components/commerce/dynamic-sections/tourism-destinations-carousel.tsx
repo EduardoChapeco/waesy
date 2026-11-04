@@ -89,7 +89,7 @@ export function TourismDestinationsCarouselSection({
  )}
  {dest.badge && (
  <div className="absolute top-2.5 left-2.5">
- <Badge className="bg-primary text-primary-foreground text-2xs font-bold shadow-md">
+ <Badge className="bg-primary text-primary-foreground text-2xs font-bold ">
  {dest.badge}
  </Badge>
  </div>
@@ -125,7 +125,7 @@ export function TourismDestinationsCarouselSection({
  size="sm"
  variant="outline"
  onClick={() => onSelectDestination?.(dest)}
- className="h-8 rounded-lg text-2xs font-bold border-border/80 bg-background hover:bg-muted"
+ className="h-8 rounded-lg text-2xs font-bold border-border/80 bg-background hover:bg-muted min-h-11 sm:min-h-0"
  >
  Cotar
  </Button>

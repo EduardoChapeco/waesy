@@ -292,7 +292,7 @@ function CustomerAfterSalesPage() {
       </div>
 
       {/* ── 2. Segmented Tabs Filter (B.39 - Linha Única Horizontal) ── */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-2 sm:px-0">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar px-2 sm:px-0">
         {(["todos", "andamento", "concluidas", "rejeitadas"] as const).map((tab) => (
           <button
             key={tab}
@@ -507,7 +507,7 @@ function CustomerAfterSalesPage() {
 
       {/* ── 4. Modal Comercial: Nova Solicitação (EARS-02 / EARS-03) ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-lg rounded-xl p-0 overflow-hidden border border-border/80 shadow-md">
+        <DialogContent className="sm:max-w-lg rounded-xl p-0 overflow-hidden border border-border/80 shadow-overlay">
           <DialogHeader className="p-5 pb-4 bg-muted/20 border-b border-border/40">
             <DialogTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
               <RefreshCw className="size-5 text-primary" />

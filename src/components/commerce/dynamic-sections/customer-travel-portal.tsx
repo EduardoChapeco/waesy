@@ -100,7 +100,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
               type="button"
               onClick={() => setActiveFilter("all")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "h-8 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
+                "h-8 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0",
                 activeFilter === "all"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -112,7 +112,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
               type="button"
               onClick={() => setActiveFilter("confirmed")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "h-8 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
+                "h-8 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0",
                 activeFilter === "confirmed"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -124,7 +124,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
               type="button"
               onClick={() => setActiveFilter("completed")}
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                "h-8 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
+                "h-8 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0",
                 activeFilter === "completed"
                   ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -144,7 +144,7 @@ export const CustomerTravelPortal: React.FC<CustomerTravelPortalProps> = ({
               return (
                 <div
                   key={voucher.id}
-                  className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-md transition-colors duration-200 flex flex-col md:flex-row"
+                  className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs  transition-colors duration-200 flex flex-col md:flex-row"
                 >
                   {/* Bloco Esquerdo: Detalhes do Bilhete / Voucher */}
                   <div className="p-5 flex-1 space-y-4">

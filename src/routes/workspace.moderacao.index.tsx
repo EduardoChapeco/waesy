@@ -213,7 +213,7 @@ function ModerationQueuePage() {
  asChild
  variant="ghost"
  size="sm"
- className="h-6 px-2 text-xs gap-1"
+ className="h-6 px-2 text-xs gap-1 min-h-11 sm:min-h-0"
  >
  <Link
  to="/classificados/$id"

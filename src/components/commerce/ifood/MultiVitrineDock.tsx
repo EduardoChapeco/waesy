@@ -67,7 +67,7 @@ export function MultiVitrineDock({
     <nav
       aria-label="Vitrines Comerciais"
       className={cn(
-        "w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-3 sm:px-4 snap-x snap-mandatory",
+        "w-full flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar py-2 px-3 sm:px-4 snap-x snap-mandatory",
         className,
       )}
       data-testid="multi-vitrine-dock"

@@ -46,7 +46,7 @@ export function CourierEarningsPanel() {
   return (
     <div className="space-y-6">
       {/* Saldo Principal / Ganhos do Mês */}
-      <div className="rounded-lg bg-card border border-border/80 p-6 shadow-sm relative overflow-hidden">
+      <div className="rounded-lg bg-card border border-border/80 p-6  relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -112,13 +112,13 @@ export function CourierEarningsPanel() {
 
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-2 font-medium text-amber-600">
+            <span className="flex items-center gap-2 font-medium text-warning-strong">
               <Zap className="size-3.5" />
               Surge Pricing (Chuva/Pico)
             </span>
-            <span className="text-2xs font-mono text-amber-600">Dinâmico</span>
+            <span className="text-2xs font-mono text-warning-strong">Dinâmico</span>
           </div>
-          <p className="text-lg font-bold text-amber-600 font-mono">
+          <p className="text-lg font-bold text-warning-strong font-mono">
             {formatMoney(breakdown.surge_bonuses_cents)}
           </p>
         </div>

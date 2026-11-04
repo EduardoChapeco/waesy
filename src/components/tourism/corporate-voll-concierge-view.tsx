@@ -271,7 +271,7 @@ export function CorporateVollConciergeView({
 
           {/* 6. Reservas */}
           <div className="flex flex-col items-center justify-center p-2 rounded-xl border border-border/70 bg-card hover:bg-muted/40 transition-colors cursor-pointer text-center space-y-1 h-20 focus-visible:ring-2 focus-visible:ring-ring">
-            <div className="size-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-warning/15 text-warning-strong flex items-center justify-center">
               <Ticket size={18} weight="bold" />
             </div>
             <button type="button" onClick={() => setSelectedQuickModule("bilhetes")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Bilhetes</button>
@@ -311,7 +311,7 @@ export function CorporateVollConciergeView({
 
           {/* 11. Eventos */}
           <div className="flex flex-col items-center justify-center p-2 rounded-xl border border-border/70 bg-card hover:bg-muted/40 transition-colors cursor-pointer text-center space-y-1 h-20 focus-visible:ring-2 focus-visible:ring-ring">
-            <div className="size-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-warning/15 text-warning-strong flex items-center justify-center">
               <CalendarCheck size={18} weight="bold" />
             </div>
             <button type="button" onClick={() => setSelectedQuickModule("eventos")} className="h-11 min-h-11 w-full rounded-lg text-xs font-bold text-foreground leading-tight cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Eventos</button>

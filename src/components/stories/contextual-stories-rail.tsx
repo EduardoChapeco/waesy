@@ -43,7 +43,7 @@ export function ContextualStoriesRail({
  className={`w-full py-2 focus:outline-none ${className}`}
  >
  <div
- className="flex items-center gap-4 sm:gap-4 overflow-x-auto no-scrollbar pb-1 focus:outline-none px-1"
+ className="flex items-center gap-4 sm:gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 focus:outline-none px-1"
  tabIndex={0}
  >
  {/* Botão de Adicionar Story (se habilitado) */}
@@ -57,7 +57,7 @@ export function ContextualStoriesRail({
  <div className="size-full rounded-full bg-muted flex items-center justify-center text-foreground group-hover:scale-105 transition-transform">
  <Plus size={24} weight="bold" />
  </div>
- <div className="absolute bottom-0 right-0 size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md border-2 border-background">
+ <div className="absolute bottom-0 right-0 size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center  border-2 border-background">
  <Plus size={12} weight="bold" />
  </div>
  </div>
@@ -78,7 +78,7 @@ export function ContextualStoriesRail({
  if (isAmbassador) {
  ringClasses = "p-1 bg-purple-600";
  } else if (isFollowing) {
- ringClasses = "p-1 bg-amber-500";
+ ringClasses = "p-1 bg-warning";
  } else if (group.hasUnseenStories) {
  ringClasses = "p-1 bg-primary";
  }
@@ -120,7 +120,7 @@ export function ContextualStoriesRail({
 
  {/* Badge de Patrocinado */}
  {isSponsored && (
- <div className="absolute bottom-0 inset-x-1 bg-amber-500 text-foreground text-2xs font-black uppercase text-center rounded-xs py-1 shadow-xs">
+ <div className="absolute bottom-0 inset-x-1 bg-warning text-foreground text-2xs font-black uppercase text-center rounded-xs py-1 shadow-xs">
  Ads
  </div>
  )}

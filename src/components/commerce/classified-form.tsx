@@ -111,7 +111,7 @@ export function ClassifiedForm({ defaultValues, onSubmit, onCancel, isSubmitting
  <FormControl>
  <Textarea
  placeholder="Descreva o que você está anunciando em detalhes..."
- className="min-h-[120px]"
+ className="min-h-30"
  {...field}
  />
  </FormControl>

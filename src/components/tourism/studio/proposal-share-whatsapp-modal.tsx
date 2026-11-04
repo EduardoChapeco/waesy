@@ -97,7 +97,7 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-2xl">
+ <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-overlay">
  <DialogHeader className="p-5 border-b border-border/70 bg-muted/20">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  </div>
  </DialogHeader>
 
- <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar">
+ <div className="p-5 space-y-4 max-h-vh-70 overflow-y-auto no-scrollbar">
  {/* Destinatário */}
  <div className="space-y-2">
  <label className="text-xs font-bold text-foreground flex items-center gap-2">
@@ -140,7 +140,7 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  variant="ghost"
  size="sm"
  onClick={handleCopyText}
- className="h-7 px-2 text-2xs text-muted-foreground hover:text-foreground"
+ className="h-7 px-2 text-2xs text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
  >
  {copiedText ? <Check className="size-3 text-success mr-1" /> : <Copy className="size-3 mr-1" />}
  {copiedText ? 'Copiado!' : 'Copiar Texto'}
@@ -166,7 +166,7 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  size="sm"
  disabled={isExportingPng}
  onClick={handleExportPng}
- className="h-9 rounded-lg text-xs font-bold gap-2 border-border bg-card hover:bg-muted"
+ className="h-9 rounded-lg text-xs font-bold gap-2 border-border bg-card hover:bg-muted min-h-11 sm:min-h-0"
  >
  <ImageIcon className="size-3.5 text-primary" />
  {isExportingPng ? 'Gerando PNG...' : 'Baixar Lâmina (PNG)'}
@@ -178,7 +178,7 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  size="sm"
  disabled={isExportingPdf}
  onClick={handleExportPdf}
- className="h-9 rounded-lg text-xs font-bold gap-2 border-border bg-card hover:bg-muted"
+ className="h-9 rounded-lg text-xs font-bold gap-2 border-border bg-card hover:bg-muted min-h-11 sm:min-h-0"
  >
  <Download className="size-3.5 text-destructive" />
  {isExportingPdf ? 'Gerando PDF...' : 'Baixar PDF'}
@@ -195,7 +195,7 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  <Button
  type="button"
  onClick={handleOpenWhatsApp}
- className="h-11 min-h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-2 shadow-md px-5"
+ className="h-11 min-h-11 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-2 shadow-overlay px-5"
  >
  <Send className="size-3.5" />
       Abrir WhatsApp

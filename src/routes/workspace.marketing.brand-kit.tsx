@@ -471,7 +471,7 @@ export function BrandKitPage() {
               </h1>
               {brandEvidence?.analysis_status === "ai_generated_draft" && (
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                  <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300">
+                  <Badge variant="outline" className="border-warning/40 text-warning-strong ">
                     Rascunho de IA · não validado por resultados reais
                   </Badge>
                   {(brandEvidence.ai_provider || brandEvidence.ai_model) && (
@@ -487,7 +487,7 @@ export function BrandKitPage() {
                 </div>
               )}
               {brandEvidence?.analysis_status === "legacy_unverified" && (
-                <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                <p className="mt-2 text-xs text-warning-strong ">
                   Perfil legado sem proveniência verificável. Revise antes de tratar como dado observado.
                 </p>
               )}

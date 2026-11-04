@@ -67,6 +67,7 @@ function mapLivePostsToItems(
     .map((raw, idx): VitrineSocialPostItem | null => {
       const content =
         (typeof raw.content === "string" && raw.content.trim()) ||
+        (typeof raw.content_text === "string" && raw.content_text.trim()) ||
         (typeof raw.caption === "string" && raw.caption.trim()) ||
         (typeof raw.body === "string" && raw.body.trim()) ||
         (typeof raw.title === "string" && raw.title.trim()) ||
@@ -88,22 +89,34 @@ function mapLivePostsToItems(
       if (!content && !firstMedia) return null;
 
       const authorObj =
-        raw.author && typeof raw.author === "object"
+        raw.author && typeof raw.author === "object" && !Array.isArray(raw.author)
           ? (raw.author as Record<string, unknown>)
+          : {};
+      const profileObj =
+        raw.profiles && typeof raw.profiles === "object" && !Array.isArray(raw.profiles)
+          ? (raw.profiles as Record<string, unknown>)
           : {};
       const authorName =
         (typeof raw.author_name === "string" && raw.author_name) ||
         (typeof authorObj.name === "string" && authorObj.name) ||
+        (typeof authorObj.full_name === "string" && authorObj.full_name) ||
+        (typeof profileObj.full_name === "string" && profileObj.full_name) ||
+        (typeof profileObj.name === "string" && profileObj.name) ||
         fallbackAuthor?.name ||
         "Publicação Oficial";
+      const rawUsername =
+        (typeof authorObj.username === "string" && authorObj.username) ||
+        (typeof profileObj.username === "string" && profileObj.username) ||
+        "";
       const authorHandle =
         (typeof raw.author_handle === "string" && raw.author_handle) ||
-        (typeof authorObj.username === "string" && `@${authorObj.username}`) ||
+        (rawUsername ? (rawUsername.startsWith("@") ? rawUsername : `@${rawUsername}`) : "") ||
         fallbackAuthor?.handle ||
         undefined;
       const authorAvatarUrl =
         (typeof raw.author_avatar_url === "string" && raw.author_avatar_url) ||
         (typeof authorObj.avatar_url === "string" && authorObj.avatar_url) ||
+        (typeof profileObj.avatar_url === "string" && profileObj.avatar_url) ||
         fallbackAuthor?.avatarUrl ||
         undefined;
       const isVid = isVideoAssetUrl(firstMedia, typeof raw.media_type === "string" ? raw.media_type : undefined);
@@ -115,7 +128,9 @@ function mapLivePostsToItems(
         authorHandle,
         authorAvatarUrl,
         authorAvatarAlt: authorName,
-        isVerified: Boolean(raw.is_verified ?? authorObj.is_verified),
+        isVerified: Boolean(
+          raw.is_verified ?? authorObj.is_verified ?? profileObj.is_verified ?? profileObj.verified_badge_url,
+        ),
         publishedLabel: typeof raw.relative_time === "string" ? raw.relative_time : undefined,
         content,
         mediaUrl: firstMedia || undefined,
@@ -124,7 +139,7 @@ function mapLivePostsToItems(
         likesCount: typeof raw.likes_count === "number" ? raw.likes_count : undefined,
         commentsCount: typeof raw.comments_count === "number" ? raw.comments_count : undefined,
         ctaLabel: "Abrir Post",
-        href: `/feed`,
+        href: typeof raw.id === "string" && raw.id ? `/publicacao/${raw.id}` : "/feed",
       };
     })
     .filter((item): item is VitrineSocialPostItem => item !== null);
@@ -171,6 +186,7 @@ export function VitrineSocialStream({
   const safeViewAllHref = isEditorCanvas ? undefined : resolveSafeLinkHref(viewAllHref);
 
   if (resolvedPosts.length === 0) {
+    if (!isEditorCanvas) return null;
     return (
       <section className={cn("w-full py-4", className)} aria-label={sectionTitle}>
         <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 flex flex-col items-center justify-center text-center gap-2">
@@ -400,7 +416,7 @@ export interface VitrineEcosystemRailProps {
   viewAllLabel?: string;
   viewAllHref?: string;
   moduleType?: VitrineEcosystemModuleType;
-  dataSource?: "live" | "manual";
+  dataSource?: "live" | "live_ecosystem" | "manual";
   maxItems?: number;
   desktopLayout?: "horizontal_rail" | "grid_3col" | "grid_4col";
   mobileLayout?: "horizontal_rail" | "stack";
@@ -516,12 +532,21 @@ function mapLiveEcosystemItems(
       const title = typeof raw.title === "string" ? raw.title.trim() : "";
       if (!title) return null;
       const slug = typeof raw.slug === "string" ? raw.slug : "";
+      const subtitle =
+        (typeof raw.subtitle === "string" && raw.subtitle) ||
+        (typeof raw.description === "string" && raw.description) ||
+        undefined;
+      const imageUrl =
+        (typeof raw.cover_image_url === "string" && raw.cover_image_url) ||
+        (typeof raw.bg_media_url === "string" && raw.bg_media_url) ||
+        (typeof raw.banner_url === "string" && raw.banner_url) ||
+        undefined;
       return {
         id: typeof raw.id === "string" ? raw.id : `hp-${idx}`,
         title,
-        subtitle: typeof raw.subtitle === "string" ? raw.subtitle : undefined,
+        subtitle,
         badge: typeof raw.badge_label === "string" ? raw.badge_label : undefined,
-        imageUrl: typeof raw.bg_media_url === "string" ? raw.bg_media_url : undefined,
+        imageUrl,
         imageAlt: title,
         ctaLabel: "Explorar",
         href:
@@ -552,7 +577,7 @@ export function VitrineEcosystemRail({
   const { isMobile, isEditorCanvas } = useEffectiveViewport();
 
   const resolvedItems = React.useMemo(() => {
-    if (dataSource === "live") {
+    if (dataSource === "live" || dataSource === "live_ecosystem") {
       const mapped = mapLiveEcosystemItems(moduleType, {
         events: liveEvents,
         jobs: liveJobs,
@@ -576,6 +601,7 @@ export function VitrineEcosystemRail({
           : Calendar;
 
   if (resolvedItems.length === 0) {
+    if (!isEditorCanvas) return null;
     return (
       <section className={cn("w-full py-4", className)} aria-label={sectionTitle}>
         <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 flex flex-col items-center justify-center text-center gap-2">

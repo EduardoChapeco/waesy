@@ -157,7 +157,7 @@ function ContatoPage() {
  {/* Horário */}
  <div className="p-5 rounded-lg bg-card border border-border/70 flex flex-col justify-between space-y-4 shadow-xs">
  <div className="space-y-2">
- <div className="size-10 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+ <div className="size-10 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center">
  <Clock className="size-5" />
  </div>
  <h3 className="font-bold text-sm text-foreground">Horário de Operação</h3>
@@ -288,7 +288,7 @@ function ContatoPage() {
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full sm:w-auto h-10 px-8 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer"
+ className="w-full sm:w-auto h-10 px-8 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer min-h-11 sm:min-h-0"
  >
  <Send className="size-3.5" />
  <span>{isSubmitting ? "Enviando..." : "Enviar Mensagem"}</span>

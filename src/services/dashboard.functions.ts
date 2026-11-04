@@ -68,18 +68,22 @@ export interface DashboardMetrics {
  setupProgressPercentage: number;
 }
 
-async function _getDashboardData(): Promise<DashboardMetrics> {
- const identity = await getServerIdentity();
- assertStoreAccess(identity, [
- "owner",
- "admin",
- "manager",
- "seller",
- "finance",
- "stock",
- "content",
- "support",
- ]);
+async function _getDashboardData(targetStoreId?: string | null): Promise<DashboardMetrics> {
+  const identity = await getServerIdentity();
+  assertStoreAccess(
+    identity,
+    [
+      "owner",
+      "admin",
+      "manager",
+      "seller",
+      "finance",
+      "stock",
+      "content",
+      "support",
+    ],
+    targetStoreId
+  );
 
  const db = getServerClient();
  const storeId = identity.store_id;
@@ -349,10 +353,12 @@ async function _getDashboardData(): Promise<DashboardMetrics> {
  };
 }
 
-export const getDashboardData = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const data = await _getDashboardData();
- return data;
+export const getDashboardData = createServerFn({ method: "GET" })
+  .validator((d?: { storeId?: string | null }) => d)
+  .handler(async ({ data }) => {
+    try {
+      const res = await _getDashboardData(data?.storeId);
+      return res;
  } catch (e: unknown) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
  console.error("[dashboard.functions] getDashboardData error:", e);

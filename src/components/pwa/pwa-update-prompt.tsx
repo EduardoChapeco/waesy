@@ -118,7 +118,7 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
           // Glassmorphism silencioso — fundo neutro, borda ultra-fina, sombra suave
           "flex items-center gap-3 px-4 py-3 rounded-lg",
           "bg-background/85 backdrop-blur-xl backdrop-saturate-150",
-          "border border-border/60 shadow-lg shadow-black/10",
+          "border border-border/60  shadow-black/10",
           "max-w-[calc(100vw-2rem)] sm:max-w-sm w-full sm:w-auto"
         )}
       >
@@ -147,7 +147,7 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
           onClick={handleUpdate}
           disabled={isUpdating}
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "shrink-0 h-8 px-3 rounded-lg text-xs font-bold",
+            "shrink-0 h-8 px-3 rounded-lg text-xs font-bold min-h-11 sm:min-h-0",
             "bg-primary text-primary-foreground",
             "hover:bg-primary/90 active:scale-95 transition-transform duration-200 cursor-pointer",
             "disabled:opacity-60 disabled:cursor-not-allowed"
@@ -161,7 +161,7 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
           type="button"
           onClick={handleDismiss}
           aria-label="Dispensar atualização"
-          className="shrink-0 size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors duration-200 cursor-pointer -mr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="shrink-0 size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors duration-200 cursor-pointer -mr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
         >
           <X size={13} weight="bold" />
         </button>

@@ -140,7 +140,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
       case "urgente":
         return <Badge variant="destructive" className="text-2xs uppercase font-bold">Urgente</Badge>;
       case "alta":
-        return <Badge className="bg-amber-500/15 text-amber-600 border border-amber-500/30 text-2xs font-bold">Alta</Badge>;
+        return <Badge className="bg-warning/15 text-warning-strong border border-warning/30 text-2xs font-bold">Alta</Badge>;
       case "media":
         return <Badge className="bg-sky-500/15 text-sky-600 border border-sky-500/30 text-2xs font-bold">Média</Badge>;
       default:

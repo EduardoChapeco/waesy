@@ -157,7 +157,7 @@ function CategoriesDesktopView({
 }: CategoriesViewProps) {
   return (
     <div className="rounded-lg overflow-hidden bg-card border border-border/40 shadow-2xs">
-      <div className="overflow-x-auto no-scrollbar">
+      <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40">

@@ -371,7 +371,7 @@ function WorkspaceTasksPage() {
               label: "Alta",
               value: tasks.filter((t) => t.priority === "high" && t.status !== "done").length,
               total: Math.max(tasks.length, 1),
-              color: "bg-amber-500",
+              color: "bg-warning",
             },
             {
               label: "Normal",

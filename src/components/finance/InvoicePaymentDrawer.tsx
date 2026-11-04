@@ -195,7 +195,7 @@ export function InvoicePaymentDrawer({
               </div>
             ) : (
               <div className="space-y-3 pt-2">
-                <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                <div className="rounded-lg bg-warning/10 border border-warning/20 p-3 text-xs text-warning-strong  flex items-start gap-2">
                   <AlertCircle className="size-4 shrink-0 mt-1" />
                   <span>
                     Saldo insuficiente na conta Waesy ({formatCents(availableBalanceCents)}). Utilize a opção Pix Instantâneo para pagar de qualquer outro banco.

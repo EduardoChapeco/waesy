@@ -140,7 +140,7 @@ export function VoucherStudio({
   const renderSidebarContent = () => (
     <>
       {draft.source_type === "operator_pdf" && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 ds-meta text-amber-800 leading-normal space-y-1">
+        <div className="rounded-lg border border-warning/30 bg-warning/50 p-3 ds-meta text-warning-strong leading-normal space-y-1">
           <span className="font-semibold block">Leitura de Documento e Modo de Contingência</span>
           <p>
             O comprovante da operadora foi anexado com sucesso. Caso o leitor digital de documentos

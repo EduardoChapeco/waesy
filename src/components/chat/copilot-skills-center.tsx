@@ -47,7 +47,7 @@ const RISK_TIER_CONFIG: Record<
   },
   EXTERNAL_WRITE: {
     label: "Ação Externa",
-    badgeClass: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+    badgeClass: "bg-warning/10 text-warning-strong  border-warning/20",
     description: "Disparos ou sincronizações com APIs externas de terceiros.",
   },
   FINANCIAL: {
@@ -148,7 +148,7 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
       </div>
 
       {/* ── Régua de Abas Horizontais com Ergonomia Tátil ── */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
         {[
           { id: "all", label: "Todas as Habilidades" },
           { id: "official", label: "Oficiais Waesy" },

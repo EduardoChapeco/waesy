@@ -64,7 +64,7 @@ export function EventStoryViewerModal({
       className="fixed inset-0 z-50 bg-foreground flex items-center justify-center select-none"
     >
       {/* 9:16 Container */}
-      <div className="relative w-full h-full max-w-md max-h-dvh aspect-[9/16] bg-foreground overflow-hidden flex flex-col justify-between">
+      <div className="relative w-full h-full max-w-md max-h-dvh aspect-9/16 bg-foreground overflow-hidden flex flex-col justify-between">
         {/* Progress Bar & Top Header */}
         <div className="absolute top-0 inset-x-0 z-30 pt-safe px-4 pt-3 pb-6 bg-black/50 space-y-2">
           {/* Progress Bar */}

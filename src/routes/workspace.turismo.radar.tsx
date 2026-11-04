@@ -53,7 +53,7 @@ function getTrendConfig(trend: DestinationTrend) {
 function getSafetyConfig(level: SafetyLevel) {
   const map: Record<SafetyLevel, { icon: any; label: string; bg: string }> = {
     safe: { icon: BadgeCheck, label: 'Seguro', bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' },
-    moderate: { icon: Shield, label: 'Atenção Moderada', bg: 'bg-amber-500/10 border-amber-500/30 text-amber-400' },
+    moderate: { icon: Shield, label: 'Atenção Moderada', bg: 'bg-warning/10 border-warning/30 text-warning-strong' },
     caution: { icon: ShieldAlert, label: 'Cautela', bg: 'bg-orange-500/10 border-orange-500/30 text-orange-400' },
     warning: { icon: ShieldOff, label: 'Alerta', bg: 'bg-rose-500/10 border-rose-500/30 text-rose-500' },
   };
@@ -63,14 +63,14 @@ function getSafetyConfig(level: SafetyLevel) {
 function getAlertConfig(severity: 'info' | 'warning' | 'critical') {
   const map = {
     info: { icon: Info, bg: 'bg-blue-500/10 border-blue-500/30', text: 'text-blue-400', dot: 'bg-blue-400' },
-    warning: { icon: AlertTriangle, bg: 'bg-amber-500/10 border-amber-500/30', text: 'text-amber-400', dot: 'bg-amber-400' },
+    warning: { icon: AlertTriangle, bg: 'bg-warning/10 border-warning/30', text: 'text-warning-strong', dot: 'bg-warning' },
     critical: { icon: ShieldOff, bg: 'bg-rose-500/10 border-rose-500/30', text: 'text-rose-400', dot: 'bg-rose-400' },
   };
   return map[severity] || map.info;
 }
 
 function DemandBar({ score }: { score: number }) {
-  const color = score >= 85 ? 'bg-emerald-500' : score >= 60 ? 'bg-amber-400' : 'bg-rose-400';
+  const color = score >= 85 ? 'bg-emerald-500' : score >= 60 ? 'bg-warning' : 'bg-rose-400';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 rounded-full bg-muted/40 overflow-hidden">
@@ -372,7 +372,7 @@ export default function TurismoRadarPage() {
               onClick={handleSeedCanonical}
               className="h-11 sm:h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
             >
-              <TrendingUp className="size-3.5 text-amber-500" />
+              <TrendingUp className="size-3.5 text-warning-strong" />
               <span>Semear Destinos Recomendados</span>
             </Button>
             <Button
@@ -416,7 +416,7 @@ export default function TurismoRadarPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-semibold text-muted-foreground">{dest.continent}</span>
-                      {dest.is_featured && <Star className="size-3 text-amber-400 fill-amber-400" />}
+                      {dest.is_featured && <Star className="size-3 text-warning-strong fill-warning" />}
                       {dest.is_visa_required && (
                         <Badge variant="destructive" className="text-xs px-2 py-0 font-bold">
                           VISTO
@@ -498,7 +498,7 @@ export default function TurismoRadarPage() {
                     {Array.isArray(dest.highlights) && dest.highlights.length > 0 && (
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 flex items-center gap-2">
-                          <Zap className="size-3.5 text-amber-500" /> Destaques e Passeios
+                          <Zap className="size-3.5 text-warning-strong" /> Destaques e Passeios
                         </h4>
                         <ul className="space-y-1">
                           {dest.highlights.map((h: string) => (
@@ -752,7 +752,7 @@ export default function TurismoRadarPage() {
         >
           <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20 shrink-0">
             <SheetTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-              <AlertTriangle className="size-5 text-amber-500" />
+              <AlertTriangle className="size-5 text-warning-strong" />
               <span>Registrar Alerta Operacional ou de Câmbio</span>
             </SheetTitle>
             <SheetDescription className="text-xs text-muted-foreground">

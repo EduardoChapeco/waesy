@@ -24,7 +24,7 @@ export function RetailSupermarket2x1Promo({ data, scale = 1, className = "" }: S
       className={`relative bg-card text-slate-900 overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
     >
       {/* ── 1. Topo: Bloco Turquesa/Ciano de Alto Impacto (OFERTA 2x1) ── */}
-      <div className="bg-[#0099B8] text-foreground pt-16 pb-12 px-12 text-center shadow-lg">
+      <div className="bg-[#0099B8] text-foreground pt-16 pb-12 px-12 text-center ">
         <h2 className="text-8xl sm:text-9xl font-black uppercase tracking-tight leading-none">
           {data.promoBadge || "OFERTA"}
         </h2>
@@ -66,7 +66,7 @@ export function RetailSupermarket2x1Promo({ data, scale = 1, className = "" }: S
 
         {/* Lado Direito: Foto do Produto */}
         {data.backgroundImageUrl && (
-          <div className="w-[420px] h-[520px] rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 shadow-xl flex items-center justify-center p-6 shrink-0">
+          <div className="w-105 h-130 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200  flex items-center justify-center p-6 shrink-0">
             <img
               src={data.backgroundImageUrl}
               alt={data.title}
@@ -96,7 +96,7 @@ export function RetailSupermarket2x1Promo({ data, scale = 1, className = "" }: S
           </span>
         </div>
 
-        <div className="bg-[#0099B8] text-foreground px-8 py-5 rounded-xl font-black text-xl flex items-center gap-3 shadow-lg">
+        <div className="bg-[#0099B8] text-foreground px-8 py-5 rounded-xl font-black text-xl flex items-center gap-3 ">
           <span>{data.ctaLabel || "Aproveitar Oferta"}</span>
           <ArrowRight className="w-6 h-6" />
         </div>

@@ -147,7 +147,7 @@ export function EventAppleCalendarButton({
         aria-label={`Filtrar eventos por dia. Dia ${displayDay} de ${displayMonth}`}
         title="Filtrar eventos por dia"
         className={cn(
-          "size-11 min-w-11 min-h-11 rounded-2xl bg-card border border-border/80 shadow-md shadow-black/10 overflow-hidden",
+          "size-11 min-w-11 min-h-11 rounded-2xl bg-card border border-border/80  shadow-black/10 overflow-hidden",
           "flex flex-col items-center justify-center cursor-pointer select-none",
           "hover:bg-muted/40 active:scale-95 transition-colors",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0 relative",

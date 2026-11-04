@@ -52,7 +52,7 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  </div>
  {isSelected && (
  <div className="size-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
- <Check className="size-2.5 stroke-[3]" />
+ <Check className="size-2.5 stroke-3" />
  </div>
  )}
  </div>

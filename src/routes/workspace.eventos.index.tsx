@@ -650,10 +650,10 @@ export default function WorkspaceEventosPage() {
                       onClick={() => setForm({ ...form, is_external_ticket: !form.is_external_ticket })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
                         form.is_external_ticket ? "bg-primary" : "bg-muted"
-                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
                     >
                       <span
-                        className={`inline-block size-4 transform rounded-full bg-background shadow-sm transition-transform ${
+                        className={`inline-block size-4 transform rounded-full bg-background  transition-transform ${
                           form.is_external_ticket ? "translate-x-6" : "translate-x-1"
                         }`}
                       />

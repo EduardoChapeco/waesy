@@ -352,7 +352,7 @@ export function OperatorVoucherImportSheet({
                                 e.stopPropagation();
                                 removeDocument(doc.id);
                               }}
-                              className="size-6 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="size-6 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                             >
                               <X className="size-3.5" />
                             </button>
@@ -383,7 +383,7 @@ export function OperatorVoucherImportSheet({
           {step === "review" && parsedData && (
             <div className="space-y-5">
               {/* Navegação por Abas do Studio */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-border text-xs font-bold">
+              <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 border-b border-border text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => setActiveReviewTab("resumo")}
@@ -638,7 +638,7 @@ export function OperatorVoucherImportSheet({
                           ],
                         })
                       }
-                      className="text-xs h-8"
+                      className="text-xs h-8 min-h-11 sm:min-h-0"
                     >
                       <Plus className="size-3 mr-1" /> Adicionar Passageiro
                     </Button>
@@ -674,7 +674,7 @@ export function OperatorVoucherImportSheet({
                             <div className="flex items-center gap-2">
                               {/* Badge de Alerta de Validade */}
                               {validity.status === "warning" && (
-                                <Badge className="bg-amber-500/10 text-amber-700 border-amber-500/30 text-xs gap-1">
+                                <Badge className="bg-warning/10 text-warning-strong border-warning/30 text-xs gap-1">
                                   <AlertTriangle className="size-3" /> {validity.label}
                                 </Badge>
                               )}
@@ -697,7 +697,7 @@ export function OperatorVoucherImportSheet({
                                     passengers: parsedData.passengers.filter((_, i) => i !== index),
                                   })
                                 }
-                                className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                               >
                                 <Trash2 className="size-3.5" />
                               </button>
@@ -838,7 +838,7 @@ export function OperatorVoucherImportSheet({
                           ],
                         })
                       }
-                      className="text-xs h-8"
+                      className="text-xs h-8 min-h-11 sm:min-h-0"
                     >
                       <Plus className="size-3 mr-1" /> Adicionar Trecho
                     </Button>
@@ -862,7 +862,7 @@ export function OperatorVoucherImportSheet({
                                 flights: parsedData.flights.filter((_, i) => i !== index),
                               })
                             }
-                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -1021,7 +1021,7 @@ export function OperatorVoucherImportSheet({
                           ],
                         })
                       }
-                      className="text-xs h-8"
+                      className="text-xs h-8 min-h-11 sm:min-h-0"
                     >
                       <Plus className="size-3 mr-1" /> Adicionar Hotel
                     </Button>
@@ -1043,7 +1043,7 @@ export function OperatorVoucherImportSheet({
                                 hotels: parsedData.hotels.filter((_, i) => i !== index),
                               })
                             }
-                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
@@ -1479,7 +1479,7 @@ export function OperatorVoucherImportSheet({
                   <div className="p-3 rounded-lg bg-background border border-border text-xs font-mono truncate text-foreground select-all">
                     {`${window.location.origin}${createdVoucherUrl}`}
                   </div>
-                  <Button asChild className="w-full h-9 text-xs font-bold">
+                  <Button asChild className="w-full h-9 text-xs font-bold min-h-11 sm:min-h-0">
                     <a href={createdVoucherUrl} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="size-3.5 mr-2" /> Abrir Voucher do Passageiro
                     </a>

@@ -99,7 +99,7 @@ export function DS4Showcase() {
   return (
     <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto py-6 select-none">
       {/* Category Navigation Bar */}
-      <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 overflow-x-auto no-scrollbar no-scrollbar scrollbar-none">
+      <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 overflow-x-auto scroll-area-carousel no-scrollbar no-scrollbar scrollbar-none">
         {[
           { id: "foundations", label: "Fundações & Tokens" },
           { id: "primitives", label: "Primitivos" },
@@ -187,7 +187,7 @@ export function DS4Showcase() {
               <Button variant="ghost" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Fantasma</Button>
               <Button variant="destructive" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Excluir Item</Button>
               <Button isLoading loadingText="Processando" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Carregando</Button>
-              <IconButton icon={<Sparkles className="size-4" />} aria-label="Copilot IA" />
+              <IconButton icon={<Sparkles className="size-4 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0" />} aria-label="Copilot IA" />
             </div>
           </div>
 

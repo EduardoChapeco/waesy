@@ -107,7 +107,7 @@ export function ContractClauseLibrary({
  };
 
  return (
- <div className={'p-5 rounded-lg bg-card border border-border shadow-sm space-y-4 ' + className}>
+ <div className={'p-5 rounded-lg bg-card border border-border  space-y-4 ' + className}>
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <BookOpen className="w-5 h-5 text-primary" />
@@ -130,7 +130,7 @@ export function ContractClauseLibrary({
  </div>
  </div>
 
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 ">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 ">
  {Object.entries(CATEGORY_LABELS).map(([k, label]) => (
  <button
  key={k}
@@ -138,7 +138,7 @@ export function ContractClauseLibrary({
  onClick={() => setSelectedCategory(k)}
  className={'px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors duration-200 ' + (
  selectedCategory === k
- ? 'bg-primary text-primary-foreground shadow-sm'
+ ? 'bg-primary text-primary-foreground '
  : 'bg-muted/40 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
@@ -147,7 +147,7 @@ export function ContractClauseLibrary({
  ))}
  </div>
 
- <div className="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar pr-1">
+ <div className="space-y-3 max-h-100 overflow-y-auto no-scrollbar pr-1">
  {filteredClauses.length === 0 ? (
  <div className="py-8 text-center text-xs text-muted-foreground">
  Nenhuma cláusula encontrada para o filtro atual.
@@ -166,7 +166,7 @@ export function ContractClauseLibrary({
  variant="ghost"
  size="sm"
  onClick={() => handleCopy(clause.id, clause.content)}
- className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
  title="Copiar texto"
  >
  {copiedId === clause.id ? (
@@ -180,7 +180,7 @@ export function ContractClauseLibrary({
  type="button"
  size="sm"
  onClick={() => onInsertClause(clause)}
- className="h-8 px-3 rounded-lg text-2xs font-semibold bg-primary/10 text-primary hover:bg-primary/20"
+ className="h-8 px-3 rounded-lg text-2xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 min-h-11 sm:min-h-0"
  >
  <Plus className="w-3 h-3 mr-1" />
  Inserir

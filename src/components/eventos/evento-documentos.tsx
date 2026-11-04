@@ -16,7 +16,7 @@ interface EventoDocumentosProps {
 }
 
 const TIPOS_DOC = [
-  { value: "alvara", label: "Alvará da Prefeitura", icon: FileText, color: "text-amber-500" },
+  { value: "alvara", label: "Alvará da Prefeitura", icon: FileText, color: "text-warning-strong" },
   { value: "avcb", label: "AVCB / Bombeiros", icon: ShieldAlert, color: "text-rose-500" },
   { value: "policia", label: "Autorização Polícia Militar / Civil", icon: FileText, color: "text-blue-500" },
   { value: "ecad", label: "Licença Direitos Autorais (ECAD)", icon: FileText, color: "text-purple-500" },

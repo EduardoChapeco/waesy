@@ -128,7 +128,7 @@ export function DigitalSignatureCanvas({
           disabled={!hasContent}
           className="h-11 px-4 text-xs"
         >
-          <Eraser className="mr-1.5 h-4 w-4" />
+          <Eraser className="mr-2 h-4 w-4" />
           Limpar
         </Button>
         <Button
@@ -138,7 +138,7 @@ export function DigitalSignatureCanvas({
           disabled={!hasContent}
           className="h-11 px-5 text-xs font-semibold"
         >
-          <Check className="mr-1.5 h-4 w-4" />
+          <Check className="mr-2 h-4 w-4" />
           Salvar Assinatura
         </Button>
       </div>

@@ -139,7 +139,7 @@ function BoostPaymentsAdmin() {
           variant="outline"
           size="sm"
           onClick={() => refetch()}
-          className="rounded-lg h-9 px-3 text-xs gap-2 cursor-pointer"
+          className="rounded-lg h-9 px-3 text-xs gap-2 cursor-pointer min-h-11 sm:min-h-0"
         >
           <RefreshCw className="size-3.5" />
           Atualizar
@@ -185,7 +185,7 @@ function BoostPaymentsAdmin() {
                 filterStatus === s
                   ? "bg-foreground text-background border-foreground"
                   : "bg-card text-muted-foreground border-border/60 hover:border-border"
-              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
             >
               {s === "all"
                 ? "Todos"
@@ -283,7 +283,7 @@ function BoostPaymentsAdmin() {
                       href={bp.payment_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="h-8 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 text-xs font-medium flex items-center gap-2 transition-colors text-muted-foreground"
+                      className="h-8 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 text-xs font-medium flex items-center gap-2 transition-colors text-muted-foreground min-h-11 sm:min-h-0"
                     >
                       <ExternalLink className="size-3.5" />
                       Link
@@ -294,7 +294,7 @@ function BoostPaymentsAdmin() {
                     <Button
                       size="sm"
                       onClick={() => setConfirmingPayment(bp)}
-                      className="h-8 rounded-lg text-xs font-bold bg-emerald-600 text-foreground hover:bg-emerald-500 gap-2 cursor-pointer"
+                      className="h-8 rounded-lg text-xs font-bold bg-emerald-600 text-foreground hover:bg-emerald-500 gap-2 cursor-pointer min-h-11 sm:min-h-0"
                     >
                       <CheckCheck className="size-3.5" />
                       Confirmar
@@ -357,14 +357,14 @@ function BoostPaymentsAdmin() {
             <Button
               variant="outline"
               onClick={() => setConfirmingPayment(null)}
-              className="rounded-lg text-xs h-10 flex-1 cursor-pointer"
+              className="rounded-lg text-xs h-10 flex-1 cursor-pointer min-h-11 sm:min-h-0"
             >
               Cancelar
             </Button>
             <Button
               onClick={() => confirmingPayment && confirmMutation.mutate(confirmingPayment.id)}
               disabled={confirmMutation.isPending}
-              className="rounded-lg text-xs h-10 flex-1 font-bold bg-emerald-600 text-foreground hover:bg-emerald-500 gap-2 cursor-pointer"
+              className="rounded-lg text-xs h-10 flex-1 font-bold bg-emerald-600 text-foreground hover:bg-emerald-500 gap-2 cursor-pointer min-h-11 sm:min-h-0"
             >
               {confirmMutation.isPending ? (
                 <>

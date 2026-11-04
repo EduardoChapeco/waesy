@@ -287,7 +287,7 @@ export function CarouselStudioEditor({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-6xl! w-11/12 h-5/6 max-h-screen p-0 flex flex-col bg-background border-border overflow-hidden rounded-lg shadow-2xl">
+      <DialogContent className="max-w-6xl! w-11/12 h-5/6 max-h-screen p-0 flex flex-col bg-background border-border overflow-hidden rounded-lg shadow-overlay">
         {/* TOPBAR DO STUDIO */}
         <div className="h-14 border-b border-border px-4 flex items-center justify-between shrink-0 bg-card">
           <div className="flex items-center gap-3 min-w-0">
@@ -647,7 +647,7 @@ export function CarouselStudioEditor({
 
         {/* MODAL DE REFINAMENTO DE TEXTO COM IA UNIVERSAL (ORQUESTRADOR) */}
         <Dialog open={showAiModal} onOpenChange={setShowAiModal}>
-          <DialogContent className="max-w-3xl w-11/12 max-h-screen p-6 flex flex-col bg-background border-border rounded-lg shadow-2xl overflow-hidden">
+          <DialogContent className="max-w-3xl w-11/12 max-h-screen p-6 flex flex-col bg-background border-border rounded-lg shadow-overlay overflow-hidden">
             <DialogHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

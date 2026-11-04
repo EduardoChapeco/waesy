@@ -556,7 +556,7 @@ function AdminMasterHotpagesPage() {
  {/* ── Sub-Filtro por Módulo (Visível principalmente na aba de Hotpages Editoriais) ── */}
         {(activeMainTab === "editorial_card" || activeMainTab === "category_hub") && (
  /* design-lint-ignore DL-30 reason:"Barra horizontal de sub-filtros de modulos com overflow nativo" expiry:"2027-12-31" */
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 scrollbar-hide border-b border-border/40">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-2 scrollbar-hide border-b border-border/40">
  {MODULE_TABS.map((tab) => {
  const isSelected = selectedModuleTab === tab.id;
  const count =

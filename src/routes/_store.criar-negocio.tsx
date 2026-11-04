@@ -352,7 +352,7 @@ function CriarNegocioPage() {
   : "text-muted-foreground hover:text-foreground"
   )}
   >
-  <Zap className="size-3.5 text-amber-500" />
+  <Zap className="size-3.5 text-warning-strong" />
   <span>Modo Expresso (1 min)</span>
   </button>
   <button
@@ -390,7 +390,7 @@ function CriarNegocioPage() {
   variant="ghost"
   size="sm"
   onClick={() => setStep((prev) => Math.max(1, prev - 1) as OnboardingStep)}
- className="h-8 rounded-lg px-3 text-xs font-bold text-muted-foreground hover:text-foreground gap-2"
+ className="h-8 rounded-lg px-3 text-xs font-bold text-muted-foreground hover:text-foreground gap-2 min-h-11 sm:min-h-0"
  >
  <ArrowLeft className="size-3.5" />
  <span>Voltar</span>
@@ -413,14 +413,14 @@ function CriarNegocioPage() {
  variant="outline"
  size="sm"
  onClick={() => setStep(1)}
- className="h-8 rounded-lg text-2xs font-medium text-muted-foreground hover:text-foreground ml-auto sm:ml-0"
+ className="h-8 rounded-lg text-2xs font-medium text-muted-foreground hover:text-foreground ml-auto sm:ml-0 min-h-11 sm:min-h-0"
  >
  Trocar Segmento
  </Button>
  </div>
 
  {/* Stepper Horizontal */}
- <div className="overflow-x-auto no-scrollbar pt-1">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar pt-1">
  <div className="flex sm:grid sm:grid-cols-6 gap-2 min-w-max sm:min-w-0">
  {stepsList.map((s) => {
  const isActive = step === s.number;
@@ -480,7 +480,7 @@ function CriarNegocioPage() {
 
  {/* Filtros e Busca */}
  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
  {BUSINESS_CATEGORIES.map((cat) => (
  <button
  key={cat.id}
@@ -520,7 +520,7 @@ function CriarNegocioPage() {
  key={segment.id}
  onClick={() => handleSelectNicheAndProceed(segment.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "group relative h-64 rounded-lg overflow-hidden cursor-pointer transition-colors duration-200 duration-200 border flex flex-col justify-between p-5 select-none active:scale-[0.98]",
+ "group relative h-64 rounded-lg overflow-hidden cursor-pointer transition-colors duration-200 duration-200 border flex flex-col justify-between p-5 select-none active:scale-98",
  isSelected
  ? "border-primary ring-2 ring-primary shadow-xs"
  : "border-border/60 hover:border-foreground/30 hover:shadow-xs"
@@ -952,7 +952,7 @@ function CriarNegocioPage() {
  variant="ghost"
  size="icon"
  onClick={() => setComplianceDocs((prev) => prev.filter((_, i) => i !== dIdx))}
- className="size-7 text-muted-foreground hover:text-destructive"
+ className="size-7 text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -1088,7 +1088,7 @@ function CriarNegocioPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleRemoveTeamMember(m.email)}
- className="size-7 text-muted-foreground hover:text-destructive"
+ className="size-7 text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -1200,7 +1200,7 @@ function CriarNegocioPage() {
  </span>
  </p>
  {!locationData.isAddressPublic && (
- <p className="text-2xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+ <p className="text-2xs text-warning-strong  font-medium flex items-center gap-1">
  <Eye className="size-2.5" />
  <span>Endereço protegido (Atendimento remoto/delivery)</span>
  </p>

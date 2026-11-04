@@ -67,7 +67,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             {promoBadge ? (
-              <span className="px-4 py-2 rounded-full bg-amber-400 text-foreground font-black uppercase tracking-wider text-xs sm:text-sm shadow-md">
+              <span className="px-4 py-2 rounded-full bg-warning text-foreground font-black uppercase tracking-wider text-xs sm:text-sm ">
                 {promoBadge}
               </span>
             ) : (
@@ -86,7 +86,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
 
           <div className="pt-4">
             <h1
-              className={`font-black uppercase tracking-tight text-foreground drop-shadow-md leading-[1.05] line-clamp-2 ${
+              className={`font-black uppercase tracking-tight text-foreground  leading-none line-clamp-2 ${
                 aspectRatio === "1:1" ? "text-4xl md:text-5xl" : "text-6xl md:text-7xl"
               }`}
             >
@@ -103,7 +103,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
           {resolvedSpecs.map((spec, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground font-semibold text-sm sm:text-base shadow-sm"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground font-semibold text-sm sm:text-base "
             >
               <CheckCircle2 className="size-5 text-primary shrink-0" />
               <span className="truncate">{spec}</span>
@@ -122,7 +122,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
             </div>
             {maxInstallments > 1 && (
               <p className="text-xs sm:text-sm text-foreground/80 font-mono">
-                Ou entrada + parcelas de <span className="text-amber-400 font-bold">{formatMoney(effectiveInstallmentCents)}</span>
+                Ou entrada + parcelas de <span className="text-warning-strong font-bold">{formatMoney(effectiveInstallmentCents)}</span>
               </p>
             )}
             <p className="text-2xs sm:text-xs text-foreground/60">

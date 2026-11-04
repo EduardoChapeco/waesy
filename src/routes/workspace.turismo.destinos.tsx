@@ -720,7 +720,7 @@ export default function WorkspaceDestinationsPage() {
  <div className="space-y-1 pt-2 text-xs text-muted-foreground/75 text-muted-foreground border-t border-border/40">
  {dest.best_season && (
  <p className="flex items-center gap-2 truncate">
- <Sun className="size-3 text-amber-500 shrink-0" />
+ <Sun className="size-3 text-warning-strong shrink-0" />
  <span className="truncate">{dest.best_season}</span>
  </p>
  )}
@@ -827,7 +827,7 @@ export default function WorkspaceDestinationsPage() {
  className="flex-1 flex flex-col overflow-hidden"
  >
  {/* design-lint-ignore DL-30 reason:"Horizontal tab rail inside studio sheet" expiry:"2028-12-31" */}
- <div className="px-5 pt-3 pb-2 border-b border-border/60 bg-card overflow-x-auto no-scrollbar ">
+ <div className="px-5 pt-3 pb-2 border-b border-border/60 bg-card overflow-x-auto scroll-area-carousel no-scrollbar ">
  <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-6 h-9 rounded-lg p-1 bg-muted/50">
  <TabsTrigger value="identificacao" className="text-xs font-bold rounded-lg gap-2 py-1">
  <MapPin className="size-3.5" />

@@ -23,12 +23,12 @@ export function GlobalRail({ session }: GlobalRailProps) {
 
  return (
  <TooltipProvider delayDuration={150}>
- <aside className="hidden md:flex flex-col items-center justify-between w-[68px] shrink-0 h-dvh sticky top-0 py-4 bg-background z-30 select-none">
+ <aside className="hidden md:flex flex-col items-center justify-between w-17 shrink-0 h-dvh sticky top-0 py-4 bg-background z-30 select-none">
  {/* 1. Topo: Logo Waesy */}
  <div className="flex flex-col items-center gap-3">
  <Link
  to="/"
- className="size-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-display font-black text-xl tracking-tighter hover:scale-105 transition-transform"
+ className="size-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-display font-black text-xl tracking-tighter hover:scale-105 transition-transform min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Waesy — Início"
  >
  W
@@ -73,14 +73,14 @@ export function GlobalRail({ session }: GlobalRailProps) {
        to="/convite"
        className={`size-11 rounded-lg flex items-center justify-center transition-colors duration-200 relative ${
          location.pathname.startsWith("/convite")
-           ? "bg-amber-500/15 text-amber-500 font-bold"
-           : "text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
+           ? "bg-warning/15 text-warning-strong font-bold"
+           : "text-muted-foreground hover:text-warning-strong hover:bg-warning/10"
        }`}
        aria-label="Programa de Convite"
      >
        <Gift className="size-5" />
        {location.pathname.startsWith("/convite") && (
-         <span className="absolute -left-1 w-1 h-5 bg-amber-500 rounded-r-full" />
+         <span className="absolute -left-1 w-1 h-5 bg-warning rounded-r-full" />
        )}
      </Link>
    </TooltipTrigger>
@@ -103,7 +103,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
  isWorkspaceActive
  ? "bg-primary text-primary-foreground font-bold "
  : "text-muted-foreground hover:text-foreground hover:bg-muted"
- }`}
+ } min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
  aria-label="Workspace Operacional"
  >
  <LayoutDashboard className="size-4" />
@@ -123,7 +123,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
  isAccountActive
  ? "bg-primary/10 text-primary font-bold "
  : "text-muted-foreground hover:text-foreground hover:bg-muted"
- }`}
+ } min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
  aria-label="Minha Conta"
  >
  <User className="size-4" />
@@ -139,7 +139,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
  <TooltipTrigger asChild>
  <Link
  to="/entrar"
- className="size-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-200"
+ className="size-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-200 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Entrar / Cadastrar"
  >
  <LogIn className="size-4" />

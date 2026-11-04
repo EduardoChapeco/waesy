@@ -25,7 +25,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
             alt="Logo"
-            className="h-12 w-auto max-w-45 aspect-[4/1] object-contain"
+            className="h-12 w-auto max-w-45 aspect-4/1 object-contain"
             width={180}
             height={48}
           />
@@ -39,7 +39,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
       </div>
 
       {/* JANELA CENTRAL (Capa) */}
-      <div className="w-full h-[250px] rounded-lg overflow-hidden relative mb-12 flex items-center justify-center break-inside-avoid border border-slate-200">
+      <div className="w-full h-63 rounded-lg overflow-hidden relative mb-12 flex items-center justify-center break-inside-avoid border border-slate-200">
         {p.cover_image_url ? (
           <img
             src={p.cover_image_url}
@@ -252,13 +252,13 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                 </div>
                 {p.valid_until && (
                   <div className="text-xs text-slate-400 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span className="w-2 h-2 rounded-full bg-warning" />
                     Válida até {formatDate(p.valid_until)}
                   </div>
                 )}
               </div>
 
-              <div className="w-full md:w-[45%] space-y-4">
+              <div className="w-full md:w-9/20 space-y-4">
                 <div className="glass-dark border border-border rounded-card p-5">
                   <div className="ds-meta uppercase font-bold tracking-widest text-slate-400 mb-2">
                     Cartão de Crédito
@@ -326,7 +326,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
             alt="Logo Agência"
-            className="h-8 w-auto max-w-30 aspect-[4/1] object-contain grayscale opacity-60"
+            className="h-8 w-auto max-w-30 aspect-4/1 object-contain grayscale opacity-60"
             width={120}
             height={32}
           />

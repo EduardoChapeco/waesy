@@ -124,7 +124,7 @@ export function BidirectionalMediaUploader({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 text-2xs gap-1 font-semibold"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 text-2xs gap-1 font-semibold min-h-11 sm:min-h-0"
                 onClick={handleCopyDesktopToMobile}
               >
                 <Copy className="size-3" />
@@ -162,7 +162,7 @@ export function BidirectionalMediaUploader({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 text-2xs gap-1 font-semibold"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 text-2xs gap-1 font-semibold min-h-11 sm:min-h-0"
                 onClick={handleCopyMobileToDesktop}
               >
                 <Copy className="size-3" />

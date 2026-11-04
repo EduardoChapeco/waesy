@@ -55,7 +55,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
 
  return (
  <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
- <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-2xl">
+ <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-lg bg-card border border-border shadow-overlay">
  <DialogHeader className="p-5 border-b border-border/70 bg-muted/20">
  <div className="flex items-center gap-3">
  <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600">
@@ -72,7 +72,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  </div>
  </DialogHeader>
 
- <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto no-scrollbar">
+ <div className="p-5 space-y-4 max-h-vh-65 overflow-y-auto no-scrollbar">
  <div className="space-y-1">
  <label className="text-xs font-bold text-foreground">Nome Completo do Passageiro / Requerente *</label>
  <Input
@@ -154,7 +154,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  type="button"
  disabled={submitting}
  onClick={handleSubmit}
- className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1 shadow-md px-5"
+ className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1  px-5"
  >
  <Check className="size-3.5" />
  {submitting ? 'Salvando...' : 'Iniciar Processo'}

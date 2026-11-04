@@ -62,16 +62,16 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
       </div>
 
       {/* Cartão de Embarque Central (Ticket com Recortes Laterais) */}
-      <div className="relative z-10 bg-card text-slate-950 rounded-lg overflow-hidden shadow-2xl flex-1 flex flex-col justify-between my-4 border border-slate-200">
+      <div className="relative z-10 bg-card text-slate-950 rounded-lg overflow-hidden  flex-1 flex flex-col justify-between my-4 border border-slate-200">
         {/* Bloco Superior do Ticket: Imagem do Destino */}
-        <div className="relative h-[48%] overflow-hidden bg-slate-900">
+        <div className="relative h-12/25 overflow-hidden bg-slate-900">
           <img
             src={data.backgroundImageUrl}
             alt={data.title}
             crossOrigin={data.backgroundImageUrl?.startsWith("data:") ? undefined : "anonymous"}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-foreground/50" />
 
           {/* Destino e Badge no Rodapé da Foto */}
           <div className="absolute bottom-6 left-8 right-8 flex items-end justify-between">
@@ -79,12 +79,12 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
               <span className="text-xs font-bold uppercase tracking-widest text-sky-400 block mb-1">
                 DESTINO CONFIRMADO
               </span>
-              <h2 className="text-3xl font-black text-foreground tracking-tight drop-shadow-md">
+              <h2 className="text-3xl font-black text-foreground tracking-tight ">
                 {data.destinationOrLocation || "Paraíso Exclusivo"}
               </h2>
             </div>
             {data.promoBadge && (
-              <span className="bg-amber-400 text-slate-950 px-4 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow">
+              <span className="bg-warning text-slate-950 px-4 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow">
                 {data.promoBadge}
               </span>
             )}
@@ -157,7 +157,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
 
       {/* Safe Zone Inferior: Botão de Ação CTA em Destaque */}
       <div className="relative z-10 pt-2 pb-6">
-        <div className="w-full bg-gradient-to-r from-sky-400 to-emerald-400 hover:from-sky-300 hover:to-emerald-300 text-slate-950 py-5 px-8 rounded-lg font-black text-2xl flex items-center justify-center gap-3 shadow-xl shadow-sky-500/20 transition-transform active:scale-98">
+        <div className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-5 px-8 rounded-lg font-black text-2xl flex items-center justify-center gap-3 transition-transform active:scale-98">
           <span>{data.ctaLabel || "Embarcar Agora"}</span>
           <ArrowRight className="w-7 h-7 text-slate-950" />
         </div>

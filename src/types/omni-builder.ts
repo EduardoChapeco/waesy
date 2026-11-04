@@ -9,7 +9,9 @@ import { BuilderAssetRefSchema } from "@/lib/builder/asset-contract";
 export const CANONICAL_BUILDER_BLOCK_IDS = [
   "hero_minimal_split",
   "hero_interactive_carousel",
+  "bento_asymmetric_4",
   "bento_asymmetric_grid",
+  "pricing_three_tiers",
   "pricing_tables_clean",
   "media_gallery_mosaic",
   "testimonials_social_proof",
@@ -37,6 +39,12 @@ export const CANONICAL_BUILDER_BLOCK_IDS = [
   "vitrine_social_stream",
   "vitrine_ecosystem_rail",
   "vitrine_lateral_drawer",
+  "vitrine_visual_spotlight_rail",
+  "vitrine_ifood_header",
+  "vitrine_subcategory_pills",
+  "vitrine_recent_stores_rail",
+  "vitrine_feature_mini_banners",
+  "vitrine_stores_feed_list",
   "ifood_feature_cards_rail",
   "ifood_recent_stores_shelf",
   "ifood_category_grid_custom",
@@ -867,6 +875,56 @@ export type VitrineEcosystemRailBlockData = z.infer<typeof VitrineEcosystemRailB
 
 // ── 3. ESTRUTURA DA INSTÂNCIA DO BLOCO (STATE TREE NODE) ──
 
+export const BlockCapabilitiesSchema = z.object({
+  text: z.boolean().default(true),
+  background: z.boolean().default(true),
+  media: z.boolean().default(false),
+  animation: z.boolean().default(true),
+  layout: z.boolean().default(true),
+  responsive: z.boolean().default(true),
+  dataBinding: z.boolean().default(false),
+  interactions: z.boolean().default(false),
+  visibility: z.boolean().default(true),
+  collectionManager: z.boolean().default(false),
+  substates: z.array(z.string()).default([]),
+});
+export type BlockCapabilities = z.infer<typeof BlockCapabilitiesSchema>;
+
+export const BlockDataBindingSchema = z.object({
+  entity: z
+    .enum([
+      "products",
+      "stores",
+      "classifieds",
+      "news",
+      "events",
+      "jobs",
+      "banners",
+      "hotpages",
+      "posts",
+      "custom_items",
+    ])
+    .optional(),
+  categoryFilter: z.string().optional(),
+  nicheFilter: z.string().optional(),
+  cityFilter: z.string().optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  sort: z
+    .enum(["recent", "newest", "popular", "price_asc", "price_desc", "highlight", "alpha"])
+    .optional(),
+  onlyVerified: z.boolean().optional(),
+  tenantScope: z.enum(["current_store", "global_marketplace"]).optional(),
+  status: z.enum(["active", "all"]).optional(),
+});
+export type BlockDataBinding = z.infer<typeof BlockDataBindingSchema>;
+
+export const BlockInteractionActionSchema = z.object({
+  type: z.enum(["navigate", "open_drawer", "open_modal", "scroll_to_anchor", "add_to_cart", "whatsapp", "share"]),
+  target: z.string().optional(),
+  payload: z.record(z.any()).optional(),
+});
+export type BlockInteractionAction = z.infer<typeof BlockInteractionActionSchema>;
+
 export const OmniBlockInstanceSchema = z.object({
   id: z.string(),
   type: z.string(),
@@ -878,6 +936,10 @@ export const OmniBlockInstanceSchema = z.object({
   assetRefs: z.array(BuilderAssetRefSchema).optional(),
   sectionAnchorId: z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/).optional(),
   isHidden: z.boolean().optional(),
+  dataBinding: BlockDataBindingSchema.optional(),
+  capabilities: BlockCapabilitiesSchema.partial().optional(),
+  activeSubstate: z.string().optional(),
+  actions: z.array(BlockInteractionActionSchema).optional(),
 });
 export type OmniBlockInstance = z.infer<typeof OmniBlockInstanceSchema>;
 
@@ -898,10 +960,13 @@ export const OmniPageDocumentSchema = z.object({
     textColor: z.string().default(String.fromCharCode(35) + "09090b"),
     fontFamily: z.string().default("Inter, sans-serif"),
     borderRadius: z.string().default("xl"),
+    customThemeEnabled: z.boolean().optional(),
   }),
   blocks: z.array(OmniBlockInstanceSchema).default([]),
   pages: z.array(z.any()).optional(),
   cms_collections: z.array(z.any()).optional(),
+  settings: z.record(z.any()).optional(),
+  is_published: z.boolean().optional(),
   source_template_id: z.string().optional(),
   source_template_version: z.string().optional(),
   published_at: z.string().nullable().optional(),

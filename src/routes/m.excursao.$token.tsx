@@ -100,7 +100,7 @@ function PublicPassengerRegistrationPage() {
  if (submitted) {
  return (
  <div className="min-h-dvh bg-background flex items-center justify-center p-4">
- <div className="max-w-md w-full p-8 rounded-lg bg-card border border-border/80 text-center space-y-4 shadow-sm">
+ <div className="max-w-md w-full p-8 rounded-lg bg-card border border-border/80 text-center space-y-4 ">
  <div className="size-16 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
  <CheckCircle2 className="size-8" />
  </div>

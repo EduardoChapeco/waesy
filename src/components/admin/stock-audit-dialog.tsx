@@ -77,7 +77,7 @@ export function StockAuditDialog({
  setCountedQty(variant.stock_on_hand.toString());
  setOpen(true);
  }}
- className={className || "text-xs h-8 rounded-lg font-medium"}
+ className={className || "text-xs h-8 rounded-lg font-medium min-h-11 sm:min-h-0"}
  >
  {children || (
  <>

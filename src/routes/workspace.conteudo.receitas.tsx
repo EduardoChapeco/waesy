@@ -281,7 +281,7 @@ function WorkspaceRecipesManagementPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-9 gap-2">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-9 gap-2 min-h-11 sm:min-h-0">
             <Link to="/receitas">
               <Eye className="size-3.5" />
               <span>Ver Vitrine Pública</span>
@@ -301,8 +301,8 @@ function WorkspaceRecipesManagementPage() {
           <p className="text-xl font-bold text-emerald-600">{activeCount}</p>
         </div>
         <div className="p-4 rounded-lg border border-border/50 bg-card space-y-1">
-          <span className="text-xs font-mono uppercase text-amber-600">Ocultas / Moderação</span>
-          <p className="text-xl font-bold text-amber-600">{hiddenCount}</p>
+          <span className="text-xs font-mono uppercase text-warning-strong">Ocultas / Moderação</span>
+          <p className="text-xl font-bold text-warning-strong">{hiddenCount}</p>
         </div>
         <div className="p-4 rounded-lg border border-border/50 bg-card space-y-1">
           <span className="text-xs font-mono uppercase text-muted-foreground">Categorias Ativas</span>
@@ -324,12 +324,12 @@ function WorkspaceRecipesManagementPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar">
           <Button
             size="sm"
             variant={filterStatus === "all" ? "default" : "outline"}
             onClick={() => setFilterStatus("all")}
-            className="rounded-lg text-xs h-8 px-3"
+            className="rounded-lg text-xs h-8 px-3 min-h-11 sm:min-h-0"
           >
             Todas ({recipes.length})
           </Button>
@@ -337,7 +337,7 @@ function WorkspaceRecipesManagementPage() {
             size="sm"
             variant={filterStatus === "active" ? "default" : "outline"}
             onClick={() => setFilterStatus("active")}
-            className="rounded-lg text-xs h-8 px-3"
+            className="rounded-lg text-xs h-8 px-3 min-h-11 sm:min-h-0"
           >
             Ativas ({activeCount})
           </Button>
@@ -345,7 +345,7 @@ function WorkspaceRecipesManagementPage() {
             size="sm"
             variant={filterStatus === "hidden" ? "default" : "outline"}
             onClick={() => setFilterStatus("hidden")}
-            className="rounded-lg text-xs h-8 px-3"
+            className="rounded-lg text-xs h-8 px-3 min-h-11 sm:min-h-0"
           >
             Ocultas ({hiddenCount})
           </Button>
@@ -430,7 +430,7 @@ function WorkspaceRecipesManagementPage() {
                     onClick={() => handleToggleVisibility(rec)}
                     variant="ghost"
                     size="sm"
-                    className="rounded-lg h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+                    className="rounded-lg h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1 min-h-11 sm:min-h-0"
                     title={isHidden ? "Publicar na vitrine" : "Ocultar da vitrine"}
                   >
                     {isHidden ? (
@@ -440,7 +440,7 @@ function WorkspaceRecipesManagementPage() {
                       </>
                     ) : (
                       <>
-                        <EyeOff className="size-3.5 text-amber-500" />
+                        <EyeOff className="size-3.5 text-warning-strong" />
                         <span className="hidden md:inline">Ocultar</span>
                       </>
                     )}
@@ -451,7 +451,7 @@ function WorkspaceRecipesManagementPage() {
                     onClick={() => openEditModal(rec)}
                     variant="outline"
                     size="sm"
-                    className="rounded-lg h-8 px-3 text-xs gap-1"
+                    className="rounded-lg h-8 px-3 text-xs gap-1 min-h-11 sm:min-h-0"
                     title="Editar dados da receita"
                   >
                     <Edit2 className="size-3.5" />
@@ -602,7 +602,7 @@ function WorkspaceRecipesManagementPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsModalOpen(false)}
-              className="rounded-lg text-xs h-9"
+              className="rounded-lg text-xs h-9 min-h-11 sm:min-h-0"
             >
               Cancelar
             </Button>
@@ -611,7 +611,7 @@ function WorkspaceRecipesManagementPage() {
               size="sm"
               onClick={handleSaveRecipe}
               disabled={isPending}
-              className="rounded-lg text-xs h-9 gap-2 font-semibold"
+              className="rounded-lg text-xs h-9 gap-2 font-semibold min-h-11 sm:min-h-0"
             >
               <Save className="size-3.5" />
               {isPending ? "Salvando..." : editingRecipe ? "Salvar Alterações" : "Publicar Receita"}

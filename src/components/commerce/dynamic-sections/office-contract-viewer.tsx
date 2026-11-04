@@ -37,7 +37,7 @@ export function OfficeContractViewer({
 
  return (
  <section className="w-full max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
- <div className="p-6 rounded-lg bg-card border border-border shadow-lg space-y-6">
+ <div className="p-6 rounded-lg bg-card border border-border shadow-overlay space-y-6">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
  <div className="flex items-center gap-3">
  <div className="p-3 rounded-lg bg-primary/10 text-primary">
@@ -55,7 +55,7 @@ export function OfficeContractViewer({
  className={'px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2 ' + (
  currentStatus === 'signed'
  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
- : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+ : 'bg-warning/10 text-warning-strong  border border-warning/20'
  )}
  >
  {currentStatus === 'signed' ? (
@@ -65,7 +65,7 @@ export function OfficeContractViewer({
  </>
  ) : (
  <>
- <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse motion-reduce:animate-none" />
+ <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse motion-reduce:animate-none" />
  Aguardando Assinatura
  </>
  )}
@@ -75,7 +75,7 @@ export function OfficeContractViewer({
  <Button
  type="button"
  onClick={() => setShowSignModal(true)}
- className="min-h-11 px-5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs shadow-md"
+ className="min-h-11 px-5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs shadow-overlay"
  >
  Assinar Agora
  </Button>
@@ -83,7 +83,7 @@ export function OfficeContractViewer({
  </div>
  </div>
 
- <div className="p-6 rounded-lg bg-muted/20 border border-border/50 text-xs leading-relaxed whitespace-pre-wrap font-serif text-foreground/90 max-h-[350px] overflow-y-auto no-scrollbar">
+ <div className="p-6 rounded-lg bg-muted/20 border border-border/50 text-xs leading-relaxed whitespace-pre-wrap font-serif text-foreground/90 max-h-88 overflow-y-auto no-scrollbar">
  {content}
  </div>
 

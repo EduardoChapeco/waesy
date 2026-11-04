@@ -281,7 +281,11 @@ function StoreSlugCanonicalPage() {
         employerStats={data.employerStats}
         associatedMembers={data.associatedMembers || []}
         builderTree={data.experienceDoc?.nodes || null}
-        omniPageDoc={data.experienceDoc?.settings?.omni_page || null}
+        omniPageDoc={
+          data.experienceDoc?.settings?.omni_page_published ||
+          data.experienceDoc?.settings?.omni_page ||
+          null
+        }
         isOwner={isOwner}
         source="storefront"
       />

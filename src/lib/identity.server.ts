@@ -175,12 +175,16 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     }
   }
 
-  // isPlatformAdmin: derivado EXCLUSIVAMENTE do banco de dados.
-  // NUNCA use emails hardcoded aqui — isso viola RLS e multi-tenancy.
+  // isPlatformAdmin: derivado EXCLUSIVAMENTE do banco de dados ou claims app_metadata assinadas pelo servidor.
+  // NUNCA use emails hardcoded nem user_metadata editável pelo cliente aqui — isso viola RLS e multi-tenancy.
   const isPlatformAdmin =
     userProfileRole === "platform_admin" ||
     userProfileRole === "master" ||
-    userProfileRole === "superadmin";
+    userProfileRole === "admin_master" ||
+    userProfileRole === "superadmin" ||
+    user?.app_metadata?.role === "platform_admin" ||
+    user?.app_metadata?.role === "master" ||
+    Boolean(user?.app_metadata?.is_master);
 
   // ── Passo 3: Memberships são somente declarados no vínculo canônico.
   // Nunca inferir ownership por email/settings nem persistir auto-heal com service_role.
@@ -193,13 +197,16 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
 
   try {
     const { getCookie, getRequestHeader: getHeader } = await import("@tanstack/start-server-core");
-    let ctxCookie = getCookie("waesy_active_context");
-    if (!ctxCookie) {
-      const rawCookie = getHeader("cookie") || "";
-      const match = rawCookie.match(/waesy_active_context=([^;]+)/);
-      if (match && match[1]) {
-        ctxCookie = decodeURIComponent(match[1].trim());
+    let ctxCookie: string | null = null;
+    const rawCookie = getHeader("cookie") || "";
+    if (rawCookie) {
+      const matches = [...rawCookie.matchAll(/waesy_active_context=([^;]+)/g)];
+      if (matches.length > 0) {
+        ctxCookie = decodeURIComponent(matches[matches.length - 1][1].trim());
       }
+    }
+    if (!ctxCookie) {
+      ctxCookie = getCookie("waesy_active_context") || null;
     }
     if (ctxCookie) {
       activeContext = ctxCookie;

@@ -38,7 +38,7 @@ function LeadLandingPage() {
 
   if (!form) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-vh-80 flex flex-col items-center justify-center p-6 text-center">
         <div className="w-16 h-16 rounded-lg bg-muted/60 flex items-center justify-center mb-4 text-muted-foreground">
           <Building2 className="w-8 h-8 opacity-40" />
         </div>
@@ -93,7 +93,7 @@ function LeadLandingPage() {
 
         {/* Imagem de Capa Opcional */}
         {form.cover_image_url && (
-          <div className="w-full aspect-[21/9] sm:aspect-[2.5/1] rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative shadow-sm">
+          <div className="w-full aspect-21/9 sm:aspect-[2.5/1] rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative ">
             <img
               src={form.cover_image_url}
               alt={form.title}
@@ -115,7 +115,7 @@ function LeadLandingPage() {
         </div>
 
         {/* Card do Formulário */}
-        <div className="bg-card rounded-lg border border-border/60 p-5 sm:p-7 shadow-sm">
+        <div className="bg-card rounded-lg border border-border/60 p-5 sm:p-7 ">
           <LeadFormRenderer
             form={form}
             fields={form.fields}
@@ -134,7 +134,7 @@ function LeadLandingPage() {
             <span className="text-xs text-muted-foreground">Privacidade e Dados 100% Protegidos</span>
           </div>
           <div className="flex items-center gap-2 p-3 rounded-lg border border-border/40 bg-muted/20">
-            <Star className="w-4 h-4 text-amber-500 shrink-0" />
+            <Star className="w-4 h-4 text-warning-strong shrink-0" />
             <span className="text-xs text-muted-foreground">Atendimento Prioritário e Ágil</span>
           </div>
         </div>

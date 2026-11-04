@@ -421,9 +421,9 @@ function CustomerDetailPage() {
 
       {/* ── Alerta Interno / Status de Bloqueio ── */}
       {(isCustomerBlocked || (data.crm?.notes && data.crm.notes.trim().length > 0)) && (
-        <div className={`p-4 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${isCustomerBlocked ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-amber-500/10 border-amber-500/30 text-foreground"}`}>
+        <div className={`p-4 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${isCustomerBlocked ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-warning/10 border-warning/30 text-foreground"}`}>
           <div className="flex items-start gap-3">
-            <AlertTriangle className={`size-4 shrink-0 mt-1 ${isCustomerBlocked ? "text-destructive" : "text-amber-600"}`} />
+            <AlertTriangle className={`size-4 shrink-0 mt-1 ${isCustomerBlocked ? "text-destructive" : "text-warning-strong"}`} />
             <div className="space-y-1">
               <span className="font-bold uppercase tracking-wider block">
                 {isCustomerBlocked ? "Cliente Bloqueado para Novas Transações" : "Sinalização Interna da Agência"}
@@ -487,7 +487,7 @@ function CustomerDetailPage() {
             {data.profile.birthDate && (
               <div className="flex items-center justify-between gap-2 text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Calendar className="size-3.5 shrink-0 text-amber-500" />
+                  <Calendar className="size-3.5 shrink-0 text-warning-strong" />
                   <span>Aniversário: {new Date(data.profile.birthDate).toLocaleDateString("pt-BR")}</span>
                 </div>
                 {data.profile.phone && (
@@ -620,7 +620,7 @@ function CustomerDetailPage() {
                       ) : event.type === "commercial_invoice" ? (
                         <Receipt className="size-5 text-sky-500" />
                       ) : event.type === "quote" ? (
-                        <Plane className="size-5 text-amber-500" />
+                        <Plane className="size-5 text-warning-strong" />
                       ) : event.type === "commercial_lead" ? (
                         <TrendingUp className="size-5 text-emerald-500" />
                       ) : event.type === "ad_touchpoint" ? (
@@ -1051,7 +1051,7 @@ function CustomerDetailPage() {
                 </div>
                 <div className="flex justify-between py-1">
                   <span className="text-muted-foreground">Vistos:</span>
-                  <span className="text-foreground truncate max-w-[150px]">
+                  <span className="text-foreground truncate max-w-38">
                     {visasInput || "Nenhum informado"}
                   </span>
                 </div>
@@ -1061,7 +1061,7 @@ function CustomerDetailPage() {
             {/* 3. Programas de Fidelidade */}
             <div className="bg-card rounded-lg border border-border/60 p-4 space-y-3">
               <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
-                <Award className="size-4 text-amber-500" />
+                <Award className="size-4 text-warning-strong" />
                 <span>Programas e Milhas</span>
               </div>
               <div className="space-y-2 text-xs">
@@ -1532,7 +1532,7 @@ function CustomerDetailPage() {
               {/* Seção 3: Programas de Milhagem */}
               <div className="space-y-3 border-t border-border/40 pt-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Award className="size-3.5 text-amber-500" />
+                  <Award className="size-3.5 text-warning-strong" />
                   Programas de Fidelidade e Milhas
                 </h4>
                 <div className="space-y-2">
@@ -1601,7 +1601,7 @@ function CustomerDetailPage() {
               type="submit"
               form="traveler-pref-form"
               disabled={isSavingTraveler}
-              className="text-xs font-bold min-h-10 px-6"
+              className="text-xs font-bold min-h-10 px-6 min-h-11 sm:min-h-0"
             >
               {isSavingTraveler ? "Salvando..." : "Salvar Preferências"}
             </Button>

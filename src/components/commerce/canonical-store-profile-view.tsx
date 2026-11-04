@@ -644,7 +644,7 @@ function cleanAddressSegment(text: string): string {
             <div>
               <div className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
                 <span>Você é proprietário(a) desta empresa?</span>
-                <Badge variant="outline" className="text-xs font-mono py-0 px-2 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                <Badge variant="outline" className="text-xs font-mono py-0 px-2 border-warning/40 text-warning-strong ">
                   {store?.is_verified ? "Perfil Verificado" : "Aguardando Reivindicação"}
                 </Badge>
               </div>
@@ -657,7 +657,7 @@ function cleanAddressSegment(text: string): string {
           <Button
             size="sm"
             variant="outline"
-            className="h-8 sm:h-9 px-4 rounded-lg font-medium text-xs shrink-0 w-full sm:w-auto cursor-pointer border-border/60 hover:bg-card text-foreground"
+            className="h-8 sm:h-9 px-4 rounded-lg font-medium text-xs shrink-0 w-full sm:w-auto cursor-pointer border-border/60 hover:bg-card text-foreground min-h-11 sm:min-h-0"
             onClick={() => setIsClaimModalOpen(true)}
           >
             Reivindicar Negócio
@@ -769,7 +769,7 @@ function cleanAddressSegment(text: string): string {
                   onClick={() => setActiveTab("avaliacoes")}
                   className="inline-flex items-center gap-1 font-bold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <Star className="size-4 fill-amber-500 text-amber-500 shrink-0" />
+                  <Star className="size-4 fill-warning text-warning-strong shrink-0" />
                   <span>{realRatingAverage.toFixed(1)}</span>
                   <span className="text-muted-foreground font-medium">({realReviewsCount})</span>
                 </button>
@@ -1047,7 +1047,7 @@ function cleanAddressSegment(text: string): string {
                         <Button
                           type="submit"
                           disabled={isSendingQuote}
-                          className="w-full h-10 rounded-lg font-bold text-xs bg-foreground text-background mt-2"
+                          className="w-full h-10 rounded-lg font-bold text-xs bg-foreground text-background mt-2 min-h-11 sm:min-h-0"
                         >
                           {isSendingQuote ? "Enviando..." : "Enviar Solicitação"}
                         </Button>
@@ -1280,7 +1280,7 @@ function cleanAddressSegment(text: string): string {
                     size="sm"
                     variant="ghost"
                     onClick={() => setIsSectionsEditorOpen(true)}
-                    className="h-7 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+                    className="h-7 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer hover:bg-muted/60 text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
                   >
                     <SlidersHorizontal className="size-4 text-primary" />
                     <span>Personalizar</span>
@@ -1406,7 +1406,7 @@ function cleanAddressSegment(text: string): string {
                                 className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 {card.imageUrl ? (
-                                  <div className="aspect-[21/9] w-full overflow-hidden bg-muted/30 relative">
+                                  <div className="aspect-21/9 w-full overflow-hidden bg-muted/30 relative">
                                     <img
                                       src={card.imageUrl}
                                       alt={card.title}
@@ -1590,7 +1590,7 @@ function cleanAddressSegment(text: string): string {
                     type="button"
                     onClick={() => setPostViewMode("grid")}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer",
+                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                       postViewMode === "grid"
                         ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground"
@@ -1603,7 +1603,7 @@ function cleanAddressSegment(text: string): string {
                     type="button"
                     onClick={() => setPostViewMode("feed")}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer",
+                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                       postViewMode === "feed"
                         ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground"
@@ -1853,7 +1853,7 @@ function cleanAddressSegment(text: string): string {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleImportMinedProduct(p)}
-                                className="rounded-lg h-10 px-3 font-semibold text-xs border-primary/30 text-primary gap-1 cursor-pointer"
+                                className="rounded-lg h-10 px-3 font-semibold text-xs border-primary/30 text-primary gap-1 cursor-pointer min-h-11 sm:min-h-0"
                               >
                                 <Plus className="size-4" />
                                 <span>Importar</span>
@@ -1915,7 +1915,7 @@ function cleanAddressSegment(text: string): string {
                           customMessage: `Olá! Gostaria de um orçamento ou informações sobre seus serviços.`,
                         })
                       }
-                      className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer mx-auto"
+                      className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer mx-auto min-h-11 sm:min-h-0"
                     >
                       <WhatsappLogo size={16} weight="bold" />
                       <span>Falar no WhatsApp</span>
@@ -1946,8 +1946,8 @@ function cleanAddressSegment(text: string): string {
                       </p>
                     </div>
                     {employerStats.avgRating && (
-                      <div className="flex items-center gap-2 bg-amber-500/10 text-amber-600 px-3 py-2 rounded-lg border border-amber-500/20 shrink-0">
-                        <Star className="size-4 fill-amber-500 text-muted-foreground" />
+                      <div className="flex items-center gap-2 bg-warning/10 text-warning-strong px-3 py-2 rounded-lg border border-warning/20 shrink-0">
+                        <Star className="size-4 fill-warning text-muted-foreground" />
                         <span className="text-sm font-black font-mono">{employerStats.avgRating} / 5.0</span>
                       </div>
                     )}
@@ -2023,7 +2023,7 @@ function cleanAddressSegment(text: string): string {
                       <Button
                         asChild
                         size="sm"
-                        className="rounded-lg h-9 px-4 font-bold text-xs bg-foreground text-background w-full"
+                        className="rounded-lg h-9 px-4 font-bold text-xs bg-foreground text-background w-full min-h-11 sm:min-h-0"
                       >
                         <Link to="/empregos/$id" params={{ id: j.id }}>
                           <span>Candidatar-se</span>
@@ -2057,7 +2057,7 @@ function cleanAddressSegment(text: string): string {
                       params={{ id: ad.id }}
                       className="group flex flex-col rounded-lg bg-card border border-border/70 overflow-hidden hover:border-primary/50 transition-colors duration-200 cursor-pointer shadow-xs"
                     >
-                      <div className="aspect-[16/10] w-full bg-muted/40 relative overflow-hidden">
+                      <div className="aspect-16/10 w-full bg-muted/40 relative overflow-hidden">
                         {firstImage ? (
                           <img
                             src={firstImage}
@@ -2108,7 +2108,7 @@ function cleanAddressSegment(text: string): string {
               <div className="space-y-4">
                 <div className="p-5 rounded-lg bg-card border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-12 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-black text-xl font-mono">
+                    <div className="size-12 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center font-black text-xl font-mono">
                       {store.rating ? Number(store.rating).toFixed(1) : "—"}
                     </div>
                     <div>
@@ -2119,7 +2119,7 @@ function cleanAddressSegment(text: string): string {
                             className={cn(
                               "size-4",
                               store.rating && s <= Math.round(Number(store.rating))
-                                ? "fill-amber-500 text-amber-500"
+                                ? "fill-warning text-warning-strong"
                                 : "text-muted-foreground/30",
                             )}
                           />
@@ -2146,7 +2146,7 @@ function cleanAddressSegment(text: string): string {
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center text-muted-foreground">
                             {Array.from({ length: Math.max(1, Math.min(5, Number(r.rating) || 5)) }).map((_, i) => (
-                              <Star key={i} className="size-3 fill-amber-500" />
+                              <Star key={i} className="size-3 fill-warning" />
                             ))}
                           </div>
                           <span className="text-xs text-muted-foreground font-mono">
@@ -2188,7 +2188,7 @@ function cleanAddressSegment(text: string): string {
                       </p>
                     </div>
                     {employerStats.avgRating && (
-                      <Badge variant="outline" className="font-mono text-xs font-bold text-amber-600 bg-amber-500/10 border-amber-500/20">
+                      <Badge variant="outline" className="font-mono text-xs font-bold text-warning-strong bg-warning/10 border-warning/20">
                          {employerStats.avgRating} / 5.0
                       </Badge>
                     )}
@@ -2204,7 +2204,7 @@ function cleanAddressSegment(text: string): string {
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center text-muted-foreground">
                               {Array.from({ length: Math.max(0, Math.min(5, Number(rev.company_rating) || 0)) }).map((_, i) => (
-                                <Star key={i} className="size-3 fill-amber-500" />
+                                <Star key={i} className="size-3 fill-warning" />
                               ))}
                             </div>
                             <Badge variant="outline" className="text-xs text-muted-foreground">
@@ -2253,7 +2253,7 @@ function cleanAddressSegment(text: string): string {
                           className={cn(
                             "text-xs uppercase font-bold",
                             sp.tier === "gold"
-                              ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                              ? "bg-warning/10 text-warning-strong border-warning/30"
                               : sp.tier === "silver"
                               ? "bg-slate-500/10 text-slate-600 border-slate-500/30"
                               : "bg-muted/30"
@@ -2291,7 +2291,7 @@ function cleanAddressSegment(text: string): string {
                         asChild
                         size="sm"
                         variant="outline"
-                        className="rounded-lg h-9 px-3 text-xs font-semibold w-full gap-2"
+                        className="rounded-lg h-9 px-3 text-xs font-semibold w-full gap-2 min-h-11 sm:min-h-0"
                       >
                         <a href={sp.website_url} target="_blank" rel="noopener noreferrer">
                           <span>{sp.cta_label || "Conhecer Parceiro"}</span>
@@ -2383,7 +2383,7 @@ function cleanAddressSegment(text: string): string {
                         asChild
                         variant="outline"
                         size="sm"
-                        className="flex-1 h-9 rounded-lg text-xs font-semibold gap-2"
+                        className="flex-1 h-9 rounded-lg text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
                       >
                         <a
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formattedAddress.mapsQuery)}`}
@@ -2400,7 +2400,7 @@ function cleanAddressSegment(text: string): string {
                       <Button
                         asChild
                         size="sm"
-                        className="flex-1 h-9 rounded-lg text-xs font-bold gap-2 bg-foreground text-background"
+                        className="flex-1 h-9 rounded-lg text-xs font-bold gap-2 bg-foreground text-background min-h-11 sm:min-h-0"
                       >
                         <a
                           href={`https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`}
@@ -2790,7 +2790,7 @@ function cleanAddressSegment(text: string): string {
                               setSelectedConcurso(c);
                               setAcceptedTerms(true);
                             }}
-                            className="h-10 px-4 rounded-lg text-xs font-bold gap-2"
+                            className="h-10 px-4 rounded-lg text-xs font-bold gap-2 min-h-11 sm:min-h-0"
                           >
                             <Ticket className="size-4" />
                             <span>Participar do Sorteio</span>
@@ -3214,7 +3214,7 @@ function cleanAddressSegment(text: string): string {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveBiolink(idx)}
-                          className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                          className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0"
                         >
                           <Trash2 className="size-4" />
                         </Button>
@@ -3240,7 +3240,7 @@ function cleanAddressSegment(text: string): string {
                     variant="outline"
                     size="sm"
                     onClick={handleAddBiolink}
-                    className="h-9 rounded-lg text-xs font-semibold px-3"
+                    className="h-9 rounded-lg text-xs font-semibold px-3 min-h-11 sm:min-h-0"
                   >
                     Adicionar
                   </Button>

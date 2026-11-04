@@ -104,7 +104,7 @@ export function SupermarketClubRibbonBadge({
               "px-2 py-1 text-3xs font-extrabold uppercase tracking-wider rounded-md text-primary-foreground",
               rule.badge_ribbon === "clube" && "bg-blue-600 dark:bg-blue-700",
               rule.badge_ribbon === "oferta" && "bg-destructive",
-              rule.badge_ribbon === "progressivo" && "bg-amber-600 dark:bg-amber-700",
+              rule.badge_ribbon === "progressivo" && "bg-warning ",
               rule.badge_ribbon === "mais_por_menos" && "bg-purple-600 dark:bg-purple-700",
               rule.badge_ribbon === "compre_e_ganhe" && "bg-emerald-600 dark:bg-emerald-700",
             )}
@@ -140,7 +140,7 @@ export function SupermarketClubRibbonBadge({
 
       {/* ── Faixa de Urgência com Countdown (Oferta Relâmpago) ── */}
       {timeLeft ? (
-        <span className="inline-flex items-center gap-1 px-2 py-1 text-3xs font-bold rounded-md bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 w-max">
+        <span className="inline-flex items-center gap-1 px-2 py-1 text-3xs font-bold rounded-md bg-warning/20 text-warning-strong  border border-warning/30 w-max">
           <Clock size={11} weight="fill" />
           Termina em: {timeLeft}
         </span>

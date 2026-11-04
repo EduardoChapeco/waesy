@@ -640,7 +640,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  size="icon"
  onClick={() => handleUpdateRoomAdults(room.id, -1)}
  disabled={room.adults <= 1}
- className="size-5 rounded"
+ className="size-5 rounded min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Minus className="size-2.5" />
  </Button>
@@ -651,7 +651,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  size="icon"
  onClick={() => handleUpdateRoomAdults(room.id, 1)}
  disabled={room.adults >= 6}
- className="size-5 rounded"
+ className="size-5 rounded min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Plus className="size-2.5" />
  </Button>
@@ -667,7 +667,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  size="icon"
  onClick={() => handleUpdateRoomChildren(room.id, -1)}
  disabled={room.children <= 0}
- className="size-5 rounded"
+ className="size-5 rounded min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Minus className="size-2.5" />
  </Button>
@@ -678,7 +678,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  size="icon"
  onClick={() => handleUpdateRoomChildren(room.id, 1)}
  disabled={room.children >= 4}
- className="size-5 rounded"
+ className="size-5 rounded min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Plus className="size-2.5" />
  </Button>
@@ -719,7 +719,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  variant="outline"
  size="sm"
  onClick={handleAddRoom}
- className="w-full h-7 rounded-lg text-2xs font-medium border-dashed border-border/70 hover:bg-muted/40 gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+ className="w-full h-7 rounded-lg text-2xs font-medium border-dashed border-border/70 hover:bg-muted/40 gap-1 text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
  >
  <Plus className="size-3" />
  <span>Adicionar Quarto</span>
@@ -848,7 +848,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  size="sm"
  variant="outline"
  onClick={handleAddFlight}
- className="h-8 text-xs rounded-lg gap-1"
+ className="h-8 text-xs rounded-lg gap-1 min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" /> Adicionar Trecho
  </Button>
@@ -863,7 +863,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  variant="ghost"
  size="sm"
  onClick={() => handleRemoveFlight(f.id)}
- className="h-7 size-7 p-0 text-destructive"
+ className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash className="size-3.5" />
  </Button>
@@ -958,7 +958,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  size="sm"
  variant="outline"
  onClick={handleAddHotel}
- className="h-8 text-xs rounded-lg gap-1"
+ className="h-8 text-xs rounded-lg gap-1 min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" /> Adicionar Manual
  </Button>
@@ -994,7 +994,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {/* Presets de Resorts Famosos (1-Toque) */}
  <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-2">
  <span className="text-2xs font-bold text-foreground flex items-center gap-1">
- <Zap className="size-3 text-amber-500" />
+ <Zap className="size-3 text-warning-strong" />
  <span>Presets de Resorts Famosos:</span>
  </span>
  <div className="flex flex-wrap gap-1">
@@ -1026,7 +1026,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  variant="ghost"
  size="sm"
  onClick={() => handleRemoveHotel(h.id)}
- className="h-7 size-7 p-0 text-destructive"
+ className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash className="size-3.5" />
  </Button>
@@ -1122,7 +1122,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  size="sm"
  variant="outline"
  onClick={handleGenerateItineraryFromDestination}
- className="h-8 text-2xs rounded-lg gap-1 text-primary hover:text-primary"
+ className="h-8 text-2xs rounded-lg gap-1 text-primary hover:text-primary min-h-11 sm:min-h-0"
  title="Sugerir Roteiro"
  >
  <Calendar className="size-3.5" /> Sugerir Dias
@@ -1132,7 +1132,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  size="sm"
  variant="outline"
  onClick={handleAddItineraryDay}
- className="h-8 text-xs rounded-lg gap-1"
+ className="h-8 text-xs rounded-lg gap-1 min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" /> Dia
  </Button>
@@ -1165,7 +1165,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  variant="ghost"
  size="sm"
  onClick={() => handleRemoveItineraryDay(day.id)}
- className="h-7 size-7 p-0 text-destructive"
+ className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash className="size-3.5" />
  </Button>
@@ -1655,7 +1655,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  },
  });
  }}
- className="h-8 text-2xs rounded-lg font-semibold"
+ className="h-8 text-2xs rounded-lg font-semibold min-h-11 sm:min-h-0"
  >
  10x e 12x Sem Juros
  </Button>
@@ -1678,7 +1678,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  },
  });
  }}
- className="h-8 text-2xs rounded-lg font-semibold"
+ className="h-8 text-2xs rounded-lg font-semibold min-h-11 sm:min-h-0"
  >
  Entrada + 10x
  </Button>

@@ -258,7 +258,7 @@ function WorkspaceNovaMateriaPage() {
  <Button
  type="submit"
  disabled={isAiProcessing || !aiUrl.trim()}
- className="rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 h-10 px-4 shrink-0"
+ className="rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 h-10 px-4 shrink-0 min-h-11 sm:min-h-0"
  >
  {isAiProcessing ? (
  <>
@@ -425,7 +425,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("paragraph")}
- className="h-8 text-xs font-bold gap-1 rounded-lg"
+ className="h-8 text-xs font-bold gap-1 rounded-lg min-h-11 sm:min-h-0"
  >
  <AlignLeft className="size-3" />
  Parágrafo
@@ -435,7 +435,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("heading")}
- className="h-8 text-xs font-bold gap-1 rounded-lg"
+ className="h-8 text-xs font-bold gap-1 rounded-lg min-h-11 sm:min-h-0"
  >
  <Heading className="size-3" />
  Subtítulo
@@ -445,7 +445,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("quote")}
- className="h-8 text-xs font-bold gap-1 rounded-lg"
+ className="h-8 text-xs font-bold gap-1 rounded-lg min-h-11 sm:min-h-0"
  >
  <Quote className="size-3" />
  Citação
@@ -455,7 +455,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("gallery")}
- className="h-8 text-xs font-bold gap-1 rounded-lg"
+ className="h-8 text-xs font-bold gap-1 rounded-lg min-h-11 sm:min-h-0"
  >
  <Image className="size-3" />
  Foto

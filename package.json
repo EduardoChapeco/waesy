@@ -10,7 +10,7 @@
     "start": "vite start",
     "preview": "vite preview",
     "lint": "eslint .",
-    "lint:design": "node scripts/design-lint.mjs --ratchet",
+    "lint:design": "node scripts/design-lint.mjs --ratchet && node scripts/contrast-audit.mjs",
     "lint:design:test": "node scripts/design-lint.test.mjs",
     "lint:design:update-baseline": "node scripts/design-lint.mjs --update-baseline",
     "format": "prettier --write .",

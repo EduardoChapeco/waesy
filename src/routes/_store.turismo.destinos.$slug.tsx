@@ -151,7 +151,7 @@ function PublicDestinationDetailPage() {
 
       <main className="mx-auto max-w-6xl px-4 pt-6 space-y-8">
         {/* Banner Hero */}
-        <div className="relative aspect-video sm:aspect-[21/9] w-full overflow-hidden rounded-lg bg-muted border border-border/80">
+        <div className="relative aspect-video sm:aspect-21/9 w-full overflow-hidden rounded-lg bg-muted border border-border/80">
           {destination.cover_image_url ? (
             <img
               src={destination.cover_image_url}
@@ -207,7 +207,7 @@ function PublicDestinationDetailPage() {
           {destination.climate_type && (
             <div className="rounded-lg border border-border/80 bg-card p-4 space-y-2">
               <span className="text-xs font-bold text-muted-foreground flex items-center gap-2">
-                <Sun className="size-3.5 text-amber-500" />
+                <Sun className="size-3.5 text-warning-strong" />
                 Clima Predominante
               </span>
               <p className="text-sm font-semibold text-foreground">
@@ -285,8 +285,8 @@ function PublicDestinationDetailPage() {
                   )}
                   <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center gap-1 text-amber-500 text-xs font-semibold">
-                        <Star className="size-3 fill-amber-500" />
+                      <div className="flex items-center gap-1 text-warning-strong text-xs font-semibold">
+                        <Star className="size-3 fill-warning" />
                         <span>{h.stars}</span>
                         <span className="text-muted-foreground ml-1">
                           • {h.regime_options?.[0] || "Hospedagem"}

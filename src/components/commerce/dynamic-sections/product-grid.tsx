@@ -103,7 +103,7 @@ export function ProductGrid({
             </Button>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory">
+          <div className="flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-4 snap-x snap-mandatory">
             {products.map((product: any) => (
               <div key={product.id} className="shrink-0 w-64 sm:w-72 snap-start">
                 <ProductCard product={product} />

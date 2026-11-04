@@ -853,7 +853,7 @@ function WorkspaceHotelsPage() {
  variant="outline"
  className="h-11 sm:h-11 px-5 rounded-lg font-medium cursor-pointer"
  >
- <Zap className="size-4 mr-2 text-amber-500" />
+ <Zap className="size-4 mr-2 text-warning-strong" />
  Importar Nannai Muro Alto (Preset Completo)
  </Button>
  </div>
@@ -1049,7 +1049,7 @@ function WorkspaceHotelsPage() {
  /* ── MODO TABELA OPERACIONAL ── */
  <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
  {/* design-lint-ignore DL-30 reason:"Tabela operacional com rolagem horizontal no workspace de hoteis" expiry:"2027-12-31" */}
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-semibold">
  <tr>
@@ -1093,7 +1093,7 @@ function WorkspaceHotelsPage() {
  <span className="text-muted-foreground ml-1">({hotel.state || hotel.country})</span>
  </td>
  <td className="p-3 whitespace-nowrap">
- <div className="flex items-center gap-1 text-amber-500 font-bold">
+ <div className="flex items-center gap-1 text-warning-strong font-bold">
  <span>{hotel.stars} Estrelas</span>
  {(hotel.internal_rating || 0) > 0 ? <span className="text-muted-foreground text-xs font-normal ml-1">({hotel.internal_rating})</span> : null}
  </div>
@@ -1370,12 +1370,12 @@ function WorkspaceHotelsPage() {
  <div className="mt-3 pt-3 border-t border-border/50">
  <div className="flex items-center justify-between mb-2">
  <span className="text-xs text-muted-foreground/75 font-bold text-foreground flex items-center gap-1">
- <Zap className="size-3 text-amber-500" />
+ <Zap className="size-3 text-warning-strong" />
  <span>Preencher com Preset de Resort Famoso (1 Toque):</span>
  </span>
  </div>
  {/* design-lint-ignore DL-30 reason:"Trilho horizontal de presets de resort no sheet de hoteis" expiry:"2027-12-31" */}
- <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar">
  {FAMOUS_HOTEL_PRESETS.map((preset) => (
  <button
  key={preset.id}
@@ -1392,7 +1392,7 @@ function WorkspaceHotelsPage() {
 
  <Tabs value={sheetTab} onValueChange={setSheetTab} className="flex-1 flex flex-col">
  {/* design-lint-ignore DL-30 reason:"Trilho horizontal de abas do sheet de configuracao de hotel" expiry:"2027-12-31" */}
- <div className="px-5 pt-3 border-b border-border/60 bg-muted/10 shrink-0 overflow-x-auto no-scrollbar">
+ <div className="px-5 pt-3 border-b border-border/60 bg-muted/10 shrink-0 overflow-x-auto scroll-area-carousel no-scrollbar">
  <TabsList className="bg-transparent border-b-0 h-9 p-0 gap-4">
  <TabsTrigger
  value="dados"

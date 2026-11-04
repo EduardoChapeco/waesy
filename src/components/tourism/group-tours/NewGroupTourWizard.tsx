@@ -495,7 +495,7 @@ export function NewGroupTourWizard({
                       variant="ghost"
                       type="button"
                       onClick={generateSlug}
-                      className="shrink-0 h-9"
+                      className="shrink-0 h-9 min-h-11 sm:min-h-0"
                     >
                       Gerar
                     </Button>
@@ -611,7 +611,7 @@ export function NewGroupTourWizard({
                           }}
                           className={`px-3 py-2 rounded-full text-xs font-medium border transition-colors duration-200 duration-200 cursor-pointer ${
                             selected
-                              ? "bg-brand/10 border-brand text-brand shadow-sm shadow-brand/10"
+                              ? "bg-brand/10 border-brand text-brand  shadow-brand/10"
                               : "bg-surface-alt/55 border-border text-muted-foreground hover:border-muted-foreground/30"
                           }`}
                         >
@@ -652,7 +652,7 @@ export function NewGroupTourWizard({
                     variant="ghost"
                     type="button"
                     onClick={populateDefaultPricingTiers}
-                    className="h-8 text-xs text-brand border border-brand/20 hover:bg-brand/5"
+                    className="h-8 text-xs text-brand border border-brand/20 hover:bg-brand/5 min-h-11 sm:min-h-0"
                   >
                     Gerar Tarifas Padrão
                   </Button>
@@ -716,7 +716,7 @@ export function NewGroupTourWizard({
                         setNewTierDesc("");
                         toast.success("Tarifa adicionada!");
                       }}
-                      className="h-9 text-xs border border-border px-3 shrink-0"
+                      className="h-9 text-xs border border-border px-3 shrink-0 min-h-11 sm:min-h-0"
                     >
                       <Plus className="h-4 w-4 mr-1" /> Adicionar
                     </Button>
@@ -827,7 +827,7 @@ export function NewGroupTourWizard({
                         setNewExtraDesc("");
                         toast.success("Serviço opcional adicionado!");
                       }}
-                      className="h-9 text-xs border border-border px-3 shrink-0"
+                      className="h-9 text-xs border border-border px-3 shrink-0 min-h-11 sm:min-h-0"
                     >
                       <Plus className="h-4 w-4 mr-1" /> Adicionar
                     </Button>
@@ -1101,7 +1101,7 @@ export function NewGroupTourWizard({
                           { shouldValidate: true },
                         )
                       }
-                      className="h-8 text-xs gap-2 border border-border"
+                      className="h-8 text-xs gap-2 border border-border min-h-11 sm:min-h-0"
                     >
                       <Plus className="h-3.5 w-3.5" /> Adicionar Dia
                     </Button>
@@ -1206,7 +1206,7 @@ export function NewGroupTourWizard({
                           {watchHotelName ? (
                             <span className="flex items-center gap-1">
                               {watchHotelName} ({watchHotelStars}{" "}
-                              <Star className="h-3 w-3 fill-amber-400 text-amber-400 inline" />)
+                              <Star className="h-3 w-3 fill-warning text-warning-strong inline" />)
                             </span>
                           ) : (
                             "Sem hospedagem cadastrada"

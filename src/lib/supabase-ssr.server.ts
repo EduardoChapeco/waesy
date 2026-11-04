@@ -46,8 +46,12 @@ export function getSSRClient() {
             name: c.name,
             value: c.value ?? "",
           }));
-          const hasWaesy = parsed.some((c) => c.name.startsWith("waesy-auth-token"));
-          if (!hasWaesy) {
+          const waesyTokens = parsed.filter(
+            (c) =>
+              (c.name === "waesy-auth-token" || c.name.startsWith("waesy-auth-token.")) &&
+              Boolean(c.value?.trim())
+          );
+          if (waesyTokens.length === 0) {
             const legacyPattern = new RegExp(["^sb-", "[^-]+", "-auth-token"].join(""));
             return parsed.map((c) =>
               c.name.startsWith("sb-") && c.name.includes("-auth-token")

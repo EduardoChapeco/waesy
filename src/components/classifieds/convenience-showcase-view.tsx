@@ -556,7 +556,7 @@ export function ConvenienceShowcaseView({
             )}
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <p className="text-xs font-bold text-foreground break-words text-wrap">{advertiserName}</p>
               <VerifiedBadge
                 isVerified={Boolean((classified as any)?.store?.is_verified || (classified as any)?.author?.is_verified || (classified as any)?.is_verified)}
@@ -617,7 +617,7 @@ export function ConvenienceShowcaseView({
       {temperature === "resfriado" && (
         <>
           <span className="text-border">•</span>
-          <span className="text-amber-600 dark:text-amber-400 font-medium">Resfriado</span>
+          <span className="text-warning-strong  font-medium">Resfriado</span>
         </>
       )}
       {temperature === "congelado" && (
@@ -1013,32 +1013,32 @@ export function ConvenienceShowcaseView({
                 {/* Badges Flutuantes Dinâmicas e Contextuais */}
                 <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 pointer-events-none select-none">
                   {(temperature === "gelada" || temperature === "gelado") && (
-                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-sky-600 text-white shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-sky-600 text-white shadow-xs">
                       Gelado
                     </span>
                   )}
                   {Boolean(attrs.is_featured || attrs.is_boosted || classified?.is_featured) && (
-                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-primary text-primary-foreground shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-primary text-primary-foreground shadow-xs">
                       Destaque
                     </span>
                   )}
                   {Boolean(attrs.is_club_exclusive || attrs.club_price_cents) && (
-                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-blue-600 text-white shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-blue-600 text-white shadow-xs">
                       Exclusivo Clube
                     </span>
                   )}
                   {progressiveDiscountTiers.length > 0 && (
-                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-amber-600 text-white shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-warning text-warning-foreground shadow-xs">
                       Leve Mais Por Menos
                     </span>
                   )}
                   {readyDelivery && (
-                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-600 text-white shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-600 text-white shadow-xs">
                       Pronta Entrega
                     </span>
                   )}
                   {isOrganic && (
-                    <span className="px-2.5 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-700 text-white shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-700 text-white shadow-xs">
                       Orgânico
                     </span>
                   )}
@@ -1502,10 +1502,10 @@ export function ConvenienceShowcaseView({
 
             {/* Oferta Relâmpago (Order Bump / Cross-sell no Carrinho) */}
             {orderBumpOffer?.enabled && (
-              <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-2">
+              <div className="p-4 rounded-lg border border-warning/30 bg-warning/5 space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-400">
-                    <Zap className="size-3.5 fill-amber-500 text-amber-500" />
+                  <div className="flex items-center gap-2 text-xs font-bold text-warning-strong ">
+                    <Zap className="size-3.5 fill-warning text-warning-strong" />
                     <span>{orderBumpOffer.badge_text || "Oferta Relâmpago no Carrinho"}</span>
                   </div>
                   <span className="text-xs text-muted-foreground">Adicione com 1 clique</span>
@@ -1520,7 +1520,7 @@ export function ConvenienceShowcaseView({
                         className="size-10 rounded-lg object-contain bg-background p-1 border shrink-0"
                       />
                     ) : (
-                      <div className="size-10 rounded-lg bg-background flex items-center justify-center border shrink-0 text-amber-600">
+                      <div className="size-10 rounded-lg bg-background flex items-center justify-center border shrink-0 text-warning-strong">
                         <Star className="size-4" />
                       </div>
                     )}
@@ -1548,7 +1548,7 @@ export function ConvenienceShowcaseView({
                       "h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer shrink-0 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring",
                       isOrderBumpAdded
                         ? "bg-foreground text-background hover:bg-foreground/90"
-                        : "border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
+                        : "border-warning/40 text-warning-strong  hover:bg-warning/10"
                     )}
                   >
                     {isOrderBumpAdded ? (
@@ -1728,7 +1728,7 @@ export function ConvenienceShowcaseView({
                     className={cn(
                       "p-3 rounded-lg border text-center transition-colors duration-150 cursor-pointer flex flex-col items-center gap-1 min-h-16 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       orderPaymentMethod === "cash"
-                        ? "border-amber-600 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold"
+                        ? "border-warning bg-warning/10 text-warning-strong  font-bold"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -1761,7 +1761,7 @@ export function ConvenienceShowcaseView({
                 <span className="font-mono font-medium">{formatMoney(subtotalCents)}</span>
               </div>
               {isOrderBumpAdded && orderBumpOffer && (
-                <div className="flex justify-between text-amber-700 dark:text-amber-400 font-medium">
+                <div className="flex justify-between text-warning-strong  font-medium">
                   <span className="break-words text-wrap">Oferta Relâmpago ({orderBumpOffer.target_title}):</span>
                   <span className="font-mono font-bold">+{formatMoney(orderBumpOffer.special_price_cents || 0)}</span>
                 </div>

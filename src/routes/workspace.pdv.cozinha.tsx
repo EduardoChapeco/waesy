@@ -21,7 +21,7 @@ type PrepStation = "all" | "chapa" | "forno" | "bebidas" | "sobremesas";
 
 const STATIONS: Array<{ id: PrepStation; label: string; icon: any; color: string }> = [
  { id: "all", label: "Todas", icon: Utensils, color: "text-foreground" },
- { id: "chapa", label: "Chapa", icon: Thermometer, color: "text-amber-600 dark:text-amber-400" },
+ { id: "chapa", label: "Chapa", icon: Thermometer, color: "text-warning-strong " },
  { id: "forno", label: "Forno", icon: Flame, color: "text-destructive" },
  { id: "bebidas", label: "Bebidas", icon: Beer, color: "text-primary" },
  { id: "sobremesas", label: "Sobremesas", icon: CakeSlice, color: "text-accent-foreground" },
@@ -398,13 +398,13 @@ function KDSDashboard() {
  </header>
 
  {/* ── Kanban Board de Produção ── */}
- <main className="flex-1 overflow-x-auto no-scrollbar overflow-y-hidden p-4 md:p-6">
- <div className="flex gap-4 md:gap-6 h-full items-start min-w-[1080px]">
+ <main className="flex-1 overflow-x-auto scroll-area-carousel no-scrollbar overflow-y-hidden p-4 md:p-6">
+ <div className="flex gap-4 md:gap-6 h-full items-start min-w-270">
  <KitchenColumn
  title="Recebidos (Fila)"
  count={colPending.length}
  icon={UtensilsCrossed}
- headerClass="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+ headerClass="bg-warning/10 text-warning-strong  border-warning/30"
  orders={colPending}
  onAction={moveOrder}
  actionLabel="Iniciar Preparo"
@@ -618,7 +618,7 @@ function KitchenColumn({
  stationFilter,
 }: any) {
  return (
- <div className="flex flex-col w-[380px] shrink-0 h-full max-h-full rounded-lg border border-border/80 bg-card overflow-hidden shadow-xs">
+ <div className="flex flex-col w-95 shrink-0 h-full max-h-full rounded-lg border border-border/80 bg-card overflow-hidden shadow-xs">
  <div className={cn("p-4 border-b flex items-center justify-between shrink-0 font-bold", headerClass)}>
  <h2 className="text-sm flex items-center gap-2 font-bold">
  <Icon className="size-4" /> {title}
@@ -682,14 +682,14 @@ function KitchenTicketCard({
  // Classe de urgência para o card inteiro
  const cardUrgencyClass = {
  normal: "border-border/80",
- warning: "border-amber-500/70 ring-1 ring-amber-500/20",
+ warning: "border-warning/70 ring-1 ring-warning/20",
  critical: "border-destructive ring-2 ring-destructive/30",
  }[urgency];
 
  // Classe do header do ticket
  const headerUrgencyClass = {
  normal: "bg-slate-900 dark:bg-slate-800",
- warning: "bg-amber-600",
+ warning: "bg-warning",
  critical: "bg-destructive animate-pulse motion-reduce:animate-none",
  }[urgency];
 
@@ -712,7 +712,7 @@ function KitchenTicketCard({
  type="button"
  onClick={(e) => { e.stopPropagation(); onPrint(); }}
  title="Imprimir comanda térmica"
- className="size-10 sm:size-8 rounded-lg bg-card/15 hover:bg-card/30 flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-10 sm:size-8 rounded-lg bg-card/15 hover:bg-card/30 flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Printer className="size-4" />
  </button>
@@ -736,7 +736,7 @@ function KitchenTicketCard({
  <div
  className={cn(
  "h-full transition-colors duration-200",
- urgency === "critical" ? "bg-destructive" : urgency === "warning" ? "bg-amber-500" : "bg-emerald-500",
+ urgency === "critical" ? "bg-destructive" : urgency === "warning" ? "bg-warning" : "bg-emerald-500",
  )}
  style={{
  width: urgency === "critical" ? "100%" : urgency === "warning" ? "65%" : `${Math.min((waitMinutes / 8) * 40, 40)}%`,
@@ -813,7 +813,7 @@ function KitchenTicketCard({
  return (
  <span
  key={oIdx}
- className="text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-2 py-1 rounded-md"
+ className="text-xs font-bold bg-warning/15 text-warning-strong  border border-warning/30 px-2 py-1 rounded-md"
  >
  + {label}
  </span>

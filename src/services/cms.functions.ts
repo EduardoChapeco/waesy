@@ -16,15 +16,14 @@ import { applyServerFnEdgeCache, CACHE_TAGS } from "@/lib/cache/edge-cache";
 // ---------------------------------------------------------------------------
 
 async function _listAdminPages() {
-  const { getServerIdentity, getSSRClient } = await import("@/lib/server-access");
-  const { store_id } = await getServerIdentity();
-  if (!store_id) throw new Error("Loja não encontrada");
+  const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+  const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
 
-  const db = await getSSRClient();
+  const db = getServerClient();
   const { data, error } = await db
     .from("pages")
     .select("id, title, slug, status, created_at, updated_at")
-    .eq("store_id", store_id)
+    .eq("store_id", authCtx.storeId)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -38,7 +37,7 @@ export const listAdminPages = createServerFn({ method: "GET" }).handler(async ()
  } catch (e) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
  console.error("[cms.functions] listAdminPages error:", e);
- throw new Error("Erro ao listar páginas.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao listar páginas.");
  }
 });
 
@@ -46,9 +45,8 @@ export const getAdminPageDetails = createServerFn({ method: "GET" })
  .validator(z.object({ id: z.string().uuid() }))
  .handler(async ({ data: input }) => {
  try {
- const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("Loja não encontrada");
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
 
  const db = getServerClient();
 
@@ -56,7 +54,7 @@ export const getAdminPageDetails = createServerFn({ method: "GET" })
  .from("pages")
  .select("*")
  .eq("id", input.id)
- .eq("store_id", store_id)
+ .eq("store_id", authCtx.storeId)
  .single();
 
  if (pageError) throw pageError;
@@ -73,7 +71,7 @@ export const getAdminPageDetails = createServerFn({ method: "GET" })
  } catch (e) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
  console.error("[cms.functions] getAdminPageDetails error:", e);
- throw new Error("Erro ao carregar detalhes da página.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao carregar detalhes da página.");
  }
  });
 
@@ -90,17 +88,13 @@ export const createPage = createServerFn({ method: "POST" })
  .handler(async ({ data: input }) => {
  try {
  const db = getServerClient();
-
- const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("No store found");
- const storeData = { id: store_id };
- if (!storeData) throw new Error("No store found");
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
 
  const { data, error } = await db
  .from("pages")
  .insert({
- store_id: storeData.id,
+ store_id: authCtx.storeId,
  title: input.title,
  slug: input.slug,
  status: input.status,
@@ -114,7 +108,7 @@ export const createPage = createServerFn({ method: "POST" })
  return data;
  } catch (e: unknown) {
  console.error("[cms.functions] createPage error:", e);
- throw new Error(e instanceof Error ? (e instanceof Error ? e.message : String(e)) : "Erro.");
+ throw new Error(e instanceof Error ? e.message : "Erro.");
  }
  });
 
@@ -123,18 +117,36 @@ export const deletePage = createServerFn({ method: "POST" })
  .handler(async ({ data: input }) => {
  try {
  const db = getServerClient();
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
+
+ const { data: existingPage, error: pageLookupErr } = await db
+ .from("pages")
+ .select("id, store_id")
+ .eq("id", input.id)
+ .eq("store_id", authCtx.storeId)
+ .maybeSingle();
+
+ if (pageLookupErr) throw pageLookupErr;
+ if (!existingPage) {
+ throw new Error("Forbidden: Página não encontrada ou pertence a outra empresa.");
+ }
 
  // First delete associated sections
- await db.from("page_sections").delete().eq("page_id", input.id);
+ await db.from("page_sections").delete().eq("page_id", existingPage.id);
 
  // Then delete page
- const { error } = await db.from("pages").delete().eq("id", input.id);
+ const { error } = await db
+ .from("pages")
+ .delete()
+ .eq("id", existingPage.id)
+ .eq("store_id", authCtx.storeId);
  if (error) throw error;
 
  return { status: "success" as const };
  } catch (e: unknown) {
  console.error("[cms.functions] deletePage error:", e);
- throw new Error("Erro ao excluir página.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao excluir página.");
  }
  });
 
@@ -155,10 +167,24 @@ export const savePageSections = createServerFn({ method: "POST" })
  .handler(async ({ data: input }) => {
  try {
  const db = getServerClient();
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
+
+ const { data: ownerPage, error: ownerErr } = await db
+ .from("pages")
+ .select("id, store_id")
+ .eq("id", input.pageId)
+ .eq("store_id", authCtx.storeId)
+ .maybeSingle();
+
+ if (ownerErr) throw ownerErr;
+ if (!ownerPage) {
+ throw new Error("Forbidden: Página não encontrada ou pertence a outra empresa.");
+ }
 
  // Delete existing sections not in the payload
  const sectionIds = input.sections.map((s) => s.id).filter(Boolean);
- let deleteQuery = db.from("page_sections").delete().eq("page_id", input.pageId);
+ let deleteQuery = db.from("page_sections").delete().eq("page_id", ownerPage.id);
  if (sectionIds.length > 0) {
  deleteQuery = deleteQuery.not("id", "in", `(${sectionIds.join(",")})`);
  }
@@ -167,14 +193,18 @@ export const savePageSections = createServerFn({ method: "POST" })
  // Upsert sections
  for (const section of input.sections) {
  const payload = {
- page_id: input.pageId,
+ page_id: ownerPage.id,
  section_type: section.section_type,
  content: section.content,
  sort_order: section.sort_order,
  };
 
  if (section.id) {
- await db.from("page_sections").update(payload).eq("id", section.id);
+ await db
+ .from("page_sections")
+ .update(payload)
+ .eq("id", section.id)
+ .eq("page_id", ownerPage.id);
  } else {
  await db.from("page_sections").insert(payload);
  }
@@ -183,7 +213,7 @@ export const savePageSections = createServerFn({ method: "POST" })
  return { status: "success" as const };
  } catch (e: unknown) {
  console.error("[cms.functions] savePageSections error:", e);
- throw new Error("Erro ao salvar seções.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao salvar seções.");
  }
  });
 
@@ -244,12 +274,18 @@ export const getPublicStoreSettings = createServerFn({ method: "GET" }).handler(
  const { data, error } = await db
  .from("stores")
  .select(
- "id, name, slug, type, email, phone, cnpj, address, city, state, zip_code, description, seo_title, seo_description, seo_keywords, settings",
+ "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, seo_title, seo_description, seo_keywords, logo_url, banner_url, settings",
  )
  .eq("id", storeId)
  .maybeSingle();
 
- if (!error && data) store = data;
+ if (!error && data) {
+ const stSettings = (data.settings as Record<string, any>) || {};
+ store = {
+ ...data,
+ type: stSettings.type || stSettings.segment || stSettings.niche || "general",
+ };
+ }
  }
 
  // Se não há store de tenant (ex: navegando na Home/SuperApp), resolve a loja matriz da plataforma
@@ -305,18 +341,21 @@ export const getThemeSettings = createServerFn({ method: "GET" }).handler(async 
     if (error && error.code !== "PGRST116") throw error; // PGRST116 is not found
 
     if (!data) {
-      // Create default if it doesn't exist
-      const { data: newData, error: insertError } = await db
-        .from("theme_settings")
-        .insert({ store_id: storeId })
-        .select()
-        .maybeSingle();
-
-      if (insertError) {
-        console.warn("[cms.functions] getThemeSettings insert error:", insertError);
-        return null;
-      }
-      return newData || null;
+      // Sem efeito colateral de INSERT em GET público não autenticado
+      return {
+        store_id: storeId,
+        // design-lint-ignore DL-01 reason:"Valores de fallback do schema de branding para loja virgem" expiry:"2027-12-31"
+        primary_color: "#2563EB",
+        // design-lint-ignore DL-01 reason:"Valores de fallback do schema de branding para loja virgem" expiry:"2027-12-31"
+        background_color: "#FFFFFF",
+        // design-lint-ignore DL-01 reason:"Valores de fallback do schema de branding para loja virgem" expiry:"2027-12-31"
+        text_color: "#09090B",
+        font_heading: "Plus Jakarta Sans",
+        font_body: "Inter",
+        border_radius: "0.75rem",
+        logo_url: null,
+        favicon_url: null,
+      };
     }
 
     return data;
@@ -343,25 +382,33 @@ export const updateThemeSettings = createServerFn({ method: "POST" })
  .handler(async ({ data: input }) => {
  try {
  const db = getServerClient();
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
 
- const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("No store found");
- const storeData = { id: store_id };
- if (!storeData) throw new Error("No store found");
+ const { data: existing } = await db
+ .from("theme_settings")
+ .select("id")
+ .eq("store_id", authCtx.storeId)
+ .maybeSingle();
 
- const { data, error } = await db
+ const result = existing?.id
+ ? await db
  .from("theme_settings")
  .update(input)
- .eq("store_id", storeData.id)
+ .eq("store_id", authCtx.storeId)
+ .select()
+ .single()
+ : await db
+ .from("theme_settings")
+ .insert({ store_id: authCtx.storeId, ...input })
  .select()
  .single();
 
- if (error) throw error;
- return data;
+ if (result.error) throw result.error;
+ return result.data;
  } catch (e: unknown) {
  console.error("[cms.functions] updateThemeSettings error:", e);
- throw new Error("Erro ao atualizar tema.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao atualizar tema.");
  }
  });
 
@@ -463,25 +510,9 @@ export const upsertNavigationMenu = createServerFn({ method: "POST" })
  .handler(async ({ data: input }) => {
  try {
  const db = getServerClient();
-
- const { getServerIdentity } = await import("@/lib/server-access");
- const identity = await getServerIdentity().catch(() => ({ store_id: null }));
- let storeId = identity?.store_id || null;
- if (!storeId) {
-  const { resolvePlatformRootStore } = await import("@/services/master.functions");
-  const rootStore = await resolvePlatformRootStore(db);
-  storeId = rootStore?.id || null;
- }
- if (!storeId) {
-  const { data: fallbackStore } = await db
-   .from("stores")
-   .select("id")
-   .order("created_at", { ascending: true })
-   .limit(1)
-   .maybeSingle();
-  storeId = fallbackStore?.id || null;
- }
- if (!storeId) throw new Error("Nenhuma loja base encontrada para salvar o menu.");
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
+ const storeId = authCtx.storeId;
 
  const normalizedHandle = input.handle.trim().toLowerCase();
  const payload = {
@@ -495,7 +526,12 @@ export const upsertNavigationMenu = createServerFn({ method: "POST" })
  let result;
 
  if (input.id && !input.id.startsWith("canonical-")) {
- result = await query.update(payload).eq("id", input.id).select().single();
+ result = await query
+ .update(payload)
+ .eq("id", input.id)
+ .eq("store_id", storeId)
+ .select()
+ .single();
  } else {
  const { data: existingMenu } = await db
   .from("navigation_menus")
@@ -505,7 +541,12 @@ export const upsertNavigationMenu = createServerFn({ method: "POST" })
   .maybeSingle();
 
  if (existingMenu?.id) {
-  result = await query.update(payload).eq("id", existingMenu.id).select().single();
+  result = await query
+  .update(payload)
+  .eq("id", existingMenu.id)
+  .eq("store_id", storeId)
+  .select()
+  .single();
  } else {
   result = await query.insert(payload).select().single();
  }
@@ -515,7 +556,7 @@ export const upsertNavigationMenu = createServerFn({ method: "POST" })
  return result.data;
  } catch (e: unknown) {
  console.error("[cms.functions] upsertNavigationMenu error:", e);
- throw new Error("Erro ao salvar menu de navegação.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao salvar menu de navegação.");
  }
  });
 
@@ -527,9 +568,8 @@ export const listReviews = createServerFn({ method: "GET" }).handler(async () =>
  try {
  const db = getServerClient();
 
- const { getServerIdentity } = await import("@/lib/server-access");
- const identity = await getServerIdentity();
- if (!identity.store_id) throw new Error("Loja não identificada.");
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext();
 
  // Join with products and users to get display names
  const { data, error } = await db
@@ -541,7 +581,7 @@ export const listReviews = createServerFn({ method: "GET" }).handler(async () =>
  users:user_id (id)
  `,
  )
- .eq("store_id", identity.store_id)
+ .eq("store_id", authCtx.storeId)
  .order("created_at", { ascending: false });
 
  if (error) throw error;
@@ -549,7 +589,7 @@ export const listReviews = createServerFn({ method: "GET" }).handler(async () =>
  } catch (e) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
  console.error("[cms.functions] listReviews error:", e);
- throw new Error("Erro ao listar avaliações.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao listar avaliações.");
  }
 });
 
@@ -564,15 +604,14 @@ export const updateReviewStatus = createServerFn({ method: "POST" })
  try {
  const db = getServerClient();
 
- const { getServerIdentity } = await import("@/lib/server-access");
- const identity = await getServerIdentity();
- if (!identity.store_id) throw new Error("Loja não identificada.");
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext();
 
  const { data, error } = await db
  .from("reviews")
  .update({ status: input.status })
  .eq("id", input.id)
- .eq("store_id", identity.store_id)
+ .eq("store_id", authCtx.storeId)
  .select()
  .single();
 
@@ -580,7 +619,7 @@ export const updateReviewStatus = createServerFn({ method: "POST" })
  return data;
  } catch (e: unknown) {
  console.error("[cms.functions] updateReviewStatus error:", e);
- throw new Error("Erro ao atualizar avaliação.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao atualizar avaliação.");
  }
  });
 
@@ -595,10 +634,12 @@ export const createProductReview = createServerFn({ method: "POST" })
  .handler(async ({ data: input }) => {
  try {
  const db = getServerClient();
+ const { getSSRClient } = await import("@/lib/server-access");
+ const ssrClient = await getSSRClient();
  const {
  data: { user },
  error: authError,
- } = await db.auth.getUser();
+ } = await ssrClient.auth.getUser();
  if (authError || !user) {
  throw new Error("Você precisa estar logado para fazer uma avaliação.");
  }
@@ -678,18 +719,16 @@ export const getLinkInBio = createServerFn({ method: "GET" })
       if (error && error.code !== "PGRST116") throw error; // PGRST116 is not found
 
       if (!bioData) {
-        // Create default if it doesn't exist
-        const { data: newData, error: insertError } = await db
-          .from("link_in_bio")
-          .insert({ store_id: storeId })
-          .select()
-          .maybeSingle();
-
-        if (insertError) {
-          console.warn("[cms.functions] getLinkInBio insert error:", insertError);
-          return null;
-        }
-        return newData || null;
+        // Sem INSERT em GET público não autenticado
+        return {
+          store_id: storeId,
+          title: "",
+          description: null,
+          avatar_url: null,
+          links: [],
+          theme: "default",
+          socials: {},
+        };
       }
 
       return bioData;
@@ -715,24 +754,33 @@ export const upsertLinkInBio = createServerFn({ method: "POST" })
  try {
  const db = getServerClient();
 
- const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("No store found");
- const storeData = { id: store_id };
- if (!storeData) throw new Error("No store found");
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
 
- const { data, error } = await db
+ const { data: existing } = await db
+ .from("link_in_bio")
+ .select("id")
+ .eq("store_id", authCtx.storeId)
+ .maybeSingle();
+
+ const result = existing?.id
+ ? await db
  .from("link_in_bio")
  .update(input)
- .eq("store_id", storeData.id)
+ .eq("store_id", authCtx.storeId)
+ .select()
+ .single()
+ : await db
+ .from("link_in_bio")
+ .insert({ store_id: authCtx.storeId, ...input })
  .select()
  .single();
 
- if (error) throw error;
- return data;
+ if (result.error) throw result.error;
+ return result.data;
  } catch (e: unknown) {
  console.error("[cms.functions] upsertLinkInBio error:", e);
- throw new Error("Erro ao atualizar Link da Bio.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao atualizar Link da Bio.");
  }
  });
 
@@ -744,16 +792,13 @@ export const listAdminStories = createServerFn({ method: "GET" }).handler(async 
  try {
  const db = getServerClient();
 
- const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("No store found");
- const storeData = { id: store_id };
- if (!storeData) throw new Error("No store found");
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
 
  const { data, error } = await db
  .from("stories")
  .select("*")
- .eq("store_id", storeData.id)
+ .eq("store_id", authCtx.storeId)
  .order("sort_order", { ascending: true });
 
  if (error) throw error;
@@ -761,7 +806,7 @@ export const listAdminStories = createServerFn({ method: "GET" }).handler(async 
  } catch (e) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
  console.error("[cms.functions] listAdminStories error:", e);
- throw new Error("Erro ao listar stories.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao listar stories.");
  }
 });
 
@@ -779,14 +824,11 @@ export const upsertStory = createServerFn({ method: "POST" })
  try {
  const db = getServerClient();
 
- const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("No store found");
- const storeData = { id: store_id };
- if (!storeData) throw new Error("No store found");
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
 
  const payload = {
- store_id: storeData.id,
+ store_id: authCtx.storeId,
  media_url: input.media_url,
  link_url: input.link_url,
  status: input.status,
@@ -800,7 +842,7 @@ export const upsertStory = createServerFn({ method: "POST" })
  result = await query
  .update(payload)
  .eq("id", input.id)
- .eq("store_id", storeData.id)
+ .eq("store_id", authCtx.storeId)
  .select()
  .single();
  } else {
@@ -811,7 +853,7 @@ export const upsertStory = createServerFn({ method: "POST" })
  return result.data;
  } catch (e: unknown) {
  console.error("[cms.functions] upsertStory error:", e);
- throw new Error("Erro ao salvar story.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao salvar story.");
  }
  });
 
@@ -821,19 +863,17 @@ export const deleteStory = createServerFn({ method: "POST" })
  try {
  const db = getServerClient();
 
- const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("No store found");
- const storeData = { id: store_id };
+ const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+ const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
 
- const { error } = await db.from("stories").delete().eq("id", id).eq("store_id", storeData.id);
+ const { error } = await db.from("stories").delete().eq("id", id).eq("store_id", authCtx.storeId);
 
  if (error) throw error;
 
  return { status: "success" as const };
  } catch (e: unknown) {
  console.error("[cms.functions] deleteStory error:", e);
- throw new Error("Erro ao excluir story.");
+ throw new Error(e instanceof Error ? e.message : "Erro ao excluir story.");
  }
  });
 
@@ -1088,4 +1128,103 @@ export const listStorePublicReviews = createServerFn({ method: "GET" })
     } catch {
       return [];
     }
+  });
+
+/**
+ * Conecta um domínio personalizado real à vitrine da empresa com verificação de unicidade multi-tenant
+ */
+export const connectStoreCustomDomain = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      domain: z.string().min(4).max(253),
+      documentId: z.string().uuid().optional().nullable(),
+      requestedStoreId: z.string().uuid().optional().nullable(),
+    }),
+  )
+  .handler(async ({ data: { domain, documentId, requestedStoreId } }) => {
+    const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+    const authCtx = await authorizeBuilderStoreContext({
+      documentId: documentId || undefined,
+      requestedStoreId: requestedStoreId || undefined,
+      allowPlatformRootForGlobalAdmin: true,
+    });
+
+    const normalizedDomain = domain
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/\/.*$/, "")
+      .replace(/:\d+$/, "");
+
+    const domainRegex = /^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/;
+    if (!domainRegex.test(normalizedDomain) || normalizedDomain.endsWith(".waesy.com.br") || normalizedDomain.endsWith(".waesy.app")) {
+      throw new Error("Informe um domínio próprio válido (ex: www.suaempresa.com.br).");
+    }
+
+    const db = getServerClient();
+
+    const { data: conflictingDoc } = await db
+      .from("experience_documents")
+      .select("id, store_id")
+      .eq("custom_domain", normalizedDomain)
+      .neq("store_id", authCtx.storeId)
+      .limit(1)
+      .maybeSingle();
+
+    if (conflictingDoc?.id) {
+      throw new Error("Este domínio já está vinculado a outra empresa na plataforma.");
+    }
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("id, slug, settings")
+      .eq("id", authCtx.storeId)
+      .maybeSingle();
+
+    const prevSettings = ((storeRow?.settings as Record<string, any>) || {});
+    const updatedStoreSettings = {
+      ...prevSettings,
+      custom_domain: normalizedDomain,
+      custom_domain_status: "pending_dns",
+      custom_domain_updated_at: new Date().toISOString(),
+    };
+
+    await db
+      .from("stores")
+      .update({
+        settings: updatedStoreSettings,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", authCtx.storeId);
+
+    if (documentId) {
+      await db
+        .from("experience_documents")
+        .update({
+          custom_domain: normalizedDomain,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", documentId)
+        .eq("store_id", authCtx.storeId);
+    } else {
+      await db
+        .from("experience_documents")
+        .update({
+          custom_domain: normalizedDomain,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("store_id", authCtx.storeId)
+        .eq("document_type", "storefront")
+        .eq("is_active", true);
+    }
+
+    return {
+      status: "pending_dns" as const,
+      domain: normalizedDomain,
+      storeSlug: storeRow?.slug || "loja",
+      cnameHost: normalizedDomain.startsWith("www.") ? "www" : "@",
+      cnameTarget: "cname.waesy.app",
+      aRecordTarget: "76.76.21.21",
+      verified: false,
+    };
   });

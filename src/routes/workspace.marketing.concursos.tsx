@@ -332,8 +332,8 @@ function WorkspaceConcursosPage() {
                   </div>
 
                   {isCompleted && c.winner_ticket_number && (
-                    <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-4 flex items-center gap-3">
-                      <Trophy className="size-5 text-amber-500 shrink-0" />
+                    <div className="rounded-lg bg-warning/10 border border-warning/30 p-4 flex items-center gap-3">
+                      <Trophy className="size-5 text-warning-strong shrink-0" />
                       <div className="text-xs">
                         <span className="font-bold text-foreground block">
                           Cupom Vencedor #{c.winner_ticket_number}
@@ -353,7 +353,7 @@ function WorkspaceConcursosPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenParticipants(c.id)}
-                      className="h-9 px-3 rounded-lg text-xs gap-1 cursor-pointer"
+                      className="h-9 px-3 rounded-lg text-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
                     >
                       <Users className="size-3.5" />
                       <span>Participantes ({c.totalTickets})</span>
@@ -365,7 +365,7 @@ function WorkspaceConcursosPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => openEditModal(c)}
-                        className="h-9 px-3 rounded-lg text-xs gap-1 cursor-pointer"
+                        className="h-9 px-3 rounded-lg text-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
                       >
                         <Pencil className="size-3.5" />
                         <span>Editar</span>
@@ -379,7 +379,7 @@ function WorkspaceConcursosPage() {
                       variant="outline"
                       disabled={drawingId === c.id || c.totalTickets === 0}
                       onClick={() => handleDraw(c.id)}
-                      className="h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                      className="h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
                     >
                       {drawingId === c.id ? (
                         <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
@@ -461,7 +461,7 @@ function WorkspaceConcursosPage() {
               placeholder="Descreva os itens inclusos, como retirar na loja e condições para o vencedor..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="rounded-lg text-sm min-h-[90px] leading-relaxed"
+              className="rounded-lg text-sm min-h-23 leading-relaxed"
             />
           </div>
 
@@ -511,7 +511,7 @@ function WorkspaceConcursosPage() {
             <Textarea
               value={termsText}
               onChange={(e) => setTermsText(e.target.value)}
-              className="rounded-lg text-xs min-h-[90px] leading-relaxed"
+              className="rounded-lg text-xs min-h-23 leading-relaxed"
               required
             />
           </div>

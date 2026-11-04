@@ -519,7 +519,7 @@ function TourismDetailPage() {
               asChild
               size="sm"
               variant="outline"
-              className="h-7 text-xs font-semibold rounded-lg border-border/80"
+              className="h-7 text-xs font-semibold rounded-lg border-border/80 min-h-11 sm:min-h-0"
             >
               <Link to={`/workspace/turismo` as any}>
                 <PencilSimple size={14} className="mr-2" />
@@ -546,7 +546,7 @@ function TourismDetailPage() {
                 asChild
                 variant="outline"
                 size="sm"
-                className="rounded-lg font-bold text-xs gap-2 h-9"
+                className="rounded-lg font-bold text-xs gap-2 h-9 min-h-11 sm:min-h-0"
               >
                 <Link to={`/workspace/turismo` as any}>
                   <PencilSimple size={14} weight="bold" />
@@ -576,7 +576,7 @@ function TourismDetailPage() {
               variant="outline"
               size="sm"
               onClick={handleShare}
-              className="rounded-lg font-semibold text-xs gap-2 h-9"
+              className="rounded-lg font-semibold text-xs gap-2 h-9 min-h-11 sm:min-h-0"
             >
               <ShareNetwork size={16} weight="bold" />
               <span>Compartilhar</span>
@@ -624,7 +624,7 @@ function TourismDetailPage() {
 
         {/* ── 3. Visual Gallery ── */}
         <div className="space-y-3">
-          <div className="relative w-full aspect-video sm:aspect-[21/9] rounded-lg border border-border/60 overflow-hidden bg-muted">
+          <div className="relative w-full aspect-video sm:aspect-21/9 rounded-lg border border-border/60 overflow-hidden bg-muted">
             <img
               src={images[activeImage] || experience.image_url}
               alt={experience.title}
@@ -633,7 +633,7 @@ function TourismDetailPage() {
           </div>
 
           {images.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+            <div className="flex gap-3 overflow-x-auto scroll-area-carousel no-scrollbar pb-2">
               {images.map((img: string, idx: number) => (
                 <button
                   key={idx}

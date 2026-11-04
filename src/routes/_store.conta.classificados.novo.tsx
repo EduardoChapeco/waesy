@@ -209,7 +209,7 @@ const NICHE_CARDS: NicheDefinition[] = [
     description: "Venda integral ou parcial de empresas ativas, repasse de ponto comercial, franquias e captação de sócios ou investimento.",
     icon: Briefcase,
     badge: "Negócios",
-    gradient: "from-amber-600/15 via-yellow-600/10 to-transparent",
+    gradient: "from-warning/15 via-warning/10 to-transparent",
   },
   {
     id: "desapego",
@@ -229,7 +229,7 @@ const NICHE_CARDS: NicheDefinition[] = [
     description: "Carros de passeio, motocicletas, caminhões, utilitários e veículos comerciais.",
     icon: Car,
     badge: "Veículos",
-    gradient: "from-amber-500/10 via-orange-500/5 to-transparent",
+    gradient: "from-warning/10 via-orange-500/5 to-transparent",
   },
   {
     id: "imovel",
@@ -282,7 +282,7 @@ const NICHE_CARDS: NicheDefinition[] = [
       "Aluguel por diária, chalés com hidro, cabanas na serra, casas de campo, pousadas e suítes com check-in.",
     icon: Key,
     badge: "Temporada",
-    gradient: "from-amber-500/10 via-rose-500/5 to-transparent",
+    gradient: "from-warning/10 via-rose-500/5 to-transparent",
   },
   {
     id: "equipamento",
@@ -322,7 +322,7 @@ const NICHE_CARDS: NicheDefinition[] = [
     description: "Pacotes turísticos, resorts, passeios guiados e roteiros com fotos e programação completa.",
     icon: Key,
     badge: "Turismo",
-    gradient: "from-amber-500/15 via-rose-500/10 to-purple-600/10",
+    gradient: "from-warning/15 via-rose-500/10 to-purple-600/10",
   },
   {
     id: "gastronomia",
@@ -362,7 +362,7 @@ const NICHE_CARDS: NicheDefinition[] = [
     description: "Itens de mercado, mantimentos, carnes, pães, frutas e conveniência diária.",
     icon: StoreIcon,
     badge: "Mercado",
-    gradient: "from-lime-500/15 via-green-500/10 to-transparent",
+    gradient: "from-warning/15 via-green-500/10 to-transparent",
   },
 ];
 
@@ -4377,7 +4377,7 @@ const [aiInstructions, setAiInstructions] = useState("");
             <div
               className={cn(
                 "h-full rounded-full transition-colors duration-300",
-                qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-amber-500" : "bg-primary"
+                qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-warning" : "bg-primary"
               )}
               style={{ width: `${qualityScore}%` }}
             />
@@ -4745,7 +4745,7 @@ const [aiInstructions, setAiInstructions] = useState("");
               )}
 
               {pricingType === "on_quote" && (
-                <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
+                <div className="p-4 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  text-xs">
                   <p className="font-semibold flex items-center gap-2">
                     <Coins className="size-4 shrink-0" />
                     <span>Preço sob Orçamento / Cotação</span>
@@ -5315,8 +5315,8 @@ const [aiInstructions, setAiInstructions] = useState("");
                         </div>
                       </div>
                       {/* Leg 2: Transfer */}
-                      <div className="rounded-lg border border-amber-200/60 bg-amber-50/30 dark:bg-amber-950/10 p-4 space-y-3">
-                        <p className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                      <div className="rounded-lg border border-warning/60 bg-warning/30  p-4 space-y-3">
+                        <p className="text-xs font-bold uppercase tracking-wider text-warning-strong  flex items-center gap-1">
                           <RouteIcon className="size-4" /> Trecho 2 — Transfer Terrestre / Marítimo
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -5707,7 +5707,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               {lodging.name ? lodging.name : `Hospedagem ${idx + 1}`}
                             </span>
                             {lodging.stars ? (
-                              <Badge variant="outline" className="text-xs font-bold text-amber-600 dark:text-amber-400 border-amber-500/30">
+                              <Badge variant="outline" className="text-xs font-bold text-warning-strong  border-warning/30">
                                 {lodging.stars} estrelas
                               </Badge>
                             ) : null}
@@ -8650,7 +8650,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
                         <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-                          <Zap className="size-4 text-amber-500 fill-amber-500" />
+                          <Zap className="size-4 text-warning-strong fill-warning" />
                           <span>Oferta Relâmpago no Checkout (Order Bump / Venda Cruzada)</span>
                         </Label>
                         <p className="text-xs text-muted-foreground/75 text-muted-foreground">
@@ -8932,7 +8932,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                       <Briefcase className="size-4 text-primary" />
                       <span>Parâmetros do Negócio</span>
                     </div>
-                    <Badge variant="outline" className="text-xs font-semibold text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
+                    <Badge variant="outline" className="text-xs font-semibold text-warning-strong  border-warning/30 bg-warning/10">
                       Negócios
                     </Badge>
                   </div>
@@ -8996,7 +8996,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               cnpjAuditData.legalRiskScore < 30
                                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                                 : cnpjAuditData.legalRiskScore < 65
-                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                ? "bg-warning/10 text-warning-strong  border-warning/30"
                                 : "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/30"
                             )}
                           >
@@ -9328,11 +9328,11 @@ const [aiInstructions, setAiInstructions] = useState("");
                   </div>
 
                   {/* Governança de Sigilo & Assessoria M&A */}
-                  <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3">
+                  <div className="p-4 rounded-lg bg-warning/5 border border-warning/20 space-y-3">
                     <div className="flex items-center justify-between gap-3">
                       <div className="space-y-1">
                         <Label htmlFor="nda-switch" className="text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2">
-                          <Lock className="size-4 text-amber-600 dark:text-amber-400" />
+                          <Lock className="size-4 text-warning-strong " />
                           Exigir Assinatura de NDA Digital
                         </Label>
                         <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-snug">
@@ -9346,7 +9346,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                       />
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 pt-2 border-t border-amber-500/15">
+                    <div className="flex items-center justify-between gap-3 pt-2 border-t border-warning/15">
                       <div className="space-y-1">
                         <Label htmlFor="advisor-switch" className="text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary flex items-center gap-2">
                           <ShieldCheck className="size-4 text-primary" />
@@ -9364,11 +9364,11 @@ const [aiInstructions, setAiInstructions] = useState("");
                     </div>
 
                     {/* Uploader de Documentos Restritos & DRE (Fase 3 Master Plan) */}
-                    <div className="pt-3 border-t border-amber-500/20 space-y-2">
+                    <div className="pt-3 border-t border-warning/20 space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-                            <FileSpreadsheet className="size-4 text-amber-600 dark:text-amber-400" />
+                            <FileSpreadsheet className="size-4 text-warning-strong " />
                             Documentos Confidenciais e DRE (Acesso Restrito via NDA)
                           </Label>
                           <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-snug">
@@ -9397,7 +9397,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               }
                             }}
                           />
-                          <span className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 border border-amber-500/30 transition-colors">
+                          <span className="inline-flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg text-xs font-semibold bg-warning/15 hover:bg-warning/25 text-warning-strong  border border-warning/30 transition-colors">
                             {isUploadingRestrictedDoc ? (
                               <>
                                 <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
@@ -9421,7 +9421,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                               className="flex items-center justify-between p-2 rounded-lg bg-background border border-border/70 text-xs"
                             >
                               <div className="flex items-center gap-2 min-w-0">
-                                <FileText className="size-4 text-amber-600 shrink-0" />
+                                <FileText className="size-4 text-warning-strong shrink-0" />
                                 <span className="font-medium text-foreground truncate">{doc.name}</span>
                                 {doc.size_bytes && (
                                   <span className="text-xs text-muted-foreground font-mono shrink-0">
@@ -11420,7 +11420,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                             O agente não poderá negociar desconto algum — defenderá o preço cheio.
                           </p>
                         ) : (
-                          <p className="text-xs text-muted-foreground/75 text-amber-600 dark:text-amber-400">
+                          <p className="text-xs text-muted-foreground/75 text-warning-strong ">
                             O agente pode conceder até {maxDiscountPct}% de desconto como último recurso. Ele negociará profissionalmente antes de ceder.
                           </p>
                         )}

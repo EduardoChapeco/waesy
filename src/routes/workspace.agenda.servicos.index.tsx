@@ -190,7 +190,7 @@ function ServicesIndexPage() {
      size="sm"
      className="rounded-lg font-bold text-xs gap-2 border-border/60 hover:bg-muted/30 text-foreground"
    >
-     <Star className="size-3.5 text-amber-500" />
+     <Star className="size-3.5 text-warning-strong" />
      <span>Importar do Catálogo</span>
    </Button>
    <Button onClick={handleOpenCreate} size="sm" className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground">

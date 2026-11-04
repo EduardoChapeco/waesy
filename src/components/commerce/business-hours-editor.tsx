@@ -221,7 +221,7 @@ export function BusinessHoursEditor({
  <div className="space-y-2 p-4 rounded-lg bg-muted/30 border border-border/50">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
- <Zap className="size-3.5 text-amber-500" />
+ <Zap className="size-3.5 text-warning-strong" />
  Modelos de Horário Prontos (Clique para Carregar)
  </span>
  </div>

@@ -161,13 +161,13 @@ function PortalCompletoPage() {
           </p>
 
           <div className="flex items-center justify-center gap-3 pt-1">
-            <Button asChild size="sm" className="h-10 px-5 rounded-lg font-bold text-xs gap-2 shadow-sm bg-foreground text-background hover:bg-foreground/90">
+            <Button asChild size="sm" className="h-10 px-5 rounded-lg font-bold text-xs gap-2  bg-foreground text-background hover:bg-foreground/90 min-h-11 sm:min-h-0">
               <a href="#waitlist">
                 <span>Solicitar Demonstração</span>
                 <ArrowRight className="size-3.5" />
               </a>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-10 px-4 rounded-lg font-semibold text-xs border-border/70">
+            <Button asChild variant="outline" size="sm" className="h-10 px-4 rounded-lg font-semibold text-xs border-border/70 min-h-11 sm:min-h-0">
               <Link to="/conta/empresa">
                 <span>Voltar ao Painel</span>
               </Link>
@@ -268,7 +268,7 @@ function PortalCompletoPage() {
                 Nossa equipe entrará em contato via WhatsApp para agendar a demonstração exclusiva e liberar seu acesso prioritário.
               </p>
               <div className="pt-2">
-                <Button asChild variant="outline" size="sm" className="h-10 rounded-lg text-xs">
+                <Button asChild variant="outline" size="sm" className="h-10 rounded-lg text-xs min-h-11 sm:min-h-0">
                   <Link to="/conta/empresa">
                     Voltar ao Meu Painel da Empresa
                   </Link>
@@ -344,7 +344,7 @@ function PortalCompletoPage() {
                 <Button
                   type="submit"
                   disabled={waitlistMutation.isPending}
-                  className="w-full h-12 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm"
+                  className="w-full h-12 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground "
                 >
                   {waitlistMutation.isPending ? (
                     <>

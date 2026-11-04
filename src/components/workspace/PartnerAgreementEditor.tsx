@@ -166,8 +166,8 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Modo de Filtro de Datas */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
                     <Label className="text-xs font-bold text-foreground">Regime de Data do Relatório</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -197,8 +197,8 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
                 </div>
 
                 {/* Status da Comanda */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
                     <Label className="text-xs font-bold text-foreground">Exigência de Finalização</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -238,8 +238,8 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Quem paga as taxas do gateway */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
                     <Label className="text-xs font-bold text-foreground">Taxas de Cartão / Gateway</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -275,8 +275,8 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
                 </div>
 
                 {/* Quem absorve os descontos comerciais */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
                     <Label className="text-xs font-bold text-foreground">Descontos Oferecidos ao Cliente</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -322,8 +322,8 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Dedução de Insumos */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
                     <Label className="text-xs font-bold text-foreground">Produtos Consumidos no Procedimento</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -356,8 +356,8 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
                 </div>
 
                 {/* Base de Preço do Insumo */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
                     <Label className="text-xs font-bold text-foreground">Preço-Base dos Insumos Usados</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -402,7 +402,7 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
                     <PenTool className="size-4 text-primary" />
                     <span>Termo de Parceria & Assinatura Digital</span>
                   </h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Assinatura eletrônica com validade jurídica e carimbo forense (IP/Timestamp).
                   </p>
                 </div>

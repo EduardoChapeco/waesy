@@ -168,7 +168,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
           {/* Botão "Instruções" */}
           <button
             onClick={() => setIsInfoOpen(true)}
-            className="flex items-center gap-2 text-xs text-muted-foreground bg-background border border-border/60 rounded-full px-3 py-2 shadow-sm hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex items-center gap-2 text-xs text-muted-foreground bg-background border border-border/60 rounded-full px-3 py-2  hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Saiba mais sobre o assistente"
           >
             <Info className="size-3.5" />
@@ -179,7 +179,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
           <button
             onClick={() => setIsOpen(true)}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "size-14 rounded-full flex items-center justify-center shadow-lg transition-colors duration-200",
+              "size-14 rounded-full flex items-center justify-center  transition-colors duration-200",
               "bg-primary text-primary-foreground hover:opacity-90 active:scale-95",
               "ring-2 ring-blue-500/20 ring-offset-2 ring-offset-background"
             )}
@@ -194,8 +194,8 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
       {isOpen && (
         <div className={cn(
           "fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 pb-safe sm:pb-0",
-          "w-full sm:w-[375px] h-[80vh] sm:h-[560px]",
-          "bg-background border border-border sm:rounded-lg shadow-2xl",
+          "w-full sm:w-94 h-vh-80 sm:h-140",
+          "bg-background border border-border sm:rounded-lg ",
           "flex flex-col overflow-hidden",
           "animate-in slide-in-from-bottom-4 fade-in duration-250",
           // Borda azul sutil no modo aberto
@@ -222,7 +222,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
                 size="sm"
                 onClick={handleEscalateToHuman}
                 disabled={isEscalating}
-                className="h-8 px-2 text-2xs font-semibold text-primary hover:bg-primary/10 gap-1 rounded-md"
+                className="h-8 px-2 text-2xs font-semibold text-primary hover:bg-primary/10 gap-1 rounded-md min-h-11 sm:min-h-0"
                 title="Conversar com o vendedor humano no chat do app"
               >
                 <MessageSquare className="size-3.5" />
@@ -230,14 +230,14 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
               </Button>
               <button
                 onClick={() => setIsInfoOpen(true)}
-                className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 aria-label="Sobre o assistente"
               >
                 <Info className="size-4" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 aria-label="Fechar chat"
               >
                 <X className="size-4" />
@@ -255,7 +255,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
               <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
                 <Bot className="size-3.5 text-primary" />
               </div>
-              <div className="bg-muted text-foreground text-xs rounded-lg rounded-tl-sm px-4 py-3 max-w-[85%]">
+              <div className="bg-muted text-foreground text-xs rounded-lg rounded-tl-sm px-4 py-3 max-w-17/20">
                 Olá! Posso te ajudar com dúvidas sobre este produto. Como posso te ajudar?
               </div>
             </div>
@@ -271,7 +271,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
                   </div>
                 )}
                 <div className={cn(
-                  "text-xs rounded-lg px-4 py-3 max-w-[85%] whitespace-pre-wrap leading-relaxed",
+                  "text-xs rounded-lg px-4 py-3 max-w-17/20 whitespace-pre-wrap leading-relaxed",
                   m.role === "user"
                     ? "bg-primary text-primary-foreground rounded-tr-sm"
                     : "bg-muted text-foreground rounded-tl-sm"
@@ -312,7 +312,7 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
                 type="submit"
                 size="icon"
                 disabled={!input.trim() || isLoading}
-                className="rounded-full size-10 bg-primary text-primary-foreground shrink-0"
+                className="rounded-full size-10 bg-primary text-primary-foreground shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               >
                 {isLoading ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Send className="size-4" />}
               </Button>

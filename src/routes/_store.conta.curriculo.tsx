@@ -106,8 +106,8 @@ function CompanyStoreSelector({
 
   if (storeId) {
     return (
-      <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-primary/30 bg-primary/5">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center justify-between gap-2 p-3 rounded-lg border border-primary/30 bg-primary/5">
+        <div className="flex items-center gap-3 min-w-0">
           {storeLogo ? (
             <img src={storeLogo} alt={company} className="size-8 rounded object-cover border border-border/40 shrink-0" />
           ) : (
@@ -116,9 +116,9 @@ function CompanyStoreSelector({
             </div>
           )}
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-foreground truncate">{company}</span>
-              <Badge variant="outline" className="text-3xs text-primary border-primary/40 bg-primary/10 gap-1 px-1.5 py-0 h-4">
+              <Badge variant="outline" className="text-3xs text-primary border-primary/40 bg-primary/10 gap-1 px-2 py-0 h-4">
                 <Check className="size-2.5" />
                 <span>Empresa Verificada</span>
               </Badge>
@@ -156,7 +156,7 @@ function CompanyStoreSelector({
       </div>
 
       {isOpen && results.length > 0 && (
-        <div className="absolute z-50 left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg overflow-hidden py-1 max-h-56 overflow-y-auto">
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-overlay overflow-hidden py-1 max-h-56 overflow-y-auto">
           <div className="px-3 py-1 text-3xs font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/40">
             Lojas & Empresas Verificadas no Waesy
           </div>
@@ -168,7 +168,7 @@ function CompanyStoreSelector({
                 onSelectStore(st);
                 setIsOpen(false);
               }}
-              className="w-full min-h-11 flex items-center gap-2.5 px-3 py-2 text-left hover:bg-muted/60 transition-colors cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-full min-h-11 flex items-center gap-3 px-3 py-2 text-left hover:bg-muted/60 transition-colors cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {st.logo_url ? (
                 <img src={st.logo_url} alt={st.name} className="size-7 rounded object-cover border border-border/40 shrink-0" />
@@ -178,7 +178,7 @@ function CompanyStoreSelector({
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span className="font-semibold text-foreground truncate">{st.name}</span>
                   <Badge variant="outline" className="text-3xs text-emerald-600 border-emerald-500/30 bg-emerald-500/10 px-1 py-0 h-3.5">
                     Verificada
@@ -190,7 +190,7 @@ function CompanyStoreSelector({
               </div>
             </button>
           ))}
-          <div className="px-3 py-1.5 text-3xs text-muted-foreground bg-muted/20 border-t border-border/40">
+          <div className="px-3 py-2 text-3xs text-muted-foreground bg-muted/20 border-t border-border/40">
             Ou mantenha o nome digitado para empresas fora da plataforma.
           </div>
         </div>
@@ -810,7 +810,7 @@ export default function MeuCurriculoPage() {
               {/* Indicador de Status de Autosave */}
               <div className="flex items-center gap-1 text-xs">
                 {saveStatus === "saving" ? (
-                  <span className="text-amber-500 font-mono flex items-center gap-1">
+                  <span className="text-warning-strong font-mono flex items-center gap-1">
                     <Clock className="size-3 animate-spin motion-reduce:animate-none" />
                     <span className="hidden sm:inline">Salvando...</span>
                   </span>
@@ -936,7 +936,7 @@ export default function MeuCurriculoPage() {
         >
           {/* Navegação de Abas do Editor */}
           {/* design-lint-ignore DL-30 reason:"B39 single continuous horizontal tabs navigation requirement" expiry:"2030-01-01" */}
-          <div className="flex border-b border-border/60 px-4 bg-muted/20 shrink-0 overflow-x-auto no-scrollbar">
+          <div className="flex border-b border-border/60 px-4 bg-muted/20 shrink-0 overflow-x-auto scroll-area-carousel no-scrollbar">
             {[
               { id: "conteudo", label: "Conteúdo", icon: FileText },
               { id: "design", label: "Design & Estilo", icon: Palette },
@@ -1225,7 +1225,7 @@ export default function MeuCurriculoPage() {
                                     aria-label={`${star} estrela${star > 1 ? "s" : ""}`}
                                     className={`size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center font-bold text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                                       (exp.company_rating || 0) >= star
-                                        ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40"
+                                        ? "bg-warning/20 text-warning-strong  border border-warning/40"
                                         : "bg-muted text-muted-foreground border border-transparent hover:bg-muted/80"
                                     }`}
                                   >

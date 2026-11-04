@@ -69,7 +69,7 @@ export function PortalOrdersRentalsWidget({ content, design_tokens }: PortalOrde
  {items.map((item) => (
  <div
  key={item.id}
- className="p-5 rounded-lg border border-border bg-card shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+ className="p-5 rounded-lg border border-border bg-card  flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
  >
  <div className="space-y-2 flex-1">
  <div className="flex items-center gap-3 flex-wrap">
@@ -90,7 +90,7 @@ export function PortalOrdersRentalsWidget({ content, design_tokens }: PortalOrde
  </Badge>
  )}
  {item.status === "active_rental" && (
- <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs">
+ <Badge variant="outline" className="bg-warning/10 text-warning-strong  border-warning/20 text-xs">
  Locação Ativa
  </Badge>
  )}
@@ -100,7 +100,7 @@ export function PortalOrdersRentalsWidget({ content, design_tokens }: PortalOrde
  <span>Valor Total: <strong>R$ {(item.total_cents / 100).toFixed(2).replace(".", ",")}</strong></span>
  <span>Data: {new Date(item.created_at).toLocaleDateString("pt-BR")}</span>
  {item.return_deadline && (
- <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+ <span className="text-warning-strong  font-semibold flex items-center gap-1">
  <Calendar className="w-3.5 h-3.5" />
  Devolução até: {new Date(item.return_deadline).toLocaleDateString("pt-BR")}
  </span>

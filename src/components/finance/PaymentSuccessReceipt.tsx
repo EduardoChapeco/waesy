@@ -49,7 +49,7 @@ export function PaymentSuccessReceipt({
   return (
     <div
       className={cn(
-        "w-full max-w-md mx-auto p-4 sm:p-6 flex flex-col items-center justify-between text-center select-none bg-background min-h-[520px]",
+        "w-full max-w-md mx-auto p-4 sm:p-6 flex flex-col items-center justify-between text-center select-none bg-background min-h-130",
         className
       )}
     >
@@ -60,7 +60,7 @@ export function PaymentSuccessReceipt({
             type="button"
             onClick={onDone}
             aria-label="Fechar tela de sucesso"
-            className="size-11 min-h-11 min-w-11 rounded-full bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            className="size-11 min-h-11 min-w-11 rounded-full bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
           >
             <X className="size-5" />
           </button>
@@ -69,9 +69,9 @@ export function PaymentSuccessReceipt({
 
       {/* ── Círculo Verde-Limão com Halo Suave & Checkmark ── */}
       <div className="my-4 flex flex-col items-center w-full">
-        <div className="size-28 rounded-full bg-lime-400/25 flex items-center justify-center shrink-0">
-          <div className="size-20 rounded-full bg-lime-400 text-zinc-950 flex items-center justify-center shadow-xs">
-            <Check className="size-10 stroke-[3]" />
+        <div className="size-28 rounded-full bg-warning/25 flex items-center justify-center shrink-0">
+          <div className="size-20 rounded-full bg-warning text-zinc-950 flex items-center justify-center shadow-xs">
+            <Check className="size-10 stroke-3" />
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export function PaymentSuccessReceipt({
         <button
           type="button"
           onClick={onViewReceipt || onDone}
-          className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          className="w-full h-12 min-h-12 rounded-xl bg-warning hover:bg-warning active:bg-warning text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
         >
           <FileText className="size-4" />
           <span>Ver comprovante</span>
@@ -140,7 +140,7 @@ export function PaymentSuccessReceipt({
               }
             })
           }
-          className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
         >
           <Share2 className="size-4" />
           <span>Compartilhar</span>

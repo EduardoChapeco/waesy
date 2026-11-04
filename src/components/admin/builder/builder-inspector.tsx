@@ -304,7 +304,7 @@ export function BuilderInspector({
 
  {/* ── Breadcrumb de Navegação Hierárquica ── */}
  {ancestors.length > 1 && (
- <div className="flex items-center gap-1 px-3 py-2 bg-muted/40 border-b border-border/60 text-xs text-muted-foreground overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-1 px-3 py-2 bg-muted/40 border-b border-border/60 text-xs text-muted-foreground overflow-x-auto scroll-area-carousel no-scrollbar">
  <Layers className="size-3 shrink-0 text-muted-foreground/80" />
  {ancestors.map((anc, idx) => (
  <React.Fragment key={anc.id}>
@@ -439,20 +439,20 @@ export function BuilderInspector({
  // Campo Especial: Código de Cupom de Desconto
  if (field.name === "couponCode") {
  return (
- <div key={field.name} className="space-y-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+ <div key={field.name} className="space-y-2 p-3 rounded-lg bg-warning/10 border border-warning/30">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground flex items-center gap-2 text-amber-500">
+ <Label className="text-xs font-bold text-foreground flex items-center gap-2 text-warning-strong">
  <Tag className="size-3.5" />
  <span>{field.label || "Código do Cupom"}</span>
  </Label>
- <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-500 font-mono">
+ <Badge variant="outline" className="text-xs border-warning/40 text-warning-strong font-mono">
  1-Toque
  </Badge>
  </div>
  <Input
  value={val}
  onChange={(e) => handleContentChange(field.name, e.target.value.toUpperCase())}
- className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-background border-amber-500/30"
+ className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-background border-warning/30"
  placeholder={field.placeholder || "EX: RELAMPAGO50"}
  />
  <div className="flex items-center gap-2 flex-wrap pt-1">
@@ -462,7 +462,7 @@ export function BuilderInspector({
  key={sug}
  type="button"
  onClick={() => handleContentChange(field.name, sug)}
- className="text-xs font-mono px-2 py-1 rounded-md bg-background border border-border/80 hover:border-amber-500 text-muted-foreground hover:text-foreground cursor-pointer transition-colors min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+ className="text-xs font-mono px-2 py-1 rounded-md bg-background border border-border/80 hover:border-warning text-muted-foreground hover:text-foreground cursor-pointer transition-colors min-h-11 min-w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  {sug}
  </button>
@@ -1151,7 +1151,7 @@ export function BuilderInspector({
  {dataBindings.source === "active_coupon" && (
  <div className="space-y-3 pt-3 border-t border-border/50">
  <div className="space-y-1">
- <Label className="text-xs font-bold text-amber-500 flex items-center gap-2">
+ <Label className="text-xs font-bold text-warning-strong flex items-center gap-2">
  <Tag className="size-3.5" />
  <span>Cupom Selecionado</span>
  </Label>

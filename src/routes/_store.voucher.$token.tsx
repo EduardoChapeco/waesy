@@ -40,7 +40,7 @@ function PublicTravelVoucherPage() {
 
   if (!data || !data.voucher) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
+      <div className="min-h-vh-70 flex flex-col items-center justify-center p-6 text-center space-y-4">
         <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center text-muted-foreground">
           <Compass className="size-7" />
         </div>

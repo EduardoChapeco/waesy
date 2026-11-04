@@ -848,7 +848,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             className="h-11 px-4 rounded-lg text-xs font-bold gap-2 border-border/60 hover:bg-muted text-foreground transition-colors cursor-pointer"
             title="Destacar Texto"
           >
-            <Highlighter className="size-4 text-amber-500" />
+            <Highlighter className="size-4 text-warning-strong" />
             <span className="hidden sm:inline">Destaque</span>
           </Button>
 

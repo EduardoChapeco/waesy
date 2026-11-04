@@ -152,7 +152,7 @@ export function StoreShareQrModal({
  onClick={handleCopyLink}
  size="sm"
  variant="outline"
- className="h-10 px-3 rounded-lg text-xs font-bold shrink-0 gap-2 cursor-pointer"
+ className="h-10 px-3 rounded-lg text-xs font-bold shrink-0 gap-2 cursor-pointer min-h-11 sm:min-h-0"
  >
  {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
  <span>{copied ? "Copiado" : "Copiar"}</span>
@@ -166,7 +166,7 @@ export function StoreShareQrModal({
  type="button"
  onClick={handleShareWhatsApp}
  size="sm"
- className="h-10 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2 cursor-pointer"
+ className="h-10 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2 cursor-pointer min-h-11 sm:min-h-0"
  >
  <WhatsappLogo className="size-4" weight="bold" />
  <span>Enviar WhatsApp</span>
@@ -176,7 +176,7 @@ export function StoreShareQrModal({
  onClick={handleShareNative}
  size="sm"
  variant="outline"
- className="h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer border-border/80"
+ className="h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer border-border/80 min-h-11 sm:min-h-0"
  >
  <Share2 className="size-3.5" />
  <span>Compartilhar</span>

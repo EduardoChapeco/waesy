@@ -200,7 +200,7 @@ function PwaOmniBuilderPage() {
       </div>
 
       {/* Navegação entre Abas Principais */}
-      <div className="flex items-center gap-2 border-b border-border/60 pb-2 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 border-b border-border/60 pb-2 overflow-x-auto scroll-area-carousel no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveMainTab("builder")}
@@ -496,7 +496,7 @@ function PwaOmniBuilderPage() {
             </div>
 
             {/* Frame do Smartphone */}
-            <div className="w-80 h-168 bg-neutral-950 rounded-lg p-4 border-4 border-neutral-800 shadow-2xl relative flex flex-col select-none overflow-hidden">
+            <div className="w-80 h-168 bg-neutral-950 rounded-lg p-4 border-4 border-neutral-800  relative flex flex-col select-none overflow-hidden">
               {/* Dynamic Island / Notch */}
               <div className="h-6 w-28 bg-neutral-900 rounded-full mx-auto mb-2 flex items-center justify-center shrink-0 z-30">
                 <div className="size-2 rounded-full bg-neutral-950/80 mr-2" />
@@ -772,7 +772,7 @@ function PwaOmniBuilderPage() {
           <div className="lg:col-span-4 space-y-4">
             <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3 shadow-xs">
               <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Resumo do Manifesto</h4>
-              <div className="p-3 rounded-lg bg-muted font-mono text-xs space-y-1 text-muted-foreground overflow-x-auto">
+              <div className="p-3 rounded-lg bg-muted font-mono text-xs space-y-1 text-muted-foreground overflow-x-auto scroll-area-carousel">
                 <p><span className="text-primary font-bold">name:</span> {appName}</p>
                 <p><span className="text-primary font-bold">short_name:</span> {shortName}</p>
                 <p><span className="text-primary font-bold">display:</span> {displayMode}</p>
@@ -832,13 +832,13 @@ function PwaOmniBuilderPage() {
             <div className="p-5 rounded-lg border border-border/70 bg-card shadow-xs space-y-2">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-semibold">Conversão de Instalação</span>
-                <BarChart3 className="size-4 text-amber-500" />
+                <BarChart3 className="size-4 text-warning-strong" />
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-black tracking-tight text-foreground">
                   {telemetry?.conversionRatePct || 0}%
                 </span>
-                <span className="text-xs text-amber-600 font-semibold">Taxa de Aceite</span>
+                <span className="text-xs text-warning-strong font-semibold">Taxa de Aceite</span>
               </div>
               <p className="text-xs text-muted-foreground">Usuários que aceitaram instalar</p>
             </div>

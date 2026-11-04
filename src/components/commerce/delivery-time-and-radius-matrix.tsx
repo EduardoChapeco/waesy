@@ -219,7 +219,7 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
  )}
  {/* Logo Sobreposto */}
- <div className="absolute -bottom-4 left-4 size-16 rounded-lg bg-card border-2 border-background overflow-hidden shadow-md flex items-center justify-center">
+ <div className="absolute -bottom-4 left-4 size-16 rounded-lg bg-card border-2 border-background overflow-hidden  flex items-center justify-center">
  {storeLogoUrl ? (
  <img src={storeLogoUrl} alt={storeName} className="size-full object-cover" />
  ) : (
@@ -262,7 +262,7 @@ export function DeliveryTimeAndRadiusMatrix({
  {/* Aviso da Equação de Entrega */}
  <div className="p-4 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1">
  <div className="flex items-center gap-2 font-bold text-foreground">
- <Zap className="size-3.5 text-amber-500" />
+ <Zap className="size-3.5 text-warning-strong" />
  <span>Cálculo Inteligente de Entrega</span>
  </div>
  <p className="text-xs text-muted-foreground leading-relaxed">
@@ -311,7 +311,7 @@ export function DeliveryTimeAndRadiusMatrix({
  variant="ghost"
  size="icon"
  onClick={() => handleRemoveTier(tier.id)}
- className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+ className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -354,7 +354,7 @@ export function DeliveryTimeAndRadiusMatrix({
  size="sm"
  onClick={handleAddTier}
  disabled={!newRadius || !newTransitTime}
- className="w-full h-8 rounded-lg text-xs font-bold gap-1 bg-foreground text-background hover:bg-foreground/90 mt-1"
+ className="w-full h-8 rounded-lg text-xs font-bold gap-1 bg-foreground text-background hover:bg-foreground/90 mt-1 min-h-11 sm:min-h-0"
  >
  <Plus className="size-3" />
  <span>Incluir Faixa de Raio</span>
@@ -391,7 +391,7 @@ export function DeliveryTimeAndRadiusMatrix({
  variant="outline"
  size="icon"
  onClick={() => handlePrepTimeChange(-5)}
- className="size-9 rounded-lg border-border"
+ className="size-9 rounded-lg border-border min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Minus className="size-4" />
  </Button>
@@ -406,7 +406,7 @@ export function DeliveryTimeAndRadiusMatrix({
  variant="outline"
  size="icon"
  onClick={() => handlePrepTimeChange(5)}
- className="size-9 rounded-lg border-border"
+ className="size-9 rounded-lg border-border min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Plus className="size-4" />
  </Button>
@@ -641,7 +641,7 @@ export function DeliveryTimeAndRadiusMatrix({
 
  <div className="pt-3 border-t border-border/60 space-y-2">
  <span className="text-xs font-bold text-foreground flex items-center gap-2">
- <AlertCircle className="size-4 text-amber-500" />
+ <AlertCircle className="size-4 text-warning-strong" />
  Regra de Desalocação
  </span>
  <p className="text-xs text-muted-foreground">

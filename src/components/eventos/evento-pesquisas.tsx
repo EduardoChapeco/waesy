@@ -360,7 +360,7 @@ export function EventoPesquisas({ eventId }: EventoPesquisasProps) {
                       {respCount} {respCount === 1 ? "resposta" : "respostas"}
                     </Badge>
                     {s.require_geofence && (
-                      <Badge variant="outline" className="text-xs gap-1 border-amber-500/30 text-amber-600 bg-amber-500/10">
+                      <Badge variant="outline" className="text-xs gap-1 border-warning/30 text-warning-strong bg-warning/10">
                         <MapPin className="size-3" />
                         Geofenced
                       </Badge>

@@ -53,7 +53,7 @@ function BlackboardBlock({ code, title }: { code: string; title?: string }) {
   };
 
   return (
-    <div className="my-3 rounded-xl border border-slate-700/80 bg-slate-950/95 text-slate-100 shadow-lg overflow-hidden font-sans">
+    <div className="my-3 rounded-xl border border-slate-700/80 bg-slate-950/95 text-slate-100  overflow-hidden font-sans">
       {/* Moldura superior da lousa com giz e ferramentas */}
       <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-300">
         <div className="flex items-center gap-2">
@@ -86,7 +86,7 @@ function BlackboardBlock({ code, title }: { code: string; title?: string }) {
       </div>
 
       {/* Superfície da Lousa com efeito sutil de giz e tipografia nítida */}
-      <div className="p-4 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed space-y-2 text-emerald-300/90 selection:bg-emerald-500/30">
+      <div className="p-4 overflow-x-auto scroll-area-carousel text-xs sm:text-sm font-mono leading-relaxed space-y-2 text-emerald-300/90 selection:bg-emerald-500/30">
         <pre className="whitespace-pre-wrap font-mono text-xs sm:text-sm text-slate-200">
           {code}
         </pre>
@@ -123,7 +123,7 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
           <span>{copied ? "Copiado" : "Copiar"}</span>
         </button>
       </div>
-      <pre className="p-3 overflow-x-auto leading-relaxed text-foreground/90 font-mono text-2xs sm:text-xs">
+      <pre className="p-3 overflow-x-auto scroll-area-carousel leading-relaxed text-foreground/90 font-mono text-2xs sm:text-xs">
         {code}
       </pre>
     </div>
@@ -214,7 +214,7 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
 
           // Tabelas limpas e responsivas
           table: ({ children }) => (
-            <div className="my-3 overflow-x-auto rounded-lg border border-border/50 bg-card">
+            <div className="my-3 overflow-x-auto scroll-area-carousel rounded-lg border border-border/50 bg-card">
               <table className="w-full border-collapse text-2xs sm:text-xs">
                 {children}
               </table>

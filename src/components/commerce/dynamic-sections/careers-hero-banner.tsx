@@ -40,7 +40,7 @@ export function CareersHeroBanner({ content, design_tokens }: CareersHeroBannerP
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-8 text-left">
  {highlights.map((h, i) => (
- <div key={i} className="p-5 rounded-lg border border-border/60 bg-card shadow-sm space-y-2">
+ <div key={i} className="p-5 rounded-lg border border-border/60 bg-card  space-y-2">
  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
  <Users className="w-4 h-4" />
  </div>

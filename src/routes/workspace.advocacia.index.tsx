@@ -307,7 +307,7 @@ function WorkspaceAdvocaciaPage() {
  label: `Urgente • ${diffHours}h`,
  variant: "urgent",
  className:
- "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold",
+ "bg-warning/15 text-warning-strong  border-warning/30 font-bold",
  };
  }
  const diffDays = Math.ceil(diffHours / 24);
@@ -315,7 +315,7 @@ function WorkspaceAdvocaciaPage() {
  return {
  label: `Atenção • ${diffDays} dias`,
  variant: "attention",
- className: "bg-amber-500/10 text-amber-600 border-amber-500/20 font-semibold",
+ className: "bg-warning/10 text-warning-strong border-warning/20 font-semibold",
  };
  }
  return {
@@ -513,12 +513,12 @@ function WorkspaceAdvocaciaPage() {
  <TabsContent value="prazos" className="space-y-6">
  {/* Barra de Filtros de Prazos */}
  <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory w-full sm:w-auto">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 snap-x snap-mandatory w-full sm:w-auto">
  <Button
  variant={deadlineFilter === "pending" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("pending")}
- className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap min-h-11 sm:min-h-0"
  >
  Prazos em Aberto
  </Button>
@@ -526,7 +526,7 @@ function WorkspaceAdvocaciaPage() {
  variant={deadlineFilter === "urgent" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("urgent")}
- className="h-9 px-3 rounded-lg text-xs font-bold text-rose-600 dark:text-rose-400 gap-2 shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold text-rose-600 dark:text-rose-400 gap-2 shrink-0 snap-start whitespace-nowrap min-h-11 sm:min-h-0"
  >
  <AlertTriangle className="size-3.5" />
  <span>Fatais (&lt; 48h)</span>
@@ -535,7 +535,7 @@ function WorkspaceAdvocaciaPage() {
  variant={deadlineFilter === "audiencia" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("audiencia")}
- className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap min-h-11 sm:min-h-0"
  >
  Audiências
  </Button>
@@ -543,7 +543,7 @@ function WorkspaceAdvocaciaPage() {
  variant={deadlineFilter === "completed" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("completed")}
- className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap min-h-11 sm:min-h-0"
  >
  Protocolados / Cumpridos
  </Button>
@@ -551,7 +551,7 @@ function WorkspaceAdvocaciaPage() {
  variant={deadlineFilter === "all" ? "default" : "outline"}
  size="sm"
  onClick={() => setDeadlineFilter("all")}
- className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap"
+ className="h-9 px-3 rounded-lg text-xs font-bold shrink-0 snap-start whitespace-nowrap min-h-11 sm:min-h-0"
  >
  Todos
  </Button>
@@ -559,7 +559,7 @@ function WorkspaceAdvocaciaPage() {
 
  <Button
  onClick={() => setIsDeadlineSheetOpen(true)}
- className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 w-full sm:w-auto shadow-xs shrink-0"
+ className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 w-full sm:w-auto shadow-xs shrink-0 min-h-11 sm:min-h-0"
  >
  <Plus className="size-4" />
  <span>Novo Prazo</span>
@@ -580,7 +580,7 @@ function WorkspaceAdvocaciaPage() {
  </p>
  <Button
  onClick={() => setIsDeadlineSheetOpen(true)}
- className="h-10 px-5 rounded-lg font-bold text-xs gap-2"
+ className="h-10 px-5 rounded-lg font-bold text-xs gap-2 min-h-11 sm:min-h-0"
  >
  <Plus className="size-4" />
  <span>Cadastrar Primeiro Prazo</span>
@@ -683,7 +683,7 @@ function WorkspaceAdvocaciaPage() {
  variant="ghost"
  size="sm"
  onClick={() => handleDeleteDeadline(dl.id)}
- className="size-8 p-0 text-muted-foreground hover:text-destructive rounded-lg"
+ className="size-8 p-0 text-muted-foreground hover:text-destructive rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Excluir Prazo"
  >
  <Trash2 className="size-3.5" />
@@ -725,7 +725,7 @@ function WorkspaceAdvocaciaPage() {
  <Button
  onClick={() => setIsMonitorSheetOpen(true)}
  variant="outline"
- className="h-10 px-4 rounded-lg text-xs font-bold gap-2"
+ className="h-10 px-4 rounded-lg text-xs font-bold gap-2 min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" />
  <span>Iniciar Monitoramento</span>
@@ -771,8 +771,8 @@ function WorkspaceAdvocaciaPage() {
         className={cn(
           "size-4 mx-auto transition-colors",
           lawsuit.is_favorite
-            ? "text-amber-500 fill-amber-500"
-            : "text-muted-foreground/40 hover:text-amber-500"
+            ? "text-warning-strong fill-warning"
+            : "text-muted-foreground/40 hover:text-warning-strong"
         )}
       />
     </button>
@@ -858,7 +858,7 @@ function WorkspaceAdvocaciaPage() {
  <Button
  onClick={() => setIsMonitorSheetOpen(true)}
  size="sm"
- className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2"
+ className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" />
  <span>Novo Monitoramento</span>
@@ -933,7 +933,7 @@ function WorkspaceAdvocaciaPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleDeleteMonitor(mon.id)}
- className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+ className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>

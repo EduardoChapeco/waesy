@@ -160,7 +160,7 @@ export default function WorkspaceQualidadePage() {
  size="sm"
  variant="ghost"
  onClick={() => handleOpenHardshipModal(a)}
- className="text-xs h-7 px-2"
+ className="text-xs h-7 px-2 min-h-11 sm:min-h-0"
  >
  Relatar Dificuldade
  </Button>
@@ -216,10 +216,10 @@ export default function WorkspaceQualidadePage() {
  </div>
 
  <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
- <Button type="button" variant="outline" onClick={() => setHardshipModalOpen(false)} className="w-full sm:w-auto text-xs h-9">
+ <Button type="button" variant="outline" onClick={() => setHardshipModalOpen(false)} className="w-full sm:w-auto text-xs h-9 min-h-11 sm:min-h-0">
  Cancelar
  </Button>
- <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto text-xs h-9 font-semibold">
+ <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto text-xs h-9 font-semibold min-h-11 sm:min-h-0">
  {isSubmitting && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
  Enviar Relato
  </Button>

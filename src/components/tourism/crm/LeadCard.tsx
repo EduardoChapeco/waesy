@@ -189,7 +189,7 @@ export function LeadCard({
     }
     return {
       label: 'Morno',
-      className: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25',
+      className: 'bg-warning/15 text-warning-strong  border-warning/25',
     };
   }, [lead.temperature, lead.custom_fields, lead.estimated_value_cents, staleness.isCold]);
 
@@ -217,7 +217,7 @@ export function LeadCard({
         staleness.isCold
           ? 'border-rose-500/30'
           : staleness.isStale
-          ? 'border-amber-500/30'
+          ? 'border-warning/30'
           : 'border-border/60'
       )}
     >
@@ -279,7 +279,7 @@ export function LeadCard({
                 </DropdownMenuItem>
               )}
               {onCalculateCommission && (
-                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onCalculateCommission(lead)} className="cursor-pointer font-medium text-amber-500">
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onCalculateCommission(lead)} className="cursor-pointer font-medium text-warning-strong">
                   <Calculator className="size-3.5 mr-2" />
                   Calcular Comissão
                 </DropdownMenuItem>
@@ -394,7 +394,7 @@ export function LeadCard({
             'text-3xs font-bold uppercase tracking-wider px-2 py-1 rounded-md inline-flex items-center gap-1 border',
             staleness.isCold
               ? 'bg-rose-500/10 text-rose-600 border-rose-500/25'
-              : 'bg-amber-500/10 text-amber-600 border-amber-500/25'
+              : 'bg-warning/10 text-warning-strong border-warning/25'
           )}
         >
           <AlertTriangle className="size-3 shrink-0" />
@@ -412,7 +412,7 @@ export function LeadCard({
               'inline-flex items-center gap-1 px-2 py-1 rounded-md font-medium border text-3xs',
               isLgpdActive
                 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                : 'bg-warning/10 text-warning-strong border-warning/20'
             )}
             title={isLgpdActive ? 'Consentimento LGPD Ativo' : 'Consentimento LGPD Pendente'}
           >

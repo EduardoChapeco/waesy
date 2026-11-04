@@ -141,7 +141,7 @@ export function FoodMenuTabsSection({
  </div>
 
  {/* Abas de Categorias */}
- <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar pb-2 ">
+ <div className="flex items-center justify-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-2 ">
  {effectiveCategories.map((cat) => {
  const isSelected = activeTab === cat.id;
  return (
@@ -212,7 +212,7 @@ export function FoodMenuTabsSection({
  variant="outline"
  disabled={addingItemId === item.id}
  onClick={() => handleAddDirect(item)}
- className="h-8 text-xs font-bold rounded-lg gap-2 border-border/80 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+ className="h-8 text-xs font-bold rounded-lg gap-2 border-border/80 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer min-h-11 sm:min-h-0"
  >
  {addingItemId === item.id ? (
  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />

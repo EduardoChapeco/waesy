@@ -239,7 +239,7 @@ function FocusGroupPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsKeySheetOpen(true)}
-            className="h-8 rounded-lg text-xs font-medium gap-2 border-border/80"
+            className="h-8 rounded-lg text-xs font-medium gap-2 border-border/80 min-h-11 sm:min-h-0"
           >
             <Key className="size-3.5" />
             <span>Chave de IA</span>
@@ -263,7 +263,7 @@ function FocusGroupPage() {
             </span>
             <span className="text-xs">Toque para alternar</span>
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar py-1">
             {availablePersonas.map((p) => {
               const isSelected = selectedPersonas.some(x => x.id === p.id);
               return (
@@ -462,7 +462,7 @@ function FocusGroupPage() {
                 </SheetDescription>
               </SheetHeader>
 
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-700 dark:text-amber-300">
+              <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 text-xs text-warning-strong ">
                 Os atributos abaixo descrevem um perfil de simulação; não são ficha de uma pessoa real, dados de microdados individuais nem evidência de compra.
               </div>
 
@@ -518,7 +518,7 @@ function FocusGroupPage() {
                     keyProvider === 'gemini' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
-                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
                 >
                   Google Gemini
                 </button>
@@ -529,7 +529,7 @@ function FocusGroupPage() {
                     keyProvider === 'groq' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
-                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
                 >
                   Groq (Llama)
                 </button>
@@ -540,7 +540,7 @@ function FocusGroupPage() {
                     keyProvider === 'openai' 
                       ? 'bg-primary text-primary-foreground border-primary' 
                       : 'bg-muted/40 border-border/80 text-muted-foreground'
-                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
                 >
                   OpenAI
                 </button>
@@ -577,7 +577,7 @@ function FocusGroupPage() {
             <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Chave ativa detectada:</span>
-                <span className={keyStatus.hasActiveKey ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
+                <span className={keyStatus.hasActiveKey ? 'text-emerald-600 font-semibold' : 'text-warning-strong font-semibold'}>
                   {keyStatus.hasActiveKey ? `Sim (${keyStatus.activeProvider?.toUpperCase()})` : 'Não (provedor de IA não configurado)'}
                 </span>
               </div>

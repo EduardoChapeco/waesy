@@ -36,7 +36,7 @@ const CREDENTIAL_TYPES = [
   { value: "equipe", label: "Equipe Interna", icon: Users, badgeStyle: "bg-primary/10 text-primary border-primary/20" },
   { value: "staff", label: "Staff e Produção", icon: UserCheck, badgeStyle: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
   { value: "terceiro", label: "Prestador / Terceirizado", icon: Briefcase, badgeStyle: "bg-muted text-muted-foreground border-border" },
-  { value: "patrocinador", label: "Patrocinador", icon: Star, badgeStyle: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" },
+  { value: "patrocinador", label: "Patrocinador", icon: Star, badgeStyle: "bg-warning/10 text-warning-strong  border-warning/20" },
   { value: "imprensa", label: "Imprensa / Mídia", icon: Newspaper, badgeStyle: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" },
   { value: "autoridade", label: "Autoridade / Fiscal", icon: Shield, badgeStyle: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20" },
   { value: "vip", label: "Convidado VIP", icon: Star, badgeStyle: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" },
@@ -216,7 +216,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               type="submit"
               size="sm"
               disabled={isValidating || !checkinCode.trim()}
-              className="h-9 rounded-lg font-bold text-xs shrink-0 cursor-pointer"
+              className="h-9 rounded-lg font-bold text-xs shrink-0 cursor-pointer min-h-11 sm:min-h-0"
             >
               {isValidating ? "Validando..." : "Validar"}
             </Button>
@@ -245,7 +245,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
               resetForm();
               setIsSheetOpen(true);
             }}
-            className="h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-xs"
+            className="h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-xs min-h-11 sm:min-h-0"
           >
             <Plus className="size-4" />
             <span>Emitir Credencial</span>
@@ -254,7 +254,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
       </div>
 
       {/* Filtros em Pílulas */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
         <button
           type="button"
           onClick={() => setFilterType("all")}
@@ -407,7 +407,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                     size="sm"
                     variant="outline"
                     onClick={() => setSelectedBadge(c)}
-                    className="h-8 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                    className="h-8 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <QrCode className="size-3.5" />
                     <span>Ver Crachá</span>
@@ -432,7 +432,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                         });
                         setIsSheetOpen(true);
                       }}
-                      className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     >
                       Editar
                     </Button>
@@ -441,7 +441,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDeleteCredential(c.id)}
-                      className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                      className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     >
                       <Trash2 className="size-3.5" />
                     </Button>
@@ -632,7 +632,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 </div>
                 <div>
                   <span className="text-muted-foreground block text-2xs">STATUS</span>
-                  <span className={`font-semibold ${selectedBadge.checkin_realizado ? "text-emerald-600" : "text-amber-600"}`}>
+                  <span className={`font-semibold ${selectedBadge.checkin_realizado ? "text-emerald-600" : "text-warning-strong"}`}>
                     {selectedBadge.checkin_realizado ? "Check-in Realizado" : "Pendente"}
                   </span>
                 </div>
@@ -645,7 +645,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 variant="outline"
                 size="sm"
                 onClick={() => window.print()}
-                className="h-9 rounded-lg text-xs font-bold gap-2 flex-1 cursor-pointer"
+                className="h-9 rounded-lg text-xs font-bold gap-2 flex-1 cursor-pointer min-h-11 sm:min-h-0"
               >
                 <Printer className="size-3.5" />
                 <span>Imprimir Crachá</span>
@@ -654,7 +654,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                 type="button"
                 size="sm"
                 onClick={() => setSelectedBadge(null)}
-                className="h-9 rounded-lg text-xs font-bold px-4 cursor-pointer"
+                className="h-9 rounded-lg text-xs font-bold px-4 cursor-pointer min-h-11 sm:min-h-0"
               >
                 Fechar
               </Button>

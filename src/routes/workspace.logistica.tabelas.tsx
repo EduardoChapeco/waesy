@@ -311,7 +311,7 @@ function WorkspaceLogisticsPriceTablesPage() {
                 <div className="text-xs text-muted-foreground flex items-center justify-between pt-1">
                   <span>{simKm} km {simIncludeHelper && "+ Ajudante"}</span>
                   {appliedMinFare && (
-                    <span className="text-amber-600 font-bold">(Piso Mínimo)</span>
+                    <span className="text-warning-strong font-bold">(Piso Mínimo)</span>
                   )}
                 </div>
               </div>

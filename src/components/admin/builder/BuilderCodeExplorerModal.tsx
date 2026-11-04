@@ -76,7 +76,7 @@ export function BuilderCodeExplorerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-2xl">
+      <DialogContent className="max-w-5xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-overlay">
         {/* Header Superior */}
         <DialogHeader className="h-14 px-4 border-b border-border/80 flex flex-row items-center justify-between flex-none bg-card select-none">
           <div className="flex items-center gap-3">
@@ -134,7 +134,7 @@ export function BuilderCodeExplorerModal({
         <div className="flex-1 flex overflow-hidden">
           {/* Coluna 1: Árvore de Arquivos */}
           <aside className="w-64 border-r border-border/80 bg-muted/20 flex flex-col flex-none select-none overflow-y-auto p-2 gap-1 font-mono text-xs">
-            <div className="px-2 py-1.5 text-2xs font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="px-2 py-2 text-2xs font-bold uppercase tracking-wider text-muted-foreground">
               Arquivos ({fileList.length})
             </div>
 
@@ -155,7 +155,7 @@ export function BuilderCodeExplorerModal({
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                 >
-                  <FileCode className={cn("size-3.5 shrink-0", isRoute ? "text-amber-500" : isConfig ? "text-sky-500" : "text-muted-foreground")} />
+                  <FileCode className={cn("size-3.5 shrink-0", isRoute ? "text-warning-strong" : isConfig ? "text-sky-500" : "text-muted-foreground")} />
                   <span className="truncate">{filePath}</span>
                 </button>
               );
@@ -177,7 +177,7 @@ export function BuilderCodeExplorerModal({
             <div className="flex-1 overflow-auto p-4 font-mono text-xs leading-relaxed text-foreground bg-zinc-950/90">
               <pre className="selection:bg-primary selection:text-primary-foreground">
                 {activeContent.split("\n").map((line, idx) => (
-                  <div key={idx} className="flex gap-4 hover:bg-white/5 px-2 rounded">
+                  <div key={idx} className="flex gap-4 hover:bg-muted/50 px-2 rounded">
                     <span className="w-8 text-right text-muted-foreground/50 select-none shrink-0 font-normal">
                       {idx + 1}
                     </span>

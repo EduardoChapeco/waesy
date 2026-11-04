@@ -176,7 +176,7 @@ export function TemplateVoucherStory({
               <div className="rounded-lg bg-slate-900/90 border border-slate-800 backdrop-blur-md p-4">
                 <div className="flex justify-between items-center text-xs uppercase font-bold tracking-wider text-slate-400 mb-1">
                   <span className="flex items-center gap-1">
-                    <Hotel className="size-3 text-amber-400" /> Hospedagem
+                    <Hotel className="size-3 text-warning-strong" /> Hospedagem
                   </span>
                 </div>
                 <div className="text-sm font-bold text-neutral-100 break-words">

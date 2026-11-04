@@ -86,7 +86,7 @@ export function InstallmentTimelineDrawer({
       <SheetContent
         side="bottom"
         className={cn(
-          "w-full max-w-lg mx-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 bg-card border-border/80 shadow-md max-h-dvh overflow-y-auto no-scrollbar",
+          "w-full max-w-lg mx-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 bg-card border-border/80 shadow-overlay max-h-dvh overflow-y-auto no-scrollbar",
           className
         )}
       >
@@ -197,7 +197,7 @@ export function InstallmentTimelineDrawer({
                         {inst.status === "due" && (
                           <Badge
                             variant="outline"
-                            className="rounded-full px-2 py-0 text-2xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                            className="rounded-full px-2 py-0 text-2xs font-semibold bg-warning/10 text-warning-strong  border-warning/20"
                           >
                             Vencendo
                           </Badge>

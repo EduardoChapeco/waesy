@@ -10,7 +10,7 @@ function healthLabel(status: WhatsAppOperationsMetricsDTO["health"]["worker_stat
   return { starting: "iniciando", running: "executando", degraded: "degradado", idle: "ocioso", failed: "falhou", stale: "sem heartbeat", unknown: "desconhecido" }[status];
 }
 function healthClass(status: WhatsAppOperationsMetricsDTO["health"]["worker_status"]) {
-  return status === "running" || status === "idle" ? "text-emerald-700" : status === "degraded" || status === "starting" ? "text-amber-700" : "text-rose-700";
+  return status === "running" || status === "idle" ? "text-emerald-700" : status === "degraded" || status === "starting" ? "text-warning-strong" : "text-rose-700";
 }
 
 export function WhatsAppOperationsMetricsPanel() {
@@ -65,8 +65,8 @@ export function WhatsAppOperationsMetricsPanel() {
         <div className="rounded-lg border border-border p-3"><p className="mb-2 flex items-center gap-2 text-xs font-semibold"><Users className="size-4" /> Atendentes com maior carga</p>{topAgents.length ? topAgents.map((agent) => <div key={agent.profile_id} className="flex justify-between text-xs"><span className="truncate">{agent.profile_id.slice(0, 8)}...</span><span>{agent.open_threads} abertas / {seconds(agent.avg_first_response_seconds)}</span></div>) : <span className="text-xs text-muted-foreground">Nenhum atendimento atribuído.</span>}</div>
         <div className="rounded-lg border border-border p-3"><p className="mb-2 flex items-center gap-2 text-xs font-semibold"><ServerCog className="size-4" /> Providers (24h)</p>{metrics.providers.length ? metrics.providers.slice(0, 3).map((provider) => <div key={provider.provider} className="flex justify-between gap-2 text-xs"><span className="truncate">{provider.provider}</span><span>{number(provider.accepted)}/{number(provider.attempts)} / {milliseconds(provider.p95_duration_ms)}</span></div>) : <span className="text-xs text-muted-foreground">Nenhuma tentativa registrada.</span>}</div>
       </div>
-      {error && <p className="mt-3 text-xs text-amber-700">Atualização parcial: {error}</p>}
-      {hasFailures ? <p className="mt-3 flex items-center gap-2 text-xs text-amber-700"><AlertTriangle className="size-3.5" /> Existem falhas ou retries que exigem acompanhamento operacional.</p> : <p className="mt-3 flex items-center gap-2 text-xs text-emerald-700"><CheckCircle2 className="size-3.5" /> Filas sem falhas registradas no período consultado.</p>}
+      {error && <p className="mt-3 text-xs text-warning-strong">Atualização parcial: {error}</p>}
+      {hasFailures ? <p className="mt-3 flex items-center gap-2 text-xs text-warning-strong"><AlertTriangle className="size-3.5" /> Existem falhas ou retries que exigem acompanhamento operacional.</p> : <p className="mt-3 flex items-center gap-2 text-xs text-emerald-700"><CheckCircle2 className="size-3.5" /> Filas sem falhas registradas no período consultado.</p>}
       <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><Clock3 className="size-4" /> Último heartbeat: {metrics.health.worker_last_seen_at ? new Date(metrics.health.worker_last_seen_at).toLocaleString("pt-BR") : "não registrado"}</p>
     </section>
   );

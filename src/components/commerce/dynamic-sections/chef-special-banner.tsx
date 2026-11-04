@@ -70,7 +70,7 @@ export function ChefSpecialBannerSection({
  </div>
  )}
  <div className="absolute top-3 left-3">
- <Badge className="bg-primary text-primary-foreground font-bold text-xs px-3 py-1 shadow-md">
+ <Badge className="bg-primary text-primary-foreground font-bold text-xs px-3 py-1 ">
  Prato Exclusivo
  </Badge>
  </div>

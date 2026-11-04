@@ -192,7 +192,7 @@ export function CompanyDeliveryManagerModal({
                   size="sm"
                   variant="outline"
                   onClick={handleAddNeighborhood}
-                  className="h-9 rounded-lg text-xs font-bold"
+                  className="h-9 rounded-lg text-xs font-bold min-h-11 sm:min-h-0"
                 >
                   <Plus className="size-3.5" />
                 </Button>
@@ -215,7 +215,7 @@ export function CompanyDeliveryManagerModal({
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRemoveNeighborhood(idx)}
-                          className="size-6 text-muted-foreground hover:text-destructive"
+                          className="size-6 text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                         >
                           <Trash2 className="size-3" />
                         </Button>

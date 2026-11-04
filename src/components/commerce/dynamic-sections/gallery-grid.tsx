@@ -85,7 +85,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  key={idx}
  className={cn(
  "rounded-lg overflow-hidden bg-muted/40 relative group cursor-pointer shadow-2xs",
- idx === 0 ? "col-span-1 @md:col-span-2 @md:row-span-2 aspect-[4/3]" : "aspect-square"
+ idx === 0 ? "col-span-1 @md:col-span-2 @md:row-span-2 aspect-4/3" : "aspect-square"
  )}
  >
  <img
@@ -109,7 +109,7 @@ export function GalleryGrid({ content, layout_rules }: GalleryGridProps) {
  {content.title}
  </h2>
  )}
- <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory">
+ <div className="flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-2 snap-x snap-mandatory">
  {images.map((img, idx) => (
  <div
  key={idx}

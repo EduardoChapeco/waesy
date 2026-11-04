@@ -127,7 +127,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
-      <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 py-6">
+      <main className="flex-1 w-full max-w-350 mx-auto px-4 py-6">
         <Outlet />
       </main>
       <footer className="w-full border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
@@ -148,7 +148,7 @@ function RootComponent() {
       return `      {/* Bloco ${idx + 1}: ${b.type} */}
       <section key="${b.id || idx}" className="w-full my-6 rounded-2xl border border-border/80 bg-card/60 p-6 shadow-xs">
         <h2 className="text-xl font-bold tracking-tight mb-2 text-foreground">${b.title || b.type}</h2>
-        <pre className="text-xs font-mono text-muted-foreground overflow-x-auto p-4 rounded-xl bg-muted/40">
+        <pre className="text-xs font-mono text-muted-foreground overflow-x-auto scroll-area-carousel p-4 rounded-xl bg-muted/40">
           {JSON.stringify(${JSON.stringify(b.props || {})}, null, 2)}
         </pre>
       </section>`;

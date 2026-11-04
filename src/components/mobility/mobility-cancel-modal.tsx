@@ -93,7 +93,7 @@ export function MobilityCancelModal({
 
         <div className="space-y-4 pt-2 text-xs">
           {isAccepted && (
-            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-950 dark:text-amber-200">
+            <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong ">
               <span className="font-bold block mb-1">Aviso sobre deslocamento</span>
               <p className="leading-snug">
                 O condutor já aceitou seu pedido. Cancelamentos após o aceite liberam o parceiro para atender outras demandas da comunidade.

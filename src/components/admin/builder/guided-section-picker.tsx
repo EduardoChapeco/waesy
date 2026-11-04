@@ -87,7 +87,7 @@ export function GuidedSectionPicker({
             />
           </div>
 
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}

@@ -123,14 +123,14 @@ function SkillsCatalogPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0 scrollbar-none">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
                 selectedCategory === cat.id
-                  ? "bg-primary text-primary-foreground shadow-sm"
+                  ? "bg-primary text-primary-foreground "
                   : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground border border-border/40"
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
@@ -161,7 +161,7 @@ function SkillsCatalogPage() {
             return (
               <div
                 key={skill.id}
-                className="bg-card border border-border/60 rounded-lg p-5 hover:border-border transition-colors duration-200 flex flex-col justify-between space-y-4 shadow-sm"
+                className="bg-card border border-border/60 rounded-lg p-5 hover:border-border transition-colors duration-200 flex flex-col justify-between space-y-4 "
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
@@ -205,7 +205,7 @@ function SkillsCatalogPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 text-xs px-3 rounded-lg"
+                      className="h-8 text-xs px-3 rounded-lg min-h-11 sm:min-h-0"
                       onClick={() => {
                         setSelectedSkill(skill);
                         setTestPrompt("");

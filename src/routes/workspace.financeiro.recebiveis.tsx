@@ -583,9 +583,9 @@ Assinatura da Loja (Consignante)`;
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Conciliações Pendentes
             </span>
-            <Clock className="h-4 w-4 text-amber-500" />
+            <Clock className="h-4 w-4 text-warning-strong" />
           </div>
-          <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-xl font-bold text-warning-strong ">
             {report?.pendingConciliationCount || 0}
           </div>
           <div className="text-xs text-muted-foreground">Aguardando análise da loja</div>
@@ -595,7 +595,7 @@ Assinatura da Loja (Consignante)`;
       {/* Barra de Filtros e Busca */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
         {/* Tabs de Filtro */}
-        <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto">
+        <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto scroll-area-carousel">
           <button
             type="button"
             onClick={() => setActiveFilter("all")}
@@ -640,7 +640,7 @@ Assinatura da Loja (Consignante)`;
           >
             Conciliações
             {(report?.pendingConciliationCount || 0) > 0 && (
-              <span className="px-2 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs text-muted-foreground/75">
+              <span className="px-2 py-0.2 rounded-full bg-warning/10 text-warning-strong font-bold text-xs text-muted-foreground/75">
                 {report?.pendingConciliationCount}
               </span>
             )}
@@ -754,7 +754,7 @@ Assinatura da Loja (Consignante)`;
                         key={inst.id}
                         className={cn(
                           "py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm transition-colors",
-                          isPending && "bg-amber-500/5 -mx-5 px-5",
+                          isPending && "bg-warning/5 -mx-5 px-5",
                         )}
                       >
                         {/* Checkbox e Detalhes da Parcela */}
@@ -780,7 +780,7 @@ Assinatura da Loja (Consignante)`;
                               )}
 
                               {!isPaid && isPending && (
-                                <Badge variant="outline" className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs py-0">
+                                <Badge variant="outline" className="bg-warning/15 text-warning-strong  border-warning/30 text-xs py-0">
                                   Comprovante enviado
                                 </Badge>
                               )}
@@ -949,9 +949,9 @@ Assinatura da Loja (Consignante)`;
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Atenção / Vencimento
                 </span>
-                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <AlertCircle className="h-4 w-4 text-warning-strong" />
               </div>
-              <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
+              <div className="text-xl font-bold text-warning-strong ">
                 {condicionaisList.filter((c: any) => c.status === "due_today" || c.status === "overdue").length}
               </div>
               <div className="text-xs text-muted-foreground">Malas vencendo hoje ou atrasadas</div>
@@ -960,7 +960,7 @@ Assinatura da Loja (Consignante)`;
 
           {/* Filtros e Busca de Condicionais */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto">
+            <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto scroll-area-carousel">
               {(
                 [
                   { key: "all", label: "Todas" },
@@ -1036,7 +1036,7 @@ Assinatura da Loja (Consignante)`;
                               </Badge>
                             )}
                             {isDueToday && (
-                              <Badge className="text-xs text-muted-foreground/75 px-2 py-0 h-4 bg-amber-500/15 text-amber-700 dark:text-amber-400 border-0">
+                              <Badge className="text-xs text-muted-foreground/75 px-2 py-0 h-4 bg-warning/15 text-warning-strong  border-0">
                                 Vence Hoje
                               </Badge>
                             )}

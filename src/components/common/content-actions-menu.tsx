@@ -386,14 +386,14 @@ export function ContentActionsMenu({
           <Button
             variant="ghost"
             size="icon"
-            className="size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0 cursor-pointer"
+            className="size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 shrink-0 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
             aria-label="Ações do conteúdo"
           >
             <MoreHorizontal className="size-4" />
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 border-border shadow-lg">
+        <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 border-border shadow-overlay">
           {/* Seção 1: Compartilhamento e Links */}
           <DropdownMenuItem
             onClick={handleCopyLink}
@@ -443,7 +443,7 @@ export function ContentActionsMenu({
                   >
                     {postData?.metadata?.is_pinned ? (
                       <>
-                        <PinOff className="size-3.5 text-amber-500" />
+                        <PinOff className="size-3.5 text-warning-strong" />
                         <span>Desafixar do Perfil</span>
                       </>
                     ) : (
@@ -506,7 +506,7 @@ export function ContentActionsMenu({
                         disabled={isPerformingAction}
                         className="text-xs font-medium rounded-lg py-2 cursor-pointer gap-2"
                       >
-                        <Pause className="size-3.5 text-amber-500" />
+                        <Pause className="size-3.5 text-warning-strong" />
                         <span>Pausar Anúncio</span>
                       </DropdownMenuItem>
 

@@ -110,7 +110,7 @@ function AdminMasterDashboard() {
       label: "Receita Pendente",
       value: formatMoney(metrics.pendingRevenueCents),
       icon: Activity,
-      color: "text-amber-600 bg-amber-500/10",
+      color: "text-warning-strong bg-warning/10",
     },
     {
       label: "Total de Lojas",
@@ -283,7 +283,7 @@ function AdminMasterDashboard() {
             <span className="text-xs font-bold text-foreground">Lojas Recentes</span>
             <span className="text-xs text-muted-foreground font-mono">{stores.length} lojas</span>
           </div>
-          <div className="overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
             <table className="w-full text-xs text-left">
               <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-2xs">
                 <tr>
@@ -314,7 +314,7 @@ function AdminMasterDashboard() {
                       <Button
                         size="sm"
                         variant={store.is_active ? "outline" : "default"}
-                        className="h-7 px-3 rounded-lg text-xs font-medium"
+                        className="h-7 px-3 rounded-lg text-xs font-medium min-h-11 sm:min-h-0"
                         disabled={loadingId === store.id}
                         onClick={() => handleToggleStore(store.id, store.is_active)}
                       >
@@ -334,7 +334,7 @@ function AdminMasterDashboard() {
             <span className="text-xs font-bold text-foreground">Faturas</span>
             <span className="text-xs text-muted-foreground font-mono">{invoices.length} faturas</span>
           </div>
-          <div className="overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
             <table className="w-full text-xs text-left">
               <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-2xs">
                 <tr>
@@ -417,7 +417,7 @@ function AdminMasterDashboard() {
               type="submit"
               size="sm"
               disabled={isSavingTax}
-              className="h-9 rounded-lg text-xs font-bold gap-1"
+              className="h-9 rounded-lg text-xs font-bold gap-1 min-h-11 sm:min-h-0"
             >
               <Plus className="size-3.5" />
               <span>Adicionar</span>

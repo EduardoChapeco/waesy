@@ -98,7 +98,7 @@ export const DocumentField = forwardRef<HTMLInputElement, DocumentFieldProps>(
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none transition-colors duration-200">
             {isValid ? (
               <span className="text-success flex items-center" title="Documento válido na Receita Federal">
-                <Check className="size-4 stroke-[2.5]" />
+                <Check className="size-4 stroke-bold" />
               </span>
             ) : (
               <span className="text-destructive flex items-center" title="Dígito verificador inválido">

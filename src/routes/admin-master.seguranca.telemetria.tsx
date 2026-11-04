@@ -39,8 +39,8 @@ export const Route = createFileRoute("/admin-master/seguranca/telemetria")({
 const SEVERITY_META: Record<string, { label: string; color: string; dot: string }> = {
   low: { label: "Baixo", color: "bg-muted text-muted-foreground border-border/60", dot: "bg-muted-foreground" },
   info: { label: "Info", color: "bg-blue-500/10 text-blue-500 border-blue-500/20", dot: "bg-blue-500" },
-  medium: { label: "Médio", color: "bg-amber-500/10 text-amber-500 border-amber-500/20", dot: "bg-amber-500" },
-  warning: { label: "Aviso", color: "bg-amber-500/10 text-amber-500 border-amber-500/20", dot: "bg-amber-500" },
+  medium: { label: "Médio", color: "bg-warning/10 text-warning-strong border-warning/20", dot: "bg-warning" },
+  warning: { label: "Aviso", color: "bg-warning/10 text-warning-strong border-warning/20", dot: "bg-warning" },
   high: { label: "Alto", color: "bg-orange-500/10 text-orange-500 border-orange-500/20", dot: "bg-orange-500" },
   critical: { label: "Crítico", color: "bg-red-500/10 text-red-500 border-red-500/20", dot: "bg-red-500 animate-pulse motion-reduce:animate-none" },
   emergency: { label: "Emergência", color: "bg-red-600/20 text-red-600 border-red-600/30", dot: "bg-red-600 animate-ping motion-reduce:animate-none" },
@@ -58,7 +58,7 @@ function SeverityBadge({ severity }: { severity: string }) {
 
 function KpiCard({ label, value, icon: Icon, accent }: { label: string; value: string | number; icon: React.ElementType; accent?: string }) {
   return (
-    <div className="bg-card border border-border/60 rounded-lg p-4 shadow-sm">
+    <div className="bg-card border border-border/60 rounded-lg p-4 ">
       <div className={cn("size-8 rounded-lg flex items-center justify-center mb-3", accent || "bg-primary/10")}>
         <Icon className="size-4 text-foreground/80" />
       </div>
@@ -204,7 +204,7 @@ function SecurityTelemetryPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
       {/* ── Sub-navegação Canônica de Segurança ── */}
-      <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-xs overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-xs overflow-x-auto scroll-area-carousel no-scrollbar">
         <Link
           to="/admin-master/seguranca"
           className="px-4 py-2 rounded-lg font-semibold transition-colors hover:bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -213,7 +213,7 @@ function SecurityTelemetryPage() {
         </Link>
         <Link
           to="/admin-master/seguranca/telemetria"
-          className="px-4 py-2 rounded-lg font-bold transition-colors bg-primary text-primary-foreground shadow-sm"
+          className="px-4 py-2 rounded-lg font-bold transition-colors bg-primary text-primary-foreground "
         >
           Telemetria de Ataques e Invasões
         </Link>
@@ -242,7 +242,7 @@ function SecurityTelemetryPage() {
             variant="outline"
             size="sm"
             onClick={handleSimulateAttack}
-            className="rounded-lg text-xs gap-2 border-dashed border-amber-500/40 text-amber-600 hover:bg-amber-500/10 cursor-pointer"
+            className="rounded-lg text-xs gap-2 border-dashed border-warning/40 text-warning-strong hover:bg-warning/10 cursor-pointer"
           >
             <Zap className="size-3.5" />
             Simular Probe de Ataque
@@ -312,7 +312,7 @@ function SecurityTelemetryPage() {
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "text-xs font-bold px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 cursor-pointer",
             activeTab === "attacks"
-              ? "bg-foreground text-background shadow-sm"
+              ? "bg-foreground text-background "
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           )}
         >
@@ -325,7 +325,7 @@ function SecurityTelemetryPage() {
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
             "text-xs font-bold px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 cursor-pointer",
             activeTab === "sentinel"
-              ? "bg-foreground text-background shadow-sm"
+              ? "bg-foreground text-background "
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           )}
         >
@@ -346,7 +346,7 @@ function SecurityTelemetryPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel w-full sm:w-auto no-scrollbar">
           {(["all", "emergency", "critical", "high", "medium", "low"] as const).map((sev) => (
             <button
               key={sev}
@@ -366,7 +366,7 @@ function SecurityTelemetryPage() {
 
       {/* ── ABA 1: FEED DE ATAQUES SERVER-SIDE ── */}
       {activeTab === "attacks" && (
-        <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-sm">
+        <div className="rounded-lg border border-border/70 bg-card overflow-hidden ">
           {filteredAttacks.length === 0 ? (
             <div className="py-16 text-center space-y-3">
               <ShieldCheck className="size-10 mx-auto text-emerald-500 opacity-60" />
@@ -380,12 +380,12 @@ function SecurityTelemetryPage() {
                 onClick={handleSimulateAttack}
                 className="mt-2 text-xs rounded-lg gap-2 border-dashed"
               >
-                <Zap className="size-3.5 text-amber-500" />
+                <Zap className="size-3.5 text-warning-strong" />
                 Simular Ataque para Testar Notificação
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto no-scrollbar">
+            <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-2xs tracking-wider font-bold">
                   <tr>
@@ -418,7 +418,7 @@ function SecurityTelemetryPage() {
 
                       <td className="p-4 font-mono text-muted-foreground">
                         <p className="text-foreground font-bold">{atk.attacker_ip || "—"}</p>
-                        <p className="text-2xs truncate max-w-[150px]">{atk.user_agent || "Desconhecido"}</p>
+                        <p className="text-2xs truncate max-w-38">{atk.user_agent || "Desconhecido"}</p>
                       </td>
 
                       <td className="p-4 font-mono text-xs">
@@ -434,7 +434,7 @@ function SecurityTelemetryPage() {
                             "text-2xs capitalize",
                             atk.resolution_status === "mitigated" && "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
                             atk.resolution_status === "blocked_ip" && "bg-purple-500/10 text-purple-600 border-purple-500/30",
-                            atk.resolution_status === "pending" && "bg-amber-500/10 text-amber-600 border-amber-500/30",
+                            atk.resolution_status === "pending" && "bg-warning/10 text-warning-strong border-warning/30",
                             atk.resolution_status === "false_positive" && "bg-muted text-muted-foreground border-border"
                           )}
                         >
@@ -452,7 +452,7 @@ function SecurityTelemetryPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedIncident(atk)}
-                          className="h-8 rounded-lg text-xs gap-1 cursor-pointer"
+                          className="h-8 rounded-lg text-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
                         >
                           <Eye className="size-3.5" />
                           Inspecionar
@@ -469,14 +469,14 @@ function SecurityTelemetryPage() {
 
       {/* ── ABA 2: FEED SENTINELA CLIENT-SIDE ── */}
       {activeTab === "sentinel" && (
-        <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-sm">
+        <div className="rounded-lg border border-border/70 bg-card overflow-hidden ">
           {filteredEvents.length === 0 ? (
             <div className="py-16 text-center text-muted-foreground">
               <ShieldCheck className="size-10 mb-3 mx-auto opacity-20" />
               <p className="text-xs font-semibold">Nenhum evento do sentinela client-side detectado.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto no-scrollbar">
+            <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-2xs tracking-wider font-bold">
                   <tr>
@@ -500,7 +500,7 @@ function SecurityTelemetryPage() {
                         {ev.ip_address || "—"}
                       </td>
                       <td className="p-4">
-                        <span className="font-mono font-bold text-amber-600 bg-amber-500/10 px-2 py-1 rounded text-2xs">
+                        <span className="font-mono font-bold text-warning-strong bg-warning/10 px-2 py-1 rounded text-2xs">
                           {ev.risk_score || 0} pts
                         </span>
                       </td>
@@ -553,7 +553,7 @@ function SecurityTelemetryPage() {
                   <FileCode className="size-3.5 text-primary" />
                   Snapshot do Payload Interceptado:
                 </span>
-                <pre className="p-3 bg-card border border-border/70 rounded-lg font-mono text-2xs text-foreground overflow-x-auto max-h-48 text-left leading-relaxed">
+                <pre className="p-3 bg-card border border-border/70 rounded-lg font-mono text-2xs text-foreground overflow-x-auto scroll-area-carousel max-h-48 text-left leading-relaxed">
                   {JSON.stringify(selectedIncident.payload_snapshot || {}, null, 2)}
                 </pre>
               </div>
@@ -564,7 +564,7 @@ function SecurityTelemetryPage() {
                   <span className="font-bold text-muted-foreground text-2xs">
                     Cabeçalhos HTTP Capturados:
                   </span>
-                  <pre className="p-2 bg-muted/20 border border-border/40 rounded-lg font-mono text-2xs text-muted-foreground overflow-x-auto max-h-28">
+                  <pre className="p-2 bg-muted/20 border border-border/40 rounded-lg font-mono text-2xs text-muted-foreground overflow-x-auto scroll-area-carousel max-h-28">
                     {JSON.stringify(selectedIncident.headers_snapshot, null, 2)}
                   </pre>
                 </div>

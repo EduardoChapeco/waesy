@@ -132,7 +132,7 @@ export function ProfileEventsManager({
           type="button"
           size="sm"
           onClick={openCreateModal}
-          className="rounded-lg text-xs font-semibold gap-2 cursor-pointer h-9"
+          className="rounded-lg text-xs font-semibold gap-2 cursor-pointer h-9 min-h-11 sm:min-h-0"
         >
           <Plus className="size-3.5" />
           <span>+ Adicionar Evento</span>
@@ -194,7 +194,7 @@ export function ProfileEventsManager({
                       />
                       {ev.is_featured && (
                         <div className="absolute top-2 right-2">
-                          <Badge className="bg-primary text-primary-foreground text-3xs font-bold shadow-md">
+                          <Badge className="bg-primary text-primary-foreground text-3xs font-bold ">
                             Destaque
                           </Badge>
                         </div>
@@ -233,7 +233,7 @@ export function ProfileEventsManager({
                         size="icon"
                         variant="ghost"
                         onClick={() => openEditModal(ev)}
-                        className="size-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                        className="size-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       >
                         <Edit2 className="size-3.5" />
                       </Button>
@@ -242,7 +242,7 @@ export function ProfileEventsManager({
                         size="icon"
                         variant="ghost"
                         onClick={() => handleDelete(ev.id)}
-                        className="size-7 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="size-7 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -368,7 +368,7 @@ export function ProfileEventsManager({
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 placeholder="Conte sobre o que é o evento, atrações, convidados..."
-                className="rounded-lg text-xs min-h-[70px]"
+                className="rounded-lg text-xs min-h-18"
               />
             </div>
 

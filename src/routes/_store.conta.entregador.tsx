@@ -124,7 +124,7 @@ export const Route = createFileRoute("/_store/conta/entregador")({
 function getDemandCategoryMeta(serviceType: string) {
   switch (serviceType) {
     case "ride_moto":
-      return { label: "MotoLink Passageiro", category: "Corrida", icon: Bike, color: "text-amber-500", acceptLabel: "Aceitar Corrida (Gerar PIN)" };
+      return { label: "MotoLink Passageiro", category: "Corrida", icon: Bike, color: "text-warning-strong", acceptLabel: "Aceitar Corrida (Gerar PIN)" };
     case "ride_car":
       return { label: "Corrida Waesy Go (Carro)", category: "Corrida", icon: Car, color: "text-blue-500", acceptLabel: "Aceitar Corrida (Gerar PIN)" };
     case "delivery_express":
@@ -670,7 +670,7 @@ function CourierDriverHubPage() {
         <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
           <span className="text-xs uppercase font-mono text-muted-foreground">Avaliação Média</span>
           <p className="text-xl font-black text-foreground flex items-center gap-1 font-mono">
-            <Star className="size-4 fill-amber-400 text-amber-400" />
+            <Star className="size-4 fill-warning text-warning-strong" />
             {profile.rating.toFixed(1)}
           </p>
         </div>
@@ -1495,7 +1495,7 @@ function CourierDriverHubPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-foreground">Avaliações de Clientes Verificados</h2>
               <div className="flex items-center gap-1 font-bold text-sm text-foreground">
-                <Star className="size-4 fill-amber-400 text-amber-400" />
+                <Star className="size-4 fill-warning text-warning-strong" />
                 <span>{profile.rating.toFixed(1)} / 5.0</span>
               </div>
             </div>
@@ -1514,7 +1514,7 @@ function CourierDriverHubPage() {
                           <Star
                             key={i}
                             className={`size-4 ${
-                              i < rev.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
+                              i < rev.rating ? "fill-warning text-warning-strong" : "text-muted-foreground/30"
                             }`}
                           />
                         ))}
@@ -1562,7 +1562,7 @@ function CourierDriverHubPage() {
                 >
                   <Star
                     className={`size-6 ${
-                      star <= ratingStars ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
+                      star <= ratingStars ? "fill-warning text-warning-strong" : "text-muted-foreground/30"
                     }`}
                   />
                 </button>

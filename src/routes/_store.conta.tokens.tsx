@@ -205,7 +205,7 @@ function WzEconomyPage() {
 
           <div className="p-3 rounded-lg bg-muted/40 border border-border/40 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
+              <div className="size-8 rounded-lg bg-warning/10 flex items-center justify-center text-warning-strong">
                 <Store className="size-4" />
               </div>
               <div>
@@ -293,7 +293,7 @@ function WzEconomyPage() {
           </h2>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"> {/* design-lint-ignore DL-30 reason:"Regua horizontal continua de filtros conforme AGENTS.md B.39" expiry:"2027-12-31" */}
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1"> {/* design-lint-ignore DL-30 reason:"Regua horizontal continua de filtros conforme AGENTS.md B.39" expiry:"2027-12-31" */}
           {FILTER_LABELS.map((flt) => (
             <button
               key={flt.id}

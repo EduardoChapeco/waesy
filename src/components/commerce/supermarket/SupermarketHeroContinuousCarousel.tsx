@@ -72,7 +72,7 @@ export function SupermarketHeroContinuousCarousel({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-none scroll-smooth touch-pan-x"
+        className="flex w-full overflow-x-auto scroll-area-carousel snap-x snap-mandatory scrollbar-none scroll-smooth touch-pan-x"
         tabIndex={0}
         aria-label="Carrossel contínuo de promoções"
       >
@@ -86,12 +86,12 @@ export function SupermarketHeroContinuousCarousel({
                 loading={idx === 0 ? "eager" : "lazy"}
               />
               {banner.badge ? (
-                <span className="absolute top-3 left-3 px-3 py-1 text-2xs font-bold rounded-full bg-primary text-primary-foreground shadow-sm">
+                <span className="absolute top-3 left-3 px-3 py-1 text-2xs font-bold rounded-full bg-primary text-primary-foreground ">
                   {banner.badge}
                 </span>
               ) : null}
               {banner.title ? (
-                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-background/90 via-background/40 to-transparent">
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-background/85 backdrop-blur-xs">
                   <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-1">
                     {banner.title}
                   </h3>
@@ -138,13 +138,13 @@ export function SupermarketHeroContinuousCarousel({
                   setActiveIndex(i);
                 }
               }}
-              className="h-11 min-h-11 px-1.5 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
+              className="h-11 min-h-11 px-2 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
               aria-label={`Ir para slide ${i + 1}`}
               aria-current={i === activeIndex ? "true" : undefined}
             >
               <span
                 className={cn(
-                  "h-1.5 rounded-full transition-all duration-300 pointer-events-none block",
+                  "h-1.5 rounded-full transition duration-300 pointer-events-none block",
                   i === activeIndex ? "w-6 bg-primary" : "w-1.5 bg-foreground/30 hover:bg-foreground/50",
                 )}
               />

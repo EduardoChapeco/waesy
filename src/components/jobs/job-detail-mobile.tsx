@@ -196,7 +196,7 @@ export function JobDetailMobile({
               <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 Perfil do Empregador
               </span>
-              <span className="text-xs font-bold text-amber-500">
+              <span className="text-xs font-bold text-warning-strong">
                  {employerInsights.average_rating} ({employerInsights.total_reviews})
               </span>
             </div>
@@ -230,7 +230,7 @@ export function JobDetailMobile({
       </div>
 
       {/* ── 9. Sticky Bottom Action Bar (Thumb Zone & Safe-Area) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-overlay">
         <div className="min-w-0 flex-1">
           <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider block">
             Salário Previsto
@@ -245,7 +245,7 @@ export function JobDetailMobile({
             href={job.external_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors shadow-sm shrink-0"
+            className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-lg bg-foreground text-background font-bold text-xs hover:bg-foreground/90 transition-colors  shrink-0"
           >
             <span>Site Oficial</span>
             <LinkSimple size={14} weight="bold" />
@@ -253,7 +253,7 @@ export function JobDetailMobile({
         ) : (
           <Button
             onClick={onOpenApply}
-            className="h-12 px-6 rounded-lg font-bold text-xs bg-foreground text-background gap-2 shadow-sm shrink-0"
+            className="h-12 px-6 rounded-lg font-bold text-xs bg-foreground text-background gap-2  shrink-0"
           >
             <PaperPlaneTilt size={16} weight="bold" />
             <span>Candidatar-se</span>

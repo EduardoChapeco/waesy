@@ -50,13 +50,13 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
       >
         {/* Topo: Selo Gastronômico */}
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-amber-500 text-slate-950 font-black uppercase tracking-wider text-xs sm:text-sm shadow-md">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-warning text-slate-950 font-black uppercase tracking-wider text-xs sm:text-sm ">
             <Flame className="size-4 shrink-0 fill-current" />
             <span>{promoBadge || "ESPECIAL DA CASA"}</span>
           </div>
 
           <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground/90 text-xs sm:text-sm font-semibold">
-            <Clock className="size-3.5 text-amber-400 shrink-0" />
+            <Clock className="size-3.5 text-warning-strong shrink-0" />
             <span>35-45 min</span>
           </div>
         </div>
@@ -64,7 +64,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
         {/* Centro: Título e Descrição Apetitosa */}
         <div className="space-y-3">
           <h1
-            className={`font-black uppercase tracking-tight text-foreground drop-shadow-md leading-[1.05] line-clamp-2 ${
+            className={`font-black uppercase tracking-tight text-foreground  leading-none line-clamp-2 ${
               aspectRatio === "1:1" ? "text-4xl md:text-5xl" : "text-6xl md:text-7xl"
             }`}
           >
@@ -81,7 +81,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
                 key={i}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground/60 backdrop-blur-md border border-white/20 text-foreground/90 text-xs sm:text-sm font-semibold"
               >
-                <Star className="size-3.5 text-amber-400 shrink-0 fill-current" />
+                <Star className="size-3.5 text-warning-strong shrink-0 fill-current" />
                 <span>{item}</span>
               </span>
             ))}
@@ -94,7 +94,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
             <span className="text-xs sm:text-sm font-semibold text-foreground/70 uppercase tracking-wider block">
               Preço Especial
             </span>
-            <div className="text-4xl sm:text-5xl font-black font-mono text-amber-400 tracking-tight">
+            <div className="text-4xl sm:text-5xl font-black font-mono text-warning-strong tracking-tight">
               {formatMoney(priceCents)}
             </div>
             <p className="text-2xs sm:text-xs text-foreground/60">
@@ -103,7 +103,7 @@ export function GastronomyTemplate({ data, className = "" }: SocialTemplateProps
           </div>
 
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/10 backdrop-blur-md border border-white/15 text-foreground/90 text-xs sm:text-sm font-bold shrink-0">
-            <Utensils className="size-4.5 text-amber-400 shrink-0" />
+            <Utensils className="size-4.5 text-warning-strong shrink-0" />
             <span className="truncate max-w-45">{storeName}</span>
           </div>
         </div>

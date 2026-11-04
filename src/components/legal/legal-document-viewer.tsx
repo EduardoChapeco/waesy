@@ -56,22 +56,22 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
  {/* Links Rápidos de Outras Políticas */}
  <div className="flex flex-wrap gap-2 pt-2 pb-4 ">
  <span className="text-xs font-bold text-muted-foreground self-center mr-1">Políticas Relacionadas:</span>
- <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7 min-h-11 sm:min-h-0">
  <Link to="/termos">Termos de Uso</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7 min-h-11 sm:min-h-0">
  <Link to="/privacidade">Privacidade (LGPD)</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7 min-h-11 sm:min-h-0">
  <Link to="/politicas/$slug" params={{ slug: "cookies" }}>Cookies</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7 min-h-11 sm:min-h-0">
  <Link to="/politicas/$slug" params={{ slug: "isencao" }}>Isenção de Negociações</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7 min-h-11 sm:min-h-0">
  <Link to="/politicas/$slug" params={{ slug: "lojistas" }}>Lojistas</Link>
  </Button>
- <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7">
+ <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-7 min-h-11 sm:min-h-0">
  <Link to="/trocas-e-devolucoes">Devoluções</Link>
  </Button>
  </div>

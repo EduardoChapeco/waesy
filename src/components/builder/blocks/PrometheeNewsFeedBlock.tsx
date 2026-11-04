@@ -38,12 +38,7 @@ export function PrometheeNewsFeedBlock({
 
   const allArticles = useMemo<NormalizedPrometheeArticle[]>(() => {
     const mode = data?.dataSource || "approved_mined_AND_custom";
-    const minedRaw =
-      Array.isArray(newsArticles) && newsArticles.length > 0
-        ? newsArticles
-        : Array.isArray(products) && products.length > 0
-          ? products
-          : [];
+    const minedRaw = Array.isArray(newsArticles) ? newsArticles : [];
     const customRaw = Array.isArray(data?.articles) ? data.articles : [];
 
     let combinedRaw: any[] = [];

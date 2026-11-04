@@ -91,7 +91,7 @@ export function AiCurationUpgradeModal({
             type="button"
             variant="ghost"
             onClick={onClose}
-            className="rounded-lg text-xs h-9 w-full cursor-pointer text-muted-foreground hover:text-foreground"
+            className="rounded-lg text-xs h-9 w-full cursor-pointer text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
           >
             Continuar com Extração Mecânica (Sem IA)
           </Button>

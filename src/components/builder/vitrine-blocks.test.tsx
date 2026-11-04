@@ -146,6 +146,7 @@ describe("Design System Vitrine & Omni Builder App-Parity Suite", () => {
     expect(mobileHtml).toContain("Bebidas");
 
     expect(desktopHtml).toContain("carousel");
+    // design-lint-ignore DL-30 reason:"Asserção de teste sobre classe de carrossel horizontal" expiry:"2027-12-31"
     expect(desktopHtml).toContain("overflow-x-auto");
     expect(desktopHtml).toContain("Promoções");
     expect(desktopHtml).toContain("Bebidas");

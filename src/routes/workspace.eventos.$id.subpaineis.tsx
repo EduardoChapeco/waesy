@@ -80,7 +80,7 @@ function EventSubpanelsPage() {
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
  {subpanels.map((sp: any) => (
- <div key={sp.id} className="bg-card border border-border p-5 rounded-lg space-y-4 shadow-sm">
+ <div key={sp.id} className="bg-card border border-border p-5 rounded-lg space-y-4 ">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
  <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">

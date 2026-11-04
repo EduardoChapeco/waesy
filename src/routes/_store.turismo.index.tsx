@@ -22,7 +22,8 @@ import { BusTicketResultsRail } from "@/components/tourism/BusTicketResultsRail"
 import { listActiveBanners, type BannerDTO } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublicTourism, type TourismItemDTO } from "@/services/tourism.functions";
-import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
+import { getModularSurfaceFeed, resolveSurfacePageExperienceDocument } from "@/services/surface-cms.functions";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
@@ -60,14 +61,17 @@ export const Route = createFileRoute("/_store/turismo/")({
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [banners, hotpages, tourismItems, surfaceFeed] = await Promise.all([
+      const [banners, hotpages, tourismItems, surfaceFeed, surfaceExperience] = await Promise.all([
         listActiveBanners({ data: { placement: "turismo", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "turismo" } }).catch(() => []),
         listPublicTourism().catch(() => []),
         getModularSurfaceFeed({ data: { surfaceSlug: "turismo", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
+        resolveSurfacePageExperienceDocument({ data: { surfaceSlug: "turismo", city: activeCity } }).catch(
+          () => ({ mode: "canonical_cms" as const, documentId: null, document: null, liveData: null }),
+        ),
       ]);
 
-      return { banners, hotpages, tourismItems, surfaceFeed };
+      return { banners, hotpages, tourismItems, surfaceFeed, surfaceExperience: surfaceExperience || null };
     } catch (err) {
       console.error("[loader:_store.turismo.index] Unhandled error:", err);
       return { banners: [], hotpages: [], tourismItems: [], surfaceFeed: null };
@@ -120,7 +124,7 @@ const REGIONAL_AIRPORTS = [
 ];
 
 function TourismMasterPage() {
-  const { banners = [], hotpages = [], tourismItems: initialItems = [], surfaceFeed = null } =
+  const { banners = [], hotpages = [], tourismItems: initialItems = [], surfaceFeed = null, surfaceExperience = null } =
     ((Route.useLoaderData() as any) || {});
 
   const [selectedCategory, setSelectedCategory] = useState("todos");
@@ -208,6 +212,26 @@ function TourismMasterPage() {
     setQuoteDestination(destination);
     setIsQuoteModalOpen(true);
   };
+
+  if (surfaceExperience?.mode === "omni_published" && surfaceExperience.document) {
+    const live = surfaceExperience.liveData || {};
+    return (
+      <main className="min-h-screen bg-background">
+        <OmniPageRenderer
+          document={surfaceExperience.document}
+          classifieds={live.classifieds?.length ? live.classifieds : tourismList}
+          banners={live.banners?.length ? live.banners : banners}
+          hotpages={live.hotpages?.length ? live.hotpages : hotpages}
+          stores={live.stores?.length ? live.stores : []}
+        />
+        <TravelQuoteModal
+          isOpen={isQuoteModalOpen}
+          onClose={() => setIsQuoteModalOpen(false)}
+          defaultDestination={quoteDestination}
+        />
+      </main>
+    );
+  }
 
   const { isCompact } = useWindowSizeClass();
 

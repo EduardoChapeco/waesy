@@ -132,7 +132,7 @@ export function CardSettingsDrawer({
       <SheetContent
         side="bottom"
         className={cn(
-          "w-full max-w-md mx-auto rounded-t-3xl p-0 bg-background border-t border-border z-50 h-[92dvh] max-h-[92dvh] overflow-hidden flex flex-col select-none",
+          "w-full max-w-md mx-auto rounded-t-3xl p-0 bg-background border-t border-border z-50 h-vh-92 max-h-vh-92 overflow-hidden flex flex-col select-none",
           className
         )}
       >
@@ -146,7 +146,7 @@ export function CardSettingsDrawer({
               type="button"
               onClick={() => onOpenChange(false)}
               aria-label="Voltar"
-              className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <ArrowLeft className="size-5" />
             </button>
@@ -162,7 +162,7 @@ export function CardSettingsDrawer({
             type="button"
       onClick={onHelpClick}
             aria-label="Ajuda sobre configurações do cartão"
-            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
           >
             <HelpCircle className="size-5" />
           </button>
@@ -173,10 +173,10 @@ export function CardSettingsDrawer({
           {/* ── 1. Preview Visual do Cartão Verde-Limão (Tela 4 Anexa) ── */}
           <div
             className={cn(
-              "relative w-full aspect-[1.586/1] rounded-3xl p-5 flex flex-col justify-between overflow-hidden shadow-sm transition-colors duration-300",
+              "relative w-full aspect-[1.586/1] rounded-3xl p-5 flex flex-col justify-between overflow-hidden shadow-overlay transition-colors duration-300",
               isLocked
                 ? "bg-zinc-800 text-zinc-400 grayscale border border-zinc-700/60"
-                : "bg-lime-400 text-zinc-950 border border-lime-300/80"
+                : "bg-warning text-zinc-950 border border-warning/80"
             )}
           >
             {/* Top Row: Logo do Banco + Ondas Contactless */}
@@ -185,7 +185,7 @@ export function CardSettingsDrawer({
                 <span className="font-mono font-black">nevo</span>
                 <span className="text-3xs font-bold text-zinc-800 tracking-wider">/ WAESY BANK</span>
               </div>
-              <Wifi className="size-5 rotate-90 text-zinc-950 stroke-[2.2]" />
+              <Wifi className="size-5 rotate-90 text-zinc-950 stroke-regular" />
             </div>
 
             {/* Middle Row: Número do Cartão */}
@@ -222,7 +222,7 @@ export function CardSettingsDrawer({
                 <button
                   type="button"
                   onClick={() => setShowSensitiveData((prev) => !prev)}
-                  className="size-8 min-h-8 min-w-8 inline-flex items-center justify-center rounded-full bg-background/10 hover:bg-background/15 text-zinc-950 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+                  className="size-8 min-h-8 min-w-8 inline-flex items-center justify-center rounded-full bg-background/10 hover:bg-background/15 text-zinc-950 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                   aria-label={showSensitiveData ? "Ocultar dados" : "Exibir dados do cartão"}
                 >
                   {showSensitiveData ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -260,7 +260,7 @@ export function CardSettingsDrawer({
                   onCheckedChange={handleToggleLock}
                   disabled={isSaving}
                   aria-label="Ativar bloqueio temporário"
-                  className="data-[state=checked]:bg-rose-500 focus-visible:ring-2 focus-visible:ring-lime-500"
+                  className="data-[state=checked]:bg-rose-500 focus-visible:ring-2 focus-visible:ring-warning"
                 />
               </div>
 
@@ -271,7 +271,7 @@ export function CardSettingsDrawer({
                   onVirtualCardClick?.();
                   if (!onVirtualCardClick) setShowSensitiveData(true);
                 }}
-                className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
                   <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
@@ -294,7 +294,7 @@ export function CardSettingsDrawer({
                 <button
                   type="button"
                   onClick={() => setShowLimitSlider((prev) => !prev)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-zinc-100 transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                  className="w-full flex items-center justify-between p-4 hover:bg-zinc-100 transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-2">
                     <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
@@ -311,7 +311,7 @@ export function CardSettingsDrawer({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs font-black text-lime-600 font-mono">
+                    <span className="text-xs font-black text-warning-strong font-mono">
                       R$ {sliderValue.toLocaleString("pt-BR")}
                     </span>
                     <ChevronRight
@@ -363,7 +363,7 @@ export function CardSettingsDrawer({
                 type="button"
                 onClick={onReplacementRequest}
                 disabled={!onReplacementRequest}
-                className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
                   <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
@@ -410,7 +410,7 @@ export function CardSettingsDrawer({
                   checked={contactlessEnabled}
                   onCheckedChange={setContactlessEnabled}
                   aria-label="Compras por Aproximação"
-                  className="data-[state=checked]:bg-lime-500 focus-visible:ring-2 focus-visible:ring-lime-500"
+                  className="data-[state=checked]:bg-warning focus-visible:ring-2 focus-visible:ring-warning"
                 />
               </div>
 
@@ -430,7 +430,7 @@ export function CardSettingsDrawer({
                   checked={onlinePurchasesEnabled}
                   onCheckedChange={setOnlinePurchasesEnabled}
                   aria-label="Compras Online"
-                  className="data-[state=checked]:bg-lime-500 focus-visible:ring-2 focus-visible:ring-lime-500"
+                  className="data-[state=checked]:bg-warning focus-visible:ring-2 focus-visible:ring-warning"
                 />
               </div>
             </div>

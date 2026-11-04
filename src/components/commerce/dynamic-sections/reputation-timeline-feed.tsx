@@ -40,13 +40,13 @@ export function ReputationTimelineFeed({ content, design_tokens }: ReputationTim
           <p className="text-xs text-muted-foreground">Registros conectados ao perfil; ausência de itens não significa ausência de manifestações.</p>
         </div>
         <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border border-border/50">
-          <button onClick={() => setFilter("all")} className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200 min-h-9", filter === "all" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
+          <button onClick={() => setFilter("all")} className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200 min-h-9 min-h-11 sm:min-h-0", filter === "all" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
             Registros ({complaints.length})
           </button>
-          <button onClick={() => setFilter("resolved")} className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200 min-h-9", filter === "resolved" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
+          <button onClick={() => setFilter("resolved")} className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200 min-h-9 min-h-11 sm:min-h-0", filter === "resolved" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
             Resolvidos
           </button>
-          <button onClick={() => setFilter("open")} className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200 min-h-9", filter === "open" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
+          <button onClick={() => setFilter("open")} className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", "px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200 min-h-9 min-h-11 sm:min-h-0", filter === "open" ? "bg-card text-foreground shadow-xs font-semibold" : "text-muted-foreground")}>
             Em aberto
           </button>
         </div>
@@ -61,14 +61,14 @@ export function ReputationTimelineFeed({ content, design_tokens }: ReputationTim
           const date = new Date(item.created_at);
           const dateLabel = Number.isNaN(date.getTime()) ? "Data não informada" : date.toLocaleDateString("pt-BR");
           return (
-            <div key={item.id} className="p-5 sm:p-6 rounded-lg border border-border/60 bg-card shadow-sm space-y-4">
+            <div key={item.id} className="p-5 sm:p-6 rounded-lg border border-border/60 bg-card  space-y-4">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs font-bold text-muted-foreground">{item.protocol}</span>
                   {item.status === "resolved" ? (
                     <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Resolvido</Badge>
                   ) : (
-                    <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Em atendimento</Badge>
+                    <Badge variant="outline" className="bg-warning/10 text-warning-strong  border-warning/20 text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Em atendimento</Badge>
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground">{dateLabel}</span>

@@ -75,13 +75,13 @@ export function ServiceSearchDialog({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-2xl p-0 flex flex-col bg-background border-l border-border/40 shadow-2xl"
+        className="w-full sm:max-w-2xl p-0 flex flex-col bg-background border-l border-border/40 shadow-overlay"
       >
         {/* CABEÇALHO */}
         <SheetHeader className="p-4 sm:p-6 border-b border-border/40 bg-muted/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-primary">
-              <Star className="w-5 h-5 text-amber-500" />
+              <Star className="w-5 h-5 text-warning-strong" />
               <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
                 Catálogo de Serviços
               </span>
@@ -107,7 +107,7 @@ export function ServiceSearchDialog({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por serviço, eletricista, site, diarista, tráfego..."
-              className="pl-9 pr-4 h-10 text-sm bg-background border-border/60 focus:border-primary/60 rounded-lg shadow-sm"
+              className="pl-9 pr-4 h-10 text-sm bg-background border-border/60 focus:border-primary/60 rounded-lg shadow-overlay"
               autoFocus
             />
             {searchQuery && (
@@ -121,14 +121,14 @@ export function ServiceSearchDialog({
           </div>
 
           {/* CHIPS DE CATEGORIAS */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-3 -mb-1">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pt-3 -mb-1">
             {CATEGORY_TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setSelectedCategory(tab.id)}
                 className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium transition-colors duration-200 ${
                   selectedCategory === tab.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
+                    ? "bg-primary text-primary-foreground shadow-overlay"
                     : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
@@ -166,7 +166,7 @@ export function ServiceSearchDialog({
       }
     }}
     onClick={() => handleSelect(srv)}
-    className="group p-4 rounded-lg border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-colors duration-200 cursor-pointer flex flex-col gap-3 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="group p-4 rounded-lg border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-colors duration-200 cursor-pointer flex flex-col gap-3 shadow-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   >
                 {/* TOPO: TÍTULO & CATEGORIA */}
                 <div className="flex items-start justify-between gap-3">
@@ -219,7 +219,7 @@ export function ServiceSearchDialog({
 
                 {/* TAGS */}
                 {srv.suggested_tags && srv.suggested_tags.length > 0 && (
-                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
+                  <div className="flex items-center gap-1 overflow-x-auto scroll-area-carousel no-scrollbar pt-1">
                     {srv.suggested_tags.map((tag, idx) => (
                       <span
                         key={idx}
