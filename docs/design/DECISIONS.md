@@ -1,5 +1,21 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-436: Reengenharia Ultraminimalista Flat do Dossiê 360° (88vw), Scroll Central Independente, Zero Containeritis e LeadCard Linear
+- **Data:** 2026-11-04
+- **Contexto:**
+  1. A gaveta lateral de Dossiê 360° do Lead (`_turismo.index.tsx`) apresentava compressão horizontal extrema devido à largura travada e divisão 25%/50%/25% que sobrecarregava as colunas laterais em detrimento do conteúdo central.
+  2. Presença de "Containeritis" (DL-31) e cartões encapsulados com fundos cinza artificiais e bordas duras empilhadas nas abas de Visão Geral, Pastas de Viajantes, Checklists, Contratos, Pagamento, Reuniões e Anamnese.
+  3. O `LeadCard` apresentava excesso de 12 micro-chips concorrentes no rodapé, ofuscando a hierarquia tipográfica principal (nome do viajante, destino, datas e preço formatado).
+  4. Falta de scroll interno independente na coluna de conteúdo central, forçando a rolagem de toda a gaveta e desalinhando cabeçalhos e painéis laterais.
+- **Decisão:**
+  1. Adoção do utilitário canônico `@utility sheet-page-dossier` (`88vw` no desktop) e variantes de 3 colunas redimensionadas: lateral esquerda compacta (`w-64 xl:w-72`), lateral direita compacta (`w-56 xl:w-60`) e coluna central dominante (`flex-1 min-w-0`) com scroll interno vertical independente (`[scrollbar-width:thin] overflow-y-auto`).
+  2. Erradicação total do "Containeritis": substituição de cards encaixados por seções planas diretamente sobre a superfície da página, delimitadas por divisores sutis de 1px (`border-b border-border/40`), mantendo campos de formulário e tabelas integrados.
+  3. Redesign do `LeadCard` seguindo os princípios de clareza do Linear/Trello: nome em destaque, WhatsApp direto de 1-clique, destino com ícone, datas e pax, preço e comissão proeminentes, pílula discreta de temperatura (`Quente`/`Morno`/`Frio`) e relógio de SLA sem acúmulo de badges.
+  4. Redesign do checklist operacional: conversão de caixas flutuantes isoladas em lista tabular unificada com divisores internos, checkboxes acessíveis e badges de status.
+  5. Aprovação com 0 violações P0, aprovação plena na catraca de CI (`node scripts/design-lint.mjs --ratchet` com 674 violações totais), aprovação de 145/145 testes Vitest e build de produção Cloudflare Pages concluído com sucesso.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.11, B.22, B.26, B.31; Diretrizes de Flat UI, Anti-AI Design e Content-First.
+- **Consequências:** Interface de vendas e atendimento de turismo com ergonomia visual de nível internacional, eliminação de ruído cognitivo, rolagem central fluida e preservação de 100% dos dados e integrações BFF.
+
 ## DEC-435: Reengenharia Visual Sistêmica V2: SheetPages com 70% da Largura, Abas Flat em Linha, Hierarquia de Botões e Kanban Ultraminimalista
 - **Data:** 2026-11-04
 - **Contexto:**
