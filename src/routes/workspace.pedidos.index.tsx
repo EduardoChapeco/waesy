@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { ShoppingBag, Search, MoreVertical, Eye, CheckCircle2, Truck, PackageCheck, XCircle, ReceiptText, Clock, Filter, Volume2, VolumeX, Printer, LayoutGrid, List, ChefHat, ArrowRight, Plane, Compass, FileText, Layers, Users, Calendar, MessageCircle, Store, Ticket, BadgeAlert, ArrowUpRight } from 'lucide-react';
 
-import { PageHeader } from "@/components/commerce/page-header";
+import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { formatHumanOrderId } from "@/lib/order-id";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -288,99 +288,77 @@ function AdminOrdersPage() {
 
  return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
- {/* ── Header da Página ── */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
- <PageHeader
- eyebrow={pageEyebrow}
- title={pageTitle}
- actions={
- isTourism ? (
- <div className="flex items-center gap-2">
- <Button
- asChild
- variant="outline"
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+ {/* ── Toolbar Canônica do Workspace (AGENTS.md B.26 & NC-001) ── */}
+ <WorkspaceCanonicalToolbar
+  title={pageTitle}
+  viewModes={availableViewModes.map((m) => ({
+   id: m.id,
+   label: m.label,
+   icon: m.icon,
+  }))}
+  activeViewMode={viewMode}
+  onViewModeChange={(m) => setViewMode(m as ViewMode)}
+  primaryAction={
+   isTourism ? (
+    <div className="flex items-center gap-2">
+     <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+     >
+      <Link to="/workspace/turismo/grupos">
+       <Users className="size-3.5 text-primary" />
+       <span>Grupos e Excursões</span>
+      </Link>
+     </Button>
+     <Button
+      asChild
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
+     >
+      <Link to="/workspace/turismo/propostas" search={{ new: true }}>
+       <Layers className="size-3.5" />
+       <span>+ Nova Proposta</span>
+      </Link>
+     </Button>
+    </div>
+   ) : isServices ? (
+    <Button
+     asChild
+     size="sm"
+     className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
+    >
+     <Link to="/workspace/agenda">
+      <Calendar className="size-3.5" />
+      <span>Grade de Agendamentos</span>
+     </Link>
+    </Button>
+   ) : (
+    <Button
+     asChild
+     variant="outline"
+     size="sm"
+     className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+    >
+     <Link to="/workspace/pdv">
+      <Store className="size-3.5 text-primary" />
+      <span>Frente de Caixa (PDV)</span>
+     </Link>
+    </Button>
+   )
+  }
  >
- <Link to="/workspace/turismo/grupos">
- <Users className="size-3.5 text-primary" />
- <span>Grupos e Excursões</span>
- </Link>
- </Button>
- <Button
- asChild
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
- >
- <Link to="/workspace/turismo/propostas" search={{ new: true }}>
- <Layers className="size-3.5" />
- <span>+ Nova Proposta</span>
- </Link>
- </Button>
- </div>
- ) : isServices ? (
- <Button
- asChild
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
- >
- <Link to="/workspace/agenda">
- <Calendar className="size-3.5" />
- <span>Grade de Agendamentos</span>
- </Link>
- </Button>
- ) : (
- <Button
- asChild
- variant="outline"
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
- >
- <Link to="/workspace/pdv">
- <Store className="size-3.5 text-primary" />
- <span>Frente de Caixa (PDV)</span>
- </Link>
- </Button>
- )
- }
- />
-
- {/* Action Controls & Seletor de Modo Contextual */}
- <div className="flex items-center gap-2 shrink-0">
- <Button
- variant="outline"
- size="sm"
- onClick={() => setSoundEnabled(!soundEnabled)}
- className={`rounded-lg text-xs gap-2 font-bold ${soundEnabled ? "border-primary/40 text-primary" : "text-muted-foreground"}`}
- >
- {soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
- <span>{soundEnabled ? "Notificações On" : "Mudo"}</span>
- </Button>
-
- {availableViewModes.length > 1 && (
- <div className="flex items-center rounded-lg p-1 bg-muted/40 border border-border/60 overflow-x-auto scroll-area-carousel no-scrollbar max-w-full">
- {availableViewModes.map((mode) => {
- const Icon = mode.icon;
- const isActive = viewMode === mode.id;
- return (
- <button
- key={mode.id}
- onClick={() => setViewMode(mode.id)}
- className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer ${
- isActive
- ? "bg-card text-foreground shadow-xs"
- : "text-muted-foreground hover:text-foreground"
- } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
- >
- <Icon className={`size-3.5 ${isActive ? "text-primary" : ""}`} />
- <span>{mode.label}</span>
- </button>
- );
- })}
- </div>
- )}
- </div>
- </div>
+  <Button
+   variant="outline"
+   size="sm"
+   onClick={() => setSoundEnabled(!soundEnabled)}
+   className={`h-11 min-h-11 sm:h-9 rounded-lg text-xs gap-2 font-bold ${soundEnabled ? "border-primary/40 text-primary" : "text-muted-foreground"}`}
+  >
+   {soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+   <span>{soundEnabled ? "Notificações On" : "Mudo"}</span>
+  </Button>
+ </WorkspaceCanonicalToolbar>
 
  {/* ── KPIs Operacionais de Pedidos via StatTile ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

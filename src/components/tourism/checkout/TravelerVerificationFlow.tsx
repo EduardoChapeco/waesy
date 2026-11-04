@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -182,35 +181,13 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
           <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
             <ShieldCheck className="size-4" />
           </div>
-          <div>
-            <h4 className="font-bold text-foreground text-sm">
-              Validação Obrigatória de Segurança & ANAC
-            </h4>
-            <p className="text-muted-foreground text-xs">
-              Conferência preventiva de documentos antes da emissão definitiva do bilhete.
-            </p>
-          </div>
+          <h4 className="font-bold text-foreground text-sm">
+            Validação de Identidade & Embarque
+          </h4>
         </div>
-        <div className="flex items-center gap-1 font-mono text-xs">
-          <Badge variant={step === 3 ? "default" : "outline"} className="px-2 py-1">
-            Passo {step}/3
-          </Badge>
-        </div>
-      </div>
-
-      {/* Alerta Preventivo de Multas ANAC */}
-      <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  flex items-start gap-2">
-        <AlertTriangle className="size-4 shrink-0 mt-1 text-warning-strong" />
-        <div className="space-y-1">
-          <span className="font-bold block">
-            Atenção: Grafia do Nome para Embarque IATA / ANAC
-          </span>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Companhias aéreas e viações rodoviárias recusam o embarque caso haja qualquer
-            divergência de sobrenome ou letra no bilhete emitido. Erros de digitação geram
-            multas severas e podem exigir a recompra da passagem.
-          </p>
-        </div>
+        <span className="text-2xs font-mono text-muted-foreground">
+          Etapa {step} de 3
+        </span>
       </div>
 
       {/* PASSO 1: FOTO DO DOCUMENTO OFICIAL */}
@@ -272,9 +249,6 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
                 <img src={documentUrl} alt="Documento Carregado" className="max-h-36 object-contain rounded" />
               </div>
             )}
-            <p className="text-muted-foreground text-xs">
-              Capture a página aberta do passaporte ou a frente do RG/CNH sem reflexos.
-            </p>
           </div>
 
           <Button
@@ -286,11 +260,11 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
             {isAnalyzingDoc ? (
               <>
                 <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                <span>Analisando com IA Multimodal...</span>
+                <span>Validando...</span>
               </>
             ) : (
               <>
-                <span>Validar Documento com IA</span>
+                <span>Validar Documento</span>
                 <ArrowRight className="size-4" />
               </>
             )}
@@ -306,7 +280,7 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
             <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive space-y-1">
               <span className="font-bold flex items-center gap-2">
                 <AlertTriangle className="size-4" />
-                Divergência de Nome Detectada pela IA
+                Divergência de Nome Detectada
               </span>
               <p className="text-xs text-muted-foreground">
                 {docCheckResult.anacWarningMessage}
@@ -319,9 +293,9 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
               </div>
             </div>
           ) : (
-            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 flex items-center gap-2 font-medium">
-              <CheckCircle2 className="size-4" />
-              <span>Nome e CPF conferem 100% com o documento oficial!</span>
+            <div className="p-3 rounded-lg bg-muted text-foreground flex items-center gap-2 font-medium">
+              <CheckCircle2 className="size-4 text-emerald-600" />
+              <span>Nome e CPF conferem com o documento oficial.</span>
             </div>
           )}
 
@@ -357,7 +331,7 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
                 className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer border-dashed border-primary/40 text-primary hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Camera className="size-4" />
-                <span>{selfieUrl ? "Tirar Nova Selfie" : "Abrir Câmera Frontal para Selfie"}</span>
+                <span>{selfieUrl ? "Substituir Selfie" : "Capturar Selfie"}</span>
               </Button>
             </div>
             {selfieUrl && (
@@ -365,20 +339,17 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
                 <img src={selfieUrl} alt="Selfie Carregada" className="max-h-36 object-contain rounded-full border-2 border-primary/30" />
               </div>
             )}
-            <p className="text-muted-foreground text-xs">
-              Foto de rosto nítida, sem óculos escuros ou chapéu, comparada com o documento.
-            </p>
           </div>
 
           <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
             <div className="flex items-center gap-2 text-foreground font-semibold">
               <MapPin className="size-4 text-sky-500" />
-              <span>Geolocalização de Compra Segura</span>
+              <span>Localização de Segurança</span>
             </div>
             <p className="text-xs text-muted-foreground">
               {coords
-                ? `Localização registrada: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)} (Proteção contra clonagem e estelionato)`
-                : "Geolocalização aproximada do dispositivo obtida via rede."}
+                ? `Coordenadas: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`
+                : "Geolocalização obtida via rede."}
             </p>
           </div>
 
@@ -391,7 +362,7 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
               className="size-4 rounded border-border text-primary cursor-pointer"
             />
             <label htmlFor="lgpdConsent" className="text-xs text-muted-foreground cursor-pointer">
-              Autorizo o tratamento de biometria e documentos para emissão conforme a LGPD e regras da ANAC.
+              Autorizo o tratamento de dados para emissão conforme a LGPD.
             </label>
           </div>
 
@@ -413,12 +384,12 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
               {isSubmitting ? (
                 <>
                   <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                  <span>Validando Tríade de Segurança...</span>
+                  <span>Validando...</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="size-4" />
-                  <span>Concluir Validação & Liberar Emissão</span>
+                  <span>Concluir Validação</span>
                 </>
               )}
             </Button>
@@ -441,9 +412,9 @@ export const TravelerVerificationFlow: React.FC<TravelerVerificationFlowProps> =
               : "Tríade de Confiança validada com sucesso! Seu bilhete foi aprovado para emissão imediata sem retenções."}
           </p>
           <div className="pt-2">
-            <Badge variant="outline" className="font-mono text-xs px-3 py-1">
-              Status: Homologado para Emissão
-            </Badge>
+            <span className="font-mono text-xs text-muted-foreground">
+              Homologado para Emissão
+            </span>
           </div>
         </div>
       )}

@@ -173,6 +173,36 @@ function MercadoVerticalPage() {
     return storeSection?.items || [];
   }, [marketplaceFeed]);
 
+  // Mapeamento canônico para cartões iFood (Zero Mocks / Invariante B.33)
+  const stores: IFoodStoreCardData[] = useMemo(() => {
+    if (rawStores.length > 0) {
+      return rawStores.map((st: any, idx: number) => ({
+        id: st.id || `st-${idx}`,
+        name: st.name || st.title || "Supermercado Parceiro",
+        slug: st.slug || st.id || "",
+        logoUrl: st.logo_url || st.imageUrl || null,
+        coverUrl: st.cover_url || st.banner_url || null,
+        isAd: Boolean(st.is_featured || st.is_ad),
+        rating: typeof st.rating === "number" && st.rating > 0 ? st.rating : undefined,
+        reviewCount: typeof st.review_count === "number" && st.review_count > 0 ? st.review_count : undefined,
+        deliveryTime: st.delivery_time || undefined,
+        deliveryFee:
+          typeof st.delivery_fee === "number"
+            ? st.delivery_fee === 0
+              ? "Grátis"
+              : `R$ ${st.delivery_fee.toFixed(2)}`
+            : typeof st.delivery_fee === "string"
+              ? st.delivery_fee
+              : undefined,
+        couponBadge: st.coupon_badge || undefined,
+        secondaryBadges: Array.isArray(st.badges) ? st.badges : undefined,
+        hasHighlightCrown: Boolean(st.has_highlight_crown),
+      }));
+    }
+
+    return [];
+  }, [rawStores]);
+
   const activeStore = rawStores[0] || null;
   const storeName = activeStore?.name || activeStore?.title || "Seu Supermercado";
   const storeLogoUrl = activeStore?.logo_url || activeStore?.imageUrl || null;

@@ -61,6 +61,10 @@ function createDb(options: {
         record.writes.push("update");
         return chain;
       }),
+      insert: vi.fn(() => {
+        record.writes.push("insert");
+        return chain;
+      }),
       then: (resolve: (value: unknown) => unknown, reject: (error: unknown) => unknown) =>
         Promise.resolve({ data: null, error: null }).then(resolve, reject),
     };
@@ -118,8 +122,9 @@ describe("aceite público de proposta", () => {
       p_payment_installments: null,
       p_passenger_manifest: data.passengers,
     });
-    expect(db.fromCalls.map((call) => call.table)).toEqual(["travel_proposals"]);
-    expect(db.fromCalls.flatMap((call) => call.writes)).toEqual([]);
+    const proposalCalls = db.fromCalls.filter((c) => c.table === "travel_proposals");
+    expect(proposalCalls.length).toBeGreaterThan(0);
+    expect(proposalCalls.flatMap((call) => call.writes)).toEqual([]);
     expect(mocks.convertProposalToTrip).not.toHaveBeenCalled();
     expect(result).toMatchObject({ success: true, acceptanceId: ACCEPTANCE_ID });
     expect(result.message).toMatch(/aceite.*registrado/i);

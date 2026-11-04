@@ -1444,7 +1444,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {stageTotalCents > 0 && (
-                        <span className="text-2xs font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
+                        <span className="text-2xs font-mono tabular-nums font-semibold text-muted-foreground">
                           {formatMoney(stageTotalCents)}
                         </span>
                       )}
@@ -1518,11 +1518,6 @@ export default function WorkspaceTurismoCockpitPage() {
                         />
                       ))
                     )}
-
-                    {/* Instrução Operacional da Fase */}
-                    <p className="text-center text-2xs text-muted-foreground/80 px-3 py-2 leading-relaxed">
-                      {stage.description}
-                    </p>
                   </div>
                 </div>
               );
@@ -1657,20 +1652,23 @@ export default function WorkspaceTurismoCockpitPage() {
           <SheetContent side="right" size="dossier" className="p-0 flex flex-col h-full bg-background border-l border-border/60 overflow-hidden">
             {/* Header Fixo com Título, Metadados e Abas Flat */}
             <SheetHeader className="px-6 py-4 border-b border-border/50 shrink-0 space-y-3 bg-background">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <SheetTitle className="text-xl font-bold tracking-tight text-foreground">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 space-y-1">
+                  <SheetTitle className="text-lg font-bold tracking-tight text-foreground truncate">
                     {editLeadForm.name || selectedLead.full_name || "Oportunidade Comercial"}
                   </SheetTitle>
-                  <Badge variant="outline" className="font-mono text-xs bg-muted/40">
-                    Fase atual: {TOURISM_STAGES.find((s) => s.id === (editLeadForm.status || selectedLead.status))?.title || (editLeadForm.status || selectedLead.status)}
-                  </Badge>
-                  <Badge variant="secondary" className="font-mono text-xs px-3 py-1 rounded-lg">
-                    {editLeadForm.destination || "Destino a definir"}
-                  </Badge>
-                  <Badge variant="outline" className="font-mono tabular-nums font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-xs px-3 py-1 rounded-lg">
-                    {formatMoney(editLeadForm.estimated_value_cents || 0)}
-                  </Badge>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                    <span className="inline-flex items-center gap-2 font-medium text-foreground">
+                      <span className={cn("size-2 rounded-full shrink-0", TOURISM_STAGES.find((s) => s.id === (editLeadForm.status || selectedLead.status))?.dotColor || "bg-primary")} />
+                      {TOURISM_STAGES.find((s) => s.id === (editLeadForm.status || selectedLead.status))?.title || (editLeadForm.status || selectedLead.status)}
+                    </span>
+                    <span>·</span>
+                    <span className="truncate">{editLeadForm.destination || "Destino a definir"}</span>
+                    <span>·</span>
+                    <span className="font-mono tabular-nums font-semibold text-foreground">
+                      {formatMoney(editLeadForm.estimated_value_cents || 0)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -1707,7 +1705,7 @@ export default function WorkspaceTurismoCockpitPage() {
             {/* Layout Balanceado em 3 Colunas com Scroll Central Independente */}
             <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden divide-y lg:divide-y-0 lg:divide-x divide-border/40">
               {/* COLUNA ESQUERDA: Formulário Inicial com Scroll Próprio (Estreita e Compacta) */}
-              <div className="w-full lg:w-64 xl:w-72 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/5">
+              <div className="w-full lg:w-56 xl:w-60 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/5">
                 <div className="flex items-center justify-between border-b border-border/40 pb-2">
                   <span className="font-bold text-foreground">Formulário Inicial</span>
                   <span className="text-2xs font-mono text-muted-foreground">
@@ -1747,29 +1745,6 @@ export default function WorkspaceTurismoCockpitPage() {
                     </p>
                   </div>
                 </div>
-
-                {/* Histórico de Transição de Fases */}
-                <div className="pt-2 border-t border-border/40 space-y-2">
-                  <span className="font-bold text-foreground block">Histórico no Funil</span>
-                  <div className="space-y-1">
-                    {TOURISM_STAGES.map((st) => {
-                      const isCurrent = (editLeadForm.status || selectedLead.status) === st.id;
-                      return (
-                        <div
-                          key={st.id}
-                          className={`p-2 rounded-lg border flex items-center justify-between text-2xs ${
-                            isCurrent
-                              ? "bg-primary/10 border-primary/30 text-primary font-bold"
-                              : "bg-background border-border/40 text-muted-foreground"
-                          }`}
-                        >
-                          <span>{st.title}</span>
-                          <span className="font-mono">{isCurrent ? "Fase Atual" : "Registrado"}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
 
               {/* COLUNA CENTRAL: Conteúdo da Aba com Scroll Interno Independente (Ampla e Dominante) */}
@@ -1778,18 +1753,6 @@ export default function WorkspaceTurismoCockpitPage() {
             {/* 1. ABA VIAGEM & COTAÇÃO COM EDIÇÃO PLENA */}
             {leadDrawerTab === "viagem" && (
               <div className="space-y-6 text-xs">
-                {/* Status de Consentimento LGPD + Origem */}
-                <div className="flex items-center justify-between pb-3 border-b border-border/40 text-xs">
-                  <div className="flex items-center gap-2 text-emerald-600 font-semibold">
-                    <ShieldCheck className="size-4 shrink-0" />
-                    <span>Consentimento LGPD Ativo</span>
-                    <span className="text-2xs font-normal text-muted-foreground">({(editLeadForm.source || selectedLead.source) === "whatsapp" ? "Origem: WhatsApp" : "Origem: Formulário Web"})</span>
-                  </div>
-                  <Badge variant="outline" className="text-2xs font-mono text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
-                    LGPD Verificado
-                  </Badge>
-                </div>
-
                 {/* Bloco 1: Contato do Passageiro */}
                 <div className="space-y-3 pb-5 border-b border-border/40">
                   <div className="flex items-center gap-2 pb-1">
@@ -2042,7 +2005,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     onClick={handleSaveLeadDetails}
                     className="h-11 min-h-11 px-6 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {isUpdatingLead ? "Salvando..." : "Salvar Alterações da Ficha"}
+                    {isUpdatingLead ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>
 
@@ -2061,7 +2024,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/40">
                         <h4 className="font-bold text-xs uppercase tracking-wide text-foreground flex items-center gap-2">
                           <FileText className="size-4 text-primary" />
-                          <span>Propostas & Cenários Enviados ({leadProposals.length})</span>
+                          <span>Propostas ({leadProposals.length})</span>
                         </h4>
                         <div className="flex items-center gap-2 flex-wrap">
                           {leadProposals.length >= 1 && (
@@ -2081,7 +2044,7 @@ export default function WorkspaceTurismoCockpitPage() {
                                   });
                                   const unifiedUrl = `${window.location.origin}/p/${res.publicToken}`;
                                   await navigator.clipboard.writeText(unifiedUrl);
-                                  toast.success(`Link Único Multi-Opções (${res.optionsCount} abas) copiado!`);
+                                  toast.success(`Link copiado!`);
                                 } catch (err: any) {
                                   toast.error(err?.message || "Erro ao unificar propostas em link único.");
                                 } finally {
@@ -2091,7 +2054,7 @@ export default function WorkspaceTurismoCockpitPage() {
                               className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 text-primary border-primary/30 hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Copy className="size-3.5" />
-                              <span>{isBundlingProposals ? "Unificando..." : "Gerar Link Único Multi-Opções"}</span>
+                              <span>{isBundlingProposals ? "Unificando..." : "Copiar Link Comparativo"}</span>
                             </Button>
                           )}
 
@@ -2123,7 +2086,7 @@ export default function WorkspaceTurismoCockpitPage() {
 
                       {leadProposals.length === 0 ? (
                         <p className="text-2xs text-muted-foreground">
-                          Nenhuma proposta gerada ainda. Você pode criar e enviar quantos cenários de proposta forem necessários para este atendimento.
+                          Nenhuma proposta gerada.
                         </p>
                       ) : (
                         <div className="space-y-2">
@@ -2134,9 +2097,9 @@ export default function WorkspaceTurismoCockpitPage() {
                             >
                               <div className="space-y-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="text-2xs font-mono">
-                                    Cenário #{idx + 1}
-                                  </Badge>
+                                  <span className="text-2xs font-mono text-muted-foreground">
+                                    #{idx + 1}
+                                  </span>
                                   <span className="font-bold text-foreground truncate">
                                     {lp.title || lp.destination_city || "Proposta"}
                                   </span>
@@ -2342,29 +2305,22 @@ export default function WorkspaceTurismoCockpitPage() {
                     onClick={handleIssueContract}
                     className="w-full h-11 min-h-11 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                   >
-                    {isIssuingContract ? "Gerando Contrato..." : "Gerar Contrato com Assinatura Digital"}
+                    {isIssuingContract ? "Gerando..." : "Gerar Contrato"}
                   </Button>
                 </div>
 
-                {/* Lista de Contratos Existentes + Stepper Visual de 5 Etapas */}
+                {/* Lista de Contratos Existentes */}
                 {customer360Data?.contracts && customer360Data.contracts.length > 0 && (
                   <div className="space-y-3">
-                    <span className="font-bold text-foreground block">Contratos Emitidos & Rastreio de Assinatura</span>
+                    <span className="font-bold text-foreground block">Contratos Emitidos</span>
                     {customer360Data.contracts.map((c: any) => {
                       const isSigned = c.status === "signed" || Boolean(c.signed_at);
                       const isViewed = isSigned || c.status === "viewed";
                       const isOpened = isViewed || c.status === "opened" || c.status === "sent";
-                      const steps = [
-                        { step: 1, label: "Minuta Gerada", done: true },
-                        { step: 2, label: "Link Enviado", done: true },
-                        { step: 3, label: "Link Aberto", done: isOpened },
-                        { step: 4, label: "Visualizado", done: isViewed },
-                        { step: 5, label: "Assinado", done: isSigned },
-                      ];
                       return (
                         <div
                           key={c.id}
-                          className="p-3 rounded-lg border border-border/60 bg-card space-y-3 text-xs"
+                          className="p-3 rounded-lg border border-border/60 bg-card space-y-2 text-xs"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div>
@@ -2372,7 +2328,7 @@ export default function WorkspaceTurismoCockpitPage() {
                                 {c.contract_title || c.title || "Contrato Digital"}
                               </span>
                               <span className="text-2xs text-muted-foreground font-mono">
-                                {formatMoney(c.total_value_cents || c.total_amount_cents || 0)} • Status: {isSigned ? "Assinado Digitalmente" : c.status}
+                                {formatMoney(c.total_value_cents || c.total_amount_cents || 0)} · {isSigned ? "Assinado" : c.status}
                               </span>
                             </div>
                             <Button
@@ -2387,30 +2343,18 @@ export default function WorkspaceTurismoCockpitPage() {
                             </Button>
                           </div>
 
-                          {/* Stepper de 5 Etapas */}
-                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
-                            {steps.map((st) => (
-                              <div
-                                key={st.step}
-                                className={`p-2 rounded-md border text-center space-y-1 ${
-                                  st.done
-                                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600"
-                                    : "bg-muted/30 border-border/40 text-muted-foreground"
-                                }`}
-                              >
-                                <div className="font-mono text-3xs font-bold">{st.step}.</div>
-                                <div className="text-3xs font-semibold leading-tight">{st.label}</div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Metadados Forenses de Assinatura */}
-                          <div className="p-2 rounded-md bg-muted/30 border border-border/40 grid grid-cols-1 sm:grid-cols-3 gap-2 text-2xs font-mono text-muted-foreground">
-                            <div>IP: {c.signer_ip || "Rastreio ativo"}</div>
-                            <div className="truncate">Hash SHA-256: {c.public_token || c.id.slice(0, 12)}</div>
-                            <div>
-                              Carimbo: {c.signed_at ? new Date(c.signed_at).toLocaleString("pt-BR") : "Aguardando assinatura"}
-                            </div>
+                          <div className="flex items-center gap-2 text-2xs text-muted-foreground pt-1">
+                            <span className="font-semibold text-foreground">
+                              {isSigned ? "Assinado" : isViewed ? "Visualizado" : isOpened ? "Aberto" : "Enviado"}
+                            </span>
+                            <span>·</span>
+                            <span>Etapa {isSigned ? 5 : isViewed ? 4 : isOpened ? 3 : 2} de 5</span>
+                            {c.signed_at && (
+                              <>
+                                <span>·</span>
+                                <span>{new Date(c.signed_at).toLocaleString("pt-BR")}</span>
+                              </>
+                            )}
                           </div>
                         </div>
                       );
@@ -2427,16 +2371,13 @@ export default function WorkspaceTurismoCockpitPage() {
                 <div className="space-y-3 pb-5 border-b border-border/40">
                   <div className="flex items-center gap-2 pb-1">
                     <Share2 className="size-4 text-emerald-600" />
-                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Coleta Autônoma de Dados do Passageiro</h4>
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Coleta de Dados do Passageiro</h4>
                   </div>
-                  <p className="text-2xs text-muted-foreground leading-relaxed">
-                    Envie o formulário de anamnese para o WhatsApp do viajante. Ele preenche os dados cadastrais, preferências de voo, quartos e documentos de forma 100% autônoma.
-                  </p>
 
                   {/* Seletor de Formulário de Onboarding */}
                   {onboardingFormsData?.availableForms && onboardingFormsData.availableForms.length > 0 && (
                     <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Modelo de Ficha de Onboarding</Label>
+                      <Label className="text-2xs text-muted-foreground font-semibold">Modelo de Ficha</Label>
                       <Select
                         value={selectedOnboardingFormSlug || activeOnboardingForm?.slug || ""}
                         onValueChange={setSelectedOnboardingFormSlug}
@@ -2462,7 +2403,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       className="h-11 min-h-11 text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                     >
                       <MessageSquare className="size-3.5" />
-                      <span>Enviar via WhatsApp (1 Clique)</span>
+                      <span>Enviar WhatsApp</span>
                     </Button>
 
                     <Button
@@ -2472,19 +2413,14 @@ export default function WorkspaceTurismoCockpitPage() {
                       className="h-11 min-h-11 text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                     >
                       <Copy className="size-3.5" />
-                      <span>Copiar Link da Ficha</span>
+                      <span>Copiar Link</span>
                     </Button>
                   </div>
                 </div>
 
                 {/* Magic Link Autônomo */}
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <span className="font-bold text-xs text-foreground block">Link Mágico Autônomo do Viajante</span>
-                    <p className="text-2xs text-muted-foreground">
-                      Link exclusivo que permite ao cliente acompanhar o status da proposta e atualizar documentos sem login.
-                    </p>
-                  </div>
+                <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-center justify-between gap-3">
+                  <span className="font-bold text-xs text-foreground">Link de Acompanhamento</span>
                   <Button
                     type="button"
                     variant="outline"
@@ -2493,7 +2429,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <ExternalLink className="size-3.5" />
-                    <span>Copiar Link Mágico</span>
+                    <span>Copiar Link</span>
                   </Button>
                 </div>
 
@@ -2507,19 +2443,14 @@ export default function WorkspaceTurismoCockpitPage() {
                     if (res.correctedName) {
                       setEditLeadForm((prev: any) => ({ ...prev, full_name: res.correctedName! }));
                     }
-                    toast.success("Conferência documental ANAC e biometria registradas no dossiê!");
+                    toast.success("Conferência documental e biometria registradas no dossiê!");
                   }}
                 />
 
                 {/* Pastas Hierárquicas por Passageiro (Documentação & Passaportes) */}
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/40">
-                    <div>
-                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground block">Pastas Documentais por Passageiro</h4>
-                      <span className="text-2xs text-muted-foreground">
-                        RG, CPF, Passaporte e controle de validade (alerta de 6 meses antes do embarque)
-                      </span>
-                    </div>
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground block">Passageiros</h4>
                     <Button
                       type="button"
                       variant="outline"
@@ -2546,7 +2477,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Plus className="size-3.5" />
-                      <span>Nova Pasta</span>
+                      <span>Adicionar Passageiro</span>
                     </Button>
                   </div>
 
@@ -2639,7 +2570,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       onClick={handleSaveLeadDetails}
                       className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      {isUpdatingLead ? "Salvando Pastas..." : "Salvar Pastas de Passageiros"}
+                      {isUpdatingLead ? "Salvando..." : "Salvar"}
                     </Button>
                   </div>
                 </div>
@@ -2677,16 +2608,10 @@ export default function WorkspaceTurismoCockpitPage() {
                         ) : (
                           <Square className="size-4 text-muted-foreground shrink-0" />
                         )}
-                        <span className={`text-xs ${item.done ? "line-through opacity-75" : "font-medium"}`}>
+                        <span className={`text-xs ${item.done ? "line-through text-muted-foreground" : "font-medium text-foreground"}`}>
                           {item.text}
                         </span>
                       </div>
-                      <Badge
-                        variant={item.done ? "outline" : "secondary"}
-                        className={`text-2xs font-mono ${item.done ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10" : ""}`}
-                      >
-                        {item.done ? "Concluído" : "Pendente"}
-                      </Badge>
                     </button>
                   ))}
                 </div>
@@ -2811,7 +2736,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   <div className="flex items-center justify-between gap-2 pb-1">
                     <div className="flex items-center gap-2">
                       <Calendar className="size-4 text-primary" />
-                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Agendar Reunião ou Alinhamento com Cliente</h4>
+                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Agendar Reunião</h4>
                     </div>
                     <Button
                       type="button"
@@ -2821,7 +2746,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Copy className="size-3.5" />
-                      <span>Link Mágico de Confirmação</span>
+                      <span>Copiar Link</span>
                     </Button>
                   </div>
 
@@ -2921,7 +2846,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       }}
                       className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      {isSavingMeeting ? "Agendando..." : "Confirmar Agendamento"}
+                      {isSavingMeeting ? "Agendando..." : "Agendar Reunião"}
                     </Button>
                   </div>
                 </div>
@@ -2941,9 +2866,9 @@ export default function WorkspaceTurismoCockpitPage() {
                             {new Date(m.scheduled_at).toLocaleString("pt-BR")} · {m.meeting_type}
                           </span>
                         </div>
-                        <Badge variant="outline" className="text-2xs font-mono">
+                        <span className="text-2xs font-mono text-muted-foreground">
                           Agendada
-                        </Badge>
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -2957,16 +2882,14 @@ export default function WorkspaceTurismoCockpitPage() {
                 <div className="space-y-3 pb-5 border-b border-border/40">
                   <div className="flex items-center gap-2 pb-1">
                     <ShieldCheck className="size-4 text-emerald-600" />
-                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Governança LGPD (Lei 13.709/2018)</h4>
+                    <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Governança LGPD</h4>
                   </div>
-                  <p className="text-2xs text-muted-foreground leading-relaxed">
-                    Consentimento de coleta e tratamento de dados cadastrais, emissão de bilhetes e compartilhamento estritamente necessário com companhias aéreas, hotéis e operadoras parceiras.
-                  </p>
                   <div className="p-3 rounded-lg bg-muted/20 border border-border/40 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-foreground">Termo de Consentimento Comercial</span>
-                    <Badge variant="outline" className="text-2xs text-emerald-600 border-emerald-500/30 bg-emerald-500/10 font-mono">
-                      Consentido / Ativo
-                    </Badge>
+                    <span className="text-xs font-semibold text-foreground">Termo de Consentimento</span>
+                    <span className="flex items-center gap-2 text-xs text-emerald-600 font-medium">
+                      <CheckCircle2 className="size-3.5" />
+                      Ativo
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2979,11 +2902,11 @@ export default function WorkspaceTurismoCockpitPage() {
                   <div className="flex items-center justify-between gap-2 pb-1">
                     <div className="flex items-center gap-2">
                       <DollarSign className="size-4 text-emerald-600" />
-                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Decomposição Tarifária & Custos</h4>
+                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Decomposição Tarifária</h4>
                     </div>
-                    <Badge variant="outline" className="font-mono text-xs text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
-                      Total: {formatMoney(editLeadForm.estimated_value_cents || 0)}
-                    </Badge>
+                    <span className="font-mono tabular-nums text-xs font-semibold text-foreground">
+                      {formatMoney(editLeadForm.estimated_value_cents || 0)}
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -3077,7 +3000,7 @@ export default function WorkspaceTurismoCockpitPage() {
                           }
                           className={`h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
                             active
-                              ? "border-primary bg-primary/10 text-primary font-bold"
+                              ? "border-primary bg-primary text-primary-foreground font-bold"
                               : "border-border/60 bg-card text-foreground hover:bg-muted/40"
                           }`}
                         >
@@ -3088,7 +3011,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Condições e Observações do Plano Financeiro</Label>
+                    <Label className="text-2xs text-muted-foreground font-semibold">Condições do Plano Financeiro</Label>
                     <Input
                       value={editLeadForm.payment_plan?.notes || ""}
                       onChange={(e) =>
@@ -3097,7 +3020,7 @@ export default function WorkspaceTurismoCockpitPage() {
                           payment_plan: { ...prev.payment_plan, notes: e.target.value },
                         }))
                       }
-                      placeholder="Ex: 20% de entrada via PIX + 10x sem juros no cartão..."
+                      placeholder="Ex: 20% de entrada via PIX + 10x no cartão..."
                       className="h-10 text-xs rounded-lg"
                     />
                   </div>
@@ -3110,12 +3033,12 @@ export default function WorkspaceTurismoCockpitPage() {
                         const token = selectedLead.magic_token || selectedLead.id;
                         const url = `${window.location.origin}/m/lead/${token}?tab=pagamento`;
                         await navigator.clipboard.writeText(url);
-                        toast.success("Link de aprovação do plano de pagamento copiado!");
+                        toast.success("Link copiado!");
                       }}
                       className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Copy className="size-3.5" />
-                      <span>Copiar Link para Aprovação do Cliente</span>
+                      <span>Copiar Link</span>
                     </Button>
 
                     <Button
@@ -3124,7 +3047,7 @@ export default function WorkspaceTurismoCockpitPage() {
                       onClick={handleSaveLeadDetails}
                       className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      {isUpdatingLead ? "Salvando..." : "Salvar Plano de Pagamento"}
+                      {isUpdatingLead ? "Salvando..." : "Salvar"}
                     </Button>
                   </div>
                 </div>
@@ -3133,11 +3056,11 @@ export default function WorkspaceTurismoCockpitPage() {
 
               </div>
 
-              {/* COLUNA DIREITA: Mover para Fase & Ações Rápidas com Scroll Próprio (Compacta) */}
-              <div className="w-full lg:w-56 xl:w-60 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/5 border-l border-border/40">
+              {/* COLUNA DIREITA: Fases do Funil & Ações Rápidas (Compacta) */}
+              <div className="w-full lg:w-52 xl:w-56 shrink-0 p-4 overflow-y-auto space-y-4 text-xs [scrollbar-width:thin] bg-muted/5 border-l border-border/40">
                 <div className="space-y-2">
-                  <span className="font-bold text-foreground block">Mover para fase</span>
-                  <div className="space-y-2">
+                  <span className="font-bold text-foreground block pb-1 border-b border-border/40 text-xs">Fase do Atendimento</span>
+                  <div className="space-y-1 pt-1">
                     {TOURISM_STAGES.map((st) => {
                       const isCurrent = (editLeadForm.status || selectedLead.status) === st.id;
                       return (
@@ -3146,17 +3069,18 @@ export default function WorkspaceTurismoCockpitPage() {
                           type="button"
                           disabled={isCurrent}
                           onClick={() => handleMoveStage(selectedLead.id, st.id)}
-                          className={`w-full h-11 min-h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          className={cn(
+                            "w-full h-11 min-h-11 px-3 rounded-lg text-xs font-medium flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             isCurrent
-                              ? "bg-primary/10 border-primary text-primary font-bold cursor-default"
-                              : "bg-card border-border/60 text-foreground hover:border-foreground/30 hover:bg-muted/50"
-                          }`}
+                              ? "bg-muted text-foreground font-semibold cursor-default"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                          )}
                         >
                           <span className="flex items-center gap-2 min-w-0">
                             <span className={cn("size-2 rounded-full shrink-0", st.dotColor)} />
                             <span className="truncate">{st.title}</span>
                           </span>
-                          <ArrowRight className="size-3.5 shrink-0" />
+                          {isCurrent && <Check className="size-3.5 text-primary shrink-0" />}
                         </button>
                       );
                     })}
@@ -3164,7 +3088,7 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
 
                 <div className="pt-3 border-t border-border/40 space-y-2">
-                  <span className="font-bold text-foreground block">Ações Operacionais</span>
+                  <span className="font-bold text-foreground block">Ações Rápidas</span>
                   <Button
                     type="button"
                     onClick={() => {
@@ -3203,7 +3127,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
                   >
                     <Calculator className="size-3.5 text-warning-strong" />
-                    <span>Simular Markup / Comissão</span>
+                    <span>Simular Markup</span>
                   </Button>
                 </div>
               </div>
@@ -3212,23 +3136,15 @@ export default function WorkspaceTurismoCockpitPage() {
         </Sheet>
       )}
 
-      {/* ── MODAL LATERAL DE NOVA OPORTUNIDADE (18 CAMPOS ESTRUTURADOS) ── */}
+      {/* ── MODAL LATERAL DE NOVA OPORTUNIDADE ── */}
       <Sheet open={isNewLeadOpen} onOpenChange={setIsNewLeadOpen}>
         <SheetContent side="right" className="w-full sm:max-w-2xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           <div className="space-y-6">
             <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-md">
-                  Cockpit Operacional Enterprise
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Etapa: {TOURISM_STAGES.find((s) => s.id === newLeadTargetStage)?.title}
-                </span>
-              </div>
               <SheetTitle className="text-lg font-bold text-foreground">Nova Oportunidade Comercial</SheetTitle>
-              <SheetDescription className="text-xs text-muted-foreground">
-                Cadastre viajantes e viagens com todas as especificações de voo, hotel, passageiros e datas.
-              </SheetDescription>
+              <div className="text-xs text-muted-foreground">
+                Etapa: {TOURISM_STAGES.find((s) => s.id === newLeadTargetStage)?.title}
+              </div>
             </SheetHeader>
 
             <form id="new-lead-form" onSubmit={handleCreateNewLead} className="space-y-5 text-xs">

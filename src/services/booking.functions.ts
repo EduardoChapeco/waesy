@@ -981,15 +981,15 @@ export const updateAppointmentStatus = createServerFn({ method: "POST" })
 
       const db = getServerClient();
 
+      const { data: appt } = await db
+        .from("booking_appointments")
+        .select("id, pass_id, status, guest_name, service_id, booking_services(title, price_cents)")
+        .eq("id", id)
+        .eq("store_id", storeId)
+        .maybeSingle();
+
       // Se for cancelado, estorno automático do passe de sessões se houver pass_id
       if (status === "cancelled") {
-        const { data: appt } = await db
-          .from("booking_appointments")
-          .select("id, pass_id, status")
-          .eq("id", id)
-          .eq("store_id", storeId)
-          .maybeSingle();
-
         if (appt && appt.status !== "cancelled" && appt.pass_id) {
           const { data: passRow } = await db
             .from("customer_service_passes")
@@ -1029,6 +1029,40 @@ export const updateAppointmentStatus = createServerFn({ method: "POST" })
       if (status === "completed") {
         updatePayload.completed_at = nowIso;
         updatePayload.completed_by = completed_by || identity?.id || null;
+
+        // Invariante NC-006: Conclusão de atendimento sem passe gera recebível no caixa da loja
+        if (appt && !appt.pass_id) {
+          try {
+            const servicePriceCents = (appt.booking_services as any)?.price_cents || 0;
+            const serviceTitle = (appt.booking_services as any)?.title || "Serviço";
+            if (servicePriceCents > 0) {
+              const { data: openRegister } = await db
+                .from("cash_registers")
+                .select("id")
+                .eq("store_id", storeId)
+                .eq("status", "open")
+                .order("opened_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (openRegister) {
+                await db.from("cash_register_entries").insert({
+                  register_id: openRegister.id,
+                  entry_type: "sale",
+                  amount_cents: servicePriceCents,
+                  payment_method: "other",
+                  description: `Atendimento: ${serviceTitle} (${appt.guest_name || "Cliente"})`,
+                  reference_type: "appointment",
+                  reference_id: appt.id,
+                  created_by: identity?.id || null,
+                  created_at: nowIso,
+                });
+              }
+            }
+          } catch (cashErr: any) {
+            console.warn("[booking] Cash register entry warning:", cashErr?.message);
+          }
+        }
       } else if (status === "no_show") {
         updatePayload.no_show_marked_at = nowIso;
         updatePayload.no_show_marked_by = no_show_marked_by || identity?.id || null;

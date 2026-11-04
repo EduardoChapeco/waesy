@@ -1236,7 +1236,23 @@ export function resolveWorkspaceNavigation(
 
 
 import { getNicheTranslation } from "./niche-dictionary";
-import { getNicheManifest } from "./niche-manifest";
+import { getNicheManifest, type NicheModuleKey } from "./niche-manifest";
+
+const PATH_TO_NICHE_MODULE: Record<string, NicheModuleKey> = {
+  "/workspace/pedidos/gestor": "kds",
+  "/workspace/pedidos/mesas": "tables",
+  "/workspace/turismo/embarque": "boarding",
+  "/workspace/turismo/embarques": "boarding",
+  "/workspace/turismo/frota": "fleet",
+  "/workspace/turismo/propostas": "proposals",
+  "/workspace/turismo/cotacoes": "quotes",
+  "/workspace/turismo/contratos": "contracts",
+  "/workspace/simlab": "simlab",
+  "/workspace/estoque": "inventory",
+  "/workspace/tarefas": "tasks",
+  "/workspace/entregadores": "couriers",
+  "/workspace/pedidos/entregadores": "couriers",
+};
 
 /**
  * The Semantic Sidebar Engine (Waesy Omni-Niche)
@@ -1257,25 +1273,42 @@ export function getSidebarConfig(
   const groups = resolveWorkspaceNavigation(storeContext, options);
   const { t } = getNicheTranslation(storeContext);
 
-  // Aplica metamorfose semântica nos rótulos de navegação
-  return groups.map((group) => {
-    // Traduz o título do grupo se for catálogo, vendas ou operações
-    let groupLabel = group.label;
-    if (group.id.includes("catalog")) groupLabel = t("catalog");
-    if (group.id.includes("sales") || group.id.includes("orders")) groupLabel = t("orders");
+  if (options?.isMasterMode) {
+    return groups;
+  }
 
-    const items = group.items.map((item) => {
-      let label = item.label;
-      if (item.path === "/workspace/catalogo/produtos") label = t("items");
-      if (item.path === "/workspace/catalogo/categorias") label = t("categories");
-      if (item.path === "/workspace/catalogo/atributos") label = t("modifiers");
-      if (item.path === "/workspace/pedidos/gestor") label = t("kds");
-      if (item.path === "/workspace/pedidos") label = t("orders");
-      if (item.path === "/workspace/clientes") label = t("clients");
-      if (item.path === "/workspace/estoque") label = t("stock");
-      return { ...item, label };
-    });
+  // Aplica metamorfose semântica nos rótulos de navegação e filtragem estrita pelo manifesto do nicho
+  return groups
+    .map((group) => {
+      // Traduz o título do grupo se for catálogo, vendas ou operações
+      let groupLabel = group.label;
+      if (group.id.includes("catalog")) groupLabel = t("catalog");
+      if (group.id.includes("sales") || group.id.includes("orders")) groupLabel = t("orders");
 
-    return { ...group, label: groupLabel, items };
-  });
+      const items = group.items
+        .filter((item) => {
+          if (options?.additionalModules?.includes(item.path)) return true;
+          const matchedModule = Object.entries(PATH_TO_NICHE_MODULE).find(([prefix]) =>
+            item.path.startsWith(prefix)
+          )?.[1];
+          if (matchedModule && manifest.activeModules && !manifest.activeModules.includes(matchedModule)) {
+            return false;
+          }
+          return true;
+        })
+        .map((item) => {
+          let label = item.label;
+          if (item.path === "/workspace/catalogo/produtos") label = t("items");
+          if (item.path === "/workspace/catalogo/categorias") label = t("categories");
+          if (item.path === "/workspace/catalogo/atributos") label = t("modifiers");
+          if (item.path === "/workspace/pedidos/gestor") label = t("kds");
+          if (item.path === "/workspace/pedidos") label = t("orders");
+          if (item.path === "/workspace/clientes") label = t("clients");
+          if (item.path === "/workspace/estoque") label = t("stock");
+          return { ...item, label };
+        });
+
+      return { ...group, label: groupLabel, items };
+    })
+    .filter((group) => group.items.length > 0);
 }

@@ -196,26 +196,74 @@ export async function _updateOrderStatus(
   updatePayload.paid_at = new Date().toISOString();
   // Disparo em background da emissão automatizada de NF-e na confirmação de pagamento
   emitOrderNFeAutomated({ data: { orderId, storeId: store_id } })
-   .then((res) => {
+   .then(async (res) => {
     if (res.success && res.invoice) {
      console.log(`[fiscal] NF-e #${res.invoice.nfe_number} emitida automaticamente no pagamento do pedido ${orderId}`);
+    } else if (!res.success && res.reason) {
+     try {
+       await db.from("fiscal_events_queue").insert({
+         store_id,
+         order_id: orderId,
+         event_type: "nfe_emission_warning",
+         status: "pending_action",
+         payload: { order_id: orderId, reason: res.reason },
+         created_at: new Date().toISOString(),
+       });
+       await db.from("orders").update({ nfe_status: "pending_action" }).eq("id", orderId);
+     } catch (queueErr) {
+       console.warn("[fiscal] Erro ao registrar fiscal_events_queue:", queueErr);
+     }
     }
    })
-   .catch((err) => {
+   .catch(async (err) => {
     console.warn(`[fiscal] Background auto-emit (paid) aviso para o pedido ${orderId}:`, err);
+    try {
+      await db.from("fiscal_events_queue").insert({
+        store_id,
+        order_id: orderId,
+        event_type: "nfe_emission_error",
+        status: "failed",
+        payload: { order_id: orderId, error: String(err?.message || err) },
+        created_at: new Date().toISOString(),
+      });
+      await db.from("orders").update({ nfe_status: "failed" }).eq("id", orderId);
+    } catch {}
    });
  }
  if (status === "processing") {
   updatePayload.prep_started_at = new Date().toISOString();
   // Disparo em background da emissão automatizada de NF-e na separação (idempotente - checa duplicidade)
   emitOrderNFeAutomated({ data: { orderId, storeId: store_id } })
-   .then((res) => {
+   .then(async (res) => {
     if (res.success && res.invoice) {
      console.log(`[fiscal] NF-e #${res.invoice.nfe_number} emitida automaticamente para o pedido ${orderId}`);
+    } else if (!res.success && res.reason) {
+     try {
+       await db.from("fiscal_events_queue").insert({
+         store_id,
+         order_id: orderId,
+         event_type: "nfe_emission_warning",
+         status: "pending_action",
+         payload: { order_id: orderId, reason: res.reason },
+         created_at: new Date().toISOString(),
+       });
+       await db.from("orders").update({ nfe_status: "pending_action" }).eq("id", orderId);
+     } catch {}
     }
    })
-   .catch((err) => {
+   .catch(async (err) => {
     console.warn(`[fiscal] Background auto-emit (processing) aviso para o pedido ${orderId}:`, err);
+    try {
+      await db.from("fiscal_events_queue").insert({
+        store_id,
+        order_id: orderId,
+        event_type: "nfe_emission_error",
+        status: "failed",
+        payload: { order_id: orderId, error: String(err?.message || err) },
+        created_at: new Date().toISOString(),
+      });
+      await db.from("orders").update({ nfe_status: "failed" }).eq("id", orderId);
+    } catch {}
    });
  }
  if (status === "shipped") updatePayload.shipped_at = new Date().toISOString();

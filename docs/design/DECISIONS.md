@@ -8161,3 +8161,38 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   5. **Evidência de Não-Regressão:** Suíte E2E com 145/145 testes aprovados (100%), build de produção Cloudflare Pages gerando worker de 1.62 MB com exit code 0 e catraca de design lint com 0 violações P0 e baseline reduzida para 674.
 - **Fundamentação Teórica:** AGENTS.md B.1 a B.36, DL-01 a DL-32, WCAG 2.2 AA e Princípio Single Sovereign Surface.
 - **Consequências:** Foco estrito da engenharia na execução sequencial das 5 ondas de remediação com garantia de não-regressão e validação baseada em evidências.
+
+---
+
+### DEC-435: Remediação Controlada de Não Conformidades Críticas (NC-001, NC-004, NC-005, NC-006, NC-010) e Correção de Testes de Regressão
+- **Data:** 2026-11-04
+- **ID da Decisão:** DEC-435
+- **Contexto:** Execução das ações corretivas prioritárias mapeadas no relatório forense de aceitação e identificação de falhas em testes unitários durante a checagem geral de regressão.
+- **Decisão Adotada:**
+  1. **NC-005 (P0 - Fiscal / NF-e):** Implementado enfileiramento em `fiscal_events_queue` com tipo `nfe_pending_configuration` / `nfe_emission_warning` e atualização defensiva de `orders.nfe_status = 'pending_action'` em `src/services/fiscal-nfe.functions.ts` e `src/services/order.functions.ts`, impedindo omissão silenciosa de pendências fiscais quando a loja não possui credenciais Focus configuradas.
+  2. **NC-006 (P1 - Agenda / Caixa):** Em `src/services/booking.functions.ts` (`updateAppointmentStatus`), configurado disparo automático de lançamento de entrada no caixa aberto (`cash_register_entries`) ao marcar agendamento como `completed` para atendimentos sem passe pré-pago, eliminando divergência contábil entre recepção e caixa.
+  3. **NC-010 (P1 - Navegação / Sidebar):** Em `src/lib/workspace-navigation.ts` (`getSidebarConfig`), adicionado filtro estrito baseado em `manifest.activeModules` derivado de `getNicheManifest`, eliminando vazamento de submenus inativos de outros nichos (mesas, kds, embarques, frotas) para empresas incompatíveis.
+  4. **NC-001 (P1 - Operações / Pedidos):** Migrado o cabeçalho legado `PageHeader` em `src/routes/workspace.pedidos.index.tsx` para `WorkspaceCanonicalToolbar`, reduzindo altura vertical, unificando controles táteis de 44px e integrando `viewModes` nativos.
+  5. **NC-004 (P1 - Financeiro / Caixa):** Eliminada a Containeritis (DL-31) em `src/routes/workspace.financeiro.caixa.index.tsx`, desacoplando a grade de métricas de pagamento do turno para fora do card de status e convertendo para superfícies métricas soberanas.
+  6. **Resolução de Testes de Integridade:** Corrigidos os testes `vertical-showcases-integrity.test.ts` (mapeamento canônico em `_store.mercado.tsx`), `travel-proposal-public-acceptance.test.ts` (mock de insert na fila de outbox do WhatsApp) e `omni-builder.functions.test.ts` (alinhamento dos identificadores à arquitetura Zero-Trust `authCtx`).
+  7. **Evidência de Qualidade:** 56/56 testes passando nos módulos tocados, build de produção Cloudflare Pages aprovado com Exit Code 0, auditoria de contraste WCAG 2.2 AA aprovada em todos os pares e catraca mecânica de Design Lint mantida em 0 violações P0.
+- **Fundamentação Teórica:** AGENTS.md B.5, B.7, B.8, B.9, B.11, B.25, B.26 e DL-31.
+- **Consequências:** Eliminação imediata dos bloqueios P0/P1 mais críticos do Workspace e vitrines públicas, assegurando integridade fiscal, contábil e visual.
+
+---
+
+### DEC-436: Erradicação de AI-Smell, Textos Explicativos Redundantes e Bordas em Pills no Dossiê de Turismo e Kanban CRM
+- **Data:** 2026-11-04
+- **ID da Decisão:** DEC-436
+- **Contexto:** Auditoria visual forense detalhada solicitada pelo usuário sobre poluição visual remanescente no Dossiê do Lead (`workspace.turismo.index.tsx`), no card de lead (`LeadCard.tsx`) e no fluxo de verificação de embarque (`TravelerVerificationFlow.tsx`). Identificados padrões indesejados de protótipo: pills coloridas com bordas visíveis (`border border-emerald-500/30`, `bg-emerald-500/10`), banners explicativos de auto-explicação ("Consentimento LGPD Ativo", "Atenção: Grafia do Nome para Embarque IATA / ANAC"), menções explícitas de "IA" em botões/títulos ("Validar Documento com IA", "Analisando com IA Multimodal...") e duplicação da esteira de funil na coluna esquerda.
+- **Decisão Adotada:**
+  1. **LeadCard (Kanban CRM):** Eliminadas todas as bordas e fundos semitransparentes em badges/chips. Temperatura convertida em dot colorido canônico (`size-2 rounded-full`) + texto neutro; categoria simplificada para tipografia limpa sem invólucro `Badge`; botão rápido do WhatsApp desprovido de fundo verde ou borda colorida (`text-muted-foreground hover:text-emerald-600 hover:bg-muted`); valor de comissão convertido em texto tabular neutro sem chip verde.
+  2. **Dossiê 360° (Cabeçalho & Colunas):** Substituídos 3 badges espessos por linha tipográfica contínua com dot de fase, separadores pontuais (`·`) e valores monetários limpos; removido o bloco redundante "Histórico no Funil" da coluna esquerda (estreitada para `w-56`), desobstruindo a visualização; coluna direita reformulada com seletor de fases plano e compacto (`h-11 min-h-11`), eliminando cards com bordas pesadas.
+  3. **Erradicação de Parágrafos Tutoriais:** Removidos parágrafos óbvios sob inputs em "Pastas de Passageiros", "Link Mágico" e "Governança LGPD"; removido o alerta amarelo prolixo de multas ANAC em `TravelerVerificationFlow`; removido o banner de LGPD do topo do formulário de cotação de viagens.
+  4. **Diretriz de Verbosidade de Botões (DL-24):** Encurtados rótulos prolixos para o padrão `[Verbo] + [Substantivo]`: "Enviar via WhatsApp (1 Clique)" ➔ "Enviar WhatsApp"; "Copiar Link da Ficha" ➔ "Copiar Link"; "Gerar Contrato com Assinatura Digital" ➔ "Gerar Contrato"; "Salvar Alterações da Ficha" / "Salvar Plano de Pagamento" ➔ "Salvar"; "Validar Documento com IA" ➔ "Validar Documento"; "Concluir Validação & Liberar Emissão" ➔ "Concluir Validação".
+  5. **Checklists & Contratos:** Removidos badges repetitivos "Pendente" / "Concluído" em cada linha do checklist; stepper de contratos de 5 caixas coloridas substituído por linha de status contínua ("Etapa X de 5").
+  6. **Evidência de Qualidade:** 145/145 testes Vitest aprovados com sucesso, catraca de Design Lint com zero violações P0 e baseline preservada em 674 violações (Exit Code 0), e build de produção Cloudflare Pages (`npm run build`) gerando worker e assets sem erros.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.11, skills `anti-ai-design`, `content-density`, Apple HIG e Linear/Stripe design standards.
+- **Consequências:** Interface executiva, madura e silenciosa, sem aparência de protótipo ou ruído conversacional de IA.
+
+
