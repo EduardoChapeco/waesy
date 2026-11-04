@@ -736,11 +736,16 @@ export function classifyKeyQuotaError(
     return { scope: "permanent", reason: "invalid_key", until: null };
   }
 
+  // Quarentena mensal restrita a 402 ou quotas com limite de fatura explícito.
+  // Provedores como Gemini e Groq que emitem "quota" em 429 operam em janelas de minuto ou dia, nunca mês.
   const isMonthly =
     statusCode === 402 ||
-    /insufficient_quota|billing_hard_limit_reached|monthly[_ ]limit|credit balance is too low|exceeded your current quota|spend limit|per month|monthly quota/.test(
-      msg,
-    );
+    (!msg.includes("gemini") &&
+      !msg.includes("ai.google.dev") &&
+      !msg.includes("groq") &&
+      /insufficient_quota|billing_hard_limit_reached|monthly[_ ]limit|credit balance is too low|spend limit|per month|monthly quota/.test(
+        msg,
+      ));
   if (isMonthly) {
     const nextMonth = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0);
     return { scope: "month", reason: "monthly_quota_exhausted", until: nextMonth };
@@ -1275,7 +1280,7 @@ export async function executeUnifiedAiCall(
           }
 
           // Higienização e cascata de modelos para o Groq: garante resiliência caso um modelo específico oscile
-          const groqModels = ["qwen/qwen3.8-27b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"];
+          const groqModels = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"];
           if (options.modelOverride) {
             const o = options.modelOverride.toLowerCase();
             if (
@@ -1350,14 +1355,13 @@ export async function executeUnifiedAiCall(
 
             lastGroqStatus = attemptRes.status;
             lastGroqErrText = await attemptRes.text().catch(() => "");
-            // Se for erro de autenticação (401/403) ou cota (402/429), a chave em si está impedida; passa para próxima chave
-            if (
-              attemptRes.status === 401 ||
-              attemptRes.status === 402 ||
-              attemptRes.status === 403 ||
-              attemptRes.status === 429
-            ) {
+            // Se for erro de autenticação (401/403), a chave em si está impedida; passa para próxima chave
+            if (attemptRes.status === 401 || attemptRes.status === 403) {
               break;
+            }
+            // Se for 429 por modelo específico no tier (ex: Qwen 1000 OTPM), tenta o próximo modelo da cascata
+            if (attemptRes.status === 429) {
+              continue;
             }
           }
 

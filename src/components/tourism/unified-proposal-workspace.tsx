@@ -46,6 +46,7 @@ import { createAgencyTravelQuote } from "@/services/tourism.functions";
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { parseUniversalDocumentOCR } from "@/services/multimodal-ocr.functions";
+import { processOperatorQuoteOcr } from "@/services/travel-operator-ocr.functions";
 import { publishExtractedTravelPackageToCatalogAndMatchRadar } from "@/services/travel-ai-extractor.functions";
 import { getHotelByNameOrSlug } from "@/lib/data/hotels-resorts-catalog";
 import {
@@ -191,43 +192,6 @@ export function UnifiedProposalWorkspace({
     }
   };
 
-  const handleParsePastedOcrText = () => {
-    const raw = ocrPastedText.trim();
-    if (!raw) {
-      toast.error("Cole o texto do orçamento, GDS ou WhatsApp para extrair os dados.");
-      return;
-    }
-    const priceMatch = raw.match(/R\$\s*([\d.]+(?:,\d{2})?)/i);
-    if (priceMatch?.[1]) {
-      const parsedVal = parseFloat(priceMatch[1].replace(/\./g, "").replace(",", "."));
-      if (!isNaN(parsedVal) && parsedVal > 0) {
-        const perAdultCents = Math.round((parsedVal * 100) / 2);
-        setRooms((prev) =>
-          prev.map((r, i) => (i === 0 ? { ...r, baseAdultPriceCents: perAdultCents } : r)),
-        );
-        setBundleOptions((prev) =>
-          prev.map((o, i) => (i === 0 ? { ...o, adultPriceCents: perAdultCents } : o)),
-        );
-      }
-    }
-    const dateMatches = raw.match(/\b(\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4})\b/g);
-    if (dateMatches && dateMatches.length >= 1) {
-      const toIso = (d: string) =>
-        d.includes("/") ? d.split("/").reverse().join("-") : d;
-      setDepartureDate(toIso(dateMatches[0]));
-      if (dateMatches[1]) setReturnDate(toIso(dateMatches[1]));
-    }
-    const matchedTpl = TRAVEL_PACKAGE_TEMPLATES.find((t) =>
-      raw.toLowerCase().includes(t.destinationCity.split(",")[0].toLowerCase()),
-    );
-    if (matchedTpl) {
-      setDestinationQuery(matchedTpl.destinationCity);
-    }
-    setNotes((prev) => (prev ? `${prev}\n${raw.slice(0, 400)}` : raw.slice(0, 400)));
-    setShowOcrTextModal(false);
-    setOcrPastedText("");
-    toast.success("Texto analisado e tarifas/datas aplicadas à proposta!");
-  };
   const [destinationQuery, setDestinationQuery] = useState(lead?.destination || initialDestination || "Buenos Aires");
   const [departureDate, setDepartureDate] = useState("2027-01-09");
   const [returnDate, setReturnDate] = useState("2027-01-14");
@@ -542,19 +506,212 @@ export function UnifiedProposalWorkspace({
     }
   };
 
+  const normalizeDateToIso = (d?: string | null): string | null => {
+    if (!d) return null;
+    const clean = d.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(clean)) {
+      const [day, month, year] = clean.split("/");
+      return `${year}-${month}-${day}`;
+    }
+    if (/^\d{2}-\d{2}-\d{4}$/.test(clean)) {
+      const [day, month, year] = clean.split("-");
+      return `${year}-${month}-${day}`;
+    }
+    const parsed = new Date(clean);
+    if (!isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+    return null;
+  };
+
+  const applyExtractedTravelData = (extracted: {
+    destination?: string | null;
+    origin?: string | null;
+    departureDate?: string | null;
+    returnDate?: string | null;
+    clientName?: string | null;
+    clientPhone?: string | null;
+    operatorName?: string | null;
+    hotelName?: string | null;
+    adultsCount?: number | null;
+    childrenCount?: number | null;
+    grossPriceCents?: number | null;
+    maxInstallments?: number | null;
+    inclusions?: string[] | null;
+  }): number => {
+    let fieldsUpdated = 0;
+
+    if (extracted.destination?.trim() && extracted.destination !== "Destino a definir") {
+      setDestinationQuery(extracted.destination.trim());
+      setCustomTitle(`Proposta Exclusiva — ${extracted.destination.trim()}`);
+      fieldsUpdated++;
+    }
+
+    if (extracted.origin?.trim()) {
+      setOriginCity(extracted.origin.trim());
+      fieldsUpdated++;
+    }
+
+    const isoDep = normalizeDateToIso(extracted.departureDate);
+    if (isoDep) {
+      setDepartureDate(isoDep);
+      fieldsUpdated++;
+    }
+
+    const isoRet = normalizeDateToIso(extracted.returnDate);
+    if (isoRet) {
+      setReturnDate(isoRet);
+      fieldsUpdated++;
+    }
+
+    if (extracted.clientName?.trim()) {
+      setClientName(extracted.clientName.trim());
+      fieldsUpdated++;
+    }
+
+    if (extracted.clientPhone?.trim()) {
+      setClientPhone(extracted.clientPhone.trim());
+      fieldsUpdated++;
+    }
+
+    if (extracted.operatorName?.trim()) {
+      setOperatorName(extracted.operatorName.trim());
+      fieldsUpdated++;
+    }
+
+    const detectedHotel = extracted.hotelName?.trim();
+    if (detectedHotel) {
+      const matchedInBank = (hotelSuggestions as any[]).find(
+        (h) => h.name && h.name.toLowerCase().includes(detectedHotel.toLowerCase()),
+      );
+      const canonicalHotel = matchedInBank?.name || detectedHotel;
+      setHotelQuery(canonicalHotel);
+      setBundleOptions((prev) =>
+        prev.map((opt, i) => (i === 0 ? { ...opt, hotelName: canonicalHotel } : opt)),
+      );
+      fieldsUpdated++;
+    }
+
+    const adults = Math.max(1, extracted.adultsCount || 2);
+    const children = Math.max(0, extracted.childrenCount || 0);
+    const grossCents = extracted.grossPriceCents || 0;
+    const perAdultCents = grossCents > 0 ? Math.round(grossCents / adults) : 0;
+
+    if (grossCents > 0 || extracted.adultsCount) {
+      setRooms((prev) => [
+        {
+          ...prev[0],
+          adultsCount: adults,
+          childrenCount: children,
+          baseAdultPriceCents: perAdultCents > 0 ? perAdultCents : prev[0].baseAdultPriceCents,
+        },
+        ...prev.slice(1),
+      ]);
+
+      if (perAdultCents > 0) {
+        setBundleOptions((prev) =>
+          prev.map((opt, i) =>
+            i === 0
+              ? {
+                  ...opt,
+                  adultPriceCents: perAdultCents,
+                  hotelName: detectedHotel || opt.hotelName,
+                }
+              : opt,
+          ),
+        );
+      }
+      fieldsUpdated++;
+    }
+
+    if (extracted.maxInstallments && extracted.maxInstallments > 0) {
+      setCardInstallments(extracted.maxInstallments);
+      setBoletoInstallments(extracted.maxInstallments);
+      fieldsUpdated++;
+    }
+
+    if (Array.isArray(extracted.inclusions) && extracted.inclusions.length > 0) {
+      setSelectedInclusions((prev) => {
+        const next = [...prev];
+        const joined = extracted.inclusions!.join(" ").toLowerCase();
+        if (joined.includes("transfer") || joined.includes("traslado")) {
+          if (!next.includes("Transfer In/Out Aeroporto ↔ Hotel")) {
+            next.push("Transfer In/Out Aeroporto ↔ Hotel");
+          }
+        }
+        if (joined.includes("seguro") || joined.includes("gta") || joined.includes("assist")) {
+          if (!next.includes("Seguro Viagem Cobertura Completa")) {
+            next.push("Seguro Viagem Cobertura Completa");
+          }
+        }
+        if (joined.includes("bagagem") || joined.includes("mala") || joined.includes("23kg")) {
+          if (!next.includes("Bagagem Despachada 23kg")) {
+            next.push("Bagagem Despachada 23kg");
+          }
+        }
+        return next;
+      });
+      fieldsUpdated++;
+    }
+
+    return fieldsUpdated;
+  };
+
   const handleOcrFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsScanningOcr(true);
-    const toastId = toast.loading("Lendo documento da operadora via OCR...");
+    const toastId = toast.loading(`Lendo documento ${file.name} via OCR inteligente...`);
 
     try {
       const reader = new FileReader();
       reader.onload = async () => {
         try {
           const base64Data = (reader.result as string).split(",")[1];
-          const result = await parseUniversalDocumentOCR({
+
+          // 1. Tenta primeiramente o motor especializado de operadoras B2B de turismo
+          const quoteRes = await processOperatorQuoteOcr({
+            data: {
+              fileBase64: base64Data,
+              fileMime: file.type || "application/pdf",
+              fileName: file.name,
+            },
+          }).catch((err) => {
+            console.warn("[proposal-ocr] Falha no processOperatorQuoteOcr, tentando fallback universal:", err);
+            return null;
+          });
+
+          if (quoteRes?.data) {
+            const q = quoteRes.data;
+            const updatedCount = applyExtractedTravelData({
+              destination: q.destination !== "Destino a definir" ? q.destination : undefined,
+              origin: q.flights?.[0]?.origin_city || (q.flights?.[0]?.origin_iata ? `${q.flights[0].origin_iata}` : undefined),
+              departureDate: q.travel_start || q.flights?.[0]?.date || q.hotels?.[0]?.checkin_date,
+              returnDate: q.travel_end || q.hotels?.[0]?.checkout_date,
+              clientName: q.client_name,
+              clientPhone: q.client_phone,
+              operatorName: q.operator_name,
+              hotelName: q.hotels?.[0]?.hotel_name,
+              adultsCount: q.adults_count,
+              childrenCount: q.children_count,
+              grossPriceCents: q.gross_price_cents,
+              maxInstallments: q.max_installments,
+              inclusions: q.inclusions,
+            });
+
+            if (updatedCount > 0) {
+              const highlights = [
+                q.destination && q.destination !== "Destino a definir" ? `Destino: ${q.destination}` : null,
+                q.hotels?.[0]?.hotel_name ? `Hotel: ${q.hotels[0].hotel_name}` : null,
+                q.gross_price_cents ? `Total: ${formatMoney(q.gross_price_cents)}` : null,
+              ].filter(Boolean);
+              toast.success(`Cotação da operadora extraída com sucesso! (${highlights.join(" · ")})`, { id: toastId });
+              return;
+            }
+          }
+
+          // 2. Fallback para o motor universal se o específico não tiver retornado campos
+          const universalRes = await parseUniversalDocumentOCR({
             data: {
               files: [
                 {
@@ -565,76 +722,119 @@ export function UnifiedProposalWorkspace({
               ],
               nicheHint: "tourism",
             },
-          });
+          }).catch(() => null);
 
-          if (result) {
-            if (result.destinationCity) {
-              setDestinationQuery(result.destinationCity);
-            }
-            if (result.clientName && !clientName) {
-              setClientName(result.clientName);
-            }
-            if (result.clientPhone && !clientPhone) {
-              setClientPhone(result.clientPhone);
-            }
-            if (result.dates?.departure) {
-              setDepartureDate(result.dates.departure);
-            }
-            if (result.dates?.return) {
-              setReturnDate(result.dates.return);
-            }
-            const detectedHotelName = result.hotel?.name || result.companyName;
-            if (detectedHotelName) {
-              const matchedInBank = (hotelSuggestions as any[]).find(
-                (h) => h.name && h.name.toLowerCase().includes(detectedHotelName.toLowerCase()),
-              );
-              const matchedInStatic = getHotelByNameOrSlug(detectedHotelName);
-              const canonicalHotelName = matchedInBank?.name || matchedInStatic?.name || detectedHotelName;
+          if (universalRes && universalRes.confidence !== "low") {
+            const updatedCount = applyExtractedTravelData({
+              destination: universalRes.destinationCity,
+              origin: universalRes.flightSegments?.[0]?.origin,
+              departureDate: universalRes.dates?.departure,
+              returnDate: universalRes.dates?.return,
+              clientName: universalRes.clientName,
+              clientPhone: universalRes.clientPhone,
+              operatorName: universalRes.companyName !== "Não identificado" ? universalRes.companyName : undefined,
+              hotelName: universalRes.hotel?.name,
+              grossPriceCents: universalRes.financials?.totalCents,
+            });
 
-              setHotelQuery(canonicalHotelName);
-              setBundleOptions((prev) =>
-                prev.map((opt, i) => (i === 0 ? { ...opt, hotelName: canonicalHotelName } : opt))
-              );
-              if (matchedInBank?.city && !result.destinationCity) {
-                setDestinationQuery(matchedInBank.city);
-              } else if (matchedInStatic?.city && !result.destinationCity) {
-                setDestinationQuery(matchedInStatic.city);
-              }
+            if (updatedCount > 0) {
+              toast.success("Dados do documento extraídos e preenchidos com sucesso!", { id: toastId });
+              return;
             }
-            if (result.financials?.totalCents && result.financials.totalCents > 0) {
-              const paxDivisor = Math.max(1, result.participants?.length || 2);
-              const perAdultCents = Math.round(result.financials.totalCents / paxDivisor);
-              setRooms((prev) =>
-                prev.map((r, i) =>
-                  i === 0 ? { ...r, baseAdultPriceCents: perAdultCents } : r
-                )
-              );
-              setBundleOptions((prev) =>
-                prev.map((opt, i) =>
-                  i === 0
-                    ? {
-                        ...opt,
-                        hotelName: detectedHotelName || opt.hotelName,
-                        adultPriceCents: perAdultCents,
-                      }
-                    : opt
-                )
-              );
-            }
-            toast.success("Dados do documento extraídos e hotel vinculado com sucesso!", { id: toastId });
-          } else {
-            toast.info("Não foi possível identificar dados estruturados no arquivo.", { id: toastId });
           }
+
+          toast.error(
+            "Não foi possível extrair dados estruturados deste arquivo. Use o botão 'Colar Texto' ou preencha manualmente.",
+            { id: toastId },
+          );
         } catch (innerErr: any) {
-          toast.error(innerErr?.message || "Erro no processamento do OCR.", { id: toastId });
+          toast.error(innerErr?.message || "Erro no processamento do OCR da operadora.", { id: toastId });
         } finally {
           setIsScanningOcr(false);
+          e.target.value = "";
         }
       };
       reader.readAsDataURL(file);
     } catch {
       setIsScanningOcr(false);
-      toast.error("Falha ao carregar arquivo para OCR.", { id: toastId });
+      toast.error("Falha ao ler o arquivo localmente.", { id: toastId });
+    }
+  };
+
+  const handleParsePastedOcrText = async () => {
+    const raw = ocrPastedText.trim();
+    if (!raw) {
+      toast.error("Cole o texto do orçamento, GDS ou WhatsApp para extrair os dados.");
+      return;
+    }
+
+    const toastId = toast.loading("Analisando texto da cotação...");
+    try {
+      const res = await processOperatorQuoteOcr({
+        data: { rawText: raw },
+      }).catch(() => null);
+
+      if (res?.data) {
+        const q = res.data;
+        const updated = applyExtractedTravelData({
+          destination: q.destination !== "Destino a definir" ? q.destination : undefined,
+          origin: q.flights?.[0]?.origin_city || (q.flights?.[0]?.origin_iata ? `${q.flights[0].origin_iata}` : undefined),
+          departureDate: q.travel_start || q.flights?.[0]?.date || q.hotels?.[0]?.checkin_date,
+          returnDate: q.travel_end || q.hotels?.[0]?.checkout_date,
+          clientName: q.client_name,
+          clientPhone: q.client_phone,
+          operatorName: q.operator_name,
+          hotelName: q.hotels?.[0]?.hotel_name,
+          adultsCount: q.adults_count,
+          childrenCount: q.children_count,
+          grossPriceCents: q.gross_price_cents,
+          maxInstallments: q.max_installments,
+          inclusions: q.inclusions,
+        });
+
+        if (updated > 0) {
+          setNotes((prev) => (prev ? `${prev}\n${raw.slice(0, 400)}` : raw.slice(0, 400)));
+          setShowOcrTextModal(false);
+          setOcrPastedText("");
+          toast.success("Texto analisado e dados da proposta preenchidos com sucesso!", { id: toastId });
+          return;
+        }
+      }
+
+      // Fallback regex local se offline ou IA não retornar campos
+      const priceMatch = raw.match(/R\$\s*([\d.]+(?:,\d{2})?)/i);
+      if (priceMatch?.[1]) {
+        const parsedVal = parseFloat(priceMatch[1].replace(/\./g, "").replace(",", "."));
+        if (!isNaN(parsedVal) && parsedVal > 0) {
+          const perAdultCents = Math.round((parsedVal * 100) / 2);
+          setRooms((prev) =>
+            prev.map((r, i) => (i === 0 ? { ...r, baseAdultPriceCents: perAdultCents } : r)),
+          );
+          setBundleOptions((prev) =>
+            prev.map((o, i) => (i === 0 ? { ...o, adultPriceCents: perAdultCents } : o)),
+          );
+        }
+      }
+      const dateMatches = raw.match(/\b(\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4})\b/g);
+      if (dateMatches && dateMatches.length >= 1) {
+        const toIso = (d: string) =>
+          d.includes("/") ? d.split("/").reverse().join("-") : d;
+        setDepartureDate(toIso(dateMatches[0]));
+        if (dateMatches[1]) setReturnDate(toIso(dateMatches[1]));
+      }
+      const matchedTpl = TRAVEL_PACKAGE_TEMPLATES.find((t) =>
+        raw.toLowerCase().includes(t.destinationCity.split(",")[0].toLowerCase()),
+      );
+      if (matchedTpl) {
+        setDestinationQuery(matchedTpl.destinationCity);
+      }
+      setNotes((prev) => (prev ? `${prev}\n${raw.slice(0, 400)}` : raw.slice(0, 400)));
+      setShowOcrTextModal(false);
+      setOcrPastedText("");
+      toast.success("Texto analisado e tarifas/datas aplicadas à proposta!", { id: toastId });
+    } catch {
+      setShowOcrTextModal(false);
+      toast.error("Erro ao processar texto colado. Preencha os campos manualmente.", { id: toastId });
     }
   };
 

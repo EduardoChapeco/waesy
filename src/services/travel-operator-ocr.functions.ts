@@ -7,6 +7,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
+import { extractDocumentMechanically } from "./mechanical-document-extractor.server";
 
 // ─── CONTRATOS DE DADOS DE COTAÇÃO DE OPERADORA B2B ─────────────────────────
 
@@ -37,9 +38,11 @@ export const OperatorHotelItemSchema = z.object({
 });
 
 export const OperatorQuoteExtractionResultSchema = z.object({
+  client_name: z.string().optional(),
+  client_phone: z.string().optional(),
   operator_name: z.string().optional(),
   quote_reference_number: z.string().optional(),
-  destination: z.string(),
+  destination: z.string().optional().default("Destino a definir"),
   travel_start: z.string().optional().nullable(),
   travel_end: z.string().optional().nullable(),
   adults_count: z.number().int().optional(),
@@ -79,20 +82,21 @@ export const processOperatorQuoteOcr = createServerFn({ method: "POST" })
 Sua missão é ler documentos, PDFs, vouchers ou prints de sistemas de operadoras de viagem (ex: CVC Corp, Orinter, Trend, Visual Turismo, E-HTL, Azul Viagens, RexturAdvance, Decolar B2B) e extrair os dados estruturados da cotação.
 
 DIRETRIZES FUNDAMENTAIS (ZERO ALUCINAÇÃO):
-1. Identifique a operadora emitente (ex: 'Orinter', 'Trend Viagens', 'CVC', 'Visual').
-2. Identifique o Destino principal (ex: 'Maceió - AL', 'Cancún - México', 'Gramado - RS').
-3. Extraia os voos com precisão:
+1. Identifique o passageiro titular / cliente se constar no documento (client_name, client_phone).
+2. Identifique a operadora emitente (ex: 'Orinter', 'Trend Viagens', 'CVC', 'Visual Turismo', 'FRT', 'Incomum').
+3. Identifique o Destino principal (ex: 'Maceió - AL', 'Cancún - México', 'Gramado - RS').
+4. Extraia os voos com precisão:
    - Cia aérea (GOL, LATAM, Azul, TAP, Copa, etc.)
    - Número do voo, origem (IATA e cidade), destino (IATA e cidade)
    - Datas e horários de partida/chegada
    - Bagagem inclusa (se mala despachada 23kg ou apenas mão 10kg)
-4. Extraia os hotéis/resorts:
+5. Extraia os hotéis/resorts:
    - Nome do hotel
    - Categoria do quarto (Standard, Luxo, Suíte Vista Mar)
    - Regime de alimentação (Café da Manhã, Meia Pensão, All Inclusive)
    - Datas de check-in e check-out
-5. Extraia traslados e passeios inclusos.
-6. Extraia a composição financeira:
+6. Extraia traslados e passeios inclusos.
+7. Extraia a composição financeira:
    - Preço bruto total da venda (gross_price_cents, em centavos)
    - Preço líquido do operador (operator_net_cents, valor pago à operadora)
    - A comissão estimada da agência (gross_price_cents - operator_net_cents)
@@ -101,11 +105,13 @@ DIRETRIZES FUNDAMENTAIS (ZERO ALUCINAÇÃO):
 
 Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionResult:
 {
+  "client_name": "Simone Costa",
+  "client_phone": "499988456758",
   "operator_name": "Orinter",
   "quote_reference_number": "OR-98412",
   "destination": "Maceió - AL",
-  "travel_start": "2026-10-15",
-  "travel_end": "2026-10-22",
+  "travel_start": "2027-01-09",
+  "travel_end": "2027-01-14",
   "adults_count": 2,
   "children_count": 0,
   "flights": [
@@ -118,7 +124,7 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       "destination_city": "Maceió",
       "departure_time": "09:40",
       "arrival_time": "16:20",
-      "date": "2026-10-15",
+      "date": "2027-01-09",
       "baggage": "1 mala de 23kg inclusa",
       "connections_count": 1
     }
@@ -129,15 +135,15 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       "city": "Maceió",
       "room_category": "Superior Jardim",
       "meal_plan": "Meia Pensão (Café + Jantar)",
-      "checkin_date": "2026-10-15",
-      "checkout_date": "2026-10-22",
-      "nights_count": 7,
+      "checkin_date": "2027-01-09",
+      "checkout_date": "2027-01-14",
+      "nights_count": 5,
       "stars": 5
     }
   ],
   "transfers": ["Traslado Aeroporto de Maceió / Hotel / Aeroporto Regular"],
   "tours": ["City tour em Maceió com Praia do Francês"],
-  "inclusions": ["Passagem aérea ida e volta", "7 noites de hospedagem com Meia Pensão", "Traslados in/out", "Seguro viagem GTA"],
+  "inclusions": ["Passagem aérea ida e volta", "5 noites de hospedagem com Meia Pensão", "Traslados in/out", "Seguro viagem GTA"],
   "exclusions": ["Despesas pessoais", "Bebidas nas refeições", "Passeios opcionais"],
   "gross_price_cents": 890000,
   "operator_net_cents": 780000,
@@ -147,17 +153,36 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
   "currency": "BRL"
 }`;
 
-    const userPrompt = data.fileBase64
-      ? `Analise este arquivo anexo de cotação da operadora (${data.fileName || "cotacao"}) e extraia todos os dados estruturados no formato JSON.`
-      : `Analise o seguinte texto bruto copiado do sistema da operadora e extraia todos os dados estruturados no formato JSON:\n\n${data.rawText || ""}`;
+    let extractedMechanicalText = "";
+    if (data.fileBase64) {
+      try {
+        const mech = await extractDocumentMechanically({
+          base64: data.fileBase64,
+          mimeType: data.fileMime || "application/pdf",
+          name: data.fileName,
+        });
+        if (mech && mech.text && mech.text.trim().length >= 40) {
+          extractedMechanicalText = mech.text.trim();
+        }
+      } catch (mechErr) {
+        console.warn("[travel-operator-ocr] Extração mecânica indisponível:", mechErr);
+      }
+    }
+
+    const hasReadableText = Boolean(data.rawText?.trim() || extractedMechanicalText);
+    const textContent = data.rawText?.trim() || extractedMechanicalText;
+
+    const userPrompt = hasReadableText
+      ? `Analise o seguinte texto estruturado extraído do documento/cotação da operadora (${data.fileName || "cotação"}) e extraia todos os dados no formato JSON:\n\n${textContent.slice(0, 30000)}`
+      : `Analise o documento anexo de cotação da operadora (${data.fileName || "cotacao"}) e extraia todos os dados estruturados no formato JSON.`;
 
     const aiResponse = await executeUnifiedAiCall({
-      preferredProvider: "gemini",
+      preferredProvider: hasReadableText ? "groq" : "gemini",
       feature: "ocr_operator_quote",
       systemPrompt,
       userPrompt,
-      fileBase64: data.fileBase64,
-      fileMime: data.fileMime || "application/pdf",
+      fileBase64: hasReadableText ? undefined : data.fileBase64,
+      fileMime: hasReadableText ? undefined : (data.fileMime || "application/pdf"),
       responseFormat: "json_object",
       temperature: 0.1,
     });
