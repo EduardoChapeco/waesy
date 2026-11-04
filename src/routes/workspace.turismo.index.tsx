@@ -988,281 +988,88 @@ export default function WorkspaceTurismoCockpitPage() {
           : "space-y-3 pb-16 lg:pb-2"
       )}
     >
-      {/* ── Sub-Header Unificado do Funil de Atendimento ── */}
-      <div className="flex flex-col gap-3 rounded-2xl bg-card border border-border/60 p-3 sm:p-4">
-        {/* Linha 1: Título do Funil + KPIs em Pílulas Tabulares + Ações Operacionais */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="size-9 rounded-xl bg-muted flex items-center justify-center text-foreground shrink-0">
-                <Compass className="size-4" />
-              </span>
-              <div>
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
-                  Qualificação & Funil de Turismo
-                </h1>
-              </div>
-            </div>
-
-            {/* KPIs Ultra-Resumidos em Pílulas Tabulares */}
-            <div className="hidden sm:flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/60 border border-border/50 text-xs">
-                <span className="text-muted-foreground">Aberto:</span>
-                <strong className="font-mono tabular-nums text-foreground">
-                  {formatMoney(pipelineMetrics.totalPipelineCents)}
-                </strong>
-              </span>
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs">
-                <span className="text-emerald-700 dark:text-emerald-400">Fechados:</span>
-                <strong className="font-mono tabular-nums text-emerald-700 dark:text-emerald-400">
-                  {pipelineMetrics.wonCount}
-                </strong>
-              </span>
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/60 border border-border/50 text-xs">
-                <span className="text-muted-foreground">Leads:</span>
-                <strong className="font-mono tabular-nums text-foreground">
-                  {pipelineMetrics.totalLeads}
-                </strong>
-              </span>
-            </div>
-          </div>
-
-          {/* Ações Primárias e Secundárias */}
-          <div className="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsImportModalOpen(true)}
-              className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium gap-2 focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Upload className="size-3.5 text-muted-foreground" />
-              <span className="hidden sm:inline">Importar Leads</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsDashboardOpen(true)}
-              className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium gap-2 focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <TrendingUp className="size-3.5 text-primary" />
-              <span>Métricas</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                setProposalLead({
-                  id: "",
-                  fullName: "",
-                  destination: "",
-                  passenger_count: 2,
-                })
-              }
-              className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <FileText className="size-3.5 text-primary" />
-              <span>Nova Proposta</span>
-            </Button>
-
-            <Button
-              type="button"
-              onClick={() => {
-                setNewLeadTargetStage("new");
-                setIsNewLeadOpen(true);
-              }}
-              className="h-11 min-h-11 px-4 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-            >
-              <Plus className="size-3.5" />
-              <span>Nova Oportunidade</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Linha 2: Visões de Trabalho + Atalhos de Sub-Módulos + Filtros e Busca */}
-        <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-2 pt-2 border-t border-border/40">
-          {/* Visões Principais + Sub-Módulos */}
-          <div className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <div className="tab-list flex items-center gap-1 p-1 rounded-xl bg-muted/60 shrink-0">
-              <button
-                type="button"
-                onClick={() => setActiveViewTab("kanban")}
-                className={`h-11 min-h-11 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  activeViewTab === "kanban"
-                    ? "bg-card text-foreground font-bold shadow-2xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Kanban className="size-3.5" />
-                <span>Kanban ({filteredLeads.length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveViewTab("dashboard")}
-                className={`h-11 min-h-11 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  activeViewTab === "dashboard"
-                    ? "bg-card text-foreground font-bold shadow-2xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Compass className="size-3.5" />
-                <span>Painel & Alertas</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveViewTab("propostas")}
-                className={`h-11 min-h-11 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  activeViewTab === "propostas"
-                    ? "bg-card text-foreground font-bold shadow-2xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <FileText className="size-3.5" />
-                <span>Propostas ({proposals.length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveViewTab("viagens")}
-                className={`h-11 min-h-11 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  activeViewTab === "viagens"
-                    ? "bg-card text-foreground font-bold shadow-2xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Plane className="size-3.5" />
-                <span>Viagens ({trips.length})</span>
-              </button>
-            </div>
-
-            <div className="h-5 w-px bg-border/60 shrink-0 hidden sm:block" />
-
-            {/* Atalhos Rápidos dos Sub-Módulos Especializados */}
-            <div className="tab-list flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => router.navigate({ to: "/workspace/turismo/oportunidades" })}
-                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <TrendingUp className="size-3.5 text-primary" />
-                <span>Oportunidades</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => router.navigate({ to: "/workspace/turismo/cotacoes" })}
-                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Plane className="size-3.5 text-muted-foreground" />
-                <span>Cotações</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => router.navigate({ to: "/workspace/turismo/embarques" })}
-                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Calendar className="size-3.5 text-muted-foreground" />
-                <span>Embarques</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => router.navigate({ to: "/workspace/turismo/corporativo" })}
-                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Building2 className="size-3.5 text-muted-foreground" />
-                <span>Empresas B2B</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => router.navigate({ to: "/workspace/turismo/fornecedores" })}
-                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <ShieldCheck className="size-3.5 text-muted-foreground" />
-                <span>Operadoras</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => router.navigate({ to: "/workspace/turismo/comissoes" })}
-                className="h-11 min-h-11 px-3 text-xs font-medium rounded-lg border border-border/50 bg-background hover:bg-muted/50 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <DollarSign className="size-3.5 text-emerald-600" />
-                <span>Comissões</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Controles de Filtro (Temperatura, Responsável, Origem) & Busca */}
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            <Select value={temperatureFilter} onValueChange={setTemperatureFilter}>
-              <SelectTrigger className="h-11 min-h-11 text-xs rounded-xl w-36 focus-visible:ring-2 focus-visible:ring-ring">
-                <SelectValue placeholder="Temperatura" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas Temperaturas</SelectItem>
-                <SelectItem value="hot">Quente</SelectItem>
-                <SelectItem value="warm">Morno</SelectItem>
-                <SelectItem value="cold">Frio</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={ownerFilter} onValueChange={setOwnerFilter}>
-              <SelectTrigger className="h-11 min-h-11 text-xs rounded-xl w-40 focus-visible:ring-2 focus-visible:ring-ring">
-                <SelectValue placeholder="Responsável" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Responsáveis</SelectItem>
-                {team.map((m: any) => (
-                  <SelectItem key={m.profile_id || m.id} value={m.profile_id || m.id}>
-                    {m.full_name || m.name || "Membro"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={sourceFilter} onValueChange={setSourceFilter}>
-              <SelectTrigger className="h-11 min-h-11 text-xs rounded-xl w-36 focus-visible:ring-2 focus-visible:ring-ring">
-                <SelectValue placeholder="Origens" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as Origens</SelectItem>
-                {LEAD_SOURCES.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => setIsCustomizerOpen(true)}
-              className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-              title="Personalizar Colunas do Funil"
-            >
-              <SlidersHorizontal className="size-4" />
-            </Button>
-
-            <div className="relative w-full sm:w-64">
-              <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Procurar cards..."
-                className="h-11 min-h-11 pl-9 text-xs rounded-xl"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* ── BARRA OPERACIONAL CANÔNICA (SILENCIOSA, ULTRAMINIMALISTA E ALTA DENSIDADE) ── */}
+      <WorkspaceCanonicalToolbar
+        tabs={[
+          { id: "kanban", label: "Kanban", icon: Kanban, count: filteredLeads.length },
+          { id: "dashboard", label: "Painel & Alertas", icon: Compass },
+          { id: "propostas", label: "Propostas", icon: FileText, count: proposals.length },
+          { id: "viagens", label: "Viagens", icon: Plane, count: trips.length },
+        ]}
+        activeTab={activeViewTab}
+        onTabChange={(tabId) => setActiveViewTab(tabId as any)}
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Procurar cards no funil de turismo..."
+        filters={[
+          {
+            id: "temperature",
+            label: "Temperatura",
+            value: temperatureFilter,
+            options: [
+              { label: "Todas Temperaturas", value: "all" },
+              { label: "Quente", value: "hot" },
+              { label: "Morno", value: "warm" },
+              { label: "Frio", value: "cold" },
+            ],
+            onChange: setTemperatureFilter,
+          },
+          {
+            id: "owner",
+            label: "Responsável",
+            value: ownerFilter,
+            options: [
+              { label: "Todos os Responsáveis", value: "all" },
+              ...team.map((m: any) => ({
+                label: m.full_name || m.name || "Membro",
+                value: m.profile_id || m.id,
+              })),
+            ],
+            onChange: setOwnerFilter,
+          },
+          {
+            id: "source",
+            label: "Origem",
+            value: sourceFilter,
+            options: [
+              { label: "Todas as Origens", value: "all" },
+              ...LEAD_SOURCES.map((s) => ({ label: s.label, value: s.value })),
+            ],
+            onChange: setSourceFilter,
+          },
+        ]}
+        onMetricsClick={() => setIsDashboardOpen(true)}
+        metricsBadge={pipelineMetrics.totalPipelineCents > 0 ? formatMoney(pipelineMetrics.totalPipelineCents) : undefined}
+        onColumnsClick={() => setIsCustomizerOpen(true)}
+        secondaryActions={[
+          {
+            label: "Nova Proposta",
+            icon: FileText,
+            onClick: () =>
+              setProposalLead({
+                id: "",
+                fullName: "",
+                destination: "",
+                passenger_count: 2,
+              }),
+            variant: "outline",
+          },
+          {
+            label: "Importar Leads",
+            icon: Upload,
+            onClick: () => setIsImportModalOpen(true),
+            variant: "outline",
+          },
+        ]}
+        primaryAction={{
+          label: "Nova Oportunidade",
+          icon: Plus,
+          onClick: () => {
+            setNewLeadTargetStage("new");
+            setIsNewLeadOpen(true);
+          },
+        }}
+      />
 
       {/* ── CONTEÚDO DA VISÃO ATIVA ── */}
 

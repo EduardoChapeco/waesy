@@ -327,7 +327,7 @@ function AdminAppointmentsPage() {
  size="sm"
  variant={viewMode === "daily" ? "default" : "ghost"}
  onClick={() => setViewMode("daily")}
- className="h-9 px-3 rounded-md text-xs font-bold gap-2 cursor-pointer"
+ className="h-11 min-h-11 px-3 rounded-md text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
  >
  <CalendarIcon className="size-3.5" />
  <span>Diário</span>
@@ -336,7 +336,7 @@ function AdminAppointmentsPage() {
  size="sm"
  variant={viewMode === "heatmap" ? "default" : "ghost"}
  onClick={() => setViewMode("heatmap")}
- className="h-9 px-3 rounded-md text-xs font-bold gap-2 cursor-pointer"
+ className="h-11 min-h-11 px-3 rounded-md text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Clock className="size-3.5" />
  <span>Heatmap</span>

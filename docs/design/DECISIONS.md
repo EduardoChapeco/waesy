@@ -8042,3 +8042,16 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   7. **Testes Automatizados:** Suítes `universal-idempotency-and-state-machine.test.ts` (8 testes), `systemic-niche-atomic-stock.test.ts` (7 testes) e `atomic-reservations-and-idempotency.test.ts` (16 testes), totalizando 31 testes unitários aprovados (100% pass).
 - **Fundamentação Teórica:** AGENTS.md B.5, B.7, B.9, B.24, B.25, BigTech Red Team Protocol e Princípio Zero-Trust ACID.
 - **Consequências:** Eliminação sistemática de race conditions, garantia de unicidade em processamento financeiro e integridade estrutural em reservas, checkout e caixa.
+---
+
+### DEC-432 (2026-11-04): Refatoração Canônica do Funil de Turismo e Grade de Agenda (Erradicação de Containeritis e Touch Targets de 44px)
+- **Data:** 2026-11-04
+- **ID da Decisão:** DEC-432
+- **Contexto:** Execução das diretrizes do Master Prompt de Reengenharia Visual e Arquitetura de UX (SPEC-20261104). As páginas de Funil de Turismo (`workspace.turismo.index.tsx`) e Agenda (`workspace.agenda.index.tsx`) sofriam com contêineres empilhados (DL-31), múltiplos atalhos redundantes comprimindo o quadro Kanban verticalmente e botões de alternância com altura inferior ao piso de 44px (DL-14).
+- **Decisão Adotada:**
+  1. **Adoção de WorkspaceCanonicalToolbar no Turismo:** Substituição de 275 linhas de cartões multicamadas pelo componente canônico `WorkspaceCanonicalToolbar`. O novo layout unifica em linha única de 44px as 4 abas (Kanban, Painel & Alertas, Propostas, Viagens), busca por lead/destino, 3 filtros estruturados (Temperatura, Responsável, Origem), ações primária ("Nova Oportunidade") e secundárias ("Nova Proposta", "Importar"), liberando 100% da viewport vertical e horizontal para a rolagem fluida das colunas do Kanban.
+  2. **Preservação Integral de Capacidades:** 100% dos formulários, modais de importação, customizador de colunas, gavetas de métricas (`WorkspaceDashboardSheet`) e cálculo de orçamentos foram mantidos intactos e perfeitamente conectados.
+  3. **Piso de Toque de 44px na Agenda:** Adequação dos seletores de modo ("Diário" e "Heatmap") em `workspace.agenda.index.tsx` para `h-11 min-h-11` acompanhados de anéis de foco `:focus-visible:ring-2`, garantindo conformidade com Rules B.14, B.26 e WCAG 2.2 AA.
+  4. **Aprovação na Catraca:** Ratchet de CI verde com 0 violações P0 e redução de 8 débitos visuais; 40 testes unitários passando (100% pass).
+- **Fundamentação Teórica:** AGENTS.md B.4, B.8, B.14, B.26, B.31 e HIG/Linear High-Density Design Craft.
+- **Consequências:** Descompressão total da experiência de CRM/Kanban de turismo e consistência táctil em dispositivos móveis e desktops.
