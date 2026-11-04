@@ -67,13 +67,13 @@ export const HostingDomainConnectContent: React.FC<Omit<HostingDomainConnectModa
       if (onConnectCustomDomain) {
         await onConnectCustomDomain(cleanDomain);
       } else {
-        const res = await connectStoreCustomDomain({
+        const res: any = await connectStoreCustomDomain({
           data: {
             domain: cleanDomain,
             requestedStoreId: storeId || undefined,
           },
         });
-        if (!res?.success) {
+        if (!res || (res.status !== "pending_dns" && !res.success)) {
           throw new Error(res?.error || "Falha ao vincular domínio personalizado.");
         }
       }

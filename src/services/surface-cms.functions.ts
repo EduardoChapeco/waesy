@@ -9,6 +9,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
+import { microCache } from "@/lib/cache/micro-cache";
 import { NICHE_STORE_KEYWORDS, isMatchNicheKeyword } from "@/services/marketplace.functions";
 import type { FlashOfferDTO, StoreCardDTO } from "@/services/marketplace.functions";
 import { formatStoreCategory } from "@/lib/niches/niche-manifest";
@@ -2279,19 +2280,22 @@ export const resolveSurfacePageExperienceDocument = createServerFn({ method: "GE
     }),
   )
   .handler(async ({ data: { surfaceSlug, city, storeId } }) => {
-    const supabase = getServerClient();
-    const { findPlatformRootStoreIdReadOnly } = await import("@/lib/server-access");
     const normalizedSlug = surfaceSlug.trim().toLowerCase();
+    const cacheKey = `surface_cms:doc:${normalizedSlug}:${city || "all"}:${storeId || "root"}`;
 
-    const effectiveStoreId = storeId || (await findPlatformRootStoreIdReadOnly(supabase));
-    if (!effectiveStoreId) {
-      return {
-        mode: "canonical_cms" as const,
-        documentId: null,
-        document: null,
-        liveData: null,
-      };
-    }
+    return microCache.getOrSet(cacheKey, 60_000, async () => {
+      const supabase = getServerClient();
+      const { findPlatformRootStoreIdReadOnly } = await import("@/lib/server-access");
+
+      const effectiveStoreId = storeId || (await findPlatformRootStoreIdReadOnly(supabase));
+      if (!effectiveStoreId) {
+        return {
+          mode: "canonical_cms" as const,
+          documentId: null,
+          document: null,
+          liveData: null,
+        };
+      }
 
     // 1. Busca documento correspondente em experience_documents (usa coluna real `title`, NUNCA `name`)
     const { data: docRows } = await supabase
@@ -2476,10 +2480,11 @@ export const resolveSurfacePageExperienceDocument = createServerFn({ method: "GE
       }
     }
 
-    return {
-      mode: "canonical_cms" as const,
-      documentId: null,
-      document: null,
-      liveData: null,
-    };
+      return {
+        mode: "canonical_cms" as const,
+        documentId: null,
+        document: null,
+        liveData: null,
+      };
+    });
   });

@@ -18,7 +18,7 @@ import { StatTile, SegmentedControl } from "@/design-system/components";
 
 export const Route = createFileRoute("/workspace/")({
   head: () => ({ meta: [{ title: "Operação | Workspace Waesy" }] }),
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { storeId?: string } => ({
     storeId: typeof search.storeId === "string" ? search.storeId : undefined,
   }),
   loader: async ({ search }) => {

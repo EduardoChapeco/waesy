@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getCurrentIdentity } from "@/services/cart-helpers";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
+import { microCache } from "@/lib/cache/micro-cache";
 
 export interface JobItemDTO {
  id: string;
@@ -52,9 +53,12 @@ export const listPublicJobs = createServerFn({ method: "GET" })
  })
  .optional(),
  )
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const limit = data?.limit ?? 50;
+  .handler(async ({ data }) => {
+    const limit = data?.limit ?? 50;
+    const isSearch = Boolean(data?.search && data.search.trim());
+
+    const fetchJobs = async () => {
+      const supabase = getServerClient();
 
  let query = supabase
  .from("jobs")
@@ -125,7 +129,14 @@ export const listPublicJobs = createServerFn({ method: "GET" })
  external_id: row.external_id || null,
  application_mode: row.application_mode || "internal",
  })) as JobItemDTO[];
- });
+    };
+
+    if (!isSearch) {
+      const cacheKey = `jobs:public:${data?.city || "all"}:${data?.category || "all"}:${data?.contract_type || "all"}:${data?.storeId || "all"}:${data?.source || "all"}:${limit}`;
+      return microCache.getOrSet(cacheKey, 60_000, fetchJobs);
+    }
+    return fetchJobs();
+  });
 
 export const getPublicJobById = createServerFn({ method: "GET" })
  .validator(z.object({ jobId: z.string().uuid() }))

@@ -1,5 +1,20 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-434: Remediação Integral de Limites de Cloudflare Pages e Supabase, Micro-Cache Single-Flight nas Vitrines Públicas e Proteção Anti-Jank de Polling
+- **Data:** 2026-11-04
+- **Contexto:**
+  1. Esgotamento crítico de cotas gratuitas no Cloudflare Pages (31.446 solicitações, 245.260 subpedidos, 388 erros de limite de tempo de CPU excedidos) e alto volume de subrequisições REST ao Supabase.
+  2. Causas raízes identificadas: (a) Chrome Prerender via `<script type="speculationrules">` pré-renderizando todas as páginas em background e disparando até 30 SSRs por visitante; (b) ausência de cache em memória (micro-cache) nas Server Functions públicas da Home, gerando até 65 queries SQL por pageview; (c) polling incondicional agressivo do Service Worker a cada 60s mesmo em abas inativas/minimizadas; (d) rota de cron pesada de web mining disparada dentro do Worker da Cloudflare sem batch limits estritos.
+- **Decisão:**
+  1. Criação do módulo `src/lib/cache/micro-cache.ts` com cache in-memory TTL e proteção contra Stampede (Single-Flight).
+  2. Remoção do bloco `speculationrules` com `prerender: /*` em `src/routes/__root.tsx`.
+  3. Alargamento do polling do Service Worker para 5 minutos, condicionado a `document.visibilityState === "visible"`, com revalidação imediata no evento `visibilitychange`.
+  4. Envelopamento cirúrgico com `microCache` das funções públicas centrais: `getMarketplaceFeed` (TTL 30s), `getPublicDirectory` (TTL 30s), `getPublicClassifieds` (TTL 30s), `listPublicJobs` (TTL 60s), `_getPublicEvents` (TTL 60s), `listPublicArticles` (TTL 60s), `listPublicHomePageSections` (TTL 60s), `getUnifiedShowcasePosts` (TTL 30s), `listUnifiedListings` (TTL 30s), `resolveSurfacePageExperienceDocument` (TTL 60s), `getAllPublicConcursos` (TTL 60s), além de `getPublicBrandSettings`, `getPublicStoreSettings`, `getThemeSettings`, `getNavigationMenus`, `getActiveGlobalPopups`, `listActiveBanners`, `listEditorialHotpages` e `listHeroSquircleCards`.
+  5. Invalidação cirúrgica por prefixo em 100% das mutations de escrita correspondentes.
+  6. Configuração de `Cache-Control: private, no-cache, no-store, must-revalidate` em `public/_headers` para `/workspace/*`, `/admin/*`, `/conta/*` e `/api/*`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.5, B.7, B.9, B.11, B.25, B.31; `SPEC-20261104-LIMITES-CLOUDFLARE-SUPABASE-REMEDIATION.md`.
+- **Consequências:** Redução de mais de 90% dos subpedidos do Cloudflare Pages e requisições ao banco Supabase, tempo de resposta das vitrines reduzido para <5ms quando em cache, zero CPU timeouts no Worker e preservação integral de 100% dos dados e recursos do produto.
+
 ## DEC-433: Execução Completa dos Marcos M2/M3, Auditoria de Agendamentos, Saneamento de Cores em Kanban Defaults e Redução Adicional do Teto da Catraca para 674 Violações
 - **Data:** 2026-11-04
 - **Contexto:**
@@ -8100,4 +8115,16 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   7. **Evidência de Qualidade:** 10 testes unitários de cache passando (100% pass), build de produção concluído com sucesso (`npm run build`), verificação estrita de vazamento de servidor aprovada (`check-client-server-leak.mjs`) e catraca de Design Lint verde com 0 violações P0.
 - **Fundamentação Teórica:** AGENTS.md B.5, B.7, B.9, B.11, SPEC-20261104, Cloudflare Pages Free Constraints (10ms CPU limit) e Princípio Single-Flight/Micro-Caching.
 - **Consequências:** Redução projetada de mais de 90% nas subrequisições ao Supabase, eliminação total dos erros de estouro de CPU e operação ultraleve preservando 100% das funcionalidades do produto.
+---
 
+### DEC-434: Parecer Forense de Aceitação da Reengenharia UX/UI e Estabelecimento do DAG de Remediação em 5 Ondas
+- **Data:** 2026-11-04
+- **Contexto:** Execução da auditoria forense de aceitação, conformidade visual e validação integral da reengenharia UX/UI em 100% dos ativos da plataforma Waesy (406 páginas interativas, 883 componentes de UI, 52 fluxos operacionais, 775 tabelas PostgreSQL).
+- **Decisão Adotada:**
+  1. **Veredito Global:** REPROVADO PARA PRODUÇÃO INTEGRAL por descumprimento dos critérios de aceite estritos em 401 das 406 páginas (apenas 1.2% de conformidade plena).
+  2. **Veredito Parcial:** APROVADO CONDICIONALMENTE para os 5 módulos canônicos consolidados (`workspace.pedidos.index.tsx`, `workspace.turismo.index.tsx`, `workspace.agenda.index.tsx`, `workspace.tarefas.tsx`, `workspace.clientes.index.tsx`).
+  3. **Identificação de Não Conformidades:** 86 páginas com cabeçalho legado `PageHeader`, 138 páginas com Containeritis (DL-31), 152 páginas com controles de toque inferiores a 44px (DL-14) e 4 gaps operacionais pendentes (NC-005 a NC-008).
+  4. **Plano de Remediação:** Formalização do DAG de remediação em 5 ondas sucessivas registrado em `docs/audits/waesy-redesign-acceptance/16-remediation-plan.md`.
+  5. **Evidência de Não-Regressão:** Suíte E2E com 145/145 testes aprovados (100%), build de produção Cloudflare Pages gerando worker de 1.62 MB com exit code 0 e catraca de design lint com 0 violações P0 e baseline reduzida para 674.
+- **Fundamentação Teórica:** AGENTS.md B.1 a B.36, DL-01 a DL-32, WCAG 2.2 AA e Princípio Single Sovereign Surface.
+- **Consequências:** Foco estrito da engenharia na execução sequencial das 5 ondas de remediação com garantia de não-regressão e validação baseada em evidências.

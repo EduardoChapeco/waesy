@@ -352,10 +352,21 @@ function RootComponent() {
     navigator.serviceWorker
      .register("/sw.js")
      .then((registration) => {
-      // Verifica atualizações periodicamente (a cada 60s) enquanto o app está aberto
+      // Verifica atualizações periodicamente (a cada 5min) apenas se a aba estiver visível
       setInterval(() => {
-       registration.update().catch(() => {});
-      }, 60_000);
+       if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        registration.update().catch(() => {});
+       }
+      }, 300_000);
+
+      // Revalida imediatamente quando o usuário retorna à aba
+      if (typeof document !== "undefined") {
+       document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+         registration.update().catch(() => {});
+        }
+       });
+      }
 
       // NÃO fazemos SKIP_WAITING automático aqui —
       // o PwaUpdatePrompt aguarda a ação explícita do utilizador (V120 design).

@@ -5,6 +5,7 @@ import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { decryptSecret } from "@/lib/crypto-vault.server";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
+import { microCache } from "@/lib/cache/micro-cache";
 
 export interface NewsSectionDTO {
   type: "paragraph" | "heading" | "quote" | "gallery" | "video";
@@ -140,13 +141,16 @@ export const listPublicArticles = createServerFn({ method: "GET" })
       .optional(),
   )
   .handler(async ({ data }): Promise<NewsArticleDTO[]> => {
-    const supabase = getAnonServerClient();
     const limit = data?.limit ?? 20;
+    const isSearch = Boolean(data?.query && data.query.trim());
 
-    try {
-      let q = supabase
-        .from("news_articles")
-        .select(
+    const fetchArticles = async (): Promise<NewsArticleDTO[]> => {
+      const supabase = getAnonServerClient();
+
+      try {
+        let q = supabase
+          .from("news_articles")
+          .select(
           `
  id, store_id, author_profile_id, author_name, source_url, ai_summary, quality_score,
  title, slug, kicker, subtitle, content_sections,
@@ -314,6 +318,13 @@ export const listPublicArticles = createServerFn({ method: "GET" })
       console.warn("[news] Erro ao buscar artigos no banco:", err);
       return [];
     }
+    };
+
+    if (!isSearch) {
+      const cacheKey = `news:public:${data?.city || "all"}:${data?.category || "all"}:${data?.storeId || "all"}:${data?.regionHint || "all"}:${limit}`;
+      return microCache.getOrSet(cacheKey, 60_000, fetchArticles);
+    }
+    return fetchArticles();
   });
 
 export const getArticleDetail = createServerFn({ method: "GET" })

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
+import { microCache } from "@/lib/cache/micro-cache";
 
 export interface InviteOverviewDTO {
   code: string;
@@ -606,6 +607,7 @@ export const storeCreateConcurso = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw new Error("Falha ao criar concurso de sorte: " + error.message);
+    microCache.invalidatePrefix("raffles:");
     return res;
   });
 
@@ -662,6 +664,8 @@ export const storeDrawConcurso = createServerFn({ method: "POST" })
       .eq("id", raffleId);
 
     if (updErr) throw new Error("Falha ao registrar apuração do concurso: " + updErr.message);
+
+    microCache.invalidatePrefix("raffles:");
 
     return {
       success: true,
@@ -723,6 +727,7 @@ export const storeUpdateConcurso = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw new Error("Falha ao atualizar concurso: " + error.message);
+    microCache.invalidatePrefix("raffles:");
     return res;
   });
 
@@ -754,6 +759,7 @@ export const storeCancelConcurso = createServerFn({ method: "POST" })
       .eq("id", raffleId);
 
     if (updErr) throw new Error("Falha ao cancelar concurso: " + updErr.message);
+    microCache.invalidatePrefix("raffles:");
     return { success: true };
   });
 
@@ -821,67 +827,75 @@ export const getAllPublicConcursos = createServerFn({ method: "GET" })
       .optional()
   )
   .handler(async ({ data }): Promise<RaffleDTO[]> => {
-    const supabase = getServerClient();
     const identity = await getIdentity().catch(() => null);
     const filter = data?.filter || "all";
 
-    let query = supabase
-      .from("raffles")
-      .select("*, stores:store_id(id, name, logo_url)");
+    const fetchPublicConcursos = async (): Promise<RaffleDTO[]> => {
+      const supabase = getServerClient();
+      let query = supabase
+        .from("raffles")
+        .select("*, stores:store_id(id, name, logo_url)");
 
-    if (filter === "completed") {
-      query = query.eq("status", "completed").order("drawn_at", { ascending: false });
-    } else {
-      query = query.in("status", ["active", "drawing"]).order("draw_date", { ascending: true });
-    }
+      if (filter === "completed") {
+        query = query.eq("status", "completed").order("drawn_at", { ascending: false });
+      } else {
+        query = query.in("status", ["active", "drawing"]).order("draw_date", { ascending: true });
+      }
 
-    if (filter === "official") {
-      query = query.or("is_official_platform.eq.true,store_id.is.null");
-    } else if (filter === "stores") {
-      query = query.not("store_id", "is", null);
-    }
+      if (filter === "official") {
+        query = query.or("is_official_platform.eq.true,store_id.is.null");
+      } else if (filter === "stores") {
+        query = query.not("store_id", "is", null);
+      }
 
-    const { data: raffles, error } = await query;
-    if (error || !raffles) return [];
+      const { data: raffles, error } = await query;
+      if (error || !raffles) return [];
 
-    let myTicketsMap = new Map<string, number>();
-    if (identity?.id && raffles.length > 0) {
-      const raffleIds = raffles.map((r) => r.id);
-      const { data: tickets } = await supabase
-        .from("raffle_tickets")
-        .select("raffle_id")
-        .eq("user_id", identity.id)
-        .in("raffle_id", raffleIds);
+      let myTicketsMap = new Map<string, number>();
+      if (identity?.id && raffles.length > 0) {
+        const raffleIds = raffles.map((r) => r.id);
+        const { data: tickets } = await supabase
+          .from("raffle_tickets")
+          .select("raffle_id")
+          .eq("user_id", identity.id)
+          .in("raffle_id", raffleIds);
 
-      if (tickets) {
-        for (const t of tickets) {
-          myTicketsMap.set(t.raffle_id, (myTicketsMap.get(t.raffle_id) || 0) + 1);
+        if (tickets) {
+          for (const t of tickets) {
+            myTicketsMap.set(t.raffle_id, (myTicketsMap.get(t.raffle_id) || 0) + 1);
+          }
         }
       }
-    }
 
-    return raffles.map((r: any) => ({
-      id: r.id,
-      storeId: r.store_id || null,
-      storeName: r.stores?.name || (r.is_official_platform || !r.store_id ? "Waesy Oficial" : "Loja Parceira"),
-      storeLogoUrl: r.stores?.logo_url || null,
-      title: r.title,
-      description: r.description,
-      imageUrl: r.image_url,
-      rules: r.rules || {},
-      termsText: r.terms_text || "Participação aberta a membros cadastrados na Comunidade Waesy.",
-      isOfficialPlatform: r.is_official_platform || !r.store_id,
-      ticketPriceCents: r.ticket_price_cents || 0,
-      pointsCost: r.points_cost || 0,
-      tokensCost: r.points_cost || 0,
-      maxTicketsPerUser: r.max_tickets_per_user || 5,
-      drawDate: r.draw_date,
-      status: r.status,
-      winnerUserId: r.winner_user_id,
-      winnerTicketNumber: r.winner_ticket_number,
-      myTicketsCount: myTicketsMap.get(r.id) || 0,
-      totalTicketsCount: 0,
-    }));
+      return raffles.map((r: any) => ({
+        id: r.id,
+        storeId: r.store_id || null,
+        storeName: r.stores?.name || (r.is_official_platform || !r.store_id ? "Waesy Oficial" : "Loja Parceira"),
+        storeLogoUrl: r.stores?.logo_url || null,
+        title: r.title,
+        description: r.description,
+        imageUrl: r.image_url,
+        rules: r.rules || {},
+        termsText: r.terms_text || "Participação aberta a membros cadastrados na Comunidade Waesy.",
+        isOfficialPlatform: r.is_official_platform || !r.store_id,
+        ticketPriceCents: r.ticket_price_cents || 0,
+        pointsCost: r.points_cost || 0,
+        tokensCost: r.points_cost || 0,
+        maxTicketsPerUser: r.max_tickets_per_user || 5,
+        drawDate: r.draw_date,
+        status: r.status,
+        winnerUserId: r.winner_user_id,
+        winnerTicketNumber: r.winner_ticket_number,
+        myTicketsCount: myTicketsMap.get(r.id) || 0,
+        totalTicketsCount: 0,
+      }));
+    };
+
+    if (!identity?.id) {
+      const cacheKey = `raffles:public:${filter}`;
+      return microCache.getOrSet(cacheKey, 60_000, fetchPublicConcursos);
+    }
+    return fetchPublicConcursos();
   });
 
 /**

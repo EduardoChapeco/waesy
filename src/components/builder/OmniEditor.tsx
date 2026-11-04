@@ -2560,8 +2560,8 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     backgroundColor: initialDocument.theme?.backgroundColor || "#ffffff",
     // design-lint-ignore DL-01 reason:"Valores iniciais do contrato de estado de tema global" expiry:"2027-12-31"
     textColor: initialDocument.theme?.textColor || "#09090b",
-    headingFont: initialDocument.theme?.headingFont || "Inter, sans-serif",
-    bodyFont: initialDocument.theme?.bodyFont || "Inter, sans-serif",
+    headingFont: (initialDocument.theme as any)?.headingFont || (initialDocument.theme as any)?.fontFamily || "Inter, sans-serif",
+    bodyFont: (initialDocument.theme as any)?.bodyFont || (initialDocument.theme as any)?.fontFamily || "Inter, sans-serif",
     borderRadius: initialDocument.theme?.borderRadius || "xl",
     surfaceStyle: "clean",
   }));
@@ -2699,20 +2699,23 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           store_id: document.store_id || undefined,
           title: newPage.title,
           slug: newPage.slug.replace(/^\//, ""),
+          document_type: "custom",
         },
       });
-      if (createdDoc?.id) {
+      const createdData: any = createdDoc;
+      const createdObj = createdData?.data?.document || createdData;
+      if (createdObj?.id) {
         const item: BuilderPageItem = {
-          id: createdDoc.id,
-          title: createdDoc.title,
-          slug: createdDoc.slug?.startsWith("/") ? createdDoc.slug : `/${createdDoc.slug || ""}`,
+          id: createdObj.id,
+          title: createdObj.title,
+          slug: createdObj.slug?.startsWith("/") ? createdObj.slug : `/${createdObj.slug || ""}`,
           is_home: false,
           seo_title: `${createdDoc.title} | ${document.title || "Loja"}`,
           seo_description: "Página oficial criada no Waesy Studio.",
         };
         setSitePages((prev) => [...prev, item]);
-        setActivePageId(createdDoc.id);
-        toast.success(`Página "${createdDoc.title}" criada no banco de dados!`);
+        setActivePageId(createdObj.id);
+        toast.success(`Página "${createdObj.title}" criada no banco de dados!`);
       }
     } catch (err: any) {
       toast.error(err?.message || "Erro ao criar página.");
@@ -2721,9 +2724,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
   const handleDuplicateSitePage = async (pageId: string) => {
     try {
-      const dup = await duplicateExperienceDocument({
+      const dup: any = await duplicateExperienceDocument({
         data: {
-          document_id: pageId,
+          id: pageId,
         },
       });
       if (dup?.id) {

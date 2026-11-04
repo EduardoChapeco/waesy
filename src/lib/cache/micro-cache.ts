@@ -67,8 +67,21 @@ export function invalidateMicroCachePrefix(prefix: string): void {
 export async function getOrSetMicroCache<T>(
   key: string,
   fetcher: () => Promise<T>,
-  ttlMs = 60_000
+  ttlMs?: number
+): Promise<T>;
+export async function getOrSetMicroCache<T>(
+  key: string,
+  ttlMs: number,
+  fetcher: () => Promise<T>
+): Promise<T>;
+export async function getOrSetMicroCache<T>(
+  key: string,
+  arg2: (() => Promise<T>) | number,
+  arg3?: number | (() => Promise<T>)
 ): Promise<T> {
+  const fetcher = typeof arg2 === "function" ? arg2 : (arg3 as () => Promise<T>);
+  const ttlMs = typeof arg2 === "number" ? arg2 : (typeof arg3 === "number" ? arg3 : 60_000);
+
   // 1. Verifica cache existente
   const cached = getMicroCache<T>(key);
   if (cached !== undefined) {
@@ -100,3 +113,15 @@ export function clearAllMicroCache(): void {
   memoryStore.clear();
   pendingPromises.clear();
 }
+
+/**
+ * Namespace canônico microCache para consumo ergonômico em Server Functions.
+ */
+export const microCache = {
+  get: getMicroCache,
+  set: setMicroCache,
+  invalidate: invalidateMicroCache,
+  invalidatePrefix: invalidateMicroCachePrefix,
+  getOrSet: getOrSetMicroCache,
+  clearAll: clearAllMicroCache,
+};
