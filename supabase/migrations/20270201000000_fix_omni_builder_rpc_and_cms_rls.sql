@@ -271,6 +271,15 @@ REVOKE ALL ON FUNCTION public.persist_omni_document_snapshot(UUID, UUID, UUID, J
 GRANT EXECUTE ON FUNCTION public.persist_omni_document_snapshot(UUID, UUID, UUID, JSONB, BOOLEAN) TO service_role;
 
 -- 3. Sanear políticas RLS permissivas e incluir platform_admin nas tabelas de CMS
+ALTER TABLE IF EXISTS public.marketplace_surfaces
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true;
+
+ALTER TABLE IF EXISTS public.marketplace_sections
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS starts_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS ends_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS auto_archive_at TIMESTAMPTZ;
+
 DO $$
 BEGIN
   -- Remover SELECT USING (true) que anulavam filtros de publicação/ativo

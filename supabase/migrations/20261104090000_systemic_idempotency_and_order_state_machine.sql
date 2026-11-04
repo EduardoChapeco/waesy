@@ -20,6 +20,16 @@ BEGIN;
     expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '7 days')
   );
 
+  -- Garante que todas as colunas necessárias existam mesmo se a tabela já tiver sido criada previamente
+  ALTER TABLE public.processed_events ADD COLUMN IF NOT EXISTS scope TEXT NOT NULL DEFAULT 'generic';
+  ALTER TABLE public.processed_events ADD COLUMN IF NOT EXISTS entity_id TEXT;
+  ALTER TABLE public.processed_events ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'processing';
+  ALTER TABLE public.processed_events ADD COLUMN IF NOT EXISTS payload_hash TEXT NOT NULL DEFAULT '';
+  ALTER TABLE public.processed_events ADD COLUMN IF NOT EXISTS response_body JSONB DEFAULT NULL;
+  ALTER TABLE public.processed_events ADD COLUMN IF NOT EXISTS error_message TEXT DEFAULT NULL;
+  ALTER TABLE public.processed_events ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ DEFAULT NULL;
+  ALTER TABLE public.processed_events ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '7 days');
+
   CREATE INDEX IF NOT EXISTS idx_processed_events_scope_entity ON public.processed_events(scope, entity_id);
   CREATE INDEX IF NOT EXISTS idx_processed_events_expires_at ON public.processed_events(expires_at);
 
