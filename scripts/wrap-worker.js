@@ -77,6 +77,7 @@ try {
     minify: true,
     treeShaking: true,
     legalComments: "none",
+    drop: ["console", "debugger"],
     target: "es2022",
     format: "esm",
     external: ["node:*", "cloudflare:*"],
