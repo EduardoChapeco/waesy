@@ -165,6 +165,32 @@ export async function _updateOrderStatus(
  return { status: "ok" as const, message: "Pedido cancelado com sucesso." };
  }
 
+ // 1. Transição Atômica de Estado ("Carimbou PAGO, não paga de novo")
+ let isIdempotentReplay = false;
+ try {
+  const { data: atomicRes, error: rpcErr } = await db.rpc("transition_order_status_atomic", {
+   p_order_id: orderId,
+   p_store_id: store_id,
+   p_new_status: status,
+   p_reason: status === "cancelled" ? "Cancelado pelo administrador." : null,
+   p_actor_id: null,
+   p_idempotency_key: `order-status-${orderId}-${status}`,
+  });
+
+  if (!rpcErr && atomicRes && typeof atomicRes === "object") {
+   if (!(atomicRes as any).success) {
+    throw new Error((atomicRes as any).message || "Transição de status inválida");
+   }
+   isIdempotentReplay = Boolean((atomicRes as any).is_idempotent_replay);
+  }
+ } catch (rpcEx: any) {
+  console.warn("[order.functions] transition_order_status_atomic fallback:", rpcEx?.message);
+ }
+
+ if (isIdempotentReplay) {
+  return { status: "ok" as const, message: "O pedido já se encontra no status solicitado." };
+ }
+
  const updatePayload: Record<string, any> = { status };
  if (status === "paid") {
   updatePayload.paid_at = new Date().toISOString();
@@ -1688,6 +1714,30 @@ export const settleOrderPayout = createServerFn({ method: "POST" })
     assertStoreAccess(identity, ["owner", "admin", "manager", "gerente"]);
 
     const db = getServerClient();
+
+    // 1. Idempotência Atômica de Repasse ("Carimbou PAGO, não paga de novo")
+    try {
+      const { data: atomicRes, error: rpcErr } = await db.rpc("settle_order_payout_atomic", {
+        p_order_id: orderId,
+        p_store_id: identity.store_id || null,
+        p_idempotency_key: `payout-${orderId}`,
+      });
+
+      if (!rpcErr && atomicRes && typeof atomicRes === "object") {
+        if ((atomicRes as any).already_settled) {
+          return {
+            success: true,
+            orderId,
+            status: "settled",
+            settledAt: (atomicRes as any).settled_at,
+            message: "Repasse já liquidado anteriormente.",
+          };
+        }
+      }
+    } catch (rpcEx: any) {
+      console.warn("[order.functions] settle_order_payout_atomic fallback:", rpcEx?.message);
+    }
+
     const { data: order, error } = await db
       .from("orders")
       .select("id, order_number, public_token, total_cents, subtotal_cents, shipping_cents, store_id, status, cost_breakdown")
@@ -1699,6 +1749,15 @@ export const settleOrderPayout = createServerFn({ method: "POST" })
     }
 
     const currentCost = (order.cost_breakdown as OrderCostBreakdown | null) || calculateOrderFinancialSplit(order);
+    if (currentCost.settlement_status === "settled") {
+      return {
+        success: true,
+        orderId,
+        status: "settled",
+        settledAt: currentCost.settled_at,
+        message: "Repasse já liquidado anteriormente.",
+      };
+    }
     const updatedCostBreakdown: OrderCostBreakdown = {
       ...currentCost,
       settlement_status: "settled",

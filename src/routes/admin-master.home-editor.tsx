@@ -546,7 +546,7 @@ function AdminMasterHomeEditorPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
-            variant="default"
+            variant="outline"
             size="sm"
             disabled={isOpeningOmniBuilder}
             onClick={() =>

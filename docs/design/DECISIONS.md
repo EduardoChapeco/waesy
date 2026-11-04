@@ -8026,3 +8026,19 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
 - **Fundamentação Teórica:** AGENTS.md B.4, B.5, B.7, B.8, B.9, B.25, B.33 e WCAG 2.2 AA.
 - **Consequências:** Entidades comerciais e civis agora operam como ecossistemas integrados no Waesy, fortalecendo a economia local e viabilizando clubes de benefícios B2B auditáveis.
 
+---
+
+### DEC-431 (2026-11-04): Motor Universal de Idempotência, Transições Atômicas de Pedido ("Carimbou PAGO") e Proteção Anti-Concorrência em Caixa e Reservas
+- **Data:** 2026-11-04
+- **ID da Decisão:** DEC-431
+- **Contexto:** Necessidade crítica de erradicar condições de corrida (TOCTOU - Time-of-Check to Time-of-Use) e garantir idempotência absoluta em toda a plataforma Waesy. Requisições concorrentes ou duplicadas (retentativas de webhooks de pagamento, duplo clique em checkout, sangrias simultâneas em PDV e agendamentos simultâneos de serviços) poderiam gerar venda de estoque inexistente, saques a descoberto em gavetas de caixa ou liberação duplicada de comissões/lançamentos contábeis.
+- **Decisão Adotada:**
+  1. **Ledger Universal de Idempotência (`processed_events`):** Implementada a tabela `processed_events` e as RPCs atômicas `begin_idempotent_event`, `complete_idempotent_event` e `fail_idempotent_event` com serialização via `pg_advisory_xact_lock`. Eventos já marcados como `completed` retornam imediatamente o payload imutável ("Carimbou PAGO, não paga de novo"), bloqueando execuções concorrentes em voo (`in_flight: true`).
+  2. **Máquina de Estado Atômica de Pedidos (`transition_order_status_atomic`):** Bloqueio pessimista `FOR UPDATE` em pedidos, prevenindo transições ilegais a partir de pedidos cancelados/reembolsados e reconhecendo repetições de status como replays idempotentes, evitando duplicação de NF-e e comissões de afiliados.
+  3. **Proteção Anti-Concorrência em Sangria de Caixa (`record_cash_entry_atomic`):** Trava a linha do caixa aberto com `FOR UPDATE` e calcula o saldo líquido em dinheiro dentro da transação SQL, rejeitando qualquer retirada que resultaria em saldo negativo na gaveta física (`INSUFFICIENT_CASH_DRAWER`).
+  4. **Hardening de Bloqueio em Agendamentos (`hold_resource_slot`):** Serialização via advisory lock por recurso e auto-expiração de reservas transitórias após 15 minutos, impedindo overbooking no módulo de saúde e serviços.
+  5. **Liquidação Idempotente de Repasses (`settle_order_payout_atomic`):** Trava atômica no cálculo de rateio que impede re-liquidação de pedidos já liquidados.
+  6. **Compatibilidade de Cache no Omni Builder:** Adicionada sincronização bidirecional entre colunas `name` e `title` em `experience_documents` via trigger, eliminando o erro PGRST204 no Admin Master.
+  7. **Testes Automatizados:** Suítes `universal-idempotency-and-state-machine.test.ts` (8 testes), `systemic-niche-atomic-stock.test.ts` (7 testes) e `atomic-reservations-and-idempotency.test.ts` (16 testes), totalizando 31 testes unitários aprovados (100% pass).
+- **Fundamentação Teórica:** AGENTS.md B.5, B.7, B.9, B.24, B.25, BigTech Red Team Protocol e Princípio Zero-Trust ACID.
+- **Consequências:** Eliminação sistemática de race conditions, garantia de unicidade em processamento financeiro e integridade estrutural em reservas, checkout e caixa.

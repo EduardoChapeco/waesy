@@ -240,7 +240,7 @@ export default function WorkspaceAssociacaoPage() {
         <Card className="p-4 rounded-lg border-border/60 bg-card space-y-1">
           <div className="flex items-center justify-between text-muted-foreground text-xs">
             <span>Transações B2B</span>
-            <Handshake className="size-4 text-amber-500" />
+            <Handshake className="size-4 text-warning" />
           </div>
           <p className="text-xl sm:text-2xl font-extrabold text-foreground">
             {metrics?.totalTransactionsCount || 0}
@@ -354,7 +354,7 @@ export default function WorkspaceAssociacaoPage() {
                             "text-2xs capitalize shrink-0 font-mono",
                             m.status === "approved"
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                              : "border-amber-500/30 text-amber-600 dark:text-amber-400"
+                              : "border-warning/30 text-warning-strong dark:text-warning"
                           )}
                         >
                           {m.status === "approved" ? "Ativa" : "Pendente"}
