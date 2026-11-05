@@ -3,10 +3,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Plus, Search, MoreVertical, Copy, Eye, Edit3, Archive, CheckCircle2, FileText, Trash2, Download, Package, Filter, Layers, Palette, Globe, ArrowUpRight } from "lucide-react";
+import { Plus, Search, MoreVertical, Copy, Eye, Edit3, Archive, CheckCircle2, FileText, Trash2, Download, Package, Filter, Layers, Palette, Globe, ArrowUpRight, List, LayoutGrid } from "lucide-react";
 import { ClassifiedImportModal } from "@/components/workspace/classified-import-modal";
 
-import { PageHeader } from "@/components/commerce/page-header";
 import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { StatTile, SegmentedControl } from "@/design-system/components";
@@ -219,6 +218,7 @@ function AdminProductsPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isClassifiedImportOpen, setIsClassifiedImportOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const navigate = useNavigate();
   const { isCompact: isMobile } = useWindowSizeClass();
 
@@ -493,6 +493,30 @@ function AdminProductsPage() {
               icon: Plus,
               onClick: () => navigate({ to: "/workspace/catalogo/produtos/novo" }),
             }}
+            viewSwitcher={
+              <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg">
+                <Button
+                  size="sm"
+                  variant={viewMode === "table" ? "default" : "ghost"}
+                  onClick={() => setViewMode("table")}
+                  className="h-11 min-h-11 sm:h-9 px-3 rounded-md text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  title="Visualização em Tabela"
+                >
+                  <List className="size-3.5" />
+                  <span className="hidden sm:inline">Tabela</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={viewMode === "cards" ? "default" : "ghost"}
+                  onClick={() => setViewMode("cards")}
+                  className="h-11 min-h-11 sm:h-9 px-3 rounded-md text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  title="Visualização em Grade de Cards"
+                >
+                  <LayoutGrid className="size-3.5" />
+                  <span className="hidden sm:inline">Grade</span>
+                </Button>
+              </div>
+            }
           />
 
           {/* Modal de Importação de Classificados — F05 */}
@@ -590,9 +614,9 @@ function AdminProductsPage() {
  </Button>
  )}
  </div>
- ) : isMobile ? (
-        <div className="space-y-3">
-          {/* VISÃO MOBILE: Lista Espaçosa de Cartões (Zero-Aperto & Tipografia Ampla) */}
+ ) : viewMode === "cards" || isMobile ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {/* VISÃO EM GRADE DE CARDS (Zero-Aperto & Tipografia Ampla) */}
  {filteredProducts.map((product) => {
  const cover = product.product_media?.[0]?.url;
  const isSelected = selectedIds.includes(product.id);

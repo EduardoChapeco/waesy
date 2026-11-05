@@ -77,8 +77,15 @@ export interface UnifiedProposalWorkspaceLead {
   destination?: string | null;
   estimated_value_cents?: number;
   passenger_count?: number;
+  departureDate?: string | null;
+  returnDate?: string | null;
+  adultsCount?: number;
+  childrenCount?: number;
+  childrenAges?: number[];
+  notes?: string | null;
   cover_image?: string | null;
   cover_image_url?: string | null;
+  payment_plan?: any;
 }
 
 export interface UnifiedProposalWorkspaceProps {
@@ -325,6 +332,49 @@ export function UnifiedProposalWorkspace({
         if (lead.phone) setClientPhone(lead.phone);
         if (lead.email) setClientEmail(lead.email);
         if (lead.destination) setDestinationQuery(sanitizeDestinationString(lead.destination));
+        if (lead.departureDate) {
+          const iso = normalizeDateToIso(lead.departureDate);
+          if (iso) setDepartureDate(iso);
+        }
+        if (lead.returnDate) {
+          const iso = normalizeDateToIso(lead.returnDate);
+          if (iso) setReturnDate(iso);
+        }
+        const adults = Math.max(1, lead.adultsCount || (lead.passenger_count ? Math.max(1, lead.passenger_count) : 2));
+        const children = Math.max(0, lead.childrenCount || 0);
+        setRooms((prev) => [
+          {
+            ...prev[0],
+            adultsCount: adults,
+            childrenCount: children,
+            baseAdultPriceCents: lead.estimated_value_cents ? Math.round(lead.estimated_value_cents / adults) : prev[0].baseAdultPriceCents,
+            payerName: lead.fullName || prev[0].payerName,
+          },
+          ...prev.slice(1),
+        ]);
+        if (lead.notes) {
+          setNotes((curr) => curr ? curr : lead.notes!);
+        }
+        if (lead.payment_plan) {
+          const pp = lead.payment_plan;
+          if (pp.operatorName) setOperatorName(pp.operatorName);
+          if (typeof pp.agencyCommissionPct === "number") setAgencyCommissionPct(pp.agencyCommissionPct);
+          if (pp.enableBoleto !== undefined) setEnableBoleto(Boolean(pp.enableBoleto));
+          if (pp.boletoInstallments !== undefined) setBoletoInstallments(Number(pp.boletoInstallments));
+          if (pp.hasBoletoDownpayment !== undefined) setHasBoletoDownpayment(Boolean(pp.hasBoletoDownpayment));
+          if (pp.downpaymentType) setDownpaymentType(pp.downpaymentType);
+          if (typeof pp.downpaymentPct === "number") setDownpaymentPct(pp.downpaymentPct);
+          if (typeof pp.downpaymentFixedCents === "number") setDownpaymentFixedCents(pp.downpaymentFixedCents);
+          if (pp.firstBoletoDue) setFirstBoletoDue(pp.firstBoletoDue);
+          if (pp.enableCard !== undefined) setEnableCard(Boolean(pp.enableCard));
+          if (pp.cardInstallments !== undefined) setCardInstallments(Number(pp.cardInstallments));
+          if (pp.enablePixDiscount !== undefined) setEnablePixDiscount(Boolean(pp.enablePixDiscount));
+          if (typeof pp.pixDiscountPct === "number") setPixDiscountPct(pp.pixDiscountPct);
+          if (pp.notes) {
+            setCustomPaymentTermsText(pp.notes);
+            setIsTermsCustomized(Boolean(pp.isTermsCustomized));
+          }
+        }
       } else {
         if (initialClientName) setClientName(initialClientName);
         if (initialClientPhone) setClientPhone(initialClientPhone);
@@ -631,13 +681,20 @@ export function UnifiedProposalWorkspace({
     returnDate?: string | null;
     clientName?: string | null;
     clientPhone?: string | null;
+    clientEmail?: string | null;
+    clientDocument?: string | null;
     operatorName?: string | null;
     hotelName?: string | null;
+    mealPlan?: string | null;
+    roomCategory?: string | null;
     adultsCount?: number | null;
     childrenCount?: number | null;
     grossPriceCents?: number | null;
+    operatorNetCents?: number | null;
+    suggestedCommissionCents?: number | null;
     maxInstallments?: number | null;
     inclusions?: string[] | null;
+    hotelsList?: Array<{ hotel_name?: string; meal_plan?: string; room_category?: string; price_cents?: number } | any>;
   }): number => {
     let fieldsUpdated = 0;
 
@@ -675,6 +732,16 @@ export function UnifiedProposalWorkspace({
       fieldsUpdated++;
     }
 
+    if (extracted.clientEmail?.trim()) {
+      setClientEmail(extracted.clientEmail.trim());
+      fieldsUpdated++;
+    }
+
+    if (extracted.clientDocument?.trim()) {
+      setClientDocument(extracted.clientDocument.trim());
+      fieldsUpdated++;
+    }
+
     if (extracted.operatorName?.trim()) {
       setOperatorName(extracted.operatorName.trim());
       fieldsUpdated++;
@@ -698,13 +765,15 @@ export function UnifiedProposalWorkspace({
     const grossCents = extracted.grossPriceCents || 0;
     const perAdultCents = grossCents > 0 ? Math.round(grossCents / adults) : 0;
 
-    if (grossCents > 0 || extracted.adultsCount) {
+    if (grossCents > 0 || extracted.adultsCount || extracted.mealPlan || extracted.roomCategory) {
       setRooms((prev) => [
         {
           ...prev[0],
           adultsCount: adults,
           childrenCount: children,
           baseAdultPriceCents: perAdultCents > 0 ? perAdultCents : prev[0].baseAdultPriceCents,
+          mealPlan: extracted.mealPlan?.trim() || prev[0].mealPlan,
+          roomCategory: extracted.roomCategory?.trim() || prev[0].roomCategory,
         },
         ...prev.slice(1),
       ]);
@@ -725,6 +794,29 @@ export function UnifiedProposalWorkspace({
       fieldsUpdated++;
     }
 
+    if (Array.isArray(extracted.hotelsList) && extracted.hotelsList.length > 1) {
+      setBundleOptions(
+        extracted.hotelsList.map((h: any, idx: number) => ({
+          optionLabel: `Opção ${idx + 1} — ${h.hotel_name || "Hospedagem"}`,
+          hotelName: h.hotel_name || "",
+          airlineDesc: "",
+          operatorSlug: extracted.operatorName || "",
+          adultPriceCents: h.price_cents ? Math.round(h.price_cents / adults) : perAdultCents,
+          isRecommended: idx === 0,
+        }))
+      );
+      fieldsUpdated++;
+    }
+
+    if (extracted.operatorNetCents && extracted.grossPriceCents && extracted.grossPriceCents > extracted.operatorNetCents) {
+      const commCents = extracted.suggestedCommissionCents || (extracted.grossPriceCents - extracted.operatorNetCents);
+      const commPct = Math.round((commCents / extracted.grossPriceCents) * 100);
+      if (commPct > 0 && commPct <= 50) {
+        setAgencyCommissionPct(commPct);
+        fieldsUpdated++;
+      }
+    }
+
     if (extracted.maxInstallments && extracted.maxInstallments > 0) {
       setCardInstallments(extracted.maxInstallments);
       setBoletoInstallments(extracted.maxInstallments);
@@ -733,24 +825,13 @@ export function UnifiedProposalWorkspace({
 
     if (Array.isArray(extracted.inclusions) && extracted.inclusions.length > 0) {
       setSelectedInclusions((prev) => {
-        const next = [...prev];
-        const joined = extracted.inclusions!.join(" ").toLowerCase();
-        if (joined.includes("transfer") || joined.includes("traslado")) {
-          if (!next.includes("Transfer In/Out Aeroporto ↔ Hotel")) {
-            next.push("Transfer In/Out Aeroporto ↔ Hotel");
+        const set = new Set(prev);
+        for (const inc of extracted.inclusions!) {
+          if (inc && typeof inc === "string" && inc.trim()) {
+            set.add(inc.trim());
           }
         }
-        if (joined.includes("seguro") || joined.includes("gta") || joined.includes("assist")) {
-          if (!next.includes("Seguro Viagem Cobertura Completa")) {
-            next.push("Seguro Viagem Cobertura Completa");
-          }
-        }
-        if (joined.includes("bagagem") || joined.includes("mala") || joined.includes("23kg")) {
-          if (!next.includes("Bagagem Despachada 23kg")) {
-            next.push("Bagagem Despachada 23kg");
-          }
-        }
-        return next;
+        return Array.from(set);
       });
       fieldsUpdated++;
     }
@@ -788,17 +869,25 @@ export function UnifiedProposalWorkspace({
             if (Array.isArray(q.flights) && q.flights.length > 0) {
               setProposalFlights(q.flights.map((f: any, i: number) => ({
                 id: f.id || `fl-ocr-${i + 1}`,
+                type: i === 0 ? "outbound" : "return",
                 leg: i === 0 ? "ida" : "volta",
                 airline: f.airline_name || f.airline || "Companhia Aérea",
+                airline_name: f.airline_name || f.airline || "Companhia Aérea",
                 flight_number: f.flight_number || "",
+                origin: f.origin_iata || f.origin || "XAP",
                 origin_iata: f.origin_iata || f.origin || "XAP",
                 origin_city: f.origin_city || "",
+                destination: f.destination_iata || f.destination || "GRU",
                 destination_iata: f.destination_iata || f.destination || "GRU",
                 destination_city: f.destination_city || "",
+                date: f.date || f.departure_date || (i === 0 ? (q.travel_start || "") : (q.travel_end || "")),
+                departure_date: f.departure_date || f.date || (i === 0 ? (q.travel_start || "") : (q.travel_end || "")),
                 departure_time: f.departure_time || "08:30",
                 arrival_time: f.arrival_time || "10:00",
-                baggage_included: f.baggage_included || "Mochila + Mala 10kg",
-                stops_count: f.stops_count || 0,
+                baggage: f.baggage_included || f.baggage || "Mochila + Mala 10kg",
+                baggage_included: f.baggage_included || f.baggage || "Mochila + Mala 10kg",
+                stops: f.stops_count ?? f.connections_count ?? 0,
+                stops_count: f.stops_count ?? f.connections_count ?? 0,
               })));
             }
             if (Array.isArray(q.transfers) && q.transfers.length > 0) {
@@ -822,13 +911,20 @@ export function UnifiedProposalWorkspace({
               returnDate: q.travel_end || q.hotels?.[0]?.checkout_date,
               clientName: q.client_name,
               clientPhone: q.client_phone,
+              clientEmail: q.client_email,
+              clientDocument: q.client_document,
               operatorName: q.operator_name,
               hotelName: q.hotels?.[0]?.hotel_name,
+              mealPlan: q.hotels?.[0]?.meal_plan,
+              roomCategory: q.hotels?.[0]?.room_category,
               adultsCount: q.adults_count,
               childrenCount: q.children_count,
               grossPriceCents: q.gross_price_cents,
+              operatorNetCents: q.operator_net_cents,
+              suggestedCommissionCents: q.suggested_commission_cents,
               maxInstallments: q.max_installments,
               inclusions: q.inclusions,
+              hotelsList: q.hotels,
             });
 
             setLastOcrExtraction(q);
@@ -870,16 +966,24 @@ export function UnifiedProposalWorkspace({
             if (Array.isArray(universalRes.flightSegments) && universalRes.flightSegments.length > 0) {
               setProposalFlights(universalRes.flightSegments.map((f: any, i: number) => ({
                 id: f.id || `fl-ocr-u-${i + 1}`,
+                type: i === 0 ? "outbound" : "return",
                 leg: i === 0 ? "ida" : "volta",
                 airline: f.airline || "Companhia Aérea",
+                airline_name: f.airline || "Companhia Aérea",
                 flight_number: f.flightNumber || "",
+                origin: f.origin || "XAP",
                 origin_iata: f.origin || "XAP",
                 origin_city: f.originCity || "",
+                destination: f.destination || "GRU",
                 destination_iata: f.destination || "GRU",
                 destination_city: f.destinationCity || "",
+                date: (i === 0 ? universalRes.dates?.departure : universalRes.dates?.return) || "",
+                departure_date: (i === 0 ? universalRes.dates?.departure : universalRes.dates?.return) || "",
                 departure_time: f.departureTime || "08:30",
                 arrival_time: f.arrivalTime || "10:00",
+                baggage: f.baggageIncluded || "Mochila + Mala 10kg",
                 baggage_included: f.baggageIncluded || "Mochila + Mala 10kg",
+                stops: 0,
                 stops_count: 0,
               })));
             }
@@ -891,15 +995,17 @@ export function UnifiedProposalWorkspace({
               returnDate: universalRes.dates?.return,
               clientName: universalRes.clientName,
               clientPhone: universalRes.clientPhone,
+              clientEmail: (universalRes as any).clientEmail,
+              clientDocument: universalRes.clientDocument,
               operatorName: universalRes.companyName !== "Não identificado" ? universalRes.companyName : undefined,
               hotelName: universalRes.hotel?.name,
-              grossPriceCents: universalRes.financials?.totalCents,
+              grossPriceCents: universalRes.financials?.totalCents || universalRes.financial?.totalAmountCents,
             });
 
             setLastOcrExtraction({
               operator_name: universalRes.companyName !== "Não identificado" ? universalRes.companyName : undefined,
               destination: universalRes.destinationCity,
-              gross_price_cents: universalRes.financials?.totalCents,
+              gross_price_cents: universalRes.financials?.totalCents || universalRes.financial?.totalAmountCents,
               hotels: universalRes.hotel?.name ? [{ hotel_name: universalRes.hotel.name }] : [],
               flights: (universalRes.flightSegments || []).map((f: any) => ({
                 airline: f.airline,
@@ -957,17 +1063,25 @@ export function UnifiedProposalWorkspace({
           setProposalFlights(
             q.flights.map((f: any, i: number) => ({
               id: f.id || `fl-ocr-txt-${i + 1}`,
+              type: i === 0 ? "outbound" : "return",
               leg: i === 0 ? "ida" : "volta",
               airline: f.airline_name || f.airline || "Companhia Aérea",
+              airline_name: f.airline_name || f.airline || "Companhia Aérea",
               flight_number: f.flight_number || "",
+              origin: f.origin_iata || f.origin || "XAP",
               origin_iata: f.origin_iata || f.origin || "XAP",
               origin_city: f.origin_city || "",
+              destination: f.destination_iata || f.destination || "GRU",
               destination_iata: f.destination_iata || f.destination || "GRU",
               destination_city: f.destination_city || "",
+              date: f.date || f.departure_date || (i === 0 ? (q.travel_start || "") : (q.travel_end || "")),
+              departure_date: f.departure_date || f.date || (i === 0 ? (q.travel_start || "") : (q.travel_end || "")),
               departure_time: f.departure_time || "08:30",
               arrival_time: f.arrival_time || "10:00",
-              baggage_included: f.baggage_included || "Mochila + Mala 10kg",
-              stops_count: f.stops_count || 0,
+              baggage: f.baggage_included || f.baggage || "Mochila + Mala 10kg",
+              baggage_included: f.baggage_included || f.baggage || "Mochila + Mala 10kg",
+              stops: f.stops_count ?? f.connections_count ?? 0,
+              stops_count: f.stops_count ?? f.connections_count ?? 0,
             })),
           );
         }
@@ -994,13 +1108,20 @@ export function UnifiedProposalWorkspace({
           returnDate: q.travel_end || q.hotels?.[0]?.checkout_date,
           clientName: q.client_name,
           clientPhone: q.client_phone,
+          clientEmail: q.client_email,
+          clientDocument: q.client_document,
           operatorName: q.operator_name,
           hotelName: q.hotels?.[0]?.hotel_name,
+          mealPlan: q.hotels?.[0]?.meal_plan,
+          roomCategory: q.hotels?.[0]?.room_category,
           adultsCount: q.adults_count,
           childrenCount: q.children_count,
           grossPriceCents: q.gross_price_cents,
+          operatorNetCents: q.operator_net_cents,
+          suggestedCommissionCents: q.suggested_commission_cents,
           maxInstallments: q.max_installments,
           inclusions: q.inclusions,
+          hotelsList: q.hotels,
         });
 
         setLastOcrExtraction(q);
@@ -2361,7 +2482,7 @@ export function UnifiedProposalWorkspace({
                             <button
                               type="button"
                               onClick={() => toggleInclusionTag(tag)}
-                              className="size-4 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary"
+                              className="size-4 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               title="Remover inclusão"
                             >
                               <X className="size-3" />
@@ -2524,7 +2645,7 @@ export function UnifiedProposalWorkspace({
                           <button
                             type="button"
                             onClick={() => setHasBoletoDownpayment(!hasBoletoDownpayment)}
-                            className={`h-7 px-2.5 rounded-full text-2xs font-bold transition-colors cursor-pointer ${
+                            className={`h-7 px-2.5 rounded-full text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                               hasBoletoDownpayment
                                 ? "bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30"
                                 : "bg-muted text-muted-foreground"
@@ -2683,7 +2804,7 @@ export function UnifiedProposalWorkspace({
                             setIsTermsCustomized(false);
                             setCustomPaymentTermsText("");
                           }}
-                          className="text-2xs text-primary hover:underline cursor-pointer"
+                          className="text-2xs text-primary hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Restaurar cálculo automático
                         </button>

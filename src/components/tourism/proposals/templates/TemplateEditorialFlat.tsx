@@ -149,7 +149,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       <div className="flex items-center gap-2">
                         <Plane className="w-4 h-4" style={{ color: brand }} />
                         <span className="ds-label-caps" style={{ color: brand }}>
-                          {f.airline || "Companhia"}
+                          {f.airline_name || f.airline || "Companhia Aérea"}
                         </span>
                       </div>
                       <span className="bg-card px-3 py-1 rounded-full ds-meta font-mono font-bold text-slate-700 border border-slate-200">
@@ -159,26 +159,26 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                     <div className="p-6 flex items-center">
                       <div className="w-3/10 text-center">
                         <div className="text-4xl font-bold font-sans tracking-tighter text-slate-900">
-                          {(f.origin || "---").slice(0, 3).toUpperCase()}
+                          {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-sm font-semibold text-slate-700 mt-2">
                           {f.departure_time || "--:--"}
                         </div>
-                        {f.date && (
-                          <div className="text-xs text-slate-500 mt-1">{formatDate(f.date)}</div>
+                        {(f.departure_date || f.date) && (
+                          <div className="text-xs text-slate-500 mt-1">{formatDate(f.departure_date || f.date!)}</div>
                         )}
                       </div>
                       <div className="flex-1 flex flex-col items-center relative px-4">
                         <div className="w-full border-t-2 border-dashed border-slate-200 absolute top-1/2 -translate-y-1/2 z-0" />
                         <div className="bg-card z-10 px-3 py-1 rounded-full border border-slate-200 ds-meta font-semibold text-slate-500 uppercase tracking-wider">
-                          {f.stops === 0
+                          {(f.stops_count ?? f.stops ?? 0) === 0
                             ? "Voo Direto"
-                            : `${f.stops} Parada${f.stops > 1 ? "s" : ""}`}
+                            : `${f.stops_count ?? f.stops} Parada${(f.stops_count ?? f.stops ?? 1) > 1 ? "s" : ""}`}
                         </div>
                       </div>
                       <div className="w-3/10 text-center">
                         <div className="text-4xl font-bold font-sans tracking-tighter text-slate-900">
-                          {(f.destination || "---").slice(0, 3).toUpperCase()}
+                          {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-sm font-semibold text-slate-700 mt-2">
                           {f.arrival_time || "--:--"}

@@ -13,6 +13,7 @@ import { extractDocumentMechanically } from "./mechanical-document-extractor.ser
 
 export const OperatorFlightItemSchema = z.object({
   airline: z.string().optional(),
+  airline_name: z.string().optional(),
   flight_number: z.string().optional(),
   origin_iata: z.string().optional(),
   origin_city: z.string().optional(),
@@ -21,8 +22,11 @@ export const OperatorFlightItemSchema = z.object({
   departure_time: z.string().optional(),
   arrival_time: z.string().optional(),
   date: z.string().optional(),
+  departure_date: z.string().optional(),
   baggage: z.string().optional(),
+  baggage_included: z.string().optional(),
   connections_count: z.number().int().optional(),
+  stops_count: z.number().int().optional(),
 });
 
 export const OperatorHotelItemSchema = z.object({
@@ -35,11 +39,14 @@ export const OperatorHotelItemSchema = z.object({
   nights_count: z.coerce.number().optional().nullable(),
   stars: z.coerce.number().optional().nullable(),
   address: z.string().optional().nullable(),
+  price_cents: z.coerce.number().optional().nullable(),
 });
 
 export const OperatorQuoteExtractionResultSchema = z.object({
   client_name: z.string().optional().nullable(),
   client_phone: z.string().optional().nullable(),
+  client_email: z.string().optional().nullable(),
+  client_document: z.string().optional().nullable(),
   operator_name: z.string().optional().nullable(),
   quote_reference_number: z.string().optional().nullable(),
   destination: z.string().optional().default("Destino a definir"),
@@ -169,20 +176,25 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       }
     }
 
-    const hasReadableText = Boolean(data.rawText?.trim() || extractedMechanicalText);
-    const textContent = data.rawText?.trim() || extractedMechanicalText;
+    const hasRawTextOnly = Boolean(data.rawText?.trim() && !data.fileBase64);
+    const hasFile = Boolean(data.fileBase64);
 
-    const userPrompt = hasReadableText
-      ? `Analise o seguinte texto estruturado extraído do documento/cotação da operadora (${data.fileName || "cotação"}) e extraia todos os dados no formato JSON:\n\n${textContent.slice(0, 30000)}`
-      : `Analise o documento anexo de cotação da operadora (${data.fileName || "cotacao"}) e extraia todos os dados estruturados no formato JSON.`;
+    let userPrompt = "";
+    if (hasRawTextOnly) {
+      userPrompt = `Analise o seguinte texto estruturado de cotação/orçamento da operadora (${data.fileName || "cotação"}) e extraia todos os dados no formato JSON:\n\n${data.rawText!.trim().slice(0, 30000)}`;
+    } else {
+      userPrompt = `Analise o documento anexo de cotação/proposta da operadora (${data.fileName || "cotação"}) e extraia todos os dados estruturados no formato JSON.${
+        extractedMechanicalText ? `\n\nTexto auxiliar pré-extraído do arquivo:\n${extractedMechanicalText.slice(0, 15000)}` : ""
+      }`;
+    }
 
     const aiResponse = await executeUnifiedAiCall({
-      preferredProvider: hasReadableText ? "groq" : "gemini",
+      preferredProvider: hasRawTextOnly ? "groq" : "gemini",
       feature: "ocr_operator_quote",
       systemPrompt,
       userPrompt,
-      fileBase64: hasReadableText ? undefined : data.fileBase64,
-      fileMime: hasReadableText ? undefined : (data.fileMime || "application/pdf"),
+      fileBase64: hasFile ? data.fileBase64 : undefined,
+      fileMime: hasFile ? (data.fileMime || "application/pdf") : undefined,
       responseFormat: "json_object",
       temperature: 0.1,
     });
@@ -205,6 +217,8 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
         if (val === null || val === undefined) return undefined;
         if (typeof val === "number") {
           if (!Number.isFinite(val)) return undefined;
+          if (val === 0) return 0;
+          if (!Number.isInteger(val)) return Math.round(val * 100);
           return val > 50000 ? Math.round(val) : Math.round(val * 100);
         }
         if (typeof val === "string") {
@@ -224,35 +238,89 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
         return undefined;
       };
 
-      if (rawJson.gross_price_cents === undefined) {
-        rawJson.gross_price_cents = parseCents(rawJson.gross_price || rawJson.total_price || rawJson.total || rawJson.valor_total);
-      } else {
-        rawJson.gross_price_cents = parseCents(rawJson.gross_price_cents);
-      }
+      const extractPriceField = (keys: string[]): number | undefined => {
+        for (const k of keys) {
+          if (rawJson[k] !== undefined && rawJson[k] !== null) {
+            const parsed = parseCents(rawJson[k]);
+            if (parsed !== undefined) return parsed;
+          }
+        }
+        const containers = [rawJson.pricing, rawJson.financials, rawJson.valores, rawJson.financeiro, rawJson.totais];
+        for (const c of containers) {
+          if (c && typeof c === "object") {
+            for (const k of keys) {
+              if (c[k] !== undefined && c[k] !== null) {
+                const parsed = parseCents(c[k]);
+                if (parsed !== undefined) return parsed;
+              }
+            }
+          }
+        }
+        return undefined;
+      };
 
-      if (rawJson.operator_net_cents === undefined) {
-        rawJson.operator_net_cents = parseCents(rawJson.operator_net || rawJson.net_price || rawJson.valor_liquido);
-      } else {
-        rawJson.operator_net_cents = parseCents(rawJson.operator_net_cents);
-      }
+      rawJson.gross_price_cents = extractPriceField([
+        "gross_price_cents",
+        "gross_price",
+        "total_price_cents",
+        "total_price",
+        "total_cents",
+        "total",
+        "valor_total",
+        "total_value_cents",
+        "total_value",
+        "price",
+        "preco",
+        "tarifa_total",
+        "total_geral",
+      ]);
 
-      if (rawJson.suggested_commission_cents === undefined) {
-        rawJson.suggested_commission_cents = parseCents(rawJson.commission_cents || rawJson.commission || rawJson.comissao);
-      } else {
-        rawJson.suggested_commission_cents = parseCents(rawJson.suggested_commission_cents);
-      }
+      rawJson.operator_net_cents = extractPriceField([
+        "operator_net_cents",
+        "operator_net",
+        "net_price_cents",
+        "net_price",
+        "valor_liquido",
+        "net_cost_cents",
+        "net_cost",
+        "custo_operadora",
+        "liquido",
+      ]);
+
+      rawJson.suggested_commission_cents = extractPriceField([
+        "suggested_commission_cents",
+        "commission_cents",
+        "commission",
+        "comissao",
+        "over_cents",
+        "over",
+        "margem",
+      ]);
+
+      rawJson.client_name = rawJson.client_name || rawJson.client || rawJson.cliente || rawJson.passageiro || rawJson.titular || rawJson.passenger_name;
+      rawJson.client_phone = rawJson.client_phone || rawJson.phone || rawJson.telefone || rawJson.whatsapp || rawJson.celular;
+      rawJson.client_email = rawJson.client_email || rawJson.email;
+      rawJson.client_document = rawJson.client_document || rawJson.cpf || rawJson.document || rawJson.documento || rawJson.passaporte;
+      rawJson.operator_name = rawJson.operator_name || rawJson.operator || rawJson.operadora || rawJson.fornecedor;
+      rawJson.destination = rawJson.destination || rawJson.cidade_destino || rawJson.destino;
+      rawJson.travel_start = rawJson.travel_start || rawJson.start_date || rawJson.data_ida || rawJson.checkin;
+      rawJson.travel_end = rawJson.travel_end || rawJson.end_date || rawJson.data_volta || rawJson.checkout;
+      rawJson.adults_count = rawJson.adults_count || rawJson.adults || rawJson.adultos || rawJson.pax_adults;
+      rawJson.children_count = rawJson.children_count ?? rawJson.children ?? rawJson.criancas ?? rawJson.pax_children;
+      rawJson.max_installments = rawJson.max_installments || rawJson.installments || rawJson.parcelas || rawJson.num_parcelas;
 
       if (Array.isArray(rawJson.hotels)) {
         rawJson.hotels = rawJson.hotels.map((h: any) => ({
           hotel_name: h.hotel_name || h.name || h.hotel || h.nome || "Hotel a definir",
           city: h.city || h.cidade,
-          room_category: h.room_category || h.quarto || h.categoria,
-          meal_plan: h.meal_plan || h.regime || h.alimentacao,
+          room_category: h.room_category || h.quarto || h.categoria || h.apartamento,
+          meal_plan: h.meal_plan || h.regime || h.alimentacao || h.board_basis,
           checkin_date: h.checkin_date || h.checkin || h.entrada,
           checkout_date: h.checkout_date || h.checkout || h.saida,
           nights_count: h.nights_count ? Number(h.nights_count) : undefined,
           stars: h.stars ? Number(h.stars) : undefined,
           address: h.address || h.endereco,
+          price_cents: parseCents(h.price_cents || h.price || h.valor || h.preco || h.total),
         }));
       } else if (rawJson.hotel && typeof rawJson.hotel === "object") {
         rawJson.hotels = [{
@@ -262,6 +330,39 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
           meal_plan: rawJson.hotel.meal_plan,
           checkin_date: rawJson.hotel.checkin_date,
           checkout_date: rawJson.hotel.checkout_date,
+          price_cents: parseCents(rawJson.hotel.price_cents || rawJson.hotel.price || rawJson.hotel.valor),
+        }];
+      }
+
+      if (Array.isArray(rawJson.flights)) {
+        rawJson.flights = rawJson.flights.map((f: any) => ({
+          airline: f.airline || f.airline_name || f.cia || f.companhia,
+          airline_name: f.airline_name || f.airline || f.cia || f.companhia,
+          flight_number: f.flight_number || f.numero_voo || f.flight || f.voo,
+          origin_iata: f.origin_iata || f.origin || f.origem,
+          origin_city: f.origin_city || f.cidade_origem,
+          destination_iata: f.destination_iata || f.destination || f.destino,
+          destination_city: f.destination_city || f.cidade_destino,
+          departure_time: f.departure_time || f.horario_partida || f.saida || f.embarque,
+          arrival_time: f.arrival_time || f.horario_chegada || f.chegada || f.pouso,
+          date: f.date || f.departure_date || f.data,
+          departure_date: f.departure_date || f.date || f.data,
+          baggage: f.baggage || f.bagagem || f.baggage_included,
+          baggage_included: f.baggage_included || f.baggage || f.bagagem,
+          connections_count: f.connections_count ?? f.stops_count ?? f.conexoes ?? f.stops,
+          stops_count: f.stops_count ?? f.connections_count ?? f.conexoes ?? f.stops,
+        }));
+      } else if (rawJson.flight && typeof rawJson.flight === "object") {
+        rawJson.flights = [{
+          airline: rawJson.flight.airline || rawJson.flight.airline_name,
+          airline_name: rawJson.flight.airline_name || rawJson.flight.airline,
+          flight_number: rawJson.flight.flight_number,
+          origin_iata: rawJson.flight.origin_iata || rawJson.flight.origin,
+          destination_iata: rawJson.flight.destination_iata || rawJson.flight.destination,
+          departure_time: rawJson.flight.departure_time,
+          arrival_time: rawJson.flight.arrival_time,
+          date: rawJson.flight.date || rawJson.flight.departure_date,
+          departure_date: rawJson.flight.departure_date || rawJson.flight.date,
         }];
       }
 

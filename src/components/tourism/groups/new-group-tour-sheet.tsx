@@ -802,7 +802,7 @@ export function NewGroupTourSheet({
  <button
  type="button"
  onClick={() => setIncludedItems(includedItems.filter((i) => i !== item))}
- className="size-4 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary"
+ className="size-4 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Remover"
  >
  <X className="size-3" />

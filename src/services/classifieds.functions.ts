@@ -2806,6 +2806,61 @@ export const getBoostPaymentById = createServerFn({ method: "GET" })
 export const boostClassifiedAd = initiateBoostPayment;
 
 /**
+ * Expira checkouts de impulsionamento e promoções de anúncios abandonados há mais de 24 horas.
+ * Cancela tentativas pendentes que ultrapassaram expires_at ou a janela de tolerância de 24h.
+ */
+export const expireAbandonedPromotionCheckouts = createServerFn({ method: "POST" })
+  .validator(
+    z
+      .object({
+        maxAgeHours: z.number().int().min(1).max(168).optional().default(24),
+      })
+      .optional(),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const maxAgeHours = data?.maxAgeHours ?? 24;
+    const thresholdDate = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000).toISOString();
+    const now = new Date().toISOString();
+
+    const { data: expiredPayments, error: searchErr } = await supabase
+      .from("classified_boost_payments")
+      .select("id, classified_id, created_at, expires_at, status")
+      .eq("status", "pending")
+      .or(`expires_at.lt.${now},created_at.lt.${thresholdDate}`)
+      .limit(200);
+
+    if (searchErr) {
+      console.error("[boost] Erro ao buscar pagamentos expirados:", searchErr);
+      return { expiredCount: 0, expiredIds: [] };
+    }
+
+    if (!expiredPayments || expiredPayments.length === 0) {
+      return { expiredCount: 0, expiredIds: [] };
+    }
+
+    const expiredIds = expiredPayments.map((p) => p.id);
+
+    const { error: updateErr } = await supabase
+      .from("classified_boost_payments")
+      .update({
+        status: "expired",
+        failure_reason: "checkout_abandoned_timeout_24h",
+      })
+      .in("id", expiredIds);
+
+    if (updateErr) {
+      console.error("[boost] Erro ao atualizar status de pagamentos expirados:", updateErr);
+      throw new Error("Erro ao expirar pagamentos abandonados.");
+    }
+
+    return {
+      expiredCount: expiredIds.length,
+      expiredIds,
+    };
+  });
+
+/**
  * Refina título, descrição persuasiva, resumo/destaques, trechos selecionados e tags
  * do classificado via Pool Unificado de IA (Copilot Editorial Generativo).
  * Preserva 100% dos fatos bloqueados (Fact Lock) e suporta escopo por campo ou seleção.

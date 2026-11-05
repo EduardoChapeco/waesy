@@ -453,7 +453,7 @@ function DedicatedHotpageView() {
       <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-0 sm:px-4 md:px-0 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
  
         {/* ── 2.1. Sub-abas de Navegação por Nicho (Padrão Botão Grande) ── */}
-        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-area-carousel sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
+        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-area-carousel snap-x snap-mandatory sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
           {activeChips.map((chip) => {
             const Icon = chip.icon;
             const isSelected = selectedSubCategory === chip.id;
@@ -462,8 +462,8 @@ function DedicatedHotpageView() {
                 key={chip.id}
                 type="button"
                 onClick={() => setSelectedSubCategory(chip.id)}
-                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 ",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring snap-start", 
+                  "h-11 min-h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 ",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold "
                     : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -492,15 +492,15 @@ function DedicatedHotpageView() {
  />
  </div>
 
- <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel snap-x snap-mandatory no-scrollbar py-1">
  <button
  type="button"
  onClick={() => setSelectedFastFilter(selectedFastFilter === "desconto" ? null : "desconto")}
- className={`h-9 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-2 ${
+ className={`h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-2 snap-start ${
  selectedFastFilter === "desconto"
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-card border-border text-muted-foreground hover:text-foreground"
- } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
+ } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >
  <Percent size={13} weight="bold" />
  <span>Com Desconto</span>

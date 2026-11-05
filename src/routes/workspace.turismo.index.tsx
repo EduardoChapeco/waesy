@@ -39,6 +39,10 @@ import {
   Trash2,
   Edit3,
   Copy,
+  CreditCard,
+  Percent,
+  Sparkles,
+  RotateCcw,
   History,
   Star,
   ChevronRight,
@@ -316,10 +320,23 @@ export default function WorkspaceTurismoCockpitPage() {
       hotel_cents: 0,
       insurance_cents: 0,
       boarding_tax_cents: 0,
+      other_services_cents: 0,
       commission_cents: 0,
-      method: "pix_installments",
-      installments: 10,
+      operatorName: "",
+      enableBoleto: true,
+      boletoInstallments: 12,
+      hasBoletoDownpayment: false,
+      downpaymentType: "percentage" as "percentage" | "fixed_cents",
+      downpaymentPct: 20,
+      downpaymentFixedCents: 0,
+      firstBoletoDue: "Primeiro boleto para 30 dias",
+      firstBoletoCondition: "Sem juros operadora",
+      enableCard: true,
+      cardInstallments: 10,
+      enablePixDiscount: true,
+      pixDiscountPct: 5,
       notes: "",
+      isTermsCustomized: false,
     },
     lost_reason: "",
     pcd: false,
@@ -623,14 +640,27 @@ export default function WorkspaceTurismoCockpitPage() {
       checklist: Array.isArray(lead.checklist) ? lead.checklist : DEFAULT_CHECKLIST_TEMPLATE,
       pax_list: existingPaxList,
       payment_plan: {
-        flight_cents: savedPaymentPlan.flight_cents ?? Math.round(estTotal * 0.45),
-        hotel_cents: savedPaymentPlan.hotel_cents ?? Math.round(estTotal * 0.4),
-        insurance_cents: savedPaymentPlan.insurance_cents ?? Math.round(estTotal * 0.05),
-        boarding_tax_cents: savedPaymentPlan.boarding_tax_cents ?? Math.round(estTotal * 0.1),
-        commission_cents: savedPaymentPlan.commission_cents ?? Math.round(estTotal * 0.12),
-        method: savedPaymentPlan.method || "credit_card",
-        installments: savedPaymentPlan.installments || 10,
-        notes: savedPaymentPlan.notes || "Entrada via PIX + saldo em até 10x sem juros",
+        flight_cents: savedPaymentPlan.flight_cents ?? 0,
+        hotel_cents: savedPaymentPlan.hotel_cents ?? 0,
+        insurance_cents: savedPaymentPlan.insurance_cents ?? 0,
+        boarding_tax_cents: savedPaymentPlan.boarding_tax_cents ?? 0,
+        other_services_cents: savedPaymentPlan.other_services_cents ?? 0,
+        commission_cents: savedPaymentPlan.commission_cents ?? 0,
+        operatorName: savedPaymentPlan.operatorName ?? "",
+        enableBoleto: savedPaymentPlan.enableBoleto ?? true,
+        boletoInstallments: savedPaymentPlan.boletoInstallments ?? 12,
+        hasBoletoDownpayment: savedPaymentPlan.hasBoletoDownpayment ?? false,
+        downpaymentType: savedPaymentPlan.downpaymentType ?? "percentage",
+        downpaymentPct: savedPaymentPlan.downpaymentPct ?? 20,
+        downpaymentFixedCents: savedPaymentPlan.downpaymentFixedCents ?? 0,
+        firstBoletoDue: savedPaymentPlan.firstBoletoDue ?? "Primeiro boleto para 30 dias",
+        firstBoletoCondition: savedPaymentPlan.firstBoletoCondition ?? "Sem juros operadora",
+        enableCard: savedPaymentPlan.enableCard ?? true,
+        cardInstallments: savedPaymentPlan.cardInstallments ?? 10,
+        enablePixDiscount: savedPaymentPlan.enablePixDiscount ?? true,
+        pixDiscountPct: savedPaymentPlan.pixDiscountPct ?? 5,
+        notes: savedPaymentPlan.notes || "",
+        isTermsCustomized: savedPaymentPlan.isTermsCustomized ?? Boolean(savedPaymentPlan.notes),
       },
       lost_reason: lead.lost_reason || "",
       pcd: Boolean(lead.custom_fields?.pcd),
@@ -1544,6 +1574,11 @@ export default function WorkspaceTurismoCockpitPage() {
                               destination: lead.destination,
                               estimated_value_cents: lead.estimated_value_cents,
                               passenger_count: (lead.pax_adults || 2) + (lead.pax_children || 0),
+                              departureDate: lead.travel_start,
+                              returnDate: lead.travel_end,
+                              adultsCount: lead.pax_adults || 2,
+                              childrenCount: lead.pax_children || 0,
+                              notes: lead.notes || "",
                             });
                           }}
                           onOpenFlightGrid={setFlightLead}
@@ -1792,6 +1827,12 @@ export default function WorkspaceTurismoCockpitPage() {
                           destination: sanitizeDestinationString(editLeadForm.destination || selectedLead.destination),
                           estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
                           passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
+                          departureDate: editLeadForm.travel_start || selectedLead.travel_start,
+                          returnDate: editLeadForm.travel_end || selectedLead.travel_end,
+                          adultsCount: editLeadForm.pax_adults || selectedLead.pax_adults || 2,
+                          childrenCount: editLeadForm.pax_children || selectedLead.pax_children || 0,
+                          notes: editLeadForm.notes || selectedLead.notes || "",
+                          payment_plan: editLeadForm.payment_plan,
                         };
                         setSelectedLead(null);
                         setProposalLead(leadData);
@@ -2151,7 +2192,7 @@ export default function WorkspaceTurismoCockpitPage() {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveTag(t)}
-                                className="text-primary hover:text-destructive cursor-pointer"
+                                className="text-primary hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 <X className="size-3" />
                               </button>
@@ -2668,6 +2709,12 @@ export default function WorkspaceTurismoCockpitPage() {
                             destination: sanitizeDestinationString(editLeadForm.destination || selectedLead.destination),
                             estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
                             passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
+                            departureDate: editLeadForm.travel_start || selectedLead.travel_start,
+                            returnDate: editLeadForm.travel_end || selectedLead.travel_end,
+                            adultsCount: editLeadForm.pax_adults || selectedLead.pax_adults || 2,
+                            childrenCount: editLeadForm.pax_children || selectedLead.pax_children || 0,
+                            notes: editLeadForm.notes || selectedLead.notes || "",
+                            payment_plan: editLeadForm.payment_plan,
                           };
                           setSelectedLead(null);
                           setProposalLead(leadData);
@@ -2701,6 +2748,12 @@ export default function WorkspaceTurismoCockpitPage() {
                               destination: sanitizeDestinationString(editLeadForm.destination || selectedLead.destination),
                               estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
                               passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
+                              departureDate: editLeadForm.travel_start || selectedLead.travel_start,
+                              returnDate: editLeadForm.travel_end || selectedLead.travel_end,
+                              adultsCount: editLeadForm.pax_adults || selectedLead.pax_adults || 2,
+                              childrenCount: editLeadForm.pax_children || selectedLead.pax_children || 0,
+                              notes: editLeadForm.notes || selectedLead.notes || "",
+                              payment_plan: editLeadForm.payment_plan,
                             };
                             setSelectedLead(null);
                             setProposalLead(leadData);
@@ -3085,163 +3138,476 @@ export default function WorkspaceTurismoCockpitPage() {
             )}
 
             {/* 9. ABA PLANEJAMENTO DE PAGAMENTO */}
-            {leadDrawerTab === "pagamento" && (
-              <div className="space-y-4 text-xs">
-                <div className="space-y-3 pb-5 border-b border-border/40">
-                  <div className="flex items-center justify-between gap-2 pb-1">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="size-4 text-emerald-600" />
-                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Decomposição Tarifária</h4>
+            {leadDrawerTab === "pagamento" && (() => {
+              const pp = editLeadForm.payment_plan || {};
+              const flightCents = pp.flight_cents || 0;
+              const hotelCents = pp.hotel_cents || 0;
+              const insuranceCents = pp.insurance_cents || 0;
+              const boardingTaxCents = pp.boarding_tax_cents || 0;
+              const otherServicesCents = pp.other_services_cents || 0;
+              const commissionCents = pp.commission_cents || 0;
+              const decompTotal = flightCents + hotelCents + insuranceCents + boardingTaxCents + otherServicesCents + commissionCents;
+              const effectiveTotalCents = decompTotal > 0 ? decompTotal : (editLeadForm.estimated_value_cents || 0);
+
+              const enableBoleto = pp.enableBoleto ?? true;
+              const boletoInstallments = Math.max(1, pp.boletoInstallments ?? 12);
+              const hasBoletoDownpayment = Boolean(pp.hasBoletoDownpayment);
+              const downpaymentType = pp.downpaymentType || "percentage";
+              const downpaymentPct = pp.downpaymentPct ?? 20;
+              const downpaymentFixedCents = pp.downpaymentFixedCents ?? 0;
+              const firstBoletoDue = pp.firstBoletoDue || "Primeiro boleto para 30 dias";
+              const firstBoletoCondition = pp.firstBoletoCondition || "Sem juros operadora";
+
+              const enableCard = pp.enableCard ?? true;
+              const cardInstallments = Math.max(1, pp.cardInstallments ?? 10);
+
+              const enablePixDiscount = pp.enablePixDiscount ?? true;
+              const pixDiscountPct = pp.pixDiscountPct ?? 5;
+              const pixFinalCents = effectiveTotalCents > 0 && pixDiscountPct > 0
+                ? Math.round(effectiveTotalCents * (1 - pixDiscountPct / 100))
+                : effectiveTotalCents;
+
+              const operatorName = pp.operatorName || "";
+
+              const generatedTermsText = (() => {
+                const parts: string[] = [];
+                if (enableBoleto) {
+                  if (hasBoletoDownpayment) {
+                    const downpaymentStr =
+                      downpaymentType === "fixed_cents"
+                        ? formatMoney(downpaymentFixedCents)
+                        : `${downpaymentPct}% (${formatMoney(Math.round((effectiveTotalCents * downpaymentPct) / 100))})`;
+                    const remaining = Math.max(1, boletoInstallments - 1);
+                    const remainingVal = effectiveTotalCents > 0
+                      ? Math.round(
+                          (effectiveTotalCents -
+                            (downpaymentType === "fixed_cents"
+                              ? downpaymentFixedCents
+                              : Math.round((effectiveTotalCents * downpaymentPct) / 100))) /
+                            remaining
+                        )
+                      : 0;
+                    parts.push(`Boleto: Entrada de ${downpaymentStr} + ${remaining}x de ${formatMoney(remainingVal)} (${firstBoletoDue})`);
+                  } else {
+                    const monthlyVal = effectiveTotalCents > 0 ? Math.round(effectiveTotalCents / Math.max(1, boletoInstallments)) : 0;
+                    parts.push(`Boleto: Até ${boletoInstallments}x de ${formatMoney(monthlyVal)} sem entrada (${firstBoletoDue})`);
+                  }
+                }
+                if (enableCard) {
+                  const cardVal = effectiveTotalCents > 0 ? Math.round(effectiveTotalCents / Math.max(1, cardInstallments)) : 0;
+                  parts.push(`Cartão: Até ${cardInstallments}x de ${formatMoney(cardVal)} sem juros`);
+                }
+                if (enablePixDiscount && pixDiscountPct > 0) {
+                  parts.push(`À Vista no PIX: ${formatMoney(pixFinalCents)} (${pixDiscountPct}% OFF)`);
+                }
+                return parts.join(" | ");
+              })();
+
+              const isCustomized = Boolean(pp.isTermsCustomized);
+              const displayedTerms = isCustomized ? (pp.notes ?? "") : (pp.notes || generatedTermsText);
+
+              const updatePp = (patch: Record<string, any>) => {
+                setEditLeadForm((prev: any) => ({
+                  ...prev,
+                  payment_plan: {
+                    ...(prev.payment_plan || {}),
+                    ...patch,
+                  },
+                }));
+              };
+
+              return (
+                <div className="space-y-5 text-xs">
+                  {/* Bloco 1: Decomposição Tarifária & Custo Real */}
+                  <div className="space-y-3 p-4 rounded-xl border border-border/60 bg-card">
+                    <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/40">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="size-4 text-primary" />
+                        <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Decomposição Tarifária</h4>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xs text-muted-foreground">Total Calculado:</span>
+                        <span className="font-mono tabular-nums text-sm font-black text-foreground">
+                          {formatMoney(effectiveTotalCents)}
+                        </span>
+                      </div>
                     </div>
-                    <span className="font-mono tabular-nums text-xs font-semibold text-foreground">
-                      {formatMoney(editLeadForm.estimated_value_cents || 0)}
-                    </span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Aéreo / Passagens (R$)</Label>
+                        <CurrencyField
+                          value={flightCents}
+                          onChange={(val: any) => updatePp({ flight_cents: val || 0 })}
+                          className="h-10 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Hotelaria / Resort (R$)</Label>
+                        <CurrencyField
+                          value={hotelCents}
+                          onChange={(val: any) => updatePp({ hotel_cents: val || 0 })}
+                          className="h-10 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Seguro Viagem & Assistência (R$)</Label>
+                        <CurrencyField
+                          value={insuranceCents}
+                          onChange={(val: any) => updatePp({ insurance_cents: val || 0 })}
+                          className="h-10 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Taxas de Embarque (R$)</Label>
+                        <CurrencyField
+                          value={boardingTaxCents}
+                          onChange={(val: any) => updatePp({ boarding_tax_cents: val || 0 })}
+                          className="h-10 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Passeios & Outros Serviços (R$)</Label>
+                        <CurrencyField
+                          value={otherServicesCents}
+                          onChange={(val: any) => updatePp({ other_services_cents: val || 0 })}
+                          className="h-10 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Comissão / Markup da Agência (R$)</Label>
+                        <CurrencyField
+                          value={commissionCents}
+                          onChange={(val: any) => updatePp({ commission_cents: val || 0 })}
+                          className="h-10 text-xs rounded-lg font-mono"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Aéreo / Passagens (R$)</Label>
-                      <CurrencyField
-                        value={editLeadForm.payment_plan?.flight_cents || 0}
-                        onChange={(val: any) =>
-                          setEditLeadForm((prev: any) => ({
-                            ...prev,
-                            payment_plan: { ...prev.payment_plan, flight_cents: val || 0 },
-                          }))
-                        }
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
+                  {/* Bloco 2: Operadora Parceira & Fornecedor */}
+                  <div className="space-y-3 p-4 rounded-xl border border-border/60 bg-card">
+                    <div className="flex items-center gap-2 pb-2 border-b border-border/40">
+                      <Building2 className="size-4 text-primary" />
+                      <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Operadora & Fornecedor Parceiro</h4>
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Hotelaria / Resort (R$)</Label>
-                      <CurrencyField
-                        value={editLeadForm.payment_plan?.hotel_cents || 0}
-                        onChange={(val: any) =>
-                          setEditLeadForm((prev: any) => ({
-                            ...prev,
-                            payment_plan: { ...prev.payment_plan, hotel_cents: val || 0 },
-                          }))
-                        }
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Seguro Viagem & Assistência (R$)</Label>
-                      <CurrencyField
-                        value={editLeadForm.payment_plan?.insurance_cents || 0}
-                        onChange={(val: any) =>
-                          setEditLeadForm((prev: any) => ({
-                            ...prev,
-                            payment_plan: { ...prev.payment_plan, insurance_cents: val || 0 },
-                          }))
-                        }
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Taxas de Embarque (R$)</Label>
-                      <CurrencyField
-                        value={editLeadForm.payment_plan?.boarding_tax_cents || 0}
-                        onChange={(val: any) =>
-                          setEditLeadForm((prev: any) => ({
-                            ...prev,
-                            payment_plan: { ...prev.payment_plan, boarding_tax_cents: val || 0 },
-                          }))
-                        }
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1 sm:col-span-2">
-                      <Label className="text-2xs text-muted-foreground font-semibold">Comissão / Markup da Agência (R$)</Label>
-                      <CurrencyField
-                        value={editLeadForm.payment_plan?.commission_cents || 0}
-                        onChange={(val: any) =>
-                          setEditLeadForm((prev: any) => ({
-                            ...prev,
-                            payment_plan: { ...prev.payment_plan, commission_cents: val || 0 },
-                          }))
-                        }
-                        className="h-10 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Modalidade de Pagamento Planejada */}
-                <div className="space-y-3">
-                  <h4 className="font-bold text-xs uppercase tracking-wide text-foreground block">Modalidade de Pagamento Planejada</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {[
-                      { id: "pix_cash", label: "PIX à Vista (Desconto)" },
-                      { id: "credit_card", label: "Cartão em até 10x" },
-                      { id: "operator_boleto", label: "Boleto Faturado Operadora" },
-                    ].map((m) => {
-                      const active = editLeadForm.payment_plan?.method === m.id;
-                      return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() =>
-                            setEditLeadForm((prev: any) => ({
-                              ...prev,
-                              payment_plan: { ...prev.payment_plan, method: m.id },
-                            }))
-                          }
-                          className={`h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${
-                            active
-                              ? "border-primary bg-primary text-primary-foreground font-bold"
-                              : "border-border/60 bg-card text-foreground hover:bg-muted/40"
-                          }`}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Operadora de Referência</Label>
+                        <Select
+                          value={operatorName || "propria"}
+                          onValueChange={(val) => updatePp({ operatorName: val })}
                         >
-                          {m.label}
-                        </button>
-                      );
-                    })}
+                          <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
+                            <SelectValue placeholder="Selecione a operadora" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="propria">Operação Própria / Agência Local</SelectItem>
+                            <SelectItem value="Orinter">Orinter Tour & Travel</SelectItem>
+                            <SelectItem value="FRT">FRT Operadora</SelectItem>
+                            <SelectItem value="Incomum">Incomum Viagens</SelectItem>
+                            <SelectItem value="CVC">CVC Corp</SelectItem>
+                            <SelectItem value="ViagensPromo">ViagensPromo</SelectItem>
+                            <SelectItem value="E-HTL">E-HTL Hotéis</SelectItem>
+                            <SelectItem value="Europlus">Europlus Operadora</SelectItem>
+                            <SelectItem value="Schultz">Schultz Operadora</SelectItem>
+                            <SelectItem value="Personalizada">Outro Fornecedor / Personalizado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {operatorName === "Personalizada" && (
+                        <div className="space-y-1">
+                          <Label className="text-2xs text-muted-foreground font-semibold">Nome do Fornecedor</Label>
+                          <Input
+                            value={pp.customOperatorName || ""}
+                            onChange={(e) => updatePp({ customOperatorName: e.target.value })}
+                            placeholder="Ex: Operadora Regional XPTO"
+                            className="h-10 text-xs rounded-lg"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Condições do Plano Financeiro</Label>
-                    <Input
-                      value={editLeadForm.payment_plan?.notes || ""}
-                      onChange={(e) =>
-                        setEditLeadForm((prev: any) => ({
-                          ...prev,
-                          payment_plan: { ...prev.payment_plan, notes: e.target.value },
-                        }))
-                      }
-                      placeholder="Ex: 20% de entrada via PIX + 10x no cartão..."
-                      className="h-10 text-xs rounded-lg"
-                    />
+                  {/* Bloco 3: Modalidades & Condições Comerciais Livres (Espelho do Construtor) */}
+                  <div className="space-y-4 p-4 rounded-xl border border-border/60 bg-muted/10">
+                    <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="size-4 text-primary" />
+                        <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">Condições Comerciais & Modalidades</h4>
+                      </div>
+                      <Badge variant="outline" className="text-2xs font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+                        Configuração Livre
+                      </Badge>
+                    </div>
+
+                    {/* 3.1 Boleto Bancário Faturado */}
+                    <div className="space-y-3 p-3.5 rounded-lg bg-card border border-border/50">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={enableBoleto}
+                            onChange={(e) => updatePp({ enableBoleto: e.target.checked })}
+                            className="size-4 rounded border-border text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                          />
+                          <span className="text-xs font-bold text-foreground">Boleto Bancário Faturado</span>
+                        </label>
+                        {enableBoleto && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xs text-muted-foreground">Exigir Entrada?</span>
+                            <button
+                              type="button"
+                              onClick={() => updatePp({ hasBoletoDownpayment: !hasBoletoDownpayment })}
+                              className={`h-7 px-2.5 rounded-full text-2xs font-bold transition-colors cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                                hasBoletoDownpayment
+                                  ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30"
+                                  : "bg-muted text-muted-foreground border-transparent"
+                              }`}
+                            >
+                              {hasBoletoDownpayment ? "Com Entrada" : "Sem Entrada (Livre)"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {enableBoleto && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/30">
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">Qtd. Parcelas</Label>
+                            <select
+                              value={boletoInstallments}
+                              onChange={(e) => updatePp({ boletoInstallments: Number(e.target.value) })}
+                              className="w-full h-10 rounded-lg bg-background border border-border px-2 text-xs font-medium text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 18, 24].map((n) => (
+                                <option key={n} value={n}>
+                                  Até {n}x {hasBoletoDownpayment ? `(Entrada + ${n - 1}x)` : "no Boleto"}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {hasBoletoDownpayment ? (
+                            <div className="space-y-1">
+                              <Label className="text-2xs text-muted-foreground font-semibold">Valor da Entrada</Label>
+                              <div className="flex items-center gap-1">
+                                <select
+                                  value={downpaymentType}
+                                  onChange={(e) => updatePp({ downpaymentType: e.target.value as any })}
+                                  className="h-10 rounded-lg bg-background border border-border px-1.5 text-2xs text-foreground cursor-pointer"
+                                >
+                                  <option value="percentage">%</option>
+                                  <option value="fixed_cents">R$</option>
+                                </select>
+                                {downpaymentType === "percentage" ? (
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    max={90}
+                                    value={downpaymentPct}
+                                    onChange={(e) => updatePp({ downpaymentPct: Number(e.target.value) })}
+                                    className="h-10 rounded-lg text-xs font-mono"
+                                    placeholder="%"
+                                  />
+                                ) : (
+                                  <CurrencyField
+                                    value={downpaymentFixedCents}
+                                    onChange={(val: any) => updatePp({ downpaymentFixedCents: val || 0 })}
+                                    className="h-10 rounded-lg text-xs font-mono"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              <Label className="text-2xs text-muted-foreground font-semibold">Vencimento do 1º Boleto</Label>
+                              <Input
+                                value={firstBoletoDue}
+                                onChange={(e) => updatePp({ firstBoletoDue: e.target.value })}
+                                placeholder="Ex: 30 dias da emissão"
+                                className="h-10 rounded-lg text-xs"
+                              />
+                            </div>
+                          )}
+
+                          <div className="space-y-1">
+                            <Label className="text-2xs text-muted-foreground font-semibold">
+                              {hasBoletoDownpayment ? "Vencimento 1º Boleto" : "Condição / Carência"}
+                            </Label>
+                            <Input
+                              value={hasBoletoDownpayment ? firstBoletoDue : firstBoletoCondition}
+                              onChange={(e) => {
+                                if (hasBoletoDownpayment) {
+                                  updatePp({ firstBoletoDue: e.target.value });
+                                } else {
+                                  updatePp({ firstBoletoCondition: e.target.value });
+                                }
+                              }}
+                              placeholder={hasBoletoDownpayment ? "Ex: 30 dias após entrada" : "Sem juros operadora"}
+                              className="h-10 text-xs rounded-lg"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 3.2 Cartão de Crédito */}
+                    <div className="space-y-3 p-3.5 rounded-lg bg-card border border-border/50">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={enableCard}
+                            onChange={(e) => updatePp({ enableCard: e.target.checked })}
+                            className="size-4 rounded border-border text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                          />
+                          <span className="text-xs font-bold text-foreground">Cartão de Crédito</span>
+                        </label>
+                        {enableCard && (
+                          <div className="flex items-center gap-2">
+                            <Label className="text-2xs text-muted-foreground">Parcelas sem Juros:</Label>
+                            <select
+                              value={cardInstallments}
+                              onChange={(e) => updatePp({ cardInstallments: Number(e.target.value) })}
+                              className="h-9 rounded-lg bg-background border border-border px-2 text-xs font-medium text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 18, 24].map((n) => (
+                                <option key={n} value={n}>
+                                  Até {n}x sem juros
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 3.3 À Vista no PIX */}
+                    <div className="space-y-3 p-3.5 rounded-lg bg-card border border-border/50">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={enablePixDiscount}
+                            onChange={(e) => updatePp({ enablePixDiscount: e.target.checked })}
+                            className="size-4 rounded border-border text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                          />
+                          <span className="text-xs font-bold text-foreground">À Vista no PIX / Transferência</span>
+                        </label>
+                        {enablePixDiscount && (
+                          <div className="flex items-center gap-2">
+                            <Label className="text-2xs text-muted-foreground">Desconto (%):</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={30}
+                              value={pixDiscountPct}
+                              onChange={(e) => updatePp({ pixDiscountPct: Number(e.target.value) })}
+                              className="h-8 w-20 rounded-lg text-xs font-mono text-center"
+                            />
+                            {effectiveTotalCents > 0 && pixDiscountPct > 0 && (
+                              <span className="text-2xs font-mono font-bold text-emerald-600">
+                                {formatMoney(pixFinalCents)}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 3.4 Texto das Condições Comerciais ao Cliente */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-semibold text-foreground">
+                          Texto Comercial Apresentado ao Viajante
+                        </Label>
+                        {isCustomized && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              updatePp({ notes: generatedTermsText, isTermsCustomized: false });
+                            }}
+                            className="text-2xs text-primary hover:underline cursor-pointer flex items-center gap-1 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <RotateCcw className="size-3" />
+                            <span>Restaurar cálculo automático</span>
+                          </button>
+                        )}
+                      </div>
+                      <Textarea
+                        rows={2}
+                        value={displayedTerms}
+                        onChange={(e) => {
+                          updatePp({ notes: e.target.value, isTermsCustomized: true });
+                        }}
+                        placeholder="Ex: Entrada de 20% no PIX + saldo em até 10x sem juros no cartão de crédito..."
+                        className="text-xs rounded-lg min-h-16"
+                      />
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+                  {/* Barra de Ações Integradas */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/40">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          const token = selectedLead.magic_token || selectedLead.id;
+                          const url = `${window.location.origin}/m/lead/${token}?tab=pagamento`;
+                          await navigator.clipboard.writeText(url);
+                          toast.success("Link copiado!");
+                        }}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Copy className="size-3.5" />
+                        <span>Copiar Link</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        disabled={isUpdatingLead}
+                        onClick={handleSaveLeadDetails}
+                        variant="secondary"
+                        className="h-11 min-h-11 px-4 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {isUpdatingLead ? "Salvando..." : "Salvar no Lead"}
+                      </Button>
+                    </div>
+
                     <Button
                       type="button"
-                      variant="outline"
-                      onClick={async () => {
-                        const token = selectedLead.magic_token || selectedLead.id;
-                        const url = `${window.location.origin}/m/lead/${token}?tab=pagamento`;
-                        await navigator.clipboard.writeText(url);
-                        toast.success("Link copiado!");
+                      onClick={() => {
+                        const leadData = {
+                          id: selectedLead.id,
+                          fullName: editLeadForm.name || selectedLead.full_name,
+                          phone: editLeadForm.phone || selectedLead.phone,
+                          email: editLeadForm.email || selectedLead.email,
+                          destination: sanitizeDestinationString(editLeadForm.destination || selectedLead.destination),
+                          estimated_value_cents: effectiveTotalCents,
+                          passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
+                          departureDate: editLeadForm.travel_start || selectedLead.travel_start,
+                          returnDate: editLeadForm.travel_end || selectedLead.travel_end,
+                          adultsCount: editLeadForm.pax_adults || selectedLead.pax_adults || 2,
+                          childrenCount: editLeadForm.pax_children || selectedLead.pax_children || 0,
+                          notes: displayedTerms || editLeadForm.notes || selectedLead.notes || "",
+                          payment_plan: {
+                            ...editLeadForm.payment_plan,
+                            notes: displayedTerms,
+                          },
+                        };
+                        setSelectedLead(null);
+                        setProposalLead(leadData);
                       }}
-                      className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-11 min-h-11 px-4 text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring shadow-sm"
                     >
-                      <Copy className="size-3.5" />
-                      <span>Copiar Link</span>
-                    </Button>
-
-                    <Button
-                      type="button"
-                      disabled={isUpdatingLead}
-                      onClick={handleSaveLeadDetails}
-                      className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {isUpdatingLead ? "Salvando..." : "Salvar"}
+                      <Sparkles className="size-4" />
+                      <span>Abrir no Criador de Roteiro & Proposta</span>
                     </Button>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
               </div>
             </SheetContent>
           </Sheet>

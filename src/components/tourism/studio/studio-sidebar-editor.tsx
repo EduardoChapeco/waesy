@@ -992,8 +992,8 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <div className="grid grid-cols-2 gap-2">
  <Input
  placeholder="Cia (Ex: GOL, LATAM)"
- value={f.airline_name}
- onChange={(e) => handleFlightChange(f.id, "airline_name", e.target.value)}
+ value={f.airline_name || f.airline || ""}
+ onChange={(e) => { handleFlightChange(f.id, "airline_name", e.target.value); handleFlightChange(f.id, "airline", e.target.value); }}
  className="h-8 text-xs rounded-lg"
  />
  <Input
@@ -1010,8 +1010,8 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <div className="flex gap-1 mt-1">
  <Input
  placeholder="XAP"
- value={f.origin_iata}
- onChange={(e) => handleFlightChange(f.id, "origin_iata", e.target.value.toUpperCase())}
+ value={f.origin_iata || f.origin || ""}
+ onChange={(e) => { handleFlightChange(f.id, "origin_iata", e.target.value.toUpperCase()); handleFlightChange(f.id, "origin", e.target.value.toUpperCase()); }}
  className="h-8 text-xs rounded-lg uppercase font-mono w-16"
  />
  <Input
@@ -1028,8 +1028,8 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <div className="flex gap-1 mt-1">
  <Input
  placeholder="GRU"
- value={f.destination_iata}
- onChange={(e) => handleFlightChange(f.id, "destination_iata", e.target.value.toUpperCase())}
+ value={f.destination_iata || f.destination || ""}
+ onChange={(e) => { handleFlightChange(f.id, "destination_iata", e.target.value.toUpperCase()); handleFlightChange(f.id, "destination", e.target.value.toUpperCase()); }}
  className="h-8 text-xs rounded-lg uppercase font-mono w-16"
  />
  <Input
@@ -1052,7 +1052,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    <Input
      type="date"
      value={f.departure_date || (f as any).date || ""}
-     onChange={(e) => handleFlightChange(f.id, "departure_date", e.target.value)}
+     onChange={(e) => { handleFlightChange(f.id, "departure_date", e.target.value); handleFlightChange(f.id, "date" as any, e.target.value); }}
      className="h-8 text-xs rounded-lg"
    />
    <select

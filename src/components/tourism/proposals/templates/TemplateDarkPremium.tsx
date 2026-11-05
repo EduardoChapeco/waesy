@@ -145,31 +145,31 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                   className="border border-slate-200 rounded-lg overflow-hidden break-inside-avoid"
                 >
                   <div className="bg-blue-50 px-6 py-3 flex justify-between items-center border-b border-blue-100">
-                    <span className="ds-label-caps text-blue-600">{f.airline || "Companhia"}</span>
+                    <span className="ds-label-caps text-blue-600">{f.airline_name || f.airline || "Companhia Aérea"}</span>
                     <span className="text-xs font-mono font-bold text-blue-800 bg-blue-100/50 px-3 py-1 rounded-full">
-                      {f.flight_number}
+                      {f.flight_number || "Voo Confirmado"}
                     </span>
                   </div>
                   <div className="p-6 bg-card flex items-center">
                     <div className="w-1/3 text-center">
                       <div className="text-4xl font-bold text-slate-900">
-                        {(f.origin || "---").slice(0, 3).toUpperCase()}
+                        {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                       </div>
                       <div className="text-sm font-bold text-slate-500 mt-1">
-                        {f.departure_time}
+                        {f.departure_time || "--:--"}
                       </div>
                     </div>
                     <div className="flex-1 px-4 relative flex items-center justify-center">
                       <div className="w-full border-t border-dashed border-slate-300 absolute" />
                       <div className="bg-card border border-slate-200 px-4 py-1 rounded-full z-10 ds-meta font-bold text-slate-400 uppercase tracking-widest">
-                        {f.date ? formatDate(f.date) : "—"}
+                        {f.departure_date ? formatDate(f.departure_date) : f.date ? formatDate(f.date) : "—"}
                       </div>
                     </div>
                     <div className="w-1/3 text-center">
                       <div className="text-4xl font-bold text-slate-900">
-                        {(f.destination || "---").slice(0, 3).toUpperCase()}
+                        {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                       </div>
-                      <div className="text-sm font-bold text-slate-500 mt-1">{f.arrival_time}</div>
+                      <div className="text-sm font-bold text-slate-500 mt-1">{f.arrival_time || "--:--"}</div>
                     </div>
                   </div>
                 </div>

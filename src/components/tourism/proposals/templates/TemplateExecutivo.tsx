@@ -98,7 +98,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                   className="border border-slate-200 rounded-card p-5 break-inside-avoid"
                 >
                   <div className="flex justify-between items-center mb-4">
-                    <span className="ds-label-caps text-slate-500">{f.airline || "Cia Aérea"}</span>
+                    <span className="ds-label-caps text-slate-500">{f.airline_name || f.airline || "Cia Aérea"}</span>
                     <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">
                       {f.flight_number}
                     </span>
@@ -106,19 +106,19 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                   <div className="flex items-center justify-between">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-slate-900">
-                        {(f.origin || "---").slice(0, 3).toUpperCase()}
+                        {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                       </div>
                       <div className="text-sm font-medium text-slate-600">{f.departure_time}</div>
                     </div>
                     <div className="flex-1 px-8 flex flex-col items-center">
                       <div className="w-full h-px bg-slate-200 mb-1" />
                       <div className="ds-meta text-slate-400 uppercase font-bold tracking-widest">
-                        {f.stops === 0 ? "Direto" : `${f.stops} paradas`}
+                        {(f.stops_count ?? f.stops ?? 0) === 0 ? "Direto" : `${f.stops_count ?? f.stops} paradas`}
                       </div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-slate-900">
-                        {(f.destination || "---").slice(0, 3).toUpperCase()}
+                        {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                       </div>
                       <div className="text-sm font-medium text-slate-600">{f.arrival_time}</div>
                     </div>

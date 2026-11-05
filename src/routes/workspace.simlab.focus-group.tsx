@@ -1,16 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useRef, useEffect } from 'react';
-import { Users, Send, Layers, Brain, ShieldCheck, CheckCircle2, Activity, TrendingUp, DollarSign, Filter, Sliders, ArrowRight, Clock, Command, MessageSquare, ChevronRight, Info, Key, Briefcase, Home, Wallet, CreditCard, UserCheck, Scale, FileText, Cpu } from 'lucide-react';
+import { Users, Send, Layers, Brain, ShieldCheck, CheckCircle2, Activity, TrendingUp, DollarSign, Filter, Sliders, ArrowRight, Clock, Command, MessageSquare, ChevronRight, Info, Key, Briefcase, Home, Wallet, CreditCard, UserCheck, Scale, FileText, Cpu, Sparkles, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import type { SyntheticArchetype, FocusGroupMessage, FocusGroupSession } from '@/types/simlab';
 import { listSyntheticArchetypes, getOrCreateActiveFocusSession, listFocusGroupMessages, sendFocusGroupMessage } from '@/services/simlab.functions';
 import { getSimLabKeyStatus, saveSimLabApiKey } from '@/services/api-orchestrator.functions';
 import { getStoreSettings } from '@/services/store.functions';
+import { listAdminProducts, updateProduct } from '@/services/admin-catalog.functions';
 
 export const Route = createFileRoute('/workspace/simlab/focus-group')({
   head: () => ({ meta: [{ title: 'Focus Group Sintético — Exploração Qualitativa | Waesy' }] }),
@@ -46,8 +49,46 @@ function FocusGroupPage() {
   });
 
   const [statements, setStatements] = useState<FocusGroupMessage[]>([]);
+  const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [appliedTitle, setAppliedTitle] = useState('');
+  const [appliedDescription, setAppliedDescription] = useState('');
+  const [appliedPriceCents, setAppliedPriceCents] = useState<number | undefined>(undefined);
+  const [isApplyingToCatalog, setIsApplyingToCatalog] = useState(false);
 
   const feedEndRef = useRef<HTMLDivElement>(null);
+
+  function handleOpenApplyModal(suggestionContent?: string) {
+    if (suggestionContent) {
+      setAppliedDescription(suggestionContent);
+    }
+    setIsApplyModalOpen(true);
+  }
+
+  async function handleApplyToCatalog() {
+    if (!selectedProductId) {
+      toast.error('Selecione um produto do catálogo.');
+      return;
+    }
+    setIsApplyingToCatalog(true);
+    try {
+      await updateProduct({
+        data: {
+          id: selectedProductId,
+          title: appliedTitle.trim() || undefined,
+          description: appliedDescription.trim() || undefined,
+          price_cents: appliedPriceCents,
+        },
+      });
+      toast.success('Sugestão do SimLab aplicada ao catálogo com sucesso!');
+      setIsApplyModalOpen(false);
+    } catch (err: any) {
+      toast.error('Erro ao atualizar produto no catálogo: ' + (err?.message || 'Falha de comunicação.'));
+    } finally {
+      setIsApplyingToCatalog(false);
+    }
+  }
 
   async function refreshKeyStatus() {
     try {
@@ -92,6 +133,19 @@ function FocusGroupPage() {
               }
             }
           }
+        }
+
+        // 4. Carregar produtos do catálogo para fechamento de ciclo (GAP-004 / NC-008)
+        try {
+          const prodsRes = await listAdminProducts({ data: { page: 1, limit: 100 } });
+          if (prodsRes?.items && prodsRes.items.length > 0) {
+            setCatalogProducts(prodsRes.items);
+            setSelectedProductId(prodsRes.items[0].id);
+            setAppliedTitle(prodsRes.items[0].title || '');
+            setAppliedPriceCents(prodsRes.items[0].price_cents);
+          }
+        } catch (catErr: any) {
+          console.warn('Erro ao carregar produtos para SimLab:', catErr?.message);
         }
       } catch (e: any) {
         console.warn('Erro ao carregar dados do SimLab Focus Group:', e.message);
@@ -233,6 +287,17 @@ function FocusGroupPage() {
               <span>Disponibilidade verificada ao enviar</span>
             </Badge>
           )}
+
+          {/* Botão de Fechamento de Ciclo no Catálogo (GAP-004 / NC-008) */}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => handleOpenApplyModal()}
+            className="h-8 rounded-lg text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
+          >
+            <Sparkles className="size-3.5" />
+            <span>Aplicar ao Catálogo</span>
+          </Button>
 
           {/* Botão de Governança de Chaves */}
           <Button
@@ -407,7 +472,26 @@ function FocusGroupPage() {
                       <p className="text-sm text-foreground/90 mt-2 leading-relaxed">
                       {s.content}
                       </p>
-                      {isModerator ? <Badge variant="outline" className="mt-2 text-2xs">Pergunta do pesquisador</Badge> : s.provenance?.record_kind === 'llm_generated_synthetic_qualitative_response' ? <Badge variant="outline" className="mt-2 text-2xs">Resposta hipotética de IA · não é cliente real</Badge> : <Badge variant="secondary" className="mt-2 text-2xs">Registro legado · origem desconhecida</Badge>}
+                      {isModerator ? (
+                        <Badge variant="outline" className="mt-2 text-2xs">Pergunta do pesquisador</Badge>
+                      ) : s.provenance?.record_kind === 'llm_generated_synthetic_qualitative_response' ? (
+                        <Badge variant="outline" className="mt-2 text-2xs">Resposta hipotética de IA · não é cliente real</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="mt-2 text-2xs">Registro legado · origem desconhecida</Badge>
+                      )}
+
+                      {!isModerator && (
+                        <div className="mt-3 pt-2 border-t border-border/30 flex items-center justify-between">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenApplyModal(s.content)}
+                            className="text-xs text-primary font-medium hover:underline flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                          >
+                            <Sparkles className="size-3" />
+                            <span>Aplicar esta sugestão ao catálogo</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -589,6 +673,102 @@ function FocusGroupPage() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* ── DIALOG 3: APLICAR SUGESTÕES DO SIMLAB AO CATÁLOGO REAL (GAP-004 / NC-008) ── */}
+      <Dialog open={isApplyModalOpen} onOpenChange={setIsApplyModalOpen}>
+        <DialogContent className="sm:max-w-xl p-6 space-y-4">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-5 text-primary" />
+              <DialogTitle className="text-base font-bold">Aplicar Insights do SimLab ao Catálogo</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Transfira as melhorias qualitativas, argumentos de venda e ajustes de preço diretamente para um produto real da loja.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 text-xs">
+            <div className="space-y-1.5">
+              <label className="font-semibold text-foreground">Produto de Destino no Catálogo</label>
+              <select
+                value={selectedProductId}
+                onChange={(e) => {
+                  const pid = e.target.value;
+                  setSelectedProductId(pid);
+                  const found = catalogProducts.find((p) => p.id === pid);
+                  if (found) {
+                    setAppliedTitle(found.title || '');
+                    setAppliedPriceCents(found.price_cents);
+                  }
+                }}
+                className="w-full h-11 px-3 rounded-lg border border-border bg-card text-foreground text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 cursor-pointer"
+              >
+                {catalogProducts.length === 0 ? (
+                  <option value="">Nenhum produto cadastrado na loja</option>
+                ) : (
+                  catalogProducts.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title} (R$ {(p.price_cents / 100).toFixed(2)})
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-semibold text-foreground">Título Aprimorado</label>
+              <Input
+                value={appliedTitle}
+                onChange={(e) => setAppliedTitle(e.target.value)}
+                placeholder="Título refinado do produto..."
+                className="h-11 rounded-lg text-xs min-h-11"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-semibold text-foreground">Descrição / Copy Persuasiva Sugerida</label>
+              <Textarea
+                value={appliedDescription}
+                onChange={(e) => setAppliedDescription(e.target.value)}
+                placeholder="Insira ou ajuste os argumentos e copy validados na simulação..."
+                rows={4}
+                className="rounded-lg text-xs resize-y"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-semibold text-foreground">Preço Ajustado (em centavos, opcional)</label>
+              <Input
+                type="number"
+                value={appliedPriceCents ?? ''}
+                onChange={(e) => setAppliedPriceCents(e.target.value ? Number(e.target.value) : undefined)}
+                placeholder="Ex: 4990 para R$ 49,90"
+                className="h-11 rounded-lg text-xs min-h-11"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsApplyModalOpen(false)}
+              className="h-11 rounded-lg text-xs font-semibold min-h-11"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={isApplyingToCatalog || !selectedProductId}
+              onClick={handleApplyToCatalog}
+              className="h-11 rounded-lg text-xs font-semibold gap-2 min-h-11"
+            >
+              <Package className="size-4" />
+              <span>{isApplyingToCatalog ? "Atualizando Catálogo..." : "Confirmar e Atualizar Produto"}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

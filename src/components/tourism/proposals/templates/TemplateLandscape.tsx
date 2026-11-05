@@ -275,7 +275,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                   <div key={i} className="bg-slate-800/30 border border-slate-800 rounded-lg p-6">
                     <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
                       <span className="text-xs font-black uppercase tracking-widest text-slate-400">
-                        {f.airline || "Companhia Aérea"}
+                        {f.airline_name || f.airline || "Companhia Aérea"}
                       </span>
                       <span className="text-xs font-mono font-bold bg-slate-800 text-blue-400 px-2 py-1 rounded border border-slate-700">
                         {f.flight_number || "Voo"}
@@ -284,7 +284,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                     <div className="flex items-center justify-between text-center py-2">
                       <div>
                         <div className="text-4xl font-black text-foreground tracking-tight">
-                          {(f.origin || "---").slice(0, 3).toUpperCase()}
+                          {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-xs font-bold text-slate-400 mt-1">
                           {f.departure_time || "--:--"}
@@ -294,16 +294,16 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                       <div className="flex-1 px-6 relative flex flex-col items-center">
                         <div className="w-full border-t border-dashed border-slate-700" />
                         <span className="absolute -top-3.5 bg-slate-900 px-2 py-1 rounded-full border border-slate-800 text-3xs font-black uppercase text-slate-500">
-                          {f.stops === 0 ? "Direto" : `${f.stops} Parada${f.stops > 1 ? "s" : ""}`}
+                          {(f.stops_count ?? f.stops ?? 0) === 0 ? "Direto" : `${f.stops_count ?? f.stops} Parada${(f.stops_count ?? f.stops ?? 1) > 1 ? "s" : ""}`}
                         </span>
                         <span className="text-3xs text-slate-500 font-bold mt-2">
-                          {f.date ? formatDate(f.date) : ""}
+                          {f.departure_date ? formatDate(f.departure_date) : f.date ? formatDate(f.date) : ""}
                         </span>
                       </div>
 
                       <div>
                         <div className="text-4xl font-black text-foreground tracking-tight">
-                          {(f.destination || "---").slice(0, 3).toUpperCase()}
+                          {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-xs font-bold text-slate-400 mt-1">
                           {f.arrival_time || "--:--"}

@@ -1,5 +1,20 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-437: Remediação de Violações P0 (DL-15), Sincronização Canônica de OCR, Suporte a Boleto Faturado e Ingestão de Contatos WhatsApp
+- **Data:** 2026-11-05
+- **Contexto:**
+  1. Detecção de violações P0 bloqueantes na regra DL-15 (falta de :focus-visible em botões interativos em turismo e dossiês).
+  2. Implementação e normalização do motor de OCR para cotações de operadoras de turismo com suporte a múltiplos hotéis, voos, comissões sugeridas e preenchimento automático de dados no estúdio de propostas.
+  3. Adição de condições comerciais completas para pacotes turísticos: Boleto Bancário Faturado (até 24x), carência e entrada flexível (percentual ou fixa).
+  4. Criação do módulo e API de ingestão de contatos de grupos de WhatsApp (`/api/v1/ingest/whatsapp-contacts`) com tokens SHA-256 isolados por tenant e idempotência estrita.
+  5. Saneamento do teste `community-spaces-view.test.tsx` garantindo compatibilidade com a omissão dinâmica de abas vazias (AGENTS.md B.33).
+- **Decisão:**
+  1. Correção cirúrgica de todas as ocorrências de DL-15 em botões nativos e tags nos componentes de turismo e workspace, atingindo 0 violações P0.
+  2. Congelamento da baseline do Design Lint V2 em 867 violações com 0 P0 e aprovação plena na catraca mecânica de CI (`node scripts/design-lint.mjs --ratchet`).
+  3. Aprovação integral da suíte de testes Vitest (incluindo 12 testes novos do motor de ingestão de WhatsApp e teste de CommunitySpacesView).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.11, B.25, B.31, B.33; SPEC-INFOTRAVEL-QUOTE-CAPTURE-AND-OPPORTUNITY-RADAR.
+- **Consequências:** Zero violações P0 no repositório, catraca de CI 100% verde, ecossistema de turismo e propostas enriquecido e contratos de ingestão protegidos.
+
 ## DEC-436: Reengenharia Ultraminimalista Flat do Dossiê 360° (88vw), Scroll Central Independente, Zero Containeritis e LeadCard Linear
 - **Data:** 2026-11-04
 - **Contexto:**

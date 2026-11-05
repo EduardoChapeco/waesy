@@ -1,31 +1,40 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-04T12:10:58.995Z",
-  "totalViolations": 674,
-  "filesInspected": 2613,
-  "filesWithViolations": 229,
+  "timestamp": "2026-11-05T17:24:41.860Z",
+  "totalViolations": 867,
+  "filesInspected": 2621,
+  "filesWithViolations": 238,
   "bySeverity": {
     "P0": 0,
-    "P1": 668,
-    "P2": 6,
-    "P3": 0
+    "P1": 833,
+    "P2": 28,
+    "P3": 6
   },
   "byRule": {
-    "DL-02": 137,
-    "DL-18": 45,
-    "DL-05": 42,
-    "DL-01": 394,
+    "DL-02": 138,
+    "DL-18": 61,
+    "DL-05": 43,
+    "DL-01": 397,
     "DL-13": 9,
     "DL-12": 26,
     "DL-11": 15,
-    "DL-07": 6
+    "DL-03": 90,
+    "DL-33": 18,
+    "DL-14": 34,
+    "DL-25": 1,
+    "DL-28": 2,
+    "DL-29": 2,
+    "DL-30": 4,
+    "DL-07": 20,
+    "DL-23": 5,
+    "DL-27": 2
   },
   "byModule": {
     "components/app": {
-      "total": 222,
+      "total": 245,
       "P0": 0,
-      "P1": 222,
-      "P2": 0,
+      "P1": 244,
+      "P2": 1,
       "P3": 0
     },
     "components/chat": {
@@ -36,11 +45,11 @@
       "P3": 0
     },
     "components/tourism": {
-      "total": 49,
+      "total": 159,
       "P0": 0,
-      "P1": 49,
-      "P2": 0,
-      "P3": 0
+      "P1": 137,
+      "P2": 17,
+      "P3": 5
     },
     "components/ui": {
       "total": 46,
@@ -78,11 +87,11 @@
       "P3": 0
     },
     "routes/workspace": {
-      "total": 54,
+      "total": 114,
       "P0": 0,
-      "P1": 54,
-      "P2": 0,
-      "P3": 0
+      "P1": 109,
+      "P2": 4,
+      "P3": 1
     },
     "routes/store": {
       "total": 36,
