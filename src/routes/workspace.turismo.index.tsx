@@ -1084,6 +1084,12 @@ export default function WorkspaceTurismoCockpitPage() {
         onColumnsClick={() => setIsCustomizerOpen(true)}
         secondaryActions={[
           {
+            label: "Planilha de Comissões",
+            icon: Receipt,
+            onClick: () => navigate({ to: "/workspace/turismo/comissoes" }),
+            variant: "outline",
+          },
+          {
             label: "Nova Proposta",
             icon: FileText,
             onClick: () =>
@@ -1532,7 +1538,6 @@ export default function WorkspaceTurismoCockpitPage() {
                               passenger_count: (lead.pax_adults || 2) + (lead.pax_children || 0),
                             });
                           }}
-                          onCalculateCommission={setCalculatorLead}
                           onOpenFlightGrid={setFlightLead}
                           onStageChange={(leadId, newStage) => handleMoveStage(leadId, newStage)}
                           onPromote={handlePromoteToCustomer}

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { MessageSquare, Clock, MapPin, Calendar, Users, CheckCircle2, ChevronRight, ChevronLeft, UserCheck, MoreVertical, Edit3, FileText, Calculator, Plane, Trash2, AlertTriangle, Paperclip, ShieldCheck } from 'lucide-react';
+import { MessageSquare, Clock, MapPin, Calendar, Users, CheckCircle2, ChevronRight, ChevronLeft, UserCheck, MoreVertical, Edit3, FileText, Plane, Trash2, AlertTriangle, Paperclip, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -192,14 +192,6 @@ export function LeadCard({
     };
   }, [lead.temperature, lead.custom_fields, lead.estimated_value_cents, staleness.isCold]);
 
-  const estimatedCommissionCents = useMemo(() => {
-    if (typeof lead.commission_cents === 'number' && lead.commission_cents > 0) {
-      return lead.commission_cents;
-    }
-    const val = lead.estimated_value_cents || 0;
-    return val > 0 ? Math.round(val * 0.1) : 0;
-  }, [lead.commission_cents, lead.estimated_value_cents]);
-
   return (
     <div
       role="button"
@@ -268,12 +260,6 @@ export function LeadCard({
                 <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onGenerateProposal(lead)} className="cursor-pointer font-medium text-primary">
                   <FileText className="size-3.5 mr-2" />
                   Gerar Proposta Visual
-                </DropdownMenuItem>
-              )}
-              {onCalculateCommission && (
-                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onCalculateCommission(lead)} className="cursor-pointer font-medium text-warning-strong">
-                  <Calculator className="size-3.5 mr-2" />
-                  Calcular Comissão
                 </DropdownMenuItem>
               )}
               {onOpenFlightGrid && (
@@ -352,17 +338,12 @@ export function LeadCard({
           </div>
         </div>
 
-        {/* Faixa Financeira: Preço em Tabular-Nums + Comissão Estimada */}
+        {/* Faixa Financeira: Valor Estimado da Venda em Tabular-Nums */}
         {lead.estimated_value_cents > 0 && (
           <div className="flex items-center justify-between gap-2 pt-1">
             <span className="font-mono tabular-nums font-bold text-sm text-foreground">
               {formatMoney(lead.estimated_value_cents)}
             </span>
-            {estimatedCommissionCents > 0 && (
-              <span className="font-mono tabular-nums text-2xs text-muted-foreground font-medium">
-                +{formatMoney(estimatedCommissionCents)} com.
-              </span>
-            )}
           </div>
         )}
       </div>

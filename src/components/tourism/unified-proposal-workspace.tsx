@@ -45,6 +45,7 @@ import { createTravelProposal, type TravelProposalDTO, type ProposalCanvasFormat
 import { createAgencyTravelQuote } from "@/services/tourism.functions";
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
+import { listTravelSuppliers } from "@/services/travel-suppliers.functions";
 import { parseUniversalDocumentOCR } from "@/services/multimodal-ocr.functions";
 import { processOperatorQuoteOcr } from "@/services/travel-operator-ocr.functions";
 import { publishExtractedTravelPackageToCatalogAndMatchRadar } from "@/services/travel-ai-extractor.functions";
@@ -88,17 +89,6 @@ export interface UnifiedProposalWorkspaceProps {
   sourcePackageTitle?: string;
   onCreated?: (result: { proposalId?: string; quoteId?: string; proposal?: TravelProposalDTO }) => void;
 }
-
-export const POPULAR_OPERATOR_PRESETS = [
-  "Orinter Tour & Travel",
-  "Incomum Operadora",
-  "FRT Operadora",
-  "CVC Corp",
-  "Azul Viagens",
-  "ViagensPromo",
-  "Financiamento Santander",
-  "Operadora Própria",
-];
 
 export const SUGGESTED_ROOM_ADDONS = [
   { code: "checked_bag_23", label: "Bagagem Despachada 23kg" },
@@ -286,8 +276,9 @@ export function UnifiedProposalWorkspace({
     },
   ]);
 
-  // Operadora & Condições de Pagamento Flexíveis (100% Customizáveis pelo Agente)
-  const [operatorName, setOperatorName] = useState<string>("Orinter Tour & Travel");
+  // Operadora & Condições de Pagamento Flexíveis (100% Livres & Configuráveis pela Agência)
+  const [operatorName, setOperatorName] = useState<string>("");
+  const [agencyCommissionPct, setAgencyCommissionPct] = useState<number>(10);
   const [enableBoleto, setEnableBoleto] = useState<boolean>(true);
   const [boletoInstallments, setBoletoInstallments] = useState<number>(12);
   const [hasBoletoDownpayment, setHasBoletoDownpayment] = useState<boolean>(false); // Zero entrada por padrão!
@@ -305,10 +296,16 @@ export function UnifiedProposalWorkspace({
   const [customPaymentTermsText, setCustomPaymentTermsText] = useState<string>("");
   const [isTermsCustomized, setIsTermsCustomized] = useState<boolean>(false);
 
-  const [supplierNetCostPct, setSupplierNetCostPct] = useState<number>(88);
   const [notes, setNotes] = useState("");
   const [infotravelOperatorFilter, setInfotravelOperatorFilter] = useState<InfoTravelOperatorSlug>("orinter");
   const [isSearchingInfotravel, setIsSearchingInfotravel] = useState(false);
+
+  // Fornecedores & Operadoras Cadastradas na Agência (Sem Mocks Hardcoded)
+  const { data: registeredSuppliers = [] } = useQuery({
+    queryKey: ["travel-suppliers-active"],
+    queryFn: () => listTravelSuppliers({ data: {} }),
+    enabled: open,
+  });
 
   // Pós-salvamento: Modal de WhatsApp
   const [createdProposalForWhatsapp, setCreatedProposalForWhatsapp] = useState<TravelProposalDTO | null>(null);
@@ -1885,21 +1882,45 @@ export function UnifiedProposalWorkspace({
                     placeholder="Ex: Orinter, Incomum, FRT, CVC, Azul Viagens..."
                     className="h-11 min-h-11 rounded-lg text-xs font-medium"
                   />
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {POPULAR_OPERATOR_PRESETS.map((op) => (
-                      <button
-                        key={op}
-                        type="button"
-                        onClick={() => setOperatorName(op)}
-                        className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                          operatorName === op
-                            ? "bg-primary text-primary-foreground font-bold"
-                            : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/30"
-                        }`}
-                      >
-                        {op}
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    {registeredSuppliers.length > 0 ? (
+                      <>
+                        <span className="text-2xs text-muted-foreground mr-1">Fornecedores da Agência:</span>
+                        {registeredSuppliers.map((sup: any) => (
+                          <button
+                            key={sup.id}
+                            type="button"
+                            onClick={() => {
+                              setOperatorName(sup.name);
+                              if (typeof sup.commission_rate === "number" && sup.commission_rate > 0) {
+                                setAgencyCommissionPct(sup.commission_rate);
+                              }
+                            }}
+                            className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                              operatorName.toLowerCase() === sup.name.toLowerCase()
+                                ? "bg-primary text-primary-foreground font-bold"
+                                : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/30"
+                            }`}
+                          >
+                            {sup.name}
+                            {sup.commission_rate > 0 && ` (${sup.commission_rate}%)`}
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <span className="text-2xs text-muted-foreground">
+                        Nenhum fornecedor pré-configurado na agência. Digite o nome acima livremente.
+                      </span>
+                    )}
+                    <a
+                      href="/workspace/turismo/fornecedores"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-2xs text-primary hover:underline ml-auto font-medium"
+                    >
+                      <ExternalLink className="size-3" />
+                      <span>Gerenciar Fornecedores & Comissões</span>
+                    </a>
                   </div>
                 </div>
 
@@ -2107,12 +2128,20 @@ export function UnifiedProposalWorkspace({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">Comissão da Agência (%)</Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium text-foreground">Comissão da Agência (%)</Label>
+                      <span className="text-2xs text-muted-foreground font-mono">
+                        Custo Fornecedor: {100 - agencyCommissionPct}%
+                      </span>
+                    </div>
                     <Input
                       type="number"
-                      value={100 - supplierNetCostPct}
-                      onChange={(e) => setSupplierNetCostPct(100 - Number(e.target.value))}
-                      className="h-11 min-h-11 rounded-lg text-xs font-mono"
+                      min={0}
+                      max={100}
+                      step={0.5}
+                      value={agencyCommissionPct}
+                      onChange={(e) => setAgencyCommissionPct(Math.max(0, Math.min(100, Number(e.target.value))))}
+                      className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold"
                     />
                   </div>
 

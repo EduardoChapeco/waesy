@@ -26,41 +26,41 @@ export const OperatorFlightItemSchema = z.object({
 });
 
 export const OperatorHotelItemSchema = z.object({
-  hotel_name: z.string(),
-  city: z.string().optional(),
-  room_category: z.string().optional(),
-  meal_plan: z.string().optional(),
-  checkin_date: z.string().optional(),
-  checkout_date: z.string().optional(),
-  nights_count: z.number().int().optional(),
-  stars: z.number().optional(),
-  address: z.string().optional(),
+  hotel_name: z.string().optional().default("Hotel a definir"),
+  city: z.string().optional().nullable(),
+  room_category: z.string().optional().nullable(),
+  meal_plan: z.string().optional().nullable(),
+  checkin_date: z.string().optional().nullable(),
+  checkout_date: z.string().optional().nullable(),
+  nights_count: z.coerce.number().optional().nullable(),
+  stars: z.coerce.number().optional().nullable(),
+  address: z.string().optional().nullable(),
 });
 
 export const OperatorQuoteExtractionResultSchema = z.object({
-  client_name: z.string().optional(),
-  client_phone: z.string().optional(),
-  operator_name: z.string().optional(),
-  quote_reference_number: z.string().optional(),
+  client_name: z.string().optional().nullable(),
+  client_phone: z.string().optional().nullable(),
+  operator_name: z.string().optional().nullable(),
+  quote_reference_number: z.string().optional().nullable(),
   destination: z.string().optional().default("Destino a definir"),
   travel_start: z.string().optional().nullable(),
   travel_end: z.string().optional().nullable(),
-  adults_count: z.number().int().optional(),
-  children_count: z.number().int().optional(),
-  flights: z.array(OperatorFlightItemSchema).optional(),
-  hotels: z.array(OperatorHotelItemSchema).optional(),
-  transfers: z.array(z.string()).optional(),
-  tours: z.array(z.string()).optional(),
-  inclusions: z.array(z.string()).optional(),
-  exclusions: z.array(z.string()).optional(),
-  gross_price_cents: z.number().int().optional(),
-  operator_net_cents: z.number().int().optional(),
-  suggested_commission_cents: z.number().int().optional(),
-  max_installments: z.number().int().optional(),
-  installment_cents: z.number().int().optional(),
-  currency: z.string().optional(),
-  cancellation_rules: z.string().optional(),
-  notes: z.string().optional(),
+  adults_count: z.coerce.number().int().optional().nullable(),
+  children_count: z.coerce.number().int().optional().nullable(),
+  flights: z.array(OperatorFlightItemSchema).optional().nullable(),
+  hotels: z.array(OperatorHotelItemSchema).optional().nullable(),
+  transfers: z.array(z.string()).optional().nullable(),
+  tours: z.array(z.string()).optional().nullable(),
+  inclusions: z.array(z.string()).optional().nullable(),
+  exclusions: z.array(z.string()).optional().nullable(),
+  gross_price_cents: z.coerce.number().int().optional().nullable(),
+  operator_net_cents: z.coerce.number().int().optional().nullable(),
+  suggested_commission_cents: z.coerce.number().int().optional().nullable(),
+  max_installments: z.coerce.number().int().optional().nullable(),
+  installment_cents: z.coerce.number().int().optional().nullable(),
+  currency: z.string().optional().nullable(),
+  cancellation_rules: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
 });
 
 export type OperatorQuoteExtractionResult = z.infer<typeof OperatorQuoteExtractionResultSchema>;
@@ -196,6 +196,77 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
         rawJson = JSON.parse(match[0]);
       } else {
         throw new Error("Não foi possível decodificar os dados retornados pela IA.");
+      }
+    }
+
+    // Normalização defensiva pré-validação (Blindagem contra formatações mistas de IA)
+    if (rawJson && typeof rawJson === "object") {
+      const parseCents = (val: any): number | undefined => {
+        if (val === null || val === undefined) return undefined;
+        if (typeof val === "number") {
+          if (!Number.isFinite(val)) return undefined;
+          return val > 50000 ? Math.round(val) : Math.round(val * 100);
+        }
+        if (typeof val === "string") {
+          const cleaned = val.replace(/[^\d.,]/g, "").trim();
+          if (!cleaned) return undefined;
+          if (cleaned.includes(",")) {
+            const num = parseFloat(cleaned.replace(/\./g, "").replace(",", "."));
+            return isNaN(num) ? undefined : Math.round(num * 100);
+          }
+          if (cleaned.includes(".") && cleaned.split(".")[1]?.length === 2) {
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? undefined : Math.round(num * 100);
+          }
+          const num = parseInt(cleaned, 10);
+          return isNaN(num) ? undefined : (num > 50000 ? num : num * 100);
+        }
+        return undefined;
+      };
+
+      if (rawJson.gross_price_cents === undefined) {
+        rawJson.gross_price_cents = parseCents(rawJson.gross_price || rawJson.total_price || rawJson.total || rawJson.valor_total);
+      } else {
+        rawJson.gross_price_cents = parseCents(rawJson.gross_price_cents);
+      }
+
+      if (rawJson.operator_net_cents === undefined) {
+        rawJson.operator_net_cents = parseCents(rawJson.operator_net || rawJson.net_price || rawJson.valor_liquido);
+      } else {
+        rawJson.operator_net_cents = parseCents(rawJson.operator_net_cents);
+      }
+
+      if (rawJson.suggested_commission_cents === undefined) {
+        rawJson.suggested_commission_cents = parseCents(rawJson.commission_cents || rawJson.commission || rawJson.comissao);
+      } else {
+        rawJson.suggested_commission_cents = parseCents(rawJson.suggested_commission_cents);
+      }
+
+      if (Array.isArray(rawJson.hotels)) {
+        rawJson.hotels = rawJson.hotels.map((h: any) => ({
+          hotel_name: h.hotel_name || h.name || h.hotel || h.nome || "Hotel a definir",
+          city: h.city || h.cidade,
+          room_category: h.room_category || h.quarto || h.categoria,
+          meal_plan: h.meal_plan || h.regime || h.alimentacao,
+          checkin_date: h.checkin_date || h.checkin || h.entrada,
+          checkout_date: h.checkout_date || h.checkout || h.saida,
+          nights_count: h.nights_count ? Number(h.nights_count) : undefined,
+          stars: h.stars ? Number(h.stars) : undefined,
+          address: h.address || h.endereco,
+        }));
+      } else if (rawJson.hotel && typeof rawJson.hotel === "object") {
+        rawJson.hotels = [{
+          hotel_name: rawJson.hotel.hotel_name || rawJson.hotel.name || "Hotel a definir",
+          city: rawJson.hotel.city,
+          room_category: rawJson.hotel.room_category,
+          meal_plan: rawJson.hotel.meal_plan,
+          checkin_date: rawJson.hotel.checkin_date,
+          checkout_date: rawJson.hotel.checkout_date,
+        }];
+      }
+
+      if (!rawJson.destination || rawJson.destination === "Destino a definir") {
+        rawJson.destination = rawJson.hotels?.[0]?.city || rawJson.flights?.[0]?.destination_city || rawJson.destino || "Destino a definir";
       }
     }
 
