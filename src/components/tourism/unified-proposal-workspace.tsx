@@ -24,6 +24,11 @@ import {
   Eye,
   Loader2,
   X,
+  Bus,
+  ShoppingCart,
+  Sparkles,
+  ArrowLeftRight,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -41,13 +46,13 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { formatMoney } from "@/lib/money";
-import { createTravelProposal, type TravelProposalDTO, type ProposalCanvasFormat } from "@/services/travel-proposal.functions";
+import { createTravelProposal, type TravelProposalDTO, type ProposalCanvasFormat, type FlightSegmentDTO, type TransferDTO } from "@/services/travel-proposal.functions";
 import { createAgencyTravelQuote } from "@/services/tourism.functions";
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { listTravelSuppliers } from "@/services/travel-suppliers.functions";
 import { parseUniversalDocumentOCR } from "@/services/multimodal-ocr.functions";
-import { processOperatorQuoteOcr } from "@/services/travel-operator-ocr.functions";
+import { processOperatorQuoteOcr, type OperatorQuoteExtractionResult } from "@/services/travel-operator-ocr.functions";
 import { publishExtractedTravelPackageToCatalogAndMatchRadar } from "@/services/travel-ai-extractor.functions";
 import { getHotelByNameOrSlug } from "@/lib/data/hotels-resorts-catalog";
 import {
@@ -106,6 +111,18 @@ export const COMMON_INCLUSIONS_TAGS = [
   "Bagagem Despachada 23kg",
 ];
 
+export function sanitizeDestinationString(raw?: string | null): string {
+  if (!raw) return "Buenos Aires";
+  const trimmed = raw.trim();
+  if (trimmed.includes(" - ")) {
+    const firstPart = trimmed.split(" - ")[0].trim();
+    if (firstPart.length >= 3 && firstPart.length <= 40) {
+      return firstPart;
+    }
+  }
+  return trimmed.slice(0, 50);
+}
+
 export function UnifiedProposalWorkspace({
   open,
   onOpenChange,
@@ -123,7 +140,7 @@ export function UnifiedProposalWorkspace({
   const queryClient = useQueryClient();
   const ocrFileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [stepTab, setStepTab] = useState<"destino" | "quartos" | "opcoes" | "pagamento">("destino");
+  const [stepTab, setStepTab] = useState<"destino" | "aereo" | "quartos" | "opcoes" | "rodoviario" | "pagamento">("destino");
   const [quoteSourceMode, setQuoteSourceMode] = useState<"manual_ocr" | "infotravel_api">("manual_ocr");
 
   // Dados do Lead / Cliente
@@ -182,9 +199,85 @@ export function UnifiedProposalWorkspace({
     }
   };
 
-  const [destinationQuery, setDestinationQuery] = useState(lead?.destination || initialDestination || "Buenos Aires");
+  const [destinationQuery, setDestinationQuery] = useState(
+    sanitizeDestinationString(lead?.destination || initialDestination)
+  );
+  const [lastOcrExtraction, setLastOcrExtraction] = useState<OperatorQuoteExtractionResult | null>(null);
+  const [newInclusionInput, setNewInclusionInput] = useState("");
   const [departureDate, setDepartureDate] = useState("2027-01-09");
   const [returnDate, setReturnDate] = useState("2027-01-14");
+
+  // Malha Aérea Dinâmica (Voos - PassHub / Infotravel)
+  const [proposalFlights, setProposalFlights] = useState<FlightSegmentDTO[]>([
+    {
+      id: "fl-1",
+      leg: "ida",
+      airline: "LATAM Airlines",
+      flight_number: "LA 3241",
+      origin_iata: "XAP",
+      origin_city: "Chapecó",
+      destination_iata: "GRU",
+      destination_city: "São Paulo",
+      departure_time: "08:30",
+      arrival_time: "10:00",
+      baggage_included: "Mochila + Mala 10kg",
+      stops_count: 0,
+    },
+    {
+      id: "fl-2",
+      leg: "volta",
+      airline: "LATAM Airlines",
+      flight_number: "LA 3242",
+      origin_iata: "GRU",
+      origin_city: "São Paulo",
+      destination_iata: "XAP",
+      destination_city: "Chapecó",
+      departure_time: "18:00",
+      arrival_time: "19:30",
+      baggage_included: "Mochila + Mala 10kg",
+      stops_count: 0,
+    },
+  ]);
+
+  const handleAddFlight = () => {
+    const isSecond = proposalFlights.length === 1;
+    const newFlight: FlightSegmentDTO = {
+      id: `fl-${Date.now()}`,
+      leg: isSecond ? "volta" : "ida",
+      airline: "LATAM Airlines",
+      flight_number: isSecond ? "LA 3242" : "LA 3241",
+      origin_iata: isSecond ? (proposalFlights[0]?.destination_iata || "GRU") : "XAP",
+      origin_city: isSecond ? (proposalFlights[0]?.destination_city || "São Paulo") : "Chapecó",
+      destination_iata: isSecond ? (proposalFlights[0]?.origin_iata || "XAP") : "GRU",
+      destination_city: isSecond ? (proposalFlights[0]?.origin_city || "Chapecó") : (destinationQuery || "São Paulo"),
+      departure_date: isSecond ? (returnDate || departureDate) : departureDate,
+      departure_time: isSecond ? "18:00" : "08:30",
+      arrival_time: isSecond ? "19:30" : "10:00",
+      baggage_included: "Mochila + Mala 10kg",
+      stops_count: 0,
+    };
+    setProposalFlights((prev) => [...prev, newFlight]);
+  };
+
+  const handleRemoveFlight = (idx: number) => {
+    setProposalFlights((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleUpdateFlight = (idx: number, patch: Partial<FlightSegmentDTO>) => {
+    setProposalFlights((prev) =>
+      prev.map((f, i) => (i === idx ? { ...f, ...patch } : f))
+    );
+  };
+
+  // Transporte Rodoviário & Terrestre (Ônibus Leito DD / Frota)
+  const [proposalTransfers, setProposalTransfers] = useState<TransferDTO[]>([
+    {
+      type: "Ônibus Leito DD",
+      vehicle: "Marcopolo Paradiso G8 DD",
+      date: departureDate,
+      notes: "Embarques: São Miguel do Oeste (18:30), Maravilha (19:15), Chapecó (20:00)",
+    },
+  ]);
 
   // Autocomplete do Banco de Hotéis
   const [hotelQuery, setHotelQuery] = useState("");
@@ -220,12 +313,12 @@ export function UnifiedProposalWorkspace({
         if (lead.fullName) setClientName(lead.fullName);
         if (lead.phone) setClientPhone(lead.phone);
         if (lead.email) setClientEmail(lead.email);
-        if (lead.destination) setDestinationQuery(lead.destination);
+        if (lead.destination) setDestinationQuery(sanitizeDestinationString(lead.destination));
       } else {
         if (initialClientName) setClientName(initialClientName);
         if (initialClientPhone) setClientPhone(initialClientPhone);
         if (initialClientEmail) setClientEmail(initialClientEmail);
-        if (initialDestination) setDestinationQuery(initialDestination);
+        if (initialDestination) setDestinationQuery(sanitizeDestinationString(initialDestination));
       }
     }
   }, [open, lead, initialClientName, initialClientPhone, initialClientEmail, initialDestination]);
@@ -537,9 +630,10 @@ export function UnifiedProposalWorkspace({
   }): number => {
     let fieldsUpdated = 0;
 
-    if (extracted.destination?.trim() && extracted.destination !== "Destino a definir") {
-      setDestinationQuery(extracted.destination.trim());
-      setCustomTitle(`Proposta Exclusiva — ${extracted.destination.trim()}`);
+    const cleanDest = sanitizeDestinationString(extracted.destination);
+    if (cleanDest && cleanDest !== "Destino a definir") {
+      setDestinationQuery(cleanDest);
+      setCustomTitle(`Proposta ${cleanDest}`);
       fieldsUpdated++;
     }
 
@@ -680,8 +774,38 @@ export function UnifiedProposalWorkspace({
 
           if (quoteRes?.data) {
             const q = quoteRes.data;
+            if (Array.isArray(q.flights) && q.flights.length > 0) {
+              setProposalFlights(q.flights.map((f: any, i: number) => ({
+                id: f.id || `fl-ocr-${i + 1}`,
+                leg: i === 0 ? "ida" : "volta",
+                airline: f.airline_name || f.airline || "Companhia Aérea",
+                flight_number: f.flight_number || "",
+                origin_iata: f.origin_iata || f.origin || "XAP",
+                origin_city: f.origin_city || "",
+                destination_iata: f.destination_iata || f.destination || "GRU",
+                destination_city: f.destination_city || "",
+                departure_time: f.departure_time || "08:30",
+                arrival_time: f.arrival_time || "10:00",
+                baggage_included: f.baggage_included || "Mochila + Mala 10kg",
+                stops_count: f.stops_count || 0,
+              })));
+            }
+            if (Array.isArray(q.transfers) && q.transfers.length > 0) {
+              setProposalTransfers(q.transfers.map((t: any, i: number) => ({
+                id: `tr-ocr-${i + 1}`,
+                type: "in_out",
+                route_name: typeof t === "string" ? t : (t.route_name || "Transfer Aeroporto ↔ Hotel"),
+                vehicle_type: "Van / Ônibus Executivo",
+                is_private: false,
+                price_cents: 0,
+              })));
+            }
+            const detectedDest = (q.destination && q.destination !== "Destino a definir")
+              ? q.destination
+              : (q.hotels?.[0]?.city || q.flights?.[0]?.destination_city || q.flights?.[0]?.destination_iata);
+
             const updatedCount = applyExtractedTravelData({
-              destination: q.destination !== "Destino a definir" ? q.destination : undefined,
+              destination: detectedDest,
               origin: q.flights?.[0]?.origin_city || (q.flights?.[0]?.origin_iata ? `${q.flights[0].origin_iata}` : undefined),
               departureDate: q.travel_start || q.flights?.[0]?.date || q.hotels?.[0]?.checkin_date,
               returnDate: q.travel_end || q.hotels?.[0]?.checkout_date,
@@ -696,10 +820,19 @@ export function UnifiedProposalWorkspace({
               inclusions: q.inclusions,
             });
 
-            if (updatedCount > 0) {
-              setStepTab("opcoes");
+            setLastOcrExtraction(q);
+
+            if (updatedCount > 0 || (Array.isArray(q.flights) && q.flights.length > 0)) {
+              if (Array.isArray(q.flights) && q.flights.length > 0) {
+                setStepTab("aereo");
+              } else if (q.hotels?.[0]?.hotel_name) {
+                setStepTab("opcoes");
+              } else {
+                setStepTab("destino");
+              }
               const highlights = [
-                q.destination && q.destination !== "Destino a definir" ? `Destino: ${q.destination}` : null,
+                detectedDest ? `Destino: ${detectedDest}` : null,
+                Array.isArray(q.flights) && q.flights.length > 0 ? `${q.flights.length} voo(s)` : null,
                 q.hotels?.[0]?.hotel_name ? `Hotel: ${q.hotels[0].hotel_name}` : null,
                 q.gross_price_cents ? `Total: ${formatMoney(q.gross_price_cents)}` : null,
               ].filter(Boolean);
@@ -723,6 +856,23 @@ export function UnifiedProposalWorkspace({
           }).catch(() => null);
 
           if (universalRes && universalRes.confidence !== "low") {
+            if (Array.isArray(universalRes.flightSegments) && universalRes.flightSegments.length > 0) {
+              setProposalFlights(universalRes.flightSegments.map((f: any, i: number) => ({
+                id: f.id || `fl-ocr-u-${i + 1}`,
+                leg: i === 0 ? "ida" : "volta",
+                airline: f.airline || "Companhia Aérea",
+                flight_number: f.flightNumber || "",
+                origin_iata: f.origin || "XAP",
+                origin_city: f.originCity || "",
+                destination_iata: f.destination || "GRU",
+                destination_city: f.destinationCity || "",
+                departure_time: f.departureTime || "08:30",
+                arrival_time: f.arrivalTime || "10:00",
+                baggage_included: f.baggageIncluded || "Mochila + Mala 10kg",
+                stops_count: 0,
+              })));
+            }
+
             const updatedCount = applyExtractedTravelData({
               destination: universalRes.destinationCity,
               origin: universalRes.flightSegments?.[0]?.origin,
@@ -735,8 +885,25 @@ export function UnifiedProposalWorkspace({
               grossPriceCents: universalRes.financials?.totalCents,
             });
 
-            if (updatedCount > 0) {
-              setStepTab("opcoes");
+            setLastOcrExtraction({
+              operator_name: universalRes.companyName !== "Não identificado" ? universalRes.companyName : undefined,
+              destination: universalRes.destinationCity,
+              gross_price_cents: universalRes.financials?.totalCents,
+              hotels: universalRes.hotel?.name ? [{ hotel_name: universalRes.hotel.name }] : [],
+              flights: (universalRes.flightSegments || []).map((f: any) => ({
+                airline: f.airline,
+                flight_number: f.flightNumber,
+                origin_iata: f.origin,
+                destination_iata: f.destination,
+              })),
+            } as any);
+
+            if (updatedCount > 0 || (Array.isArray(universalRes.flightSegments) && universalRes.flightSegments.length > 0)) {
+              if (Array.isArray(universalRes.flightSegments) && universalRes.flightSegments.length > 0) {
+                setStepTab("aereo");
+              } else {
+                setStepTab("opcoes");
+              }
               toast.success("Dados do documento extraídos e preenchidos com sucesso!", { id: toastId });
               return;
             }
@@ -775,8 +942,42 @@ export function UnifiedProposalWorkspace({
 
       if (res?.data) {
         const q = res.data;
+        if (Array.isArray(q.flights) && q.flights.length > 0) {
+          setProposalFlights(
+            q.flights.map((f: any, i: number) => ({
+              id: f.id || `fl-ocr-txt-${i + 1}`,
+              leg: i === 0 ? "ida" : "volta",
+              airline: f.airline_name || f.airline || "Companhia Aérea",
+              flight_number: f.flight_number || "",
+              origin_iata: f.origin_iata || f.origin || "XAP",
+              origin_city: f.origin_city || "",
+              destination_iata: f.destination_iata || f.destination || "GRU",
+              destination_city: f.destination_city || "",
+              departure_time: f.departure_time || "08:30",
+              arrival_time: f.arrival_time || "10:00",
+              baggage_included: f.baggage_included || "Mochila + Mala 10kg",
+              stops_count: f.stops_count || 0,
+            })),
+          );
+        }
+        if (Array.isArray(q.transfers) && q.transfers.length > 0) {
+          setProposalTransfers(
+            q.transfers.map((t: any, i: number) => ({
+              id: `tr-ocr-txt-${i + 1}`,
+              type: "in_out",
+              route_name: typeof t === "string" ? t : (t.route_name || "Transfer Aeroporto ↔ Hotel"),
+              vehicle_type: "Van / Ônibus Executivo",
+              is_private: false,
+              price_cents: 0,
+            })),
+          );
+        }
+        const detectedDest = (q.destination && q.destination !== "Destino a definir")
+          ? q.destination
+          : (q.hotels?.[0]?.city || q.flights?.[0]?.destination_city || q.flights?.[0]?.destination_iata);
+
         const updated = applyExtractedTravelData({
-          destination: q.destination !== "Destino a definir" ? q.destination : undefined,
+          destination: detectedDest,
           origin: q.flights?.[0]?.origin_city || (q.flights?.[0]?.origin_iata ? `${q.flights[0].origin_iata}` : undefined),
           departureDate: q.travel_start || q.flights?.[0]?.date || q.hotels?.[0]?.checkin_date,
           returnDate: q.travel_end || q.hotels?.[0]?.checkout_date,
@@ -791,7 +992,14 @@ export function UnifiedProposalWorkspace({
           inclusions: q.inclusions,
         });
 
-        if (updated > 0) {
+        setLastOcrExtraction(q);
+
+        if (updated > 0 || (Array.isArray(q.flights) && q.flights.length > 0)) {
+          if (Array.isArray(q.flights) && q.flights.length > 0) {
+            setStepTab("aereo");
+          } else if (q.hotels?.[0]?.hotel_name) {
+            setStepTab("opcoes");
+          }
           setNotes((prev) => (prev ? `${prev}\n${raw.slice(0, 400)}` : raw.slice(0, 400)));
           setShowOcrTextModal(false);
           setOcrPastedText("");
@@ -996,13 +1204,7 @@ export function UnifiedProposalWorkspace({
             matchedPkgTemplate?.coverImageUrl ||
             undefined,
           initialNotes: fullSummary,
-          flights:
-            matchedPkgTemplate?.flights && matchedPkgTemplate.flights.length > 0
-              ? matchedPkgTemplate.flights.map((f) => ({
-                  ...f,
-                  departure_date: departureDate,
-                }))
-              : [],
+          flights: proposalFlights.length > 0 ? proposalFlights : (matchedPkgTemplate?.flights || []),
           hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt, idx) => ({
             id: opt.offerSnapshotId || `hotel-${idx + 1}`,
             hotel_name: opt.hotelName,
@@ -1022,7 +1224,7 @@ export function UnifiedProposalWorkspace({
             amenities: matchedPkgTemplate?.hotels?.[0]?.amenities || [],
           })),
           itinerary: matchedPkgTemplate?.itinerary || [],
-          transfers: (matchedPkgTemplate?.transfers as any) || [],
+          transfers: proposalTransfers.length > 0 ? proposalTransfers : ((matchedPkgTemplate?.transfers as any) || []),
           tours: matchedPkgTemplate?.tours || [],
           rooms: calculation.rooms.map((r) => ({
             id: `room-${r.roomNumber}`,
@@ -1091,17 +1293,17 @@ export function UnifiedProposalWorkspace({
         destination_city: destinationQuery,
         travel_start_date: departureDate || null,
         travel_end_date: returnDate || null,
-        flights: matchedPkgTemplate?.flights || [],
+        flights: proposalFlights.length > 0 ? proposalFlights : (matchedPkgTemplate?.flights || []),
         hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt) => ({
           hotel_name: opt.hotelName,
         })),
         itinerary: matchedPkgTemplate?.itinerary || [],
-        transfers: (matchedPkgTemplate?.transfers || []).map((t: any) => ({
+        transfers: proposalTransfers.length > 0 ? proposalTransfers : ((matchedPkgTemplate?.transfers || []).map((t: any) => ({
           type: t.type,
           vehicle: t.vehicle || t.vehicle_type,
           date: t.date,
           notes: t.notes || t.description,
-        })),
+        }))),
         tours: matchedPkgTemplate?.tours || [],
         rooms: calculation.rooms.map((room) => ({
           roomNumber: room.roomNumber,
@@ -1164,7 +1366,7 @@ export function UnifiedProposalWorkspace({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 flex flex-col h-full bg-background border-l border-border/60">
+        <SheetContent side="right" className="w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl p-0 flex flex-col h-full bg-background border-l border-border/60">
           {/* Cabeçalho */}
           <SheetHeader className="p-4 sm:p-6 border-b border-border/40 shrink-0">
             <div className="flex items-center justify-between gap-3">
@@ -1270,64 +1472,136 @@ export function UnifiedProposalWorkspace({
               </div>
             )}
 
-            {/* Abas do Fluxo Canônico */}
+            {/* Abas do Fluxo Canônico PassHub / Infotravel */}
             <div className="flex items-center gap-1 mt-4 overflow-x-auto scroll-area-carousel no-scrollbar border-b border-border/30 pb-2">
               <button
                 type="button"
                 onClick={() => setStepTab("destino")}
-                className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   stepTab === "destino"
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 }`}
               >
                 <MapPin className="size-3.5" />
-                <span>1. Destino & Datas</span>
+                <span>1. Destino & Pacote</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStepTab("aereo")}
+                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  stepTab === "aereo"
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                }`}
+              >
+                <Plane className="size-3.5" />
+                <span>2. Voos & Aéreo ({proposalFlights.length})</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setStepTab("quartos")}
-                className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   stepTab === "quartos"
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 }`}
               >
                 <Building2 className="size-3.5" />
-                <span>2. Quartos & Ocupação ({rooms.length})</span>
+                <span>3. Quartos ({rooms.length})</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setStepTab("opcoes")}
-                className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   stepTab === "opcoes"
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 }`}
               >
                 <Tag className="size-3.5" />
-                <span>3. Inclusões & Hotéis</span>
+                <span>4. Hotéis & Inclusões</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStepTab("rodoviario")}
+                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  stepTab === "rodoviario"
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                }`}
+              >
+                <Bus className="size-3.5" />
+                <span>5. Rodoviário & Ônibus</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setStepTab("pagamento")}
-                className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   stepTab === "pagamento"
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 }`}
               >
                 <CreditCard className="size-3.5" />
-                <span>4. Condições & Operadora</span>
+                <span>6. Condições & Operadora</span>
               </button>
             </div>
           </SheetHeader>
 
           {/* Conteúdo com Rolagem */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+          {/* Corpo com Grid Adaptativo (Formulário + Dock PassHub em telas grandes) */}
+          <div className="flex-1 min-h-0 overflow-hidden grid grid-cols-1 xl:grid-cols-12">
+            {/* Coluna Principal: Formulário de Cotação */}
+            <div className="xl:col-span-8 overflow-y-auto p-4 sm:p-6 space-y-6 [scrollbar-width:thin]">
+            {/* Banner Informativo de OCR Recém-Processado */}
+            {lastOcrExtraction && (
+              <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-start sm:items-center gap-2.5">
+                  <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center text-primary shrink-0 mt-0.5 sm:mt-0">
+                    <Sparkles className="size-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-foreground">
+                        Documento OCR Processado {lastOcrExtraction.operator_name ? `(${lastOcrExtraction.operator_name})` : ""}
+                      </span>
+                      <Badge variant="outline" className="text-2xs bg-background/80 font-medium">
+                        Campos Vinculados
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs text-muted-foreground mt-1">
+                      {lastOcrExtraction.destination && <span>Destino: <strong className="text-foreground">{lastOcrExtraction.destination}</strong></span>}
+                      {proposalFlights.length > 0 && <span>Malha: <strong className="text-foreground">{proposalFlights.length} voo(s)</strong></span>}
+                      {lastOcrExtraction.hotels?.[0]?.hotel_name && <span>Hotel: <strong className="text-foreground">{lastOcrExtraction.hotels[0].hotel_name}</strong></span>}
+                      {lastOcrExtraction.gross_price_cents ? <span>Total: <strong className="text-emerald-600 dark:text-emerald-400 font-mono font-bold">{formatMoney(lastOcrExtraction.gross_price_cents)}</strong></span> : null}
+                      {lastOcrExtraction.max_installments ? <span>Parcelamento: <strong className="text-foreground">Até {lastOcrExtraction.max_installments}x</strong></span> : null}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+                  {proposalFlights.length > 0 && (
+                    <Button size="sm" variant="outline" className="h-8 text-2xs font-semibold" onClick={() => setStepTab("aereo")}>
+                      <Plane className="size-3 mr-1" />
+                      Revisar Voos
+                    </Button>
+                  )}
+                  <Button size="sm" variant="outline" className="h-8 text-2xs font-semibold" onClick={() => setStepTab("quartos")}>
+                    <Building2 className="size-3 mr-1" />
+                    Quartos
+                  </Button>
+                  <Button size="sm" variant="ghost" className="size-8 p-0 text-muted-foreground hover:text-foreground" onClick={() => setLastOcrExtraction(null)}>
+                    <X className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* ETAPA 1: DESTINO & DATAS */}
             {stepTab === "destino" && (
               <div className="space-y-4">
@@ -1491,6 +1765,156 @@ export function UnifiedProposalWorkspace({
                       Conexão terrestre recomendada: {gatewayResolution.recommendedTransferType.replace("_", " ")} ({gatewayResolution.primaryDistanceKm} km / ~{gatewayResolution.primaryTransferDurationMins} min).
                     </p>
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* ETAPA 2: MALHA AÉREA & VOOS (PASSHUB / INFOTRAVEL) */}
+            {stepTab === "aereo" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-foreground flex items-center gap-2">
+                      <Plane className="size-4 text-primary" />
+                      <span>Malha Aérea & Trechos de Voo ({proposalFlights.length})</span>
+                    </h3>
+                    <p className="text-2xs text-muted-foreground">
+                      Configure os voos de ida, volta e conexões com horários e franquia de bagagem
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAddFlight}
+                    className="h-11 min-h-11 px-3 text-xs gap-1.5 font-semibold"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>Adicionar Trecho</span>
+                  </Button>
+                </div>
+
+                {proposalFlights.length === 0 ? (
+                  <div className="p-6 text-center rounded-lg border border-dashed border-border/60 bg-muted/20 space-y-2">
+                    <Plane className="size-6 text-muted-foreground mx-auto opacity-50" />
+                    <p className="text-xs text-muted-foreground">Nenhum voo adicionado à cotação.</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAddFlight}
+                      className="h-11 px-4 text-xs font-bold"
+                    >
+                      Configurar Voo de Ida e Volta
+                    </Button>
+                  </div>
+                ) : (
+                  proposalFlights.map((flight, fIdx) => (
+                    <div
+                      key={flight.id || fIdx}
+                      className="p-4 rounded-lg border border-border/60 bg-card space-y-3"
+                    >
+                      <div className="flex items-center justify-between border-b border-border/30 pb-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-2xs font-bold uppercase">
+                            {flight.leg === "volta" ? "Trecho Volta" : `Trecho #${fIdx + 1} (Ida)`}
+                          </Badge>
+                          <Input
+                            placeholder="Companhia (Ex: LATAM, GOL, AZUL)"
+                            value={flight.airline || ""}
+                            onChange={(e) => handleUpdateFlight(fIdx, { airline: e.target.value })}
+                            className="h-9 text-xs font-semibold max-w-44"
+                          />
+                          <Input
+                            placeholder="Nº Voo (Ex: LA 3241)"
+                            value={flight.flight_number || ""}
+                            onChange={(e) => handleUpdateFlight(fIdx, { flight_number: e.target.value })}
+                            className="h-9 text-xs font-mono max-w-28"
+                          />
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveFlight(fIdx)}
+                          className="size-9 p-0 text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+                          title="Remover trecho"
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                        <div>
+                          <Label className="text-2xs text-muted-foreground">Origem (IATA / Cidade)</Label>
+                          <Input
+                            placeholder="Ex: XAP (Chapecó)"
+                            value={flight.origin_iata ? `${flight.origin_iata} - ${flight.origin_city || ""}` : (flight.origin || "")}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const parts = val.split("-");
+                              handleUpdateFlight(fIdx, {
+                                origin_iata: parts[0]?.trim() || val,
+                                origin_city: parts[1]?.trim() || "",
+                                origin: val,
+                              });
+                            }}
+                            className="h-9 mt-1 text-xs font-mono"
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-2xs text-muted-foreground">Destino (IATA / Cidade)</Label>
+                          <Input
+                            placeholder="Ex: GRU (São Paulo)"
+                            value={flight.destination_iata ? `${flight.destination_iata} - ${flight.destination_city || ""}` : (flight.destination || "")}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const parts = val.split("-");
+                              handleUpdateFlight(fIdx, {
+                                destination_iata: parts[0]?.trim() || val,
+                                destination_city: parts[1]?.trim() || "",
+                                destination: val,
+                              });
+                            }}
+                            className="h-9 mt-1 text-xs font-mono"
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-2xs text-muted-foreground">Horário Saída ↔ Chegada</Label>
+                          <div className="grid grid-cols-2 gap-1 mt-1">
+                            <Input
+                              type="time"
+                              value={flight.departure_time || "08:30"}
+                              onChange={(e) => handleUpdateFlight(fIdx, { departure_time: e.target.value })}
+                              className="h-9 text-xs font-mono px-1"
+                            />
+                            <Input
+                              type="time"
+                              value={flight.arrival_time || "10:00"}
+                              onChange={(e) => handleUpdateFlight(fIdx, { arrival_time: e.target.value })}
+                              className="h-9 text-xs font-mono px-1"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label className="text-2xs text-muted-foreground">Franquia de Bagagem</Label>
+                          <select
+                            value={flight.baggage_included || "Mochila + Mala 10kg"}
+                            onChange={(e) => handleUpdateFlight(fIdx, { baggage_included: e.target.value })}
+                            className="w-full h-9 mt-1 rounded-lg bg-background border border-border text-xs px-2"
+                          >
+                            <option value="Apenas Mochila (Item Pessoal)">Apenas Mochila (Item Pessoal)</option>
+                            <option value="Mochila + Mala 10kg">Mochila + Mala 10kg</option>
+                            <option value="Bagagem Despachada 23kg">Bagagem Despachada 23kg</option>
+                            <option value="2x Bagagens Despachadas 23kg">2x Bagagens Despachadas 23kg</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
             )}
@@ -1842,28 +2266,167 @@ export function UnifiedProposalWorkspace({
                   ))}
                 </div>
 
-                {/* Tags de Inclusões em Linha Única com Scroll Horizontal */}
-                <div className="space-y-2 pt-2 border-t border-border/20">
-                  <Label className="text-xs font-medium text-foreground">Itens Inclusos no Pacote (Clique para ativar):</Label>
-                  <div className="flex flex-nowrap overflow-x-auto no-scrollbar gap-2 py-1">
-                    {COMMON_INCLUSIONS_TAGS.map((tag) => {
+                {/* Itens Inclusos no Pacote */}
+                <div className="space-y-3 pt-3 border-t border-border/20">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Itens Inclusos no Pacote</Label>
+                    <p className="text-2xs text-muted-foreground">
+                      Digite para adicionar itens personalizados ou clique nas sugestões rápidas abaixo.
+                    </p>
+                  </div>
+
+                  {/* Campo de Busca / Adição Personalizada */}
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={newInclusionInput}
+                      onChange={(e) => setNewInclusionInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && newInclusionInput.trim()) {
+                          e.preventDefault();
+                          if (!selectedInclusions.includes(newInclusionInput.trim())) {
+                            setSelectedInclusions((prev) => [...prev, newInclusionInput.trim()]);
+                          }
+                          setNewInclusionInput("");
+                        }
+                      }}
+                      placeholder="Adicionar ou filtrar inclusão (ex: Almoço Típico, Passeio de Barco)..."
+                      className="h-11 min-h-11 text-xs flex-1 rounded-lg"
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={!newInclusionInput.trim()}
+                      onClick={() => {
+                        if (newInclusionInput.trim() && !selectedInclusions.includes(newInclusionInput.trim())) {
+                          setSelectedInclusions((prev) => [...prev, newInclusionInput.trim()]);
+                        }
+                        setNewInclusionInput("");
+                      }}
+                      className="h-11 min-h-11 px-3.5 text-xs font-bold gap-1 shrink-0 cursor-pointer"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Adicionar</span>
+                    </Button>
+                  </div>
+
+                  {/* Sugestões Rápidas em Linha Única com Scroll Horizontal */}
+                  <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-1.5 py-1">
+                    <span className="text-2xs text-muted-foreground mr-1 shrink-0">Sugestões rápidas:</span>
+                    {COMMON_INCLUSIONS_TAGS.filter((tag) =>
+                      !newInclusionInput.trim() || tag.toLowerCase().includes(newInclusionInput.toLowerCase())
+                    ).map((tag) => {
                       const isSelected = selectedInclusions.includes(tag);
                       return (
                         <button
                           key={tag}
                           type="button"
                           onClick={() => toggleInclusionTag(tag)}
-                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors shrink-0 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-2 ${
+                          className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1 ${
                             isSelected
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "border-border/60 hover:bg-muted/40 text-muted-foreground"
+                              ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                              : "bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border"
                           }`}
                         >
-                          {isSelected && <Check className="size-3" />}
+                          {isSelected ? <Check className="size-3" /> : <Plus className="size-3" />}
                           <span>{tag}</span>
                         </button>
                       );
                     })}
+                  </div>
+
+                  {/* Lista de Itens Inclusos Ativos */}
+                  {selectedInclusions.length > 0 && (
+                    <div className="space-y-1.5 pt-2 border-t border-border/20">
+                      <span className="text-2xs font-bold text-muted-foreground block">
+                        Inclusões Ativas na Proposta ({selectedInclusions.length}):
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedInclusions.map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-primary/10 text-primary border border-primary/20 font-medium"
+                          >
+                            <span>{tag}</span>
+                            <button
+                              type="button"
+                              onClick={() => toggleInclusionTag(tag)}
+                              className="size-4 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary"
+                              title="Remover inclusão"
+                            >
+                              <X className="size-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ETAPA 5: RODOVIÁRIO & TRANSPORTE TERRESTRE (INFOTRAVEL / GRUPOS) */}
+            {stepTab === "rodoviario" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-foreground flex items-center gap-2">
+                      <Bus className="size-4 text-primary" />
+                      <span>Transporte Rodoviário & Ônibus de Grupo</span>
+                    </h3>
+                    <p className="text-2xs text-muted-foreground">
+                      Paridade completa com o criador de pacotes e excursões rodoviárias
+                    </p>
+                  </div>
+                  <span className="text-2xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                    Multimodal
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-lg border border-border/60 bg-card space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-bold">Tipo de Frota / Categoria de Poltrona</Label>
+                      <select
+                        value={proposalTransfers[0]?.type || "Ônibus Leito DD"}
+                        onChange={(e) => {
+                          const current = proposalTransfers[0] || { type: "Ônibus Leito DD", vehicle: "", date: departureDate, notes: "" };
+                          setProposalTransfers([{ ...current, type: e.target.value }]);
+                        }}
+                        className="w-full h-9 rounded-lg bg-background border border-border text-xs px-2"
+                      >
+                        <option value="Ônibus Leito DD">Ônibus Leito DD (Double Decker)</option>
+                        <option value="Ônibus Semi-Leito Executivo">Ônibus Semi-Leito Executivo</option>
+                        <option value="Micro-ônibus Executivo">Micro-ônibus Executivo</option>
+                        <option value="Van Executiva Luxo">Van Executiva Luxo</option>
+                        <option value="Transfer Privativo In/Out">Transfer Privativo In/Out</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-2xs font-bold">Empresa de Transporte / Linha Parceira</Label>
+                      <Input
+                        placeholder="Ex: Expresso São Miguel / Frota Própria"
+                        value={proposalTransfers[0]?.vehicle || ""}
+                        onChange={(e) => {
+                          const current = proposalTransfers[0] || { type: "Ônibus Leito DD", vehicle: "", date: departureDate, notes: "" };
+                          setProposalTransfers([{ ...current, vehicle: e.target.value }]);
+                        }}
+                        className="h-9 text-xs rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 text-xs">
+                    <Label className="text-2xs font-bold">Pontos de Embarque no Roteiro (Cidades Intermediárias)</Label>
+                    <Textarea
+                      placeholder="Ex: São Miguel do Oeste (18:30) • Maravilha (19:15) • Chapecó (20:00) • Xanxerê (21:00)"
+                      value={proposalTransfers[0]?.notes || ""}
+                      onChange={(e) => {
+                        const current = proposalTransfers[0] || { type: "Ônibus Leito DD", vehicle: "", date: departureDate, notes: "" };
+                        setProposalTransfers([{ ...current, notes: e.target.value }]);
+                      }}
+                      className="text-xs rounded-lg min-h-16"
+                    />
                   </div>
                 </div>
               </div>
@@ -2271,6 +2834,145 @@ export function UnifiedProposalWorkspace({
             )}
           </div>
 
+          {/* ── DOCK PASSHUB: SEU RESUMO EM TEMPO REAL ── */}
+            <div className="hidden xl:flex xl:col-span-4 flex-col border-l border-border/50 bg-muted/20 p-5 overflow-y-auto [scrollbar-width:thin] space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShoppingCart className="size-4 text-primary" />
+                  <span className="font-bold text-xs uppercase tracking-wide text-foreground">Seu Resumo</span>
+                </div>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  {currency}
+                </Badge>
+              </div>
+
+              {/* Card Voo Ida/Volta */}
+              {proposalFlights.length > 0 ? (
+                <div className="p-3 rounded-lg bg-card border border-border/60 space-y-2">
+                  <div className="flex items-center justify-between text-2xs font-bold text-primary">
+                    <span className="flex items-center gap-1.5"><Plane className="size-3" /> Malha Aérea ({proposalFlights.length} trechos)</span>
+                    <span className="text-muted-foreground font-normal">{proposalFlights[0].airline}</span>
+                  </div>
+                  {proposalFlights.map((fl, fIdx) => (
+                    <div key={fl.id || fIdx} className="text-xs pt-1 border-t border-border/30 flex items-center justify-between">
+                      <div>
+                        <span className="font-mono font-bold">{fl.origin_iata || fl.origin || "Origem"}</span>
+                        <span className="text-muted-foreground mx-1">→</span>
+                        <span className="font-mono font-bold">{fl.destination_iata || fl.destination || "Destino"}</span>
+                        <span className="text-2xs text-muted-foreground block">{fl.departure_time || "08:30"} - {fl.arrival_time || "10:00"}</span>
+                      </div>
+                      <Badge variant="secondary" className="text-2xs">{fl.baggage_included || "10kg"}</Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-lg border border-dashed border-border/60 text-2xs text-muted-foreground flex items-center gap-2">
+                  <Plane className="size-3.5 text-muted-foreground/60" />
+                  <span>Nenhum voo configurado.</span>
+                </div>
+              )}
+
+              {/* Card Hotel */}
+              {bundleOptions[0]?.hotelName ? (
+                <div className="p-3 rounded-lg bg-card border border-border/60 space-y-1 text-xs">
+                  <div className="flex items-center justify-between text-2xs font-bold text-primary">
+                    <span className="flex items-center gap-1.5"><Building2 className="size-3" /> Hospedagem</span>
+                    <span className="text-emerald-600 font-bold">Confirmada</span>
+                  </div>
+                  <p className="font-bold text-foreground truncate">{bundleOptions[0].hotelName}</p>
+                  <p className="text-2xs text-muted-foreground">{rooms[0]?.roomLabel || "Quarto Casal"} • {departureDate ? `${departureDate} a ${returnDate}` : "Datas flexíveis"}</p>
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-lg border border-dashed border-border/60 text-2xs text-muted-foreground flex items-center gap-2">
+                  <Building2 className="size-3.5 text-muted-foreground/60" />
+                  <span>Nenhum hotel selecionado.</span>
+                </div>
+              )}
+
+              {/* Card Rodoviário */}
+              {proposalTransfers[0]?.notes || proposalTransfers[0]?.vehicle ? (
+                <div className="p-3 rounded-lg bg-card border border-border/60 space-y-1 text-xs">
+                  <div className="flex items-center justify-between text-2xs font-bold text-primary">
+                    <span className="flex items-center gap-1.5"><Bus className="size-3" /> Rodoviário</span>
+                    <span className="text-muted-foreground font-normal">{proposalTransfers[0].type}</span>
+                  </div>
+                  <p className="font-bold text-foreground truncate">{proposalTransfers[0].vehicle || "Transporte Executivo"}</p>
+                  {proposalTransfers[0].notes && <p className="text-2xs text-muted-foreground line-clamp-2">{proposalTransfers[0].notes}</p>}
+                </div>
+              ) : null}
+
+              {/* Card Inclusões */}
+              {selectedInclusions.length > 0 && (
+                <div className="p-3 rounded-lg bg-card border border-border/60 space-y-1.5">
+                  <span className="text-2xs font-bold text-muted-foreground block">Inclusões ({selectedInclusions.length}):</span>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedInclusions.map((inc) => (
+                      <span key={inc} className="text-2xs px-2 py-0.5 rounded-md bg-muted text-foreground border border-border/40">
+                        {inc.split(" ")[0]} {inc.split(" ")[1] || ""}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Totalização Consolidada */}
+              <div className="mt-auto pt-4 border-t border-border/60 space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xs text-muted-foreground">Total da Proposta</span>
+                  <span className="text-xl font-black font-mono text-foreground">{formatMoney(calculation.grandTotalCents)}</span>
+                </div>
+                <div className="flex items-baseline justify-between text-2xs text-muted-foreground">
+                  <span>Por passageiro adulto ({calculation.totalAdults}x)</span>
+                  <span className="font-mono font-semibold">{formatMoney(calculation.perAdultTotalCents)}</span>
+                </div>
+
+                {/* Condições de Pagamento */}
+                <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40 space-y-1 text-2xs text-muted-foreground">
+                  <div className="flex justify-between">
+                    <span>Cartão de Crédito</span>
+                    <span className="font-bold text-foreground">Até {cardInstallments}x</span>
+                  </div>
+                  {enableBoleto && (
+                    <div className="flex justify-between">
+                      <span>Boleto Bancário</span>
+                      <span className="font-bold text-foreground">Até {boletoInstallments}x</span>
+                    </div>
+                  )}
+                  {enablePixDiscount && (
+                    <div className="flex justify-between text-emerald-600 font-bold">
+                      <span>À vista no PIX ({pixDiscountPct}% off)</span>
+                      <span>{formatMoney(Math.round(calculation.grandTotalCents * (1 - pixDiscountPct / 100)))}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Ações */}
+                <div className="space-y-2 pt-2">
+                  <Button
+                    type="button"
+                    onClick={() => saveProposalMutation.mutate({ openStudioAfterSave: true })}
+                    disabled={saveProposalMutation.isPending}
+                    className="w-full h-11 text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm cursor-pointer"
+                  >
+                    {saveProposalMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                    <span>Salvar & Abrir Studio</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => saveProposalMutation.mutate({ openStudioAfterSave: false })}
+                    disabled={saveProposalMutation.isPending}
+                    className="w-full h-11 text-xs font-semibold gap-2 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                  >
+                    <Send className="size-4 text-emerald-600" />
+                    <span>Salvar & WhatsApp</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Rodapé de Ações com Toque 44px */}
           <SheetFooter className="p-4 sm:p-6 border-t border-border/40 shrink-0 bg-background flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -2279,9 +2981,11 @@ export function UnifiedProposalWorkspace({
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    if (stepTab === "pagamento") setStepTab("opcoes");
+                    if (stepTab === "pagamento") setStepTab("rodoviario");
+                    else if (stepTab === "rodoviario") setStepTab("opcoes");
                     else if (stepTab === "opcoes") setStepTab("quartos");
-                    else if (stepTab === "quartos") setStepTab("destino");
+                    else if (stepTab === "quartos") setStepTab("aereo");
+                    else if (stepTab === "aereo") setStepTab("destino");
                   }}
                   className="h-11 min-h-11 px-4 text-xs font-medium"
                 >
@@ -2293,9 +2997,11 @@ export function UnifiedProposalWorkspace({
                 <Button
                   type="button"
                   onClick={() => {
-                    if (stepTab === "destino") setStepTab("quartos");
+                    if (stepTab === "destino") setStepTab("aereo");
+                    else if (stepTab === "aereo") setStepTab("quartos");
                     else if (stepTab === "quartos") setStepTab("opcoes");
-                    else if (stepTab === "opcoes") setStepTab("pagamento");
+                    else if (stepTab === "opcoes") setStepTab("rodoviario");
+                    else if (stepTab === "rodoviario") setStepTab("pagamento");
                   }}
                   className="h-11 min-h-11 px-4 text-xs font-semibold gap-2"
                 >

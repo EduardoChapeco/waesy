@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bus, FolderPlus, MapPin, Calendar, Clock, DollarSign, Plus, Trash, CheckCircle2, ShieldCheck, Building, Image as ImageIcon, Users, Compass } from "lucide-react";
+import { Bus, FolderPlus, MapPin, Calendar, Clock, DollarSign, Plus, Trash, CheckCircle2, ShieldCheck, Building, Image as ImageIcon, Users, Compass, X } from "lucide-react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { createGroupTour } from "@/services/group-tours.functions";
@@ -195,12 +195,11 @@ export function NewGroupTourSheet({
  "Seguro Viagem & ANTT",
  "Guia Cadastur Acompanhante",
  ]);
+ const [newInclusionInput, setNewInclusionInput] = useState("");
 
  // Form State — Aba 4: Tarifário & Condições
  const [priceBrl, setPriceBrl] = useState("850,00");
- const [paymentConditions, setPaymentConditions] = useState(
- "Entrada de 20% + até 10x sem juros no cartão ou carnê da agência"
- );
+ const [paymentConditions, setPaymentConditions] = useState("");
  const [notes, setNotes] = useState("");
 
  // Cálculo da capacidade e nome do layout selecionado
@@ -728,32 +727,91 @@ export function NewGroupTourSheet({
  </p>
  </div>
 
- <div className="flex flex-wrap gap-2">
- {COMMON_INCLUSIONS.map((item) => {
+ {/* Campo de Busca / Adição Personalizada */}
+ <div className="flex items-center gap-2">
+ <Input
+ value={newInclusionInput}
+ onChange={(e) => setNewInclusionInput(e.target.value)}
+ onKeyDown={(e) => {
+ if (e.key === "Enter" && newInclusionInput.trim()) {
+ e.preventDefault();
+ if (!includedItems.includes(newInclusionInput.trim())) {
+ setIncludedItems([...includedItems, newInclusionInput.trim()]);
+ }
+ setNewInclusionInput("");
+ }
+ }}
+ placeholder="Digite para filtrar sugestões ou adicionar item (ex: Almoço Típico Incluso)..."
+ className="h-10 text-xs flex-1 rounded-lg"
+ />
+ <Button
+ type="button"
+ variant="secondary"
+ disabled={!newInclusionInput.trim()}
+ onClick={() => {
+ if (newInclusionInput.trim() && !includedItems.includes(newInclusionInput.trim())) {
+ setIncludedItems([...includedItems, newInclusionInput.trim()]);
+ }
+ setNewInclusionInput("");
+ }}
+ className="h-10 px-3 text-xs font-semibold gap-1 shrink-0"
+ >
+ <Plus className="size-3.5" />
+ <span>Adicionar</span>
+ </Button>
+ </div>
+
+ {/* Sugestões Rápidas em Linha Única com Scroll Horizontal */}
+ <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-1.5 py-1">
+ <span className="text-2xs text-muted-foreground mr-1 shrink-0">Sugestões rápidas:</span>
+ {COMMON_INCLUSIONS.filter((item) =>
+ !newInclusionInput.trim() || item.toLowerCase().includes(newInclusionInput.toLowerCase())
+ ).map((item) => {
  const isSelected = includedItems.includes(item);
  return (
- <Badge
-    key={item}
-    variant={isSelected ? "default" : "outline"}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggleInclusion(item);
-      }
-    }}
-    onClick={() => toggleInclusion(item)}
-    className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
- isSelected ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+ <button
+ key={item}
+ type="button"
+ onClick={() => toggleInclusion(item)}
+ className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1 ${
+ isSelected
+ ? "bg-primary text-primary-foreground font-bold"
+ : "bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border"
  }`}
  >
- {isSelected && <CheckCircle2 className="size-3.5 mr-1" />}
+ {isSelected ? <CheckCircle2 className="size-3" /> : <Plus className="size-3" />}
  <span>{item}</span>
- </Badge>
+ </button>
  );
  })}
  </div>
+
+ {/* Lista de Itens Inclusos Ativos */}
+ {includedItems.length > 0 && (
+ <div className="space-y-1.5 pt-2 border-t border-border/30">
+ <span className="text-2xs font-bold text-muted-foreground block">
+ Itens Ativos no Pacote ({includedItems.length}):
+ </span>
+ <div className="flex flex-wrap gap-1.5">
+ {includedItems.map((item) => (
+ <span
+ key={item}
+ className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-primary/10 text-primary border border-primary/20 font-medium"
+ >
+ <span>{item}</span>
+ <button
+ type="button"
+ onClick={() => setIncludedItems(includedItems.filter((i) => i !== item))}
+ className="size-4 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary"
+ title="Remover"
+ >
+ <X className="size-3" />
+ </button>
+ </span>
+ ))}
+ </div>
+ </div>
+ )}
  </div>
  </TabsContent>
 
@@ -785,7 +843,7 @@ export function NewGroupTourSheet({
  <div className="space-y-1">
  <Label className="text-xs font-bold">Condições de Pagamento e Parcelamento</Label>
  <Input
- placeholder="Ex: Entrada de 20% + até 10x sem juros no cartão ou 4x no carnê"
+ placeholder="Ex: Até 10x sem juros no cartão ou consulte condições no boleto"
  value={paymentConditions}
  onChange={(e) => setPaymentConditions(e.target.value)}
  className="h-10 text-xs rounded-lg"

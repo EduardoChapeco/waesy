@@ -124,7 +124,7 @@ const PRESET_TEMPLATES: Record<string, PreBoardingTripInput> = {
     insuranceProvider: "Assist Card AC 60 Internacional",
     insurancePolicyNumber: "AC-9988412-RD",
     commercialPriceTotalCents: 2190000,
-    commercialPaymentConditions: "Entrada de 20% via Pix + 10x sem juros no cartão ou boleto operadora",
+    commercialPaymentConditions: "Condições comerciais conforme contrato da operadora",
   },
   orlando_parques: {
     presentationType: "pre_boarding_guide",

@@ -1881,21 +1881,19 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  variant="outline"
  onClick={() => {
  const total = proposal.pricing?.total_price_cents || 0;
- const entrada = Math.round(total * 0.2); // 20% de entrada
- const restante = total - entrada;
  onChange({
  pricing: {
  ...proposal.pricing,
  installments_options: [
  { installments_count: 1, installment_value_cents: total, method: "pix", has_interest: false },
- { installments_count: 10, installment_value_cents: Math.round(restante / 10), method: "credit_card", has_interest: false },
+ { installments_count: 12, installment_value_cents: Math.round(total / 12), method: "boleto", has_interest: false },
  ],
  },
  });
  }}
  className="h-8 text-2xs rounded-lg font-semibold min-h-11 sm:min-h-0"
  >
- Entrada + 10x
+ Boleto 12x Sem Entrada
  </Button>
  </div>
 

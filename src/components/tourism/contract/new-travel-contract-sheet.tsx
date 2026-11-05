@@ -872,9 +872,9 @@ export function NewTravelContractSheet({
  <div className="flex flex-wrap gap-2">
  {[
  " Pix à Vista (5% de desconto)",
- " Entrada de 20% + Saldo em até 10x sem juros no Cartão",
+ " Cartão de Crédito em até 10x sem juros",
  " 50% na Assinatura + 50% até 15 dias antes do Embarque",
- " Boleto Bancário Faturado (Entrada + Saldo em até 6x)",
+ " Boleto Faturado sem entrada (1º vencimento em 30 dias)",
  ].map((preset) => (
  <button
  key={preset}
