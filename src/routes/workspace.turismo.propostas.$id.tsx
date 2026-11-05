@@ -241,33 +241,12 @@ function WorkspaceProposalStudioPage() {
  </div>
  </div>
 
- {/* Centro: Formato + Template + Controles de Zoom */}
+ {/* Centro: Controles de Zoom do Canvas */}
  <div className="flex items-center gap-2">
- {/* Seletor de Formato do Canvas */}
- <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
- {(["a4-portrait", "a4-landscape", "story-916", "presentation-169", "letter-portrait"] as ProposalCanvasFormat[]).map((fmt) => (
- <button
- key={fmt}
- type="button"
- onClick={() => handleChange({ canvas_format: fmt })}
- className={cn(
- "min-h-11 px-3 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
- proposal.canvas_format === fmt
- ? "bg-background text-foreground"
- : "text-muted-foreground hover:text-foreground"
- )}
- title={CANVAS_DIMENSIONS[fmt]?.label}
- >
- {CANVAS_DIMENSIONS[fmt]?.iconEmoji}{" "}
- <span className="hidden waesy-expanded-flex">
- {fmt === "a4-portrait" ? "A4" : fmt === "a4-landscape" ? "Paisagem" : fmt === "story-916" ? "Story" : fmt === "presentation-169" ? "16:9" : "Carta"}
- </span>
- </button>
- ))}
- </div>
+
 
  {/* Controles de Zoom */}
- <div className="hidden waesy-expanded-flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
+ <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
  <button
  type="button"
  onClick={() => setZoomScale((prev) => Math.max(0.3, (prev !== null ? prev : autoFitScale) - 0.1))}

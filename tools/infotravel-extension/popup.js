@@ -257,3 +257,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 });
+
+  // Listener para cota��es e or�amentos capturados em tempo real
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === 'QUOTE_CAPTURED') {
+      const q = message.payload;
+      const formattedPrice = (q.totalCents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      appendLog(`?? COTA��O DETECTADA: ${q.destinationCity} por ${formattedPrice} (${q.sourcePage})`, 'success');
+      
+      // Salva no storage local de cota��es recentes
+      chrome.storage.local.get(['cotacoesRecentes'], (res) => {
+        const list = res.cotacoesRecentes || [];
+        list.unshift(q);
+        if (list.length > 50) list.pop();
+        chrome.storage.local.set({ cotacoesRecentes: list });
+      });
+    }
+  });

@@ -485,7 +485,7 @@ function FocusGroupPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenApplyModal(s.content)}
-                            className="text-xs text-primary font-medium hover:underline flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                            className="text-xs text-primary font-medium hover:underline flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                           >
                             <Sparkles className="size-3" />
                             <span>Aplicar esta sugestão ao catálogo</span>
@@ -688,7 +688,7 @@ function FocusGroupPage() {
           </DialogHeader>
 
           <div className="space-y-4 text-xs">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-foreground">Produto de Destino no Catálogo</label>
               <select
                 value={selectedProductId}
@@ -715,7 +715,7 @@ function FocusGroupPage() {
               </select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-foreground">Título Aprimorado</label>
               <Input
                 value={appliedTitle}
@@ -725,7 +725,7 @@ function FocusGroupPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-foreground">Descrição / Copy Persuasiva Sugerida</label>
               <Textarea
                 value={appliedDescription}
@@ -736,7 +736,7 @@ function FocusGroupPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <label className="font-semibold text-foreground">Preço Ajustado (em centavos, opcional)</label>
               <Input
                 type="number"

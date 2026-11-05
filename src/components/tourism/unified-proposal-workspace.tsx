@@ -119,16 +119,14 @@ export const COMMON_INCLUSIONS_TAGS = [
 ];
 
 export function sanitizeDestinationString(raw?: string | null): string {
-  if (!raw) return "Buenos Aires";
+  if (!raw) return "";
   const trimmed = raw.trim();
-  let cityCandidate = trimmed;
-  if (trimmed.includes(" - ")) {
-    const firstPart = trimmed.split(" - ")[0].trim();
-    if (firstPart.length >= 2 && firstPart.length <= 40) {
-      cityCandidate = firstPart;
-    }
-  } else if (trimmed.length > 50) {
-    cityCandidate = trimmed.slice(0, 50);
+  if (!trimmed) return "";
+  // Delimita por hífen, traço, travessão, pipe, ponto de bala, dois pontos, barra ou quebra de linha
+  const parts = trimmed.split(/[\s\u00A0]*[-–—|•·:\/\n][\s\u00A0]*/);
+  let cityCandidate = (parts[0] || trimmed).trim();
+  if (cityCandidate.length > 40) {
+    cityCandidate = cityCandidate.slice(0, 40).trim();
   }
   // Title Case if shouting in all-caps
   if (cityCandidate === cityCandidate.toUpperCase() && cityCandidate.length > 2) {
@@ -177,7 +175,7 @@ export function UnifiedProposalWorkspace({
   const [selectedPackageTemplateId, setSelectedPackageTemplateId] = useState<string | null>(null);
   const [showOcrTextModal, setShowOcrTextModal] = useState(false);
   const [ocrPastedText, setOcrPastedText] = useState("");
-  const [originCity, setOriginCity] = useState("Chapecó (XAP)");
+  const [originCity, setOriginCity] = useState("");
 
   const { data: crmCustomersRes, refetch: refetchCustomers } = useQuery({
     queryKey: ["crm-customers-proposal-workspace"],
@@ -222,55 +220,34 @@ export function UnifiedProposalWorkspace({
   );
   const [lastOcrExtraction, setLastOcrExtraction] = useState<OperatorQuoteExtractionResult | null>(null);
   const [newInclusionInput, setNewInclusionInput] = useState("");
-  const [departureDate, setDepartureDate] = useState("2027-01-09");
-  const [returnDate, setReturnDate] = useState("2027-01-14");
+  const [departureDate, setDepartureDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return d.toISOString().split("T")[0];
+  });
+  const [returnDate, setReturnDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 37);
+    return d.toISOString().split("T")[0];
+  });
 
   // Malha Aérea Dinâmica (Voos - PassHub / Infotravel)
-  const [proposalFlights, setProposalFlights] = useState<FlightSegmentDTO[]>([
-    {
-      id: "fl-1",
-      leg: "ida",
-      airline: "LATAM Airlines",
-      flight_number: "LA 3241",
-      origin_iata: "XAP",
-      origin_city: "Chapecó",
-      destination_iata: "GRU",
-      destination_city: "São Paulo",
-      departure_time: "08:30",
-      arrival_time: "10:00",
-      baggage_included: "Mochila + Mala 10kg",
-      stops_count: 0,
-    },
-    {
-      id: "fl-2",
-      leg: "volta",
-      airline: "LATAM Airlines",
-      flight_number: "LA 3242",
-      origin_iata: "GRU",
-      origin_city: "São Paulo",
-      destination_iata: "XAP",
-      destination_city: "Chapecó",
-      departure_time: "18:00",
-      arrival_time: "19:30",
-      baggage_included: "Mochila + Mala 10kg",
-      stops_count: 0,
-    },
-  ]);
+  const [proposalFlights, setProposalFlights] = useState<FlightSegmentDTO[]>([]);
 
   const handleAddFlight = () => {
     const isSecond = proposalFlights.length === 1;
     const newFlight: FlightSegmentDTO = {
       id: `fl-${Date.now()}`,
       leg: isSecond ? "volta" : "ida",
-      airline: "LATAM Airlines",
-      flight_number: isSecond ? "LA 3242" : "LA 3241",
-      origin_iata: isSecond ? (proposalFlights[0]?.destination_iata || "GRU") : "XAP",
-      origin_city: isSecond ? (proposalFlights[0]?.destination_city || "São Paulo") : "Chapecó",
-      destination_iata: isSecond ? (proposalFlights[0]?.origin_iata || "XAP") : "GRU",
-      destination_city: isSecond ? (proposalFlights[0]?.origin_city || "Chapecó") : (destinationQuery || "São Paulo"),
+      airline: "",
+      flight_number: "",
+      origin_iata: isSecond ? (proposalFlights[0]?.destination_iata || "") : (originCity || ""),
+      origin_city: isSecond ? (proposalFlights[0]?.destination_city || "") : (originCity || ""),
+      destination_iata: isSecond ? (proposalFlights[0]?.origin_iata || "") : (destinationQuery || ""),
+      destination_city: isSecond ? (proposalFlights[0]?.origin_city || "") : (destinationQuery || ""),
       departure_date: isSecond ? (returnDate || departureDate) : departureDate,
-      departure_time: isSecond ? "18:00" : "08:30",
-      arrival_time: isSecond ? "19:30" : "10:00",
+      departure_time: "",
+      arrival_time: "",
       baggage_included: "Mochila + Mala 10kg",
       stops_count: 0,
     };
@@ -287,15 +264,8 @@ export function UnifiedProposalWorkspace({
     );
   };
 
-  // Transporte Rodoviário & Terrestre (Ônibus Leito DD / Frota)
-  const [proposalTransfers, setProposalTransfers] = useState<TransferDTO[]>([
-    {
-      type: "Ônibus Leito DD",
-      vehicle: "Marcopolo Paradiso G8 DD",
-      date: departureDate,
-      notes: "Embarques: São Miguel do Oeste (18:30), Maravilha (19:15), Chapecó (20:00)",
-    },
-  ]);
+  // Transporte Rodoviário & Terrestre (Ônibus Leito DD / Frota / Transfers)
+  const [proposalTransfers, setProposalTransfers] = useState<TransferDTO[]>([]);
 
   // Autocomplete do Banco de Hotéis
   const [hotelQuery, setHotelQuery] = useState("");
@@ -308,12 +278,8 @@ export function UnifiedProposalWorkspace({
     staleTime: 30_000,
   });
 
-  // Tags Rápidas de Inclusões
-  const [selectedInclusions, setSelectedInclusions] = useState<string[]>([
-    "Transfer In/Out Aeroporto ↔ Hotel",
-    "Seguro Viagem Cobertura Completa",
-    "Bagagem Despachada 23kg",
-  ]);
+  // Tags Rápidas de Inclusões (Livre e configurável, sem itens fake)
+  const [selectedInclusions, setSelectedInclusions] = useState<string[]>([]);
 
   const toggleInclusionTag = (tag: string) => {
     setSelectedInclusions((prev) =>
@@ -660,14 +626,45 @@ export function UnifiedProposalWorkspace({
   const normalizeDateToIso = (d?: string | null): string | null => {
     if (!d) return null;
     const clean = d.trim();
+    if (!clean) return null;
+    // YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(clean)) {
-      const [day, month, year] = clean.split("/");
-      return `${year}-${month}-${day}`;
+    // YYYY-MM-DDTHH:mm:ss
+    if (/^\d{4}-\d{2}-\d{2}T/.test(clean)) return clean.split("T")[0];
+    // DD/MM/YYYY ou DD/MM/YYYY HH:mm
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(clean)) {
+      const datePart = clean.split(" ")[0];
+      const [day, month, year] = datePart.split("/");
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
     }
-    if (/^\d{2}-\d{2}-\d{4}$/.test(clean)) {
-      const [day, month, year] = clean.split("-");
-      return `${year}-${month}-${day}`;
+    // DD-MM-YYYY
+    if (/^\d{1,2}-\d{1,2}-\d{4}/.test(clean)) {
+      const datePart = clean.split(" ")[0];
+      const [day, month, year] = datePart.split("-");
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+    // DD/MM/YY (ano de 2 dígitos)
+    if (/^\d{1,2}\/\d{1,2}\/\d{2}$/.test(clean)) {
+      const [day, month, yy] = clean.split("/");
+      const year = Number(yy) < 50 ? `20${yy}` : `19${yy}`;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+    // Formato por extenso em português: "9 de janeiro de 2027" ou "09 de jan de 2027"
+    const monthsPt: Record<string, string> = {
+      jan: "01", fev: "02", mar: "03", abr: "04", mai: "05", jun: "06",
+      jul: "07", ago: "08", set: "09", out: "10", nov: "11", dez: "12",
+      janeiro: "01", fevereiro: "02", marco: "03", "março": "03", abril: "04",
+      maio: "05", junho: "06", julho: "07", agosto: "08", setembro: "09",
+      outubro: "10", novembro: "11", dezembro: "12",
+    };
+    const ptMatch = clean.toLowerCase().match(/(\d{1,2})\s*(?:de|\/|-|\s)\s*([a-zç]+)\s*(?:de|\/|-|\s)\s*(\d{2,4})/);
+    if (ptMatch) {
+      const day = ptMatch[1].padStart(2, "0");
+      const monthStr = ptMatch[2];
+      const yy = ptMatch[3];
+      const year = yy.length === 2 ? (Number(yy) < 50 ? `20${yy}` : `19${yy}`) : yy;
+      const month = monthsPt[monthStr] || monthsPt[monthStr.slice(0, 3)];
+      if (month) return `${year}-${month}-${day}`;
     }
     const parsed = new Date(clean);
     if (!isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
@@ -689,10 +686,18 @@ export function UnifiedProposalWorkspace({
     roomCategory?: string | null;
     adultsCount?: number | null;
     childrenCount?: number | null;
+    childrenAges?: number[] | null;
     grossPriceCents?: number | null;
     operatorNetCents?: number | null;
     suggestedCommissionCents?: number | null;
     maxInstallments?: number | null;
+    hasDownpayment?: boolean | null;
+    downpaymentPct?: number | null;
+    downpaymentFixedCents?: number | null;
+    firstBoletoDue?: string | null;
+    pixDiscountPct?: number | null;
+    cardInstallments?: number | null;
+    boletoInstallments?: number | null;
     inclusions?: string[] | null;
     hotelsList?: Array<{ hotel_name?: string; meal_plan?: string; room_category?: string; price_cents?: number } | any>;
   }): number => {
@@ -765,12 +770,15 @@ export function UnifiedProposalWorkspace({
     const grossCents = extracted.grossPriceCents || 0;
     const perAdultCents = grossCents > 0 ? Math.round(grossCents / adults) : 0;
 
-    if (grossCents > 0 || extracted.adultsCount || extracted.mealPlan || extracted.roomCategory) {
+    if (grossCents > 0 || extracted.adultsCount || extracted.mealPlan || extracted.roomCategory || extracted.childrenAges) {
       setRooms((prev) => [
         {
           ...prev[0],
           adultsCount: adults,
           childrenCount: children,
+          childrenAges: (Array.isArray(extracted.childrenAges) && extracted.childrenAges.length > 0)
+            ? extracted.childrenAges
+            : prev[0].childrenAges,
           baseAdultPriceCents: perAdultCents > 0 ? perAdultCents : prev[0].baseAdultPriceCents,
           mealPlan: extracted.mealPlan?.trim() || prev[0].mealPlan,
           roomCategory: extracted.roomCategory?.trim() || prev[0].roomCategory,
@@ -817,7 +825,45 @@ export function UnifiedProposalWorkspace({
       }
     }
 
-    if (extracted.maxInstallments && extracted.maxInstallments > 0) {
+    if (extracted.hasDownpayment !== undefined && extracted.hasDownpayment !== null) {
+      setHasBoletoDownpayment(Boolean(extracted.hasDownpayment));
+      fieldsUpdated++;
+    }
+
+    if (extracted.downpaymentPct !== undefined && extracted.downpaymentPct !== null && extracted.downpaymentPct > 0) {
+      setDownpaymentType("pct");
+      setDownpaymentPct(extracted.downpaymentPct);
+      setHasBoletoDownpayment(true);
+      fieldsUpdated++;
+    } else if (extracted.downpaymentFixedCents !== undefined && extracted.downpaymentFixedCents !== null && extracted.downpaymentFixedCents > 0) {
+      setDownpaymentType("fixed");
+      setDownpaymentFixedCents(extracted.downpaymentFixedCents);
+      setHasBoletoDownpayment(true);
+      fieldsUpdated++;
+    }
+
+    if (extracted.firstBoletoDue?.trim()) {
+      setFirstBoletoDue(extracted.firstBoletoDue.trim());
+      fieldsUpdated++;
+    }
+
+    if (extracted.pixDiscountPct !== undefined && extracted.pixDiscountPct !== null) {
+      setEnablePixDiscount(true);
+      setPixDiscountPct(extracted.pixDiscountPct);
+      fieldsUpdated++;
+    }
+
+    if (extracted.cardInstallments && extracted.cardInstallments > 0) {
+      setEnableCard(true);
+      setCardInstallments(extracted.cardInstallments);
+      fieldsUpdated++;
+    }
+
+    if (extracted.boletoInstallments && extracted.boletoInstallments > 0) {
+      setEnableBoleto(true);
+      setBoletoInstallments(extracted.boletoInstallments);
+      fieldsUpdated++;
+    } else if (extracted.maxInstallments && extracted.maxInstallments > 0) {
       setCardInstallments(extracted.maxInstallments);
       setBoletoInstallments(extracted.maxInstallments);
       fieldsUpdated++;
@@ -874,18 +920,18 @@ export function UnifiedProposalWorkspace({
                 airline: f.airline_name || f.airline || "Companhia Aérea",
                 airline_name: f.airline_name || f.airline || "Companhia Aérea",
                 flight_number: f.flight_number || "",
-                origin: f.origin_iata || f.origin || "XAP",
-                origin_iata: f.origin_iata || f.origin || "XAP",
+                origin: f.origin_iata || f.origin || "",
+                origin_iata: f.origin_iata || f.origin || "",
                 origin_city: f.origin_city || "",
-                destination: f.destination_iata || f.destination || "GRU",
-                destination_iata: f.destination_iata || f.destination || "GRU",
+                destination: f.destination_iata || f.destination || "",
+                destination_iata: f.destination_iata || f.destination || "",
                 destination_city: f.destination_city || "",
                 date: f.date || f.departure_date || (i === 0 ? (q.travel_start || "") : (q.travel_end || "")),
                 departure_date: f.departure_date || f.date || (i === 0 ? (q.travel_start || "") : (q.travel_end || "")),
-                departure_time: f.departure_time || "08:30",
-                arrival_time: f.arrival_time || "10:00",
-                baggage: f.baggage_included || f.baggage || "Mochila + Mala 10kg",
-                baggage_included: f.baggage_included || f.baggage || "Mochila + Mala 10kg",
+                departure_time: f.departure_time || "",
+                arrival_time: f.arrival_time || "",
+                baggage: f.baggage_included || f.baggage || "",
+                baggage_included: f.baggage_included || f.baggage || "",
                 stops: f.stops_count ?? f.connections_count ?? 0,
                 stops_count: f.stops_count ?? f.connections_count ?? 0,
               })));
@@ -895,8 +941,8 @@ export function UnifiedProposalWorkspace({
                 id: `tr-ocr-${i + 1}`,
                 type: "in_out",
                 route_name: typeof t === "string" ? t : (t.route_name || "Transfer Aeroporto ↔ Hotel"),
-                vehicle_type: "Van / Ônibus Executivo",
-                is_private: false,
+                vehicle_type: t.vehicle_type || "Transfer Regular",
+                is_private: Boolean(t.is_private),
                 price_cents: 0,
               })));
             }
@@ -906,7 +952,7 @@ export function UnifiedProposalWorkspace({
 
             const updatedCount = applyExtractedTravelData({
               destination: detectedDest,
-              origin: q.flights?.[0]?.origin_city || (q.flights?.[0]?.origin_iata ? `${q.flights[0].origin_iata}` : undefined),
+              origin: q.origin || q.flights?.[0]?.origin_city || (q.flights?.[0]?.origin_iata ? `${q.flights[0].origin_iata}` : undefined),
               departureDate: q.travel_start || q.flights?.[0]?.date || q.hotels?.[0]?.checkin_date,
               returnDate: q.travel_end || q.hotels?.[0]?.checkout_date,
               clientName: q.client_name,
@@ -919,10 +965,18 @@ export function UnifiedProposalWorkspace({
               roomCategory: q.hotels?.[0]?.room_category,
               adultsCount: q.adults_count,
               childrenCount: q.children_count,
+              childrenAges: q.children_ages,
               grossPriceCents: q.gross_price_cents,
               operatorNetCents: q.operator_net_cents,
               suggestedCommissionCents: q.suggested_commission_cents,
               maxInstallments: q.max_installments,
+              hasDownpayment: q.has_downpayment,
+              downpaymentPct: q.downpayment_pct,
+              downpaymentFixedCents: q.downpayment_cents,
+              firstBoletoDue: q.first_installment_due,
+              pixDiscountPct: q.pix_discount_pct,
+              cardInstallments: q.card_installments,
+              boletoInstallments: q.boleto_installments,
               inclusions: q.inclusions,
               hotelsList: q.hotels,
             });
@@ -971,18 +1025,18 @@ export function UnifiedProposalWorkspace({
                 airline: f.airline || "Companhia Aérea",
                 airline_name: f.airline || "Companhia Aérea",
                 flight_number: f.flightNumber || "",
-                origin: f.origin || "XAP",
-                origin_iata: f.origin || "XAP",
+                origin: f.origin || "",
+                origin_iata: f.origin || "",
                 origin_city: f.originCity || "",
-                destination: f.destination || "GRU",
-                destination_iata: f.destination || "GRU",
+                destination: f.destination || "",
+                destination_iata: f.destination || "",
                 destination_city: f.destinationCity || "",
                 date: (i === 0 ? universalRes.dates?.departure : universalRes.dates?.return) || "",
                 departure_date: (i === 0 ? universalRes.dates?.departure : universalRes.dates?.return) || "",
-                departure_time: f.departureTime || "08:30",
-                arrival_time: f.arrivalTime || "10:00",
-                baggage: f.baggageIncluded || "Mochila + Mala 10kg",
-                baggage_included: f.baggageIncluded || "Mochila + Mala 10kg",
+                departure_time: f.departureTime || "",
+                arrival_time: f.arrivalTime || "",
+                baggage: f.baggageIncluded || "",
+                baggage_included: f.baggageIncluded || "",
                 stops: 0,
                 stops_count: 0,
               })));
@@ -1068,18 +1122,18 @@ export function UnifiedProposalWorkspace({
               airline: f.airline_name || f.airline || "Companhia Aérea",
               airline_name: f.airline_name || f.airline || "Companhia Aérea",
               flight_number: f.flight_number || "",
-              origin: f.origin_iata || f.origin || "XAP",
-              origin_iata: f.origin_iata || f.origin || "XAP",
+              origin: f.origin_iata || f.origin || "",
+              origin_iata: f.origin_iata || f.origin || "",
               origin_city: f.origin_city || "",
-              destination: f.destination_iata || f.destination || "GRU",
-              destination_iata: f.destination_iata || f.destination || "GRU",
+              destination: f.destination_iata || f.destination || "",
+              destination_iata: f.destination_iata || f.destination || "",
               destination_city: f.destination_city || "",
               date: f.date || f.departure_date || (i === 0 ? (q.travel_start || "") : (q.travel_end || "")),
               departure_date: f.departure_date || f.date || (i === 0 ? (q.travel_start || "") : (q.travel_end || "")),
-              departure_time: f.departure_time || "08:30",
-              arrival_time: f.arrival_time || "10:00",
-              baggage: f.baggage_included || f.baggage || "Mochila + Mala 10kg",
-              baggage_included: f.baggage_included || f.baggage || "Mochila + Mala 10kg",
+              departure_time: f.departure_time || "",
+              arrival_time: f.arrival_time || "",
+              baggage: f.baggage_included || f.baggage || "",
+              baggage_included: f.baggage_included || f.baggage || "",
               stops: f.stops_count ?? f.connections_count ?? 0,
               stops_count: f.stops_count ?? f.connections_count ?? 0,
             })),
@@ -1091,8 +1145,8 @@ export function UnifiedProposalWorkspace({
               id: `tr-ocr-txt-${i + 1}`,
               type: "in_out",
               route_name: typeof t === "string" ? t : (t.route_name || "Transfer Aeroporto ↔ Hotel"),
-              vehicle_type: "Van / Ônibus Executivo",
-              is_private: false,
+              vehicle_type: t.vehicle_type || "Veículo Executivo",
+              is_private: Boolean(t.is_private),
               price_cents: 0,
             })),
           );
@@ -1103,7 +1157,7 @@ export function UnifiedProposalWorkspace({
 
         const updated = applyExtractedTravelData({
           destination: detectedDest,
-          origin: q.flights?.[0]?.origin_city || (q.flights?.[0]?.origin_iata ? `${q.flights[0].origin_iata}` : undefined),
+          origin: q.origin || q.flights?.[0]?.origin_city || (q.flights?.[0]?.origin_iata ? `${q.flights[0].origin_iata}` : undefined),
           departureDate: q.travel_start || q.flights?.[0]?.date || q.hotels?.[0]?.checkin_date,
           returnDate: q.travel_end || q.hotels?.[0]?.checkout_date,
           clientName: q.client_name,
@@ -1116,10 +1170,18 @@ export function UnifiedProposalWorkspace({
           roomCategory: q.hotels?.[0]?.room_category,
           adultsCount: q.adults_count,
           childrenCount: q.children_count,
+          childrenAges: q.children_ages,
           grossPriceCents: q.gross_price_cents,
           operatorNetCents: q.operator_net_cents,
           suggestedCommissionCents: q.suggested_commission_cents,
           maxInstallments: q.max_installments,
+          hasDownpayment: q.has_downpayment,
+          downpaymentPct: q.downpayment_pct,
+          downpaymentFixedCents: q.downpayment_cents,
+          firstBoletoDue: q.first_installment_due,
+          pixDiscountPct: q.pix_discount_pct,
+          cardInstallments: q.card_installments,
+          boletoInstallments: q.boleto_installments,
           inclusions: q.inclusions,
           hotelsList: q.hotels,
         });
@@ -1835,7 +1897,7 @@ export function UnifiedProposalWorkspace({
                   <Input
                     value={customTitle}
                     onChange={(e) => setCustomTitle(e.target.value)}
-                    placeholder={`Ex: Proposta Exclusiva — ${destinationQuery || "Viagem"}`}
+                    placeholder={`Ex: Proposta ${destinationQuery ? destinationQuery : "Personalizada"}`}
                     className="h-11 min-h-11 rounded-lg text-xs"
                   />
                 </div>
@@ -2514,53 +2576,92 @@ export function UnifiedProposalWorkspace({
                   </span>
                 </div>
 
-                <div className="p-4 rounded-lg border border-border/60 bg-card space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="space-y-1">
-                      <Label className="text-2xs font-bold">Tipo de Frota / Categoria de Poltrona</Label>
-                      <select
-                        value={proposalTransfers[0]?.type || "Ônibus Leito DD"}
-                        onChange={(e) => {
-                          const current = proposalTransfers[0] || { type: "Ônibus Leito DD", vehicle: "", date: departureDate, notes: "" };
-                          setProposalTransfers([{ ...current, type: e.target.value }]);
-                        }}
-                        className="w-full h-9 rounded-lg bg-background border border-border text-xs px-2"
+                {proposalTransfers.length === 0 ? (
+                  <div className="p-6 rounded-lg border border-dashed border-border/80 bg-muted/10 text-center space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      Nenhum transporte rodoviário ou transfer vinculado a esta proposta (ideal para pacotes aéreos exclusivos).
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setProposalTransfers([
+                          {
+                            type: "Ônibus Leito DD",
+                            vehicle: "",
+                            date: departureDate,
+                            notes: "",
+                          },
+                        ])
+                      }
+                      className="h-10 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Incluir Ônibus / Transfer Rodoviário</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-lg border border-border/60 bg-card space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-border/30">
+                      <span className="text-xs font-bold text-foreground">Configuração de Transporte Terrestre</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setProposalTransfers([])}
+                        className="h-8 px-2 text-2xs text-destructive hover:text-destructive cursor-pointer"
                       >
-                        <option value="Ônibus Leito DD">Ônibus Leito DD (Double Decker)</option>
-                        <option value="Ônibus Semi-Leito Executivo">Ônibus Semi-Leito Executivo</option>
-                        <option value="Micro-ônibus Executivo">Micro-ônibus Executivo</option>
-                        <option value="Van Executiva Luxo">Van Executiva Luxo</option>
-                        <option value="Transfer Privativo In/Out">Transfer Privativo In/Out</option>
-                      </select>
+                        Remover Transporte
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="space-y-1">
+                        <Label className="text-2xs font-bold">Tipo de Frota / Categoria de Poltrona</Label>
+                        <select
+                          value={proposalTransfers[0]?.type || "Ônibus Leito DD"}
+                          onChange={(e) => {
+                            const current = proposalTransfers[0] || { type: "Ônibus Leito DD", vehicle: "", date: departureDate, notes: "" };
+                            setProposalTransfers([{ ...current, type: e.target.value }]);
+                          }}
+                          className="w-full h-9 rounded-lg bg-background border border-border text-xs px-2"
+                        >
+                          <option value="Ônibus Leito DD">Ônibus Leito DD (Double Decker)</option>
+                          <option value="Ônibus Semi-Leito Executivo">Ônibus Semi-Leito Executivo</option>
+                          <option value="Micro-ônibus Executivo">Micro-ônibus Executivo</option>
+                          <option value="Van Executiva Luxo">Van Executiva Luxo</option>
+                          <option value="Transfer Privativo In/Out">Transfer Privativo In/Out</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-2xs font-bold">Empresa de Transporte / Linha Parceira</Label>
+                        <Input
+                          placeholder="Ex: Expresso São Miguel / Frota Própria"
+                          value={proposalTransfers[0]?.vehicle || ""}
+                          onChange={(e) => {
+                            const current = proposalTransfers[0] || { type: "Ônibus Leito DD", vehicle: "", date: departureDate, notes: "" };
+                            setProposalTransfers([{ ...current, vehicle: e.target.value }]);
+                          }}
+                          className="h-9 text-xs rounded-lg"
+                        />
+                      </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <Label className="text-2xs font-bold">Empresa de Transporte / Linha Parceira</Label>
-                      <Input
-                        placeholder="Ex: Expresso São Miguel / Frota Própria"
-                        value={proposalTransfers[0]?.vehicle || ""}
+                    <div className="space-y-1 text-xs">
+                      <Label className="text-2xs font-bold">Pontos de Embarque no Roteiro (Cidades Intermediárias)</Label>
+                      <Textarea
+                        placeholder="Ex: São Miguel do Oeste (18:30) • Maravilha (19:15) • Chapecó (20:00) • Xanxerê (21:00)"
+                        value={proposalTransfers[0]?.notes || ""}
                         onChange={(e) => {
                           const current = proposalTransfers[0] || { type: "Ônibus Leito DD", vehicle: "", date: departureDate, notes: "" };
-                          setProposalTransfers([{ ...current, vehicle: e.target.value }]);
+                          setProposalTransfers([{ ...current, notes: e.target.value }]);
                         }}
-                        className="h-9 text-xs rounded-lg"
+                        className="text-xs rounded-lg min-h-16"
                       />
                     </div>
                   </div>
-
-                  <div className="space-y-1 text-xs">
-                    <Label className="text-2xs font-bold">Pontos de Embarque no Roteiro (Cidades Intermediárias)</Label>
-                    <Textarea
-                      placeholder="Ex: São Miguel do Oeste (18:30) • Maravilha (19:15) • Chapecó (20:00) • Xanxerê (21:00)"
-                      value={proposalTransfers[0]?.notes || ""}
-                      onChange={(e) => {
-                        const current = proposalTransfers[0] || { type: "Ônibus Leito DD", vehicle: "", date: departureDate, notes: "" };
-                        setProposalTransfers([{ ...current, notes: e.target.value }]);
-                      }}
-                      className="text-xs rounded-lg min-h-16"
-                    />
-                  </div>
-                </div>
+                )}
               </div>
             )}
 

@@ -223,8 +223,8 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  stars: hotel.stars || 4,
  room_type: firstRoom?.name || "Apartamento Superior",
  board_basis: (hotel.regime_options?.[0] as any) || "all_inclusive",
- checkin_date: proposal.travel_start_date || "2026-10-10",
- checkout_date: proposal.travel_end_date || "2026-10-15",
+ checkin_date: proposal.travel_start_date || "",
+ checkout_date: proposal.travel_end_date || "",
  nights_count: 5,
  amenities: (hotel.badges && hotel.badges.length > 0) ? hotel.badges : ["Piscina", "Wi-Fi", "Ar Condicionado"],
  };
@@ -247,8 +247,8 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  stars: preset.stars || 5,
  room_type: "Apartamento Luxo / Bangalô",
  board_basis: (preset.regime_options?.[0] as any) || "all_inclusive",
- checkin_date: proposal.travel_start_date || "2026-10-10",
- checkout_date: proposal.travel_end_date || "2026-10-15",
+ checkin_date: proposal.travel_start_date || "",
+ checkout_date: proposal.travel_end_date || "",
  nights_count: 5,
  amenities: preset.badges || ["Piscina", "Wi-Fi", "Pé na Areia"],
  };
@@ -261,23 +261,26 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  // Helpers de Voos
  const handleAddFlight = () => {
- const newFlight: FlightSegmentDTO = {
- id: "fl_" + Math.random().toString(36).substring(2, 7),
- type: proposal.flights.length === 0 ? "outbound" : "return",
- airline: "LATAM Airlines",
- airline_name: "LATAM Airlines",
- origin: "XAP",
- origin_iata: "XAP",
- origin_city: "Chapecó",
- destination: "GRU",
- destination_iata: "GRU",
- destination_city: "São Paulo",
- departure_time: "08:30",
- arrival_time: "10:00",
- baggage_included: "Mochila + Mala 10kg",
- stops_count: 0,
- };
- onChange({ flights: [...proposal.flights, newFlight] });
+   const isReturn = proposal.flights.length > 0;
+   const firstFlight = proposal.flights[0];
+   const newFlight: FlightSegmentDTO = {
+     id: "fl_" + Math.random().toString(36).substring(2, 7),
+     type: isReturn ? "return" : "outbound",
+     leg: isReturn ? "volta" : "ida",
+     airline: "",
+     airline_name: "",
+     origin: isReturn ? (firstFlight?.destination || "") : "",
+     origin_iata: isReturn ? (firstFlight?.destination_iata || "") : "",
+     origin_city: isReturn ? (firstFlight?.destination_city || "") : "",
+     destination: isReturn ? (firstFlight?.origin || "") : (proposal.destination || ""),
+     destination_iata: isReturn ? (firstFlight?.origin_iata || "") : "",
+     destination_city: isReturn ? (firstFlight?.origin_city || "") : (proposal.destination || ""),
+     departure_time: "",
+     arrival_time: "",
+     baggage_included: "",
+     stops_count: 0,
+   };
+   onChange({ flights: [...proposal.flights, newFlight] });
  };
 
  const handleRemoveFlight = (id?: string) => {
@@ -302,18 +305,18 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  // Helpers de Hotéis
  const handleAddHotel = () => {
- const newHotel: HotelOptionDTO = {
- id: "ht_" + Math.random().toString(36).substring(2, 7),
- hotel_name: "Resort & Spa",
- stars: 4,
- room_type: "Apartamento Luxo",
- board_basis: "breakfast",
- checkin_date: proposal.travel_start_date || "2026-10-10",
- checkout_date: proposal.travel_end_date || "2026-10-15",
- nights_count: 5,
- amenities: ["Piscina", "Wi-Fi Grátis", "Ar Condicionado"],
- };
- onChange({ hotels: [...proposal.hotels, newHotel] });
+   const newHotel: HotelOptionDTO = {
+     id: "ht_" + Math.random().toString(36).substring(2, 7),
+     hotel_name: "",
+     stars: 3,
+     room_type: "",
+     board_basis: "Café da Manhã",
+     checkin_date: proposal.travel_start_date || "",
+     checkout_date: proposal.travel_end_date || "",
+     nights_count: 1,
+     amenities: [],
+   };
+   onChange({ hotels: [...proposal.hotels, newHotel] });
  };
 
  const handleRemoveHotel = (id?: string) => {
@@ -338,14 +341,14 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  // Helpers de Roteiro
  const handleAddItineraryDay = () => {
- const nextDay = proposal.itinerary.length + 1;
- const newDay: ItineraryDayDTO = {
- id: "day_" + Math.random().toString(36).substring(2, 7),
- day_number: nextDay,
- title: `Dia ${nextDay} • Atividade Sugerida`,
- description: "Descrição do passeio com tempo livre para fotos, almoço típico e descanso.",
- };
- onChange({ itinerary: [...proposal.itinerary, newDay] });
+   const nextDay = proposal.itinerary.length + 1;
+   const newDay: ItineraryDayDTO = {
+     id: "day_" + Math.random().toString(36).substring(2, 7),
+     day_number: nextDay,
+     title: `Dia ${nextDay}`,
+     description: "",
+   };
+   onChange({ itinerary: [...proposal.itinerary, newDay] });
  };
 
  const handleRemoveItineraryDay = (id?: string) => {

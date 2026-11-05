@@ -324,6 +324,21 @@ function RootShell({ children }: { children: ReactNode }) {
             }}
           />
         )}
+        {/* Speculation Rules para Pre-rendering Moderado (docs/PERFORMANCE.md) */}
+        <script
+          type="speculationrules"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              prerender: [
+                {
+                  source: "list",
+                  where: { href_matches: "/*" },
+                  eagerness: "moderate",
+                },
+              ],
+            }),
+          }}
+        />
       </head>
  <body className="w-full max-w-full viewport-lock antialiased select-none font-sans">
         <a href="#main-content" className="skip-link">

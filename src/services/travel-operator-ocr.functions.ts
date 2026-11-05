@@ -49,11 +49,13 @@ export const OperatorQuoteExtractionResultSchema = z.object({
   client_document: z.string().optional().nullable(),
   operator_name: z.string().optional().nullable(),
   quote_reference_number: z.string().optional().nullable(),
+  origin: z.string().optional().nullable(),
   destination: z.string().optional().default("Destino a definir"),
   travel_start: z.string().optional().nullable(),
   travel_end: z.string().optional().nullable(),
   adults_count: z.coerce.number().int().optional().nullable(),
   children_count: z.coerce.number().int().optional().nullable(),
+  children_ages: z.array(z.coerce.number().int()).optional().nullable(),
   flights: z.array(OperatorFlightItemSchema).optional().nullable(),
   hotels: z.array(OperatorHotelItemSchema).optional().nullable(),
   transfers: z.array(z.string()).optional().nullable(),
@@ -65,6 +67,13 @@ export const OperatorQuoteExtractionResultSchema = z.object({
   suggested_commission_cents: z.coerce.number().int().optional().nullable(),
   max_installments: z.coerce.number().int().optional().nullable(),
   installment_cents: z.coerce.number().int().optional().nullable(),
+  has_downpayment: z.boolean().optional().nullable(),
+  downpayment_pct: z.coerce.number().optional().nullable(),
+  downpayment_cents: z.coerce.number().int().optional().nullable(),
+  first_installment_due: z.string().optional().nullable(),
+  pix_discount_pct: z.coerce.number().optional().nullable(),
+  card_installments: z.coerce.number().int().optional().nullable(),
+  boleto_installments: z.coerce.number().int().optional().nullable(),
   currency: z.string().optional().nullable(),
   cancellation_rules: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
@@ -89,25 +98,40 @@ export const processOperatorQuoteOcr = createServerFn({ method: "POST" })
 Sua missão é ler documentos, PDFs, vouchers ou prints de sistemas de operadoras de viagem (ex: CVC Corp, Orinter, Trend, Visual Turismo, E-HTL, Azul Viagens, RexturAdvance, Decolar B2B) e extrair os dados estruturados da cotação.
 
 DIRETRIZES FUNDAMENTAIS (ZERO ALUCINAÇÃO):
-1. Identifique o passageiro titular / cliente se constar no documento (client_name, client_phone).
-2. Identifique a operadora emitente (ex: 'Orinter', 'Trend Viagens', 'CVC', 'Visual Turismo', 'FRT', 'Incomum').
-3. Identifique o Destino principal (ex: 'Maceió - AL', 'Cancún - México', 'Gramado - RS').
-4. Extraia os voos com precisão:
+1. Identifique o passageiro titular / cliente se constar no documento (client_name, client_phone, client_email, client_document).
+2. Identifique a operadora emitente (ex: 'Orinter', 'Trend Viagens', 'CVC', 'Visual Turismo', 'FRT', 'Incomum', 'Azul Viagens').
+3. Identifique a Origem (origin: cidade e/ou aeroporto IATA, ex: 'Chapecó (XAP)', 'Curitiba (CWB)', 'São Paulo (GRU)').
+4. Identifique o Destino principal (destination: apenas o nome do destino/cidade/região, ex: 'Maceió', 'Cancún', 'Gramado'). NUNCA inclua frases ou observações longas no destino.
+5. Extraia as datas exatas no formato YYYY-MM-DD:
+   - travel_start: Data de início/embarque/check-in
+   - travel_end: Data de retorno/desembarque/check-out
+6. Extraia a composição de passageiros:
+   - adults_count: Quantidade de adultos
+   - children_count: Quantidade de crianças
+   - children_ages: Array de números com as idades das crianças (ex: [4, 8])
+7. Extraia os voos com precisão:
    - Cia aérea (GOL, LATAM, Azul, TAP, Copa, etc.)
    - Número do voo, origem (IATA e cidade), destino (IATA e cidade)
    - Datas e horários de partida/chegada
    - Bagagem inclusa (se mala despachada 23kg ou apenas mão 10kg)
-5. Extraia os hotéis/resorts:
+8. Extraia os hotéis/resorts:
    - Nome do hotel
    - Categoria do quarto (Standard, Luxo, Suíte Vista Mar)
    - Regime de alimentação (Café da Manhã, Meia Pensão, All Inclusive)
    - Datas de check-in e check-out
-6. Extraia traslados e passeios inclusos.
-7. Extraia a composição financeira:
+9. Extraia traslados e passeios inclusos.
+10. Extraia a composição financeira e condições comerciais:
    - Preço bruto total da venda (gross_price_cents, em centavos)
    - Preço líquido do operador (operator_net_cents, valor pago à operadora)
-   - A comissão estimada da agência (gross_price_cents - operator_net_cents)
-   - Quantidade de parcelas (ex: 10x, 12x) e valor de cada parcela em centavos
+   - A comissão estimada da agência (suggested_commission_cents)
+   - has_downpayment: boolean indicando se exige entrada (true) ou se é sem entrada (false)
+   - downpayment_pct: percentual de entrada se informado (ex: 20)
+   - downpayment_cents: valor fixo de entrada em centavos se informado
+   - first_installment_due: texto ou prazo de vencimento do primeiro boleto (ex: '30 dias da emissão', 'Sem entrada')
+   - max_installments: quantidade máxima de parcelas
+   - card_installments: quantidade máxima de parcelas no cartão sem juros
+   - boleto_installments: quantidade de parcelas no boleto
+   - pix_discount_pct: percentual de desconto no Pix se informado (ex: 5)
    - Se os valores estiverem em reais com vírgula (ex: R$ 5.480,00), multiplique por 100 para centavos (548000).
 
 Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionResult:
@@ -302,12 +326,41 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       rawJson.client_email = rawJson.client_email || rawJson.email;
       rawJson.client_document = rawJson.client_document || rawJson.cpf || rawJson.document || rawJson.documento || rawJson.passaporte;
       rawJson.operator_name = rawJson.operator_name || rawJson.operator || rawJson.operadora || rawJson.fornecedor;
+      rawJson.origin = rawJson.origin || rawJson.origem || rawJson.cidade_origem || rawJson.origin_city || rawJson.origin_iata;
       rawJson.destination = rawJson.destination || rawJson.cidade_destino || rawJson.destino;
       rawJson.travel_start = rawJson.travel_start || rawJson.start_date || rawJson.data_ida || rawJson.checkin;
       rawJson.travel_end = rawJson.travel_end || rawJson.end_date || rawJson.data_volta || rawJson.checkout;
       rawJson.adults_count = rawJson.adults_count || rawJson.adults || rawJson.adultos || rawJson.pax_adults;
       rawJson.children_count = rawJson.children_count ?? rawJson.children ?? rawJson.criancas ?? rawJson.pax_children;
+      rawJson.children_ages = Array.isArray(rawJson.children_ages)
+        ? rawJson.children_ages.map(Number).filter((n: any) => !isNaN(n))
+        : (Array.isArray(rawJson.idades_criancas)
+          ? rawJson.idades_criancas.map(Number).filter((n: any) => !isNaN(n))
+          : undefined);
       rawJson.max_installments = rawJson.max_installments || rawJson.installments || rawJson.parcelas || rawJson.num_parcelas;
+      rawJson.card_installments = rawJson.card_installments || rawJson.parcelas_cartao || rawJson.max_installments;
+      rawJson.boleto_installments = rawJson.boleto_installments || rawJson.parcelas_boleto || rawJson.max_installments;
+      rawJson.has_downpayment = typeof rawJson.has_downpayment === "boolean"
+        ? rawJson.has_downpayment
+        : (typeof rawJson.com_entrada === "boolean"
+          ? rawJson.com_entrada
+          : (rawJson.downpayment_pct || rawJson.entrada_pct || rawJson.downpayment_cents || rawJson.entrada_valor
+            ? true
+            : (rawJson.sem_entrada ? false : undefined)));
+      rawJson.downpayment_pct = rawJson.downpayment_pct !== undefined
+        ? Number(rawJson.downpayment_pct)
+        : (rawJson.entrada_pct !== undefined ? Number(rawJson.entrada_pct) : undefined);
+      rawJson.downpayment_cents = extractPriceField([
+        "downpayment_cents",
+        "downpayment",
+        "entrada",
+        "valor_entrada",
+        "entrada_cents",
+      ]);
+      rawJson.first_installment_due = rawJson.first_installment_due || rawJson.vencimento_primeiro_boleto || rawJson.primeiro_vencimento || rawJson.primeiro_boleto;
+      rawJson.pix_discount_pct = rawJson.pix_discount_pct !== undefined
+        ? Number(rawJson.pix_discount_pct)
+        : (rawJson.desconto_pix !== undefined ? Number(rawJson.desconto_pix) : undefined);
 
       if (Array.isArray(rawJson.hotels)) {
         rawJson.hotels = rawJson.hotels.map((h: any) => ({

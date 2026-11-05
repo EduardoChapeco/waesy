@@ -1,5 +1,36 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-439: Resolução Integral das Não Conformidades da Auditoria Forense (NC-001 a NC-010), Expiração de Checkouts e Fechamento de Ciclo SimLab-Catálogo
+- **Data:** 2026-11-05
+- **Contexto:**
+  1. Fechamento das últimas não conformidades do catálogo de aceitação da plataforma Waesy (`docs/audits/waesy-redesign-acceptance/nonconformities.csv`).
+  2. NC-007 (WF-021 / GAP-003): Checkouts de impulsionamento em anúncios e classificados ficavam indefinidamente em `pending_promotion`. Necessidade de expiração automática de tentativas com mais de 24h para desobstrução de filas.
+  3. NC-008 (WF-018 / GAP-004): O simulador qualitativo SimLab Focus Group gerava relatórios e argumentos de personas sintéticas sem fechamento operacional direto com os produtos cadastrados da loja.
+  4. NC-009 (Invariante B.32): Chips de sub-categorias no mobile em `_store.destaques.$slug.tsx` careciam de snap scroll elástico e touch targets táteis canônicos de 44px (`h-11 min-h-11`).
+- **Decisão:**
+  1. Implementada a Server Function `expireAbandonedPromotionCheckouts` em `src/services/classifieds.functions.ts` e migration SQL `20270319000000_expire_abandoned_boost_payments_cron.sql` com stored procedure e agendamento contínuo.
+  2. Integrada ação "Aplicar Sugestões ao Catálogo" em `src/routes/workspace.simlab.focus-group.tsx` com chamada atômica a `updateProduct` e modal de confirmação.
+  3. Atualizados os contêineres de navegação móvel de `_store.destaques.$slug.tsx` com `scroll-area-carousel snap-x snap-mandatory` e `snap-start min-h-11`.
+  4. Script de Speculation Rules adicionado ao `<head>` de `__root.tsx` em conformidade com `docs/PERFORMANCE.md` e suíte de performance web.
+  5. 100% das não conformidades marcadas como `RESOLVIDO` em `nonconformities.csv`, aprovação do build Cloudflare Pages e aprovação na catraca de CI de Design Lint (0 P0).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.9, B.11, B.25, B.26, B.32; docs/audits/waesy-redesign-acceptance/.
+- **Consequências:** Aceitação plena dos 52 fluxos operacionais de negócio, integridade transacional de checkouts, sinergia entre IA do SimLab e catálogo real e ergonomia tátil nativa em vitrines.
+
+## DEC-438: Captura Inteligente de Cotações Infotravel, Ledger de Preços e Radar de Oportunidades com IA
+- **Data:** 2026-11-05
+- **Contexto:**
+  1. Necessidade operacional de capturar orçamentos de voos, hotéis, circuitos e pacotes montados no sistema Infotravel (ex: Orinter, FRT) sem depender de digitação manual ou prints de tela.
+  2. Demanda por cruzamento automático entre orçamentos recém-cotados e clientes esquecidos no CRM com intenções de viagem em datas e faixas de preço compatíveis.
+  3. Criação de histórico de preços para cálculo de temperatura tarifária (tarifa fria/média/quente) e geração automática de propostas personalizadas para WhatsApp.
+- **Decisão:**
+  1. Criação da migration `20270320000000_infotravel_quote_capture_and_opportunity_radar.sql` com as tabelas `travel_quote_captures`, `travel_quote_capture_items`, `travel_client_demands`, `travel_opportunities` e `travel_price_observations`.
+  2. Implementação do motor de casamento determinístico `travel-opportunity-matcher.ts` com tolerância orçamentária (+10%), flexibilidade de datas (+2 dias) e geração de pitch para WhatsApp.
+  3. Criação da Server Function BFF `travel-quote-capture.functions.ts` com validação Zod, ingestão idempotente e cálculo de temperatura tarifária sobre mediana de observações.
+  4. Extensão Chrome (`content.js` e `popup.js`) atualizada para escutar mutações de DOM do carrinho (`#frmCarrinhoView` / `#pnlCarrinho`) e resultados de aéreo (`#frmResultadoProduto:pnlResultadoAereo`).
+  5. Aprovação com 16/16 testes Vitest passando nos módulos de integração e 0 novas violações P0/P1 de Design Lint.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.9, B.11, B.25, B.33; SPEC-INFOTRAVEL-QUOTE-CAPTURE-AND-OPPORTUNITY-RADAR.
+- **Consequências:** Agências contam com memória de preços de mercado, automação de radar para clientes inativos e eliminação da perda de oportunidades comerciais.
+
 ## DEC-437: Remediação de Violações P0 (DL-15), Sincronização Canônica de OCR, Suporte a Boleto Faturado e Ingestão de Contatos WhatsApp
 - **Data:** 2026-11-05
 - **Contexto:**
