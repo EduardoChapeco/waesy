@@ -37,32 +37,32 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-10 w-auto max-w-40 aspect-4/1 object-contain brightness-0 invert"
+              className="h-10 w-auto max-w-40 aspect-4/1 object-contain drop-shadow-md"
               width={160}
               height={40}
             />
           ) : (
-            <div className="text-xl font-black tracking-tighter text-foreground uppercase">
+            <div className="text-xl font-black tracking-tighter text-white uppercase drop-shadow-md">
               {vm.agency.name}
             </div>
           )}
         </div>
 
-        <div className="absolute bottom-12 left-12 max-w-xl text-foreground">
-          <div className="inline-flex items-center gap-2 bg-red-600 px-3 py-1 rounded-full ds-meta font-black uppercase tracking-widest mb-4">
+        <div className="absolute bottom-12 left-12 max-w-xl text-white">
+          <div className="inline-flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-full ds-meta font-black uppercase tracking-widest mb-4 shadow-sm">
             <Users className="w-3 h-3" /> Excursão em Grupo
           </div>
           <h1
-            className="text-5xl font-black tracking-tighter mb-4 leading-none"
-            style={{ textShadow: "0 4px 12px rgba(0,0,0,0.5)" }}
+            className="text-5xl font-black tracking-tighter mb-4 leading-none text-white"
+            style={{ textShadow: "0 4px 12px rgba(0,0,0,0.8)" }}
           >
             {p.title || "Pacote Grupo Rodoviário"}
           </h1>
-          <div className="flex items-center gap-4 font-bold text-lg">
+          <div className="flex items-center gap-4 font-bold text-lg text-white/95">
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-red-500" /> {p.destination || "Destino"}
             </div>
-            <div className="w-1.5 h-1.5 rounded-full bg-foreground/50" />
+            <div className="w-1.5 h-1.5 rounded-full bg-white/50" />
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-red-500" />{" "}
               {p.travel_start ? formatDate(p.travel_start) : "A definir"}
@@ -152,8 +152,8 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
 
             {/* BOTÃO FALSO PARA MOSTRAR QUE É UM CATALOGO */}
             <div
-              className="w-full py-4 rounded-card text-center text-foreground font-black uppercase tracking-widest text-lg border-b-4 opacity-90"
-              style={{ backgroundColor: brand, borderBottomColor: "rgba(0,0,0,0.2)" }}
+              className="w-full py-4 rounded-card text-center text-white font-black uppercase tracking-widest text-lg border-b-4 shadow-sm"
+              style={{ backgroundColor: brand, borderBottomColor: "rgba(0,0,0,0.3)" }}
             >
               Garantir Vaga
             </div>

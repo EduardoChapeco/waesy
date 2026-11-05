@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type {
- TravelProposalDTO,
- FlightSegmentDTO,
- HotelOptionDTO,
- ItineraryDayDTO,
- ProposalRoomItem,
+  TravelProposalDTO,
+  FlightSegmentDTO,
+  HotelOptionDTO,
+  ItineraryDayDTO,
+  ProposalRoomItem,
+  ProposalCanvasFormat,
 } from "@/services/travel-proposal.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { listCustomers } from "@/services/crm.functions";
@@ -21,7 +22,45 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Sparkles, Users, LayoutTemplate, Check, X } from "lucide-react";
+import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Sparkles, Users, LayoutTemplate, Check, X, Bus, Moon, Briefcase, Monitor, FileText, Tag, Palette } from "lucide-react";
+
+const TEMPLATE_CATALOG = [
+  { id: "editorial-flat", label: "Clean Apple", desc: "Design minimalista, foco em tipografia e fotos amplas", icon: LayoutTemplate },
+  { id: "dark-premium", label: "Dark Luxo", desc: "Capa cinematográfica escura, acabamento sofisticado", icon: Moon },
+  { id: "executivo-b2b", label: "Executivo B2B", desc: "Tabela corporativa limpa, direto ao ponto", icon: Briefcase },
+  { id: "landscape-presentation", label: "Paisagem Widescreen", desc: "Formato slide 16:9 para reuniões e TVs", icon: Monitor },
+  { id: "vertical-premium", label: "Vertical Premium", desc: "Otimizado para leitura em tela de smartphone", icon: FileText },
+  { id: "group-catalog", label: "Catálogo de Grupo", desc: "Excursão rodoviária com tabela de vagas e saídas", icon: Tag },
+];
+
+const FORMAT_CATALOG: Array<{ id: ProposalCanvasFormat; label: string; icon: string; desc: string }> = [
+  { id: "a4-portrait", label: "A4 Retrato", icon: "📄", desc: "Padrão oficial para impressão e PDF clássico (210×297mm)" },
+  { id: "a4-landscape", label: "A4 Paisagem", icon: "📑", desc: "Visual horizontal panorâmico para relatórios" },
+  { id: "story-916", label: "Story 9:16", icon: "📱", desc: "Vertical para visualização mobile e WhatsApp" },
+  { id: "presentation-169", label: "Apresentação 16:9", icon: "🖥️", desc: "Widescreen para reuniões e propostas executivas" },
+  { id: "letter-portrait", label: "Carta (US)", icon: "📜", desc: "Formato internacional Carta" },
+];
+
+const COMMON_INCLUDE_PRESETS = [
+  "Passagens aéreas de ida e volta com taxas inclusas",
+  "Transporte Rodoviário Executivo Ida e Volta",
+  "Hospedagem com Café da Manhã",
+  "Transfer Aeroporto / Hotel / Aeroporto",
+  "Seguro Viagem Completo com Cobertura Médica",
+  "Bagagem Despachada 23kg",
+  "Guia Credenciado Acompanhante",
+  "Passeios e Ingressos descritos no roteiro",
+  "Suporte e Conciergerie 24h durante a viagem",
+];
+
+const COMMON_EXCLUDE_PRESETS = [
+  "Despesas de caráter pessoal e frigobar",
+  "Passeios opcionais não descritos como inclusos",
+  "Taxas turísticas locais ou de preservação ambiental",
+  "Refeições e bebidas não mencionadas no roteiro",
+  "Excesso de bagagem além da franquia contratada",
+  "Seguro cancelamento de viagem (opcional)",
+];
 
 interface StudioSidebarEditorProps {
  proposal: TravelProposalDTO;
@@ -498,17 +537,98 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
  <Tabs defaultValue="dados" className="space-y-4">
  <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar w-full justify-start gap-1 h-11 p-1 rounded-lg bg-muted/50 text-xs">
- <TabsTrigger value="dados" className="text-xs px-3 rounded-lg font-bold shrink-0">Geral</TabsTrigger>
- <TabsTrigger value="voos" className="text-xs px-3 rounded-lg font-bold shrink-0">Voos</TabsTrigger>
- <TabsTrigger value="hotel" className="text-xs px-3 rounded-lg font-bold shrink-0">Hotel</TabsTrigger>
- <TabsTrigger value="roteiro" className="text-xs px-3 rounded-lg font-bold shrink-0">Roteiro</TabsTrigger>
- <TabsTrigger value="servicos" className="text-xs px-3 rounded-lg font-bold shrink-0">Serviços</TabsTrigger>
- <TabsTrigger value="inclusoes" className="text-xs px-3 rounded-lg font-bold shrink-0">Inclusões</TabsTrigger>
- <TabsTrigger value="preco" className="text-xs px-3 rounded-lg font-bold shrink-0">Preço</TabsTrigger>
- </TabsList>
+          <TabsTrigger value="design" className="text-xs px-3 rounded-lg font-bold shrink-0">Modelos</TabsTrigger>
+          <TabsTrigger value="dados" className="text-xs px-3 rounded-lg font-bold shrink-0">Geral</TabsTrigger>
+          <TabsTrigger value="voos" className="text-xs px-3 rounded-lg font-bold shrink-0">Voos</TabsTrigger>
+          <TabsTrigger value="hotel" className="text-xs px-3 rounded-lg font-bold shrink-0">Hotel</TabsTrigger>
+          <TabsTrigger value="rodoviario" className="text-xs px-3 rounded-lg font-bold shrink-0">Rodoviário</TabsTrigger>
+          <TabsTrigger value="roteiro" className="text-xs px-3 rounded-lg font-bold shrink-0">Roteiro</TabsTrigger>
+          <TabsTrigger value="servicos" className="text-xs px-3 rounded-lg font-bold shrink-0">Serviços</TabsTrigger>
+          <TabsTrigger value="inclusoes" className="text-xs px-3 rounded-lg font-bold shrink-0">Inclusões</TabsTrigger>
+          <TabsTrigger value="preco" className="text-xs px-3 rounded-lg font-bold shrink-0">Preço</TabsTrigger>
+        </TabsList>
 
  {/* ── ABA 1: DADOS GERAIS & CLIENTE ── */}
- <TabsContent value="dados" className="space-y-3">
+ 
+        {/* ── ABA 0: MODELOS & DESIGN DO CANVAS ── */}
+        <TabsContent value="design" className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <LayoutTemplate className="size-4 text-primary" />
+                <span>Modelo Visual da Proposta</span>
+              </Label>
+              <span className="text-2xs font-mono text-muted-foreground uppercase">{proposal.template_theme || "editorial-flat"}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {TEMPLATE_CATALOG.map((tpl) => {
+                const TplIcon = tpl.icon;
+                const isSelected = (proposal.template_theme || "editorial-flat") === tpl.id;
+                return (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => onChange({ template_theme: tpl.id })}
+                    className={cn(
+                      "p-3 rounded-lg text-left transition-all cursor-pointer border flex flex-col gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isSelected
+                        ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary"
+                        : "border-border/60 bg-card hover:bg-muted/40 hover:border-border"
+                    )}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
+                        <TplIcon className={cn("size-3.5", isSelected ? "text-primary" : "text-muted-foreground")} />
+                        <span>{tpl.label}</span>
+                      </div>
+                      {isSelected && <Check className="size-3.5 text-primary" />}
+                    </div>
+                    <p className="text-2xs text-muted-foreground leading-snug">{tpl.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-3 border-t border-border/40">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Monitor className="size-4 text-primary" />
+                <span>Formato do Canvas & Exportação</span>
+              </Label>
+              <span className="text-2xs font-mono text-muted-foreground uppercase">{proposal.canvas_format || "a4-portrait"}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {FORMAT_CATALOG.map((fmt) => {
+                const isSelected = (proposal.canvas_format || "a4-portrait") === fmt.id;
+                return (
+                  <button
+                    key={fmt.id}
+                    type="button"
+                    onClick={() => onChange({ canvas_format: fmt.id })}
+                    className={cn(
+                      "p-2.5 rounded-lg text-left transition-all cursor-pointer border flex flex-col gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isSelected
+                        ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary"
+                        : "border-border/60 bg-card hover:bg-muted/40 hover:border-border"
+                    )}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
+                        <span className="text-sm">{fmt.icon}</span>
+                        <span>{fmt.label}</span>
+                      </div>
+                      {isSelected && <Check className="size-3.5 text-primary" />}
+                    </div>
+                    <p className="text-2xs text-muted-foreground leading-snug">{fmt.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="dados" className="space-y-3">
  <div className="space-y-1">
  <Label className="text-2xs font-bold">Título da Proposta *</Label>
  <Input
@@ -1111,7 +1231,102 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </TabsContent>
 
  {/* ── ABA 4: ROTEIRO DIA A DIA ── */}
- <TabsContent value="roteiro" className="space-y-3">
+ 
+        {/* ── ABA 3.5: RODOVIÁRIO & TRANSPORTE TERRESTRE ── */}
+        <TabsContent value="rodoviario" className="space-y-4">
+          <div className="p-3.5 rounded-lg border border-border/60 bg-card space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-foreground flex items-center gap-2">
+                <Bus className="size-4 text-primary" />
+                <span>Transporte Rodoviário & Ônibus de Grupo</span>
+              </span>
+              <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                Multimodal
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div className="space-y-1">
+                <Label className="text-2xs font-bold">Tipo de Frota / Veículo</Label>
+                <select
+                  value={proposal.transfers?.[0]?.type || "Ônibus Leito DD"}
+                  onChange={(e) => {
+                    const current = proposal.transfers?.[0] || { id: "bus-main", route: "", date: "", included: true };
+                    const next = [{ ...current, type: e.target.value }];
+                    onChange({ transfers: next });
+                  }}
+                  className="w-full h-9 rounded-lg bg-background border border-border text-xs px-2"
+                >
+                  <option value="Ônibus Leito DD">Ônibus Leito DD (Double Decker)</option>
+                  <option value="Ônibus Semi-Leito Executivo">Ônibus Semi-Leito Executivo</option>
+                  <option value="Micro-ônibus Executivo">Micro-ônibus Executivo</option>
+                  <option value="Van Executiva Luxo">Van Executiva Luxo</option>
+                  <option value="Transfer Privativo In/Out">Transfer Privativo In/Out</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-2xs font-bold">Empresa de Transporte / Linha</Label>
+                <Input
+                  placeholder="Ex: Expresso São Miguel / Frota Própria"
+                  value={proposal.transfers?.[0]?.route || ""}
+                  onChange={(e) => {
+                    const current = proposal.transfers?.[0] || { id: "bus-main", type: "Ônibus Leito DD", date: "", included: true };
+                    const next = [{ ...current, route: e.target.value }];
+                    onChange({ transfers: next });
+                  }}
+                  className="h-9 text-xs rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div className="space-y-1">
+                <Label className="text-2xs font-bold">Ponto & Cidade de Embarque</Label>
+                <Input
+                  placeholder="Ex: Chapecó - Posto Bertaso (20:00)"
+                  value={proposal.transfers?.[0]?.pickup_time || ""}
+                  onChange={(e) => {
+                    const current = proposal.transfers?.[0] || { id: "bus-main", type: "Ônibus Leito DD", route: "", date: "", included: true };
+                    const next = [{ ...current, pickup_time: e.target.value }];
+                    onChange({ transfers: next });
+                  }}
+                  className="h-9 text-xs rounded-lg"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-2xs font-bold">Previsão de Desembarque / Chegada</Label>
+                <Input
+                  placeholder="Ex: Curitiba - Hotel Bourbon (06:00)"
+                  value={proposal.transfers?.[0]?.dropoff_time || ""}
+                  onChange={(e) => {
+                    const current = proposal.transfers?.[0] || { id: "bus-main", type: "Ônibus Leito DD", route: "", date: "", included: true };
+                    const next = [{ ...current, dropoff_time: e.target.value }];
+                    onChange({ transfers: next });
+                  }}
+                  className="h-9 text-xs rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1 text-xs">
+              <Label className="text-2xs font-bold">Pontos de Embarque no Roteiro (Cidades Intermediárias)</Label>
+              <Textarea
+                placeholder="Ex: São Miguel do Oeste (18:30) • Maravilha (19:15) • Chapecó (20:00) • Xanxerê (21:00)"
+                value={proposal.transfers?.[0]?.notes || ""}
+                onChange={(e) => {
+                  const current = proposal.transfers?.[0] || { id: "bus-main", type: "Ônibus Leito DD", route: "", date: "", included: true };
+                  const next = [{ ...current, notes: e.target.value }];
+                  onChange({ transfers: next });
+                }}
+                className="text-xs rounded-lg min-h-16"
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="roteiro" className="space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-2xs font-bold text-foreground">
  Dias de Viagem ({proposal.itinerary.length})

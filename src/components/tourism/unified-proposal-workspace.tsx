@@ -697,6 +697,7 @@ export function UnifiedProposalWorkspace({
             });
 
             if (updatedCount > 0) {
+              setStepTab("opcoes");
               const highlights = [
                 q.destination && q.destination !== "Destino a definir" ? `Destino: ${q.destination}` : null,
                 q.hotels?.[0]?.hotel_name ? `Hotel: ${q.hotels[0].hotel_name}` : null,
@@ -735,6 +736,7 @@ export function UnifiedProposalWorkspace({
             });
 
             if (updatedCount > 0) {
+              setStepTab("opcoes");
               toast.success("Dados do documento extraídos e preenchidos com sucesso!", { id: toastId });
               return;
             }
@@ -1721,9 +1723,9 @@ export function UnifiedProposalWorkspace({
                         </div>
                       )}
 
-                      {/* Sugestões Rápidas (Zero Valores Hardcoded) */}
-                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                        <span className="text-2xs text-muted-foreground mr-1">Sugestões rápidas:</span>
+                      {/* Sugestões Rápidas (Zero Valores Hardcoded - Linha Única com Scroll Horizontal) */}
+                      <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-1.5 py-1">
+                        <span className="text-2xs text-muted-foreground mr-1 shrink-0">Sugestões rápidas:</span>
                         {SUGGESTED_ROOM_ADDONS.map((sug) => {
                           const alreadyAdded = room.addons.some(
                             (a) => a.label.toLowerCase() === sug.label.toLowerCase()
@@ -1743,7 +1745,7 @@ export function UnifiedProposalWorkspace({
                                   addons: [...room.addons, newAddon],
                                 });
                               }}
-                              className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                              className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                                 alreadyAdded
                                   ? "bg-muted text-muted-foreground/60 cursor-default"
                                   : "bg-muted/40 hover:bg-muted text-foreground border border-border/30 hover:border-border/60"
@@ -1840,10 +1842,10 @@ export function UnifiedProposalWorkspace({
                   ))}
                 </div>
 
-                {/* Tags de Inclusões */}
+                {/* Tags de Inclusões em Linha Única com Scroll Horizontal */}
                 <div className="space-y-2 pt-2 border-t border-border/20">
                   <Label className="text-xs font-medium text-foreground">Itens Inclusos no Pacote (Clique para ativar):</Label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-nowrap overflow-x-auto no-scrollbar gap-2 py-1">
                     {COMMON_INCLUSIONS_TAGS.map((tag) => {
                       const isSelected = selectedInclusions.includes(tag);
                       return (
@@ -1851,7 +1853,7 @@ export function UnifiedProposalWorkspace({
                           key={tag}
                           type="button"
                           onClick={() => toggleInclusionTag(tag)}
-                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-2 ${
+                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors shrink-0 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-2 ${
                             isSelected
                               ? "bg-primary text-primary-foreground border-primary"
                               : "border-border/60 hover:bg-muted/40 text-muted-foreground"

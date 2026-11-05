@@ -36,37 +36,38 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
         <div className="absolute inset-0 bg-slate-950/60" />
 
         {/* TOPO: LOGO E REFERÊNCIA */}
-        <div className="absolute top-0 left-0 w-full p-12 flex justify-between items-start">
+        <div className="absolute top-0 left-0 w-full p-12 flex justify-between items-start text-white">
           {vm.agency.logo_url ? (
             <img
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-10 w-auto max-w-40 aspect-banner-ultrawide object-contain brightness-0 invert" width={160} height={40}
+              className="h-10 w-auto max-w-40 aspect-banner-ultrawide object-contain drop-shadow-md" width={160} height={40}
             />
           ) : (
-            <div className="text-2xl font-bold tracking-widest text-foreground uppercase">
+            <div className="text-2xl font-bold tracking-widest text-white uppercase drop-shadow-sm">
               {vm.agency.name}
             </div>
           )}
-          <div className="text-right text-foreground">
-            <div className="ds-label-caps opacity-80">Proposta Oficial</div>
-            <div className="text-xl font-mono">#{p.number}</div>
+          <div className="text-right text-white">
+            <div className="ds-label-caps opacity-80 text-white/80">Proposta Oficial</div>
+            <div className="text-xl font-mono font-bold">#{p.number}</div>
           </div>
         </div>
 
         {/* Título Centralizado na Capa */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pt-16 px-12 text-center text-foreground">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pt-16 px-12 text-center text-white">
           <h1
-            className="text-6xl font-bold tracking-tight mb-6"
+            className="text-6xl font-bold tracking-tight mb-6 text-white drop-shadow-md"
             style={{
               fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)",
+              textShadow: "0 4px 16px rgba(0,0,0,0.7)",
             }}
           >
             {p.title || "Proposta Exclusiva"}
           </h1>
           <div
-            className="text-lg font-medium opacity-90 max-w-lg"
+            className="text-lg font-medium opacity-90 max-w-lg text-white/90 drop-shadow-sm"
           >
             {p.destination || "Roteiro Personalizado"}
           </div>

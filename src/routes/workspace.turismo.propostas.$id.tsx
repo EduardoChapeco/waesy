@@ -2,7 +2,7 @@ import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {  ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal , LayoutTemplate, Moon, Briefcase, Monitor, FileText, Tag } from "lucide-react";
+import { ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
@@ -264,37 +264,6 @@ function WorkspaceProposalStudioPage() {
  </span>
  </button>
  ))}
- </div>
-
- {/* Seletor de Template Visual */}
- <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/50">
- {[
-  { id: "editorial-flat", label: "Clean Apple", icon: LayoutTemplate },
-  { id: "dark-premium", label: "Dark Luxo", icon: Moon },
-  { id: "executivo-b2b", label: "Executivo", icon: Briefcase },
-  { id: "landscape-presentation", label: "Paisagem", icon: Monitor },
-  { id: "vertical-premium", label: "Vertical", icon: FileText },
-  { id: "group-catalog", label: "Catálogo", icon: Tag },
-  ].map((tpl) => {
-    const TplIcon = tpl.icon;
-    return (
-      <button
-        key={tpl.id}
-        type="button"
-        onClick={() => handleChange({ template_theme: tpl.id })}
-        className={cn(
-          "min-h-11 px-2 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          currentTemplate === tpl.id
-            ? "bg-background text-foreground"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-        title={`Template ${tpl.label}`}
-      >
-        <TplIcon className="size-3.5" />
-        <span className="hidden waesy-expanded-flex">{tpl.label}</span>
-      </button>
-    );
-  })}
  </div>
 
  {/* Controles de Zoom */}

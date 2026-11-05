@@ -1,14 +1,14 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-04T19:55:35.664Z",
+  "timestamp": "2026-11-04T21:13:03.011Z",
   "inspectedFiles": 2615,
-  "totalViolations": 674,
+  "totalViolations": 706,
   "summary": {
-    "totalViolations": 674,
+    "totalViolations": 706,
     "bySeverity": {
       "P0": 0,
-      "P1": 668,
-      "P2": 6,
+      "P1": 697,
+      "P2": 9,
       "P3": 0
     },
     "byRule": {
@@ -19,7 +19,10 @@
       "DL-13": 9,
       "DL-12": 26,
       "DL-11": 15,
-      "DL-07": 6
+      "DL-03": 8,
+      "DL-29": 1,
+      "DL-14": 21,
+      "DL-07": 8
     },
     "byModule": {
       "components/app": {
@@ -37,10 +40,10 @@
         "P3": 0
       },
       "components/tourism": {
-        "total": 49,
+        "total": 52,
         "P0": 0,
-        "P1": 49,
-        "P2": 0,
+        "P1": 51,
+        "P2": 1,
         "P3": 0
       },
       "components/ui": {
@@ -79,10 +82,10 @@
         "P3": 0
       },
       "routes/workspace": {
-        "total": 54,
+        "total": 83,
         "P0": 0,
-        "P1": 54,
-        "P2": 0,
+        "P1": 81,
+        "P2": 2,
         "P3": 0
       },
       "routes/store": {
@@ -121,7 +124,7 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 229,
+    "filesWithViolations": 231,
     "filesCount": 2615
   },
   "config": {
