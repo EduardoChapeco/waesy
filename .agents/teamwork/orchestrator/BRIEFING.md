@@ -79,7 +79,7 @@ Orquestrar a reestruturação visual ultraminimalista, funcional e arquitetural 
 
 ## Active Timers
 - Heartbeat cron: 71cb6393-bf04-4e51-946b-1dd9ac61e734/task-318
-- Safety timer: 71cb6393-bf04-4e51-946b-1dd9ac61e734/task-602
+- Safety timer: 71cb6393-bf04-4e51-946b-1dd9ac61e734/task-638
 - On succession: kill all timers before spawning successor
 - On context truncation: handle timers as step 4 of the State Recovery section of your prompt says
 
