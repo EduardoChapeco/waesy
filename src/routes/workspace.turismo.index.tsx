@@ -86,7 +86,7 @@ import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
-import { UnifiedProposalWorkspace, type UnifiedProposalWorkspaceLead } from "@/components/tourism/unified-proposal-workspace";
+import { UnifiedProposalWorkspace, type UnifiedProposalWorkspaceLead, sanitizeDestinationString } from "@/components/tourism/unified-proposal-workspace";
 import { LeadCard } from "@/components/tourism/crm/LeadCard";
 import { LeadImportModal } from "@/components/commercial/lead-import-modal";
 import { LeadCommissionCalculatorSheet } from "@/components/commercial/lead-commission-calculator-sheet";
@@ -592,11 +592,19 @@ export default function WorkspaceTurismoCockpitPage() {
     const savedPaymentPlan = lead.custom_fields?.payment_plan || {};
     const estTotal = lead.estimated_value_cents || 0;
 
+    const cleanCity = sanitizeDestinationString(lead.destination);
+    const rawExtraNotes = lead.destination && lead.destination.includes(" - ")
+      ? lead.destination.split(" - ").slice(1).join(" - ").trim()
+      : "";
+    const combinedNotes = lead.notes || lead.message
+      ? `${lead.notes || lead.message}${rawExtraNotes ? `\nObs Destino: ${rawExtraNotes}` : ""}`
+      : rawExtraNotes;
+
     setEditLeadForm({
       name: lead.full_name || "",
       phone: lead.phone || "",
       email: lead.email || "",
-      destination: lead.destination || "",
+      destination: cleanCity,
       interest_type: lead.interest_type || "",
       interest_period: lead.interest_period || "",
       travel_start: lead.travel_start || "",
@@ -606,7 +614,7 @@ export default function WorkspaceTurismoCockpitPage() {
       pax_infants: lead.pax_infants || 0,
       pax_ages_str: paxAgesStr,
       estimated_value_cents: estTotal,
-      notes: lead.notes || lead.message || "",
+      notes: combinedNotes,
       status: lead.status || "new",
       source: lead.source || "whatsapp",
       lead_source_detail: lead.lead_source_detail || "",
@@ -1781,7 +1789,7 @@ export default function WorkspaceTurismoCockpitPage() {
                           fullName: editLeadForm.name || selectedLead.full_name,
                           phone: editLeadForm.phone || selectedLead.phone,
                           email: editLeadForm.email || selectedLead.email,
-                          destination: editLeadForm.destination || selectedLead.destination,
+                          destination: sanitizeDestinationString(editLeadForm.destination || selectedLead.destination),
                           estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
                           passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
                         };
@@ -2657,7 +2665,7 @@ export default function WorkspaceTurismoCockpitPage() {
                             fullName: editLeadForm.name || selectedLead.full_name,
                             phone: editLeadForm.phone || selectedLead.phone,
                             email: editLeadForm.email || selectedLead.email,
-                            destination: editLeadForm.destination || selectedLead.destination,
+                            destination: sanitizeDestinationString(editLeadForm.destination || selectedLead.destination),
                             estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
                             passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
                           };
@@ -2690,7 +2698,7 @@ export default function WorkspaceTurismoCockpitPage() {
                               fullName: editLeadForm.name || selectedLead.full_name,
                               phone: editLeadForm.phone || selectedLead.phone,
                               email: editLeadForm.email || selectedLead.email,
-                              destination: editLeadForm.destination || selectedLead.destination,
+                              destination: sanitizeDestinationString(editLeadForm.destination || selectedLead.destination),
                               estimated_value_cents: editLeadForm.estimated_value_cents || selectedLead.estimated_value_cents,
                               passenger_count: (editLeadForm.pax_adults || 2) + (editLeadForm.pax_children || 0),
                             };

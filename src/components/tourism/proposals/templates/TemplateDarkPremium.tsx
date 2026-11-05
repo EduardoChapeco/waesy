@@ -60,6 +60,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
           <h1
             className="text-6xl font-bold tracking-tight mb-6 text-white drop-shadow-md"
             style={{
+              color: "#ffffff",
               fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)",
               textShadow: "0 4px 16px rgba(0,0,0,0.7)",
             }}

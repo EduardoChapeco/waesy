@@ -29,54 +29,19 @@ import {
 
 const DEFAULT_AGENT_PROFILES: AgentCommissionProfile[] = [
   {
-    agentId: "agent-ana",
-    agentName: "Ana Paula (Consultora Sênior)",
+    agentId: "agent-default",
+    agentName: "Consultor Responsável",
     goalEvaluationBasis: "gross_sale",
     commissionCalculationBasis: "net_sale_plus_over",
     baseCommissionPct: 1.0,
     defaultOverCommissionPct: 30,
-    currentMonthAgencyRevenueCents: 8500000, // R$ 85.000,00 Bruto no mês -> Faixa 1 (Até R$ 99.999,99 = 1% s/ Líquido + 30% s/ Over Líquido)
+    currentMonthAgencyRevenueCents: 0,
     tiers: [
       {
-        tierName: "Faixa 1 (Até R$ 99.999,99 Bruto)",
+        tierName: "Faixa Padrão da Agência",
         minMonthlyRevenueCents: 0,
-        maxMonthlyRevenueCents: 9999999,
-        commissionPct: 1.0,
-        overCommissionPct: 30,
-        bonusFixedCents: 0,
-      },
-      {
-        tierName: "Faixa 2 (R$ 100.000,00+ Bruto)",
-        minMonthlyRevenueCents: 10000000,
         maxMonthlyRevenueCents: null,
-        commissionPct: 1.5,
-        overCommissionPct: 30,
-        bonusFixedCents: 0,
-      },
-    ],
-  },
-  {
-    agentId: "agent-lucas",
-    agentName: "Lucas (Consultor Pleno)",
-    goalEvaluationBasis: "gross_sale",
-    commissionCalculationBasis: "net_sale_plus_over",
-    baseCommissionPct: 1.0,
-    defaultOverCommissionPct: 30,
-    currentMonthAgencyRevenueCents: 11200000, // R$ 112.000,00 Bruto no mês -> Atingiu R$ 100k+ -> Recebe 1,5% s/ Líquido + 30% s/ Over Líquido
-    tiers: [
-      {
-        tierName: "Faixa 1 (Até R$ 99.999,99 Bruto)",
-        minMonthlyRevenueCents: 0,
-        maxMonthlyRevenueCents: 9999999,
         commissionPct: 1.0,
-        overCommissionPct: 30,
-        bonusFixedCents: 0,
-      },
-      {
-        tierName: "Faixa 2 (R$ 100.000,00+ Bruto)",
-        minMonthlyRevenueCents: 10000000,
-        maxMonthlyRevenueCents: null,
-        commissionPct: 1.5,
         overCommissionPct: 30,
         bonusFixedCents: 0,
       },
@@ -84,56 +49,7 @@ const DEFAULT_AGENT_PROFILES: AgentCommissionProfile[] = [
   },
 ];
 
-const INITIAL_INLINE_ROWS: InlineSaleSpreadsheetRowInput[] = [
-  {
-    id: "inline-row-1",
-    saleDate: "2026-10-17",
-    clientName: "Roberto Carlos Almeida & Esposa",
-    passengersCount: 2,
-    operatorName: "Orinter",
-    operatorPackageCode: "ORT-88412",
-    contractSigned: true,
-    bookingStatus: "emitida",
-    grossSaleCents: 2000000, // R$ 20.000,00 Bruto cobrados do cliente (conta R$ 20k para a Meta Bruta)
-    operatorTablePriceCents: 1900000, // R$ 19.000,00 na tabela da operadora -> R$ 1.000,00 de Over Bruto
-    taxesAndFeesCents: 100000, // R$ 1.000,00 taxas -> Valor Líquido Comissionável = R$ 18.000,00
-    baseCommissionPct: 10,
-    overRetentionFeePct: 16, // Retenção da Orinter quando financiado na operadora
-    paid100PctViaOperator: true,
-    overPaymentMethod: "operadora_financiado",
-    agentId: "agent-ana",
-    agentName: "Ana Paula (Consultora Sênior)",
-    agentCommissionPctOverride: null,
-    agentOverCommissionPctOverride: null,
-    agentCommissionCentsOverride: null,
-    deductCommissionOnCancel: false,
-    managerCommissionClawbackCents: null,
-  },
-  {
-    id: "inline-row-2",
-    saleDate: "2026-10-16",
-    clientName: "Luciana Martins & Família",
-    passengersCount: 4,
-    operatorName: "FRT Operadora",
-    operatorPackageCode: "FRT-91024",
-    contractSigned: true,
-    bookingStatus: "confirmada",
-    grossSaleCents: 3450000, // R$ 34.500,00 Bruto
-    operatorTablePriceCents: 3200000, // R$ 32.000,00 Tabela -> R$ 2.500,00 Over Bruto
-    taxesAndFeesCents: 200000, // R$ 2.000,00 Taxas -> Valor Líquido = R$ 30.000,00
-    baseCommissionPct: 12,
-    overRetentionFeePct: 15, // Taxa FRT (mas como foi pago via Pix Direto Agência abaixo, retenção efetiva = 0%)
-    paid100PctViaOperator: false,
-    overPaymentMethod: "pix_direto_agencia",
-    agentId: "agent-lucas",
-    agentName: "Lucas (Consultor Pleno)",
-    agentCommissionPctOverride: null,
-    agentOverCommissionPctOverride: null,
-    agentCommissionCentsOverride: null,
-    deductCommissionOnCancel: false,
-    managerCommissionClawbackCents: null,
-  },
-];
+const INITIAL_INLINE_ROWS: InlineSaleSpreadsheetRowInput[] = [];
 
 export function InlineSalesSpreadsheetAndGoalsPanel() {
   const { currentStore } = useWorkspaceStore();
@@ -497,16 +413,33 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
-              {calculatedRows.map((row) => {
-                const isDirectPix =
-                  row.overPaymentMethod === "pix_direto_agencia" || !row.paid100PctViaOperator;
-                return (
-                  <tr
-                    key={row.id}
-                    className={`hover:bg-muted/20 transition-colors ${
-                      row.bookingStatus === "cancelada" ? "bg-destructive/5" : ""
-                    }`}
-                  >
+              {calculatedRows.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="py-12 text-center text-muted-foreground">
+                    <div className="max-w-md mx-auto space-y-3">
+                      <Calculator className="size-8 mx-auto text-muted-foreground/60" />
+                      <p className="text-sm font-semibold text-foreground">Nenhuma operação financeira registrada na planilha</p>
+                      <p className="text-xs text-muted-foreground">
+                        Adicione uma venda abaixo para calcular faturamento bruto, taxas não comissionáveis, comissão da agência, over e repasse do vendedor.
+                      </p>
+                      <Button size="sm" onClick={handleAddNewRow} className="h-11 min-h-11 px-4 text-xs font-bold gap-1.5 cursor-pointer">
+                        <Plus className="size-4" />
+                        <span>Lançar Primeira Venda</span>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                calculatedRows.map((row) => {
+                  const isDirectPix =
+                    row.overPaymentMethod === "pix_direto_agencia" || !row.paid100PctViaOperator;
+                  return (
+                    <tr
+                      key={row.id}
+                      className={`hover:bg-muted/20 transition-colors ${
+                        row.bookingStatus === "cancelada" ? "bg-destructive/5" : ""
+                      }`}
+                    >
                     {/* Data & Status */}
                     <td className="py-3 px-3 space-y-1">
                       <Input
@@ -853,7 +786,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>

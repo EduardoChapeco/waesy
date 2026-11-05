@@ -411,6 +411,8 @@ import { Route as ApiAuthAdsCallbackRouteImport } from './routes/api.auth.ads.ca
 import { Route as ApiAuthGovbrCallbackRouteImport } from './routes/api.auth.govbr.callback'
 import { Route as ApiAuthLinkedinCallbackRouteImport } from './routes/api.auth.linkedin.callback'
 import { Route as ApiAuthMarketplaceCallbackRouteImport } from './routes/api.auth.marketplace.callback'
+import { Route as ApiV1IngestWhatsappContactsRouteImport } from './routes/api.v1.ingest.whatsapp-contacts'
+import { Route as ApiV1IngestWhoamiRouteImport } from './routes/api.v1.ingest.whoami'
 import { Route as ApiV1PublicDiscoveryRouteImport } from './routes/api.v1.public.discovery'
 import { Route as WorkspaceAgendaServicosIndexRouteImport } from './routes/workspace.agenda.servicos.index'
 import { Route as WorkspaceBuilderDocumentIdEditorRouteImport } from './routes/workspace.builder.$documentId.editor'
@@ -2562,6 +2564,17 @@ const ApiAuthMarketplaceCallbackRoute =
     path: '/api/auth/marketplace/callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiV1IngestWhatsappContactsRoute =
+  ApiV1IngestWhatsappContactsRouteImport.update({
+    id: '/api/v1/ingest/whatsapp-contacts',
+    path: '/api/v1/ingest/whatsapp-contacts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiV1IngestWhoamiRoute = ApiV1IngestWhoamiRouteImport.update({
+  id: '/api/v1/ingest/whoami',
+  path: '/api/v1/ingest/whoami',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1PublicDiscoveryRoute = ApiV1PublicDiscoveryRouteImport.update({
   id: '/api/v1/public/discovery',
   path: '/api/v1/public/discovery',
@@ -3205,6 +3218,8 @@ export interface FileRoutesByFullPath {
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
+  '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
+  '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -3640,6 +3655,8 @@ export interface FileRoutesByTo {
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
+  '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
+  '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -4086,6 +4103,8 @@ export interface FileRoutesById {
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
+  '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
+  '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -4532,6 +4551,8 @@ export interface FileRouteTypes {
     | '/api/auth/govbr/callback'
     | '/api/auth/linkedin/callback'
     | '/api/auth/marketplace/callback'
+    | '/api/v1/ingest/whatsapp-contacts'
+    | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -4967,6 +4988,8 @@ export interface FileRouteTypes {
     | '/api/auth/govbr/callback'
     | '/api/auth/linkedin/callback'
     | '/api/auth/marketplace/callback'
+    | '/api/v1/ingest/whatsapp-contacts'
+    | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -5412,6 +5435,8 @@ export interface FileRouteTypes {
     | '/api/auth/govbr/callback'
     | '/api/auth/linkedin/callback'
     | '/api/auth/marketplace/callback'
+    | '/api/v1/ingest/whatsapp-contacts'
+    | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -5509,6 +5534,8 @@ export interface RootRouteChildren {
   ApiAuthGovbrCallbackRoute: typeof ApiAuthGovbrCallbackRoute
   ApiAuthLinkedinCallbackRoute: typeof ApiAuthLinkedinCallbackRoute
   ApiAuthMarketplaceCallbackRoute: typeof ApiAuthMarketplaceCallbackRoute
+  ApiV1IngestWhatsappContactsRoute: typeof ApiV1IngestWhatsappContactsRoute
+  ApiV1IngestWhoamiRoute: typeof ApiV1IngestWhoamiRoute
   ApiV1PublicDiscoveryRoute: typeof ApiV1PublicDiscoveryRoute
   WorkspacePedidosIdReciboRoute: typeof WorkspacePedidosIdReciboRoute
   ApiMcpV1ToolsCallRoute: typeof ApiMcpV1ToolsCallRoute
@@ -8330,6 +8357,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthMarketplaceCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/ingest/whatsapp-contacts': {
+      id: '/api/v1/ingest/whatsapp-contacts'
+      path: '/api/v1/ingest/whatsapp-contacts'
+      fullPath: '/api/v1/ingest/whatsapp-contacts'
+      preLoaderRoute: typeof ApiV1IngestWhatsappContactsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/ingest/whoami': {
+      id: '/api/v1/ingest/whoami'
+      path: '/api/v1/ingest/whoami'
+      fullPath: '/api/v1/ingest/whoami'
+      preLoaderRoute: typeof ApiV1IngestWhoamiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/public/discovery': {
       id: '/api/v1/public/discovery'
       path: '/api/v1/public/discovery'
@@ -9658,6 +9699,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthGovbrCallbackRoute: ApiAuthGovbrCallbackRoute,
   ApiAuthLinkedinCallbackRoute: ApiAuthLinkedinCallbackRoute,
   ApiAuthMarketplaceCallbackRoute: ApiAuthMarketplaceCallbackRoute,
+  ApiV1IngestWhatsappContactsRoute: ApiV1IngestWhatsappContactsRoute,
+  ApiV1IngestWhoamiRoute: ApiV1IngestWhoamiRoute,
   ApiV1PublicDiscoveryRoute: ApiV1PublicDiscoveryRoute,
   WorkspacePedidosIdReciboRoute: WorkspacePedidosIdReciboRoute,
   ApiMcpV1ToolsCallRoute: ApiMcpV1ToolsCallRoute,

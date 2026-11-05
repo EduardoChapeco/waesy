@@ -114,13 +114,24 @@ export const COMMON_INCLUSIONS_TAGS = [
 export function sanitizeDestinationString(raw?: string | null): string {
   if (!raw) return "Buenos Aires";
   const trimmed = raw.trim();
+  let cityCandidate = trimmed;
   if (trimmed.includes(" - ")) {
     const firstPart = trimmed.split(" - ")[0].trim();
-    if (firstPart.length >= 3 && firstPart.length <= 40) {
-      return firstPart;
+    if (firstPart.length >= 2 && firstPart.length <= 40) {
+      cityCandidate = firstPart;
     }
+  } else if (trimmed.length > 50) {
+    cityCandidate = trimmed.slice(0, 50);
   }
-  return trimmed.slice(0, 50);
+  // Title Case if shouting in all-caps
+  if (cityCandidate === cityCandidate.toUpperCase() && cityCandidate.length > 2) {
+    return cityCandidate
+      .toLowerCase()
+      .split(" ")
+      .map((w) => (w.length > 2 ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+      .join(" ");
+  }
+  return cityCandidate;
 }
 
 export function UnifiedProposalWorkspace({

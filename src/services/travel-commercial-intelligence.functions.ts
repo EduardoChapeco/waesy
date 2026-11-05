@@ -204,11 +204,29 @@ export const upsertCommercialContactFn = createServerFn({ method: "POST" })
       }
     }
 
-    const { data: saved, error } = await supabase
+    let { data: saved, error } = await supabase
       .from("travel_commercial_contacts")
       .upsert(payload)
       .select()
       .single();
+
+    // Corrida com outro processo: o índice único (store_id, phone_e164) barrou a duplicata.
+    // Reaproveita o registro vencedor e atualiza em vez de falhar ou duplicar.
+    if (error?.code === "23505" && !data.id) {
+      const { data: winner } = await supabase
+        .from("travel_commercial_contacts")
+        .select("id")
+        .eq("store_id", staff.store_id)
+        .eq("phone", cleanPhone)
+        .maybeSingle();
+      if (winner?.id) {
+        ({ data: saved, error } = await supabase
+          .from("travel_commercial_contacts")
+          .upsert({ ...payload, id: winner.id })
+          .select()
+          .single());
+      }
+    }
 
     if (error) {
       console.error("[upsertCommercialContactFn] Error:", error);
@@ -577,16 +595,38 @@ export const bulkImportInterestsFn = createServerFn({ method: "POST" })
           .select("id")
           .single();
 
-        if (cErr || !newContact) {
+        if (cErr?.code === "23505") {
+          const { data: winner } = await supabase
+            .from("travel_commercial_contacts")
+            .select("id")
+            .eq("store_id", staff.store_id)
+            .eq("phone", cleanPhone)
+            .maybeSingle();
+          contactId = winner?.id;
+        } else if (cErr || !newContact) {
           console.warn("[bulkImportInterestsFn] Falha ao criar contato:", cErr);
           continue;
+        } else {
+          contactId = newContact.id;
+          importedContacts++;
         }
-        contactId = newContact.id;
-        importedContacts++;
+        if (!contactId) continue;
       }
 
       // 2. Cria o interesse de viagem
       const title = `${item.destinations[0]} - ${item.adults} adultos${item.children ? ` + ${item.children} crianças` : ""}`;
+
+      // Idempotência: reenviar o mesmo lote não cria interesse duplicado.
+      const { data: existingInterest } = await supabase
+        .from("travel_interests")
+        .select("id")
+        .eq("store_id", staff.store_id)
+        .eq("contact_id", contactId)
+        .eq("title", title)
+        .in("status", ["open", "matched", "nurturing"])
+        .limit(1)
+        .maybeSingle();
+      if (existingInterest?.id) continue;
       const { error: iErr } = await supabase
         .from("travel_interests")
         .insert({
