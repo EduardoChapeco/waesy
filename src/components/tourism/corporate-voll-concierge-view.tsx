@@ -36,6 +36,8 @@ interface CorporateVollConciergeViewProps {
   companyName?: string;
   userName?: string;
   className?: string;
+  /** WhatsApp da agencia (somente digitos). Sem valor, o concierge fica oculto. */
+  whatsappNumber?: string;
 }
 
 export function CorporateVollConciergeView({
@@ -43,6 +45,7 @@ export function CorporateVollConciergeView({
   companyName,
   userName = "Viajante Corporativo",
   className,
+  whatsappNumber,
 }: CorporateVollConciergeViewProps) {
   const isLinked = Boolean(companyAccount);
 
@@ -58,13 +61,13 @@ export function CorporateVollConciergeView({
 
   const handleSendConcierge = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!conciergeMsg.trim()) return;
+    if (!conciergeMsg.trim() || !whatsappNumber) return;
 
     // Redireciona com mensagem pré-formatada para o WhatsApp corporativo da agência
     const encoded = encodeURIComponent(
       `Olá, Excelência Tour! Sou ${userName} da empresa ${companyName || "Parceira"} e gostaria de suporte para minha viagem: ${conciergeMsg}`
     );
-    window.open(`https://wa.me/5549991234567?text=${encoded}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encoded}`, "_blank", "noopener,noreferrer");
     setConciergeMsg("");
     toast.success("Abrindo atendimento com o concierge de viagens...");
   };
@@ -326,35 +329,6 @@ export function CorporateVollConciergeView({
           </div>
         </div>
 
-        {/* ── Callout Canônico VOLL: Bilhetes Não Voados & Créditos Aéreos Automáticos (Image 1) ── */}
-        <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-orange-500/20 text-orange-600 flex items-center justify-center shrink-0">
-              <AirplaneTilt size={18} weight="bold" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-foreground">
-                Sempre que você tiver algum bilhete não voado, a plataforma utiliza seus créditos de forma automática.
-              </p>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">Saldo retido em companhias:</span>
-                <span className="px-2 py-1 rounded bg-card border border-border font-mono text-foreground font-bold">GOL · R$ 247,00</span>
-                <span className="px-2 py-1 rounded bg-card border border-border font-mono text-foreground font-bold">Azul · R$ 156,00</span>
-                <span className="px-2 py-1 rounded bg-card border border-border font-mono text-foreground font-bold">LATAM · R$ 49,00</span>
-              </div>
-            </div>
-          </div>
-          <Button
-            asChild
-            variant="outline"
-            className="h-11 min-h-11 px-3 text-xs font-bold text-orange-600 border-orange-500/30 hover:bg-orange-500/10 cursor-pointer shrink-0"
-          >
-            <Link to="/workspace/empresa/viagens">
-              <span>Verificar créditos</span>
-              <ArrowRight size={14} className="ml-1" />
-            </Link>
-          </Button>
-        </div>
       </div>
 
       {/* ── Vitrine Corporativa B2B Wooba: Locação de Carros (3 diárias / Faturado) ── */}
@@ -368,68 +342,9 @@ export function CorporateVollConciergeView({
         </div>
       )}
 
-      {/* ── Seção: "Meus Compromissos & Viagens" (VOLL Image 4 e Image 5) ── */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
-            <Clock size={16} className="text-orange-500" weight="bold" />
-            <span>Meus Compromissos & Viagens em Foco</span>
-          </h3>
-          <span className="text-xs text-muted-foreground font-mono">
-            Sincronizado via Wooba & GDS
-          </span>
-        </div>
+      {/* Concierge: exige WhatsApp da agencia */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* Card 1: Voo Emitido */}
-          <div className="rounded-xl border border-border/70 bg-card p-4 space-y-3 hover:border-foreground/30 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="size-8 rounded-lg bg-sky-500/15 text-sky-600 flex items-center justify-center">
-                  <AirplaneTilt size={18} weight="bold" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-foreground block">Voo GRU &rarr; JFK (LATAM)</span>
-                  <span className="text-xs text-muted-foreground block">Voo de ida · LA 8180 · 22:10</span>
-                </div>
-              </div>
-              <span className="text-xs font-bold px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600">
-                Emitido · No Horário
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
-              <span className="text-muted-foreground font-medium">Saída em 9 dias · Portão a definir</span>
-              <span className="font-bold text-foreground font-mono">14 Sex Mar</span>
-            </div>
-          </div>
-
-          {/* Card 2: Hotel dentro da Política */}
-          <div className="rounded-xl border border-border/70 bg-card p-4 space-y-3 hover:border-foreground/30 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="size-8 rounded-lg bg-rose-500/15 text-rose-600 flex items-center justify-center">
-                  <Bed size={18} weight="bold" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-foreground block">Mercure São Paulo Jardins</span>
-                  <span className="text-xs text-muted-foreground block">Hospedagem Corporativa · 3 noites</span>
-                </div>
-              </div>
-              <span className="text-xs font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
-                Dentro da Política
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
-              <span className="text-muted-foreground font-medium">Teto de diária respeitado</span>
-              <span className="font-bold text-foreground font-mono">R$ 489/noite</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Concierge VOLL Interativo (Image 5) ── */}
+      {whatsappNumber && (
       <div className="rounded-xl border border-border/70 bg-muted/20 p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -459,6 +374,7 @@ export function CorporateVollConciergeView({
           </Button>
         </form>
       </div>
+      )}
 
       {/* ── MODAL: SOLICITAR VÍNCULO CORPORATIVO ── */}
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>

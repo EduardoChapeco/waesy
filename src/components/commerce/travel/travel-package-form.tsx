@@ -75,6 +75,7 @@ import {
 } from "@/lib/classifieds/canonical-airports";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { formatMoney } from "@/lib/money";
+import { CurrencyField } from "@/components/ui/currency-field";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
 import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";

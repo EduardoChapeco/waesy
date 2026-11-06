@@ -14,6 +14,7 @@ export type ProposalStatus = "draft" | "sent" | "approved" | "rejected" | "expir
 export interface FlightSegmentDTO {
   id?: string;
   type?: "outbound" | "return" | "round_trip";
+  leg?: "ida" | "volta" | string;
   airline?: string;
   airline_name?: string;
   airline_code?: string;
@@ -78,6 +79,14 @@ export interface ItineraryDayDTO {
 export interface TransferDTO {
   type: string; // Ex: "Aeroporto -> Hotel (Privativo)"
   vehicle: string;
+  id?: string;
+  vehicle_type?: string;
+  route?: string;
+  route_name?: string;
+  pickup_time?: string;
+  dropoff_time?: string;
+  is_private?: boolean;
+  price_cents?: number;
   date?: string;
   notes?: string;
 }
@@ -143,6 +152,7 @@ export interface TravelProposalDTO {
   canvas_format: ProposalCanvasFormat;
   template_theme: string;
   destination_city: string;
+  destination?: string;
   travel_start_date?: string | null;
   travel_end_date?: string | null;
   flights: FlightSegmentDTO[];

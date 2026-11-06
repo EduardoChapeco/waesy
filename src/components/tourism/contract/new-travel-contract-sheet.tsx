@@ -12,7 +12,11 @@ import { Scale, ShieldCheck, User, UserPlus, Users, Compass, DollarSign, FileTex
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listAgencyTravelProposals } from "@/services/travel-proposal.functions";
 import { createTravelContract, CANONICAL_TOURISM_CLAUSES, type ContractClauseDTO } from "@/services/travel-contract.functions";
+import { getAgencySalesAndCommissionConfigFn, type AgencyCancellationPolicyConfig, type OperatorOverRetentionConfig } from "@/services/travel-pre-boarding-and-commissions.functions";
 import { formatMoney } from "@/lib/money";
+
+// Modelos de pagamento vem das configuracoes da agencia (nenhum embutido)
+const PAYMENT_PRESETS: string[] = [];
 
 interface NewTravelContractSheetProps {
   isOpen?: boolean;
@@ -29,9 +33,21 @@ export function NewTravelContractSheet({
   onOpenChange,
   onCreated,
   onSuccess,
+  storeId,
 }: NewTravelContractSheetProps) {
   const effectiveOpen = open !== undefined ? open : (isOpen ?? false);
   const queryClient = useQueryClient();
+
+  const { data: agencyErpConfig } = useQuery({
+    queryKey: ["agency-erp-sales-commission-config", storeId || "active"],
+    queryFn: () => getAgencySalesAndCommissionConfigFn({ data: { storeId } }),
+    enabled: effectiveOpen,
+    staleTime: 60_000,
+  });
+
+  const configuredOperatorRules: OperatorOverRetentionConfig[] = agencyErpConfig?.operatorConfigs || [];
+  const configuredCancellationPolicies: AgencyCancellationPolicyConfig[] = agencyErpConfig?.cancellationPolicies || [];
+  const [selectedPolicyKey, setSelectedPolicyKey] = useState<string>("");
 
  // Modo ativo: 'proposal' | 'crm' | 'manual'
  const [activeTab, setActiveTab] = useState<"proposal" | "crm" | "manual">("proposal");
@@ -44,9 +60,7 @@ export function NewTravelContractSheet({
  const [packageSummary, setPackageSummary] = useState("");
  const [totalValueFormatted, setTotalValueFormatted] = useState("R$ 0,00");
  const [totalValueCents, setTotalValueCents] = useState<number>(0);
- const [paymentConditions, setPaymentConditions] = useState(
- "À vista via PIX (5% de desconto) ou em até 10x sem juros no cartão de crédito."
- );
+ const [paymentConditions, setPaymentConditions] = useState("");
 
  // Proposta vinculada
  const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
@@ -74,12 +88,62 @@ export function NewTravelContractSheet({
  // Passageiros Acompanhantes
  const [passengers, setPassengers] = useState<Array<{ name: string; document: string; birthDate?: string }>>([]);
 
- // Cláusulas e Acordeão
- const [showClauses, setShowClauses] = useState(false);
- const [customClauses, setCustomClauses] = useState<ContractClauseDTO[]>([]);
+ // Cláusulas e Acordeão (Editáveis pela Agência)
+ const [showClauses, setShowClauses] = useState(true);
+ const [customClauses, setCustomClauses] = useState<ContractClauseDTO[]>(() =>
+   CANONICAL_TOURISM_CLAUSES.map((c) => ({ ...c }))
+ );
  const [newClauseSection, setNewClauseSection] = useState("");
  const [newClauseText, setNewClauseText] = useState("");
  const [isAddingClause, setIsAddingClause] = useState(false);
+
+ const handleSelectCancellationPolicy = (policy: AgencyCancellationPolicyConfig) => {
+   setSelectedPolicyKey(policy.policyKey || policy.policyName || "");
+   const tiersSummary =
+     policy.fineTiers && policy.fineTiers.length > 0
+       ? policy.fineTiers
+           .map((t) => `Até ${t.daysBeforeDeparture} dias antes do embarque: retenção de ${t.finePct}% (${t.label || "faixa contratual"})`)
+           .join("; ")
+       : `Retenção padrão configurada de ${policy.defaultFinePct}%`;
+
+   const clauseText = [
+     policy.contractClausesTemplate || "",
+     `Escalonamento de Multas da Agência (${policy.policyName}): ${tiersSummary}.`,
+     `Prazo de arrependimento: ${policy.freeCancellationWindowDays} dia(s).`,
+     policy.nonRefundableAirfareRule ? `Regra de bilhete aéreo: ${policy.nonRefundableAirfareRule}` : "",
+   ]
+     .filter(Boolean)
+     .join(" ");
+
+   setCustomClauses((prev) => {
+     const base = prev.length > 0 ? [...prev] : CANONICAL_TOURISM_CLAUSES.map((c) => ({ ...c }));
+     const cancelIdx = base.findIndex(
+       (c) =>
+         c.section.toLowerCase().includes("cancel") ||
+         c.section.toLowerCase().includes("multa") ||
+         c.section.toLowerCase().includes("desist")
+     );
+     if (cancelIdx >= 0) {
+       base[cancelIdx] = {
+         ...base[cancelIdx],
+         section: `Cancelamento, Alteração e Retenções (${policy.policyName})`,
+         clause_text: clauseText,
+       };
+       return base;
+     }
+     return [
+       ...base,
+       {
+         number: base.length + 1,
+         section: `Cancelamento, Alteração e Retenções (${policy.policyName})`,
+         clause_text: clauseText,
+         is_mandatory: false,
+         legal_basis: "Lei Geral do Turismo (Lei 11.771/2008) e Resolução ANAC 400",
+       },
+     ];
+   });
+   toast.success(`Política "${policy.policyName}" aplicada às cláusulas do contrato!`);
+ };
 
  // Submissão
  const [isSubmitting, setIsSubmitting] = useState(false);
@@ -864,29 +928,29 @@ export function NewTravelContractSheet({
  </div>
  </div>
 
- {/* Chips de Presets de Condições Comerciais */}
+ {/* Chips de Regras Comerciais das Operadoras Configuradas pela Agência */}
+ {configuredOperatorRules.length > 0 && (
  <div className="space-y-2 pt-1">
  <Label className="text-xs font-bold text-muted-foreground">
- Modelos Rápidos de Pagamento:
+ Aplicar Regra de Pagamento da Operadora (Configurada pela Agência):
  </Label>
  <div className="flex flex-wrap gap-2">
- {[
- " Pix à Vista (5% de desconto)",
- " Cartão de Crédito em até 10x sem juros",
- " 50% na Assinatura + 50% até 15 dias antes do Embarque",
- " Boleto Faturado sem entrada (1º vencimento em 30 dias)",
- ].map((preset) => (
+ {configuredOperatorRules.map((op) => {
+ const opText = `${op.operatorName}: até ${op.maxBoletoInstallments || 10}x no boleto (entrada mín. ${op.boletoDownpaymentPct ?? 20}%), até ${op.maxCardInstallments || 10}x no cartão ou ${op.pixDiscountPct ?? 0}% de desconto à vista no Pix.${op.paymentGuidanceInstructions ? ` ${op.paymentGuidanceInstructions}` : ""}`;
+ return (
  <button
- key={preset}
+ key={op.operatorKey || op.operatorName}
  type="button"
- onClick={() => applyPaymentPreset(preset)}
- className="text-xs font-medium px-3 py-1 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ onClick={() => applyPaymentPreset(opText)}
+ className="h-11 min-h-11 text-xs font-semibold px-3 rounded-lg bg-muted/60 hover:bg-muted text-foreground border border-border/60 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
- {preset}
+ {op.operatorName} ({op.maxBoletoInstallments || 10}x Bol. / {op.maxCardInstallments || 10}x Cartão)
  </button>
- ))}
+ );
+ })}
  </div>
  </div>
+ )}
 
  <div className="space-y-1">
  <Label className="text-xs font-bold">Condições de Pagamento Descritivas *</Label>
@@ -900,7 +964,7 @@ export function NewTravelContractSheet({
  </div>
  </div>
 
- {/* Card 5: Cláusulas Pétreas & Minuta Jurídica */}
+ {/* Card 5: Políticas de Cancelamento Configuradas & Cláusulas Editáveis da Agência */}
  <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-xs">
  <button
  type="button"
@@ -909,21 +973,145 @@ export function NewTravelContractSheet({
  >
  <span className="flex items-center gap-2">
  <Scale className="size-4 text-primary" />
- <span>Cláusulas Contratuais da Minuta (5 Cláusulas Padrão Embratur)</span>
+ <span>Políticas de Cancelamento (% Multas) & Cláusulas Editáveis ({customClauses.length} Cláusulas)</span>
  </span>
  {showClauses ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
  </button>
 
  {showClauses && (
- <div className="p-4 pt-0 space-y-3 divide-y divide-border/40 text-xs">
- {CANONICAL_TOURISM_CLAUSES.map((c) => (
- <div key={c.number} className="pt-3 space-y-1">
- <p className="font-bold text-foreground">
- Art. {c.number} — {c.section}
- </p>
- <p className="text-muted-foreground leading-relaxed">{c.clause_text}</p>
+ <div className="p-4 pt-0 space-y-4 text-xs">
+ {configuredCancellationPolicies.length > 0 && (
+ <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-2">
+ <Label className="text-xs font-bold text-foreground block">
+ Selecionar Política de Cancelamento e Multas Escalonadas da Agência:
+ </Label>
+ <div className="flex flex-wrap gap-2">
+ {configuredCancellationPolicies.map((pol) => (
+ <button
+ key={pol.policyKey || pol.policyName || pol.id}
+ type="button"
+ onClick={() => handleSelectCancellationPolicy(pol)}
+ className={`h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+ selectedPolicyKey === (pol.policyKey || pol.policyName)
+ ? "bg-primary text-primary-foreground border-primary"
+ : "bg-card text-foreground border-border hover:bg-muted"
+ }`}
+ >
+ {pol.policyName} (Multa base {pol.defaultFinePct}%)
+ </button>
+ ))}
+ </div>
+ </div>
+ )}
+
+ <div className="space-y-3 divide-y divide-border/40">
+ {customClauses.map((c, idx) => (
+ <div key={idx} className="pt-3 space-y-2">
+ <div className="flex items-center justify-between gap-2">
+ <Input
+ value={c.section}
+ onChange={(e) => {
+ const next = [...customClauses];
+ next[idx] = { ...next[idx], section: e.target.value };
+ setCustomClauses(next);
+ }}
+ className="h-9 text-xs font-bold"
+ placeholder={`Título da Cláusula ${idx + 1}`}
+ />
+ <Button
+ type="button"
+ variant="ghost"
+ size="sm"
+ onClick={() =>
+ setCustomClauses(
+ customClauses
+ .filter((_, i) => i !== idx)
+ .map((item, i) => ({ ...item, number: i + 1 }))
+ )
+ }
+ className="h-11 min-h-11 px-3 text-muted-foreground hover:text-destructive"
+ >
+ <Trash2 className="size-3.5" />
+ </Button>
+ </div>
+ <Textarea
+ rows={3}
+ value={c.clause_text}
+ onChange={(e) => {
+ const next = [...customClauses];
+ next[idx] = { ...next[idx], clause_text: e.target.value };
+ setCustomClauses(next);
+ }}
+ className="text-xs leading-relaxed"
+ />
  </div>
  ))}
+ </div>
+
+ <div className="pt-2 border-t border-border/40 space-y-2">
+ {!isAddingClause ? (
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => setIsAddingClause(true)}
+ className="h-11 min-h-11 text-xs font-bold gap-2"
+ >
+ <Plus className="size-3.5" />
+ Adicionar Cláusula Personalizada
+ </Button>
+ ) : (
+ <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2">
+ <Input
+ placeholder="Título da cláusula (ex: Regras de Bagagem / Multa de No-Show)"
+ value={newClauseSection}
+ onChange={(e) => setNewClauseSection(e.target.value)}
+ className="h-9 text-xs"
+ />
+ <Textarea
+ rows={2}
+ placeholder="Texto jurídico e percentual aplicável..."
+ value={newClauseText}
+ onChange={(e) => setNewClauseText(e.target.value)}
+ className="text-xs"
+ />
+ <div className="flex items-center gap-2">
+ <Button
+ type="button"
+ size="sm"
+ onClick={() => {
+ if (!newClauseSection.trim() || !newClauseText.trim()) return;
+ setCustomClauses([
+ ...customClauses,
+ {
+ number: customClauses.length + 1,
+ section: newClauseSection.trim(),
+ clause_text: newClauseText.trim(),
+ is_mandatory: false,
+ legal_basis: "Cláusula contratual específica da agência",
+ },
+ ]);
+ setNewClauseSection("");
+ setNewClauseText("");
+ setIsAddingClause(false);
+ }}
+ className="h-11 min-h-11 text-xs font-bold"
+ >
+ Salvar Cláusula
+ </Button>
+ <Button
+ type="button"
+ variant="ghost"
+ size="sm"
+ onClick={() => setIsAddingClause(false)}
+ className="h-11 min-h-11 text-xs"
+ >
+ Cancelar
+ </Button>
+ </div>
+ </div>
+ )}
+ </div>
  </div>
  )}
  </div>

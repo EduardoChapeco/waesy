@@ -209,6 +209,9 @@ CREATE TABLE IF NOT EXISTS public.travel_price_observations (
   observed_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+ALTER TABLE public.travel_price_observations ADD COLUMN IF NOT EXISTS store_id UUID REFERENCES public.stores(id) ON DELETE CASCADE;
+ALTER TABLE public.travel_price_observations ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'extension_capture';
+
 CREATE INDEX IF NOT EXISTS idx_travel_price_obs_lookup ON public.travel_price_observations(store_id, route_fingerprint, travel_start_date);
 CREATE INDEX IF NOT EXISTS idx_travel_price_obs_temporal ON public.travel_price_observations(observed_at);
 

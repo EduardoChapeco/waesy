@@ -73,6 +73,7 @@ export interface WixVisualSitemapModalProps {
   onSelectPage: (pageId: string) => void;
   onAddPage: (newPage: { title: string; slug: string; is_home: boolean }) => void;
   onDuplicatePage: (pageId: string) => void;
+  onDeletePage?: (pageId: string) => void;
   onUpdatePageSeo: (
     pageId: string,
     seo: { seo_title?: string; seo_description?: string },

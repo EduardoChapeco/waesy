@@ -4,6 +4,7 @@ import {
   calculateMultiRoomQuoteBreakdown,
   autoMatchCustomerReceiptToInstallment,
   getOperatorPaymentGuidance,
+  calculateApplicableCancellationPenalty,
   buildAutomaticTripItineraryFallback,
   answerTripCopilotGroundedQuestion,
   parseAndValidatePassportMrz,
@@ -265,5 +266,36 @@ describe("Travel Ecosystem Engines (Ondas 2 a 5)", () => {
     expect(split.netRemittanceToOperatorCents).toBe(260000); // Repassa R$ 2.600,00 para a operadora
     expect(split.agentCommissionCents).toBe(36000); // R$ 360,00 de comissão do vendedor
     expect(split.accountingBalanced).toBe(true);
+  });
+
+  it("calculateApplicableCancellationPenalty e getOperatorPaymentGuidance aplicam regras configuradas pela agência", () => {
+    const customGuidance = getOperatorPaymentGuidance("incomum_chat", "Operadora Custom", {
+      paymentGuidanceTitle: "Portal Exclusivo da Agência",
+      paymentGuidanceInstructions: "Pague via Pix ou Boleto no portal personalizado e anexe o comprovante.",
+      paymentPortalUrl: "https://pagamentos.agencia.com.br",
+    });
+    expect(customGuidance.headline).toBe("Portal Exclusivo da Agência");
+    expect(customGuidance.paymentPortalUrl).toBe("https://pagamentos.agencia.com.br");
+
+    const penalty = calculateApplicableCancellationPenalty({
+      departureDateIso: "2027-06-30",
+      requestDateIso: "2027-06-10", // 20 dias antes
+      totalContractCents: 1000000, // R$ 10.000,00
+      policy: {
+        policyName: "Política Personalizada da Agência",
+        freeCancellationWindowDays: 7,
+        defaultFinePct: 20,
+        nonRefundableAirfareRule: "Bilhete aéreo conforme tarifa",
+        fineTiers: [
+          { daysBeforeDeparture: 30, finePct: 15, label: "Mais de 30 dias" },
+          { daysBeforeDeparture: 15, finePct: 40, label: "Entre 15 e 29 dias" },
+          { daysBeforeDeparture: 0, finePct: 80, label: "Menos de 15 dias" },
+        ],
+      },
+    });
+    expect(penalty.daysBeforeDeparture).toBe(20);
+    expect(penalty.appliedFinePct).toBe(40);
+    expect(penalty.penaltyAmountCents).toBe(400000);
+    expect(penalty.refundableAmountCents).toBe(600000);
   });
 });

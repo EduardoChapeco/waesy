@@ -15,10 +15,11 @@ import { formatMoney } from "@/lib/money";
 // ─── Tipagens Canônicas do Contrato Turístico ──────────────────────────────────
 
 export interface ContractClauseDTO {
- number: number;
- section: string;
- clause_text: string;
- is_mandatory: boolean;
+  number: number;
+  section: string;
+  clause_text: string;
+  is_mandatory: boolean;
+  legal_basis?: string;
 }
 
 export interface ContractSignerDTO {

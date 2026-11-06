@@ -45,7 +45,7 @@ export function TourismDynamicSearchPanel({
   className,
 }: TourismDynamicSearchPanelProps) {
   // Search state
-  const [origin, setOrigin] = useState("Chapecó (XAP)");
+  const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [returnDate, setReturnDate] = useState("");

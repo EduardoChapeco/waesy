@@ -1655,27 +1655,47 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
          Adicionar
        </Button>
      </div>
-     <div className="flex flex-wrap gap-1 pt-1">
+     <div className="tab-list flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar py-1">
        {[
          "Passagens aéreas ida e volta",
+         "Hospedagem com café da manhã",
          "Transfer Aeroporto / Hotel",
          "Seguro viagem completo",
          "Bagagem despachada 23kg",
+         "Bagagem de mão 10kg",
+         "Guia acompanhante credenciado",
+         "Ônibus Leito DD Executivo",
          "Conciergerie 24h",
-       ].map((chip) => (
-         <button
-           key={chip}
-           type="button"
-           onClick={() => {
-             if (!currentIncludes.includes(chip)) {
-               onChange({ includes: [...currentIncludes, chip] });
-             }
-           }}
-           className="min-h-11 px-3 py-1 rounded bg-muted/60 hover:bg-emerald-500/10 text-xs text-muted-foreground hover:text-emerald-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-         >
-           + {chip}
-         </button>
-       ))}
+       ]
+         .filter(
+           (chip) =>
+             !newIncludeText.trim() ||
+             chip.toLowerCase().includes(newIncludeText.trim().toLowerCase()),
+         )
+         .map((chip) => {
+           const isSelected = currentIncludes.includes(chip);
+           return (
+             <button
+               key={chip}
+               type="button"
+               onClick={() => {
+                 if (isSelected) {
+                   onChange({ includes: currentIncludes.filter((i) => i !== chip) });
+                 } else {
+                   onChange({ includes: [...currentIncludes, chip] });
+                 }
+               }}
+               className={cn(
+                 "h-11 min-h-11 px-3 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                 isSelected
+                   ? "bg-emerald-500/15 text-emerald-700 border border-emerald-500/30 font-bold"
+                   : "bg-muted/60 hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-700 border border-border/50",
+               )}
+             >
+               {isSelected ? chip : `+ ${chip}`}
+             </button>
+           );
+         })}
      </div>
      <div className="space-y-2 pt-2">
        {currentIncludes.map((item, idx) => (
@@ -1731,6 +1751,45 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
        >
          Adicionar
        </Button>
+     </div>
+     <div className="tab-list flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar py-1">
+       {[
+         "Despesas de caráter pessoal",
+         "Refeições e bebidas não mencionadas",
+         "Ingressos em atrações opcionais",
+         "Taxas turísticas municipais no check-in",
+         "Bagagem despachada extra",
+         "Passeios opcionais no destino",
+       ]
+         .filter(
+           (chip) =>
+             !newExcludeText.trim() ||
+             chip.toLowerCase().includes(newExcludeText.trim().toLowerCase()),
+         )
+         .map((chip) => {
+           const isSelected = currentExcludes.includes(chip);
+           return (
+             <button
+               key={chip}
+               type="button"
+               onClick={() => {
+                 if (isSelected) {
+                   onChange({ excludes: currentExcludes.filter((i) => i !== chip) });
+                 } else {
+                   onChange({ excludes: [...currentExcludes, chip] });
+                 }
+               }}
+               className={cn(
+                 "h-11 min-h-11 px-3 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                 isSelected
+                   ? "bg-destructive/15 text-destructive border border-destructive/30 font-bold"
+                   : "bg-muted/60 hover:bg-destructive/10 text-muted-foreground hover:text-destructive border border-border/50",
+               )}
+             >
+               {isSelected ? chip : `+ ${chip}`}
+             </button>
+           );
+         })}
      </div>
      <div className="space-y-2 pt-2">
        {currentExcludes.map((item, idx) => (

@@ -824,15 +824,15 @@ export function OperatorVoucherImportSheet({
                           flights: [
                             ...(parsedData.flights || []),
                             {
-                              airline: "LATAM",
+                              airline: "",
                               flight_number: "",
-                              origin: "GRU",
+                              origin: "",
                               destination: "",
                               date: parsedData.travel_start_date || "",
                               departure_time: "",
                               arrival_time: "",
                               locator: "",
-                              baggage: "1x 23kg",
+                              baggage: "",
                               class: "Econômica",
                             },
                           ],

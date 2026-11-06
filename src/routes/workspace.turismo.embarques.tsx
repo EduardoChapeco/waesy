@@ -812,7 +812,7 @@ function WorkspaceBoardingPage() {
 
         {/* ── PRE-BOARDING STUDIO & MEETING SCHEDULER VIEW ── */}
         {viewMode === 'pre_boarding_studio' && (
-          <PreBoardingPresentationStudio />
+          <PreBoardingPresentationStudio departures={cards} />
         )}
       </div>
 

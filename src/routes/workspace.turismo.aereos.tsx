@@ -67,18 +67,28 @@ export default function FlightsPage() {
   const [recordLocator, setRecordLocator] = useState('');
 
   // Segment fields
-  const [airlineCode, setAirlineCode] = useState('LA');
-  const [airlineName, setAirlineName] = useState('LATAM Airlines');
-  const [flightNumber, setFlightNumber] = useState('3214');
-  const [originIata, setOriginIata] = useState('GRU');
-  const [originCity, setOriginCity] = useState('São Paulo / Guarulhos');
-  const [destinationIata, setDestinationIata] = useState('MIA');
-  const [destinationCity, setDestinationCity] = useState('Miami');
-  const [departureAt, setDepartureAt] = useState('2026-10-15T23:30');
-  const [arrivalAt, setArrivalAt] = useState('2026-10-16T07:15');
+  const [airlineCode, setAirlineCode] = useState('');
+  const [airlineName, setAirlineName] = useState('');
+  const [flightNumber, setFlightNumber] = useState('');
+  const [originIata, setOriginIata] = useState('');
+  const [originCity, setOriginCity] = useState('');
+  const [destinationIata, setDestinationIata] = useState('');
+  const [destinationCity, setDestinationCity] = useState('');
+  const [departureAt, setDepartureAt] = useState('');
+  const [arrivalAt, setArrivalAt] = useState('');
+  const [baggage, setBaggage] = useState('');
+  const [airportTerminal, setAirportTerminal] = useState('');
+
+
+
+
+
+
+
+
   const [cabin, setCabin] = useState<FlightCabin>('economy');
-  const [baggage, setBaggage] = useState('1x 23kg Despachada');
-  const [airportTerminal, setAirportTerminal] = useState('Terminal 3');
+
+
 
   const handleSelectOrigin = (code: string) => {
     const clean = code.trim().toUpperCase();

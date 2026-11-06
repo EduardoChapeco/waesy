@@ -1,5 +1,21 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-440: Persistência Relacional em Tabelas Supabase com RLS por Papel, Governança de Comissões, Paridade Completa de Propostas/Roteiros e Zero Dados Hardcoded
+- **Data:** 2026-11-05
+- **Contexto:**
+  1. O módulo financeiro de agência e comissões dependia de armazenamento volátil no `localStorage` por navegador, carecendo de tabelas relacionais com isolamento multi-tenant e RLS estrito por papel.
+  2. A edição de comissão no construtor de propostas estava desprotegida, permitindo que agentes alterassem comissões globais e percentuais da agência sem autorização de gerência/proprietário.
+  3. Existência de valores fixos hardcoded: operadoras com textos estáticos em `travel-ecosystem-engines.functions.ts` ("multa 20%... 30 dias"), aeroportos e datas estáticas em `PreBoardingPresentationStudio.tsx`, `CarRentalOfferCard.tsx`, `workspace.turismo.aereos.tsx`, `tourism-dynamic-search-panel.tsx` e `_store.turismo.index.tsx` (ausência de WhatsApp real do concierge e aeroportos regionais fixos).
+  4. Falta de paridade integral entre Criador de Pacotes/Roteiros, InfoTravel, Construtor de Propostas, Studio Sidebar Editor e o portal Minha Viagem (`convertProposalToTrip`).
+- **Decisão:**
+  1. **Migration e Tabelas Relacionais com RLS por Papel:** Criada a migration `20261105230000_travel_erp_commissions_operators_contracts_parity.sql` com as tabelas `agency_operator_rules`, `agency_agent_commission_profiles`, `agency_sales_commission_ledger`, `agency_contract_cancellation_policies`, e funções `is_agency_store_member(uuid)` e `is_agency_store_manager(uuid)` em SECURITY DEFINER.
+  2. **Governança de Comissões por Papel:** Bloqueada edição de comissões e regras globais para usuários sem papel de gerência (`isManagerOrOwner`); agentes visualizam a comissão em modo somente leitura.
+  3. **Erradicação de Hardcodes:** Removidos todos os dados sintéticos/presets estáticos; aeroportos de saída agora são derivados dos pacotes publicados; WhatsApp do concierge é resolvido dinamicamente da agência ativa; regras de operadoras e políticas de cancelamento (% multas escalonadas) agora são 100% configuráveis pela agência.
+  4. **Paridade Completa de Roteiro e Multimodal:** Roteiro dia a dia, transportes multimodais (aéreo/rodoviário), ocupação de quartos e condições de pagamento propagam sem perdas da Proposta até a Viagem e ao Portal do Passageiro.
+  5. **Conformidade de CI e Design Lint:** 17/17 testes Vitest aprovados, zero violações P0 e catraca aprovada com redução de 10 violações abaixo da baseline congelada.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.10, B.11, B.22, B.25, B.26, B.33, B.50; SPEC-2026-11-05-TRAVEL-ERP-TABLES-PARITY.md.
+- **Consequências:** Fim completo de dependência de localStorage, isolamento de papéis por RLS, integridade relacional total e paridade de ponta a ponta no ecossistema de turismo.
+
 ## DEC-439: Resolução Integral das Não Conformidades da Auditoria Forense (NC-001 a NC-010), Expiração de Checkouts e Fechamento de Ciclo SimLab-Catálogo
 - **Data:** 2026-11-05
 - **Contexto:**
@@ -8242,3 +8258,18 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
 - **Consequências:** Interface executiva, madura e silenciosa, sem aparência de protótipo ou ruído conversacional de IA.
 
 
+
+### DEC-440: Erradicacao de dados embutidos em turismo e pendencias estruturais de comissao
+- **Data:** 2026-11-05
+- **ID da Decisao:** DEC-440
+- **Contexto:** Auditoria de hardcode/mock no modulo turismo (OCR, proposta, contrato, excursoes, comissoes, concierge corporativo).
+- **Decisao Adotada:**
+  1. Proposta: padroes de pagamento zerados (sem entrada, sem parcelas, sem Pix, comissao 0, filtro Infotravel neutro); OCR estendido com origem, idades, entrada, 1o vencimento, parcelas e Pix.
+  2. Contrato: condicao de pagamento padrao e modelos rapidos removidos; bloco oculto quando vazio.
+  3. Excursoes: catalogo `TOUR_PRESETS` (precos, entradas, embarques) removido; bloco oculto quando vazio.
+  4. Comissoes: `DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS` vazio; linha nova da planilha e simulador de cancelamento sem valores de exemplo.
+  5. Concierge corporativo: removidos saldos, voo e hotel ficticios e WhatsApp fixo; concierge exige prop `whatsappNumber`.
+  6. Templates de proposta: textos que afirmavam inclusao sem dado removidos.
+- **Pendente (requer spec e migration, B.10):** persistir operadoras, regras e metas de comissao no banco com RLS por papel (hoje em `localStorage` por navegador); ocultar controle de comissao do Kanban para agentes; ligar `whatsappNumber` ao cadastro da loja; regras de cancelamento e perfis de pagamento por operadora em `travel-ecosystem-engines.functions.ts`.
+- **Consequencias:** nenhum valor comercial aparece sem origem em dado real ou entrada do usuario.
+- **Handoff:** proxima fase = spec de `agency_commission_rules`/`agency_operators` (EARS) e migration.

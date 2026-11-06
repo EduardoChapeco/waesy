@@ -113,16 +113,6 @@ const CATEGORY_CHIPS: FilterChipOption[] = [
   { id: "corporativo", label: "Corporativo (VOLL)" },
 ];
 
-const REGIONAL_AIRPORTS = [
-  { id: "todos", label: "Todas as Saídas" },
-  { id: "XAP", label: "Chapecó (XAP)" },
-  { id: "FLN", label: "Florianópolis (FLN)" },
-  { id: "CWB", label: "Curitiba (CWB)" },
-  { id: "POA", label: "Porto Alegre (POA)" },
-  { id: "NVT", label: "Navegantes (NVT)" },
-  { id: "GRU", label: "São Paulo (GRU)" },
-];
-
 function TourismMasterPage() {
   const { banners = [], hotpages = [], tourismItems: initialItems = [], surfaceFeed = null, surfaceExperience = null } =
     ((Route.useLoaderData() as any) || {});
@@ -169,6 +159,33 @@ function TourismMasterPage() {
 
   const rawList: TourismItemDTO[] = (items as any[]) || [];
   const isLoading = !items && initialItems.length === 0;
+
+  const agencyWhatsapp = useMemo(() => {
+    const storePhone =
+      surfaceExperience?.liveData?.stores?.[0]?.whatsapp ||
+      surfaceExperience?.liveData?.stores?.[0]?.phone;
+    if (storePhone) return String(storePhone);
+    const itemWithWhatsapp = rawList.find((i) => i.contact_whatsapp && i.contact_whatsapp.trim().length > 0);
+    return itemWithWhatsapp?.contact_whatsapp || undefined;
+  }, [surfaceExperience, rawList]);
+
+  const availableDepartureOptions = useMemo(() => {
+    const uniqueDepartures = new Map<string, string>();
+    rawList.forEach((item) => {
+      const rawDep = (item.departure_city || (item as any).departure_airport || "").trim();
+      if (rawDep) {
+        const key = rawDep.toUpperCase();
+        if (!uniqueDepartures.has(key)) {
+          uniqueDepartures.set(key, rawDep);
+        }
+      }
+    });
+    if (uniqueDepartures.size === 0) return [];
+    return [
+      { id: "todos", label: "Todas as Saídas" },
+      ...Array.from(uniqueDepartures.entries()).map(([id, label]) => ({ id, label })),
+    ];
+  }, [rawList]);
 
   const tourismList = useMemo(() => {
     return rawList.filter((item) => {
@@ -225,7 +242,7 @@ function TourismMasterPage() {
           stores={live.stores?.length ? live.stores : []}
         />
         <TravelQuoteModal
-          isOpen={isQuoteModalOpen}
+          open={isQuoteModalOpen}
           onClose={() => setIsQuoteModalOpen(false)}
           defaultDestination={quoteDestination}
         />
@@ -302,7 +319,7 @@ function TourismMasterPage() {
       {/* ── 4. Visão Corporativa VOLL (se a aba 'corporativo' estiver selecionada) ── */}
       {selectedCategory === "corporativo" && (
         <section aria-label="Painel Corporativo VOLL" className="w-full">
-          <CorporateVollConciergeView />
+          <CorporateVollConciergeView whatsappNumber={agencyWhatsapp} />
         </section>
       )}
 
@@ -342,13 +359,13 @@ function TourismMasterPage() {
         />
       )}
 
-      {/* ── Filtro de Saída por Aeroporto Regional (Snap Scroll Canônico) ── */}
-      {selectedCategory !== "corporativo" && (
+      {/* ── Filtro de Saída Dinâmico pelas Cidades/Aeroportos dos Pacotes Publicados (Snap Scroll Canônico) ── */}
+      {selectedCategory !== "corporativo" && availableDepartureOptions.length > 1 && (
         <div className="tab-list flex items-center gap-2 overflow-x-auto no-scrollbar py-1 pr-6 border-b border-border/40 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_90%,transparent_100%)]">
           <span className="text-xs font-semibold text-muted-foreground shrink-0 mr-1 snap-start">
             Saída:
           </span>
-          {REGIONAL_AIRPORTS.map((air) => {
+          {availableDepartureOptions.map((air) => {
             const isActive = selectedAirport === air.id;
             return (
               <button
@@ -384,7 +401,7 @@ function TourismMasterPage() {
           initialDays={3}
           initialPickupLocation={
             selectedAirport !== "todos"
-              ? REGIONAL_AIRPORTS.find((a) => a.id === selectedAirport)?.label
+              ? availableDepartureOptions.find((a) => a.id === selectedAirport)?.label
               : undefined
           }
         />

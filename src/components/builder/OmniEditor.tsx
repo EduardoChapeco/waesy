@@ -222,7 +222,11 @@ const BLOCK_ICONS: Record<string, any> = {
 };
 
 interface BlockContentFieldsProps {
-  selectedBlock: OmniBlockInstance;
+  selectedBlock?: OmniBlockInstance;
+  block?: OmniBlockInstance;
+  onOpenAssetPicker?: (field: any) => void;
+  onOpenPhotoStudio?: () => void;
+  onOpenMenuManager?: () => void;
   onUpdateConfig: (key: string, value: any) => void;
   onUpdateAssetRef?: (asset: BuilderAssetRef) => void;
   onClearAssetRef?: (usageSlot?: string) => void;
@@ -261,7 +265,8 @@ const CATALOG_BOUND_BLOCK_TYPES = new Set([
 ]);
 
 export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
-  selectedBlock,
+  selectedBlock: selectedBlockProp,
+  block: blockProp,
   onUpdateConfig,
   onUpdateAssetRef,
   onClearAssetRef,
@@ -280,6 +285,7 @@ export const BlockContentFields: React.FC<BlockContentFieldsProps> = ({
   banners = [],
   hotpages = [],
 }) => {
+  const selectedBlock = (selectedBlockProp || blockProp)!;
   const config = selectedBlock.config as any;
   const isCatalogBlock = CATALOG_BOUND_BLOCK_TYPES.has(selectedBlock.type);
 
@@ -2710,7 +2716,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           title: createdObj.title,
           slug: createdObj.slug?.startsWith("/") ? createdObj.slug : `/${createdObj.slug || ""}`,
           is_home: false,
-          seo_title: `${createdDoc.title} | ${document.title || "Loja"}`,
+          seo_title: `${createdObj.title} | ${document.title || "Loja"}`,
           seo_description: "Página oficial criada no Waesy Studio.",
         };
         setSitePages((prev) => [...prev, item]);
@@ -2754,7 +2760,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     try {
       await deleteExperienceDocument({
         data: {
-          document_id: pageId,
+          id: pageId,
         },
       });
       setSitePages((prev) => prev.filter((p) => p.id !== pageId));
@@ -2769,9 +2775,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     seo: { seo_title?: string; seo_description?: string },
   ) => {
     try {
-      await updateExperienceDocumentSettings({
+      await (updateExperienceDocumentSettings as any)({
         data: {
-          document_id: pageId,
+          id: pageId,
           settings: {
             seo: {
               title: seo.seo_title,
@@ -4292,9 +4298,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   <BlockContentFields
                     block={selectedBlock}
                     onUpdateConfig={handleUpdateConfig}
-                    onOpenAssetPicker={(field) => {
-                      setAssetPickerField(field);
-                      setIsAssetPickerOpen(true);
+                    onOpenAssetPicker={(_field: any) => {
+                      // asset picker delegated to PhotoStudio
+                      setIsPhotoStudioOpen(true);
                     }}
                     onOpenPhotoStudio={() => {
                       setIsMobileSheetOpen(false);
@@ -4624,7 +4630,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
       <VersionHistorySheet
         isOpen={isVersionHistoryOpen}
         onClose={() => setIsVersionHistoryOpen(false)}
-        documentId={document.id}
+        documentId={document.id || ""}
         onRestoreVersion={(restoredDoc) => {
           commitDocumentMutation(() => restoredDoc);
           setIsVersionHistoryOpen(false);
@@ -4667,8 +4673,11 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
     let isCancelled = false;
     setIsLoading(true);
 
-    listOmniDocumentVersions({ data: { document_id: documentId } })
-      .then((res) => {
+    listOmniDocumentVersions({ data: { documentId } })
+      .then((res: any) => {
+        if (!isCancelled && Array.isArray(res?.versions)) {
+          setVersions(res.versions as any);
+        }
         if (!isCancelled && res.success && Array.isArray(res.versions)) {
           setVersions(res.versions);
         }
@@ -4689,7 +4698,7 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
   const handleRestore = async (versionId: string) => {
     setRestoringId(versionId);
     try {
-      const res = await restoreOmniDocumentVersion({
+      const res: any = await (restoreOmniDocumentVersion as any)({
         data: {
           document_id: documentId,
           version_id: versionId,

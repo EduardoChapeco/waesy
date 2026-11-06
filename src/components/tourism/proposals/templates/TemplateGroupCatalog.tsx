@@ -178,7 +178,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               {vm.hasTransfers && (
                 <li className="flex items-start gap-2 text-sm font-semibold text-slate-700">
                   <Bus className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
-                  {p.transfers?.[0]?.description || "Transporte / Transfer Incluso"}
+                  {p.transfers?.[0]?.description || p.transfers?.[0]?.vehicle || "Transporte"}
                 </li>
               )}
               {vm.hasFlights && (

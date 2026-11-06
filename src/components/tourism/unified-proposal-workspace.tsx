@@ -51,6 +51,7 @@ import { createAgencyTravelQuote } from "@/services/tourism.functions";
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { listTravelSuppliers } from "@/services/travel-suppliers.functions";
+import { getAgencySalesAndCommissionConfigFn } from "@/services/travel-pre-boarding-and-commissions.functions";
 import { parseUniversalDocumentOCR } from "@/services/multimodal-ocr.functions";
 import { processOperatorQuoteOcr, type OperatorQuoteExtractionResult } from "@/services/travel-operator-ocr.functions";
 import { publishExtractedTravelPackageToCatalogAndMatchRadar } from "@/services/travel-ai-extractor.functions";
@@ -278,11 +279,22 @@ export function UnifiedProposalWorkspace({
     staleTime: 30_000,
   });
 
-  // Tags Rápidas de Inclusões (Livre e configurável, sem itens fake)
+  // Tags Rápidas de Inclusões e Exclusões (Livre e configurável, sem itens fake)
   const [selectedInclusions, setSelectedInclusions] = useState<string[]>([]);
+  const [selectedExclusions, setSelectedExclusions] = useState<string[]>([]);
+  const [newExclusionInput, setNewExclusionInput] = useState("");
+  const [proposalItinerary, setProposalItinerary] = useState<
+    Array<{ day: number; title: string; description: string; meals?: string }>
+  >([]);
 
   const toggleInclusionTag = (tag: string) => {
     setSelectedInclusions((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const toggleExclusionTag = (tag: string) => {
+    setSelectedExclusions((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
@@ -398,34 +410,84 @@ export function UnifiedProposalWorkspace({
 
   // Operadora & Condições de Pagamento Flexíveis (100% Livres & Configuráveis pela Agência)
   const [operatorName, setOperatorName] = useState<string>("");
-  const [agencyCommissionPct, setAgencyCommissionPct] = useState<number>(10);
-  const [enableBoleto, setEnableBoleto] = useState<boolean>(true);
-  const [boletoInstallments, setBoletoInstallments] = useState<number>(12);
+  const [agencyCommissionPct, setAgencyCommissionPct] = useState<number>(0);
+  const [enableBoleto, setEnableBoleto] = useState<boolean>(false);
+  const [boletoInstallments, setBoletoInstallments] = useState<number>(1);
   const [hasBoletoDownpayment, setHasBoletoDownpayment] = useState<boolean>(false); // Zero entrada por padrão!
   const [downpaymentType, setDownpaymentType] = useState<"percentage" | "fixed_cents">("percentage");
-  const [downpaymentPct, setDownpaymentPct] = useState<number>(20);
+  const [downpaymentPct, setDownpaymentPct] = useState<number>(0);
   const [downpaymentFixedCents, setDownpaymentFixedCents] = useState<number>(0);
-  const [firstBoletoDue, setFirstBoletoDue] = useState<string>("Primeiro boleto para 30 dias");
+  const [firstBoletoDue, setFirstBoletoDue] = useState<string>("");
 
-  const [enableCard, setEnableCard] = useState<boolean>(true);
-  const [cardInstallments, setCardInstallments] = useState<number>(10);
+  const [enableCard, setEnableCard] = useState<boolean>(false);
+  const [cardInstallments, setCardInstallments] = useState<number>(1);
 
-  const [enablePixDiscount, setEnablePixDiscount] = useState<boolean>(true);
-  const [pixDiscountPct, setPixDiscountPct] = useState<number>(5);
+  const [enablePixDiscount, setEnablePixDiscount] = useState<boolean>(false);
+  const [pixDiscountPct, setPixDiscountPct] = useState<number>(0);
 
   const [customPaymentTermsText, setCustomPaymentTermsText] = useState<string>("");
   const [isTermsCustomized, setIsTermsCustomized] = useState<boolean>(false);
 
   const [notes, setNotes] = useState("");
-  const [infotravelOperatorFilter, setInfotravelOperatorFilter] = useState<InfoTravelOperatorSlug>("orinter");
+  const [infotravelOperatorFilter, setInfotravelOperatorFilter] = useState<InfoTravelOperatorSlug>("infotravel_default");
   const [isSearchingInfotravel, setIsSearchingInfotravel] = useState(false);
 
   // Fornecedores & Operadoras Cadastradas na Agência (Sem Mocks Hardcoded)
-  const { data: registeredSuppliers = [] } = useQuery({
+  const { data: rawRegisteredSuppliers = [] } = useQuery({
     queryKey: ["travel-suppliers-active"],
     queryFn: () => listTravelSuppliers({ data: {} }),
     enabled: open,
   });
+
+  const { data: erpCommissionConfig } = useQuery({
+    queryKey: ["agency-erp-commission-config-proposal"],
+    queryFn: () => getAgencySalesAndCommissionConfigFn({ data: {} }),
+    enabled: open,
+  });
+
+  const isManagerOrOwner = Boolean(erpCommissionConfig?.isManagerOrOwner);
+  const activeAgentProfile = erpCommissionConfig?.agents?.[0] || null;
+
+  const registeredSuppliers = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        commission_rate: number;
+        maxBoletoInstallments?: number;
+        boletoRequiresDownpayment?: boolean;
+        boletoDownpaymentPct?: number;
+        maxCardInstallments?: number;
+        pixDiscountPct?: number;
+      }
+    >();
+    for (const sup of rawRegisteredSuppliers as any[]) {
+      if (sup?.name) {
+        map.set(sup.name.toLowerCase(), {
+          id: sup.id || `sup-${sup.name}`,
+          name: sup.name,
+          commission_rate: Number(sup.commission_rate) || 0,
+        });
+      }
+    }
+    for (const op of erpCommissionConfig?.operatorConfigs || []) {
+      if (op?.operatorName) {
+        const existing = map.get(op.operatorName.toLowerCase());
+        map.set(op.operatorName.toLowerCase(), {
+          id: existing?.id || `erp-op-${op.operatorName}`,
+          name: op.operatorName,
+          commission_rate: Number(op.baseAgencyCommissionPct) || existing?.commission_rate || 0,
+          maxBoletoInstallments: op.maxBoletoInstallments,
+          boletoRequiresDownpayment: op.boletoRequiresDownpayment,
+          boletoDownpaymentPct: op.boletoDownpaymentPct,
+          maxCardInstallments: op.maxCardInstallments,
+          pixDiscountPct: op.pixDiscountPct,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [rawRegisteredSuppliers, erpCommissionConfig]);
 
   // Pós-salvamento: Modal de WhatsApp
   const [createdProposalForWhatsapp, setCreatedProposalForWhatsapp] = useState<TravelProposalDTO | null>(null);
@@ -831,12 +893,12 @@ export function UnifiedProposalWorkspace({
     }
 
     if (extracted.downpaymentPct !== undefined && extracted.downpaymentPct !== null && extracted.downpaymentPct > 0) {
-      setDownpaymentType("pct");
+      setDownpaymentType("percentage");
       setDownpaymentPct(extracted.downpaymentPct);
       setHasBoletoDownpayment(true);
       fieldsUpdated++;
     } else if (extracted.downpaymentFixedCents !== undefined && extracted.downpaymentFixedCents !== null && extracted.downpaymentFixedCents > 0) {
-      setDownpaymentType("fixed");
+      setDownpaymentType("fixed_cents");
       setDownpaymentFixedCents(extracted.downpaymentFixedCents);
       setHasBoletoDownpayment(true);
       fieldsUpdated++;
@@ -940,6 +1002,7 @@ export function UnifiedProposalWorkspace({
               setProposalTransfers(q.transfers.map((t: any, i: number) => ({
                 id: `tr-ocr-${i + 1}`,
                 type: "in_out",
+                vehicle: t.vehicle_type || t.vehicle || "Transfer Regular",
                 route_name: typeof t === "string" ? t : (t.route_name || "Transfer Aeroporto ↔ Hotel"),
                 vehicle_type: t.vehicle_type || "Transfer Regular",
                 is_private: Boolean(t.is_private),
@@ -978,7 +1041,7 @@ export function UnifiedProposalWorkspace({
               cardInstallments: q.card_installments,
               boletoInstallments: q.boleto_installments,
               inclusions: q.inclusions,
-              hotelsList: q.hotels,
+              hotelsList: q.hotels ?? undefined,
             });
 
             setLastOcrExtraction(q);
@@ -1144,6 +1207,7 @@ export function UnifiedProposalWorkspace({
             q.transfers.map((t: any, i: number) => ({
               id: `tr-ocr-txt-${i + 1}`,
               type: "in_out",
+              vehicle: t.vehicle_type || t.vehicle || "Veículo Executivo",
               route_name: typeof t === "string" ? t : (t.route_name || "Transfer Aeroporto ↔ Hotel"),
               vehicle_type: t.vehicle_type || "Veículo Executivo",
               is_private: Boolean(t.is_private),
@@ -1183,7 +1247,7 @@ export function UnifiedProposalWorkspace({
           cardInstallments: q.card_installments,
           boletoInstallments: q.boleto_installments,
           inclusions: q.inclusions,
-          hotelsList: q.hotels,
+          hotelsList: q.hotels ?? undefined,
         });
 
         setLastOcrExtraction(q);
@@ -1417,7 +1481,10 @@ export function UnifiedProposalWorkspace({
             image_url: matchedPkgTemplate?.hotels?.[0]?.image_url || matchedPkgTemplate?.coverImageUrl,
             amenities: matchedPkgTemplate?.hotels?.[0]?.amenities || [],
           })),
-          itinerary: matchedPkgTemplate?.itinerary || [],
+          itinerary:
+            proposalItinerary.length > 0
+              ? proposalItinerary
+              : (matchedPkgTemplate?.itinerary || []),
           transfers: proposalTransfers.length > 0 ? proposalTransfers : ((matchedPkgTemplate?.transfers as any) || []),
           tours: matchedPkgTemplate?.tours || [],
           rooms: calculation.rooms.map((r) => ({
@@ -1464,10 +1531,10 @@ export function UnifiedProposalWorkspace({
                 : generatedTermsText,
           },
           includes: selectedInclusions,
-          excludes: matchedPkgTemplate?.excludes || [
-            "Despesas de caráter pessoal (frigobar, lavanderia e telefonemas)",
-            "Taxas turísticas municipais e governamentais cobradas diretamente no check-in",
-          ],
+          excludes:
+            selectedExclusions.length > 0
+              ? selectedExclusions
+              : (matchedPkgTemplate?.excludes || []),
         },
       });
 
@@ -2096,7 +2163,7 @@ export function UnifiedProposalWorkspace({
                         <div>
                           <Label className="text-2xs text-muted-foreground">Franquia de Bagagem</Label>
                           <select
-                            value={flight.baggage_included || "Mochila + Mala 10kg"}
+                            value={typeof flight.baggage_included === "string" && flight.baggage_included ? flight.baggage_included : "Mochila + Mala 10kg"}
                             onChange={(e) => handleUpdateFlight(fIdx, { baggage_included: e.target.value })}
                             className="w-full h-9 mt-1 rounded-lg bg-background border border-border text-xs px-2"
                           >
@@ -2504,7 +2571,7 @@ export function UnifiedProposalWorkspace({
                   </div>
 
                   {/* Sugestões Rápidas em Linha Única com Scroll Horizontal */}
-                  <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-1.5 py-1">
+                  <div className="tab-list flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-2 py-1">
                     <span className="text-2xs text-muted-foreground mr-1 shrink-0">Sugestões rápidas:</span>
                     {COMMON_INCLUSIONS_TAGS.filter((tag) =>
                       !newInclusionInput.trim() || tag.toLowerCase().includes(newInclusionInput.toLowerCase())
@@ -2515,7 +2582,7 @@ export function UnifiedProposalWorkspace({
                           key={tag}
                           type="button"
                           onClick={() => toggleInclusionTag(tag)}
-                          className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1 ${
+                          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1 ${
                             isSelected
                               ? "bg-primary text-primary-foreground font-bold shadow-xs"
                               : "bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border"
@@ -2530,28 +2597,118 @@ export function UnifiedProposalWorkspace({
 
                   {/* Lista de Itens Inclusos Ativos */}
                   {selectedInclusions.length > 0 && (
-                    <div className="space-y-1.5 pt-2 border-t border-border/20">
+                    <div className="space-y-2 pt-2 border-t border-border/20">
                       <span className="text-2xs font-bold text-muted-foreground block">
                         Inclusões Ativas na Proposta ({selectedInclusions.length}):
                       </span>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {selectedInclusions.map((tag) => (
-                          <span
+                          <button
                             key={tag}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-primary/10 text-primary border border-primary/20 font-medium"
+                            type="button"
+                            onClick={() => toggleInclusionTag(tag)}
+                            className="h-11 min-h-11 inline-flex items-center gap-2 px-3 rounded-lg text-xs bg-primary/10 text-primary border border-primary/20 font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            title="Remover inclusão"
                           >
                             <span>{tag}</span>
-                            <button
-                              type="button"
-                              onClick={() => toggleInclusionTag(tag)}
-                              className="size-4 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                              title="Remover inclusão"
-                            >
-                              <X className="size-3" />
-                            </button>
-                          </span>
+                            <X className="size-3" />
+                          </button>
                         ))}
                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Itens Não Inclusos (Exclusões) — 1 Linha Scroll Horizontal + Filtro */}
+                <div className="space-y-3 pt-3 border-t border-border/20">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">O Que Não Inclui (Exclusões)</Label>
+                    <p className="text-2xs text-muted-foreground">
+                      Digite para filtrar ou adicionar exclusões em 1 linha com rolagem horizontal.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={newExclusionInput}
+                      onChange={(e) => setNewExclusionInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && newExclusionInput.trim()) {
+                          e.preventDefault();
+                          if (!selectedExclusions.includes(newExclusionInput.trim())) {
+                            setSelectedExclusions((prev) => [...prev, newExclusionInput.trim()]);
+                          }
+                          setNewExclusionInput("");
+                        }
+                      }}
+                      placeholder="Adicionar ou filtrar exclusão (ex: Despesas pessoais, Taxas municipais)..."
+                      className="h-11 min-h-11 text-xs flex-1 rounded-lg"
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={!newExclusionInput.trim()}
+                      onClick={() => {
+                        if (newExclusionInput.trim() && !selectedExclusions.includes(newExclusionInput.trim())) {
+                          setSelectedExclusions((prev) => [...prev, newExclusionInput.trim()]);
+                        }
+                        setNewExclusionInput("");
+                      }}
+                      className="h-11 min-h-11 px-4 text-xs font-bold gap-1 shrink-0 cursor-pointer"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Adicionar</span>
+                    </Button>
+                  </div>
+
+                  <div className="tab-list flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-2 py-1">
+                    <span className="text-2xs text-muted-foreground mr-1 shrink-0">Sugestões rápidas:</span>
+                    {[
+                      "Despesas de caráter pessoal",
+                      "Refeições e bebidas não mencionadas",
+                      "Taxas turísticas municipais no check-in",
+                      "Ingressos em atrações opcionais",
+                      "Bagagem despachada extra",
+                    ]
+                      .filter(
+                        (tag) =>
+                          !newExclusionInput.trim() ||
+                          tag.toLowerCase().includes(newExclusionInput.trim().toLowerCase()),
+                      )
+                      .map((tag) => {
+                        const isSelected = selectedExclusions.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => toggleExclusionTag(tag)}
+                            className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1 ${
+                              isSelected
+                                ? "bg-destructive/15 text-destructive border border-destructive/30 font-bold"
+                                : "bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border"
+                            }`}
+                          >
+                            {isSelected ? <Check className="size-3" /> : <Plus className="size-3" />}
+                            <span>{tag}</span>
+                          </button>
+                        );
+                      })}
+                  </div>
+
+                  {selectedExclusions.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {selectedExclusions.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleExclusionTag(tag)}
+                          className="h-11 min-h-11 inline-flex items-center gap-2 px-3 rounded-lg text-xs bg-destructive/10 text-destructive border border-destructive/20 font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          title="Remover exclusão"
+                        >
+                          <span>{tag}</span>
+                          <X className="size-3" />
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -2662,6 +2819,100 @@ export function UnifiedProposalWorkspace({
                     </div>
                   </div>
                 )}
+
+                {/* Roteiro Dia a Dia Completo (Paridade 100% com Criador de Pacotes e Studio) */}
+                <div className="space-y-3 pt-4 border-t border-border/40">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wide text-foreground">
+                        Roteiro Dia a Dia ({proposalItinerary.length} Dias)
+                      </h4>
+                      <p className="text-2xs text-muted-foreground">
+                        Sincronizado diretamente com o Estúdio Visual, PDF e Portal Minha Viagem
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        setProposalItinerary((prev) => [
+                          ...prev,
+                          {
+                            day: prev.length + 1,
+                            title: `Dia ${prev.length + 1} — ${destinationQuery || "Roteiro"}`,
+                            description: "",
+                            meals: "Café da Manhã",
+                          },
+                        ])
+                      }
+                      className="h-11 min-h-11 px-3 text-xs font-bold gap-2"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Adicionar Dia</span>
+                    </Button>
+                  </div>
+
+                  {proposalItinerary.length === 0 ? (
+                    <div className="p-4 rounded-lg border border-dashed border-border/60 bg-muted/10 text-center text-xs text-muted-foreground">
+                      Nenhum dia de roteiro adicionado manualmente (você pode adicionar dias acima ou importar de um pacote).
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {proposalItinerary.map((dayItem, dIdx) => (
+                        <div
+                          key={dIdx}
+                          className="p-3 rounded-lg border border-border/60 bg-card space-y-2"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-primary font-mono">
+                              Dia {dayItem.day}
+                            </span>
+                            <Input
+                              value={dayItem.title}
+                              onChange={(e) =>
+                                setProposalItinerary((prev) =>
+                                  prev.map((item, i) =>
+                                    i === dIdx ? { ...item, title: e.target.value } : item,
+                                  ),
+                                )
+                              }
+                              placeholder="Título do dia (ex: Chegada, Recepção e Check-in)"
+                              className="h-9 text-xs font-semibold flex-1"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                setProposalItinerary((prev) =>
+                                  prev
+                                    .filter((_, i) => i !== dIdx)
+                                    .map((item, i) => ({ ...item, day: i + 1 })),
+                                )
+                              }
+                              className="h-11 w-11 p-0 text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                          <Textarea
+                            value={dayItem.description}
+                            onChange={(e) =>
+                              setProposalItinerary((prev) =>
+                                prev.map((item, i) =>
+                                  i === dIdx ? { ...item, description: e.target.value } : item,
+                                ),
+                              )
+                            }
+                            placeholder="Descrição detalhada das atividades do dia, horários e dicas..."
+                            className="text-xs min-h-16"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -2677,7 +2928,7 @@ export function UnifiedProposalWorkspace({
                   <Input
                     value={operatorName}
                     onChange={(e) => setOperatorName(e.target.value)}
-                    placeholder="Ex: Orinter, Incomum, FRT, CVC, Azul Viagens..."
+                    placeholder="Operadora ou fornecedor"
                     className="h-11 min-h-11 rounded-lg text-xs font-medium"
                   />
                   <div className="flex flex-wrap items-center gap-1.5 pt-1">
@@ -2690,11 +2941,30 @@ export function UnifiedProposalWorkspace({
                             type="button"
                             onClick={() => {
                               setOperatorName(sup.name);
-                              if (typeof sup.commission_rate === "number" && sup.commission_rate > 0) {
+                              if (typeof sup.commission_rate === "number") {
                                 setAgencyCommissionPct(sup.commission_rate);
                               }
+                              if (sup.maxBoletoInstallments && sup.maxBoletoInstallments > 1) {
+                                setEnableBoleto(true);
+                                setBoletoInstallments(sup.maxBoletoInstallments);
+                              }
+                              if (sup.boletoRequiresDownpayment !== undefined) {
+                                setHasBoletoDownpayment(Boolean(sup.boletoRequiresDownpayment));
+                              }
+                              if (sup.boletoDownpaymentPct && sup.boletoDownpaymentPct > 0) {
+                                setDownpaymentType("percentage");
+                                setDownpaymentPct(sup.boletoDownpaymentPct);
+                              }
+                              if (sup.maxCardInstallments && sup.maxCardInstallments > 1) {
+                                setEnableCard(true);
+                                setCardInstallments(sup.maxCardInstallments);
+                              }
+                              if (sup.pixDiscountPct && sup.pixDiscountPct > 0) {
+                                setEnablePixDiscount(true);
+                                setPixDiscountPct(sup.pixDiscountPct);
+                              }
                             }}
-                            className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            className={`h-11 min-h-11 px-3 rounded-full text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                               operatorName.toLowerCase() === sup.name.toLowerCase()
                                 ? "bg-primary text-primary-foreground font-bold"
                                 : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/30"
@@ -2746,7 +3016,7 @@ export function UnifiedProposalWorkspace({
                           <button
                             type="button"
                             onClick={() => setHasBoletoDownpayment(!hasBoletoDownpayment)}
-                            className={`h-7 px-2.5 rounded-full text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                            className={`h-11 min-h-11 px-3 rounded-full text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                               hasBoletoDownpayment
                                 ? "bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30"
                                 : "bg-muted text-muted-foreground"
@@ -2823,7 +3093,7 @@ export function UnifiedProposalWorkspace({
                             {hasBoletoDownpayment ? "Vencimento 1º Boleto" : "Condição / Carência"}
                           </Label>
                           <Input
-                            value={hasBoletoDownpayment ? firstBoletoDue : "Sem juros operadora"}
+                            value={firstBoletoDue}
                             onChange={(e) => setFirstBoletoDue(e.target.value)}
                             placeholder="Ex: 30 dias após entrada"
                             className="h-10 rounded-lg text-xs"
@@ -2926,21 +3196,42 @@ export function UnifiedProposalWorkspace({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <Label className="text-xs font-medium text-foreground">Comissão da Agência (%)</Label>
-                      <span className="text-2xs text-muted-foreground font-mono">
-                        Custo Fornecedor: {100 - agencyCommissionPct}%
-                      </span>
+                      <Badge variant="outline" className="text-2xs font-mono">
+                        {isManagerOrOwner ? "Editável (Gestor)" : "Somente Leitura (Agente)"}
+                      </Badge>
                     </div>
                     <Input
                       type="number"
                       min={0}
                       max={100}
                       step={0.5}
+                      disabled={!isManagerOrOwner}
+                      readOnly={!isManagerOrOwner}
                       value={agencyCommissionPct}
-                      onChange={(e) => setAgencyCommissionPct(Math.max(0, Math.min(100, Number(e.target.value))))}
-                      className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold"
+                      onChange={(e) => {
+                        if (!isManagerOrOwner) return;
+                        setAgencyCommissionPct(Math.max(0, Math.min(100, Number(e.target.value))));
+                      }}
+                      title={
+                        isManagerOrOwner
+                          ? "Altere o percentual de comissão da agência para esta proposta"
+                          : "Apenas gestores/proprietários podem alterar a taxa de comissão da agência"
+                      }
+                      className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold disabled:opacity-80 disabled:cursor-not-allowed"
                     />
+                    <div className="flex items-center justify-between text-2xs text-muted-foreground font-mono">
+                      <span>Repasse Fornecedor: {Math.max(0, 100 - agencyCommissionPct)}%</span>
+                      {activeAgentProfile && (
+                        <span>
+                          Sua Comissão ({activeAgentProfile.baseCommissionPct || 0}% líq.):{" "}
+                          {formatMoney(
+                            Math.round((calculation.grandTotalCents * (activeAgentProfile.baseCommissionPct || 0)) / 100)
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -3156,7 +3447,7 @@ export function UnifiedProposalWorkspace({
                 </div>
                 <div className="flex items-baseline justify-between text-2xs text-muted-foreground">
                   <span>Por passageiro adulto ({calculation.totalAdults}x)</span>
-                  <span className="font-mono font-semibold">{formatMoney(calculation.perAdultTotalCents)}</span>
+                  <span className="font-mono font-semibold">{formatMoney(Math.round(calculation.grandTotalCents / Math.max(1, calculation.totalAdults)))}</span>
                 </div>
 
                 {/* Condições de Pagamento */}

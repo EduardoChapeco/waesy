@@ -47,7 +47,7 @@ try {
 // 3. Executar db push completo
 try {
   console.log('\n[Passo 2/4] Executando db push (migrations completas)...');
-  const pushCmd = `cmd /c npx supabase db push --project-ref ${projectRef} -p "${env.SUPABASE_DB_PASSWORD}" --include-all --yes`;
+  const pushCmd = `cmd /c npx supabase db push --remote -p "${env.SUPABASE_DB_PASSWORD}" --include-all --yes`;
   const pushOut = execSync(pushCmd, { env, encoding: 'utf8', stdio: 'pipe' });
   console.log(pushOut);
 } catch (err) {

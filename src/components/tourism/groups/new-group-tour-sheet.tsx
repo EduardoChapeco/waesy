@@ -20,129 +20,9 @@ interface NewGroupTourSheetProps {
  onSuccess: (newTourId: string) => void;
 }
 
-// 5 Presets canônicos de viagens rodoviárias no Sul/Brasil
-const TOUR_PRESETS = [
- {
- id: "beto_carrero",
- title: "Excursão Beto Carrero World e Praias",
- destination: "Penha / Balneário Camboriú, SC",
- departureTime: "19:30",
- returnTime: "22:00",
- priceBrl: "790,00",
- priceCents: 79000,
- coverImage: "",
- included: [
- "Transporte Rodoviário Semi-Leito",
- "02 Diárias de Hotel com Café da Manhã",
- "Passaporte Beto Carrero 01 Dia",
- "Seguro Viagem & ANTT",
- "Guia Cadastur Acompanhante",
- "Serviço de Bordo",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "19:30", location: "Posto Central / Rodoviária" },
- { city: "Maravilha, SC", time: "20:30", location: "Trevo de Acesso BR-282" },
- { city: "Chapecó, SC", time: "21:45", location: "Posto Carga Pesada" },
- ],
- payment: "Entrada R$ 190 + 6x de R$ 100 no cartão ou carnê",
- },
- {
- id: "gramado_canela",
- title: "Gramado e Canela — Serra Gaúcha & Natal Luz",
- destination: "Gramado / Canela, RS",
- departureTime: "20:00",
- returnTime: "23:00",
- priceBrl: "1.150,00",
- priceCents: 115000,
- coverImage: "",
- included: [
- "Transporte Rodoviário Leito Turismo",
- "03 Noites em Hotel Central com Café",
- "Passeio Trem Maria Fumaça com Degustação",
- "Noite Gaúcha com Churrasco e Show",
- "Seguro Viagem & ANTT",
- "Guia Credenciado",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "20:00", location: "Agência / Rodoviária" },
- { city: "Chapecó, SC", time: "22:00", location: "Trevo Chapecó" },
- { city: "Erechim, RS", time: "23:30", location: "Posto Master" },
- ],
- payment: "Entrada R$ 250 + 9x de R$ 100 sem juros",
- },
- {
- id: "aparecida",
- title: "Aparecida do Norte e Frei Galvão — Circuito da Fé",
- destination: "Aparecida / Guaratinguetá, SP",
- departureTime: "12:00",
- returnTime: "18:00",
- priceBrl: "980,00",
- priceCents: 98000,
- coverImage: "",
- included: [
- "Transporte Double Decker Leito Cama",
- "03 Diárias em Hotel Próximo à Basílica",
- "Pensão Completa (Café, Almoço e Jantar)",
- "Visita ao Santuário Frei Galvão",
- "Seguro Viagem ANTT",
- "Acompanhamento Pastoral",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "12:00", location: "Rodoviária Municipal" },
- { city: "Chapecó, SC", time: "14:30", location: "Shopping Pátio Chapecó" },
- { city: "Curitiba, PR", time: "22:00", location: "Posto Pelanda BR-116" },
- ],
- payment: "Em até 10x de R$ 98 no cartão ou Pix com 5% de desconto",
- },
- {
- id: "foz_cataratas",
- title: "Foz do Iguaçu, Cataratas e Compras Paraguai",
- destination: "Foz do Iguaçu, PR / CDE",
- departureTime: "22:00",
- returnTime: "23:30",
- priceBrl: "890,00",
- priceCents: 89000,
- coverImage: "",
- included: [
- "Transporte Rodoviário Executivo",
- "02 Diárias de Hotel com Piscina e Café",
- "Ingresso Parque Nacional das Cataratas",
- "Transporte Seguro para Compras em Ciudad del Este",
- "Visita ao Marco das Três Fronteiras",
- "Guia Bilíngue",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "22:00", location: "Rodoviária" },
- { city: "Dionísio Cerqueira, SC", time: "23:00", location: "Aduana / Trevo" },
- { city: "Cascavel, PR", time: "02:00", location: "Posto Pra Frente Brasil" },
- ],
- payment: "Entrada R$ 190 + 7x de R$ 100 no cartão",
- },
- {
- id: "piratuba",
- title: "Termas de Piratuba e Machadinho — Águas Termais",
- destination: "Piratuba, SC",
- departureTime: "06:00",
- returnTime: "20:00",
- priceBrl: "680,00",
- priceCents: 68000,
- coverImage: "",
- included: [
- "Transporte Rodoviário Semi-Leito",
- "02 Diárias de Hotel com Piscinas Termais",
- "Café da Manhã e Jantar Inclusos",
- "Passeio de Maria Fumaça Histórica",
- "Seguro Viagem",
- "Guia da Agência",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "06:00", location: "Praça Central" },
- { city: "Maravilha, SC", time: "07:00", location: "Trevo BR-282" },
- { city: "Chapecó, SC", time: "08:15", location: "Terminal Rodoviário" },
- ],
- payment: "Entrada R$ 180 + 5x de R$ 100 sem juros",
- },
-];
+// Modelos de excursao vem do cadastro da agencia (nenhum modelo embutido)
+interface TourPreset { id: string; title: string; destination: string; departureTime: string; returnTime: string; priceBrl: string; priceCents: number; coverImage: string; included: string[]; boardingPoints: { city: string; time: string; location: string }[]; payment: string }
+const TOUR_PRESETS: TourPreset[] = [];
 
 const COMMON_INCLUSIONS = [
  "Transporte Rodoviário Leito/Semi-Leito",
@@ -383,6 +263,7 @@ export function NewGroupTourSheet({
  <div className="flex-1 overflow-y-auto no-scrollbar p-5 text-xs space-y-6">
  {/* ── ABA 1: ROTEIRO & PRESETS ── */}
  <TabsContent value="roteiro" className="m-0 space-y-5">
+ {TOUR_PRESETS.length > 0 && (<>
  {/* Presets de 1 Clique */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
@@ -416,6 +297,7 @@ export function NewGroupTourSheet({
  </div>
 
  <hr className="border-border/60" />
+ </>)}
 
  {/* Informações Principais */}
  <div className="space-y-3">

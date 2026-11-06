@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
@@ -22,9 +23,12 @@ import {
   calculateInlineSaleSpreadsheetRow,
   simulateTripCancellationAndCredit,
   DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS,
+  getAgencySalesAndCommissionConfigFn,
+  saveAgencySalesAndCommissionConfigFn,
   type AgentCommissionProfile,
   type InlineSaleSpreadsheetRowInput,
   type OperatorOverRetentionConfig,
+  type AgencyCancellationPolicyConfig,
 } from "@/services/travel-pre-boarding-and-commissions.functions";
 
 const DEFAULT_AGENT_PROFILES: AgentCommissionProfile[] = [
@@ -33,16 +37,16 @@ const DEFAULT_AGENT_PROFILES: AgentCommissionProfile[] = [
     agentName: "Consultor Responsável",
     goalEvaluationBasis: "gross_sale",
     commissionCalculationBasis: "net_sale_plus_over",
-    baseCommissionPct: 1.0,
-    defaultOverCommissionPct: 30,
+    baseCommissionPct: 0,
+    defaultOverCommissionPct: 0,
     currentMonthAgencyRevenueCents: 0,
     tiers: [
       {
-        tierName: "Faixa Padrão da Agência",
+        tierName: "Faixa base",
         minMonthlyRevenueCents: 0,
         maxMonthlyRevenueCents: null,
-        commissionPct: 1.0,
-        overCommissionPct: 30,
+        commissionPct: 0,
+        overCommissionPct: 0,
         bonusFixedCents: 0,
       },
     ],
@@ -60,12 +64,15 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
   const [operatorConfigs, setOperatorConfigs] = useState<OperatorOverRetentionConfig[]>(
     DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS,
   );
+  const [cancellationPolicies, setCancellationPolicies] = useState<AgencyCancellationPolicyConfig[]>([]);
+  const [isManagerOrOwner, setIsManagerOrOwner] = useState<boolean>(true);
   const [showArchived, setShowArchived] = useState(false);
   const [showOperatorSettings, setShowOperatorSettings] = useState(false);
   const [showAgentSettings, setShowAgentSettings] = useState(false);
 
-  // Carrega configurações persistidas por agência/tenant no mount
+  // Carrega configurações persistidas por agência/tenant no banco (Supabase) com fallback offline
   useEffect(() => {
+    let cancelled = false;
     try {
       const savedRows = localStorage.getItem(`waesy_travel_sales_rows_${storeId}`);
       if (savedRows) {
@@ -84,28 +91,93 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
         const parsed = JSON.parse(savedOps);
         if (Array.isArray(parsed) && parsed.length > 0) setOperatorConfigs(parsed);
       }
+
+      const savedPolicies = localStorage.getItem(`waesy_travel_cancel_policies_${storeId}`);
+      if (savedPolicies) {
+        const parsed = JSON.parse(savedPolicies);
+        if (Array.isArray(parsed) && parsed.length > 0) setCancellationPolicies(parsed);
+      }
     } catch (e) {
-      console.warn("[InlineSalesSpreadsheetAndGoalsPanel] Erro ao carregar dados locais:", e);
+      console.warn("[InlineSalesSpreadsheetAndGoalsPanel] Erro ao carregar cache local:", e);
     }
+
+    getAgencySalesAndCommissionConfigFn({ data: { storeId } })
+      .then((res) => {
+        if (cancelled || !res) return;
+        if (typeof res.isManagerOrOwner === "boolean") {
+          setIsManagerOrOwner(res.isManagerOrOwner);
+        }
+        if (Array.isArray(res.rows) && res.rows.length > 0) {
+          setRows(res.rows);
+          try {
+            localStorage.setItem(`waesy_travel_sales_rows_${storeId}`, JSON.stringify(res.rows));
+          } catch {}
+        }
+        if (Array.isArray(res.agents) && res.agents.length > 0) {
+          setAgents(res.agents);
+          try {
+            localStorage.setItem(`waesy_travel_agents_${storeId}`, JSON.stringify(res.agents));
+          } catch {}
+        }
+        if (Array.isArray(res.operatorConfigs) && res.operatorConfigs.length > 0) {
+          setOperatorConfigs(res.operatorConfigs);
+          try {
+            localStorage.setItem(`waesy_travel_operator_configs_${storeId}`, JSON.stringify(res.operatorConfigs));
+          } catch {}
+        }
+        if (Array.isArray(res.cancellationPolicies) && res.cancellationPolicies.length > 0) {
+          setCancellationPolicies(res.cancellationPolicies);
+          try {
+            localStorage.setItem(`waesy_travel_cancel_policies_${storeId}`, JSON.stringify(res.cancellationPolicies));
+          } catch {}
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
   }, [storeId]);
 
-  // Salva automaticamente alterações locais
+  // Salva automaticamente alterações no banco (BFF + Supabase) e cache local
   const persistChanges = useCallback(
-    (newRows?: InlineSaleSpreadsheetRowInput[], newAgents?: AgentCommissionProfile[], newOps?: OperatorOverRetentionConfig[]) => {
+    (
+      newRows?: InlineSaleSpreadsheetRowInput[],
+      newAgents?: AgentCommissionProfile[],
+      newOps?: OperatorOverRetentionConfig[],
+      newPolicies?: AgencyCancellationPolicyConfig[],
+    ) => {
       try {
         if (newRows) localStorage.setItem(`waesy_travel_sales_rows_${storeId}`, JSON.stringify(newRows));
         if (newAgents) localStorage.setItem(`waesy_travel_agents_${storeId}`, JSON.stringify(newAgents));
         if (newOps) localStorage.setItem(`waesy_travel_operator_configs_${storeId}`, JSON.stringify(newOps));
+        if (newPolicies) localStorage.setItem(`waesy_travel_cancel_policies_${storeId}`, JSON.stringify(newPolicies));
       } catch (e) {
-        console.warn("[InlineSalesSpreadsheetAndGoalsPanel] Erro ao salvar dados locais:", e);
+        console.warn("[InlineSalesSpreadsheetAndGoalsPanel] Erro ao salvar cache local:", e);
       }
+      saveAgencySalesAndCommissionConfigFn({
+        data: {
+          storeId,
+          ...(newRows !== undefined ? { rows: newRows } : {}),
+          ...(newAgents !== undefined ? { agents: newAgents } : {}),
+          ...(newOps !== undefined ? { operatorConfigs: newOps } : {}),
+          ...(newPolicies !== undefined ? { cancellationPolicies: newPolicies } : {}),
+        },
+      }).catch(() => {});
     },
     [storeId],
   );
 
-  const handleManualSave = () => {
-    persistChanges(rows, agents, operatorConfigs);
-    toast.success("Configurações e planilha salvas com sucesso!");
+  const handleManualSave = async () => {
+    persistChanges(rows, agents, operatorConfigs, cancellationPolicies);
+    try {
+      await saveAgencySalesAndCommissionConfigFn({
+        data: { storeId, rows, agents, operatorConfigs, cancellationPolicies },
+      });
+      toast.success("Configurações e planilha sincronizadas nas tabelas do banco com sucesso!");
+    } catch {
+      toast.success("Configurações e planilha salvas localmente!");
+    }
   };
 
   const handleRestoreDefaults = () => {
@@ -117,17 +189,25 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
       localStorage.removeItem(`waesy_travel_agents_${storeId}`);
       localStorage.removeItem(`waesy_travel_operator_configs_${storeId}`);
     } catch {}
-    toast.info("Configurações restauradas para o padrão do sistema.");
+    saveAgencySalesAndCommissionConfigFn({
+      data: {
+        storeId,
+        rows: INITIAL_INLINE_ROWS,
+        agents: DEFAULT_AGENT_PROFILES,
+        operatorConfigs: DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS,
+      },
+    }).catch(() => {});
+    toast.info("Configurações limpas e sincronizadas.");
   };
 
   // Estado do Simulador de Cancelamento / Multa / Carta de Crédito / Financiamento Ativo
   const [cancelTargetRowId, setCancelTargetRowId] = useState<string | null>(null);
-  const [alreadyPaidReais, setAlreadyPaidReais] = useState("4000");
-  const [remainingFinancedReais, setRemainingFinancedReais] = useState("16000");
-  const [supplierNonRefundableReais, setSupplierNonRefundableReais] = useState("6500");
-  const [agencyContractFinePct, setAgencyContractFinePct] = useState("20");
+  const [alreadyPaidReais, setAlreadyPaidReais] = useState("");
+  const [remainingFinancedReais, setRemainingFinancedReais] = useState("");
+  const [supplierNonRefundableReais, setSupplierNonRefundableReais] = useState("");
+  const [agencyContractFinePct, setAgencyContractFinePct] = useState("");
   const [convertBalanceToCredit, setConvertBalanceToCredit] = useState(true);
-  const [daysBeforeDeparture, setDaysBeforeDeparture] = useState("12");
+  const [daysBeforeDeparture, setDaysBeforeDeparture] = useState("");
 
   const calculatedRows = useMemo(() => {
     return rows
@@ -173,22 +253,22 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
 
   const handleAddInlineRow = () => {
     const defaultOp = operatorConfigs[0] || {
-      operatorName: "Orinter",
-      defaultRetentionPctWhenFinanced: 16,
-      baseAgencyCommissionPct: 10,
+      operatorName: "",
+      defaultRetentionPctWhenFinanced: 0,
+      baseAgencyCommissionPct: 0,
     };
     const newRow: InlineSaleSpreadsheetRowInput = {
       id: `inline-row-${Date.now()}`,
       saleDate: new Date().toISOString().slice(0, 10),
-      clientName: "Novo Passageiro / Família",
-      passengersCount: 2,
+      clientName: "",
+      passengersCount: 1,
       operatorName: defaultOp.operatorName,
       operatorPackageCode: `RES-${Math.floor(10000 + Math.random() * 89999)}`,
-      contractSigned: true,
+      contractSigned: false,
       bookingStatus: "confirmada",
-      grossSaleCents: 2000000,
-      operatorTablePriceCents: 1900000,
-      taxesAndFeesCents: 100000,
+      grossSaleCents: 0,
+      operatorTablePriceCents: 0,
+      taxesAndFeesCents: 0,
       baseCommissionPct: defaultOp.baseAgencyCommissionPct,
       overRetentionFeePct: defaultOp.defaultRetentionPctWhenFinanced,
       paid100PctViaOperator: true,
@@ -224,9 +304,9 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
       alreadyPaidByClientCents: Math.round((parseFloat(alreadyPaidReais) || 0) * 100),
       remainingFinancedBalanceCents: Math.round((parseFloat(remainingFinancedReais) || 0) * 100),
       supplierNonRefundableCents: Math.round((parseFloat(supplierNonRefundableReais) || 0) * 100),
-      agencyContractFinePct: parseFloat(agencyContractFinePct) || 20,
+      agencyContractFinePct: parseFloat(agencyContractFinePct) || 0,
       convertBalanceToOperatorCredit: convertBalanceToCredit,
-      daysBeforeDeparture: parseInt(daysBeforeDeparture, 10) || 10,
+      daysBeforeDeparture: parseInt(daysBeforeDeparture, 10) || 0,
     });
   }, [
     activeCancelRow,
@@ -327,64 +407,207 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                   Configure a retenção que cada operadora aplica quando o Over é financiado no boleto/cartão dela. Quando o Over é pago em Pix/Dinheiro direto para a agência, a retenção é automaticamente 0%.
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  setOperatorConfigs((prev) => [
-                    ...prev,
-                    {
-                      operatorName: `Operadora ${prev.length + 1}`,
-                      defaultRetentionPctWhenFinanced: 12,
-                      baseAgencyCommissionPct: 10,
-                    },
-                  ])
-                }
-                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
-              >
-                <Plus className="size-3.5" />
-                <span>Nova Operadora</span>
-              </Button>
+              {isManagerOrOwner && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const nextOps: OperatorOverRetentionConfig[] = [
+                      ...operatorConfigs,
+                      {
+                        operatorName: "",
+                        defaultRetentionPctWhenFinanced: 0,
+                        baseAgencyCommissionPct: 0,
+                        maxBoletoInstallments: 1,
+                        boletoRequiresDownpayment: false,
+                        boletoDownpaymentPct: 0,
+                        maxCardInstallments: 1,
+                        pixDiscountPct: 0,
+                        paymentChannelCode: "portal_operadora",
+                        paymentGuidanceInstructions: "",
+                        cancellationFinePct: 0,
+                        cancellationFreeDaysBefore: 0,
+                      },
+                    ];
+                    setOperatorConfigs(nextOps);
+                    persistChanges(undefined, undefined, nextOps);
+                  }}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Nova Operadora</span>
+                </Button>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {operatorConfigs.map((op, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-lg border border-border bg-card flex items-center justify-between gap-2 text-xs"
+                  className="p-3 rounded-lg border border-border bg-card space-y-2.5 text-xs"
                 >
-                  <div className="space-y-1 flex-1">
+                  <div className="flex items-center justify-between gap-2">
                     <Input
+                      disabled={!isManagerOrOwner}
+                      placeholder="Nome da Operadora / Consolidadora"
                       value={op.operatorName}
-                      onChange={(e) =>
-                        setOperatorConfigs((prev) =>
-                          prev.map((item, i) =>
-                            i === idx ? { ...item, operatorName: e.target.value } : item,
-                          ),
-                        )
-                      }
-                      className="h-11 text-xs font-bold rounded-md px-2"
+                      onChange={(e) => {
+                        const next = operatorConfigs.map((item, i) =>
+                          i === idx ? { ...item, operatorName: e.target.value } : item,
+                        );
+                        setOperatorConfigs(next);
+                        persistChanges(undefined, undefined, next);
+                      }}
+                      className="h-11 text-xs font-bold rounded-md px-2 flex-1"
                     />
-                    <div className="flex items-center gap-2 pt-1">
-                      <span className="text-muted-foreground">Retenção Over (%):</span>
+                    {isManagerOrOwner && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {
+                          const next = operatorConfigs.filter((_, i) => i !== idx);
+                          setOperatorConfigs(next);
+                          persistChanges(undefined, undefined, next);
+                        }}
+                        className="size-11 min-h-11 min-w-11 p-0 text-destructive cursor-pointer"
+                        title="Remover operadora"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground block text-2xs">Comissão Agência (%)</span>
                       <Input
                         type="number"
                         step="0.5"
+                        disabled={!isManagerOrOwner}
+                        value={op.baseAgencyCommissionPct}
+                        onChange={(e) => {
+                          const next = operatorConfigs.map((item, i) =>
+                            i === idx
+                              ? { ...item, baseAgencyCommissionPct: parseFloat(e.target.value) || 0 }
+                              : item,
+                          );
+                          setOperatorConfigs(next);
+                          persistChanges(undefined, undefined, next);
+                        }}
+                        className="h-11 text-xs font-mono text-right rounded-md px-2"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground block text-2xs">Retenção Over (%)</span>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        disabled={!isManagerOrOwner}
                         value={op.defaultRetentionPctWhenFinanced}
-                        onChange={(e) =>
-                          setOperatorConfigs((prev) =>
-                            prev.map((item, i) =>
-                              i === idx
-                                ? {
-                                    ...item,
-                                    defaultRetentionPctWhenFinanced:
-                                      parseFloat(e.target.value) || 0,
-                                  }
-                                : item,
-                            ),
-                          )
-                        }
-                        className="h-11 w-20 text-xs font-mono text-right rounded-md px-2"
+                        onChange={(e) => {
+                          const next = operatorConfigs.map((item, i) =>
+                            i === idx
+                              ? {
+                                  ...item,
+                                  defaultRetentionPctWhenFinanced: parseFloat(e.target.value) || 0,
+                                }
+                              : item,
+                          );
+                          setOperatorConfigs(next);
+                          persistChanges(undefined, undefined, next);
+                        }}
+                        className="h-11 text-xs font-mono text-right rounded-md px-2"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground block text-2xs">Boleto Máx. (x)</span>
+                      <Input
+                        type="number"
+                        min={1}
+                        disabled={!isManagerOrOwner}
+                        value={op.maxBoletoInstallments ?? 1}
+                        onChange={(e) => {
+                          const next = operatorConfigs.map((item, i) =>
+                            i === idx
+                              ? { ...item, maxBoletoInstallments: Math.max(1, parseInt(e.target.value, 10) || 1) }
+                              : item,
+                          );
+                          setOperatorConfigs(next);
+                          persistChanges(undefined, undefined, next);
+                        }}
+                        className="h-11 text-xs font-mono text-right rounded-md px-2"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground block text-2xs">Cartão Máx. (x)</span>
+                      <Input
+                        type="number"
+                        min={1}
+                        disabled={!isManagerOrOwner}
+                        value={op.maxCardInstallments ?? 1}
+                        onChange={(e) => {
+                          const next = operatorConfigs.map((item, i) =>
+                            i === idx
+                              ? { ...item, maxCardInstallments: Math.max(1, parseInt(e.target.value, 10) || 1) }
+                              : item,
+                          );
+                          setOperatorConfigs(next);
+                          persistChanges(undefined, undefined, next);
+                        }}
+                        className="h-11 text-xs font-mono text-right rounded-md px-2"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground block text-2xs">Desconto Pix (%)</span>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        disabled={!isManagerOrOwner}
+                        value={op.pixDiscountPct ?? 0}
+                        onChange={(e) => {
+                          const next = operatorConfigs.map((item, i) =>
+                            i === idx ? { ...item, pixDiscountPct: parseFloat(e.target.value) || 0 } : item,
+                          );
+                          setOperatorConfigs(next);
+                          persistChanges(undefined, undefined, next);
+                        }}
+                        className="h-11 text-xs font-mono text-right rounded-md px-2"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground block text-2xs">Multa Cancelamento (%)</span>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        disabled={!isManagerOrOwner}
+                        value={op.cancellationFinePct ?? 0}
+                        onChange={(e) => {
+                          const next = operatorConfigs.map((item, i) =>
+                            i === idx ? { ...item, cancellationFinePct: parseFloat(e.target.value) || 0 } : item,
+                          );
+                          setOperatorConfigs(next);
+                          persistChanges(undefined, undefined, next);
+                        }}
+                        className="h-11 text-xs font-mono text-right rounded-md px-2"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground block text-2xs">Instrução de Pagamento</span>
+                      <Input
+                        disabled={!isManagerOrOwner}
+                        placeholder="Ex: Portal Operadora / Link"
+                        value={op.paymentGuidanceInstructions ?? ""}
+                        onChange={(e) => {
+                          const next = operatorConfigs.map((item, i) =>
+                            i === idx ? { ...item, paymentGuidanceInstructions: e.target.value } : item,
+                          );
+                          setOperatorConfigs(next);
+                          persistChanges(undefined, undefined, next);
+                        }}
+                        className="h-11 text-xs rounded-md px-2"
                       />
                     </div>
                   </div>
@@ -422,7 +645,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                       <p className="text-xs text-muted-foreground">
                         Adicione uma venda abaixo para calcular faturamento bruto, taxas não comissionáveis, comissão da agência, over e repasse do vendedor.
                       </p>
-                      <Button size="sm" onClick={handleAddNewRow} className="h-11 min-h-11 px-4 text-xs font-bold gap-1.5 cursor-pointer">
+                      <Button size="sm" onClick={handleAddInlineRow} className="h-11 min-h-11 px-4 text-xs font-bold gap-1.5 cursor-pointer">
                         <Plus className="size-4" />
                         <span>Lançar Primeira Venda</span>
                       </Button>
@@ -707,36 +930,40 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                         <Input
                           type="number"
                           step="0.1"
+                          disabled={!isManagerOrOwner}
                           value={row.effectiveAgentCommissionPct}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            if (!isManagerOrOwner) return;
                             updateRowField(
                               row.id,
                               "agentCommissionPctOverride",
                               parseFloat(e.target.value) || 0,
-                            )
-                          }
-                          className="h-11 w-20 text-xs font-mono text-right rounded-md px-2"
+                            );
+                          }}
+                          className="h-11 w-20 text-xs font-mono text-right rounded-md px-2 disabled:opacity-75"
                         />
                         <span className="font-mono">
                           % = {formatMoney(row.agentBaseCommissionCents)}
                         </span>
                       </div>
 
-                      {/* Linha 2: % própria sobre o Over Líquido (Padrão 30%) */}
+                      {/* Linha 2: % própria sobre o Over Líquido */}
                       <div className="flex items-center gap-1 text-xs">
                         <span className="text-muted-foreground w-20">% s/ Over Líq:</span>
                         <Input
                           type="number"
                           step="1"
+                          disabled={!isManagerOrOwner}
                           value={row.effectiveAgentOverCommissionPct}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            if (!isManagerOrOwner) return;
                             updateRowField(
                               row.id,
                               "agentOverCommissionPctOverride",
                               parseFloat(e.target.value) || 0,
-                            )
-                          }
-                          className="h-11 w-20 text-xs font-mono text-right rounded-md px-2"
+                            );
+                          }}
+                          className="h-11 w-20 text-xs font-mono text-right rounded-md px-2 disabled:opacity-75"
                         />
                         <span className="font-mono">
                           % = {formatMoney(row.agentOverCommissionCents)}
@@ -1207,40 +1434,218 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                   );
                 })}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    setAgents((prev) =>
-                      prev.map((item, idx) =>
+                {isManagerOrOwner && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const next = agents.map((item, idx) =>
                         idx === agIdx
                           ? {
                               ...item,
                               tiers: [
                                 ...item.tiers,
                                 {
-                                  tierName: `Nova Faixa (${item.tiers.length + 1})`,
-                                  minMonthlyRevenueCents: 15000000,
+                                  tierName: `Faixa ${item.tiers.length + 1}`,
+                                  minMonthlyRevenueCents: 0,
                                   maxMonthlyRevenueCents: null,
-                                  commissionPct: 2.0,
-                                  overCommissionPct: 35,
+                                  commissionPct: 0,
+                                  overCommissionPct: 0,
                                   bonusFixedCents: 0,
                                 },
                               ],
                             }
                           : item,
-                      ),
-                    )
-                  }
-                  className="h-11 min-h-11 w-full rounded-lg text-xs font-semibold gap-2 cursor-pointer"
-                >
-                  <Plus className="size-4" />
-                  <span>Adicionar Nova Faixa de Meta para {ag.agentName}</span>
-                </Button>
+                      );
+                      setAgents(next);
+                      persistChanges(undefined, next);
+                    }}
+                    className="h-11 min-h-11 w-full rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                  >
+                    <Plus className="size-4" />
+                    <span>Adicionar Nova Faixa de Meta para {ag.agentName}</span>
+                  </Button>
+                )}
               </div>
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ── 4. CONFIGURADOR DE POLÍTICAS DE CANCELAMENTO, MULTAS ESCALONADAS E CLÁUSULAS DE CONTRATO (TABELA agency_contract_cancellation_policies) ── */}
+      <div className="p-5 rounded-lg border border-border bg-card space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-bold text-foreground">
+              Políticas de Cancelamento, Multas Escalonadas (%) e Cláusulas Contratuais da Agência
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Configure as regras de cancelamento, janelas de reembolso e cláusulas contratuais dinâmicas da agência.
+            </p>
+          </div>
+          {isManagerOrOwner && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const nextPolicies: AgencyCancellationPolicyConfig[] = [
+                  ...cancellationPolicies,
+                  {
+                    policyName: `Política ${cancellationPolicies.length + 1}`,
+                    isDefault: cancellationPolicies.length === 0,
+                    freeCancellationWindowDays: 7,
+                    anacRegretHours: 24,
+                    anacMinAdvanceDays: 7,
+                    defaultFinePct: 0,
+                    fineTiers: [],
+                    allowOperatorCreditConversion: true,
+                    creditValidityMonths: 12,
+                    contractClausesTemplate: "",
+                    reschedulingPolicyText: "",
+                  },
+                ];
+                setCancellationPolicies(nextPolicies);
+                persistChanges(undefined, undefined, undefined, nextPolicies);
+              }}
+              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+            >
+              <Plus className="size-4" />
+              <span>Nova Política de Cancelamento</span>
+            </Button>
+          )}
+        </div>
+
+        {cancellationPolicies.length === 0 ? (
+          <div className="p-6 rounded-lg border border-dashed border-border text-center text-xs text-muted-foreground">
+            Nenhuma política de cancelamento cadastrada. Clique em "Nova Política de Cancelamento" para definir percentuais de multa, prazos e cláusulas do contrato da agência.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {cancellationPolicies.map((pol, pIdx) => (
+              <div key={pIdx} className="p-4 rounded-lg border border-border bg-muted/15 space-y-3 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Input
+                    disabled={!isManagerOrOwner}
+                    value={pol.policyName}
+                    placeholder="Nome da Política (ex.: Nacional Terrestre / Internacional Aéreo)"
+                    onChange={(e) => {
+                      const next = cancellationPolicies.map((item, idx) =>
+                        idx === pIdx ? { ...item, policyName: e.target.value } : item,
+                      );
+                      setCancellationPolicies(next);
+                      persistChanges(undefined, undefined, undefined, next);
+                    }}
+                    className="h-11 flex-1 min-w-52 text-xs font-bold rounded-md px-3 bg-background"
+                  />
+                  {isManagerOrOwner && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        const next = cancellationPolicies.filter((_, idx) => idx !== pIdx);
+                        setCancellationPolicies(next);
+                        persistChanges(undefined, undefined, undefined, next);
+                      }}
+                      className="size-11 min-h-11 min-w-11 p-0 text-destructive cursor-pointer"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-2xs text-muted-foreground">Multa Padrão (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      disabled={!isManagerOrOwner}
+                      value={pol.defaultFinePct}
+                      onChange={(e) => {
+                        const next = cancellationPolicies.map((item, idx) =>
+                          idx === pIdx ? { ...item, defaultFinePct: parseFloat(e.target.value) || 0 } : item,
+                        );
+                        setCancellationPolicies(next);
+                        persistChanges(undefined, undefined, undefined, next);
+                      }}
+                      className="h-11 text-xs font-mono rounded-md px-2 bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-2xs text-muted-foreground">Prazo Livre CDC (Dias)</Label>
+                    <Input
+                      type="number"
+                      disabled={!isManagerOrOwner}
+                      value={pol.freeCancellationWindowDays}
+                      onChange={(e) => {
+                        const next = cancellationPolicies.map((item, idx) =>
+                          idx === pIdx
+                            ? { ...item, freeCancellationWindowDays: parseInt(e.target.value, 10) || 0 }
+                            : item,
+                        );
+                        setCancellationPolicies(next);
+                        persistChanges(undefined, undefined, undefined, next);
+                      }}
+                      className="h-11 text-xs font-mono rounded-md px-2 bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-2xs text-muted-foreground">Validade Crédito (Meses)</Label>
+                    <Input
+                      type="number"
+                      disabled={!isManagerOrOwner}
+                      value={pol.creditValidityMonths}
+                      onChange={(e) => {
+                        const next = cancellationPolicies.map((item, idx) =>
+                          idx === pIdx ? { ...item, creditValidityMonths: parseInt(e.target.value, 10) || 0 } : item,
+                        );
+                        setCancellationPolicies(next);
+                        persistChanges(undefined, undefined, undefined, next);
+                      }}
+                      className="h-11 text-xs font-mono rounded-md px-2 bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-2xs text-muted-foreground">Regra ANAC (Horas)</Label>
+                    <Input
+                      type="number"
+                      disabled={!isManagerOrOwner}
+                      value={pol.anacRegretHours}
+                      onChange={(e) => {
+                        const next = cancellationPolicies.map((item, idx) =>
+                          idx === pIdx ? { ...item, anacRegretHours: parseInt(e.target.value, 10) || 0 } : item,
+                        );
+                        setCancellationPolicies(next);
+                        persistChanges(undefined, undefined, undefined, next);
+                      }}
+                      className="h-11 text-xs font-mono rounded-md px-2 bg-background"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-2xs text-muted-foreground">
+                    Cláusulas Contratuais de Cancelamento / Remarcação (Editável pela Agência)
+                  </Label>
+                  <Textarea
+                    rows={3}
+                    disabled={!isManagerOrOwner}
+                    placeholder="Digite as cláusulas contratuais personalizadas da agência para cancelamento, no-show, retenção tarifária e carta de crédito..."
+                    value={pol.contractClausesTemplate}
+                    onChange={(e) => {
+                      const next = cancellationPolicies.map((item, idx) =>
+                        idx === pIdx ? { ...item, contractClausesTemplate: e.target.value } : item,
+                      );
+                      setCancellationPolicies(next);
+                      persistChanges(undefined, undefined, undefined, next);
+                    }}
+                    className="text-xs rounded-lg bg-background"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

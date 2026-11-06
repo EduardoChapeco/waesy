@@ -21,7 +21,8 @@ export const Route = createFileRoute("/workspace/")({
   validateSearch: (search: Record<string, unknown>): { storeId?: string } => ({
     storeId: typeof search.storeId === "string" ? search.storeId : undefined,
   }),
-  loader: async ({ search }) => {
+  loaderDeps: ({ search }) => ({ storeId: search?.storeId }),
+  loader: async ({ deps }) => {
     try {
       let session: any = null;
       try {
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/workspace/")({
         session?.user?.role === "platform_admin" ||
         session?.user?.user_metadata?.role === "platform_admin"
       );
-      const queryStoreId = search?.storeId;
+      const queryStoreId = deps?.storeId;
       const isQueryValid = queryStoreId && (isPlatformAdmin || memberships.some((m: any) => m.store_id === queryStoreId));
 
       const activeStoreId =

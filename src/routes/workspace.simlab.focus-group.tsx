@@ -137,12 +137,13 @@ function FocusGroupPage() {
 
         // 4. Carregar produtos do catálogo para fechamento de ciclo (GAP-004 / NC-008)
         try {
-          const prodsRes = await listAdminProducts({ data: { page: 1, limit: 100 } });
-          if (prodsRes?.items && prodsRes.items.length > 0) {
-            setCatalogProducts(prodsRes.items);
-            setSelectedProductId(prodsRes.items[0].id);
-            setAppliedTitle(prodsRes.items[0].title || '');
-            setAppliedPriceCents(prodsRes.items[0].price_cents);
+          const prodsRes = await listAdminProducts({ data: { limit: 100 } });
+          const prodsList = Array.isArray(prodsRes) ? prodsRes : ((prodsRes as any)?.items || []);
+          if (prodsList.length > 0) {
+            setCatalogProducts(prodsList);
+            setSelectedProductId(prodsList[0].id);
+            setAppliedTitle(prodsList[0].title || '');
+            setAppliedPriceCents(prodsList[0].price_cents);
           }
         } catch (catErr: any) {
           console.warn('Erro ao carregar produtos para SimLab:', catErr?.message);

@@ -245,7 +245,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             </div>
 
             <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
-              <span>Serviços de Alojamento Selecionados</span>
+              <span>Hospedagem</span>
               <span>Cotação #{p.number}</span>
             </div>
           </DocumentPage>
@@ -316,7 +316,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             </div>
 
             <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
-              <span>Bilhetes Emitidos / Franquias inclusas conforme regras de tarifa</span>
+              <span>Voos</span>
               <span>Cotação #{p.number}</span>
             </div>
           </DocumentPage>

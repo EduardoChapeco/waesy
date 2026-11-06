@@ -140,13 +140,19 @@ export default function TripPortalPage() {
       })),
       transferDetails: trip.transfers?.[0]?.description || "Transfer conforme voucher oficial",
       transferConfirmationId: trip.transfers?.[0]?.confirmation_id || `TR-${id.slice(0, 8)}`,
-      emergencyPhone24h: agency.phone || "+55 (49) 99999-1372",
-      cancellationRulesText: trip.tariff_rules?.cancellation_penalty || "Cancelamento sujeito às normas do contrato de prestação de serviços turísticos.",
-      fineSchedule: [
-        { daysBeforeDeparture: 30, penaltyPct: 20 },
-        { daysBeforeDeparture: 15, penaltyPct: 50 },
-        { daysBeforeDeparture: 7, penaltyPct: 100 },
-      ],
+      emergencyPhone24h: agency.phone || "",
+      cancellationRulesText:
+        trip.cancellation_policy_snapshot?.contractClausesTemplate ||
+        trip.tariff_rules?.cancellation_penalty ||
+        "Cancelamento sujeito às normas do contrato de prestação de serviços turísticos.",
+      fineSchedule: Array.isArray(trip.cancellation_policy_snapshot?.fineTiers)
+        ? trip.cancellation_policy_snapshot.fineTiers.map((t: any) => ({
+            daysBeforeDeparture: Number(t.daysBeforeDeparture || 0),
+            penaltyPct: Number(t.finePct ?? t.penaltyPct ?? 0),
+          }))
+        : Array.isArray(trip.tariff_rules?.fine_schedule)
+          ? trip.tariff_rules.fine_schedule
+          : [],
       requiredDocuments: [
         "Documento de Identificação Oficial com foto (RG ou Passaporte)",
         "Voucher de Hospedagem e Localizador Aéreo",
@@ -236,16 +242,12 @@ export default function TripPortalPage() {
     }
     return buildAutomaticTripItineraryFallback({
       destination: tripContext.destination,
-      startDate: trip.travel_start_date || "2027-01-09",
-      endDate: trip.travel_end_date || "2027-01-14",
+      startDate: trip.travel_start_date || "",
+      endDate: trip.travel_end_date || "",
       hotelName: tripContext.hotelName,
-      arrivalTime: tripContext.flights[0]?.arrivalTime || "14:00",
-      departureTime: tripContext.flights[1]?.departureTime || "18:00",
-      includedTours: trip.tours?.map((t: any) => t.title || t.name) || [
-        `City Tour Panorâmico por ${tripContext.destination}`,
-        "Experiência Gastronômica Regional",
-        "Dia Livre para Atividades Pessoais",
-      ],
+      arrivalTime: tripContext.flights[0]?.arrivalTime || "",
+      departureTime: tripContext.flights[1]?.departureTime || "",
+      includedTours: trip.tours?.map((t: any) => t.title || t.name) || [],
     });
   }, [trip, tripContext]);
   // Paradas Técnicas e Pontos de Embarque Rodoviários (Excursões e Viagens Terrestres)
@@ -776,7 +778,47 @@ export default function TripPortalPage() {
           {activeTab === "pre_embarque" && (
             <div className="space-y-6">
               <SmartPackingChecklist tripId={trip.id} destination={tripContext.destination} />
-              <PreBoardingPresentationStudio tripId={trip.id} />
+              <PreBoardingPresentationStudio
+                tripId={trip.id}
+                isPassengerPortal={true}
+                initialTripInput={{
+                  presentationType: "pre_boarding_guide",
+                  agencyName: agency?.name || tripContext.operatorName,
+                  agencyEmergencyPhone: tripContext.emergencyPhone24h,
+                  tripTitle: `Guia Oficial de Pré-Embarque — ${tripContext.destination}`,
+                  conceptSubtitle: `${tripContext.destination} · Reserva #${tripContext.reservationCode}`,
+                  passengersNames: passengers?.map((p: any) => p.full_name || p.name).filter(Boolean) || [trip.client_name || "Passageiro"],
+                  adultsCount: Math.max(1, passengers?.length || 1),
+                  childrenCount: 0,
+                  startDate: tripContext.travelStartDate,
+                  endDate: tripContext.travelEndDate,
+                  originCity: trip.origin_city || tripContext.flights[0]?.originIata || "",
+                  destinations: [tripContext.destination],
+                  countries: [trip.destination_country || "Brasil"],
+                  flights: tripContext.flights.map((f: any) => ({
+                    direction: f.direction === "volta" ? "volta" : "ida",
+                    date: f.direction === "volta" ? tripContext.travelEndDate : tripContext.travelStartDate,
+                    airline: f.airline,
+                    flightNumber: f.flightNumber,
+                    originIata: f.originIata,
+                    destinationIata: f.destinationIata,
+                    departureTime: f.departureTime,
+                    arrivalTime: f.arrivalTime,
+                    durationText: "",
+                    sameTicket: true,
+                  })),
+                  hotels: tripContext.hotelName
+                    ? [
+                        {
+                          name: tripContext.hotelName,
+                          city: tripContext.destination,
+                          address: tripContext.hotelAddress,
+                          mealPlan: tripContext.mealPlan,
+                        },
+                      ]
+                    : [],
+                }}
+              />
             </div>
           )}
 
