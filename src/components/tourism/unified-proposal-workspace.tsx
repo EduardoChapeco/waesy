@@ -3751,7 +3751,7 @@ export function UnifiedProposalWorkspace({
                     </div>
                   )}
                   {enablePixDiscount && (
-                    <div className="flex justify-between text-emerald-600 font-bold">
+                    <div className="flex justify-between font-bold text-foreground">
                       <span>À vista no PIX ({pixDiscountPct}% off)</span>
                       <span>{formatMoney(Math.round(calculation.grandTotalCents * (1 - pixDiscountPct / 100)))}</span>
                     </div>
@@ -3775,9 +3775,9 @@ export function UnifiedProposalWorkspace({
                     variant="outline"
                     onClick={() => saveProposalMutation.mutate({ openStudioAfterSave: false })}
                     disabled={saveProposalMutation.isPending}
-                    className="w-full h-11 text-xs font-semibold gap-2 border-border text-emerald-600 hover:bg-muted cursor-pointer"
+                    className="w-full h-11 text-xs font-semibold gap-2 border-border text-foreground hover:bg-muted cursor-pointer"
                   >
-                    <Send className="size-4 text-emerald-600" />
+                    <Send className="size-4 text-primary" />
                     <span>Salvar & WhatsApp</span>
                   </Button>
                 </div>
@@ -3834,8 +3834,8 @@ export function UnifiedProposalWorkspace({
               )}
             </div>
 
-            {/* Ações primárias no rodapé visíveis apenas no mobile/tablet (< xl), evitando duplicação com o dock no desktop */}
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end xl:hidden">
+            {/* Ações primárias no rodapé visíveis apenas no mobile/tablet (< lg), evitando duplicação com o dock no desktop */}
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end lg:hidden">
               <Button
                 type="button"
                 variant="outline"

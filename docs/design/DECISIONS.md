@@ -1,5 +1,37 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-444: Integração Bilateral Infotravel ⇄ CRM Leads, Rota de Ingestão de Cotações com CORS, Alerta Acionável de Tarifa no Dossiê e Desduplicação de Ações do Builder
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. O motor de avaliação de cotações capturadas (`evaluateRadarForCapture` em `travel-quote-capture.functions.ts`) consultava estritamente `travel_client_demands`, deixando de cruzar com os leads reais ativos do CRM da agência (`leads_crm`). Dessa forma, cotações capturadas via minerador ou extensão do Chrome nunca geravam oportunidades nos cards do funil.
+  2. A extensão do Infotravel (`tools/infotravel-extension/`) coletava cotações em tempo real no portal da operadora, mas não possuía rota HTTP dedicada no Waesy para transmissão contínua com cabeçalhos CORS (`chrome-extension://`).
+  3. No dossiê do card do lead (`TourismPipeCardDossier.tsx`), não havia alerta visual acionável para tarifas identificadas pelo radar nem botão para disparar a proposta pré-preenchida com os valores cotados.
+  4. No modal de criação de proposta (`unified-proposal-workspace.tsx`), os botões de ação primária ("Salvar & Abrir Studio" e "Salvar & WhatsApp") estavam duplicados na tela no desktop (renderizados simultaneamente no dock lateral de resumo e no rodapé flutuante).
+  5. Presença de classes de cor fora do padrão de design (`text-emerald-600`) em ícones e half-steps de espaçamento (`DL-03`: `p-1.5`, `gap-1.5`, `p-2.5`).
+- **Decisão:**
+  1. **Casamento Bilateral com `leads_crm` (`travel-quote-capture.functions.ts`):**
+     - O avaliador do radar agora consulta tanto `travel_client_demands` quanto os leads ativos em `leads_crm` (excluindo leads finalizados/perdidos).
+     - Quando há casamento (`matchQuoteWithDemand`), atualiza `leads_crm.algorithmic_score` e grava o payload completo em `leads_crm.custom_fields.infotravel_opportunity` (destino, datas, valores, economia, temperatura e pitch de WhatsApp).
+     - Insere registro correlacionado no ledger perpétuo `travel_opportunities`.
+  2. **Endpoint Canônico de Ingestão HTTP (`src/routes/api.v1.ingest.infotravel-quotes.ts`):**
+     - Criada rota HTTP com suporte a `OPTIONS` (CORS para origens `chrome-extension://`, `localhost`, `waesy.com.br`) e `POST` autenticado via sessão SSR, token Bearer ou cabeçalho `x-waesy-store-id`.
+     - Validação estrita via `TravelQuoteCapturePayloadSchema` com resposta estruturada de oportunidades geradas.
+  3. **Extensão Infotravel Conectada (`tools/infotravel-extension/`):**
+     - Background service worker e popup controller atualizados com envio automático em tempo real e botão de sincronização em lote para o Waesy CRM.
+  4. **Banner Acionável de Oportunidade no Dossiê (`TourismPipeCardDossier.tsx`):**
+     - Quando um card possui `infotravel_opportunity`, renderiza banner de alto contraste no topo da coluna principal, com detalhes de economia, operadora, motivos do match e dois botões de ação direta: "Copiar Pitch WhatsApp" (1-clique) e "Gerar Proposta com esta Tarifa" (abre o builder pré-preenchido).
+     - No modal de PDF, adicionado botão "Baixar PDF" direto integrando o motor canônico `exportElementAsPdf`.
+  5. **Desduplicação de Ações do Builder & Purga Visual (`unified-proposal-workspace.tsx`):**
+     - Ajustado o breakpoint do rodapé de `xl:hidden` para `lg:hidden`, garantindo que em telas desktop (>=1024px) o CTA primário seja exibido estritamente uma única vez (no dock de resumo), respeitando AGENTS.md B.8.
+     - Cores literais `text-emerald-600` e half-steps de espaçamento sanitizados para conformidade plena com DL-03 e WCAG 2.2 AA.
+  6. **Verificação Mecânica:**
+     - TypeScript: `tsc --noEmit` aprovado com 0 erros (Exit Code 0).
+     - Testes unitários do BFF: `travel-quote-capture.test.ts` aprovado (2/2 testes cobrindo demandas e leads CRM).
+     - Catraca Design Lint Ratchet: Aprovada com 0 violações P0 e 0 regressões.
+     - Build e deploy Cloudflare Pages: Concluído com sucesso (https://66bb9808.usewaesy.pages.dev, HTTP 200).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.10, B.25; skills `supabase`, `web-performance`, `accessibility-floor`.
+- **Consequências:** Sincronização em tempo real de cotações entre mineradores/extensões e os cards do funil; fechamento ágil de vendas com 1-clique no WhatsApp; e interface limpa sem botões duplicados ou artefatos visuais.
+
 ## DEC-443: Erradicação de Quedas de Sessão Espontâneas, Resolução do Loop de Bounce de Login, Deduplicação de Chunks de Cookie e Purga de Neons Visuais
 - **Data:** 2026-11-06
 - **Contexto:**

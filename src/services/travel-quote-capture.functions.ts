@@ -144,6 +144,7 @@ export async function ingestTravelQuoteCapture(payloadRaw: TravelQuoteCapturePay
   const matchedOpportunities = await evaluateRadarForCapture({
     captureId: capture.id,
     storeId,
+    operatorSlug,
     destinationCity,
     originCity,
     startDate,
@@ -163,11 +164,12 @@ export async function ingestTravelQuoteCapture(payloadRaw: TravelQuoteCapturePay
 }
 
 /**
- * Avalia demandas ativas da agência e gera oportunidades sob demanda
+ * Avalia demandas ativas da agência e leads do CRM, gerando oportunidades sob demanda
  */
 async function evaluateRadarForCapture(captureData: {
   captureId: string;
   storeId: string;
+  operatorSlug?: string;
   destinationCity: string;
   originCity?: string | null;
   startDate: string;
@@ -177,14 +179,32 @@ async function evaluateRadarForCapture(captureData: {
   childrenCount?: number;
   sourcePage: string;
 }) {
-  // Buscar demandas ativas da agência
+  // 1. Buscar demandas ativas da agência em travel_client_demands
   const { data: demands } = await supabase
     .from('travel_client_demands')
     .select('*')
     .eq('store_id', captureData.storeId)
     .eq('status', 'active');
 
-  if (!demands || demands.length === 0) return [];
+  // 2. Buscar leads ativos do CRM da agência em leads_crm
+  let crmLeads: any[] = [];
+  try {
+    const { data: lData } = await supabase
+      .from('leads_crm')
+      .select('*')
+      .eq('store_id', captureData.storeId);
+    crmLeads = (lData || []).filter((l: any) =>
+      !['won', 'lost', 'cancelled'].includes(l.status) &&
+      Boolean(l.destination || l.destination_of_interest)
+    );
+  } catch (err) {
+    console.warn('[travel-quote-capture] fallback consultando leads_crm:', err);
+  }
+
+  // Se não houver demandas nem leads ativos, encerra
+  const totalDemands = (demands || []).length;
+  const totalCrmLeads = crmLeads.length;
+  if (totalDemands === 0 && totalCrmLeads === 0) return [];
 
   // Buscar histórico de preços para cálculo de temperatura
   const { data: historicalPrices } = await supabase
@@ -203,7 +223,8 @@ async function evaluateRadarForCapture(captureData: {
 
   const generatedOpps = [];
 
-  for (const demand of demands) {
+  // Avaliação 1: Demandas formais de travel_client_demands
+  for (const demand of demands || []) {
     const match = matchQuoteWithDemand(
       {
         id: demand.id,
@@ -242,6 +263,97 @@ async function evaluateRadarForCapture(captureData: {
           match_reasons: match.reasons,
           quoted_total_cents: captureData.totalCents,
           client_budget_cents: demand.budget_max_cents,
+          variance_pct: match.variancePct,
+          historical_reference_median_cents: tempAnalysis.medianCents,
+          historical_sample_size: tempAnalysis.sampleSize,
+          tariff_temperature: tempAnalysis.temperature,
+          whatsapp_pitch_draft: match.suggestedWhatsAppPitch,
+          status: 'open'
+        })
+        .select()
+        .single();
+
+      if (!error && opp) {
+        generatedOpps.push(opp);
+      }
+    }
+  }
+
+  // Avaliação 2: Leads ativos do Funil Comercial / CRM em leads_crm
+  for (const lead of crmLeads) {
+    const candidateCity = lead.destination || lead.destination_of_interest || '';
+    const budget = Number(lead.budget_cents || lead.estimated_value_cents || 0);
+    const earliest = lead.travel_start || lead.departure_date || captureData.startDate;
+    const latest = lead.travel_end || lead.return_date || captureData.startDate;
+
+    const match = matchQuoteWithDemand(
+      {
+        id: lead.id,
+        contactName: lead.full_name || lead.title || 'Cliente sem nome',
+        contactPhone: lead.phone || null,
+        destinationCity: candidateCity,
+        earliestDeparture: earliest,
+        latestDeparture: latest,
+        budgetMaxCents: budget,
+        adultsCount: Number(lead.pax_adults || lead.passenger_count || lead.pax_count || 1),
+        childrenCount: Number(lead.pax_children || 0),
+        preferredProductType: 'any',
+        lastInteractionAt: lead.updated_at || lead.created_at || new Date().toISOString()
+      },
+      {
+        id: captureData.captureId,
+        destinationCity: captureData.destinationCity,
+        originCity: captureData.originCity,
+        startDate: captureData.startDate,
+        endDate: captureData.endDate,
+        totalCents: captureData.totalCents,
+        adultsCount: captureData.adultsCount,
+        childrenCount: captureData.childrenCount,
+        productType
+      }
+    );
+
+    if (match.isMatch) {
+      // 1. Atualizar o card em leads_crm com o score e payload estruturado da oportunidade
+      const existingCustom = (typeof lead.custom_fields === 'object' && lead.custom_fields) ? lead.custom_fields : {};
+      const oppPayload = {
+        capture_id: captureData.captureId,
+        operator_slug: captureData.operatorSlug || 'infotravel_default',
+        destination: captureData.destinationCity,
+        origin: captureData.originCity,
+        start_date: captureData.startDate,
+        end_date: captureData.endDate,
+        quoted_total_cents: captureData.totalCents,
+        budget_cents: budget,
+        variance_pct: match.variancePct,
+        tariff_temperature: tempAnalysis.temperature,
+        match_reasons: match.reasons,
+        whatsapp_pitch_draft: match.suggestedWhatsAppPitch,
+        matched_at: new Date().toISOString()
+      };
+
+      await supabase
+        .from('leads_crm')
+        .update({
+          algorithmic_score: match.matchScore,
+          custom_fields: {
+            ...existingCustom,
+            infotravel_opportunity: oppPayload
+          }
+        })
+        .eq('id', lead.id);
+
+      // 2. Gravar no ledger de travel_opportunities
+      const { data: opp, error } = await supabase
+        .from('travel_opportunities')
+        .insert({
+          store_id: captureData.storeId,
+          demand_id: lead.id,
+          capture_id: captureData.captureId,
+          match_score: match.matchScore,
+          match_reasons: match.reasons,
+          quoted_total_cents: captureData.totalCents,
+          client_budget_cents: budget,
           variance_pct: match.variancePct,
           historical_reference_median_cents: tempAnalysis.medianCents,
           historical_sample_size: tempAnalysis.sampleSize,

@@ -24,6 +24,23 @@ vi.mock('@/lib/supabase', () => {
         last_interaction_at: '2027-04-10T10:00:00Z'
       }
     ],
+    leads_crm: [
+      {
+        id: '22222222-2222-4222-a222-222222222222',
+        store_id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
+        full_name: 'Carlos Alberto Mendes',
+        phone: '49999991234',
+        destination: 'Lisboa',
+        travel_start: '2027-05-05',
+        travel_end: '2027-05-20',
+        budget_cents: 1200000,
+        pax_adults: 2,
+        pax_children: 0,
+        status: 'qualified',
+        custom_fields: {},
+        created_at: '2027-04-12T10:00:00Z'
+      }
+    ],
     travel_opportunities: []
   };
 
@@ -42,6 +59,13 @@ vi.mock('@/lib/supabase', () => {
             data: inserted
           };
         }),
+        update: vi.fn((payload: any) => ({
+          eq: vi.fn((_col: string, val: any) => {
+            const item = tableData[table]?.find((r) => r.id === val);
+            if (item) Object.assign(item, payload);
+            return { data: item, error: null };
+          })
+        })),
         select: vi.fn(() => ({
           eq: vi.fn((_col: string, _val: any) => ({
             eq: vi.fn((_c2: string, _v2: any) => ({
@@ -90,12 +114,13 @@ describe('BFF Server Function: ingestTravelQuoteCapture', () => {
     rawPayloadJson: { test: true }
   };
 
-  it('deve validar e processar a ingestão de cotação gerando oportunidade casada', async () => {
+  it('deve validar e processar a ingestão de cotação gerando oportunidade casada com demanda e lead CRM', async () => {
     const result = await ingestTravelQuoteCapture(validPayload);
     expect(result.success).toBe(true);
     expect(result.captureId).toBeDefined();
-    expect(result.opportunitiesGenerated).toBe(1);
-    expect(result.opportunities[0].whatsapp_pitch_draft).toContain('Juliana');
+    expect(result.opportunitiesGenerated).toBe(2);
+    expect(result.opportunities.some(o => o.whatsapp_pitch_draft.includes('Juliana'))).toBe(true);
+    expect(result.opportunities.some(o => o.whatsapp_pitch_draft.includes('Carlos'))).toBe(true);
   });
 
   it('deve rejeitar payload com tipos inválidos via Zod', async () => {

@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pacingSlider = document.getElementById('pacingSlider');
   const pacingLabel = document.getElementById('pacingLabel');
   const toggleSyncBtn = document.getElementById('toggleSyncBtn');
+  const syncCrmBtn = document.getElementById('syncCrmBtn');
   const exportCsvBtn = document.getElementById('exportCsvBtn');
   const exportJsonBtn = document.getElementById('exportJsonBtn');
   const logBox = document.getElementById('logBox');
@@ -115,6 +116,68 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     await refreshState();
+  });
+
+  // Sincronizar cotações com Waesy CRM & Radar de Oportunidades
+  syncCrmBtn.addEventListener('click', async () => {
+    const data = await chrome.storage.local.get(['cotacoesRecentes', 'waesyStoreId']);
+    const cotacoes = data.cotacoesRecentes || [];
+
+    if (cotacoes.length === 0) {
+      appendLog('Nenhuma cotação capturada na memória para sincronizar.', 'warn');
+      alert('Nenhuma cotação foi capturada ainda. Navegue por resultados de voos/hotéis no portal da operadora.');
+      return;
+    }
+
+    syncCrmBtn.disabled = true;
+    syncCrmBtn.textContent = 'Sincronizando...';
+    appendLog(`Iniciando transmissão de ${cotacoes.length} cotações para o Waesy CRM...`, 'info');
+
+    let successCount = 0;
+    let oppTotal = 0;
+
+    for (const q of cotacoes) {
+      try {
+        const payload = {
+          storeId: data.waesyStoreId || undefined,
+          operatorSlug: q.operatorSlug || 'infotravel_default',
+          sourcePage: q.sourcePage || 'carrinho',
+          originCity: q.originCity || null,
+          destinationCity: q.destinationCity,
+          startDate: q.startDate,
+          endDate: q.endDate || null,
+          adultsCount: q.adultsCount || 1,
+          childrenCount: q.childrenCount || 0,
+          currency: q.currency || 'BRL',
+          totalCents: q.totalCents,
+          perAdultCents: q.perAdultCents || null,
+          taxesCents: q.taxesCents || 0,
+          items: q.items || [],
+          rawPayloadJson: q
+        };
+
+        const res = await fetch('https://waesy.com.br/api/v1/ingest/infotravel-quotes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(data.waesyStoreId ? { 'x-waesy-store-id': data.waesyStoreId } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const resData = await res.json();
+          successCount++;
+          oppTotal += resData.opportunitiesGenerated || 0;
+        }
+      } catch (err) {
+        console.warn('[Waesy Sync] Falha enviando cotação:', err);
+      }
+    }
+
+    syncCrmBtn.disabled = false;
+    syncCrmBtn.textContent = 'Sincronizar com Waesy CRM & Radar';
+    appendLog(`Sincronização concluída: ${successCount}/${cotacoes.length} enviadas, ${oppTotal} oportunidades no radar!`, 'success');
   });
 
   // Exportar CSV

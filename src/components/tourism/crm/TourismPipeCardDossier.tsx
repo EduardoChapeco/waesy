@@ -35,7 +35,9 @@ import {
   Download,
   FileCheck,
   FileCode,
+  Zap,
 } from "lucide-react";
+import { exportElementAsPdf } from "@/lib/pdf-export";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -233,7 +235,11 @@ export function TourismPipeCardDossier({
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [selectedPdfTemplateKey, setSelectedPdfTemplateKey] = useState<string>("proposta_a4");
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isExportingDirectPdf, setIsExportingDirectPdf] = useState(false);
   const [activePdfTab, setActivePdfTab] = useState<"templates" | "fields" | "preview">("templates");
+
+  // Oportunidade capturada do Radar / Infotravel
+  const infotravelOpp = (lead?.custom_fields?.infotravel_opportunity as any) || null;
 
   // Current Stage calculations
   const currentStageIdx = stages.findIndex((s) => s.id === formData.status);
@@ -585,7 +591,7 @@ export function TourismPipeCardDossier({
                   disabled={!cleanPhone}
                   className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <MessageSquare className="size-3.5 text-emerald-600" />
+                  <MessageSquare className="size-3.5 text-primary" />
                   <span>WhatsApp</span>
                   <ChevronDown className="size-3 text-muted-foreground" />
                 </Button>
@@ -596,7 +602,7 @@ export function TourismPipeCardDossier({
                   className="cursor-pointer gap-2 focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={() => window.open(whatsappUrl, "_blank")}
                 >
-                  <MessageSquare className="size-4 text-emerald-600" />
+                  <MessageSquare className="size-4 text-primary" />
                   <span>Abrir no WhatsApp</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -714,6 +720,119 @@ export function TourismPipeCardDossier({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* ══════════ COLUNA ESQUERDA (DADOS DO CARD & FLUXO - 65%) ══════════ */}
           <div className="lg:col-span-8 space-y-6">
+            {/* ALERTA DE OPORTUNIDADE DO RADAR INFOTRAVEL / OPERADORA */}
+            {infotravelOpp && (
+              <div className="p-4 rounded-xl border border-border/80 bg-muted/40 space-y-3">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="p-2 rounded-lg bg-primary/10 text-primary">
+                      <Zap className="size-4" />
+                    </span>
+                    <div>
+                      <h4 className="text-xs font-bold text-foreground">
+                        Oportunidade de Tarifa Detectada no Radar
+                      </h4>
+                      <p className="text-2xs text-muted-foreground font-mono">
+                        Operadora: <strong className="text-foreground uppercase">{infotravelOpp.operator_slug}</strong> · Destino: <strong className="text-foreground">{infotravelOpp.destination}</strong>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-2xs font-mono font-bold uppercase border-border/60">
+                      {infotravelOpp.tariff_temperature === "super_tarifa"
+                        ? "Super Tarifa"
+                        : infotravelOpp.tariff_temperature === "oportunidade"
+                        ? "Tarifa Competitiva"
+                        : "Em Análise"}
+                    </Badge>
+                    {infotravelOpp.variance_pct !== undefined && (
+                      <span className="text-2xs font-mono font-bold text-foreground">
+                        {infotravelOpp.variance_pct <= 0
+                          ? `${Math.abs(infotravelOpp.variance_pct)}% abaixo do teto`
+                          : `+${infotravelOpp.variance_pct}% margem`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-2xs p-3 rounded-lg bg-background border border-border/40">
+                  <div>
+                    <span className="text-muted-foreground block">Tarifa Identificada:</span>
+                    <strong className="text-sm font-bold font-mono text-foreground">
+                      {formatMoney(infotravelOpp.quoted_total_cents || 0)}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block">Orçamento Máximo do Cliente:</span>
+                    <strong className="text-sm font-bold font-mono text-muted-foreground">
+                      {formatMoney(infotravelOpp.budget_cents || 0)}
+                    </strong>
+                  </div>
+                </div>
+
+                {infotravelOpp.match_reasons && infotravelOpp.match_reasons.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {infotravelOpp.match_reasons.map((r: string, idx: number) => (
+                      <Badge key={idx} variant="secondary" className="text-3xs font-medium">
+                        {r}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
+                {infotravelOpp.whatsapp_pitch_draft && (
+                  <div className="p-3 rounded-lg bg-muted/60 text-2xs font-sans text-muted-foreground italic border-l-2 border-primary">
+                    "{infotravelOpp.whatsapp_pitch_draft}"
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-2 pt-1 flex-wrap">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (infotravelOpp.whatsapp_pitch_draft) {
+                        navigator.clipboard.writeText(infotravelOpp.whatsapp_pitch_draft);
+                        toast.success("Mensagem da oportunidade copiada!");
+                      }
+                      if (cleanPhone) {
+                        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(infotravelOpp.whatsapp_pitch_draft || "")}`, "_blank");
+                      }
+                    }}
+                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+                  >
+                    <MessageSquare className="size-3.5" />
+                    <span>Copiar Pitch WhatsApp</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onGenerateProposal({
+                        id: lead.id,
+                        fullName: formData.name,
+                        phone: formData.phone,
+                        email: formData.email,
+                        destination: infotravelOpp.destination || formData.destination,
+                        estimated_value_cents: infotravelOpp.quoted_total_cents || formData.estimated_value_cents,
+                        passenger_count: (formData.pax_adults || 2) + (formData.pax_children || 0),
+                        departureDate: infotravelOpp.start_date || formData.travel_start,
+                        returnDate: infotravelOpp.end_date || formData.travel_end,
+                        adultsCount: formData.pax_adults || 2,
+                        childrenCount: formData.pax_children || 0,
+                        notes: `Tarifa do Radar (${infotravelOpp.operator_slug}): ${infotravelOpp.match_reasons?.join("; ") || ""}`,
+                      });
+                    }}
+                    className="h-11 min-h-11 px-4 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Sparkles className="size-3.5" />
+                    <span>Gerar Proposta com esta Tarifa</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* 1. FORMULÁRIO INICIAL (START FORM) */}
             <div id="section-form" className="space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -1431,7 +1550,7 @@ export function TourismPipeCardDossier({
                   }}
                   className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
                 >
-                  <MessageSquare className="size-3.5 text-emerald-600" />
+                  <MessageSquare className="size-3.5 text-primary" />
                   <span className="hidden sm:inline">Enviar por WhatsApp</span>
                 </Button>
                 <button
@@ -1689,7 +1808,10 @@ export function TourismPipeCardDossier({
 
             {/* ABA 3: PRÉVIA DO DOCUMENTO SIMULADA */}
             {activePdfTab === "preview" && (
-              <div className="p-6 rounded-xl border border-border/60 bg-card text-foreground space-y-4 max-w-xl mx-auto shadow-2xs font-sans text-xs">
+              <div
+                id="dossier-pdf-preview-canvas"
+                className="p-6 rounded-xl border border-border/60 bg-card text-foreground space-y-4 max-w-xl mx-auto shadow-2xs font-sans text-xs document-page"
+              >
                 <div className="flex items-center justify-between border-b border-border/40 pb-3">
                   <div>
                     <h3 className="font-bold text-sm tracking-tight">
@@ -1742,14 +1864,42 @@ export function TourismPipeCardDossier({
           </div>
 
           <DialogFooter className="p-4 sm:p-6 border-t border-border/40 bg-muted/10 flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsPdfModalOpen(false)}
-              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
-            >
-              Fechar
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsPdfModalOpen(false)}
+                className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+              >
+                Fechar
+              </Button>
+              {activePdfTab === "preview" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isExportingDirectPdf}
+                  onClick={async () => {
+                    setIsExportingDirectPdf(true);
+                    try {
+                      await exportElementAsPdf(
+                        "dossier-pdf-preview-canvas",
+                        `${formData.destination || "documento"}-${formData.name || "cliente"}.pdf`,
+                        "p"
+                      );
+                      toast.success("Download do PDF concluído em alta resolução!");
+                    } catch (err: any) {
+                      toast.error(err?.message || "Erro ao baixar PDF");
+                    } finally {
+                      setIsExportingDirectPdf(false);
+                    }
+                  }}
+                  className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 cursor-pointer"
+                >
+                  <Download className="size-3.5" />
+                  <span>{isExportingDirectPdf ? "Baixando..." : "Baixar PDF"}</span>
+                </Button>
+              )}
+            </div>
             <Button
               type="button"
               disabled={isGeneratingPdf}
