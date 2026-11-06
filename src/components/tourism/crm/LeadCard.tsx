@@ -203,14 +203,7 @@ export function LeadCard({
         }
       }}
       onClick={() => onOpenDetails?.(lead)}
-      className={cn(
-        'p-4 rounded-2xl border bg-card hover:border-foreground/25 transition-colors duration-150 space-y-3 text-xs group cursor-pointer relative select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        staleness.isCold
-          ? 'border-rose-500/30'
-          : staleness.isStale
-          ? 'border-warning/30'
-          : 'border-border/60'
-      )}
+      className="p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/25 transition-colors duration-150 space-y-3 text-xs group cursor-pointer relative select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
       {/* Topo do Card: Nome em Destaque + WhatsApp 1-Clique + Menu Contextual */}
       <div className="flex items-start justify-between gap-2">
