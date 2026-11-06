@@ -31,6 +31,10 @@ import {
   Edit3,
   Check,
   Upload,
+  Printer,
+  Download,
+  FileCheck,
+  FileCode,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +55,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -212,10 +224,70 @@ export function TourismPipeCardDossier({
     return Array.isArray(lead.custom_fields?.comments) ? lead.custom_fields.comments : [];
   });
 
+  // Attachments State (Pipefy & Trello Benchmark)
+  const [cardAttachments, setCardAttachments] = useState<any[]>(() => {
+    return Array.isArray(lead.attachments) ? lead.attachments : [];
+  });
+
+  // PDF Templates & Dynamic Merge Tags State (Pipefy Benchmark)
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [selectedPdfTemplateKey, setSelectedPdfTemplateKey] = useState<string>("proposta_a4");
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [activePdfTab, setActivePdfTab] = useState<"templates" | "fields" | "preview">("templates");
+
   // Current Stage calculations
   const currentStageIdx = stages.findIndex((s) => s.id === formData.status);
   const currentStage = stages[currentStageIdx] || stages[0];
   const nextStage = currentStageIdx < stages.length - 1 ? stages[currentStageIdx + 1] : null;
+
+  // Dynamic Merge Fields Catalog (Pipefy Benchmark: [Campo dinâmico])
+  const dynamicMergeFields = useMemo(() => [
+    { tag: "{{nome_cliente}}", label: "Nome do Cliente", value: formData.name || "Não informado" },
+    { tag: "{{telefone_cliente}}", label: "Telefone do Contato", value: formData.phone || "Não informado" },
+    { tag: "{{email_cliente}}", label: "E-mail do Cliente", value: formData.email || "Não informado" },
+    { tag: "{{destino_viagem}}", label: "Destino da Viagem", value: formData.destination || "A definir" },
+    { tag: "{{tipo_interesse}}", label: "Tipo de Interesse", value: INTEREST_TYPES.find((t) => t.value === formData.interest_type)?.label || "Pacote Completo" },
+    { tag: "{{data_ida}}", label: "Data de Embarque", value: formData.travel_start || "A definir" },
+    { tag: "{{data_volta}}", label: "Data de Retorno", value: formData.travel_end || "A definir" },
+    { tag: "{{passageiros_adultos}}", label: "Passageiros Adultos", value: String(formData.pax_adults || 1) },
+    { tag: "{{passageiros_criancas}}", label: "Crianças", value: String(formData.pax_children || 0) },
+    { tag: "{{total_passageiros}}", label: "Total de Passageiros", value: String((formData.pax_adults || 1) + (formData.pax_children || 0)) },
+    { tag: "{{orcamento_estimado}}", label: "Orçamento Estimado", value: formatMoney(formData.estimated_value_cents || 0) },
+    { tag: "{{etapa_funil}}", label: "Etapa Atual no Pipe", value: currentStage.title },
+    { tag: "{{consultor_responsavel}}", label: "Consultor Responsável", value: team.find((m) => (m.profile_id || m.id) === formData.assigned_to)?.full_name || "Consultor Waesy" },
+    { tag: "{{data_emissao}}", label: "Data de Emissão", value: new Date().toLocaleDateString("pt-BR") },
+  ], [formData, currentStage, team]);
+
+  const PDF_TEMPLATES = [
+    {
+      key: "proposta_a4",
+      title: "Proposta Comercial Executiva A4",
+      description: "Documento oficial de cotação com aéreo, hotel, transfers e condições de pagamento parcelado.",
+      category: "Comercial & Vendas",
+      estimatedPages: "2 Páginas A4",
+    },
+    {
+      key: "contrato_turismo",
+      title: "Contrato de Intermediação Turística",
+      description: "Minuta jurídica canônica com cláusulas de responsabilidade, cancelamento, no-show e aceite digital.",
+      category: "Jurídico & LGPD",
+      estimatedPages: "4 Páginas A4",
+    },
+    {
+      key: "anamnese_embarque",
+      title: "Ficha de Embarque & Anamnese PCD",
+      description: "Ficha médica confidencial com acessibilidade, alergias, contatos de emergência e documentos oficiais.",
+      category: "Operacional & Saúde",
+      estimatedPages: "1 Página A4",
+    },
+    {
+      key: "voucher_resumo",
+      title: "Voucher & Roteiro Resumido",
+      description: "Itinerário dia a dia para envio no WhatsApp do viajante com códigos de reserva e telefones úteis.",
+      category: "Pós-Venda & Embarque",
+      estimatedPages: "2 Páginas A4",
+    },
+  ];
 
   // Phone & WhatsApp formatting
   const cleanPhone = (formData.phone || "").replace(/\D/g, "");
@@ -234,10 +306,12 @@ export function TourismPipeCardDossier({
         health_notes: formData.health_notes,
         checklist_groups: checklistGroups,
         comments: internalComments,
+        attachments: cardAttachments,
       };
 
       await onSaveLead({
         ...formData,
+        attachments: cardAttachments,
         custom_fields: mergedCustomFields,
         checklist: checklistGroups[0]?.items || [],
       });
@@ -246,6 +320,61 @@ export function TourismPipeCardDossier({
       toast.error(err?.message || "Erro ao salvar alterações.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleGenerateAndAttachPdf = async (templateKey: string) => {
+    setIsGeneratingPdf(true);
+    try {
+      const template = PDF_TEMPLATES.find((t) => t.key === templateKey) || PDF_TEMPLATES[0];
+      const newAttachment = {
+        id: `pdf-${Date.now()}`,
+        name: `${template.title} - ${formData.destination || "Roteiro"}.pdf`,
+        url: `/workspace/turismo/propostas`,
+        size: template.estimatedPages,
+        type: "application/pdf",
+        created_at: new Date().toISOString(),
+        templateKey,
+      };
+
+      const updatedAttachments = [newAttachment, ...cardAttachments];
+      setCardAttachments(updatedAttachments);
+
+      // Histórico
+      const newTimelineComment = {
+        id: `comm-${Date.now()}`,
+        author: "Sistema de Documentos",
+        text: `Documento PDF gerado e vinculado ao Card: ${newAttachment.name}`,
+        date: new Date().toLocaleString("pt-BR"),
+      };
+      const updatedComments = [newTimelineComment, ...internalComments];
+      setInternalComments(updatedComments);
+
+      const mergedCustomFields = {
+        ...(lead.custom_fields || {}),
+        pcd: formData.pcd,
+        reduced_mobility: formData.reduced_mobility,
+        autism_spectrum: formData.autism_spectrum,
+        health_notes: formData.health_notes,
+        checklist_groups: checklistGroups,
+        comments: updatedComments,
+        attachments: updatedAttachments,
+      };
+
+      await onSaveLead({
+        ...formData,
+        attachments: updatedAttachments,
+        custom_fields: mergedCustomFields,
+      });
+
+      toast.success(`${template.title} gerado e vinculado aos Anexos do Card!`);
+      setIsPdfModalOpen(false);
+      const el = document.getElementById("section-attachments");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao gerar PDF.");
+    } finally {
+      setIsGeneratingPdf(false);
     }
   };
 
@@ -400,7 +529,7 @@ export function TourismPipeCardDossier({
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden text-foreground">
       {/* ── HEADER SOBERANO DO CARD (PIPEFY STYLE) ── */}
-      <SheetHeader className="px-6 py-4 pr-16 border-b border-border/50 shrink-0 space-y-3 bg-background">
+      <SheetHeader className="px-6 py-4 pr-20 sm:pr-24 border-b border-border/50 shrink-0 space-y-3 bg-background">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Identificação Principal & Título Editável */}
           <div className="flex items-center gap-4 min-w-0">
@@ -539,7 +668,8 @@ export function TourismPipeCardDossier({
               label: `Checklists (${checklistGroups.reduce((acc, g) => acc + g.items.length, 0)})`,
               icon: CheckSquare,
             },
-            { id: "attachments", label: "Anexos & Docs", icon: Paperclip },
+            { id: "attachments", label: `Anexos (${cardAttachments.length})`, icon: Paperclip },
+            { id: "pdf_templates", label: "PDF & Modelos", icon: Printer },
             { id: "presentation", label: "Apresentação IA", icon: Sparkles },
             { id: "proposals", label: `Cotações (${proposals.length})`, icon: CreditCard },
             { id: "meeting", label: "Agenda & Reunião", icon: Calendar },
@@ -559,7 +689,9 @@ export function TourismPipeCardDossier({
                 )}
                 onClick={() => {
                   setActiveSection(item.id);
-                  if (item.id === "presentation") {
+                  if (item.id === "pdf_templates") {
+                    setIsPdfModalOpen(true);
+                  } else if (item.id === "presentation") {
                     handleGeneratePresentation();
                   } else {
                     const el = document.getElementById(`section-${item.id}`);
@@ -894,18 +1026,49 @@ export function TourismPipeCardDossier({
 
             {/* 3. ANEXOS, VOUCHERS & DOCUMENTOS DOS VIAJANTES */}
             <div id="section-attachments" className="p-5 rounded-xl border border-border/60 bg-muted/10 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center justify-between pb-2 border-b border-border/40 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <Paperclip className="size-4 text-primary" />
                   <h3 className="font-bold text-xs uppercase tracking-wide text-foreground">
-                    Anexos & Documentos do Lead
+                    Anexos & Documentos do Lead ({cardAttachments.length})
                   </h3>
                 </div>
-                <span className="text-2xs text-muted-foreground">PDFs, Vouchers, Passaportes</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsPdfModalOpen(true)}
+                    className="h-11 min-h-11 sm:h-8 px-3 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Printer className="size-3.5 text-primary" />
+                    <span>Gerar PDF Modelo</span>
+                  </Button>
+                </div>
               </div>
 
               {/* Dropzone Estilizado */}
-              <div className="border border-dashed border-border/60 rounded-xl p-6 text-center space-y-2 bg-card hover:bg-muted/20 transition-colors cursor-pointer">
+              <label className="border border-dashed border-border/60 rounded-xl p-6 text-center space-y-2 bg-card hover:bg-muted/20 transition-colors cursor-pointer block">
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length === 0) return;
+                    const newItems = files.map((f, i) => ({
+                      id: `upload-${Date.now()}-${i}`,
+                      name: f.name,
+                      size: `${Math.round(f.size / 1024)} KB`,
+                      url: URL.createObjectURL(f),
+                      type: f.type,
+                      created_at: new Date().toISOString(),
+                    }));
+                    const updated = [...newItems, ...cardAttachments];
+                    setCardAttachments(updated);
+                    toast.success(`${files.length} arquivo(s) anexado(s) ao card!`);
+                  }}
+                />
                 <Upload className="size-6 text-muted-foreground mx-auto" />
                 <p className="text-xs font-medium text-foreground">
                   Clique ou arraste arquivos para anexar a este card
@@ -913,12 +1076,12 @@ export function TourismPipeCardDossier({
                 <p className="text-2xs text-muted-foreground">
                   Suporta PDFs de passagens, reservas de hotéis, apólices de seguro e comprovantes
                 </p>
-              </div>
+              </label>
 
               {/* Lista de Documentos Anexados */}
-              {Array.isArray(lead.attachments) && lead.attachments.length > 0 ? (
+              {cardAttachments.length > 0 ? (
                 <div className="space-y-2">
-                  {lead.attachments.map((att: any, idx: number) => (
+                  {cardAttachments.map((att: any, idx: number) => (
                     <div
                       key={att.id || idx}
                       className="p-3 rounded-lg border border-border/50 bg-card flex items-center justify-between text-xs"
@@ -928,15 +1091,30 @@ export function TourismPipeCardDossier({
                         <span className="font-medium text-foreground truncate">{att.name || `Documento #${idx + 1}`}</span>
                         {att.size && <span className="text-2xs font-mono text-muted-foreground">{att.size}</span>}
                       </div>
-                      <a
-                        href={att.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-primary hover:underline font-semibold flex items-center gap-1"
-                      >
-                        <span>Abrir</span>
-                        <ExternalLink className="size-3" />
-                      </a>
+                      <div className="flex items-center gap-2">
+                        {att.url && (
+                          <a
+                            href={att.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-primary hover:underline font-semibold flex items-center gap-1"
+                          >
+                            <span>Abrir</span>
+                            <ExternalLink className="size-3" />
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCardAttachments((prev) => prev.filter((_, i) => i !== idx));
+                            toast.success("Documento removido.");
+                          }}
+                          className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          title="Remover anexo"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1359,6 +1537,231 @@ export function TourismPipeCardDossier({
           </div>
         </div>
       )}
+
+      {/* ── MODAL DE MODELOS DE PDF & CAMPOS DINÂMICOS (PIPEFY BENCHMARK) ── */}
+      <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-screen flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-4 sm:p-6 border-b border-border/40 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Printer className="size-5" />
+              </span>
+              <div>
+                <DialogTitle className="text-base font-bold text-foreground">
+                  Modelos de PDF & Documentos Dinâmicos
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Selecione um modelo para preenchimento automático instantâneo com os dados deste card do funil.
+                </DialogDescription>
+              </div>
+            </div>
+
+            {/* Abas do Modal */}
+            <div className="flex items-center gap-2 pt-3 border-t border-border/30 mt-3">
+              <button
+                type="button"
+                onClick={() => setActivePdfTab("templates")}
+                className={cn(
+                  "h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  activePdfTab === "templates"
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                )}
+              >
+                Modelos Disponíveis ({PDF_TEMPLATES.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePdfTab("fields")}
+                className={cn(
+                  "h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  activePdfTab === "fields"
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                )}
+              >
+                Campos Dinâmicos ({dynamicMergeFields.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePdfTab("preview")}
+                className={cn(
+                  "h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  activePdfTab === "preview"
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                )}
+              >
+                Prévia do Documento
+              </button>
+            </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 [scrollbar-width:thin]">
+            {/* ABA 1: SELETOR DE MODELOS */}
+            {activePdfTab === "templates" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {PDF_TEMPLATES.map((tmpl) => {
+                  const isSelected = selectedPdfTemplateKey === tmpl.key;
+                  return (
+                    <div
+                      key={tmpl.key}
+                      onClick={() => setSelectedPdfTemplateKey(tmpl.key)}
+                      className={cn(
+                        "p-4 rounded-xl border transition-colors cursor-pointer flex flex-col justify-between space-y-3",
+                        isSelected
+                          ? "border-primary bg-muted/40 shadow-2xs"
+                          : "border-border/60 bg-card hover:border-border hover:bg-muted/20"
+                      )}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline" className="text-3xs font-mono border-border/60">
+                            {tmpl.category}
+                          </Badge>
+                          <span className="text-3xs font-mono text-muted-foreground">
+                            {tmpl.estimatedPages}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-foreground">
+                          {tmpl.title}
+                        </h4>
+                        <p className="text-2xs text-muted-foreground leading-relaxed">
+                          {tmpl.description}
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-border/30 flex items-center justify-between text-2xs">
+                        <span className="text-muted-foreground">Autopreenchido</span>
+                        <div className="flex items-center gap-2 text-primary font-bold">
+                          <FileCheck className="size-3.5" />
+                          <span>{isSelected ? "Selecionado" : "Escolher"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ABA 2: EXPLORADOR DE CAMPOS DINÂMICOS (PIPEFY BENCHMARK) */}
+            {activePdfTab === "fields" && (
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg border border-border/50 bg-muted/20 text-xs text-muted-foreground">
+                  Estes campos são extraídos automaticamente do card e das respostas do formulário. Clique para copiar a tag e usar em minutas ou templates personalizados.
+                </div>
+
+                <div className="space-y-2">
+                  {dynamicMergeFields.map((field) => (
+                    <div
+                      key={field.tag}
+                      className="p-3 rounded-lg border border-border/50 bg-card flex items-center justify-between text-xs gap-3"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <code className="text-2xs font-mono font-bold text-primary bg-primary/10 px-2 py-1 rounded">
+                            {field.tag}
+                          </code>
+                          <span className="font-semibold text-foreground text-xs">{field.label}</span>
+                        </div>
+                        <span className="text-2xs text-muted-foreground block truncate mt-1">
+                          Valor atual: <strong className="text-foreground">{field.value}</strong>
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(field.tag);
+                          toast.success(`Tag ${field.tag} copiada!`);
+                        }}
+                        className="h-11 min-h-11 sm:h-8 px-3 text-2xs font-semibold gap-2 cursor-pointer shrink-0"
+                      >
+                        <Copy className="size-3" />
+                        <span>Copiar Tag</span>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ABA 3: PRÉVIA DO DOCUMENTO SIMULADA */}
+            {activePdfTab === "preview" && (
+              <div className="p-6 rounded-xl border border-border/60 bg-card text-foreground space-y-4 max-w-xl mx-auto shadow-2xs font-sans text-xs">
+                <div className="flex items-center justify-between border-b border-border/40 pb-3">
+                  <div>
+                    <h3 className="font-bold text-sm tracking-tight">
+                      {PDF_TEMPLATES.find((t) => t.key === selectedPdfTemplateKey)?.title || "Documento Oficial"}
+                    </h3>
+                    <span className="text-2xs text-muted-foreground">
+                      Waesy Gestão Turística · Emissão: {new Date().toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                  <Badge variant="outline" className="text-2xs font-mono text-primary border-primary/30">
+                    Minuta Dinâmica
+                  </Badge>
+                </div>
+
+                <div className="space-y-3 leading-relaxed text-muted-foreground text-xs">
+                  <p>
+                    <strong className="text-foreground">CONTRATANTE:</strong> {formData.name || "Cliente não informado"}
+                    {formData.phone ? ` · Telefone: ${formData.phone}` : ""}
+                    {formData.email ? ` · E-mail: ${formData.email}` : ""}
+                  </p>
+                  <p>
+                    <strong className="text-foreground">DESTINO & PERÍODO:</strong> {formData.destination || "A definir"}
+                    {formData.travel_start ? ` · Ida: ${formData.travel_start}` : ""}
+                    {formData.travel_end ? ` · Retorno: ${formData.travel_end}` : ""}
+                  </p>
+                  <p>
+                    <strong className="text-foreground">COMPOSIÇÃO DO GRUPO:</strong> {formData.pax_adults} Adulto(s)
+                    {formData.pax_children > 0 ? ` e ${formData.pax_children} Criança(s)` : ""}.
+                  </p>
+                  <p>
+                    <strong className="text-foreground">VALOR ESTIMADO / PACOTE:</strong>{" "}
+                    <span className="font-bold text-foreground font-mono">
+                      {formatMoney(formData.estimated_value_cents || 0)}
+                    </span>
+                  </p>
+                  {formData.notes && (
+                    <div className="p-3 rounded-lg bg-muted/30 border border-border/40 text-2xs">
+                      <strong className="text-foreground block mb-1">Roteiro e Preferências:</strong>
+                      {formData.notes}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-border/40 flex items-center justify-between text-2xs text-muted-foreground">
+                  <span>Assinatura Digital Auditada via Waesy</span>
+                  <span className="font-mono">Página 1 de 2</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="p-4 sm:p-6 border-t border-border/40 bg-muted/10 flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsPdfModalOpen(false)}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Fechar
+            </Button>
+            <Button
+              type="button"
+              disabled={isGeneratingPdf}
+              onClick={() => handleGenerateAndAttachPdf(selectedPdfTemplateKey)}
+              className="h-11 min-h-11 px-5 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Download className="size-3.5" />
+              <span>{isGeneratingPdf ? "Gerando PDF..." : "Gerar e Vincular ao Card (1-Clique)"}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,5 +1,27 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-442: Modelos Dinâmicos de PDF com Merge Tags (Benchmark Pipefy), Alinhamento Soberano do Header de Dossiê e Safe-Area Zero-Clutter
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. Feedback com capturas do Pipefy: necessidade de gerar modelos de PDF com 1 clique (Proposta Comercial A4, Contrato, Ficha de Embarque e Voucher) e explorar campos dinâmicos (`[Campo dinâmico]`) auto-preenchidos a partir das respostas do card.
+  2. Alinhamento e quebra de botões no cabeçalho do dossiê: no mobile/tablet e viewports restritas, o cluster de ações primárias quebrava e colidia com o botão de fechar `<X>`.
+  3. Prevenção de neon e bordas coloridas artificiais: manutenção do piso estrito de superfícies limpas, botões sólidos com contraste WCAG AA e fundos transparentes/neutros.
+  4. Anexos interativos: persistência de uploads e PDFs gerados diretamente na coleção do card com remoção defensiva e abertura direta.
+- **Decisão:**
+  1. **Central de Modelos de PDF & Campos Dinâmicos (`TourismPipeCardDossier.tsx`):**
+     - Integrado botão rápido na barra de ferramentas e na seção de anexos para abrir modal com 4 templates canônicos (Proposta A4, Contrato, Ficha PCD/Anamnese, Voucher Resumido).
+     - Explorador de Campos Dinâmicos (Merge Tags) no estilo Pipefy (`{{nome_cliente}}`, `{{destino_viagem}}`, `{{data_ida}}`, `{{orcamento_estimado}}`, `{{consultor_responsavel}}`, etc.) com cópia em 1 clique.
+     - Ação "Gerar e Vincular ao Card" que interpola os dados, insere no histórico e anexa o documento PDF ao card.
+  2. **Alinhamento Soberano e Deconflito de Header:**
+     - Adicionada folga defensiva `pr-20 sm:pr-24` no `SheetHeader` para garantir safe-area absoluta em relação ao botão de fechar `<X>` do Radix.
+     - Botões com altura mínima canônica de 44px (`h-11 min-h-11`), anéis `:focus-visible` explícitos e sem quebras desordenadas.
+  3. **Conformidade de CI e Ratchet:**
+     - TypeScript: 0 erros de compilação em 2.628 arquivos (`tsc --noEmit` Exit Code 0).
+     - Design Lint Ratchet: Catraca aprovada com 0 violações P0 e 0 regressões.
+     - Build de produção e deploy Cloudflare Pages: Concluído com sucesso (https://4ed5675a.usewaesy.pages.dev / `waesy.com.br`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.11, B.14, B.15, B.22, B.25, B.26.
+- **Consequências:** Paridade com a experiência de documentos rápidos do Pipefy, eliminação de colisões no cabeçalho e integridade total dos anexos.
+
 ## DEC-441: Criador de Propostas Contínuo (Infotravel/PassHub Speed Model), Arquitetura de Dossier 2-Colunas Pipefy/Trello, Apresentações com Inteligência de Vendas e Erradicação de Neons no Workspace
 - **Data:** 2026-11-06
 - **Contexto:**
