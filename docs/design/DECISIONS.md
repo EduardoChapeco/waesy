@@ -1,5 +1,36 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-441: Criador de Propostas Contínuo (Infotravel/PassHub Speed Model), Arquitetura de Dossier 2-Colunas Pipefy/Trello, Apresentações com Inteligência de Vendas e Erradicação de Neons no Workspace
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. O fluxo de criação de propostas em `workspace/turismo` impunha um assistente rígido de 6 etapas que atrasava cotações rápidas e apresentava duplicação de botões primários no dock e rodapé.
+  2. Demanda por paridade com plataformas líderes de mercado (Infotravel e PassHub): modo rápido de tela única contínua com âncoras de navegação direta e importação em 1 clique do catálogo oficial (`TRAVEL_PACKAGE_TEMPLATES`).
+  3. Ficha de lead/dossiê desalinhada: carência de arquitetura estruturada de card (modelo Pipefy/Trello de 2 colunas), onde formulário inicial, checklists operacionais dinâmicos e anexos convivem sem fragmentação em abas isoladas.
+  4. Apresentações comerciais IA enriquecidas: necessidade de gerar inteligência de vendas focada em conversão (requisitos de visto/passaporte por país, previsão de temperatura/clima na época, e economia de câmbio via cartões globais com IOF 1,1%).
+  5. Queixas de "elementos neons" em badges com fundos pesados e bordas saturadas em cards sazonais e navegação.
+- **Decisão:**
+  1. **Modo Rápido no Criador de Propostas (`unified-proposal-workspace.tsx`):**
+     - Trifurcação de visualização: "⚡ Modo Rápido (Tudo em 1 Tela)" ativado por padrão com âncoras canônicas (`#sec-destino`, `#sec-aereo`, `#sec-quartos`, `#sec-opcoes`, `#sec-rodoviario`, `#sec-pagamento`).
+     - Modal de "Puxar do Catálogo" com busca em tempo real e injeção atômica em 1 clique de voos, hotéis, quartos, preços e roteiros dia a dia.
+     - Erradicação de botões duplicados entre dock lateral e barra de rodapé; desestruturação completa e propagação de parcelamentos e exclusões.
+  2. **Arquitetura 2-Colunas Pipefy/Trello no Card CRM (`TourismPipeCardDossier.tsx`):**
+     - Cabeçalho soberano unificado com avatar, fase do funil, dropdown integrado de WhatsApp (abrir conversa, enviar ficha, copiar link) e CTA primário soberano.
+     - Barra de ancoragem (pills) para scroll instantâneo às seções (`#section-form`, `#section-checklists`, `#section-attachments`, `#section-comments`, `#section-proposals`, `#section-meeting`, `#section-customer360`).
+     - Checklists dinâmicos por grupos com contagem de progresso, inclusão de itens via tecla Enter e persistência em `custom_fields`.
+  3. **Apresentação Comercial IA com Inteligência de Vendas (`travel-pre-boarding-and-commissions.functions.ts`):**
+     - Inclusão automática de slides dinâmicos de Visto/Passaporte, Clima/Temperatura média na época e Câmbio/Moeda inteligente por arquétipo (Orlando, Caribe, Europa, Nacional).
+     - Header da apresentação com botão de envio direto por WhatsApp com link formatado.
+  4. **Erradicação de Neons no Workspace (`seasonal-marketing-calendar-widget.tsx`):**
+     - Badges de impacto convertidos de blocos sólidos saturados para tipografia neutra com dot indicador colorido (`size-2 rounded-full`) e fundo transparente.
+  5. **Verificação Mecânica de Qualidade:**
+     - TypeScript: 0 erros de compilação em 2.628 arquivos (`tsc --noEmit` Exit Code 0).
+     - Vitest: 13/13 testes aprovados em conversão de propostas e pacotes.
+     - Design Lint Ratchet: Aprovado sem regressões (0 violações P0, baseline congelada em 793).
+     - Build de Produção: Compilação Vite + SSR + Nitro + wrap-worker concluída com sucesso.
+     - Deploy Cloudflare Pages: Concluído com sucesso (https://8ec58595.usewaesy.pages.dev / `waesy.com.br`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.11, B.22, B.25, B.26, B.28, B.33; skills `anti-ai-design`, `content-density`, `component-api`.
+- **Consequências:** Cotações ágeis em tela única, CRM padronizado no modelo de cards de alta produtividade (Pipefy/Trello), argumentos de vendas enriquecidos por IA e zero ruído visual de neon.
+
 ## DEC-440: Persistência Relacional em Tabelas Supabase com RLS por Papel, Governança de Comissões, Paridade Completa de Propostas/Roteiros e Zero Dados Hardcoded
 - **Data:** 2026-11-05
 - **Contexto:**

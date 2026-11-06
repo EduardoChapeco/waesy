@@ -388,6 +388,204 @@ export function generateDynamicTravelPresentation(
       });
     }
 
+    // ── SLIDE DE DOCUMENTAÇÃO & REQUISITOS DE ENTRADA (INTELIGÊNCIA DE VENDA) ──
+    const entryCards: PreBoardingSlideCard[] = [];
+    if (archetype === "orlando_parques") {
+      entryCards.push(
+        {
+          label: "Passaporte Brasileiro",
+          value: "Válido durante toda a estadia",
+          practicalExplanation: "Exigido para embarque internacional e controle migratório americano.",
+          badge: "OBRIGATÓRIO",
+        },
+        {
+          label: "Visto Americano (B1/B2)",
+          value: "Visto consular emitido",
+          practicalExplanation: "Obrigatório para turismo nos EUA. Nossa assessoria apoia no agendamento consular.",
+          badge: "OBRIGATÓRIO",
+        }
+      );
+    } else if (archetype === "caribe_resort") {
+      entryCards.push(
+        {
+          label: "Passaporte Brasileiro",
+          value: "Validade mínima de 6 meses",
+          practicalExplanation: "Isento de visto consular prévio para brasileiros no Caribe (Punta Cana / Curaçao).",
+          badge: "OBRIGATÓRIO",
+        },
+        {
+          label: "Vacina Febre Amarela (CIVP)",
+          value: "Emitido pela ANVISA / ConecteSUS",
+          practicalExplanation: "Tomar com no mínimo 10 dias de antecedência do embarque.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else if (archetype === "europa_multipais" || archetype === "italia_multicidade") {
+      entryCards.push(
+        {
+          label: "Passaporte Brasileiro",
+          value: "Validade mínima de 6 meses além da volta",
+          practicalExplanation: "Isenção de visto consular para viagens de turismo de até 90 dias no Espaço Schengen.",
+          badge: "OBRIGATÓRIO",
+        },
+        {
+          label: "Seguro Viagem Internacional",
+          value: "Cobertura mínima de € 30.000",
+          practicalExplanation: "Exigência formal do Tratado de Schengen para entrada na Europa.",
+          badge: "OBRIGATÓRIO",
+        }
+      );
+    } else {
+      entryCards.push(
+        {
+          label: "Documento com Foto (RG ou CNH)",
+          value: "Físico ou digital oficial",
+          practicalExplanation: "Para voos e traslados nacionais, aceito em todo o território nacional.",
+          badge: "OBRIGATÓRIO",
+        },
+        {
+          label: "Crianças e Menores de Idade",
+          value: "Certidão de nascimento ou RG",
+          practicalExplanation: "Acompanhados de ambos os pais ou com autorização registrada.",
+          badge: "OBRIGATÓRIO",
+        }
+      );
+    }
+
+    pushPage("entry_requirements", {
+      eyebrow: "Documentação & Requisitos de Viagem",
+      title: "O que você precisa para viajar com tranquilidade",
+      subtitle: `Assessoria completa de embarque inclusa pela ${input.agencyName}`,
+      humanNarrative:
+        "Cuidamos da verificação prévia de todos os seus documentos para que nenhum imprevisto ocorra no dia do embarque.",
+      cards: entryCards,
+    });
+
+    // ── SLIDE DE CLIMA & DICAS SAZONAIS DA ÉPOCA (INTELIGÊNCIA DE VENDA) ──
+    const weatherCards: PreBoardingSlideCard[] = [];
+    if (archetype === "orlando_parques") {
+      weatherCards.push(
+        {
+          label: "Temperatura Média",
+          value: "20°C a 27°C (Clima Ameno a Quente)",
+          practicalExplanation: "Ideal para longas caminhadas nos parques temáticos sem exaustão térmica.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "O que Levar na Mala",
+          value: "Tênis confortável + Casaco leve",
+          practicalExplanation: "Roupas respiráveis de dia e casaco leve para as noites e atrações climatizadas.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else if (archetype === "caribe_resort") {
+      weatherCards.push(
+        {
+          label: "Temperatura Média",
+          value: "26°C a 30°C (Sol & Mar Quente)",
+          practicalExplanation: "Águas mornas e sol pleno para aproveitar as praias e piscinas do resort.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "O que Levar na Mala",
+          value: "Roupas leves e protetor solar",
+          practicalExplanation: "Trajes de banho, chapéu e protetor solar biodegradável para passeios ecológicos.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else if (archetype === "europa_multipais" || archetype === "italia_multicidade") {
+      weatherCards.push(
+        {
+          label: "Estação no Destino",
+          value: "Clima equilibrado para passeios a pé",
+          practicalExplanation: "Centros históricos perfeitos para explorar a pé e fotografar sem aglomeração extrema.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "O que Levar na Mala",
+          value: "Calçado ergonômico + Camadas",
+          practicalExplanation: "Look em camadas (cebola) para adaptar entre ambientes abertos e museus aquecidos.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else {
+      weatherCards.push(
+        {
+          label: "Clima Local",
+          value: "Condições favoráveis para o roteiro",
+          practicalExplanation: "Selecionamos as melhores janelas de viagem para máxima comodidade e lazer.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "O que Levar",
+          value: "Mala versátil para o período",
+          practicalExplanation: "Roupas casuais e calçados confortáveis para passeios diurnos e jantares.",
+          badge: "RECOMENDADO",
+        }
+      );
+    }
+
+    pushPage("weather", {
+      eyebrow: "Clima & Época da Viagem",
+      title: `Como estará o tempo em ${input.destinations[0] || "seu destino"}`,
+      subtitle: `Período planejado: ${input.startDate} a ${input.endDate}`,
+      humanNarrative:
+        "Saber o clima exato da época permite fazer a mala ideal e aproveitar cada atração na melhor hora do dia.",
+      cards: weatherCards,
+    });
+
+    // ── SLIDE DE CÂMBIO & FORMAS DE PAGAMENTO NO DESTINO (INTELIGÊNCIA DE VENDA) ──
+    const currencyCards: PreBoardingSlideCard[] = [];
+    if (archetype === "orlando_parques" || archetype === "caribe_resort") {
+      currencyCards.push(
+        {
+          label: "Moeda no Destino",
+          value: "Dólar Americano (USD)",
+          practicalExplanation: "Aceito amplamente em todos os estabelecimentos, parques e restaurantes.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "Forma de Pagamento Mais Econômica",
+          value: "Cartão de Conta Global (Wise / Nomad)",
+          practicalExplanation: "IOF reduzido de 1,1% (vs 4,38% de cartões de crédito convencionais) e cotação comercial.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else if (archetype === "europa_multipais" || archetype === "italia_multicidade") {
+      currencyCards.push(
+        {
+          label: "Moeda no Destino",
+          value: "Euro (EUR)",
+          practicalExplanation: "Moeda unificada em toda a zona do euro sem necessidade de novas trocas.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "Cartão Internacional & Dinheiro",
+          value: "Conta Global + Pequena quantia em espécie",
+          practicalExplanation: "Uso de aproximação (Apple Pay / Google Pay) é padrão em quase 100% dos locais.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else {
+      currencyCards.push(
+        {
+          label: "Pagamentos Locais",
+          value: "PIX e Cartões de Crédito/Débito",
+          practicalExplanation: "Ampla aceitação digital em todo o território nacional sem custos extras.",
+          badge: "RECOMENDADO",
+        }
+      );
+    }
+
+    pushPage("currency", {
+      eyebrow: "Câmbio & Economia Inteligente",
+      title: "Moeda, Câmbio e Como Economizar no Destino",
+      subtitle: "Dicas práticas da nossa curadoria para suas compras e alimentação",
+      humanNarrative:
+        "Orientamos a melhor estratégia de pagamentos no destino para você não pagar taxas abusivas de IOF nem perder tempo com casas de câmbio caras.",
+      cards: currencyCards,
+    });
+
     pushPage("payments", {
       eyebrow: "Investimento & Condições Comerciais",
       title: "Valores e Parcelamento Planejado",

@@ -69,11 +69,26 @@ export function SeasonalMarketingCalendarWidget({
   const getImpactBadge = (impact: string) => {
     switch (impact) {
       case "extremo":
-        return <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-destructive text-destructive-foreground">Impacto Extremo</span>;
+        return (
+          <span className="inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-bold bg-transparent text-destructive">
+            <span className="size-2 rounded-full bg-destructive shrink-0" />
+            <span>Impacto Extremo</span>
+          </span>
+        );
       case "alto":
-        return <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-warning text-warning-foreground">Pico Comercial</span>;
+        return (
+          <span className="inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-bold bg-transparent text-warning-strong">
+            <span className="size-2 rounded-full bg-warning-strong shrink-0" />
+            <span>Pico Comercial</span>
+          </span>
+        );
       default:
-        return <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-muted text-muted-foreground">Oportunidade</span>;
+        return (
+          <span className="inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-medium bg-transparent text-muted-foreground">
+            <span className="size-2 rounded-full bg-muted-foreground/60 shrink-0" />
+            <span>Oportunidade</span>
+          </span>
+        );
     }
   };
 
@@ -171,7 +186,10 @@ export function SeasonalMarketingCalendarWidget({
               <div className="flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground">
                 <span>{item.date.split("-").reverse().slice(0, 2).join("/")}</span>
                 {item.commercial_impact === "extremo" ? (
-                  <span className="text-destructive font-bold text-xs">Pico Máximo</span>
+                  <span className="text-destructive font-bold text-xs inline-flex items-center gap-1">
+                    <span className="size-1 rounded-full bg-destructive shrink-0" />
+                    <span>Pico Máximo</span>
+                  </span>
                 ) : (
                   <span className="text-xs">Comercial</span>
                 )}

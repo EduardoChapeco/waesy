@@ -561,6 +561,11 @@ export function TourismPipeCardDossier({
                   setActiveSection(item.id);
                   if (item.id === "presentation") {
                     handleGeneratePresentation();
+                  } else {
+                    const el = document.getElementById(`section-${item.id}`);
+                    if (el) {
+                      el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
                   }
                 }}
               >
@@ -1076,7 +1081,7 @@ export function TourismPipeCardDossier({
             </div>
 
             {/* COTAÇÕES & PROPOSTAS CONECTADAS */}
-            <div className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
+            <div id="section-proposals" className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
               <div className="flex items-center justify-between pb-1 border-b border-border/40">
                 <span className="font-bold text-xs uppercase tracking-wide text-foreground">
                   Cotações Vinculadas ({proposals.length})
@@ -1127,7 +1132,7 @@ export function TourismPipeCardDossier({
             </div>
 
             {/* AGENDAMENTO RÁPIDO DE REUNIÃO */}
-            <div className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
+            <div id="section-meeting" className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
               <div className="flex items-center gap-2 pb-1 border-b border-border/40">
                 <Calendar className="size-4 text-primary" />
                 <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">
@@ -1178,7 +1183,7 @@ export function TourismPipeCardDossier({
             </div>
 
             {/* CLIENTE 360° VINCULADO */}
-            <div className="p-4 rounded-xl border border-border/60 bg-card space-y-2">
+            <div id="section-customer360" className="p-4 rounded-xl border border-border/60 bg-card space-y-2">
               <div className="flex items-center justify-between pb-1 border-b border-border/40">
                 <span className="font-bold text-xs uppercase tracking-wide text-foreground">
                   Cliente Carteira 360°
@@ -1226,20 +1231,39 @@ export function TourismPipeCardDossier({
         <div className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4">
           <div className="w-full max-w-4xl bg-card rounded-2xl border border-border/60 shadow-overlay overflow-hidden flex flex-col max-h-overlay-max">
             {/* Header da Apresentação */}
-            <div className="p-4 border-b border-border/50 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-primary" />
-                <span className="font-bold text-sm text-foreground">
+            <div className="p-4 border-b border-border/50 flex items-center justify-between shrink-0 gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Sparkles className="size-4 text-primary shrink-0" />
+                <span className="font-bold text-sm text-foreground truncate">
                   Apresentação Comercial IA · Slide {activeSlideIndex + 1} de {generatedPresentation.pages.length}
                 </span>
               </div>
-              <button
-                type="button"
-                className="size-11 min-h-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                onClick={() => setPresentationModalOpen(false)}
-              >
-                <X className="size-4" />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (!cleanPhone) {
+                      toast.error("Lead sem telefone cadastrado.");
+                      return;
+                    }
+                    const text = `Olá, ${formData.name.split(" ")[0]}! Preparamos uma apresentação exclusiva da sua viagem para ${formData.destination || "seu destino dos sonhos"}.\n\nConfira todos os detalhes de voos, hotéis, clima na época e dicas de câmbio: ${window.location.origin}/workspace/turismo/propostas`;
+                    window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`, "_blank");
+                  }}
+                  className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+                >
+                  <MessageSquare className="size-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">Enviar por WhatsApp</span>
+                </Button>
+                <button
+                  type="button"
+                  className="size-11 min-h-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  onClick={() => setPresentationModalOpen(false)}
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
             </div>
 
             {/* Slide Viewer (16:9 Aspect Ratio) */}
