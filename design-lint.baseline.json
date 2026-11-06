@@ -1,31 +1,31 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-06T00:31:49.965Z",
-  "totalViolations": 858,
-  "filesInspected": 2627,
-  "filesWithViolations": 239,
+  "timestamp": "2026-11-06T02:45:50.633Z",
+  "totalViolations": 793,
+  "filesInspected": 2628,
+  "filesWithViolations": 238,
   "bySeverity": {
     "P0": 0,
-    "P1": 825,
-    "P2": 28,
-    "P3": 5
+    "P1": 765,
+    "P2": 24,
+    "P3": 4
   },
   "byRule": {
     "DL-02": 138,
-    "DL-18": 61,
+    "DL-18": 59,
     "DL-05": 43,
     "DL-01": 397,
     "DL-13": 9,
     "DL-12": 26,
     "DL-11": 15,
-    "DL-03": 83,
-    "DL-33": 18,
-    "DL-14": 32,
+    "DL-03": 48,
+    "DL-33": 14,
+    "DL-14": 13,
     "DL-25": 1,
     "DL-28": 3,
-    "DL-29": 2,
-    "DL-30": 3,
-    "DL-07": 20,
+    "DL-29": 1,
+    "DL-30": 2,
+    "DL-07": 17,
     "DL-23": 5,
     "DL-27": 2
   },
@@ -45,9 +45,9 @@
       "P3": 0
     },
     "components/tourism": {
-      "total": 149,
+      "total": 143,
       "P0": 0,
-      "P1": 128,
+      "P1": 122,
       "P2": 17,
       "P3": 4
     },
@@ -87,11 +87,11 @@
       "P3": 0
     },
     "routes/workspace": {
-      "total": 114,
+      "total": 55,
       "P0": 0,
-      "P1": 109,
-      "P2": 4,
-      "P3": 1
+      "P1": 55,
+      "P2": 0,
+      "P3": 0
     },
     "routes/store": {
       "total": 36,

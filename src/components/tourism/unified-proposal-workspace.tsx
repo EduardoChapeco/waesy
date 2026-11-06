@@ -29,6 +29,10 @@ import {
   Sparkles,
   ArrowLeftRight,
   Clock,
+  Package,
+  Zap,
+  Layers,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -39,6 +43,13 @@ import {
   SheetDescription,
   SheetFooter,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,7 +79,7 @@ import {
   type InfoTravelOperatorSlug,
 } from "@/services/infotravel";
 import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal-share-whatsapp-modal";
-import { TRAVEL_PACKAGE_TEMPLATES } from "@/lib/tourism/tourism-templates";
+import { TRAVEL_PACKAGE_TEMPLATES, type TravelPackageTemplate } from "@/lib/tourism/tourism-templates";
 
 export interface UnifiedProposalWorkspaceLead {
   id: string;
@@ -159,6 +170,9 @@ export function UnifiedProposalWorkspace({
 
   const [stepTab, setStepTab] = useState<"destino" | "aereo" | "quartos" | "opcoes" | "rodoviario" | "pagamento">("destino");
   const [quoteSourceMode, setQuoteSourceMode] = useState<"manual_ocr" | "infotravel_api">("manual_ocr");
+  const [builderViewMode, setBuilderViewMode] = useState<"quick_canvas" | "wizard">("quick_canvas");
+  const [showCatalogModal, setShowCatalogModal] = useState(false);
+  const [catalogSearchQuery, setCatalogSearchQuery] = useState("");
 
   // Dados do Lead / Cliente
   const effectiveLeadId = lead?.id || initialLeadId || "";
@@ -431,6 +445,120 @@ export function UnifiedProposalWorkspace({
   const [notes, setNotes] = useState("");
   const [infotravelOperatorFilter, setInfotravelOperatorFilter] = useState<InfoTravelOperatorSlug>("infotravel_default");
   const [isSearchingInfotravel, setIsSearchingInfotravel] = useState(false);
+
+  const filteredCatalogPackages = useMemo(() => {
+    const q = catalogSearchQuery.trim().toLowerCase();
+    if (!q) return TRAVEL_PACKAGE_TEMPLATES;
+    return TRAVEL_PACKAGE_TEMPLATES.filter(
+      (pkg) =>
+        pkg.title.toLowerCase().includes(q) ||
+        pkg.destinationCity.toLowerCase().includes(q) ||
+        pkg.subtitle?.toLowerCase().includes(q) ||
+        pkg.includes?.some((inc) => inc.toLowerCase().includes(q))
+    );
+  }, [catalogSearchQuery]);
+
+  const handleApplyCatalogPackage = (pkg: TravelPackageTemplate) => {
+    const cleanCity = sanitizeDestinationString(pkg.destinationCity);
+    setDestinationQuery(cleanCity);
+    setCustomTitle(pkg.title);
+    if (pkg.templateTheme) setTemplateTheme(pkg.templateTheme);
+    if (pkg.canvasFormat) setCanvasFormat(pkg.canvasFormat);
+
+    if (Array.isArray(pkg.flights) && pkg.flights.length > 0) {
+      setProposalFlights(
+        pkg.flights.map((f: any, idx: number) => ({
+          id: f.id || `fl-pkg-${Date.now()}-${idx}`,
+          leg: f.type === "return" ? "volta" : "ida",
+          airline: f.airline_name || f.airline || "",
+          flight_number: f.flight_number || "",
+          origin_iata: f.origin_iata || originCity || "",
+          origin_city: f.origin_city || originCity || "",
+          destination_iata: f.destination_iata || "",
+          destination_city: f.destination_city || cleanCity,
+          departure_date: departureDate,
+          departure_time: f.departure_time || "08:00",
+          arrival_time: f.arrival_time || "11:30",
+          baggage_included: f.baggage_included || "Mochila + Mala 10kg",
+          stops_count: f.stops_count || 0,
+        }))
+      );
+    }
+
+    if (Array.isArray(pkg.hotels) && pkg.hotels.length > 0) {
+      const mainH = pkg.hotels[0];
+      setBundleOptions([
+        {
+          optionLabel: "Opção Padrão do Pacote",
+          hotelName: (mainH as any).hotel_name || (mainH as any).name || pkg.title,
+          airlineDesc: pkg.flights?.[0]?.airline_name || "Aéreo Incluso",
+          operatorSlug: "",
+          adultPriceCents: Math.round(pkg.suggestedPriceCents / Math.max(1, pkg.defaultAdults)),
+          isRecommended: true,
+        },
+      ]);
+      setHotelQuery((mainH as any).hotel_name || (mainH as any).name || "");
+    }
+
+    if (pkg.suggestedPriceCents > 0) {
+      const rate = Math.round(pkg.suggestedPriceCents / Math.max(1, pkg.defaultAdults));
+      setRooms([
+        {
+          roomNumber: 1,
+          roomLabel: "Quarto 1 - Casal",
+          roomCategory: "Standard Double",
+          mealPlan: "Café da Manhã",
+          adultsCount: pkg.defaultAdults || 2,
+          childrenCount: pkg.defaultChildren || 0,
+          childrenAges: [],
+          baseAdultPriceCents: rate,
+          baseChildPriceCents: 0,
+          addons: [],
+          payerName: clientName || "",
+        },
+      ]);
+    }
+
+    if (Array.isArray(pkg.itinerary) && pkg.itinerary.length > 0) {
+      setProposalItinerary(
+        pkg.itinerary.map((d: any, idx: number) => ({
+          day: d.day || idx + 1,
+          title: d.title || `Dia ${idx + 1}`,
+          description: d.description || "",
+          meals: d.meals || "Café da Manhã",
+        }))
+      );
+    }
+
+    if (Array.isArray(pkg.includes) && pkg.includes.length > 0) {
+      setSelectedInclusions(pkg.includes);
+    }
+    if (Array.isArray(pkg.excludes) && pkg.excludes.length > 0) {
+      setSelectedExclusions(pkg.excludes);
+    }
+
+    if (Array.isArray(pkg.transfers) && pkg.transfers.length > 0) {
+      setProposalTransfers(
+        pkg.transfers.map((t: any) => ({
+          type: t.type || "Transfer In/Out",
+          vehicle: t.vehicle || (t as any).vehicle_type || "Transporte Executivo",
+          date: departureDate,
+          notes: t.notes || (t as any).description || "",
+        }))
+      );
+    }
+
+    setSelectedPackageTemplateId(pkg.id);
+    setShowCatalogModal(false);
+    toast.success(`Pacote "${pkg.title}" aplicado na proposta!`);
+  };
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   // Fornecedores & Operadoras Cadastradas na Agência (Sem Mocks Hardcoded)
   const { data: rawRegisteredSuppliers = [] } = useQuery({
@@ -1558,7 +1686,16 @@ export function UnifiedProposalWorkspace({
         hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt) => ({
           hotel_name: opt.hotelName,
         })),
-        itinerary: matchedPkgTemplate?.itinerary || [],
+        itinerary: (proposalItinerary.length > 0 ? proposalItinerary : (matchedPkgTemplate?.itinerary || [])).map(
+          (d: any, idx: number) => ({
+            id: d.id || `day-${idx + 1}`,
+            day_number: d.day_number ?? d.day ?? idx + 1,
+            day: d.day ?? d.day_number ?? idx + 1,
+            title: d.title || `Dia ${idx + 1}`,
+            description: d.description || "",
+            meals: d.meals || "",
+          })
+        ),
         transfers: proposalTransfers.length > 0 ? proposalTransfers : ((matchedPkgTemplate?.transfers || []).map((t: any) => ({
           type: t.type,
           vehicle: t.vehicle || t.vehicle_type,
@@ -1574,7 +1711,7 @@ export function UnifiedProposalWorkspace({
           childrenAges: room.childrenAges,
         })),
         includes: selectedInclusions,
-        excludes: [],
+        excludes: selectedExclusions.length > 0 ? selectedExclusions : (matchedPkgTemplate?.excludes || []),
         pricing: {
           currency,
           base_price_cents: calculation.grandBaseCents,
@@ -1582,7 +1719,26 @@ export function UnifiedProposalWorkspace({
           other_taxes_cents: 0,
           discount_cents: 0,
           total_price_cents: calculation.grandTotalCents,
-          installments_options: [],
+          installments_options: [
+            ...(enableCard ? [{
+              installments_count: cardInstallments,
+              installment_value_cents: calculation.campaignSummary.cardMonthlyInstallmentCents,
+              method: "credit_card",
+              has_interest: false,
+            }] : []),
+            ...(enableBoleto ? [{
+              installments_count: boletoInstallments,
+              installment_value_cents: calculation.campaignSummary.boletoMonthlyInstallmentCents,
+              method: "boleto",
+              has_interest: false,
+            }] : []),
+            ...(enablePixDiscount ? [{
+              installments_count: 1,
+              installment_value_cents: Math.round(calculation.grandTotalCents * (1 - pixDiscountPct / 100)),
+              method: "pix",
+              has_interest: false,
+            }] : []),
+          ],
         },
         status: "draft",
         created_at: new Date().toISOString(),
@@ -1645,8 +1801,19 @@ export function UnifiedProposalWorkspace({
                 </div>
               </div>
 
-              {/* Gatilho OCR Rápido */}
+              {/* Gatilho OCR & Catálogo Rápido */}
               <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCatalogModal(true)}
+                  className="h-11 min-h-11 px-3 text-xs gap-2 font-medium"
+                  title="Puxar pacote ou roteiro pré-configurado do catálogo"
+                >
+                  <Package className="size-3.5 text-primary" />
+                  <span className="hidden sm:inline">Puxar do Catálogo</span>
+                </Button>
                 <input
                   type="file"
                   ref={ocrFileInputRef}
@@ -1733,86 +1900,174 @@ export function UnifiedProposalWorkspace({
               </div>
             )}
 
-            {/* Abas do Fluxo Canônico PassHub / Infotravel */}
-            <div className="flex items-center gap-1 mt-4 overflow-x-auto scroll-area-carousel no-scrollbar border-b border-border/30 pb-2">
-              <button
-                type="button"
-                onClick={() => setStepTab("destino")}
-                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  stepTab === "destino"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
-              >
-                <MapPin className="size-3.5" />
-                <span>1. Destino & Pacote</span>
-              </button>
+            {/* Seletor de Modo: Modo Rápido (Tudo em 1 Tela) vs Passo a Passo */}
+            <div className="flex items-center justify-between gap-2 mt-4 pt-2 border-t border-border/30">
+              <div className="inline-flex items-center p-1 rounded-lg bg-muted/60 border border-border/40">
+                <button
+                  type="button"
+                  onClick={() => setBuilderViewMode("quick_canvas")}
+                  className={`h-11 min-h-11 px-3 rounded-md text-xs font-semibold transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    builderViewMode === "quick_canvas"
+                      ? "bg-background text-foreground shadow-xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Zap className="size-3 text-primary" />
+                  <span>Modo Rápido (Tudo em 1 Tela)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBuilderViewMode("wizard")}
+                  className={`h-11 min-h-11 px-3 rounded-md text-xs font-semibold transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    builderViewMode === "wizard"
+                      ? "bg-background text-foreground shadow-xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Layers className="size-3 text-primary" />
+                  <span>Passo a Passo (6 Etapas)</span>
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setStepTab("aereo")}
-                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  stepTab === "aereo"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
-              >
-                <Plane className="size-3.5" />
-                <span>2. Voos & Aéreo ({proposalFlights.length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStepTab("quartos")}
-                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  stepTab === "quartos"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
-              >
-                <Building2 className="size-3.5" />
-                <span>3. Quartos ({rooms.length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStepTab("opcoes")}
-                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  stepTab === "opcoes"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
-              >
-                <Tag className="size-3.5" />
-                <span>4. Hotéis & Inclusões</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStepTab("rodoviario")}
-                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  stepTab === "rodoviario"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
-              >
-                <Bus className="size-3.5" />
-                <span>5. Rodoviário & Ônibus</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStepTab("pagamento")}
-                className={`h-11 min-h-11 px-3.5 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  stepTab === "pagamento"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
-              >
-                <CreditCard className="size-3.5" />
-                <span>6. Condições & Operadora</span>
-              </button>
+              <span className="text-2xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary hidden sm:inline-flex items-center gap-1">
+                <Zap className="size-3 text-primary" />
+                <span>Padrão PassHub / Infotravel</span>
+              </span>
             </div>
+
+            {/* Navegação Rápida (Pills de Salto no Modo Rápido ou Abas no Modo Wizard) */}
+            {builderViewMode === "quick_canvas" ? (
+              <div className="flex items-center gap-2 mt-2 overflow-x-auto scroll-area-carousel no-scrollbar border-b border-border/30 pb-2">
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("sec-destino")}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <MapPin className="size-3 text-primary" />
+                  <span>1. Destino & Pax</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("sec-aereo")}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Plane className="size-3 text-primary" />
+                  <span>2. Voos ({proposalFlights.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("sec-quartos")}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Building2 className="size-3 text-primary" />
+                  <span>3. Quartos ({rooms.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("sec-opcoes")}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Tag className="size-3 text-primary" />
+                  <span>4. Hotéis & Inclusões</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("sec-rodoviario")}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Bus className="size-3 text-primary" />
+                  <span>5. Rodoviário & Roteiro ({proposalItinerary.length}d)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("sec-pagamento")}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-medium bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <CreditCard className="size-3 text-primary" />
+                  <span>6. Condições & Template</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 mt-2 overflow-x-auto scroll-area-carousel no-scrollbar border-b border-border/30 pb-2">
+                <button
+                  type="button"
+                  onClick={() => setStepTab("destino")}
+                  className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    stepTab === "destino"
+                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  }`}
+                >
+                  <MapPin className="size-3.5" />
+                  <span>1. Destino & Pacote</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStepTab("aereo")}
+                  className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    stepTab === "aereo"
+                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  }`}
+                >
+                  <Plane className="size-3.5" />
+                  <span>2. Voos & Aéreo ({proposalFlights.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStepTab("quartos")}
+                  className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    stepTab === "quartos"
+                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  }`}
+                >
+                  <Building2 className="size-3.5" />
+                  <span>3. Quartos ({rooms.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStepTab("opcoes")}
+                  className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    stepTab === "opcoes"
+                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  }`}
+                >
+                  <Tag className="size-3.5" />
+                  <span>4. Hotéis & Inclusões</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStepTab("rodoviario")}
+                  className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    stepTab === "rodoviario"
+                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  }`}
+                >
+                  <Bus className="size-3.5" />
+                  <span>5. Rodoviário & Ônibus</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStepTab("pagamento")}
+                  className={`h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors shrink-0 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    stepTab === "pagamento"
+                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  }`}
+                >
+                  <CreditCard className="size-3.5" />
+                  <span>6. Condições & Operadora</span>
+                </button>
+              </div>
+            )}
           </SheetHeader>
 
           {/* Conteúdo com Rolagem */}
@@ -1864,8 +2119,19 @@ export function UnifiedProposalWorkspace({
             )}
 
             {/* ETAPA 1: DESTINO & DATAS */}
-            {stepTab === "destino" && (
-              <div className="space-y-4">
+            {(builderViewMode === "quick_canvas" || stepTab === "destino") && (
+              <div id="sec-destino" className="space-y-4">
+                {builderViewMode === "quick_canvas" && (
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-foreground flex items-center gap-2">
+                      <MapPin className="size-4 text-primary" />
+                      <span>1. Destino, Passageiro & Datas</span>
+                    </h3>
+                    <Badge variant="outline" className="text-2xs font-mono">
+                      Etapa 1
+                    </Badge>
+                  </div>
+                )}
                 {/* Vínculo Inteligente com CRM + Criação Inline de Cliente */}
                 <div className="p-3 rounded-lg bg-muted/30 border border-border/60 space-y-3">
                   <div className="flex items-center justify-between gap-2">
@@ -2031,8 +2297,8 @@ export function UnifiedProposalWorkspace({
             )}
 
             {/* ETAPA 2: MALHA AÉREA & VOOS (PASSHUB / INFOTRAVEL) */}
-            {stepTab === "aereo" && (
-              <div className="space-y-4">
+            {(builderViewMode === "quick_canvas" || stepTab === "aereo") && (
+              <div id="sec-aereo" className={`space-y-4 ${builderViewMode === "quick_canvas" ? "pt-6 border-t border-border/40" : ""}`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xs font-bold uppercase tracking-wide text-foreground flex items-center gap-2">
@@ -2180,9 +2446,9 @@ export function UnifiedProposalWorkspace({
               </div>
             )}
 
-            {/* ETAPA 2: QUARTOS & OCUPAÇÃO */}
-            {stepTab === "quartos" && (
-              <div className="space-y-4">
+            {/* ETAPA 3: QUARTOS & OCUPAÇÃO */}
+            {(builderViewMode === "quick_canvas" || stepTab === "quartos") && (
+              <div id="sec-quartos" className={`space-y-4 ${builderViewMode === "quick_canvas" ? "pt-6 border-t border-border/40" : ""}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground">
                     Configuração de Quartos ({rooms.length})
@@ -2447,9 +2713,20 @@ export function UnifiedProposalWorkspace({
               </div>
             )}
 
-            {/* ETAPA 3: INCLUSÕES & HOTÉIS */}
-            {stepTab === "opcoes" && (
-              <div className="space-y-4">
+            {/* ETAPA 4: INCLUSÕES & HOTÉIS */}
+            {(builderViewMode === "quick_canvas" || stepTab === "opcoes") && (
+              <div id="sec-opcoes" className={`space-y-4 ${builderViewMode === "quick_canvas" ? "pt-6 border-t border-border/40" : ""}`}>
+                {builderViewMode === "quick_canvas" && (
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-foreground flex items-center gap-2">
+                      <Tag className="size-4 text-primary" />
+                      <span>4. Hospedagem, Opções de Hotel & Inclusões</span>
+                    </h3>
+                    <Badge variant="outline" className="text-2xs font-mono">
+                      {selectedInclusions.length} Inclusões
+                    </Badge>
+                  </div>
+                )}
                 {/* Autocomplete de Hotéis */}
                 <div className="space-y-2 relative">
                   <Label className="text-xs font-medium text-foreground">Buscar no Banco de Hotéis Parceiros</Label>
@@ -2716,8 +2993,8 @@ export function UnifiedProposalWorkspace({
             )}
 
             {/* ETAPA 5: RODOVIÁRIO & TRANSPORTE TERRESTRE (INFOTRAVEL / GRUPOS) */}
-            {stepTab === "rodoviario" && (
-              <div className="space-y-4">
+            {(builderViewMode === "quick_canvas" || stepTab === "rodoviario") && (
+              <div id="sec-rodoviario" className={`space-y-4 ${builderViewMode === "quick_canvas" ? "pt-6 border-t border-border/40" : ""}`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xs font-bold uppercase tracking-wide text-foreground flex items-center gap-2">
@@ -2916,9 +3193,20 @@ export function UnifiedProposalWorkspace({
               </div>
             )}
 
-            {/* ETAPA 4: CONDIÇÕES & FORNECEDOR (100% PERSONALIZÁVEL) */}
-            {stepTab === "pagamento" && (
-              <div className="space-y-5">
+            {/* ETAPA 6: CONDIÇÕES & FORNECEDOR (100% PERSONALIZÁVEL) */}
+            {(builderViewMode === "quick_canvas" || stepTab === "pagamento") && (
+              <div id="sec-pagamento" className={`space-y-5 ${builderViewMode === "quick_canvas" ? "pt-6 border-t border-border/40" : ""}`}>
+                {builderViewMode === "quick_canvas" && (
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-foreground flex items-center gap-2">
+                      <CreditCard className="size-4 text-primary" />
+                      <span>6. Condições Comerciais, Fornecedor & Template</span>
+                    </h3>
+                    <Badge variant="outline" className="text-2xs font-mono">
+                      Fechamento
+                    </Badge>
+                  </div>
+                )}
                 {/* 1. Operadora / Fornecedor */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -3487,7 +3775,7 @@ export function UnifiedProposalWorkspace({
                     variant="outline"
                     onClick={() => saveProposalMutation.mutate({ openStudioAfterSave: false })}
                     disabled={saveProposalMutation.isPending}
-                    className="w-full h-11 text-xs font-semibold gap-2 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                    className="w-full h-11 text-xs font-semibold gap-2 border-border text-emerald-600 hover:bg-muted cursor-pointer"
                   >
                     <Send className="size-4 text-emerald-600" />
                     <span>Salvar & WhatsApp</span>
@@ -3500,7 +3788,7 @@ export function UnifiedProposalWorkspace({
           {/* Rodapé de Ações com Toque 44px */}
           <SheetFooter className="p-4 sm:p-6 border-t border-border/40 shrink-0 bg-background flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              {stepTab !== "destino" && (
+              {builderViewMode === "wizard" && stepTab !== "destino" && (
                 <Button
                   type="button"
                   variant="outline"
@@ -3517,7 +3805,7 @@ export function UnifiedProposalWorkspace({
                 </Button>
               )}
 
-              {stepTab !== "pagamento" && (
+              {builderViewMode === "wizard" && stepTab !== "pagamento" && (
                 <Button
                   type="button"
                   onClick={() => {
@@ -3533,9 +3821,21 @@ export function UnifiedProposalWorkspace({
                   <ArrowRight className="size-3.5" />
                 </Button>
               )}
+
+              {builderViewMode === "quick_canvas" && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Badge variant="outline" className="text-2xs font-mono">
+                    {calculation.totalPassengers} passageiros ({calculation.totalAdults} ADT{calculation.totalChildren > 0 ? ` + ${calculation.totalChildren} CHD` : ""})
+                  </Badge>
+                  <span className="hidden sm:inline font-mono">
+                    Total: <strong className="text-foreground">{formatMoney(calculation.grandTotalCents)}</strong>
+                  </span>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            {/* Ações primárias no rodapé visíveis apenas no mobile/tablet (< xl), evitando duplicação com o dock no desktop */}
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end xl:hidden">
               <Button
                 type="button"
                 variant="outline"
@@ -3568,6 +3868,96 @@ export function UnifiedProposalWorkspace({
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      {/* Modal de Importação Rápida de Pacote / Roteiro do Catálogo */}
+      <Dialog open={showCatalogModal} onOpenChange={setShowCatalogModal}>
+        <DialogContent className="sm:max-w-3xl max-h-screen flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-4 sm:p-6 border-b border-border/40 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Package className="size-4" />
+              </span>
+              <div>
+                <DialogTitle className="text-base font-bold text-foreground">
+                  Catálogo de Pacotes & Roteiros Prontos
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Selecione um roteiro ou pacote para preencher automaticamente voos, hotéis, inclusões, itinerário e preços na proposta.
+                </DialogDescription>
+              </div>
+            </div>
+            <div className="mt-3 relative">
+              <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={catalogSearchQuery}
+                onChange={(e) => setCatalogSearchQuery(e.target.value)}
+                placeholder="Buscar por destino, roteiro, atração (ex: Gramado, Maceió, Paris, Disney)..."
+                className="pl-9 h-11 text-xs rounded-lg"
+              />
+            </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
+            {filteredCatalogPackages.length === 0 ? (
+              <div className="p-8 text-center rounded-lg border border-dashed border-border/60 text-muted-foreground text-xs space-y-1">
+                <Package className="size-8 mx-auto opacity-40 mb-2" />
+                <p className="font-semibold text-foreground">Nenhum pacote encontrado para a busca.</p>
+                <p>Tente outro termo ou limpe a busca para ver todos os modelos.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredCatalogPackages.map((pkg) => (
+                  <div
+                    key={pkg.id}
+                    className="p-4 rounded-xl border border-border/60 bg-card hover:border-primary/50 transition-colors flex flex-col justify-between space-y-2"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="outline" className="text-2xs font-bold text-primary border-primary/30">
+                          {pkg.badge || "Pacote Completo"}
+                        </Badge>
+                        <span className="text-2xs font-mono text-muted-foreground">
+                          {pkg.durationDays}D / {pkg.durationNights || pkg.durationDays - 1}N
+                        </span>
+                      </div>
+                      <h4 className="text-xs font-bold text-foreground line-clamp-1">
+                        {pkg.title}
+                      </h4>
+                      <p className="text-2xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="size-3 text-primary shrink-0" />
+                        <span>{pkg.destinationCity}</span>
+                      </p>
+                      {pkg.includes && pkg.includes.length > 0 && (
+                        <p className="text-3xs text-muted-foreground line-clamp-2 leading-relaxed">
+                          Inclui: {pkg.includes.slice(0, 3).join(", ")}{pkg.includes.length > 3 ? "..." : ""}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="pt-2 border-t border-border/30 flex items-center justify-between gap-2">
+                      <div>
+                        <span className="text-3xs text-muted-foreground block">A partir de</span>
+                        <span className="text-xs font-bold font-mono text-foreground">
+                          {formatMoney(pkg.suggestedPriceCents || 0)}
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => handleApplyCatalogPackage(pkg)}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Sparkles className="size-3" />
+                        <span>Aplicar na Proposta</span>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de Disparo WhatsApp Integrado */}
       {createdProposalForWhatsapp && (

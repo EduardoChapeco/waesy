@@ -1,13 +1,13 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-06T02:09:04.482Z",
+  "timestamp": "2026-11-06T02:45:50.637Z",
   "inspectedFiles": 2628,
-  "totalViolations": 799,
+  "totalViolations": 793,
   "summary": {
-    "totalViolations": 799,
+    "totalViolations": 793,
     "bySeverity": {
       "P0": 0,
-      "P1": 771,
+      "P1": 765,
       "P2": 24,
       "P3": 4
     },
@@ -19,7 +19,7 @@
       "DL-13": 9,
       "DL-12": 26,
       "DL-11": 15,
-      "DL-03": 54,
+      "DL-03": 48,
       "DL-33": 14,
       "DL-14": 13,
       "DL-25": 1,
@@ -46,9 +46,9 @@
         "P3": 0
       },
       "components/tourism": {
-        "total": 149,
+        "total": 143,
         "P0": 0,
-        "P1": 128,
+        "P1": 122,
         "P2": 17,
         "P3": 4
       },
