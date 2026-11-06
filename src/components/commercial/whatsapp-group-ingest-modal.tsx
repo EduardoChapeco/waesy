@@ -125,10 +125,10 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
                   <span className="text-sm font-semibold text-foreground">
-                    Workspace Habilitado: Excelência Tour SMO
+                    Workspace Habilitado: {status.storeName || "Excelência Tour SMO"}
                   </span>
                   <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
-                    Exclusivo
+                    {status.isAdminMasterBypass ? "Admin Master" : "Exclusivo"}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">

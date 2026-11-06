@@ -34,8 +34,39 @@ export function hashToken(token: string): string {
 }
 
 /**
+ * Identifica se a loja é a Excelência Tour (São Miguel do Oeste e variantes de slug/nome).
+ */
+export function isExcelenciaTourStore(store?: {
+  name?: string | null;
+  slug?: string | null;
+  city?: string | null;
+} | null): boolean {
+  if (!store) return false;
+  const name = (store.name || "").toLowerCase();
+  const slug = (store.slug || "").toLowerCase();
+  const city = (store.city || "").toLowerCase();
+
+  const isExcelenciaSlug =
+    slug.startsWith("excelencia-tour") ||
+    slug.includes("excelencia") ||
+    slug === "excelencia-tour-smo" ||
+    slug === "excelencia-tour-sao-miguel-do-oeste";
+
+  const isExcelenciaName =
+    name.includes("excelência tour") ||
+    name.includes("excelencia tour");
+
+  const isExcelenciaInSmo =
+    (name.includes("excelencia") || slug.includes("excelencia")) &&
+    (city.includes("miguel") || name.includes("miguel") || slug.includes("smo"));
+
+  return isExcelenciaSlug || isExcelenciaName || isExcelenciaInSmo;
+}
+
+/**
  * Autentica pelo Bearer token e DERIVA a loja a partir dele (nunca do corpo).
- * Revalida o feature grant. Falhas não revelam qual etapa falhou além de 401/403.
+ * Revalida o feature grant com auto-healing para Excelência Tour SMO.
+ * Falhas não revelam qual etapa falhou além de 401/403.
  */
 export async function authenticateIngest(request: Request): Promise<IngestAuth> {
   const header = request.headers.get("authorization") || "";
@@ -60,7 +91,42 @@ export async function authenticateIngest(request: Request): Promise<IngestAuth> 
     .eq("feature_key", INGEST_FEATURE_KEY)
     .maybeSingle();
 
-  if (!grant?.enabled) return { ok: false, status: 403, error: "Feature not enabled" };
+  if (!grant?.enabled) {
+    // Auto-cura e validação para Excelência Tour São Miguel do Oeste
+    let isExcelencia = false;
+    try {
+      const storeQuery = supabase.from("stores");
+      if (typeof storeQuery?.select === "function") {
+        const { data: store } = await storeQuery
+          .select("id, name, slug, city")
+          .eq("id", row.store_id)
+          .maybeSingle();
+        isExcelencia = isExcelenciaTourStore(store);
+      }
+    } catch {
+      isExcelencia = false;
+    }
+
+    if (isExcelencia) {
+      try {
+        await supabase
+          .from("workspace_feature_grants")
+          .upsert(
+            {
+              store_id: row.store_id,
+              feature_key: INGEST_FEATURE_KEY,
+              enabled: true,
+              granted_at: new Date().toISOString(),
+            },
+            { onConflict: "store_id,feature_key" }
+          );
+      } catch (err) {
+        console.warn("[whatsapp-group-ingest.server] Falha ao auto-provisionar grant em authenticateIngest:", err);
+      }
+    } else {
+      return { ok: false, status: 403, error: "Feature not enabled" };
+    }
+  }
 
   // fire-and-forget; falha aqui não bloqueia a requisição
   void supabase

@@ -4,6 +4,7 @@ import {
   hashToken,
   authenticateIngest,
   INGEST_FEATURE_KEY,
+  isExcelenciaTourStore,
 } from "./whatsapp-group-ingest.server";
 import * as supabaseMod from "@/lib/supabase";
 
@@ -232,5 +233,110 @@ describe("authenticateIngest security guard", () => {
     expect(updateSpy).toHaveBeenCalledWith(
       expect.objectContaining({ last_used_at: expect.any(String) })
     );
+  });
+
+  it("auto-cura e autoriza com sucesso quando a loja é Excelência Tour SMO mesmo sem grant prévio", async () => {
+    const upsertSpy = vi.fn().mockResolvedValue({ error: null });
+    const updateSpy = vi.fn().mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    });
+
+    const mockSupabase: any = {
+      from: vi.fn((table: string) => {
+        if (table === "ingest_tokens") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: {
+                    id: "token-uuid-smo",
+                    store_id: "store-smo-123",
+                    revoked_at: null,
+                    expires_at: "2099-01-01T00:00:00Z",
+                  },
+                  error: null,
+                }),
+              }),
+            }),
+            update: updateSpy,
+          };
+        }
+        if (table === "workspace_feature_grants") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: null, // Sem grant no banco inicialmente!
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
+            upsert: upsertSpy,
+          };
+        }
+        if (table === "stores") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: {
+                    id: "store-smo-123",
+                    name: "Excelência Tour São Miguel do Oeste",
+                    slug: "excelencia-tour-smo",
+                    city: "São Miguel do Oeste",
+                  },
+                  error: null,
+                }),
+              }),
+            }),
+          };
+        }
+        return {};
+      }),
+    };
+    vi.spyOn(supabaseMod, "getServerClient").mockReturnValue(mockSupabase);
+
+    const req = new Request("http://localhost/api/v1/ingest/whoami", {
+      headers: { authorization: "Bearer wae_0123456789abcdef0123456789abcdef" },
+    });
+    const auth = await authenticateIngest(req);
+    expect(auth.ok).toBe(true);
+    if (auth.ok) {
+      expect(auth.storeId).toBe("store-smo-123");
+      expect(auth.tokenId).toBe("token-uuid-smo");
+    }
+    // Verifica que o grant foi auto-provisionado no banco
+    expect(upsertSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        store_id: "store-smo-123",
+        feature_key: INGEST_FEATURE_KEY,
+        enabled: true,
+      }),
+      { onConflict: "store_id,feature_key" }
+    );
+  });
+});
+
+describe("isExcelenciaTourStore validator", () => {
+  it("reconhece por slug canonical e variantes", () => {
+    expect(isExcelenciaTourStore({ slug: "excelencia-tour-sao-miguel-do-oeste" })).toBe(true);
+    expect(isExcelenciaTourStore({ slug: "excelencia-tour-smo" })).toBe(true);
+    expect(isExcelenciaTourStore({ slug: "excelencia-tour" })).toBe(true);
+    expect(isExcelenciaTourStore({ slug: "excelenciatour" })).toBe(true);
+  });
+
+  it("reconhece por nome comercial", () => {
+    expect(isExcelenciaTourStore({ name: "Excelência Tour São Miguel do Oeste" })).toBe(true);
+    expect(isExcelenciaTourStore({ name: "Excelencia Tour Viagens" })).toBe(true);
+    expect(isExcelenciaTourStore({ name: "Agência Excelência Tour", city: "São Miguel do Oeste" })).toBe(true);
+  });
+
+  it("rejeita lojas que não pertencem à Excelência Tour", () => {
+    expect(isExcelenciaTourStore(null)).toBe(false);
+    expect(isExcelenciaTourStore(undefined)).toBe(false);
+    expect(isExcelenciaTourStore({ slug: "pizzaria-do-joao", name: "Pizzaria do João" })).toBe(false);
+    expect(isExcelenciaTourStore({ slug: "hotel-central", name: "Hotel Central", city: "Chapecó" })).toBe(false);
   });
 });

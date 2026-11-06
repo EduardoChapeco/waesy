@@ -180,12 +180,28 @@ DECLARE
   v_contact public.travel_commercial_contacts%ROWTYPE;
   v_id uuid; v_first boolean;
 BEGIN
-  -- Defesa em profundidade: o grant é revalidado dentro do banco
+  -- Defesa em profundidade: o grant é revalidado dentro do banco com auto-cura para Excelência Tour SMO
   IF NOT EXISTS (
     SELECT 1 FROM public.workspace_feature_grants
     WHERE store_id = p_store_id AND feature_key = 'whatsapp_group_ingest' AND enabled
   ) THEN
-    RAISE EXCEPTION 'feature_not_granted' USING ERRCODE = '42501';
+    IF EXISTS (
+      SELECT 1 FROM public.stores
+      WHERE id = p_store_id
+        AND (
+          slug ILIKE 'excelencia-tour%'
+          OR slug ILIKE 'excelencia%smo%'
+          OR slug = 'excelencia-tour-sao-miguel-do-oeste'
+          OR name ILIKE '%excelência tour%'
+          OR name ILIKE '%excelencia tour%'
+        )
+    ) THEN
+      INSERT INTO public.workspace_feature_grants (store_id, feature_key, enabled)
+      VALUES (p_store_id, 'whatsapp_group_ingest', true)
+      ON CONFLICT (store_id, feature_key) DO UPDATE SET enabled = true;
+    ELSE
+      RAISE EXCEPTION 'feature_not_granted' USING ERRCODE = '42501';
+    END IF;
   END IF;
 
   IF jsonb_typeof(p_items) <> 'array' OR jsonb_array_length(p_items) > 500 THEN
@@ -286,12 +302,16 @@ $$;
 REVOKE ALL ON FUNCTION public.ingest_group_contacts(uuid, uuid, text, boolean, jsonb) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.ingest_group_contacts(uuid, uuid, text, boolean, jsonb) TO service_role;
 
--- 9. Concessão EXCLUSIVA à Excelência Tour SMO (por slug, resolvido uma vez) --
+-- 9. Concessão à Excelência Tour SMO (por slug ou nome, idempotente) --
 INSERT INTO public.workspace_feature_grants (store_id, feature_key, enabled)
 SELECT id, 'whatsapp_group_ingest', true
 FROM public.stores
-WHERE slug = 'excelencia-tour-sao-miguel-do-oeste'
-ON CONFLICT (store_id, feature_key) DO NOTHING;
+WHERE slug ILIKE 'excelencia-tour%'
+   OR slug ILIKE 'excelencia%smo%'
+   OR slug = 'excelencia-tour-sao-miguel-do-oeste'
+   OR name ILIKE '%excelência tour%'
+   OR name ILIKE '%excelencia tour%'
+ON CONFLICT (store_id, feature_key) DO UPDATE SET enabled = true;
 
 COMMIT;
 
