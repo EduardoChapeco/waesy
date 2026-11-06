@@ -42,24 +42,49 @@ export function getSSRClient() {
         try {
           const cookieHeader = getRequestHeader("cookie");
           if (!cookieHeader) return [];
-          const parsed = parseCookieHeader(cookieHeader).map((c) => ({
+          const rawParsed = parseCookieHeader(cookieHeader).map((c) => ({
             name: c.name,
             value: c.value ?? "",
           }));
-          const waesyTokens = parsed.filter(
+
+          let parsed = rawParsed;
+          const hasWaesyTokens = rawParsed.some(
             (c) =>
               (c.name === "waesy-auth-token" || c.name.startsWith("waesy-auth-token.")) &&
               Boolean(c.value?.trim())
           );
-          if (waesyTokens.length === 0) {
+          if (!hasWaesyTokens) {
             const legacyPattern = new RegExp(["^sb-", "[^-]+", "-auth-token"].join(""));
-            return parsed.map((c) =>
+            parsed = rawParsed.map((c) =>
               c.name.startsWith("sb-") && c.name.includes("-auth-token")
                 ? { ...c, name: c.name.replace(legacyPattern, "waesy-auth-token") }
                 : c,
             );
           }
-          return parsed;
+
+          // Anti-Collision & Deduplicação de Chunks (DEC-443):
+          // Se existem cookies chunked (.0, .1), remove cookie unchunked obsoleto
+          const hasChunks = parsed.some(
+            (c) => c.name.startsWith("waesy-auth-token.") && Boolean(c.value?.trim())
+          );
+
+          const deduplicatedMap = new Map<string, string>();
+          for (const c of parsed) {
+            if (hasChunks && c.name === "waesy-auth-token") {
+              continue;
+            }
+            const existing = deduplicatedMap.get(c.name);
+            if (!existing) {
+              deduplicatedMap.set(c.name, c.value);
+            } else if ((c.value?.length || 0) > (existing?.length || 0)) {
+              deduplicatedMap.set(c.name, c.value);
+            }
+          }
+
+          return Array.from(deduplicatedMap.entries()).map(([name, value]) => ({
+            name,
+            value,
+          }));
         } catch {
           return [];
         }
@@ -81,6 +106,20 @@ export function getSSRClient() {
           }
 
           cookiesToSet.forEach(({ name, value, options }) => {
+            const isDeleting = !value || options?.maxAge === 0;
+
+            // Se estiver deletando ou expirando, limpa explicitamente em ambos os escopos
+            if (isDeleting && cookieDomain) {
+              try {
+                setCookie(name, "", {
+                  ...options,
+                  maxAge: 0,
+                  path: "/",
+                  domain: cookieDomain,
+                });
+              } catch {}
+            }
+
             setCookie(name, value, {
               ...options,
               sameSite: options?.sameSite === "none" ? "none" : "lax",

@@ -73,6 +73,18 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     const ssrClient = getSSRClient();
     const authRes = await ssrClient.auth.getUser();
     user = authRes?.data?.user || null;
+
+    // Se getUser retornou null (ex: token de acesso de 1h expirou), tenta refresh automático via getSession
+    if (!user) {
+      try {
+        const sessionRes = await ssrClient.auth.getSession();
+        if (sessionRes?.data?.session?.user) {
+          user = sessionRes.data.session.user;
+        }
+      } catch {
+        // Ignora falha de refresh silenciosamente
+      }
+    }
   } catch {
     user = null;
   }
@@ -96,9 +108,8 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       memberships: [],
     };
     if (evt?.context) evt.context.__server_identity__ = guestIdentity;
-    if (memoKey !== "unscoped") {
-      IDENTITY_MEMO_CACHE.set(memoKey, { identity: guestIdentity, expiresAt: now + 5_000 });
-    }
+    // NÃO armazena guestIdentity em IDENTITY_MEMO_CACHE para prevenir envenenamento
+    // de requisições concorrentes durante refreshes assíncronos ou logins (DEC-443).
     return guestIdentity;
   }
 

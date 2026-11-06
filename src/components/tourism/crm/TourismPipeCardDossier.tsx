@@ -684,7 +684,7 @@ export function TourismPipeCardDossier({
                 className={cn(
                   "h-11 min-h-11 px-3 rounded-lg text-xs font-medium flex items-center gap-2 shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   isActive
-                    ? "bg-muted text-foreground font-bold border border-border/60 shadow-2xs"
+                    ? "bg-muted text-foreground font-bold"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 )}
                 onClick={() => {
@@ -715,7 +715,7 @@ export function TourismPipeCardDossier({
           {/* ══════════ COLUNA ESQUERDA (DADOS DO CARD & FLUXO - 65%) ══════════ */}
           <div className="lg:col-span-8 space-y-6">
             {/* 1. FORMULÁRIO INICIAL (START FORM) */}
-            <div id="section-form" className="p-5 rounded-xl border border-border/60 bg-muted/10 space-y-4">
+            <div id="section-form" className="space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-border/40">
                 <div className="flex items-center gap-2">
                   <FileText className="size-4 text-primary" />
@@ -857,7 +857,7 @@ export function TourismPipeCardDossier({
             </div>
 
             {/* 2. CHECKLISTS DINÂMICOS (PIPEFY STYLE) */}
-            <div id="section-checklists" className="p-5 rounded-xl border border-border/60 bg-muted/10 space-y-4">
+            <div id="section-checklists" className="space-y-4 pt-6 border-t border-border/40">
               <div className="flex items-center justify-between pb-2 border-b border-border/40">
                 <div className="flex items-center gap-2">
                   <CheckSquare className="size-4 text-primary" />
@@ -1025,7 +1025,7 @@ export function TourismPipeCardDossier({
             </div>
 
             {/* 3. ANEXOS, VOUCHERS & DOCUMENTOS DOS VIAJANTES */}
-            <div id="section-attachments" className="p-5 rounded-xl border border-border/60 bg-muted/10 space-y-4">
+            <div id="section-attachments" className="space-y-4 pt-6 border-t border-border/40">
               <div className="flex items-center justify-between pb-2 border-b border-border/40 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <Paperclip className="size-4 text-primary" />
@@ -1126,7 +1126,7 @@ export function TourismPipeCardDossier({
             </div>
 
             {/* 4. COMENTÁRIOS & HISTÓRICO DE ATIVIDADES (TIMELINE) */}
-            <div id="section-comments" className="p-5 rounded-xl border border-border/60 bg-muted/10 space-y-4">
+            <div id="section-comments" className="space-y-4 pt-6 border-t border-border/40">
               <div className="flex items-center justify-between pb-2 border-b border-border/40">
                 <div className="flex items-center gap-2">
                   <Clock className="size-4 text-primary" />

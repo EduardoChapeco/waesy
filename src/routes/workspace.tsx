@@ -41,6 +41,24 @@ export const Route = createFileRoute("/workspace")({
       session = null;
     }
 
+    // Fallback defensivo no cliente (DEC-443): previne loop de bounce se a requisição SSR
+    // falhou transitoriamente enquanto a sessão local no navegador ainda está ativa.
+    if (!session?.user && typeof window !== "undefined") {
+      try {
+        const { getBrowserClient } = await import("@/lib/supabase");
+        const client = getBrowserClient();
+        const { data: { session: browserSession } } = await client.auth.getSession();
+        if (browserSession?.user) {
+          const retrySession = await getUserSession();
+          if (retrySession?.user) {
+            session = retrySession;
+          }
+        }
+      } catch (browserAuthErr) {
+        console.warn("[workspace layout] Falha no fallback de sessão client:", browserAuthErr);
+      }
+    }
+
     if (!session?.user) {
       throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
     }
@@ -71,6 +89,22 @@ export const Route = createFileRoute("/workspace")({
         } catch (e) {
           console.warn("[workspace layout] Erro ao carregar sessão:", e);
           session = null;
+        }
+      }
+
+      if (!session?.user && typeof window !== "undefined") {
+        try {
+          const { getBrowserClient } = await import("@/lib/supabase");
+          const client = getBrowserClient();
+          const { data: { session: browserSession } } = await client.auth.getSession();
+          if (browserSession?.user) {
+            const retrySession = await getUserSession();
+            if (retrySession?.user) {
+              session = retrySession;
+            }
+          }
+        } catch (browserAuthErr) {
+          console.warn("[workspace layout] Falha no fallback de sessão client:", browserAuthErr);
         }
       }
 

@@ -120,7 +120,7 @@ export function SeasonalMarketingCalendarWidget({
       </div>
 
       {/* EVENTO EM DESTAQUE (PRÓXIMA JANELA) */}
-      <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 rounded-lg bg-muted/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-foreground">
@@ -132,7 +132,7 @@ export function SeasonalMarketingCalendarWidget({
             </span>
             {getImpactBadge(primaryEvent.commercial_impact)}
             {primaryEvent.city_name && (
-              <Badge variant="outline" className="text-xs gap-1 px-2 py-0 h-4">
+              <Badge variant="outline" className="text-xs gap-1 px-2 py-0 h-4 border-border/40">
                 <MapPin className="size-2.5" />
                 <span>{primaryEvent.city_name}</span>
               </Badge>
@@ -149,7 +149,7 @@ export function SeasonalMarketingCalendarWidget({
           {primaryEvent.suggested_promotional_actions && primaryEvent.suggested_promotional_actions.length > 0 && (
             <div className="flex items-center gap-2 pt-1 overflow-x-auto scroll-area-carousel no-scrollbar">
               {primaryEvent.suggested_promotional_actions.map((act, i) => (
-                <span key={i} className="text-xs bg-background border border-border/40 text-muted-foreground px-2 py-1 rounded-full whitespace-nowrap">
+                <span key={i} className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full whitespace-nowrap">
                   {act}
                 </span>
               ))}
@@ -175,7 +175,7 @@ export function SeasonalMarketingCalendarWidget({
           {upcomingList.map((item) => (
             <div
               key={item.id}
-              className="p-3 rounded-lg border border-border/30 bg-muted/20 flex flex-col justify-between gap-1 text-xs"
+              className="p-3 rounded-lg bg-muted/20 flex flex-col justify-between gap-1 text-xs"
             >
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-foreground truncate">{item.name}</span>

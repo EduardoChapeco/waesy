@@ -1,5 +1,37 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-443: Erradicação de Quedas de Sessão Espontâneas, Resolução do Loop de Bounce de Login, Deduplicação de Chunks de Cookie e Purga de Neons Visuais
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. Quedas repentinas de sessão e loop de redirecionamento "bounce" entre `/workspace` e `/_store/entrar`: usuário era desconectado silenciosamente e, ao ser enviado para login, era imediatamente reenviado ao painel ou ficava alternando de forma errática.
+  2. Diagnóstico forense revelou três causas-raiz combinadas:
+     - **Colisão de Domínio de Cookies (Host-Only vs .waesy.com.br):** O SSR client (`supabase-ssr.server.ts`) fixava `domain: ".waesy.com.br"` enquanto o browser client (`supabase.ts`) gravava cookies como host-only. O navegador enviava múltiplos cookies duplicados (`waesy-auth-token.0`), corrompendo a montagem do JWT pelo `@supabase/ssr`.
+     - **Envenenamento de Cache na Identidade:** `identity.server.ts` armazenava identidades nulas (`guestIdentity`) por 5 segundos no `IDENTITY_MEMO_CACHE`. Qualquer falha temporária ou atraso de handshake invalidava requisições concorrentes subsequentes.
+     - **Falta de Auto-Refresh na Validação SSR:** Quando o token de 1 hora vencia, `auth.getUser()` falhava sem recorrer ao `getSession()` para rodar a troca pelo refresh token.
+     - **Redirect Imediato no Client sem Checagem Local:** O layout de `/workspace` redirecionava para `/entrar` antes de verificar se o cliente local no navegador possuía sessão ativa no `localStorage`.
+  3. Presença de elementos visuais com aparência "neon", anéis de foco azuis brilhantes em fundo escuro (`--ring: var(--magic-accent-primary)`) e cartões aninhados (Containeritis DL-31) no calendário sazonal e dossiê.
+- **Decisão:**
+  1. **Harmonização de Cookies e Anti-Colisão (`supabase-ssr.server.ts` & `supabase.ts`):**
+     - Alinhamento de escopo de domínio: tanto o cliente de navegador quanto o servidor SSR utilizam as mesmas regras de domínio em produção (`.waesy.com.br` e `.usewaesy.com`).
+     - Deduplicação inteligente em `getAll()`: se chunks (`waesy-auth-token.0`) estão presentes, o cookie legado unchunked é descartado. Chunks homônimos são deduplicados priorizando o payload válido mais longo.
+     - Purga bilateral em `setAll()`: exclusão de cookies é realizada explicitamente no domínio canônico e no host-only para erradicar resíduos antigos.
+  2. **Auto-Refresh e Prevenção de Envenenamento de Memória (`identity.server.ts`):**
+     - Adicionado fallback automático via `ssrClient.auth.getSession()` quando `auth.getUser()` retorna nulo, acionando a rotação de refresh token diretamente no fluxo de SSR.
+     - Proibido o armazenamento de `guestIdentity` no `IDENTITY_MEMO_CACHE`. O cache persiste exclusivamente identidades autenticadas com ID válido.
+  3. **Guarda Defensiva Anti-Bounce no Workspace (`workspace.tsx`):**
+     - Em `beforeLoad` e `loader`, caso a chamada SSR retorne nula em ambiente cliente (`typeof window !== "undefined"`), o sistema consulta a sessão local do Supabase antes de disparar qualquer redirect para login. Se a sessão existir no navegador, realiza retry transparente do token.
+  4. **Purga de Neons e Foco Neutro Apple/HIG (`styles.css`, `workspace.index.tsx`, `seasonal-marketing-calendar-widget.tsx`, `TourismPipeCardDossier.tsx`):**
+     - Variável `--ring` e `--border-focus` normalizadas para tons neutros elegantes (`oklch(0.42 0 0)` no escuro e `oklch(0.65 0 0)` no claro), eliminando anéis azuis elétricos em elementos focados.
+     - Remoção de `hover:border-primary/50` em stat tiles do painel, adotando `hover:border-border`.
+     - Erradicação de Containeritis (DL-31) no calendário sazonal e seções do dossiê CRM, substituindo caixas aninhadas por transições limpas com divisores sutis.
+  5. **Verificação Mecânica:**
+     - TypeScript: `tsc --noEmit` aprovado com 0 erros (Exit Code 0).
+     - Testes unitários de auth e context-auth: 100% aprovados (Vitest 12/12).
+     - Catraca Design Lint Ratchet: Aprovada com 0 violações P0 e 0 regressões.
+     - Build de produção e deploy Cloudflare Pages: Concluído com sucesso (https://d399cf6e.usewaesy.pages.dev, HTTP 200).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.10, B.25, B.26.
+- **Consequências:** Fim absoluto das quedas de sessão inesperadas e loops de login; fidelidade visual neutra e livre de neons; aderência estrita às diretrizes do ecossistema Waesy.
+
 ## DEC-442: Modelos Dinâmicos de PDF com Merge Tags (Benchmark Pipefy), Alinhamento Soberano do Header de Dossiê e Safe-Area Zero-Clutter
 - **Data:** 2026-11-06
 - **Contexto:**

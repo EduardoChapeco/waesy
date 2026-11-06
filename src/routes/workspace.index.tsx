@@ -421,7 +421,7 @@ export default function WorkspaceDashboardPage() {
               value={`${dashboardMetrics?.ordersTodayCount || 0} hoje`}
               sublabel={dashboardMetrics?.ordersMonthCount ? `${dashboardMetrics.ordersMonthCount} no mês` : "Operação ativa"}
               trend="up"
-              className="h-full hover:border-primary/50 transition-colors"
+              className="h-full hover:border-border transition-colors"
             />
           </Link>
 
@@ -434,7 +434,7 @@ export default function WorkspaceDashboardPage() {
               value={`+${dashboardMetrics?.newCustomers30d ?? 0}`}
               sublabel="Novos no mês"
               trend="up"
-              className="h-full hover:border-primary/50 transition-colors"
+              className="h-full hover:border-border transition-colors"
             />
           </Link>
 
@@ -447,7 +447,7 @@ export default function WorkspaceDashboardPage() {
               value={formatMoney(dashboardMetrics?.salesTodayCents || 0)}
               sublabel="Receita diária"
               trend={dashboardMetrics?.salesTodayCents ? "up" : "neutral"}
-              className="h-full hover:border-primary/50 transition-colors"
+              className="h-full hover:border-border transition-colors"
             />
           </Link>
 
@@ -461,7 +461,7 @@ export default function WorkspaceDashboardPage() {
               sublabel={catalogDetails.subtitle}
               trend={criticalStockCount > 0 ? "down" : "neutral"}
               trendValue={criticalStockCount > 0 ? "Atenção" : "OK"}
-              className="h-full hover:border-primary/50 transition-colors"
+              className="h-full hover:border-border transition-colors"
             />
           </Link>
         </div>
