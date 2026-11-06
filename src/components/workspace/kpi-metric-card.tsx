@@ -148,13 +148,10 @@ export function KpiMetricCard({
         <div className="pt-1">
           <span
             className={cn(
-              "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-tight border",
-              trendDirection === "up" &&
-                "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
-              trendDirection === "down" &&
-                "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20",
-              (!trendDirection || trendDirection === "neutral") &&
-                "bg-muted text-muted-foreground border-border/60"
+              "inline-flex items-center gap-1 text-xs font-semibold tracking-tight",
+              trendDirection === "up" && "text-success-strong",
+              trendDirection === "down" && "text-destructive",
+              (!trendDirection || trendDirection === "neutral") && "text-muted-foreground"
             )}
           >
             {trendDirection === "up" && (

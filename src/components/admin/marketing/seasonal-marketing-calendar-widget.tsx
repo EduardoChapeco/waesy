@@ -69,11 +69,11 @@ export function SeasonalMarketingCalendarWidget({
   const getImpactBadge = (impact: string) => {
     switch (impact) {
       case "extremo":
-        return <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 text-xs">Impacto Extremo</Badge>;
+        return <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-destructive text-destructive-foreground">Impacto Extremo</span>;
       case "alto":
-        return <Badge className="bg-warning/10 text-warning-strong  border-warning/20 text-xs">Pico Comercial</Badge>;
+        return <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-warning text-warning-foreground">Pico Comercial</span>;
       default:
-        return <Badge variant="secondary" className="text-xs">Oportunidade</Badge>;
+        return <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-muted text-muted-foreground">Oportunidade</span>;
     }
   };
 
@@ -82,7 +82,7 @@ export function SeasonalMarketingCalendarWidget({
       {/* CABEÇALHO DO WIDGET */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-lg bg-warning/10 text-warning-strong  flex items-center justify-center">
+          <div className="size-8 rounded-lg bg-muted text-foreground flex items-center justify-center">
             <Calendar className="size-4" />
           </div>
           <div>
@@ -105,10 +105,10 @@ export function SeasonalMarketingCalendarWidget({
       </div>
 
       {/* EVENTO EM DESTAQUE (PRÓXIMA JANELA) */}
-      <div className="p-4 rounded-lg border border-warning/20 bg-warning/5  flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 rounded-lg border border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold text-warning-strong ">
+            <span className="text-xs font-bold text-foreground">
               {primaryEvent.days_until === 0 ? "Hoje" : `Em ${primaryEvent.days_until} dias`}
             </span>
             <span className="text-muted-foreground text-xs">•</span>
@@ -171,7 +171,7 @@ export function SeasonalMarketingCalendarWidget({
               <div className="flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground">
                 <span>{item.date.split("-").reverse().slice(0, 2).join("/")}</span>
                 {item.commercial_impact === "extremo" ? (
-                  <span className="text-rose-500 font-bold text-xs">Pico Máximo</span>
+                  <span className="text-destructive font-bold text-xs">Pico Máximo</span>
                 ) : (
                   <span className="text-xs">Comercial</span>
                 )}

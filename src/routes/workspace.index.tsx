@@ -287,17 +287,13 @@ export default function WorkspaceDashboardPage() {
             type="button"
             onClick={handleToggleStoreStatus}
             disabled={isTogglingStatus}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border transition-colors cursor-pointer h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-              isOpenNow
-                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15"
-                : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/15"
-            }`}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-transparent hover:bg-muted text-foreground transition-colors cursor-pointer h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Status Operacional"
           >
             {isTogglingStatus ? (
               <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
             ) : (
-              <span className={`size-2 rounded-full ${isOpenNow ? "bg-emerald-500" : "bg-rose-500"}`} />
+              <span className={`size-2 rounded-full ${isOpenNow ? "bg-success" : "bg-destructive"}`} />
             )}
             <span>{isOpenNow ? "Loja Aberta" : "Loja Pausada"}</span>
           </button>
@@ -383,7 +379,7 @@ export default function WorkspaceDashboardPage() {
               </div>
               {dashboardMetrics?.growthPercentage != null && (
                 <div className={`inline-flex items-center gap-2 text-xs font-semibold font-mono tabular-nums ${
-                  dashboardMetrics.growthPercentage >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                  dashboardMetrics.growthPercentage >= 0 ? "text-success-strong" : "text-destructive"
                 }`}>
                   {dashboardMetrics.growthPercentage >= 0 ? (
                     <TrendingUp className="size-3.5" />
@@ -401,7 +397,7 @@ export default function WorkspaceDashboardPage() {
           <div className="flex items-center gap-2 pt-3 border-t border-border/40">
             <Link
               to="/workspace/financeiro/caixa"
-              className="inline-flex items-center justify-center h-11 min-h-11 px-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex items-center justify-center h-11 min-h-11 px-4 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Fluxo de Caixa
             </Link>

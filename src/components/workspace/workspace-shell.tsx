@@ -359,23 +359,23 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <div className="mb-2 pb-2 border-b border-border/40 space-y-2">
  <Link
  to="/admin-master"
- className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-colors font-bold text-xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+ className="flex items-center justify-between px-3 py-2 rounded-lg bg-transparent hover:bg-muted text-foreground transition-colors font-semibold text-xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
  >
  <div className="flex items-center gap-2">
  <ShieldAlert className="size-4 text-primary shrink-0" />
  <span className="truncate">Painel Global Master</span>
  </div>
- <ArrowUpRight className="size-3.5 text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
+ <ArrowUpRight className="size-3.5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
  </Link>
 
  <button
  type="button"
  onClick={() => setIsMasterAllVerticals((prev) => !prev)}
  className={cn(
- "w-full flex items-center justify-between px-3 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+ "w-full flex items-center justify-between px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isMasterAllVerticals
- ? "bg-warning/10 text-warning-strong border-warning/30"
- : "bg-muted/40 text-muted-foreground border-border/40 hover:text-foreground"
+ ? "bg-muted text-foreground"
+ : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >
  <span>{isMasterAllVerticals ? "Modo Master: Todas as Verticais" : "Filtrar por Nicho da Loja"}</span>
@@ -640,7 +640,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                 <DropdownMenuLabel className="font-normal px-2 py-2">
                   <p className="text-xs font-bold text-foreground truncate">{userDisplayName}</p>
                   <p className="text-xs font-mono text-muted-foreground truncate">{session?.email}</p>
-                  <span className="inline-block mt-1 px-2 py-1 rounded text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+                  <span className="inline-block mt-1 px-2 py-1 rounded text-xs font-bold bg-muted text-muted-foreground">
                     {activeStore?.name || "Loja"}
                   </span>
                 </DropdownMenuLabel>
