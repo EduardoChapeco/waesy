@@ -1,6 +1,6 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, UserCircle, Truck, Boxes, Banknote, FileText, LayoutTemplate, Layers, Link2, Image as ImageIcon, ChevronDown, ChevronRight, ClipboardList, ShieldAlert, Megaphone, Flame, Newspaper, Plus, Sliders, BarChart3, DollarSign, Ticket, ArrowRightLeft, ArrowUpRight, User, LogOut, Bell, Check, ChevronsUpDown, Building2, ShieldCheck, UtensilsCrossed, Compass, ExternalLink, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Search, HelpCircle } from "lucide-react";
+import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, UserCircle, Truck, Boxes, Banknote, FileText, LayoutTemplate, Layers, Link2, Image as ImageIcon, ChevronDown, ChevronRight, ClipboardList, ShieldAlert, Megaphone, Flame, Newspaper, Plus, Sliders, BarChart3, DollarSign, Ticket, ArrowRightLeft, ArrowUpRight, User, LogOut, Bell, Check, ChevronsUpDown, Building2, ShieldCheck, UtensilsCrossed, Compass, ExternalLink, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Search, HelpCircle, PanelLeftClose, PanelLeftOpen, LayoutGrid } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { signOut } from "@/services/auth.functions";
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
-import { resolveWorkspaceNavigation, getSidebarConfig, type NavGroup, type NavItem } from "@/lib/workspace-navigation";
+import { resolveWorkspaceNavigation, getSidebarConfig, getMasterSidebarPillars, type NavGroup, type NavItem, type MasterPillar } from "@/lib/workspace-navigation";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getNicheTranslation } from "@/lib/niche-dictionary";
 import { WorkspaceAccountSwitcher } from "./workspace-account-switcher";
@@ -278,53 +278,175 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     );
   })();
 
- const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
- const initial: Record<string, boolean> = { overview: true };
- for (const group of activeModules) {
- if (group.items.some((item) => currentPath.startsWith(item.path))) {
- initial[group.id] = true;
- }
- }
- return initial;
- });
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = { overview: true };
+    for (const group of activeModules) {
+      if (group.items.some((item) => currentPath.startsWith(item.path))) {
+        initial[group.id] = true;
+      }
+    }
+    return initial;
+  });
 
- const userDisplayName =
- session?.user?.user_metadata?.full_name ||
- session?.user?.email?.split("@")[0] ||
- session?.email?.split("@")[0] ||
- "Usuário";
+  const [syncedProfile, setSyncedProfile] = useState<{
+    avatarUrl?: string | null;
+    fullName?: string | null;
+  }>({});
+  const [headerAvatarFailed, setHeaderAvatarFailed] = useState(false);
+  const [railAvatarFailed, setRailAvatarFailed] = useState(false);
 
- const userInitial = userDisplayName.charAt(0).toUpperCase();
+  const rawAvatarUrl =
+    session?.avatar_url ||
+    session?.avatarUrl ||
+    session?.profile?.avatar_url ||
+    session?.user?.avatar_url ||
+    session?.user?.user_metadata?.avatar_url ||
+    session?.user?.user_metadata?.picture ||
+    syncedProfile.avatarUrl ||
+    null;
 
- const toggleGroup = (groupId: string) => {
- setExpandedGroups((prev) => ({
- ...prev,
- [groupId]: !prev[groupId],
- }));
- };
+  useEffect(() => {
+    setHeaderAvatarFailed(false);
+    setRailAvatarFailed(false);
+  }, [rawAvatarUrl]);
 
- // Atalho global Cmd+K ou Ctrl+K para abrir Todas as Ferramentas
- useEffect(() => {
- const handleKeyDown = (e: KeyboardEvent) => {
- if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
- e.preventDefault();
- setIsAllToolsOpen((prev) => !prev);
- }
- };
- window.addEventListener("keydown", handleKeyDown);
- return () => window.removeEventListener("keydown", handleKeyDown);
- }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { getBrowserClient } = await import("@/lib/supabase");
+        const supabase = getBrowserClient();
+        const userId = session?.id || session?.userId || session?.user?.id;
+        let resolvedAvatar: string | null = null;
+        let resolvedName: string | null = null;
 
- const handleLogout = async () => {
- try {
- await signOut();
- window.location.href = "/";
- } catch (e) {
- console.error(e);
- }
- };
+        if (userId) {
+          const { data: profileRow } = await supabase
+            .from("profiles")
+            .select("avatar_url, full_name")
+            .eq("id", userId)
+            .maybeSingle();
+          if (profileRow?.avatar_url) resolvedAvatar = profileRow.avatar_url;
+          if (profileRow?.full_name) resolvedName = profileRow.full_name;
+        }
 
- const handleSwitchStore = async (storeId: string) => {
+        if (!resolvedAvatar) {
+          const { data: authData } = await supabase.auth.getUser();
+          const u = authData?.user;
+          if (u) {
+            const idData = u.identities?.[0]?.identity_data as Record<string, any> | undefined;
+            resolvedAvatar =
+              u.user_metadata?.avatar_url ||
+              u.user_metadata?.picture ||
+              idData?.avatar_url ||
+              idData?.picture ||
+              null;
+            if (!resolvedName) {
+              resolvedName = u.user_metadata?.full_name || null;
+            }
+          }
+        }
+
+        if (!cancelled && (resolvedAvatar || resolvedName)) {
+          setSyncedProfile({ avatarUrl: resolvedAvatar, fullName: resolvedName });
+        }
+      } catch {
+        // Silencioso em caso de offline
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.id, session?.userId, session?.user?.id]);
+
+  const userDisplayName =
+    session?.fullName ||
+    session?.profile?.full_name ||
+    session?.user?.user_metadata?.full_name ||
+    syncedProfile.fullName ||
+    session?.user?.email?.split("@")[0] ||
+    session?.email?.split("@")[0] ||
+    "Usuário";
+
+  const userInitial = userDisplayName.charAt(0).toUpperCase();
+
+  const masterPillars = useMemo(
+    () => getMasterSidebarPillars(activeModules, activeStore),
+    [activeModules, activeStore]
+  );
+
+  const matchedRoutePillarId = useMemo(() => {
+    if (currentPath === "/workspace" || currentPath === "/workspace/") {
+      return "overview";
+    }
+    let bestPillarId = "overview";
+    let bestMatchLength = 0;
+    for (const pillar of masterPillars) {
+      for (const item of pillar.items) {
+        if (item.path === "/workspace") continue;
+        if (currentPath === item.path || currentPath.startsWith(item.path + "/")) {
+          if (item.path.length > bestMatchLength) {
+            bestMatchLength = item.path.length;
+            bestPillarId = pillar.id;
+          }
+        }
+      }
+    }
+    return bestPillarId;
+  }, [currentPath, masterPillars]);
+
+  const [selectedPillarId, setSelectedPillarId] = useState<string>(matchedRoutePillarId);
+  const [isSubSidebarOpen, setIsSubSidebarOpen] = useState<boolean>(
+    () =>
+      !currentPath.startsWith("/workspace/estudio") &&
+      !currentPath.startsWith("/workspace/builder")
+  );
+
+  useEffect(() => {
+    setSelectedPillarId(matchedRoutePillarId);
+    if (
+      currentPath.startsWith("/workspace/estudio") ||
+      currentPath.startsWith("/workspace/builder")
+    ) {
+      setIsSubSidebarOpen(false);
+    }
+  }, [matchedRoutePillarId, currentPath]);
+
+  const activeMasterPillar: MasterPillar | undefined =
+    masterPillars.find((p) => p.id === selectedPillarId) ||
+    masterPillars.find((p) => p.id === matchedRoutePillarId) ||
+    masterPillars[0];
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
+  };
+
+  // Atalho global Cmd+K ou Ctrl+K para abrir Todas as Ferramentas
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsAllToolsOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      window.location.href = "/";
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSwitchStore = async (storeId: string) => {
     if (storeId === activeStoreId || isSwitching) return;
     setIsSwitching(true);
     try {
@@ -347,10 +469,10 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     window.location.href = targetPersonalPath || "/conta";
   };
 
- const requestSwitchToPersonal = (destination = "/conta") => {
-   setTargetPersonalPath(destination);
-   setShowPersonalSwitchModal(true);
- };
+  const requestSwitchToPersonal = (destination = "/conta") => {
+    setTargetPersonalPath(destination);
+    setShowPersonalSwitchModal(true);
+  };
 
  const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => (
  <div className="flex flex-col space-y-1 select-none">
@@ -434,115 +556,392 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
   return (
     <div className="flex h-dvh w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative">
-      {/* ── 1. BARRA LATERAL CANÔNICA DO WORKSPACE (PADRÃO META STUDIO - FIXA) ── */}
-      <aside className="hidden waesy-expanded-flex flex-col w-72 shrink-0 sticky top-0 h-dvh bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
-        {/* Topo da Sidebar com altura exata h-14 (56px) alinhada continuamente à linha do Header */}
-        <div className="h-14 border-b border-border/60 px-3 flex items-center shrink-0">
-          <WorkspaceAccountSwitcher
-            memberships={memberships}
-            activeStoreId={activeStoreId}
-            activeStore={activeStore}
-            userDisplayName={userDisplayName}
-            userEmail={session?.email}
-            isSwitching={isSwitching}
-            onSwitchStore={handleSwitchStore}
-            onSwitchToPersonal={confirmSwitchToPersonal}
-          />
+      {/* ── 1. SIDEBAR DUPLA CANÔNICA (TRILHO FINO DE MÓDULOS MASTER + SIDEBAR EXPANDIDA DE SUBMÓDULOS) ── */}
+      <aside className="hidden waesy-expanded-flex flex-row shrink-0 sticky top-0 h-dvh select-none z-30 overflow-hidden border-r border-border/40">
+        {/* 1A. TRILHO FINO NATIVO (BROWSER-STYLE MASTER MODULES RAIL - 64px) */}
+        <div className="w-16 bg-muted/60 dark:bg-canvas border-r border-border/40 flex flex-col items-center justify-between py-2 shrink-0 h-dvh">
+          {/* Topo do Trilho Fino: Alternar Painel de Submódulos */}
+          <div className="h-11 flex items-center justify-center shrink-0 mb-1">
+            <button
+              type="button"
+              onClick={() => setIsSubSidebarOpen((prev) => !prev)}
+              title={isSubSidebarOpen ? "Recolher submódulos" : "Expandir submódulos"}
+              className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {isSubSidebarOpen ? (
+                <PanelLeftClose className="size-4" />
+              ) : (
+                <PanelLeftOpen className="size-4" />
+              )}
+            </button>
+          </div>
+
+          {/* Lista Central de Módulos Master */}
+          <div className="flex-1 w-full overflow-y-auto no-scrollbar flex flex-col items-center gap-1 px-1 py-1">
+            {masterPillars.map((pillar) => {
+              const PillarIcon = pillar.icon;
+              const isSelected = activeMasterPillar?.id === pillar.id;
+              const isRouteInPillar = matchedRoutePillarId === pillar.id;
+
+              return (
+                <button
+                  key={pillar.id}
+                  type="button"
+                  onClick={() => {
+                    if (isSelected) {
+                      setIsSubSidebarOpen((prev) => !prev);
+                      return;
+                    }
+                    setSelectedPillarId(pillar.id);
+                    if (!isSubSidebarOpen) {
+                      setIsSubSidebarOpen(true);
+                    }
+                    if (!isRouteInPillar && pillar.defaultPath) {
+                      navigate({ to: pillar.defaultPath as never });
+                    }
+                  }}
+                  title={`${pillar.label} — ${pillar.description}`}
+                  className={cn(
+                    "w-full min-h-11 py-1 px-1 rounded-xl relative flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isSelected
+                      ? "bg-card text-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+                  )}
+                >
+                  {isSelected && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-foreground" />
+                  )}
+                  <PillarIcon className="size-4 shrink-0" />
+                  <span className="text-3xs font-semibold leading-none truncate max-w-12">
+                    {pillar.shortLabel}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Rodapé do Trilho Fino: Chat, Ferramentas (Cmd+K) e Conta Pessoal com Foto */}
+          <div className="w-full pt-2 border-t border-border/40 flex flex-col items-center gap-1 px-1 shrink-0">
+            <Link
+              to={"/workspace/atendimento" as any}
+              title="Chat & Atendimento (/workspace/atendimento)"
+              className={cn(
+                "size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                currentPath.startsWith("/workspace/atendimento")
+                  ? "bg-card text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+              )}
+            >
+              <MessageSquare className="size-4" />
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setIsAllToolsOpen(true)}
+              title="Todas as Ferramentas (Ctrl+K)"
+              className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <LayoutGrid className="size-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => requestSwitchToPersonal("/conta")}
+              title={`Conta Pessoal (${userDisplayName})`}
+              className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center hover:bg-card/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {rawAvatarUrl && !railAvatarFailed ? (
+                <img
+                  src={rawAvatarUrl}
+                  alt={userDisplayName}
+                  onError={() => setRailAvatarFailed(true)}
+                  className="size-7 rounded-full object-cover bg-muted"
+                />
+              ) : (
+                <span className="size-7 rounded-full bg-foreground text-background text-xs font-bold flex items-center justify-center">
+                  {userInitial}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Lista de Navegação com Scroll Suave */}
-        <ScrollArea className="flex-1 px-3 py-3 pr-2 overflow-x-hidden">
-          <NavLinks isMobile={false} />
-        </ScrollArea>
+        {/* 1B. SIDEBAR EXPANDIDA CONTEXTUAL (ALTERNAR CONTA + SUBMÓDULOS DO MÓDULO MASTER ATIVO) */}
+        {isSubSidebarOpen && (
+          <div className="w-60 bg-card flex flex-col justify-between h-dvh shrink-0 overflow-hidden">
+            {/* Topo da Sidebar Expandida (h-14): Alternar Conta Normal */}
+            <div className="h-14 border-b border-border/40 px-3 flex items-center shrink-0">
+              <WorkspaceAccountSwitcher
+                memberships={memberships}
+                activeStoreId={activeStoreId}
+                activeStore={activeStore}
+                userDisplayName={userDisplayName}
+                userEmail={session?.email}
+                userAvatarUrl={rawAvatarUrl}
+                isSwitching={isSwitching}
+                onSwitchStore={handleSwitchStore}
+                onSwitchToPersonal={confirmSwitchToPersonal}
+              />
+            </div>
 
- {/* ── Ações Canônicas de Rodapé da Sidebar (Padrão Meta Business Suite) ── */}
- <div className="p-3 space-y-1 border-t border-border/60 shrink-0">
- {/* 1. Botão "Todas as ferramentas" */}
- <button
- type="button"
- onClick={() => setIsAllToolsOpen(true)}
- className="w-full flex items-center gap-3 px-3 min-h-11 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
- >
- <Sliders className="size-4 text-primary shrink-0" />
- <span className="truncate">Todas as ferramentas</span>
- </button>
+            {/* Submódulos do Módulo Master Selecionado */}
+            <ScrollArea className="flex-1 px-3 py-3 overflow-x-hidden">
+              <div className="space-y-4">
+                {/* Atalho Admin Master para Platform Admin */}
+                {isPlatformAdmin && (
+                  <div className="pb-2 border-b border-border/40 space-y-1">
+                    <Link
+                      to="/admin-master"
+                      className="flex items-center justify-between px-3 py-2 min-h-11 rounded-xl hover:bg-muted text-foreground transition-colors font-semibold text-xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert className="size-4 text-muted-foreground shrink-0" />
+                        <span className="truncate">Painel Global Master</span>
+                      </div>
+                      <ArrowUpRight className="size-3.5 text-muted-foreground group-hover:text-foreground transition-transform shrink-0" />
+                    </Link>
 
- {/* 2. Pesquisar */}
- <button
- type="button"
- onClick={() => setIsAllToolsOpen(true)}
- className="w-full flex items-center gap-3 px-3 min-h-11 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
- >
- <Search className="size-4 shrink-0 text-muted-foreground" />
- <span className="truncate">Pesquisar</span>
- </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsMasterAllVerticals((prev) => !prev)}
+                      className={cn(
+                        "w-full flex items-center justify-between px-3 py-2 min-h-11 rounded-xl text-2xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        isMasterAllVerticals
+                          ? "bg-muted text-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                      )}
+                    >
+                      <span>
+                        {isMasterAllVerticals
+                          ? "Modo Master: Todas as Verticais"
+                          : "Filtrar por Nicho da Loja"}
+                      </span>
+                      <span
+                        className={cn(
+                          "size-2 rounded-full",
+                          isMasterAllVerticals ? "bg-foreground" : "bg-muted-foreground/50"
+                        )}
+                      />
+                    </button>
+                  </div>
+                )}
 
- {/* 3. Configurações da Loja */}
- <Link
- to="/workspace/configuracoes"
- className="w-full flex items-center gap-3 px-3 min-h-11 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
- >
- <Settings className="size-4 shrink-0 text-muted-foreground" />
- <span className="truncate">Configurações</span>
- </Link>
+                {activeMasterPillar && (
+                  <div className="space-y-3">
+                    <div className="px-2">
+                      <h3 className="text-xs font-bold text-foreground tracking-tight">
+                        {activeMasterPillar.label}
+                      </h3>
+                      <p className="text-2xs text-muted-foreground leading-snug mt-1">
+                        {activeMasterPillar.description}
+                      </p>
+                    </div>
 
- {/* 4. Central de Ajuda & Retorno ao Super App */}
- <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
- <Link
- to="/termos"
- className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-2 min-h-11 rounded-lg hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
- >
- <HelpCircle className="size-3.5" />
- <span>Ajuda</span>
- </Link>
+                    {activeMasterPillar.groups.map((group) => (
+                      <div key={group.id} className="space-y-1">
+                        {activeMasterPillar.groups.length > 1 && (
+                          <div className="px-2 pt-1 pb-1">
+                            <span className="text-2xs font-mono font-bold uppercase tracking-wider text-muted-foreground/70">
+                              {group.label}
+                            </span>
+                          </div>
+                        )}
+                        <div className="space-y-1">
+                          {group.items.map((item) => {
+                            const ItemIcon = item.icon;
+                            const isItemActive =
+                              item.path === "/workspace"
+                                ? currentPath === "/workspace" || currentPath === "/workspace/"
+                                : currentPath === item.path ||
+                                  currentPath.startsWith(item.path + "/");
 
- <button
- type="button"
- onClick={() => requestSwitchToPersonal("/")}
- className="flex items-center gap-1 text-primary hover:underline px-2 min-h-11 font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
- title="Voltar ao marketplace (Super App)"
- >
- <span>Super App</span>
- <ArrowUpRight className="size-3" />
- </button>
- </div>
- </div>
- </aside>
+                            return (
+                              <Link
+                                key={item.path}
+                                to={item.path as never}
+                                className={cn(
+                                  "flex items-center justify-between gap-2 px-3 min-h-11 py-2 rounded-xl text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                  isItemActive
+                                    ? "bg-muted text-foreground font-bold"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium"
+                                )}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <ItemIcon
+                                    className={cn(
+                                      "size-4 shrink-0",
+                                      isItemActive ? "text-foreground" : "text-muted-foreground"
+                                    )}
+                                  />
+                                  <span className="truncate">{item.label}</span>
+                                </div>
+                                {item.badge && (
+                                  <span className="px-2 py-1 text-3xs font-mono font-bold rounded-md bg-muted text-foreground shrink-0">
+                                    {item.badge}
+                                  </span>
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            {/* Rodapé da Sidebar Expandida */}
+            <div className="p-3 space-y-1 border-t border-border/40 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsAllToolsOpen(true)}
+                className="w-full flex items-center justify-between px-3 min-h-11 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <LayoutGrid className="size-4 shrink-0" />
+                  <span className="truncate">Todas as ferramentas</span>
+                </div>
+                <kbd className="text-3xs font-mono px-2 py-1 rounded bg-muted text-muted-foreground">
+                  ⌘K
+                </kbd>
+              </button>
+
+              <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
+                <Link
+                  to="/termos"
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-2 min-h-11 rounded-lg hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <HelpCircle className="size-3.5" />
+                  <span>Ajuda</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => requestSwitchToPersonal("/")}
+                  className="flex items-center gap-1 text-foreground hover:underline px-2 min-h-11 font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  title="Voltar ao marketplace (Super App)"
+                >
+                  <span>Super App</span>
+                  <ArrowUpRight className="size-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </aside>
 
       {/* ── 2. ÁREA PRINCIPAL COM HEADER OPERACIONAL DEDICADO ── */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        <header className="h-14 bg-background/95 backdrop-blur-md border-b border-border/60 px-3 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 sticky top-0 z-20">
+        <header className="h-14 bg-background border-b border-border/40 px-4 sm:px-6 flex items-center justify-between shrink-0 sticky top-0 z-20">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile & Tablet Sheet Trigger */}
             <div className="waesy-compact-medium-only shrink-0">
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" className="size-11 min-w-11 min-h-11 rounded-lg border-border/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-11 min-w-11 min-h-11 rounded-xl border-border/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
                     <Sliders className="size-4" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-72 p-4">
-                  <div className="space-y-4">
-                    <div className="pb-2 border-b border-border/60">
+                  <div className="space-y-4 h-full flex flex-col">
+                    <div className="pb-2 border-b border-border/40 shrink-0">
                       <WorkspaceAccountSwitcher
                         memberships={memberships}
                         activeStoreId={activeStoreId}
                         activeStore={activeStore}
                         userDisplayName={userDisplayName}
                         userEmail={session?.email}
+                        userAvatarUrl={rawAvatarUrl}
                         isSwitching={isSwitching}
                         onSwitchStore={handleSwitchStore}
+                        onSwitchToPersonal={confirmSwitchToPersonal}
                       />
                     </div>
-                    <ScrollArea className="h-full pr-2">
-                      <div className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => setIsMobileMenuOpen(false)}>
+                    <ScrollArea className="flex-1 pr-2">
+                      <div
+                        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
                         <NavLinks isMobile={true} />
                       </div>
                     </ScrollArea>
+                    <div className="pt-3 border-t border-border/40 shrink-0 space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          setIsAllToolsOpen(true);
+                        }}
+                        className="w-full min-h-11 px-3 py-2 rounded-xl bg-muted hover:bg-muted/80 text-foreground flex items-center justify-between text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <span className="flex items-center gap-2">
+                          <LayoutGrid className="size-4 text-primary" />
+                          <span>Todas as Ferramentas</span>
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono">Ctrl+K</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          requestSwitchToPersonal("/conta");
+                        }}
+                        className="w-full min-h-11 px-3 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground flex items-center gap-3 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <div className="size-8 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-xs overflow-hidden shrink-0">
+                          {rawAvatarUrl && !railAvatarFailed ? (
+                            <img
+                              src={rawAvatarUrl}
+                              alt={userDisplayName}
+                              className="size-full object-cover"
+                              onError={() => setRailAvatarFailed(true)}
+                            />
+                          ) : (
+                            <span>{userInitial}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-foreground truncate">{userDisplayName}</p>
+                          <p className="text-xs text-muted-foreground truncate">Minha Conta Pessoal</p>
+                        </div>
+                        <ArrowUpRight className="size-3.5 text-muted-foreground shrink-0" />
+                      </button>
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>
             </div>
+
+            {/* Quando o painel secundário está recolhido no Desktop, exibe o Account Switcher compacto no Header */}
+            {!isSubSidebarOpen && (
+              <div className="hidden waesy-expanded-flex items-center gap-2 min-w-0">
+                <div className="w-56">
+                  <WorkspaceAccountSwitcher
+                    memberships={memberships}
+                    activeStoreId={activeStoreId}
+                    activeStore={activeStore}
+                    userDisplayName={userDisplayName}
+                    userEmail={session?.email}
+                    userAvatarUrl={rawAvatarUrl}
+                    isSwitching={isSwitching}
+                    onSwitchStore={handleSwitchStore}
+                    onSwitchToPersonal={confirmSwitchToPersonal}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Identificação rápida do Módulo Master ativo no Desktop */}
+            {activeMasterPillar && (
+              <div className="hidden waesy-expanded-flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">{activeMasterPillar.label}</span>
+              </div>
+            )}
 
             {/* Identificação rápida da loja no Mobile/Tablet (< lg) */}
             <div className="waesy-compact-medium-only flex items-center gap-2 min-w-0">
@@ -553,7 +952,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           </div>
 
           {/* Ações do Header do Workspace */}
-          <div className="flex items-center gap-2 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Botão Contextual da Loja Pública */}
             {(() => {
               const storeData = activeStore?.store || activeStore;
@@ -566,7 +965,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 hidden waesy-expanded-flex border-border bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-xl text-xs font-bold gap-2 hidden waesy-expanded-flex border-border/50 bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Link
                     to="/perfil-da-loja"
@@ -574,7 +973,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ActionIcon className="size-3.5 text-primary" />
+                    <ActionIcon className="size-3.5 text-muted-foreground" />
                     <span>{contextualAction.label}</span>
                     <ExternalLink className="size-3 text-muted-foreground ml-1" />
                   </Link>
@@ -587,7 +986,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               <Button
                 asChild
                 size="sm"
-                className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground hover:opacity-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground hover:opacity-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Link to="/admin-master">
                   <ShieldAlert className="size-3.5" />
@@ -607,78 +1006,100 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 hidden waesy-expanded-flex border-border bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-xl text-xs font-bold gap-2 hidden waesy-expanded-flex border-border/50 bg-card hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Link to={opAction.path as never}>
-                    <OpIcon className="size-3.5 text-primary" />
+                    <OpIcon className="size-3.5 text-muted-foreground" />
                     <span>{opAction.label}</span>
                   </Link>
                 </Button>
               );
             })()}
 
-            {/* Menu do Operador */}
+            {/* Menu do Operador (Canto Superior Direito com Foto Sincronizada - Regra B.27) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex items-center gap-2 p-1 pl-2 h-11 min-h-11 rounded-lg border border-border/60 bg-card hover:bg-muted/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex items-center gap-2 p-1 pl-3 h-11 min-h-11 rounded-xl bg-card hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <span className="text-xs font-bold text-foreground max-w-44 truncate hidden waesy-expanded-flex">
                     {userDisplayName}
                   </span>
-                  <Avatar className="size-7 rounded-lg">
-                    <AvatarImage src="" alt={userDisplayName} />
-                    <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground">
+                  {rawAvatarUrl && !headerAvatarFailed ? (
+                    <img
+                      src={rawAvatarUrl}
+                      alt={userDisplayName}
+                      onError={() => setHeaderAvatarFailed(true)}
+                      className="size-8 rounded-full object-cover shrink-0 bg-muted"
+                    />
+                  ) : (
+                    <span className="size-8 rounded-full bg-foreground text-background text-xs font-bold flex items-center justify-center shrink-0">
                       {userInitial}
-                    </AvatarFallback>
-                  </Avatar>
+                    </span>
+                  )}
                 </button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-60 rounded-lg p-2 border border-border">
-                <DropdownMenuLabel className="font-normal px-2 py-2">
-                  <p className="text-xs font-bold text-foreground truncate">{userDisplayName}</p>
-                  <p className="text-xs font-mono text-muted-foreground truncate">{session?.email}</p>
-                  <span className="inline-block mt-1 px-2 py-1 rounded text-xs font-bold bg-muted text-muted-foreground">
-                    {activeStore?.name || "Loja"}
-                  </span>
+              <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 border border-border/60 bg-card">
+                <DropdownMenuLabel className="font-normal px-2 py-2 flex items-center gap-3">
+                  {rawAvatarUrl && !headerAvatarFailed ? (
+                    <img
+                      src={rawAvatarUrl}
+                      alt={userDisplayName}
+                      onError={() => setHeaderAvatarFailed(true)}
+                      className="size-10 rounded-full object-cover shrink-0 bg-muted"
+                    />
+                  ) : (
+                    <span className="size-10 rounded-full bg-foreground text-background text-sm font-bold flex items-center justify-center shrink-0">
+                      {userInitial}
+                    </span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-foreground truncate">{userDisplayName}</p>
+                    <p className="text-2xs font-mono text-muted-foreground truncate">
+                      {session?.email || session?.user?.email}
+                    </p>
+                    <span className="inline-block mt-1 px-2 py-1 rounded-md text-2xs font-bold bg-muted text-foreground truncate max-w-full">
+                      {activeStore?.name || "Loja"}
+                    </span>
+                  </div>
                 </DropdownMenuLabel>
 
-                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuSeparator className="bg-border/50" />
 
-                <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs">
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs min-h-11">
                   <Link to="/workspace/configuracoes">
                     <Settings className="size-3.5 mr-2 text-muted-foreground" />
                     <span>Configurações</span>
                   </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs">
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs min-h-11">
                   <Link to="/workspace/lojas">
                     <Building2 className="size-3.5 mr-2 text-muted-foreground" />
                     <span>Trocar Loja</span>
                   </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuSeparator className="bg-border/50" />
 
                 <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                   onClick={() => requestSwitchToPersonal("/conta")}
-                  className="rounded-lg cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between"
+                  className="rounded-xl cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between min-h-11"
                 >
                   <div className="flex items-center gap-2">
-                    <UserCircle className="size-3.5 text-primary" />
+                    <UserCircle className="size-3.5 text-muted-foreground" />
                     <span>Conta Pessoal</span>
                   </div>
                   <ArrowUpRight className="size-3 text-muted-foreground" />
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuSeparator className="bg-border/50" />
 
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="rounded-lg cursor-pointer text-xs text-destructive focus:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="rounded-xl cursor-pointer text-xs text-destructive focus:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-h-11"
                 >
                   <LogOut className="size-3.5 mr-2" />
                   <span>Sair</span>
@@ -688,15 +1109,16 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           </div>
         </header>
 
-        <main id="workspace-main-content" className="main-container-query flex-1 w-full min-h-0 overflow-y-auto no-scrollbar flex flex-col">
+        <main
+          id="workspace-main-content"
+          className="main-container-query flex-1 w-full min-h-0 overflow-y-auto no-scrollbar flex flex-col bg-background"
+        >
           <div
             className={cn(
               "w-full mx-auto flex-1 flex flex-col min-h-0",
-              currentPath.startsWith("/workspace/turismo") ||
-                currentPath.startsWith("/workspace/crm") ||
-                currentPath.startsWith("/workspace/pdv")
-                ? "max-w-none px-2 sm:px-4 lg:px-5 py-2 sm:py-3 pb-24 lg:pb-3"
-                : "max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 lg:pb-6"
+              currentPath.startsWith("/workspace/estudio")
+                ? "max-w-none p-0"
+                : "max-w-none px-4 sm:px-6 lg:px-6 py-4 sm:py-5 pb-28 lg:pb-8"
             )}
           >
             {isAuthorized ? (
@@ -786,9 +1208,9 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
  {/* ── 3. MODAL DE CONFIRMAÇÃO DE ALTERNÂNCIA DE CONTEXTO (PROTEÇÃO RIGOROSA) ── */}
  <Dialog open={showPersonalSwitchModal} onOpenChange={setShowPersonalSwitchModal}>
- <DialogContent className="sm:max-w-md p-0 overflow-hidden sm:rounded-lg bg-background border border-border">
- <DialogHeader className="p-6 pb-4 bg-muted/20 border-b border-border/40">
- <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2 border border-primary/20">
+ <DialogContent className="sm:max-w-md p-0 overflow-hidden sm:rounded-2xl bg-background border border-border/40">
+ <DialogHeader className="p-6 pb-4 bg-card border-b border-border/40">
+ <div className="size-10 rounded-xl bg-muted text-foreground flex items-center justify-center mb-2">
  <ArrowRightLeft className="size-5" />
  </div>
  <DialogTitle className="text-lg font-black tracking-tight text-foreground">
@@ -801,15 +1223,15 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
  <div className="p-6 space-y-4 text-xs">
  {/* Box informativo de transição de identidade */}
- <div className="rounded-lg border border-border/60 bg-muted/30 p-4 space-y-2">
+ <div className="rounded-2xl bg-card p-4 space-y-2">
  <div className="flex items-center justify-between text-xs">
  <span className="text-muted-foreground">Ambiente Atual:</span>
  <span className="font-bold text-foreground">Loja {activeStore?.name || "Matriz"}</span>
  </div>
- <div className="h-px bg-border/60" />
+ <div className="h-px bg-border/40" />
  <div className="flex items-center justify-between text-xs">
  <span className="text-muted-foreground">Destino:</span>
- <span className="font-bold text-primary">Perfil Pessoal ({userDisplayName})</span>
+ <span className="font-bold text-foreground">Perfil Pessoal ({userDisplayName})</span>
  </div>
  </div>
 
@@ -818,7 +1240,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  </p>
  </div>
 
- <DialogFooter className="p-4 bg-muted/10 border-t border-border/40 flex flex-col sm:flex-row gap-2">
+ <DialogFooter className="p-4 bg-card border-t border-border/40 flex flex-col sm:flex-row gap-2">
  <Button
  type="button"
  variant="outline"

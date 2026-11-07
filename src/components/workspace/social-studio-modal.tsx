@@ -130,7 +130,7 @@ export function SocialStudioModal({
             >
               {/* Top Branding Pill */}
               <div className="flex items-center justify-between z-10">
-                <span className="text-2xs uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-card/20 backdrop-blur-md">
+                <span className="text-2xs uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-card ">
                   {storeName}
                 </span>
                 <span className="text-2xs font-semibold bg-emerald-500 text-foreground px-2 py-1 rounded-full flex items-center gap-1">

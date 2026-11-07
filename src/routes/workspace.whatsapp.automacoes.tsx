@@ -88,7 +88,7 @@ function WhatsAppAutomationPage() {
     </Button>
   );
 
-  return <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 sm:p-6">
+  return <main className="flex w-full flex-col gap-6 p-4 sm:p-6">
     <PageHeader eyebrow="Workspace · WhatsApp" title="Automações e campanhas" actions={newFlowButton} />
     <div className="grid gap-3 md:grid-cols-3">
       <Card><CardContent className="flex items-center gap-3 p-4"><Workflow className="size-5 text-primary" /><div><p className="text-xs text-muted-foreground">Fluxos WhatsApp</p><p className="text-xl font-semibold">{flows.length}</p></div></CardContent></Card>

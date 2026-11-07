@@ -898,20 +898,20 @@ function KDSPage() {
  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
  return (
- <div key={col.id} className="flex-shrink-0 w-88 flex flex-col gap-3 h-full">
+ <div key={col.id} className="flex-shrink-0 w-88 min-h-144 h-full rounded-2xl bg-muted/50 dark:bg-muted/30 p-3 flex flex-col gap-3">
  <div
- className={`rounded-lg border ${col.color} p-3 flex items-center justify-between bg-surface-paper `}
+ className="rounded-xl px-2 py-2 flex items-center justify-between"
  >
- <div className="flex items-center gap-2 font-bold text-sm">
+ <div className="flex items-center gap-2 font-bold text-sm text-foreground">
  {col.icon}
  {col.title}
  </div>
- <Badge variant="secondary" className="font-mono text-sm">
+ <Badge variant="secondary" className="font-mono text-xs bg-card">
  {colOrders.length}
  </Badge>
  </div>
 
- <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-3 pb-6">
+ <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-3 pb-4">
  {colOrders.map((order) => {
  const elapsedMinutes = Math.floor(
  (Date.now() - new Date(order.created_at).getTime()) / 60000,
@@ -929,7 +929,7 @@ function KDSPage() {
         setSelectedOrder(order);
       }
     }}
-    className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-colors duration-200 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="bg-card rounded-2xl p-4 flex flex-col gap-3 cursor-pointer hover:bg-card/90 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     onClick={() => setSelectedOrder(order)}
   >
  <div className="flex justify-between items-start gap-2">

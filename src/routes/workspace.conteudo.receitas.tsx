@@ -260,7 +260,7 @@ function WorkspaceRecipesManagementPage() {
   const hiddenCount = recipes.filter((r) => r.status === "hidden").length;
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 px-0 sm:px-6 py-4">
+    <div className="w-full space-y-6 px-0 sm:px-6 py-4">
       {/* ── 1. Header & Actions ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4">
         <div>

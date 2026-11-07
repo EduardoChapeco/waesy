@@ -252,7 +252,7 @@ export function WorkspaceViabilityPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-24">
+    <div className="w-full space-y-6 pb-24">
       {/* ── 1. CABEÇALHO E NAVEGAÇÃO DE INCUBADORA / VIABILIDADE ── */}
       <div className="p-5 sm:p-6 rounded-lg border border-border/70 bg-card space-y-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -553,7 +553,7 @@ export function WorkspaceViabilityPage() {
           </div>
         </div>
       ) : !activeStudy ? (
-        <div className="p-12 rounded-lg border border-dashed border-border/60 bg-card/40 text-center space-y-4">
+        <div className="p-12 rounded-lg border border-dashed border-border/60 bg-card text-center space-y-4">
           <Compass className="size-8 mx-auto text-muted-foreground" />
           <div className="space-y-1">
             <h2 className="text-base font-bold text-foreground">

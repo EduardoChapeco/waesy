@@ -144,7 +144,7 @@ function CmsStoriesPage() {
  };
 
  return (
- <div className="p-6 max-w-6xl mx-auto space-y-6">
+ <div className="p-6 w-full space-y-6">
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="CMS"
  title="Stories"
@@ -215,7 +215,7 @@ function CmsStoriesPage() {
  </Badge>
  </div>
 
- <div className="absolute top-2.5 right-2.5 flex items-center gap-2 bg-foreground/60 backdrop-blur-md px-2 py-1 rounded-md text-foreground text-xs font-mono">
+ <div className="absolute top-2.5 right-2.5 flex items-center gap-2 bg-foreground/60 px-2 py-1 rounded-md text-foreground text-xs font-mono">
  <Clock className="size-3" />
  <span>{story.duration_seconds || 15}s</span>
  </div>

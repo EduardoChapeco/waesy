@@ -530,7 +530,7 @@ export default function CompanyCorporateTravelPage() {
     return (
       <div className="flex flex-col min-h-dvh bg-background text-foreground">
         <WorkspaceCanonicalToolbar title="Hub de Viagens Corporativas" />
-        <div className="p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-4">
+        <div className="p-4 sm:p-6 w-full space-y-4">
           <div className="h-11 bg-muted rounded-lg animate-pulse motion-reduce:animate-none" />
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="h-24 bg-muted rounded-lg animate-pulse motion-reduce:animate-none" />
@@ -586,7 +586,7 @@ export default function CompanyCorporateTravelPage() {
         </div>
       </WorkspaceCanonicalToolbar>
 
-      <div className="p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-6">
+      <div className="p-4 sm:p-6 w-full space-y-6">
         {/* Painel de Métricas Canônicas VOLL (Image 2) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Card 1: Destaque Laranja VOLL de Aprovações Pendentes */}
@@ -651,7 +651,7 @@ export default function CompanyCorporateTravelPage() {
         </div>
 
         {/* ── Barra Canônica de Conformidade com a Política (VOLL Image 2: Compliance Ratio) ── */}
-        <div className="p-4 rounded-xl border border-border/80 bg-card/60 space-y-2">
+        <div className="p-4 rounded-xl border border-border/80 bg-card space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <span className="font-bold text-foreground">Conformidade com a Política de Viagens</span>
             <div className="flex items-center gap-3 text-xs font-semibold">

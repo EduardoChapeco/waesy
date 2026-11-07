@@ -135,7 +135,7 @@ function CalendarioEditorialPage() {
  };
 
  return (
- <div className="space-y-6 max-w-6xl pb-16">
+ <div className="space-y-6 w-full pb-16">
  {/* Header */}
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
  <div>

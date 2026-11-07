@@ -467,7 +467,7 @@ function AnunciosWorkspacePage() {
 
   return (
     <NicheOperationalGuard requiredNiches={[]}>
-      <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="space-y-6 w-full">
         {/* ── TOOLBAR CANÔNICA SOBERANA Waesy ── */}
         <WorkspaceCanonicalToolbar
           tabs={tabs}
@@ -699,7 +699,7 @@ function AnunciosWorkspacePage() {
                       alt={aiCreativePreview.creative.headline}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute bottom-2 left-2 right-2 p-2 rounded-lg bg-background/85 backdrop-blur-md border border-border/40">
+                    <div className="absolute bottom-2 left-2 right-2 p-2 rounded-lg bg-background/85 border border-border/40">
                       <p className="text-xs font-bold text-foreground truncate">{aiCreativePreview.creative.headline}</p>
                       {aiCreativePreview.priceFormatted && (
                         <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{aiCreativePreview.priceFormatted}</p>

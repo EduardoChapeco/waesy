@@ -1038,7 +1038,7 @@ export const updateAppointmentStatus = createServerFn({ method: "POST" })
             if (servicePriceCents > 0) {
               const { data: openRegister } = await db
                 .from("cash_registers")
-                .select("id")
+                .select("id, opened_by")
                 .eq("store_id", storeId)
                 .eq("status", "open")
                 .order("opened_at", { ascending: false })
@@ -1047,14 +1047,17 @@ export const updateAppointmentStatus = createServerFn({ method: "POST" })
 
               if (openRegister) {
                 await db.from("cash_register_entries").insert({
-                  register_id: openRegister.id,
-                  entry_type: "sale",
+                  cash_register_id: openRegister.id,
+                  order_id: null,
                   amount_cents: servicePriceCents,
+                  entry_type: "sale",
                   payment_method: "other",
-                  description: `Atendimento: ${serviceTitle} (${appt.guest_name || "Cliente"})`,
-                  reference_type: "appointment",
-                  reference_id: appt.id,
-                  created_by: identity?.id || null,
+                  notes: `Atendimento: ${serviceTitle} (${appt.guest_name || "Cliente"})`,
+                  created_by: identity?.id || openRegister.opened_by,
+                  channel_source: "appointments",
+                  marketplace_fee_cents: 0,
+                  net_payout_cents: servicePriceCents,
+                  external_reference_id: appt.id,
                   created_at: nowIso,
                 });
               }

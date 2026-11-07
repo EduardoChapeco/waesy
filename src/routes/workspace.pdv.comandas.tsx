@@ -188,9 +188,9 @@ function PdvComandasPage() {
  toolDescription="Gestão de mesas, comandas abertas e fechamento de conta."
  store={store}
  >
-      <div className="flex flex-col min-h-[calc(100dvh-4rem)] bg-background text-foreground pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
+      <div className="flex flex-col min-h-[calc(100dvh-4rem)] bg-background text-foreground pb-20 w-full px-0 sm:px-4 md:px-0">
         {/* ── Top Bar ── */}
-        <div className="border-b border-border/80 bg-card/60 backdrop-blur-md px-3 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 rounded-lg">
+        <div className="border-b border-border/80 bg-card px-3 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 rounded-lg">
           <div className="flex items-center gap-3">
             <NativeBackButton fallbackHref="/workspace/pdv" />
  <div>
@@ -542,7 +542,7 @@ function PdvComandasPage() {
                   )}
 
                   {/* Documentos Fiscais da Mesa */}
-                  <div className="p-3 rounded-lg border border-border/70 bg-card/50 flex items-center justify-between gap-2">
+                  <div className="p-3 rounded-lg border border-border/70 bg-card flex items-center justify-between gap-2">
                     <div>
                       <span className="text-xs font-bold text-foreground block">Emissão Fiscal</span>
                       <span className="text-xs text-muted-foreground block">NFS-e de Serviços / NFC-e / NF-e</span>

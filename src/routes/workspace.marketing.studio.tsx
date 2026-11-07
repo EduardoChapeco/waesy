@@ -291,7 +291,7 @@ export default function WorkspaceSocialStudioPage() {
   }
 
   return (
-    <div className="space-y-6 pb-20 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
+    <div className="space-y-6 pb-20 w-full px-0 sm:px-4 md:px-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader eyebrow="Marketing" title="Studio" />
 
@@ -743,7 +743,7 @@ export default function WorkspaceSocialStudioPage() {
             {/* Topo */}
             <div className="flex items-center justify-between z-10">
               <div className="flex items-center gap-2">
-                <div className="size-10 rounded-full bg-neutral-800/80 backdrop-blur-md border border-neutral-700 flex items-center justify-center font-bold text-sm text-neutral-100">
+                <div className="size-10 rounded-full bg-neutral-800/80 border border-neutral-700 flex items-center justify-center font-bold text-sm text-neutral-100">
                   {authorName.slice(0, 2).toUpperCase()}
                 </div>
                 <div>
@@ -753,7 +753,7 @@ export default function WorkspaceSocialStudioPage() {
               </div>
 
               {(template === "carousel" ? activeSlide.tag : badgeText) && (
-                <span className="px-3 py-1 rounded-full bg-neutral-900/80 backdrop-blur-md border border-neutral-700 text-xs font-semibold uppercase tracking-wider text-emerald-300">
+                <span className="px-3 py-1 rounded-full bg-neutral-900/80 border border-neutral-700 text-xs font-semibold uppercase tracking-wider text-emerald-300">
                   {template === "carousel" ? activeSlide.tag : badgeText}
                 </span>
               )}

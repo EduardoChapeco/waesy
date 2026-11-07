@@ -398,7 +398,7 @@ function AdminOrderDetailPage() {
  };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto w-full pb-20">
+    <div className="space-y-6 w-full pb-20">
       <div className="flex justify-between items-start flex-wrap gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-3 flex-wrap">

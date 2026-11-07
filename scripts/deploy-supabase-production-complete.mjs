@@ -31,7 +31,7 @@ const env = {
   SUPABASE_DB_PASSWORD: secrets.SUPABASE_DB_PASSWORD || process.env.SUPABASE_DB_PASSWORD,
 };
 
-const projectRef = secrets.PROJECT_REF || 'jfuebqmltksyznovhlwa';
+const projectRef = secrets.SUPABASE_PROJECT_REF || secrets.PROJECT_REF || 'jfuebqmltksyznovhlwa';
 console.log(`Projeto Alvo: ${projectRef}`);
 
 // 2. Linkar projeto (se necessário)

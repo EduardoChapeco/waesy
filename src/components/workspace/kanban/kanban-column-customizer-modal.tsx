@@ -2,8 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowUp, ArrowDown, Eye, EyeOff, RotateCcw, Check } from "lucide-react";
-import { type KanbanStageDTO, type KanbanPurpose, saveKanbanStages, resetKanbanStages } from "@/services/kanban-config.functions";
+import { ArrowUp, ArrowDown, Eye, EyeOff, RotateCcw, Check, Sparkles, Plus, Trash2, Clock } from "lucide-react";
+import {
+  type KanbanStageDTO,
+  type KanbanPurpose,
+  saveKanbanStages,
+  resetKanbanStages,
+  KANBAN_PRESETS_CATALOG,
+} from "@/services/kanban-config.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -27,17 +33,13 @@ const PURPOSE_OPTIONS: Array<{ value: KanbanPurpose; label: string }> = [
 ];
 
 const COLOR_PRESETS = [
-  "#64748b", // slate
-  "#0ea5e9", // sky
-  "#3b82f6", // blue
-  "#6366f1", // indigo
-  "#a855f7", // purple
-  "#ec4899", // pink
-  "#f97316", // orange
-  "#eab308", // amber
-  "#10b981", // emerald
-  "#14b8a6", // teal
-  "#ef4444", // red
+  { value: "var(--muted-foreground)", label: "Neutro" },
+  { value: "var(--primary)", label: "Primário" },
+  { value: "var(--warning)", label: "Alerta" },
+  { value: "var(--warning-strong)", label: "Laranja" },
+  { value: "var(--success)", label: "Sucesso" },
+  { value: "var(--destructive)", label: "Urgente" },
+  { value: "var(--accent-foreground)", label: "Destaque" },
 ];
 
 export function KanbanColumnCustomizerModal({
@@ -93,6 +95,33 @@ export function KanbanColumnCustomizerModal({
   const handleToggleVisible = (index: number) => {
     const copy = [...stages];
     copy[index].is_visible = !copy[index].is_visible;
+    setStages(copy);
+  };
+
+  const handleAddStage = () => {
+    const newKey = `col_${Date.now()}`;
+    const newStage: KanbanStageDTO = {
+      stage_key: newKey,
+      title: "Nova Coluna",
+      purpose: "in_progress",
+      color: "var(--primary)",
+      sort_order: stages.length,
+      is_visible: true,
+    };
+    setStages((prev) => [...prev, newStage]);
+  };
+
+  const handleRemoveStage = (index: number) => {
+    if (stages.length <= 2) {
+      toast.error("O fluxo precisa de no mínimo 2 colunas ativas.");
+      return;
+    }
+    setStages((prev) => prev.filter((_, i) => i !== index).map((s, idx) => ({ ...s, sort_order: idx })));
+  };
+
+  const handleSlaChange = (index: number, minutes: number | undefined) => {
+    const copy = [...stages];
+    copy[index].sla_minutes = minutes;
     setStages(copy);
   };
 
@@ -154,6 +183,34 @@ export function KanbanColumnCustomizerModal({
           </DialogDescription>
         </DialogHeader>
 
+        {/* Seletor Rápido de Presets por Nicho / Setor */}
+        <div className="px-5 py-3 border-b border-border/40 bg-muted/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-3.5 text-primary shrink-0" />
+            <span className="text-2xs text-muted-foreground">
+              <strong className="text-foreground">Modelos do Setor:</strong> Carregue um preset pré-configurado
+            </span>
+          </div>
+          <select
+            onChange={(e) => {
+              const selectedKey = e.target.value;
+              if (selectedKey && KANBAN_PRESETS_CATALOG[selectedKey]) {
+                setStages(KANBAN_PRESETS_CATALOG[selectedKey].stages);
+                toast.success(`Preset "${KANBAN_PRESETS_CATALOG[selectedKey].title}" carregado!`);
+              }
+            }}
+            defaultValue=""
+            className="h-9 px-3 rounded-lg text-xs font-semibold bg-background border border-border/60 text-foreground focus:outline-none cursor-pointer"
+          >
+            <option value="" disabled>Carregar modelo...</option>
+            {Object.values(KANBAN_PRESETS_CATALOG).map((p) => (
+              <option key={p.presetKey} value={p.presetKey}>
+                {p.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="p-5 max-h-96 sm:max-h-128 overflow-y-auto no-scrollbar space-y-3">
           {stages.map((stage, idx) => (
             <div
@@ -178,8 +235,8 @@ export function KanbanColumnCustomizerModal({
                     title="Mudar cor do indicador"
                   >
                     {COLOR_PRESETS.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
+                      <option key={c.value} value={c.value}>
+                        {c.label}
                       </option>
                     ))}
                   </select>
@@ -209,6 +266,19 @@ export function KanbanColumnCustomizerModal({
                     </option>
                   ))}
                 </select>
+
+                {/* SLA (minutos) */}
+                <div className="flex items-center gap-1 bg-muted/40 px-2 py-1 rounded-lg border border-border/40" title="SLA máximo em minutos">
+                  <Clock className="size-3 text-muted-foreground shrink-0" />
+                  <input
+                    type="number"
+                    min={1}
+                    value={stage.sla_minutes || ""}
+                    onChange={(e) => handleSlaChange(idx, e.target.value ? Number(e.target.value) : undefined)}
+                    placeholder="SLA min"
+                    className="w-16 h-6 text-2xs font-mono bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+                  />
+                </div>
 
                 {/* Botões de Mover Ordem */}
                 <div className="flex items-center gap-1">
@@ -252,9 +322,32 @@ export function KanbanColumnCustomizerModal({
                 >
                   {stage.is_visible ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
                 </Button>
+
+                {/* Excluir Coluna */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveStage(idx)}
+                  className="size-7 rounded-md cursor-pointer text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+                  title="Excluir coluna"
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
               </div>
             </div>
           ))}
+
+          {/* Botão Adicionar Nova Coluna */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleAddStage}
+            className="w-full h-11 min-h-11 rounded-lg border-dashed border-border/70 hover:border-primary text-xs font-semibold gap-2 cursor-pointer text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="size-3.5" />
+            <span>Adicionar Nova Coluna</span>
+          </Button>
         </div>
 
         <DialogFooter className="p-4 border-t border-border/60 bg-muted/20 flex flex-row items-center justify-between gap-2">

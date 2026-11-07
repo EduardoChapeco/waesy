@@ -543,7 +543,7 @@ function SubPainelEventoPage() {
 
  {/* ── Aba 3: Portaria & Check-in Rápido ── */}
  <TabsContent value="portaria" className="space-y-4">
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
  {/* Validador In-Place */}
  <div className="bg-card rounded-lg p-6 border border-border/60 space-y-4">
  <div>

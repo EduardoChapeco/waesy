@@ -153,6 +153,9 @@ function PublicLeadPassageirosPage() {
           paxList,
           lgpdAccepted: true,
           healthNotes: combinedNotes || null,
+          pcd,
+          reducedMobility,
+          autism,
         },
       });
 

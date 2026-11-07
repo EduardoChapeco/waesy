@@ -54,7 +54,7 @@ function MerchantAffiliateReconciliationPage() {
   );
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto p-4 sm:p-6 pb-24">
+    <div className="space-y-6 w-full p-4 sm:p-6 pb-24">
       {/* ── 1. Top Bar / Cabeçalho ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4">
         <div>

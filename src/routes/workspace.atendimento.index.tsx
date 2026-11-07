@@ -866,7 +866,7 @@ function WorkspaceAtendimentoPage() {
     <div className="flex flex-col h-full flex-1 overflow-hidden bg-background">
       {/* CABEÇALHO DO HUB DE ATENDIMENTO */}
       <header className={cn(
-        "shrink-0 border-b border-border/80 bg-card/90 px-4 py-3 flex-col md:flex-row md:items-center justify-between gap-3",
+        "shrink-0 border-b border-border/80 bg-card px-4 py-3 flex-col md:flex-row md:items-center justify-between gap-3",
         activeHubTab === "live" && activeThreadId ? "hidden md:flex" : "flex"
       )}>
         <div className="flex items-center justify-between gap-3 min-w-0">
@@ -1043,7 +1043,7 @@ function WorkspaceAtendimentoPage() {
             )}
           >
             {/* Busca & Chips de Status */}
-            <div className="p-3 border-b border-border/80 space-y-2 bg-card/40">
+            <div className="p-3 border-b border-border/80 space-y-2 bg-card">
               <div className="relative">
                 <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
                 <Input
@@ -1117,10 +1117,10 @@ function WorkspaceAtendimentoPage() {
                       key={t.id}
                       onClick={() => setActiveThreadId(t.id)}
                       className={cn(
-                        "w-full p-4 text-left flex items-start gap-3 transition-colors duration-150 cursor-pointer border-l-4 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                        "w-full p-4 text-left flex items-start gap-3 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         isActive
-                          ? "bg-muted/70 border-primary"
-                          : "border-transparent hover:bg-muted/30",
+                          ? "bg-muted"
+                          : "hover:bg-muted/40",
                       )}
                     >
                       {/* Avatar com foto real ou iniciais */}
@@ -1394,7 +1394,7 @@ function WorkspaceAtendimentoPage() {
 
               {/* Painel Recolhível: Linha do Tempo Cronológica (Pedidos, Chamados e Planilhas) */}
               {showLiveTimeline && (
-                <div className="bg-card/95 border-b border-border/80 p-4 space-y-3 animate-in fade-in duration-150">
+                <div className="bg-card border-b border-border/80 p-4 space-y-3 animate-in fade-in duration-150">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                       <GitBranch className="size-4 text-primary" />
@@ -2007,7 +2007,7 @@ function WorkspaceAtendimentoPage() {
       {activeHubTab === "intranet" && (
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-background">
           {/* COLUNA ESQUERDA: Sidebar Segmentada por Departamento (Estilo Slack / Corporativo) */}
-          <aside className="w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-border/80 bg-card/40 flex flex-col shrink-0">
+          <aside className="w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-border/80 bg-card flex flex-col shrink-0">
             <div className="p-3 border-b border-border/80 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -2137,7 +2137,7 @@ function WorkspaceAtendimentoPage() {
                               "w-full p-3 rounded-lg text-left transition-colors cursor-pointer border space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                               isSelected
                                 ? "bg-primary/10 border-primary/40 text-foreground"
-                                : "bg-card/60 border-border/50 hover:bg-muted/40 text-foreground",
+                                : "bg-card border-border/50 hover:bg-muted/40 text-foreground",
                             )}
                           >
                             <div className="flex items-start justify-between gap-2">

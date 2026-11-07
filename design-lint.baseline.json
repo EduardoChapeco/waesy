@@ -1,12 +1,12 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-06T02:45:50.633Z",
-  "totalViolations": 793,
-  "filesInspected": 2628,
-  "filesWithViolations": 238,
+  "timestamp": "2026-11-06T22:50:23.727Z",
+  "totalViolations": 780,
+  "filesInspected": 2636,
+  "filesWithViolations": 237,
   "bySeverity": {
     "P0": 0,
-    "P1": 765,
+    "P1": 752,
     "P2": 24,
     "P3": 4
   },
@@ -14,7 +14,7 @@
     "DL-02": 138,
     "DL-18": 59,
     "DL-05": 43,
-    "DL-01": 397,
+    "DL-01": 384,
     "DL-13": 9,
     "DL-12": 26,
     "DL-11": 15,
@@ -31,9 +31,9 @@
   },
   "byModule": {
     "components/app": {
-      "total": 246,
+      "total": 235,
       "P0": 0,
-      "P1": 245,
+      "P1": 234,
       "P2": 1,
       "P3": 0
     },
@@ -101,9 +101,9 @@
       "P3": 0
     },
     "routes/other": {
-      "total": 4,
+      "total": 2,
       "P0": 0,
-      "P1": 4,
+      "P1": 2,
       "P2": 0,
       "P3": 0
     },

@@ -347,7 +347,7 @@ export default function WorkspaceTokensPage() {
             <span className="text-xs text-muted-foreground">Atualizado em tempo real</span>
           </div>
 
-          <div className="rounded-lg border border-border/50 bg-card/60 backdrop-blur-sm divide-y divide-border/40 overflow-hidden shadow-xs">
+          <div className="rounded-lg border border-border/50 bg-card divide-y divide-border/40 overflow-hidden shadow-xs">
             {wallet.transactions.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground text-xs">
                 Nenhuma movimentação registrada até o momento.

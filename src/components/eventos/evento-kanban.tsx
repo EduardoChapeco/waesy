@@ -160,13 +160,13 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
   return (
     <div className="space-y-6">
       {/* Topo do Kanban com Ações Apple HIG */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/70 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">
               {board?.nome || "Quadro de Operações do Evento"}
             </h3>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs bg-muted">
               {tasks.length} {tasks.length === 1 ? "tarefa" : "tarefas"}
             </Badge>
           </div>
@@ -297,7 +297,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
           renderItem: (task: any) => (
             <Card
               key={task.id}
-              className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs hover:border-primary/40 transition-colors duration-200 group"
+              className="rounded-2xl bg-card p-4 transition-colors duration-200 group"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-1 flex-1 min-w-0">
@@ -331,7 +331,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
               </div>
 
               {/* Rodapé do Card com Ações Rápidas de Transição de Coluna */}
-              <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between text-2xs text-muted-foreground">
+              <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between text-2xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   {task.data_fim ? (
                     <span className="flex items-center gap-1 text-muted-foreground">
@@ -352,7 +352,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
                         key={targetCol.id}
                         type="button"
                         onClick={() => handleMoveTask(task.id, targetCol.id)}
-                        className="px-2 py-1 rounded border border-border/80 text-3xs hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-2 py-1 rounded-md bg-muted text-3xs hover:bg-muted/80 hover:text-foreground transition-colors flex items-center gap-1 cursor-pointer"
                         title={`Mover para ${targetCol.nome}`}
                       >
                         <span>{targetCol.nome.substring(0, 4)}</span>

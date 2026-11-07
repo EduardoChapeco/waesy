@@ -231,7 +231,7 @@ function StudioWorkspacePage() {
  return (
  <div className="fixed inset-0 w-screen h-dvh z-50 flex flex-col bg-background text-foreground overflow-hidden font-sans select-none">
  {/* ── 1. HEADER DO ESTÚDIO FULLPAGE: Título + Modos + Salvar/Exportar ── */}
- <header className="h-14 border-b border-border/80 bg-card/95 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20">
+ <header className="h-14 border-b border-border/80 bg-card px-4 flex items-center justify-between shrink-0 z-20">
  <div className="flex items-center gap-2 sm:gap-3">
  <NativeBackButton fallbackHref="/workspace" />
 
@@ -540,7 +540,7 @@ function StudioWorkspacePage() {
  >
  <Film className="size-12 text-zinc-600 mb-2" />
  <p className="text-xs font-mono text-zinc-400">Vídeo Preview (4K Canvas)</p>
- <div className="absolute bottom-3 left-3 right-3 bg-foreground/60 backdrop-blur-md p-2 rounded-lg flex items-center justify-between text-xs font-mono text-foreground">
+ <div className="absolute bottom-3 left-3 right-3 bg-foreground/60 p-2 rounded-lg flex items-center justify-between text-xs font-mono text-foreground">
  <span>{currentTime.toFixed(1)}s</span>
  <span>/ {videoDuration}s</span>
  </div>

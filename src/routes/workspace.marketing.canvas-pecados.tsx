@@ -162,8 +162,8 @@ export function SevenSinsCanvasPage() {
   return (
     <div className="w-full min-h-full bg-background text-foreground pb-24">
       {/* ── HEADER EXECUTIVO COM SELO SILENCIOSO APPLE HIG ── */}
-      <div className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-0 sm:px-0 py-5">
+      <div className="border-b border-border/40 bg-card sticky top-0 z-20">
+        <div className="w-full px-0 sm:px-0 py-5">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ export function SevenSinsCanvasPage() {
 
       {/* ── FEEDBACK ALERT ── */}
       {feedback && (
-        <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-4">
+        <div className="w-full px-0 sm:px-0 mt-4">
           <div
             className={`p-4 rounded-lg border text-xs font-medium flex items-center justify-between ${
               feedback.type === "success"
@@ -223,7 +223,7 @@ export function SevenSinsCanvasPage() {
       )}
 
       {/* ── LENTES CRIATIVAS OPCIONAIS ── */}
-      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
+      <div className="w-full px-0 sm:px-0 mt-6">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           Lente criativa
         </h2>
@@ -241,7 +241,7 @@ export function SevenSinsCanvasPage() {
                   className={`p-4 rounded-lg border text-left transition-colors duration-200 ${
                     isSelected
                       ? "bg-card border-primary  ring-1 ring-primary/30"
-                      : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
+                      : "bg-card border-border/50 hover:bg-card hover:border-border"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -264,7 +264,7 @@ export function SevenSinsCanvasPage() {
       </div>
 
       {/* ── FORMULÁRIO DE PRODUTO & CANAL ── */}
-      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
+      <div className="w-full px-0 sm:px-0 mt-6">
         <div className="p-4 rounded-lg bg-card border border-border/50 shadow-xs flex flex-col sm:flex-row items-center gap-4">
           {/* Seletor ou Nome do Produto */}
           <div className="w-full sm:flex-1 space-y-1">
@@ -333,7 +333,7 @@ export function SevenSinsCanvasPage() {
       </div>
 
       {/* ── RASCUNHO E EXPLORAÇÃO QUALITATIVA ── */}
-      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-8">
+      <div className="w-full px-0 sm:px-0 mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Coluna Esquerda: A Peça de Copy Pronta */}
           <div className="lg:col-span-6 space-y-6">
@@ -427,7 +427,7 @@ export function SevenSinsCanvasPage() {
                 </div>
               </div>
             ) : (
-              <div className="p-12 border border-dashed border-border/60 rounded-lg text-center bg-card/30">
+              <div className="p-12 border border-dashed border-border/60 rounded-lg text-center bg-card">
                 <Target className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-60" />
                 <p className="text-sm font-medium text-foreground">Nenhuma copy gerada ainda</p>
                 <p className="text-xs text-muted-foreground mt-1 mb-4">
@@ -502,7 +502,7 @@ export function SevenSinsCanvasPage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-card/40 border border-border/40 rounded-lg p-12 text-center text-muted-foreground">
+              <div className="bg-card border border-border/40 rounded-lg p-12 text-center text-muted-foreground">
                 <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
                 <p className="text-sm font-medium">Nenhuma exploração qualitativa executada</p>
                 <p className="text-xs text-muted-foreground mt-1">

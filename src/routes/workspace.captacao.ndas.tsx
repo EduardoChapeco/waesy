@@ -35,7 +35,7 @@ function WorkspaceCaptacaoNdasPage() {
     return <ErrorState title="Não foi possível carregar os NDAs" description="O registro de assinaturas está temporariamente indisponível." />;
   }
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── CABEÇALHO & VOLTAR ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">

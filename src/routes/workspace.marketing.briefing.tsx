@@ -344,8 +344,8 @@ export function BrandBriefingPage() {
   return (
     <div className="w-full min-h-full bg-background text-foreground pb-24">
       {/* ── HEADER EXECUTIVO ── */}
-      <div className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-0 sm:px-0 py-4">
+      <div className="border-b border-border/40 bg-card sticky top-0 z-20">
+        <div className="w-full px-0 sm:px-0 py-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -407,7 +407,7 @@ export function BrandBriefingPage() {
       </div>
 
       {/* ── LAYOUT PRINCIPAL: Editor + Painel Radar ── */}
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 py-6 sm:py-8 flex flex-col lg:flex-row gap-6 lg:gap-8 animate-in fade-in duration-200">
+      <div className="w-full px-0 sm:px-4 md:px-0 py-6 sm:py-8 flex flex-col lg:flex-row gap-6 lg:gap-8 animate-in fade-in duration-200">
         {/* COLUNA 1: Editor (transplantada do satélite, adaptada ao Clean Paradigm) */}
         <div className="flex-1 min-w-0 space-y-6">
 

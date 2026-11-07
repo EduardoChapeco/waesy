@@ -74,12 +74,17 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     const authRes = await ssrClient.auth.getUser();
     user = authRes?.data?.user || null;
 
-    // Se getUser retornou null (ex: token de acesso de 1h expirou), tenta refresh automático via getSession
+    // Se getUser retornou null (ex: token de acesso de 1h expirou), tenta refresh automático via refreshSession
     if (!user) {
       try {
-        const sessionRes = await ssrClient.auth.getSession();
-        if (sessionRes?.data?.session?.user) {
-          user = sessionRes.data.session.user;
+        const refreshRes = await ssrClient.auth.refreshSession();
+        if (refreshRes?.data?.user) {
+          user = refreshRes.data.user;
+        } else {
+          const sessionRes = await ssrClient.auth.getSession();
+          if (sessionRes?.data?.session?.user) {
+            user = sessionRes.data.session.user;
+          }
         }
       } catch {
         // Ignora falha de refresh silenciosamente
@@ -263,7 +268,14 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
   const storeRole = (currentMembership?.role as any) || "customer";
   const finalRole = isPlatformAdmin ? "platform_admin" : storeRole;
 
-  const resolvedAvatarUrl = userProfile?.avatar_url || user.user_metadata?.avatar_url || null;
+  const identityData = user.identities?.[0]?.identity_data as Record<string, any> | undefined;
+  const resolvedAvatarUrl =
+    userProfile?.avatar_url ||
+    user.user_metadata?.avatar_url ||
+    user.user_metadata?.picture ||
+    identityData?.avatar_url ||
+    identityData?.picture ||
+    null;
   const resolvedUsername = userProfile?.username || user.user_metadata?.username || null;
 
   const resolvedIdentity: ServerIdentity = {

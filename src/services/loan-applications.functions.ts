@@ -49,3 +49,48 @@ export const createLoanApplication = createServerFn({ method: "POST" })
 
     return { id: row.id, status: "pending_review" };
   });
+
+export interface LoanApplicationDTO {
+  id: string;
+  customerId: string;
+  amountCents: number;
+  installmentsCount: number;
+  monthlyPaymentCents: number;
+  totalPayableCents: number;
+  firstDueDate: string;
+  status: "pending_review" | "approved" | "rejected" | "disbursed";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const listMyLoanApplications = createServerFn({ method: "GET" }).handler(
+  async (): Promise<LoanApplicationDTO[]> => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) return [];
+
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("loan_applications")
+      .select("*")
+      .eq("customer_id", identity.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[loan-applications] listMyLoanApplications error:", error);
+      return [];
+    }
+
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      customerId: row.customer_id,
+      amountCents: Number(row.amount_cents || 0),
+      installmentsCount: Number(row.installments_count || 0),
+      monthlyPaymentCents: Number(row.monthly_payment_cents || 0),
+      totalPayableCents: Number(row.total_payable_cents || 0),
+      firstDueDate: row.first_due_date,
+      status: row.status as any,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  }
+);

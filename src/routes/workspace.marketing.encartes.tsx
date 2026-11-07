@@ -279,7 +279,7 @@ export default function WorkspaceMarketingEncartesPage() {
   );
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+    <div className="space-y-6 w-full pb-16">
       {/* ─── Header Canônico do Módulo ─────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div>

@@ -1,13 +1,13 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-06T10:34:05.305Z",
-  "inspectedFiles": 2629,
-  "totalViolations": 793,
+  "timestamp": "2026-11-07T12:09:33.034Z",
+  "inspectedFiles": 2636,
+  "totalViolations": 780,
   "summary": {
-    "totalViolations": 793,
+    "totalViolations": 780,
     "bySeverity": {
       "P0": 0,
-      "P1": 765,
+      "P1": 752,
       "P2": 24,
       "P3": 4
     },
@@ -15,7 +15,7 @@
       "DL-02": 138,
       "DL-18": 59,
       "DL-05": 43,
-      "DL-01": 397,
+      "DL-01": 384,
       "DL-13": 9,
       "DL-12": 26,
       "DL-11": 15,
@@ -32,9 +32,9 @@
     },
     "byModule": {
       "components/app": {
-        "total": 246,
+        "total": 235,
         "P0": 0,
-        "P1": 245,
+        "P1": 234,
         "P2": 1,
         "P3": 0
       },
@@ -102,9 +102,9 @@
         "P3": 0
       },
       "routes/other": {
-        "total": 4,
+        "total": 2,
         "P0": 0,
-        "P1": 4,
+        "P1": 2,
         "P2": 0,
         "P3": 0
       },
@@ -130,8 +130,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 238,
-    "filesCount": 2629
+    "filesWithViolations": 237,
+    "filesCount": 2636
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

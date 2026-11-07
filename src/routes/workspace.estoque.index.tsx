@@ -410,7 +410,7 @@ function AdminStockPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
+    <div className="space-y-6 w-full px-0 sm:px-4 md:px-0">
       <PageHeader
         eyebrow="Opera��es"
         title="Estoque"

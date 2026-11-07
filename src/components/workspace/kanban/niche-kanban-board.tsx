@@ -63,20 +63,19 @@ export function NicheKanbanBoard({
 
         return (
           <div
-    key={item.id}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        onCardClick?.(item);
-      }
-    }}
-    onClick={() => onCardClick?.(item)}
-    className={cn(
-      "group relative flex flex-col gap-2 p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/25 transition-colors duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-              item.status === "won" && "border-success/30 bg-success/5",
-              item.status === "lost" && "opacity-70 border-destructive/20 bg-destructive/5"
+            key={item.id}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onCardClick?.(item);
+              }
+            }}
+            onClick={() => onCardClick?.(item)}
+            className={cn(
+              "group relative flex flex-col gap-2 p-4 rounded-2xl bg-card transition-colors duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              item.status === "lost" && "opacity-70"
             )}
           >
             {/* Linha Superior: Título e Tags */}

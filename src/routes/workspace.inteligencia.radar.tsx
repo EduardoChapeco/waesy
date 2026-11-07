@@ -150,8 +150,8 @@ export function MarketRadarPage() {
   return (
     <div className="w-full min-h-full bg-background text-foreground pb-24">
       {/* ── HEADER EXECUTIVO COM SELO SILENCIOSO APPLE HIG ── */}
-      <div className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-0 sm:px-0 py-5">
+      <div className="border-b border-border/40 bg-card sticky top-0 z-20">
+        <div className="w-full px-0 sm:px-0 py-5">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -241,7 +241,7 @@ export function MarketRadarPage() {
 
       {/* ── ALERTA DE FEEDBACK ── */}
       {feedback && (
-        <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-4">
+        <div className="w-full px-0 sm:px-0 mt-4">
           <div
             className={`p-4 rounded-lg flex items-center justify-between border ${
               feedback.type === "success"
@@ -265,7 +265,7 @@ export function MarketRadarPage() {
       )}
 
       {/* ── CONTEÚDO PRINCIPAL ── */}
-      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
+      <div className="w-full px-0 sm:px-0 mt-6">
         {loading ? (
           <div className="h-96 flex flex-col items-center justify-center text-muted-foreground">
             <RefreshCw className="w-8 h-8 animate-spin motion-reduce:animate-none mb-3 text-primary" />
@@ -285,7 +285,7 @@ export function MarketRadarPage() {
                   </div>
 
                   {competitors.length === 0 ? (
-                    <div className="p-8 border border-dashed border-border/60 rounded-lg text-center bg-card/30">
+                    <div className="p-8 border border-dashed border-border/60 rounded-lg text-center bg-card">
                       <Compass className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-60" />
                       <p className="text-sm font-medium text-foreground">Nenhum concorrente cadastrado</p>
                       <p className="text-xs text-muted-foreground mt-1 mb-4">
@@ -318,7 +318,7 @@ export function MarketRadarPage() {
                           className={`p-4 rounded-lg border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                             isSelected
                               ? "bg-card border-primary/50 shadow-xs ring-1 ring-primary/20"
-                              : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
+                              : "bg-card border-border/50 hover:bg-card hover:border-border"
                           }`}
                         >
                           <div className="flex items-start justify-between">
@@ -493,7 +493,7 @@ export function MarketRadarPage() {
                               {selectedCompetitor.latest_snapshot.extracted_dna.weaknesses.map((w, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-start gap-3 text-xs text-muted-foreground p-3 rounded-lg bg-card/40 border border-border/30"
+                                  className="flex items-start gap-3 text-xs text-muted-foreground p-3 rounded-lg bg-card border border-border/30"
                                 >
                                   <AlertCircle className="w-4 h-4 text-warning-strong shrink-0 mt-1" />
                                   <span>{w}</span>
@@ -545,7 +545,7 @@ export function MarketRadarPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="bg-card/40 border border-border/40 rounded-lg p-12 text-center text-muted-foreground">
+                    <div className="bg-card border border-border/40 rounded-lg p-12 text-center text-muted-foreground">
                       <p className="text-sm">Selecione um concorrente ao lado para ver a análise completa.</p>
                     </div>
                   )}
@@ -555,7 +555,7 @@ export function MarketRadarPage() {
 
             {/* ── ABA 2: BRAND DNA DA SUA MARCA ── */}
             {activeTab === "brand_dna" && brandDna && (
-              <div className="max-w-4xl mx-auto space-y-8">
+              <div className="w-full space-y-8">
                 <div className="bg-card border border-border/50 rounded-lg p-6 shadow-xs space-y-6">
                   <div>
                     <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -634,7 +634,7 @@ export function MarketRadarPage() {
 
             {/* ── ABA 3: MATRIZ SWOT & GANCHOS DOS 7 PECADOS ── */}
             {activeTab === "swot" && brandDna && (
-              <div className="max-w-5xl mx-auto space-y-8">
+              <div className="w-full space-y-8">
                 <div className="bg-card border border-border/50 rounded-lg p-6 shadow-xs space-y-6">
                   <div>
                     <h2 className="text-xl font-bold tracking-tight text-foreground">

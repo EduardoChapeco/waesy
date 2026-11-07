@@ -336,7 +336,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
       />
 
       {/* Navegação entre Abas */}
-      <div className="px-4 py-2 border-b border-border bg-card/50 flex flex-wrap items-center justify-between gap-4">
+      <div className="px-4 py-2 border-b border-border bg-card flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Button
             variant={activeTab === "opportunities" ? "default" : "outline"}

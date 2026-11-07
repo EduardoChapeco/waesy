@@ -446,7 +446,7 @@ Assinatura da Loja (Consignante)`;
   );
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-28 font-sans px-0 sm:px-4 md:px-0">
+    <div className="space-y-6 w-full pb-28 font-sans px-0 sm:px-4 md:px-0">
       {/* Top Header Dinâmico */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>

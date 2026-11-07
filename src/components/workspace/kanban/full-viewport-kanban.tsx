@@ -2,17 +2,20 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 function getColumnColorClass(color?: string): string {
-  if (!color) return "bg-primary/40";
+  if (!color) return "bg-primary";
   if (color.startsWith("bg-")) return color;
   const normalized = color.toLowerCase();
+  if (normalized.includes("primary")) return "bg-primary";
+  if (normalized.includes("muted")) return "bg-muted-foreground";
   if (normalized.includes("blue") || normalized.includes("info")) return "bg-blue-500";
   if (normalized.includes("amber") || normalized.includes("yellow") || normalized.includes("warning")) return "bg-warning";
   if (normalized.includes("green") || normalized.includes("emerald") || normalized.includes("success")) return "bg-emerald-500";
   if (normalized.includes("purple") || normalized.includes("indigo")) return "bg-indigo-500";
   if (normalized.includes("orange")) return "bg-orange-500";
-  if (normalized.includes("rose") || normalized.includes("red") || normalized.includes("destructive")) return "bg-rose-500";
+  if (normalized.includes("rose") || normalized.includes("red") || normalized.includes("destructive")) return "bg-destructive";
+  if (normalized.includes("accent")) return "bg-accent-foreground";
   if (normalized.includes("teal")) return "bg-teal-500";
-  return "bg-primary/40";
+  return "bg-primary";
 }
 
 export interface KanbanColumnDefinition<T = any> {
@@ -36,12 +39,12 @@ export interface FullViewportKanbanProps<T = any> {
 export function FullViewportKanban<T = any>({
   columns,
   className,
-  columnWidthClass = "w-72 sm:w-80",
+  columnWidthClass = "w-76 sm:w-80",
 }: FullViewportKanbanProps<T>) {
   return (
     <div
       className={cn(
-        "tab-list flex gap-4 sm:gap-4 items-stretch flex-1 pb-4 overflow-x-auto no-scrollbar select-none",
+        "tab-list flex gap-4 items-stretch flex-1 min-h-144 pb-4 overflow-x-auto no-scrollbar select-none",
         className
       )}
     >
@@ -49,12 +52,11 @@ export function FullViewportKanban<T = any>({
         <div
           key={col.id}
           className={cn(
-            "flex flex-col h-full shrink-0 rounded-2xl bg-muted/20 hover:bg-muted/30 border border-transparent hover:border-border/40 transition-colors overflow-hidden",
+            "flex flex-col h-full min-h-144 shrink-0 rounded-2xl bg-muted/50 dark:bg-muted/30 transition-colors overflow-hidden",
             columnWidthClass
           )}
         >
-          {/* ── Header da Coluna (Fixo no topo da coluna) ── */}
-          <div className={cn("h-1 w-full shrink-0", getColumnColorClass(col.color))} />
+          {/* ── Header da Coluna (Fixo no topo da coluna, sem barra neon) ── */}
           <div className="flex items-center justify-between px-4 py-3 bg-transparent shrink-0">
             <div className="flex items-center gap-2 min-w-0">
               {col.color && (
@@ -65,7 +67,7 @@ export function FullViewportKanban<T = any>({
               <h3 className="text-xs font-bold text-foreground truncate">
                 {col.title}
               </h3>
-              <span className="text-2xs font-mono tabular-nums font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-full shrink-0">
+              <span className="text-2xs font-mono tabular-nums font-bold text-foreground bg-card px-2 py-1 rounded-full shrink-0">
                 {col.count ?? col.items.length}
               </span>
             </div>
@@ -76,7 +78,7 @@ export function FullViewportKanban<T = any>({
           </div>
 
           {/* ── Área de Cards com Scroll Interno Independente ── */}
-          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar p-3 space-y-3">
+          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pb-3 space-y-3">
             {col.items.map((item, idx) => (
               <React.Fragment key={(item as any)?.id || idx}>
                 {col.renderItem(item, idx)}
@@ -84,7 +86,7 @@ export function FullViewportKanban<T = any>({
             ))}
 
             {col.items.length === 0 && (
-              <div className="h-full min-h-44 flex flex-col items-center justify-center p-4 text-center rounded-xl border border-dashed border-border/40 text-muted-foreground/60 text-xs gap-2">
+              <div className="h-full min-h-48 flex flex-col items-center justify-center p-4 text-center rounded-2xl bg-card text-muted-foreground/60 text-xs gap-2">
                 {col.emptyState || <span>Nenhum item nesta etapa</span>}
               </div>
             )}
@@ -92,7 +94,7 @@ export function FullViewportKanban<T = any>({
 
           {/* ── Footer da Coluna (Fixo no rodapé da coluna) ── */}
           {col.footerAction && (
-            <div className="p-2 border-t border-border/40 bg-transparent shrink-0">
+            <div className="p-3 border-t border-border/40 bg-transparent shrink-0">
               {col.footerAction}
             </div>
           )}

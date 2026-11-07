@@ -95,6 +95,7 @@ function WorkspaceCandidatesPage() {
   const [hasSearchedHunter, setHasSearchedHunter] = useState(false);
 
   const [statusTab, setStatusTab] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"kanban" | "grid">("kanban");
   const [searchQuery, setSearchQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -378,11 +379,11 @@ function WorkspaceCandidatesPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+    <div className="w-full space-y-4 sm:space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. TopBar Silenciosa Apple HIG ── */}
       <div className="flex flex-row items-center justify-between gap-2 border-b border-border/40 pb-3 pt-1">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+          <span className="p-2 rounded-xl bg-muted text-primary shrink-0">
             <Briefcase className="size-4 sm:size-5" />
           </span>
           <div>
@@ -397,7 +398,7 @@ function WorkspaceCandidatesPage() {
 
         <div className="flex items-center gap-2 shrink-0">
           {isPro ? (
-            <Badge variant="outline" className="text-xs px-2 py-1 border-emerald-500/30 text-emerald-600 bg-emerald-500/10 font-medium">
+            <Badge variant="secondary" className="text-xs px-2 py-1 text-emerald-600 bg-emerald-500/15 border-0 font-medium">
               Plano PRO 
             </Badge>
           ) : (
@@ -420,9 +421,9 @@ function WorkspaceCandidatesPage() {
       </div>
 
       {/* ── 2. Banner Silencioso do Banco de Talentos ── */}
-      <div className="p-4 rounded-lg bg-muted/30 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="size-10 rounded-xl bg-muted text-primary flex items-center justify-center shrink-0">
             <Users className="size-5" />
           </div>
           <div>
@@ -431,7 +432,7 @@ function WorkspaceCandidatesPage() {
                 Banco Regional de Talentos
               </h3>
               {!isPro && (
-                <Badge variant="outline" className="text-xs border-border text-muted-foreground">
+                <Badge variant="secondary" className="text-xs text-muted-foreground border-0">
                   Recurso PRO
                 </Badge>
               )}
@@ -499,7 +500,7 @@ function WorkspaceCandidatesPage() {
               className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 flex items-center gap-2 min-h-9 cursor-pointer ${
                 statusTab === tab.id
                   ? "bg-foreground text-background"
-                  : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
+                  : "bg-card text-muted-foreground hover:text-foreground"
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
             >
               <span>{tab.label}</span>
@@ -508,18 +509,40 @@ function WorkspaceCandidatesPage() {
           ))}
         </div>
 
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por candidato ou vaga..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-11 min-h-11 sm:h-9 rounded-lg text-xs bg-card"
-          />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-muted p-1 rounded-xl shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("kanban")}
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 ${
+                viewMode === "kanban" ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Kanban
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 ${
+                viewMode === "grid" ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Grade
+            </button>
+          </div>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por candidato ou vaga..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-11 min-h-11 sm:h-9 rounded-lg text-xs bg-card"
+            />
+          </div>
         </div>
       </div>
 
-      {/* ── 4. VISUALIZAÇÃO: BANCO DE TALENTOS OU LISTA DE CANDIDATURAS ── */}
+      {/* ── 4. VISUALIZAÇÃO: BANCO DE TALENTOS, KANBAN ATS OU GRADE ── */}
       {statusTab === "hunter" ? (
         <div className="space-y-4">
           {isSearchingHunter ? (
@@ -528,7 +551,7 @@ function WorkspaceCandidatesPage() {
               <p className="text-xs text-muted-foreground font-medium">Consultando perfis profissionais...</p>
             </div>
           ) : hunterResults.length === 0 ? (
-            <div className="py-16 text-center rounded-lg border border-border/60 bg-card space-y-3">
+            <div className="py-16 text-center rounded-2xl bg-card space-y-3">
               <Users className="size-10 text-muted-foreground/40 mx-auto" />
               <h3 className="text-sm font-bold text-foreground">Nenhum profissional encontrado</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -536,7 +559,7 @@ function WorkspaceCandidatesPage() {
               </p>
             </div>
           ) : (
-            <div className="rounded-lg border border-border/60 bg-card divide-y divide-border/40 overflow-hidden shadow-none">
+            <div className="rounded-2xl bg-card divide-y divide-border/40 overflow-hidden">
               {hunterResults.map((candidate) => (
                 <div
                   key={candidate.id}
@@ -547,10 +570,10 @@ function WorkspaceCandidatesPage() {
                       <img
                         src={candidate.avatarUrl}
                         alt={candidate.fullName}
-                        className="size-11 rounded-lg object-cover border border-border/70 shrink-0"
+                        className="size-11 rounded-xl object-cover shrink-0"
                       />
                     ) : (
-                      <div className="size-11 rounded-lg bg-muted text-foreground border border-border/70 flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="size-11 rounded-xl bg-muted text-foreground flex items-center justify-center font-bold text-xs shrink-0">
                         {candidate.fullName.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -559,7 +582,7 @@ function WorkspaceCandidatesPage() {
                       <div className="flex items-center gap-2">
                         <h4 className="text-xs font-bold text-foreground truncate">{candidate.fullName}</h4>
                         {candidate.openToWork && (
-                          <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-600 bg-emerald-500/10 px-2 py-0">
+                          <Badge variant="secondary" className="text-xs text-emerald-600 bg-emerald-500/15 border-0 px-2 py-0">
                             Disponível
                           </Badge>
                         )}
@@ -585,8 +608,144 @@ function WorkspaceCandidatesPage() {
             </div>
           )}
         </div>
+      ) : viewMode === "kanban" ? (
+        <div className="flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-4 items-stretch min-h-144">
+          {[
+            {
+              id: "pending",
+              title: "Novos / Em Triagem",
+              dotClass: "bg-primary",
+              items: filteredApps.filter((a) => !a.status || a.status === "pending" || a.status === "reviewing"),
+            },
+            {
+              id: "interview_scheduled",
+              title: "Entrevistas Agendadas",
+              dotClass: "bg-warning",
+              items: filteredApps.filter((a) => a.status === "interview_scheduled"),
+            },
+            {
+              id: "hired",
+              title: "Contratados",
+              dotClass: "bg-emerald-500",
+              items: filteredApps.filter((a) => a.status === "hired"),
+            },
+            {
+              id: "rejected",
+              title: "Arquivados",
+              dotClass: "bg-muted-foreground",
+              items: filteredApps.filter((a) => a.status === "rejected"),
+            },
+          ].map((col) => (
+            <div
+              key={col.id}
+              className="flex-none w-80 min-h-144 h-full rounded-2xl bg-muted/50 dark:bg-muted/30 p-3 flex flex-col gap-3 overflow-hidden"
+            >
+              <div className="flex items-center justify-between px-2 py-1">
+                <div className="flex items-center gap-2">
+                  <span className={`size-2 rounded-full shrink-0 ${col.dotClass}`} />
+                  <h4 className="text-xs font-bold text-foreground">{col.title}</h4>
+                </div>
+                <span className="text-2xs font-mono font-bold px-2 py-1 rounded-full bg-card text-foreground">
+                  {col.items.length}
+                </span>
+              </div>
+              <div className="flex-1 space-y-3 overflow-y-auto no-scrollbar">
+                {col.items.length === 0 ? (
+                  <div className="h-32 rounded-2xl bg-card flex items-center justify-center text-xs text-muted-foreground p-4 text-center">
+                    Nenhum candidato nesta etapa
+                  </div>
+                ) : (
+                  col.items.map((app) => (
+                    <div
+                      key={app.id}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleOpenDossier(app);
+                        }
+                      }}
+                      onClick={() => handleOpenDossier(app)}
+                      className="rounded-2xl bg-card p-4 space-y-3 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <span className="text-2xs font-mono text-muted-foreground uppercase block truncate">
+                            {app.job_title || "Candidatura"}
+                          </span>
+                          <h5 className="text-xs font-bold text-foreground leading-snug truncate">
+                            {app.candidate_name}
+                          </h5>
+                        </div>
+                        {app.rating ? (
+                          <span className="inline-flex items-center gap-1 text-2xs font-bold text-warning-strong px-2 py-1 rounded-md bg-muted">
+                            <Star className="size-3 fill-warning" />
+                            {app.rating}.0
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="rounded-xl bg-muted p-3 text-2xs space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-muted-foreground">Pretensão:</span>
+                          <span className="font-mono font-bold text-foreground">
+                            {app.salary_expectation_cents ? formatMoney(app.salary_expectation_cents) : "A combinar"}
+                          </span>
+                        </div>
+                        {app.previous_company_name && (
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-muted-foreground">Última:</span>
+                            <span className="font-semibold text-foreground truncate max-w-36">{app.previous_company_name}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div
+                        className="grid grid-cols-2 gap-2 pt-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setInterviewModalApp(app);
+                            setInterviewDate("");
+                          }}
+                          className="h-9 min-h-11 sm:min-h-0 rounded-lg text-2xs font-semibold gap-1"
+                        >
+                          <Calendar className="size-3" />
+                          <span>Entrevista</span>
+                        </Button>
+                        {app.status !== "hired" ? (
+                          <Button
+                            size="sm"
+                            onClick={() => handleOpenHireModal(app)}
+                            className="h-9 min-h-11 sm:min-h-0 rounded-lg text-2xs font-semibold gap-1 bg-primary text-primary-foreground"
+                          >
+                            <UserCheck className="size-3" />
+                            <span>Contratar</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleOpenDossier(app)}
+                            className="h-9 min-h-11 sm:min-h-0 rounded-lg text-2xs font-semibold"
+                          >
+                            Dossiê
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : filteredApps.length === 0 ? (
-        <div className="py-16 text-center rounded-lg border border-border/60 bg-card space-y-2">
+        <div className="py-16 text-center rounded-2xl bg-card space-y-2">
           <Briefcase className="size-10 text-muted-foreground/40 mx-auto" />
           <h3 className="text-sm font-bold text-foreground">Nenhuma candidatura encontrada</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">

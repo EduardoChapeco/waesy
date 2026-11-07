@@ -253,24 +253,31 @@ export const updateOrderStatusFn = createServerFn({ method: "POST" })
 
     // 1. Transição Atômica de Estado ("Carimbou PAGO, não paga de novo")
     let isIdempotentReplay = false;
+    let rpcExecuted = false;
     try {
-      const { data: atomicRes, error: rpcErr } = await db.rpc("transition_order_status_atomic", {
-        p_order_id: data.orderId,
-        p_store_id: targetStoreId,
-        p_new_status: data.status,
-        p_reason: data.status === "cancelled" ? "Cancelado pelo lojista no painel" : null,
-        p_actor_id: identity.id || null,
-        p_idempotency_key: `order-status-${data.orderId}-${data.status}`,
-      });
+      if (typeof (db as any).rpc === "function") {
+        const { data: atomicRes, error: rpcErr } = await db.rpc("transition_order_status_atomic", {
+          p_order_id: data.orderId,
+          p_store_id: targetStoreId,
+          p_new_status: data.status,
+          p_reason: data.status === "cancelled" ? "Cancelado pelo lojista no painel" : null,
+          p_actor_id: identity.id || null,
+          p_idempotency_key: `order-status-${data.orderId}-${data.status}`,
+        });
 
-      if (!rpcErr && atomicRes && typeof atomicRes === "object") {
-        if (!(atomicRes as any).success) {
-          throw new Error((atomicRes as any).message || "Transição de status inválida");
+        if (!rpcErr && atomicRes && typeof atomicRes === "object") {
+          rpcExecuted = true;
+          if (!(atomicRes as any).success) {
+            throw new Error((atomicRes as any).message || "Transição de status inválida");
+          }
+          isIdempotentReplay = Boolean((atomicRes as any).is_idempotent_replay);
+        } else if (rpcErr) {
+          console.warn("[orders.functions] transition_order_status_atomic fallback:", rpcErr.message);
         }
-        isIdempotentReplay = Boolean((atomicRes as any).is_idempotent_replay);
-      } else if (rpcErr) {
-        // Fallback defensivo caso RPC ainda não aplicada
-        console.warn("[orders.functions] transition_order_status_atomic fallback:", rpcErr.message);
+      }
+
+      if (!rpcExecuted) {
+        // Fallback defensivo caso RPC ainda não aplicada ou falha
         const updatePayload: Record<string, any> = {
           status: data.status,
           updated_at: new Date().toISOString(),

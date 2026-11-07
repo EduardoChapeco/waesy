@@ -95,6 +95,10 @@ const mockFrom = vi.fn((table: string) => {
 vi.mock("@/lib/supabase", () => ({
   getServerClient: () => ({
     from: mockFrom,
+    rpc: vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: "function transition_order_status_atomic does not exist" },
+    }),
   }),
 }));
 

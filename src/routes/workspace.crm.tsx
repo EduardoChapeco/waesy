@@ -157,7 +157,7 @@ export default function WorkspaceCrmPage() {
         "w-full flex-1 flex flex-col min-h-0 px-0 animate-in fade-in duration-200",
         activeTab === "funil"
           ? "h-full min-h-0 overflow-hidden space-y-2 pb-0"
-          : "max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0"
+          : "w-full space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0"
       )}
     >
       {/* ── 1. TopBar Direta (Linha 1 no Mobile: Título + Badge + Menu Kebab) ── */}

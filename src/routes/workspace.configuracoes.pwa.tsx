@@ -175,7 +175,7 @@ function PwaOmniBuilderPage() {
   });
 
   return (
-    <div className="flex-1 space-y-6 p-4 sm:p-6 max-w-7xl mx-auto pb-24 animate-in fade-in duration-200">
+    <div className="flex-1 space-y-6 p-4 sm:p-6 w-full pb-24 animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
           title="Construtor de Aplicativo PWA"
@@ -508,7 +508,7 @@ function PwaOmniBuilderPage() {
                 {phonePreviewScreen === "app" ? (
                   <>
                     {/* Header do App */}
-                    <div className="p-3 border-b border-border/50 flex items-center justify-between shrink-0 bg-card/90 backdrop-blur-md">
+                    <div className="p-3 border-b border-border/50 flex items-center justify-between shrink-0 bg-card ">
                       <div className="flex items-center gap-2">
                         {icon192Url ? (
                           <img

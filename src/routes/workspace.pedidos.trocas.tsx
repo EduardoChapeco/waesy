@@ -483,7 +483,7 @@ function ExchangesDashboardPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Pós-Venda & Logística Reversa"
         title="Trocas"
@@ -535,7 +535,7 @@ function ExchangesDashboardPage() {
 
       {/* ── KPIS OPERACIONAIS & FINANCEIROS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+        <div className="p-4 rounded-2xl bg-card space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <RotateCcw className="size-3.5 text-blue-600" />
             Total de Solicitações
@@ -548,7 +548,7 @@ function ExchangesDashboardPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+        <div className="p-4 rounded-2xl bg-card space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Clock className="size-3.5 text-warning-strong" />
             Em Triagem / Pendentes
@@ -561,7 +561,7 @@ function ExchangesDashboardPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+        <div className="p-4 rounded-2xl bg-card space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Gift className="size-3.5 text-purple-600" />
             Vale-Compras Gerados
@@ -574,7 +574,7 @@ function ExchangesDashboardPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+        <div className="p-4 rounded-2xl bg-card space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Banknote className="size-3.5 text-rose-600" />
             Total Estornado
@@ -589,12 +589,12 @@ function ExchangesDashboardPage() {
       </div>
 
       {/* ── BARRA DE CONTROLE & BUSCA ── */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card p-3 rounded-lg border border-border/70">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card p-3 rounded-2xl">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por pedido, cliente ou motivo..."
-            className="pl-10 h-10 bg-background border-border/70 rounded-lg text-xs"
+            className="pl-10 h-10 bg-background border-border/40 rounded-xl text-xs"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -607,10 +607,10 @@ function ExchangesDashboardPage() {
           description="Nenhuma troca ou devolução corresponde à busca atual ou todas as solicitações já foram concluídas."
         />
       ) : viewMode === "table" ? (
-        <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
+        <div className="rounded-2xl bg-card overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-border/60 bg-muted/20">
+              <TableRow className="border-border/40 bg-muted/20">
                 <TableHead className="text-xs font-bold">Pedido e Origem</TableHead>
                 <TableHead className="text-xs font-bold">Cliente</TableHead>
                 <TableHead className="text-xs font-bold">Motivo da Devolução</TableHead>
@@ -663,22 +663,22 @@ function ExchangesDashboardPage() {
           </Table>
         </div>
       ) : (
-        <div className="flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-4 items-start min-h-128">
+        <div className="flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-4 items-stretch min-h-144">
           {KANBAN_COLUMNS.map((col) => {
             const columnExchanges = filteredExchanges.filter((r: any) => r.status === col.id);
             return (
               <div
                 key={col.id}
-                className="min-w-72 sm:min-w-80 w-72 sm:w-80 bg-muted/20 border border-border/60 p-4 flex flex-col gap-3 rounded-lg"
+                className="min-w-72 sm:min-w-80 w-72 sm:w-80 min-h-144 bg-muted/50 dark:bg-muted/30 p-3 flex flex-col gap-3 rounded-2xl"
               >
-                <div className="flex justify-between items-center font-medium px-1">
+                <div className="flex justify-between items-center font-medium px-1 pt-1">
                   <span className="font-bold text-xs text-foreground uppercase tracking-wider">{col.title}</span>
                   <Badge variant="outline" className="bg-card font-mono text-xs">
                     {columnExchanges.length}
                   </Badge>
                 </div>
                 {columnExchanges.length === 0 ? (
-                  <div className="text-xs text-muted-foreground p-6 text-center border border-dashed border-border/60 rounded-lg bg-card/40">
+                  <div className="text-xs text-muted-foreground p-6 text-center rounded-xl bg-card">
                     Nenhum item nesta etapa
                   </div>
                 ) : (
@@ -686,7 +686,7 @@ function ExchangesDashboardPage() {
                     {columnExchanges.map((ex: any) => (
                       <div
                         key={ex.id}
-                        className="bg-card border border-border/60 p-4 rounded-lg space-y-3 shadow-2xs"
+                        className="bg-card p-4 rounded-2xl space-y-3"
                       >
                         <div className="flex justify-between items-start gap-2">
                           <div>
@@ -701,7 +701,7 @@ function ExchangesDashboardPage() {
                           </Badge>
                         </div>
 
-                        <div className="text-xs text-foreground p-2 bg-muted/30 border border-border/40 rounded-lg space-y-1">
+                        <div className="text-xs text-foreground p-2 bg-muted/50 rounded-xl space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="font-semibold text-muted-foreground">Motivo:</span>
                             {ex.forensicStatus === "flagged" ? (
@@ -709,7 +709,7 @@ function ExchangesDashboardPage() {
                                 <ShieldAlert className="size-3 mr-1" /> IA Suspeita
                               </Badge>
                             ) : ex.forensicStatus === "verified" ? (
-                              <Badge variant="outline" className="text-xs px-2 py-0 h-4 font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+                              <Badge variant="outline" className="text-xs px-2 py-0 h-4 font-semibold text-emerald-600 bg-muted">
                                 <ShieldCheck className="size-3 mr-1" /> Foto Real
                               </Badge>
                             ) : null}
@@ -720,7 +720,7 @@ function ExchangesDashboardPage() {
                               <img
                                 src={ex.claimPhotoUrl}
                                 alt="Avaria"
-                                className="size-8 rounded object-cover border border-border/60 shrink-0"
+                                className="size-8 rounded object-cover shrink-0"
                               />
                               <span className="text-xs text-muted-foreground truncate">Foto anexada</span>
                             </div>

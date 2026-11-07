@@ -152,7 +152,7 @@ function WorkspacePatrocinadoresPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -180,7 +180,7 @@ function WorkspacePatrocinadoresPage() {
 
       {/* Grid de Patrocinadores */}
       {sponsors.length === 0 ? (
-        <div className="py-16 text-center rounded-lg border bg-card/50 space-y-4">
+        <div className="py-16 text-center rounded-lg border bg-card space-y-4">
           <Megaphone className="size-12 text-muted-foreground/40 mx-auto" />
           <div className="space-y-1">
             <h3 className="text-base font-bold text-foreground">Nenhum patrocinador cadastrado</h3>

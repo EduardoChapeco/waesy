@@ -404,36 +404,36 @@ export default function AgencyQuotesPage() {
           </div>
         ) : viewMode === "kanban" ? (
           /* Visualização de Funil Kanban por Estágios */
-          <div className="tab-list flex gap-4 overflow-x-auto pb-4 min-h-96 no-scrollbar">
+          <div className="tab-list flex gap-4 overflow-x-auto pb-4 min-h-144 items-stretch no-scrollbar">
             {[
-              { id: "new", title: "Novas Solicitações", icon: Clock, borderClass: "border-t-primary", textClass: "text-primary" },
-              { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, borderClass: "border-t-warning", textClass: "text-warning-strong" },
-              { id: "quoted", title: "Proposta Enviada", icon: FileText, borderClass: "border-t-purple-500", textClass: "text-purple-500" },
-              { id: "won", title: "Fechadas / Ganhas", icon: CheckCircle, borderClass: "border-t-emerald-500", textClass: "text-emerald-500" },
-              { id: "lost", title: "Perdidas", icon: Trash, borderClass: "border-t-destructive", textClass: "text-destructive" },
+              { id: "new", title: "Novas Solicitações", icon: Clock, textClass: "text-primary" },
+              { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, textClass: "text-warning-strong" },
+              { id: "quoted", title: "Proposta Enviada", icon: FileText, textClass: "text-purple-500" },
+              { id: "won", title: "Fechadas / Ganhas", icon: CheckCircle, textClass: "text-emerald-500" },
+              { id: "lost", title: "Perdidas", icon: Trash, textClass: "text-destructive" },
             ].map((col) => {
               const colQuotes = filteredQuotes.filter((q: any) => q.status === col.id);
               const ColIcon = col.icon;
               return (
                 <div
                   key={col.id}
-                  className={cn("flex-none w-80 bg-muted/40 border border-border/60 border-t-4 rounded-3xl flex flex-col overflow-hidden", col.borderClass)}
+                  className="flex-none w-80 min-h-144 bg-muted/50 dark:bg-muted/30 rounded-2xl flex flex-col overflow-hidden"
                 >
                   {/* Cabeçalho da Coluna */}
-                  <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0 bg-card/60 rounded-t-lg">
+                  <div className="px-4 py-3 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2">
                       <ColIcon size={16} className={col.textClass} weight="bold" />
                       <h3 className="text-xs font-bold text-foreground">{col.title}</h3>
                     </div>
-                    <Badge variant="outline" className="font-mono text-xs h-5 px-2">
+                    <Badge variant="outline" className="font-mono text-xs h-5 px-2 bg-card">
                       {colQuotes.length}
                     </Badge>
                   </div>
 
                   {/* Cards da Coluna */}
-                  <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
+                  <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-3 no-scrollbar">
                     {colQuotes.length === 0 ? (
-                      <div className="h-28 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-xs text-muted-foreground/75 text-muted-foreground text-center p-3">
+                      <div className="h-28 rounded-xl bg-card flex items-center justify-center text-xs text-muted-foreground text-center p-3">
                         Nenhum lead nesta etapa
                       </div>
                     ) : (
@@ -445,11 +445,11 @@ export default function AgencyQuotesPage() {
                         return (
                           <Card
                             key={q.id}
-                            className="p-4 rounded-2xl border border-border/60 bg-card space-y-3 hover:border-foreground/25 transition-colors duration-150 flex flex-col justify-between select-none"
+                            className="p-4 rounded-2xl bg-card space-y-3 transition-colors duration-150 flex flex-col justify-between select-none"
                           >
                             <div className="space-y-2">
                               <div className="flex items-center justify-between gap-1">
-                                <span className="text-xs font-mono font-bold px-2 py-1 rounded bg-primary/10 text-primary truncate max-w-44">
+                                <span className="text-xs font-mono font-bold px-2 py-1 rounded-md bg-muted text-foreground truncate max-w-44">
                                   {q.destination_city}
                                 </span>
                                 {q.quote_amount_cents && q.quote_amount_cents > 0 ? (

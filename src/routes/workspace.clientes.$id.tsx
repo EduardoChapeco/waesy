@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils, Receipt, Megaphone } from "lucide-react";
+import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils, Receipt, Megaphone, Lock, Plus, Trash2, Printer, Check } from "lucide-react";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,15 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/state/states";
 import { getCustomer360, updateCustomer, updateCustomerCrm, addCustomerClinicalRecord, grantCustomerStoreCredit, saveTravelerPreferences } from "@/services/crm.functions";
 import { DocumentsPanel } from "@/components/crm/DocumentsPanel";
 import { formatMoney } from "@/lib/money";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { Customer360PrintableDossier } from "@/components/dossier/customer-360-printable-dossier";
+import { recordLeadOrCustomerConsent, revokeConsentAction } from "@/services/legal-telemetry.functions";
+import { CANONICAL_LEGAL_POLICIES, type LegalPolicyType, type ConsentRecordItem } from "@/types/legal-consent";
 
 export const Route = createFileRoute("/workspace/clientes/$id")({
   head: () => ({ meta: [{ title: "Ficha 360° do Cliente | Workspace" }] }),
@@ -50,6 +53,62 @@ function CustomerDetailPage() {
   const [creditDescription, setCreditDescription] = useState("");
   const [isSavingCredit, setIsSavingCredit] = useState(false);
   const [isExportingDossier, setIsExportingDossier] = useState(false);
+
+  // Governança LGPD & Consentimentos Forenses
+  const [selectedCertificate, setSelectedCertificate] = useState<any | null>(null);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [isPhysicalConsentModalOpen, setIsPhysicalConsentModalOpen] = useState(false);
+  const [physicalPolicyType, setPhysicalPolicyType] = useState<LegalPolicyType>("privacy_policy");
+  const [physicalProofUrl, setPhysicalProofUrl] = useState("");
+  const [physicalOperatorName, setPhysicalOperatorName] = useState("");
+  const [isRegisteringPhysical, setIsRegisteringPhysical] = useState(false);
+
+  const handleRegisterPhysicalConsent = async () => {
+    if (!physicalOperatorName.trim()) {
+      toast.error("Informe o nome do consultor/operador responsável.");
+      return;
+    }
+    setIsRegisteringPhysical(true);
+    try {
+      const canonical = CANONICAL_LEGAL_POLICIES[physicalPolicyType];
+      await recordLeadOrCustomerConsent({
+        data: {
+          customerId: id,
+          storeId: data?.profile?.store_id || "default",
+          policyType: physicalPolicyType,
+          policyTitle: canonical.title,
+          policyVersion: canonical.defaultVersion,
+          policyContent: canonical.defaultContent,
+          method: "physical_document",
+          operatorName: physicalOperatorName.trim(),
+          physicalProofUrl: physicalProofUrl.trim() || undefined,
+        },
+      });
+      toast.success("Consentimento presencial registrado com telemetria probatória.");
+      setIsPhysicalConsentModalOpen(false);
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao registrar termo presencial.");
+    } finally {
+      setIsRegisteringPhysical(false);
+    }
+  };
+
+  const handleRevokeConsent = async (policyType: string) => {
+    try {
+      await revokeConsentAction({
+        data: {
+          customerId: id,
+          policyType,
+          reason: "Revogação solicitada pelo titular (Art. 18 da LGPD)",
+        },
+      });
+      toast.success("Consentimento revogado conforme Art. 18 da LGPD.");
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao revogar consentimento.");
+    }
+  };
 
   const handleExportDossierPdf = async () => {
     setIsExportingDossier(true);
@@ -284,7 +343,7 @@ function CustomerDetailPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
       {/* ── Header ── */}
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         title={data.profile.name}
@@ -554,7 +613,7 @@ function CustomerDetailPage() {
           </TabsTrigger>
           <TabsTrigger value="viagens" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Plane className="size-3.5 text-primary" />
-            <span>Viagens & Propostas ({(data.confirmedTrips?.length || 0) + (data.commercialLeads?.length || 0) + (data.proposals?.length || 0) + (data.contracts?.length || 0)})</span>
+            <span>Viagens ({(data.confirmedTrips?.length || 0) + (data.commercialLeads?.length || 0) + (data.proposals?.length || 0) + (data.contracts?.length || 0)})</span>
           </TabsTrigger>
           <TabsTrigger value="preferencias" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Compass className="size-3.5 text-sky-500" />
@@ -562,15 +621,15 @@ function CustomerDetailPage() {
           </TabsTrigger>
           <TabsTrigger value="passes" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <QrCode className="size-3.5 text-primary" />
-            <span>Documentos Digitais ({data.walletPasses?.length || 0})</span>
+            <span>Passes Digitais ({data.walletPasses?.length || 0})</span>
           </TabsTrigger>
           <TabsTrigger value="acompanhantes" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Users2 className="size-3.5 text-violet-500" />
-            <span>Família / Pax ({allPax.length})</span>
+            <span>Acompanhantes ({allPax.length})</span>
           </TabsTrigger>
           <TabsTrigger value="documents" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <FileText className="size-3.5 text-primary" />
-            <span>Docs ({data.documents?.length || 0})</span>
+            <span>Documentos ({data.documents?.length || 0})</span>
             {data.documents?.some((d: any) => d.expiryStatus === "expired") && (
               <span className="size-2 rounded-full bg-rose-500 animate-pulse motion-reduce:animate-none" />
             )}
@@ -590,6 +649,10 @@ function CustomerDetailPage() {
           <TabsTrigger value="crm" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Tag className="size-3.5" />
             <span>Notas e Tags</span>
+          </TabsTrigger>
+          <TabsTrigger value="lgpd" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
+            <ShieldCheck className="size-3.5 text-primary" />
+            <span>Termos & LGPD ({(data.consentRecords || []).length})</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1134,7 +1197,7 @@ function CustomerDetailPage() {
                     <h4 className="font-bold text-sm text-foreground">{pass.title || "Passe Digital"}</h4>
                     <p className="text-xs text-muted-foreground">{pass.description || "Documento Digital"}</p>
                   </div>
-                  <div className="p-3 bg-card/80 border border-border/40 rounded-lg flex items-center justify-between font-mono text-xs">
+                  <div className="p-3 bg-card border border-border/40 rounded-lg flex items-center justify-between font-mono text-xs">
                     <span className="text-muted-foreground">Serial:</span>
                     <span className="font-bold text-foreground truncate max-w-30">{pass.serial_number || pass.id.slice(0, 8)}</span>
                   </div>
@@ -1324,6 +1387,150 @@ function CustomerDetailPage() {
               <Save className="size-3.5" />
               {isSavingCrm ? "Salvando..." : "Salvar Ficha"}
             </Button>
+          </div>
+        </TabsContent>
+
+        {/* ── Aba 11: Governança de Consentimentos & LGPD (Telemetria Militar) ── */}
+        <TabsContent value="lgpd" className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-border/60 bg-card">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="size-4 text-primary" />
+                <h3 className="text-sm font-bold text-foreground">
+                  Governança de Consentimentos & Telemetria LGPD
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Marco Civil da Internet (Lei 12.965/2014) e LGPD (Lei 13.709/2018). Registros imutáveis com assinatura SHA-256 e rastreabilidade forense.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsPhysicalConsentModalOpen(true)}
+              className="h-11 min-h-11 px-4 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer shrink-0"
+            >
+              <Plus className="size-3.5 text-primary" />
+              <span>Registrar Aceite Presencial</span>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {(["privacy_policy", "quotation_policy", "sensitive_data_policy", "cancellation_policy", "terms_of_service"] as LegalPolicyType[]).map((pKey) => {
+              const canonical = CANONICAL_LEGAL_POLICIES[pKey];
+              const record = (data.consentRecords || []).find((c: any) => c.policy_type === pKey);
+              const isAccepted = record?.status === "accepted";
+              const isRevoked = record?.status === "revoked";
+
+              return (
+                <div
+                  key={pKey}
+                  className="p-4 rounded-xl border border-border/60 bg-card space-y-3 flex flex-col justify-between"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1">
+                        <span className="text-xs font-bold text-foreground block">
+                          {canonical.title}
+                        </span>
+                        <span className="text-2xs font-mono text-muted-foreground block">
+                          Base: {canonical.legalBasis}
+                        </span>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={
+                          isAccepted
+                            ? "bg-muted text-foreground font-bold border-border/60 text-2xs"
+                            : isRevoked
+                            ? "bg-destructive/10 text-destructive border-destructive/20 text-2xs"
+                            : "bg-muted/40 text-muted-foreground border-border/40 text-2xs"
+                        }
+                      >
+                        {isAccepted ? "Aceito com Telemetria" : isRevoked ? "Revogado" : "Pendente"}
+                      </Badge>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {canonical.shortDescription}
+                    </p>
+
+                    {isAccepted && record?.proof && (
+                      <div className="p-3 rounded-lg bg-muted text-2xs font-mono text-muted-foreground space-y-1">
+                        <div className="flex justify-between">
+                          <span>Certidão:</span>
+                          <span className="font-bold text-foreground truncate max-w-48">
+                            {record.proof.certificate_code}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Data:</span>
+                          <span className="text-foreground">
+                            {new Date(record.proof.accepted_at).toLocaleString("pt-BR")}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Método:</span>
+                          <span className="text-foreground uppercase">
+                            {record.proof.method}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {isRevoked && (
+                      <div className="p-2 rounded-lg bg-destructive/10 text-destructive text-2xs font-medium">
+                        Revogado em {new Date(record.revoked_at).toLocaleDateString("pt-BR")}: {record.revocation_reason}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+                    {isAccepted ? (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedCertificate(record.proof);
+                            setIsCertModalOpen(true);
+                          }}
+                          className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 flex-1 border-border/60 hover:bg-muted cursor-pointer"
+                        >
+                          <Lock className="size-3.5 text-primary" />
+                          <span>Ver Certidão Forense</span>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRevokeConsent(pKey)}
+                          className="h-11 min-h-11 px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+                          title="Revogar Consentimento (LGPD Art. 18)"
+                        >
+                          Revogar
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setPhysicalPolicyType(pKey);
+                          setIsPhysicalConsentModalOpen(true);
+                        }}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 w-full border-border/60 hover:bg-muted cursor-pointer"
+                      >
+                        <Plus className="size-3.5 text-primary" />
+                        <span>Registrar Aceite</span>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </TabsContent>
       </Tabs>
@@ -1625,6 +1832,190 @@ function CustomerDetailPage() {
           cityState: data.profile.city && data.profile.state ? `${data.profile.city} - ${data.profile.state}` : "",
         }}
       />
+
+      {/* Modal: Certidão Militar Probatória de Consentimento Forense */}
+      <Dialog open={isCertModalOpen} onOpenChange={setIsCertModalOpen}>
+        <DialogContent className="sm:max-w-xl bg-card border-border/60 text-foreground">
+          <DialogHeader className="space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="size-5 text-primary" />
+              <DialogTitle className="text-base font-bold">
+                Certidão Militar Probatória de Consentimento
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Registro probatório imutável emitido sob o Marco Civil da Internet e LGPD.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedCertificate && (
+            <div className="space-y-3 py-2 text-xs">
+              <div className="p-3 rounded-lg bg-muted font-mono space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Código de Autenticidade:</span>
+                  <span className="font-bold text-foreground select-all">
+                    {selectedCertificate.certificate_code}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Data/Hora (UTC):</span>
+                  <span className="text-foreground">
+                    {new Date(selectedCertificate.accepted_at).toLocaleString("pt-BR")}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Método de Captura:</span>
+                  <span className="text-foreground uppercase">
+                    {selectedCertificate.method}
+                  </span>
+                </div>
+                {selectedCertificate.operator_name && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Operador Responsável:</span>
+                    <span className="text-foreground font-semibold">
+                      {selectedCertificate.operator_name}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1 font-mono text-2xs">
+                <Label className="text-xs font-semibold font-sans">Assinatura SHA-256 Inviolável</Label>
+                <div className="p-2 rounded bg-muted/60 text-muted-foreground break-all select-all">
+                  {selectedCertificate.sha256_hash}
+                </div>
+              </div>
+
+              <div className="space-y-1 font-mono text-2xs">
+                <Label className="text-xs font-semibold font-sans">Telemetria de Rede & Dispositivo</Label>
+                <div className="p-2 rounded bg-muted/60 text-muted-foreground space-y-1">
+                  <div>IP: {selectedCertificate.ip_address}</div>
+                  <div>User-Agent: {selectedCertificate.user_agent}</div>
+                  {selectedCertificate.geolocation && (
+                    <div>
+                      Localização: {selectedCertificate.geolocation.city || "N/D"} / {selectedCertificate.geolocation.state || "N/D"} ({selectedCertificate.geolocation.country || "BR"})
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {selectedCertificate.physical_proof_url && (
+                <div className="pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(selectedCertificate.physical_proof_url, "_blank")}
+                    className="w-full text-xs font-semibold gap-2 border-border/60 min-h-11"
+                  >
+                    <ExternalLink className="size-3.5" />
+                    <span>Ver Documento / Termo Assinado Anexo</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                navigator.clipboard.writeText(JSON.stringify(selectedCertificate, null, 2));
+                toast.success("Payload probatório copiado para a área de transferência.");
+              }}
+              className="text-xs font-semibold border-border/60 min-h-11"
+            >
+              <Copy className="size-3.5 mr-1" />
+              Copiar Prova JSON
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setIsCertModalOpen(false)}
+              className="text-xs font-bold min-h-11"
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Registrar Consentimento Presencial / Físico */}
+      <Dialog open={isPhysicalConsentModalOpen} onOpenChange={setIsPhysicalConsentModalOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border/60 text-foreground">
+          <DialogHeader className="space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="size-5 text-primary" />
+              <DialogTitle className="text-base font-bold">
+                Registrar Aceite Físico ou Presencial
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Lance a conformidade de termos assinados no balcão da agência ou digitalizados em papel.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2 text-xs">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Política / Termo Aplicável</Label>
+              <select
+                value={physicalPolicyType}
+                onChange={(e) => setPhysicalPolicyType(e.target.value as LegalPolicyType)}
+                className="w-full h-11 px-3 rounded-lg border border-border/60 bg-muted/30 text-xs font-medium cursor-pointer"
+              >
+                {Object.keys(CANONICAL_LEGAL_POLICIES).map((k) => (
+                  <option key={k} value={k}>
+                    {CANONICAL_LEGAL_POLICIES[k as LegalPolicyType].title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Nome do Consultor / Operador Testemunha</Label>
+              <Input
+                value={physicalOperatorName}
+                onChange={(e) => setPhysicalOperatorName(e.target.value)}
+                placeholder="Ex: Consultor Carlos Silva"
+                className="text-xs h-11"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">URL / Link do Documento Escaneado (Opcional)</Label>
+              <Input
+                value={physicalProofUrl}
+                onChange={(e) => setPhysicalProofUrl(e.target.value)}
+                placeholder="https://... termo_assinado.pdf"
+                className="text-xs h-11"
+              />
+            </div>
+
+            <div className="p-3 rounded-lg bg-muted text-2xs text-muted-foreground">
+              O sistema registrará seu usuário logado e carimbo de tempo inviolável vinculados a este aceite.
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsPhysicalConsentModalOpen(false)}
+              className="text-xs min-h-11"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleRegisterPhysicalConsent}
+              disabled={isRegisteringPhysical}
+              className="text-xs font-bold min-h-11"
+            >
+              {isRegisteringPhysical ? "Registrando..." : "Confirmar Aceite Presencial"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

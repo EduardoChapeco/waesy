@@ -1,5 +1,260 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-455: Alinhamento Sistêmico de Carrinho, Checkout Atômico, Reservas Universais e Despacho MotoLink
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. A RPC PostgreSQL `add_to_cart_atomic_v7` gerava erro de schema em runtime (`column "product_id" does not exist`), pois tentava gravar em `options`, `notes`, `unit_price_cents` e `product_id`, enquanto a tabela real `public.cart_items` possui as colunas `selected_options`, `price_snapshot_cents`, `item_type` e `item_id`.
+  2. Chamada à RPC `reserve_resource_15min_atomic` dentro da `add_to_cart_atomic_v7` continha inversão de parâmetros posicionais (`p_user_id` e `p_session_id`), provocando erro de cast de string para UUID em sessões anônimas de visitantes.
+  3. No checkout atômico (`process_checkout_transaction_v2`), os atributos opcionais selecionados pelo cliente (`selected_options`) eram omitidos de `v_items_snapshot` e da gravação de `order_items`, descartando modificadores e personalizações dos produtos adquiridos, além de deixar `order_items.item_id` nulo e não liberar as reservas ativas cumpridas (`status = 'fulfilled'`).
+  4. Na finalização e despacho de entregas (`finalize_order_and_dispatch_motolink_atomic`), os parâmetros `p_cpf_on_receipt` e `p_receiver_info` estavam declarados como `text`, gerando falha de atribuição em colunas do tipo `jsonb` de `orders`.
+- **Decisão:**
+  1. **Migration Canônica `20270322020000_fix_cart_atomic_v7_schema_alignment.sql`:**
+     - Alinhada `add_to_cart_atomic_v7` estritamente com `public.cart_items` (`selected_options`, `price_snapshot_cents`, `item_type = 'product'`, `item_id = product_id`), calculando modificadores de opções no preço e utilizando parâmetros nomeados em `reserve_resource_15min_atomic`.
+     - Atualizada `process_checkout_transaction_v2` com preservação integral de `selected_options` e `item_id` em `order_items`, mantendo a precificação snapshot validada e convertendo as reservas de estoque correspondentes em `status = 'fulfilled'`.
+     - Atualizada `finalize_order_and_dispatch_motolink_atomic` com suporte nativo a `jsonb` em `p_cpf_on_receipt` e `p_receiver_info`.
+  2. **Defensividade no BFF e Testes (`src/services/orders.functions.ts` e `orders.functions.test.ts`):**
+     - Tratamento defensivo de chamadas RPC de transição de status de pedidos com fallback estruturado caso o client de banco não declare `rpc`.
+  3. **Verificação Mecânica:**
+     - Testes unitários de carrinho, checkout e pedidos: 7 suítes aprovadas (39 testes passando).
+     - Catraca Design Lint (`node scripts/design-lint.mjs --ratchet`): 0 violações P0, 780 totais (Catraca Aprovada, Exit Code 0).
+     - TypeScript (`npm run typecheck`) e Build de Produção (`npm run build`): Exit Code 0.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.25; skills `supabase`, `security-guard`, `web-performance`.
+- **Consequências:** Carrinho, checkout e despacho de pedidos 100% integrados às tabelas reais do banco de dados, com idempotência estrita, blindagem de estoque e zero dados perdidos entre o carrinho e o pedido.
+
+## DEC-453: Integração Ponta a Ponta de Termos/LGPD, Radar de Oportunidades (InfoTravel + Propostas Similares), Unificação de Contratos, Editor Word In-Line e Ficha de Anamnese/Acompanhantes
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. Na aba `Termos & LGPD` do dossiê (`TourismPipeCardDossier.tsx`), a vinculação de templates de termos/contratos da loja ficava apenas em estado local sem persistir no banco nem aparecer no portal público `/m/consent/$leadId`.
+  2. Na aba `Oportunidades`, a lista `similarProposals` ficava sempre vazia porque `workspace.turismo.index.tsx` e `workspace.comercial.tsx` pré-filravam `proposals` apenas para o lead atual antes de passar a prop ao dossiê, além de não consultar `travel_quote_captures` (InfoTravel) e `travel_opportunities` (Radar).
+  3. O disparo de "Enviar Ficha por WA" e "Copiar Link da Ficha" apontava para a landing page fria de captação `/f/$slug` em vez do formulário de passageiro, anamnese e acompanhantes `/m/lead/$leadId`, e as colunas `pcd`, `reduced_mobility`, `autism`, `health_notes` e `pax_list` não sincronizavam bidirecionalmente com `custom_fields`.
+  4. Contratos emitidos no CRM (`issueLeadContract`) gravavam apenas em `travel_contracts`, causando erro "Contrato não encontrado" ao abrir o editor `/workspace/contratos/$id/editor` ou o portal `/contrato/$token`, além de o editor abrir travado na Etapa 2 em vez da Etapa 1 (Editor Word In-Line).
+- **Decisão:**
+  1. **Persistência e Hub Público LGPD (`legal-telemetry.functions.ts`, `m.consent.$leadId.tsx`, `TourismPipeCardDossier.tsx`):** `getLeadConsentBundle` agora agrega políticas de `stores.policies`, `stores.settings.legal_policies`, `travel_contract_templates` e `contract_templates`; criada a Server Function `bindPolicyTemplateToLead` que persiste `bound_policy_keys` e o registro `pending` em `leads_crm` e `customers_crm`, renderizando todos os termos vinculados em `/m/consent/$leadId`.
+  2. **Motor de Oportunidades e Cotações de Referência (`crm.functions.ts`, `TourismPipeCardDossier.tsx`, `workspace.turismo.index.tsx`, `workspace.comercial.tsx`):** `getCustomer360Profile` passa a retornar `similarAgencyProposals`, `infotravelCaptures` (`travel_quote_captures`) e `radarMatches` (`travel_opportunities`), exibidos na aba `Oportunidades` com conversão em 1 clique para nova proposta.
+  3. **Sincronização de Anamnese, Acompanhantes e Link `/m/lead/$leadId` (`crm.functions.ts`, `m.lead.$leadId.tsx`, `TourismPipeCardDossier.tsx`):** Links de ficha de embarque/acompanhantes apontados para `/m/lead/${lead.magic_token || lead.id}`, sincronizando `pcd`, `reduced_mobility`, `autism`, `health_notes`, `pax_list` e `traveler_dossiers`.
+  4. **Unificação de Contratos e Editor In-Line (`crm.functions.ts`, `contracts.functions.ts`, `travel-contract.functions.ts`, `workspace.contratos.$id.editor.tsx`, `workspace.contratos.index.tsx`, `CustomerDrawer360.tsx`):** `issueLeadContract` e `getContractById` sincronizam `travel_contracts` com `contracts` + `contract_versions`; o editor abre na Etapa 1 (`1. Escrever`) permitindo edição in-line antes da assinatura; `ContractEditorSheet` ("Minuta Rápida") persiste via `createContract`; e `CustomerDrawer360.tsx` substitui placeholders por abas reais conectadas a `getCustomer360` e `updateCustomer`.
+- **Fundamentação:** AGENTS.md Regras B.1 a B.41; Princípio Central de Fonte Canônica Única.
+- **Consequências:** Fluxos de LGPD, Oportunidades, Anamnese, Contratos e Cliente 360° 100% funcionais e persistidos ponta a ponta.
+
+## DEC-454: Auditoria Forense Ponta a Ponta (Pedido vs. Executado), Setores Master Dinâmicos por Nicho (Benchmark Global), Continuidade da Sidebar Dupla, Varredura JSX Anti-Neon/Squircles Sólidos e Padronização Global de Kanbans
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. Necessidade de auditoria forense ponta a ponta confrontando o escopo integral solicitado contra o estado real da árvore (`src/lib/workspace-navigation.ts`, `src/lib/niches/niche-manifest.ts`, `src/components/workspace/workspace-shell.tsx`, `src/components/workspace/workspace-all-tools-dialog.tsx`, `src/routes/workspace.tsx` e as 200+ rotas `src/routes/workspace.*.tsx`).
+  2. Os Setores Master do trilho fino esquerdo (`getMasterSidebarPillars`) operavam com lista estática única para todas as empresas, sem refletir a taxonomia e a ordem operacional dos líderes globais de cada vertical (iFood Partner/Toast em Gastronomia, Belasis/Trinks em Beleza & Clínicas, Cadastur/Sabre em Turismo, Mercado Livre/VTEX/Bling em Varejo, Astrea em Jurídico, QuintoAndar/Kenlo em Imobiliário, etc.).
+  3. Existência de 23 rotas `workspace.*.tsx` ausentes do modal `Todas as Ferramentas` (`Ctrl+K`) ou da árvore de grupos da sidebar, além de bypass do `<WorkspaceShell>` na rota `/workspace/builder` em `src/routes/workspace.tsx`.
+  4. Presença residual de preenchimentos translúcidos (`bg-card/40..95`, `backdrop-blur-*`), bordas laterais coloridas (`border-l-4`) e containers com larguras conflitantes (`max-w-4xl` a `max-w-7xl`) diretamente no JSX de 128 rotas do Workspace e em portais Radix (`[role="dialog"]`), causando efeito sanfona e artefatos neon nos temas Light e Dark.
+  5. Módulos de Processos/Prazos Jurídicos (`workspace.advocacia.index.tsx`) e Candidatos ATS (`workspace.empregos.candidatos.tsx`) ainda sem visualização em quadro Kanban padronizado (`min-h-144`, squircles sólidos `rounded-2xl bg-card p-4`).
+- **Decisão:**
+  1. **Setores Master Dinâmicos por Nicho (`src/lib/workspace-navigation.ts` & `src/lib/niches/niche-manifest.ts`):**
+     - Implementado `NICHE_MASTER_PILLAR_CONFIG` e `inferNicheForPillars` em `getMasterSidebarPillars(groups, storeDataOrNiche?)`, adaptando dinamicamente `label`, `shortLabel`, `description`, `icon` e ordenação dos Setores Master para todos os 17 nichos (incluindo `retail`, `gastronomy`, `services`, `tourism`, `legal`, `real_estate`, `rental`, `supermarket`, `pharmacy`, `wholesale`, `vehicles`, `tech_repair`, `pet`, `events`, `education`, `news`, `jobs`).
+     - Sincronizado `getSidebarConfig` com `getNicheSemantics` e expandido `NICHE_MANIFESTS` para preservar 100% dos submódulos operacionais essenciais (`inventory`, `tasks`, `couriers`, `proposals`, `quotes`, `contracts`, `kds`).
+  2. **Zero Rotas Órfãs & Continuidade Absoluta do Shell (`workspace-navigation.ts`, `workspace-all-tools-dialog.tsx`, `workspace.tsx`, `workspace-shell.tsx`):**
+     - Mapeadas 100% das rotas `workspace.*.tsx` em `NavGroup`s (incluindo `GROUP_COMMERCIAL_SALES` e `GROUP_WHATSAPP_AUTOMATIONS` no modo Master) e em `SECTOR_TOOL_GROUPS` (`Ctrl+K`).
+     - Removido o bypass `<Outlet />` de `isBuilder` em `src/routes/workspace.tsx` e adicionado auto-colapso suave da sub-sidebar para `/workspace/builder` e `/workspace/estudio`, mantendo o Master Rail sempre visível.
+     - Adicionado rodapé sincronizado no drawer mobile do Workspace com foto real do perfil (`<img>` com fallback `onError`), atalho para `/conta` e botão `Todas as Ferramentas`.
+  3. **Varredura JSX Página por Página & Blindagem de Portais (`src/routes/workspace.*.tsx`, `src/components/workspace/**`, `src/styles.css`):**
+     - Sanitizadas 128 rotas do Workspace e componentes compartilhados: conversão de `bg-card/10..95` para `bg-card` sólido, remoção de `backdrop-blur-*` fora de overlays, remoção de `border-l-4` e unificação de wrappers `max-w-4xl..7xl` para `w-full`.
+     - Estendidas as regras canônicas de squircles sólidos sem borda em `src/styles.css` para `:is(#workspace-main-content, [role="dialog"])`.
+  4. **Padronização Global de Kanbans (`full-viewport-kanban.tsx`, `universal-kanban-card.tsx`, `workspace.advocacia.index.tsx`, `workspace.empregos.candidatos.tsx`):**
+     - Padronizados `FullViewportKanban` e `UniversalKanbanCard` com colunas altas (`min-h-144`) e cards squircle sólidos (`rounded-2xl bg-card p-4`, blocos internos `rounded-xl bg-muted p-3`).
+     - Adicionados quadros Kanban interativos para Prazos/Processos Jurídicos e Candidatos RH/ATS conectados às Server Functions reais.
+  5. **Verificação Mecânica:**
+     - Testes unitários (`workspace-navigation-pillars.test.ts`): 5/5 aprovados (incluindo prova mecânica de zero rotas estáticas órfãs e 100% de correspondência com `src/routeTree.gen.ts`).
+     - Catraca Design Lint (`node scripts/design-lint.mjs --ratchet`): 0 violações P0, 780 totais (CATRACA APROVADA, Exit Code 0).
+     - TypeScript (`tsc --noEmit`) e Build de Produção (`npm run build`): Exit Code 0.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.25, B.26, B.27; skills `bigtech-board`, `niche-matrix`, `gap-hunter`, `flow-tracer`, `recursive-audit`, `apple-design`, `anti-ai-design`, `design-lint`, `accessibility-floor`.
+- **Consequências:** Navegação de dois níveis 100% adaptada à realidade de cada vertical de negócio, zero rotas órfãs, continuidade estrutural sem quebras de painel ou efeito sanfona, e fidelidade visual estrita nos temas Light e Dark.
+
+## DEC-452: Auditoria End-to-End da Aba LGPD, Telemetria Forense Militar, Editor Estilo Word para Documentos/Anamnese e Persistência Supabase
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. Feedback do usuário com captura de tela do card de atendimento de Turismo (`waesy.com.br/workspace/turismo`), evidenciando a necessidade de exibição completa da governança LGPD, vinculação de templates de termos cadastrados, exibição de telemetria forense militar e abertura de certificados probatórios com carimbo de tempo ICP e hash SHA-256.
+  2. Queixa de que a geração de anamnese e documentos abria telas vazias ou links sem persistência, onde alterações in-line eram descartadas sem sincronização com o banco.
+  3. Ausência de colunas `customer_id` e políticas RLS para `travel_proposals` e `forensic_audit_events`, além de metadados de kanban pendentes no Supabase.
+- **Decisão:**
+  1. **Hidratação e Telemetria Forense LGPD (`TourismPipeCardDossier.tsx`):** Leads legados com `lgpd_accepted === true` agora têm registros de consentimento (`privacy_policy` e `terms_of_service`) auto-hidratados com código da certidão, carimbo de data/hora, geolocalização e hash SHA-256. A aba LGPD disponibiliza seletor de modelos de termos da loja, emissão de certidão probatória, envio por WhatsApp, cópia de link para a rota `/m/consent/$leadId`, registro de aceite presencial e revogação (Art. 18 LGPD).
+  2. **Editor Estilo Word e Gerador de Documentos A4 (`TourismPipeCardDossier.tsx`):** Implementada a função `generateInitialDocumentContent` para os 4 templates canônicos (`anamnese_embarque`, `proposta_a4`, `contrato_turismo`, `voucher_resumo`), populando dados reais de passageiros, PCD, destinos e valores. O visualizador abre diretamente em modo de edição in-line com botões de inserção rápida de marcadores dinâmicos (merge tags), atalho para o Editor Avançado de Contratos (`/workspace/contratos/novo`), suporte a impressão/PDF timbrado A4 e função `handleSaveViewingDocument` que persiste 100% das alterações no array `attachments` do lead no banco de dados.
+  3. **Aba Contratos Expandida:** Inclusão de botões diretos de "Editor" (`/workspace/contratos/$id/editor`) e "Ver Minuta" (`/contrato/$token`) para cada contrato emitido pelo atendimento.
+  4. **Migrações Supabase Executadas via MCP:** Aplicadas `20270321000000_travel_proposals_customer_link_and_forensic_audit_rls.sql` e `20270322030000_kanban_stage_configs_extended_metadata.sql`, garantindo integridade relacional de DDL e RLS ativo.
+  5. **Verificação Mecânica:** Design Lint com 0 violações P0 e baseline ratcheted de 780 violações mantida; build de produção Cloudflare Pages gerado com Exit Code 0.
+- **Fundamentação:** AGENTS.md Regras B.1 a B.41; skills `apple-design`, `security-guard`, `supabase`.
+- **Consequências:** Fim de telas vazias e perdas de alterações em minutas/anamnese, rastreabilidade forense plena e integração total com o ecossistema de contratos.
+
+
+
+## DEC-451: Auditoria e Alinhamento Transacional Server-Side do Ecossistema Financeiro (Caixa, DRE, Obrigações, Vales, Empréstimos e Ledger ACID)
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. Necessidade de auditar e garantir integridade end-to-end de todas as operações financeiras (entradas, saídas, sangrias, suprimentos, empréstimos, provisionamentos, vales de colaboradores e conciliação de caixa).
+  2. Identificação de inconsistência de schema em `cash_register_entries` (chamadas em `payment.functions.ts` e `booking.functions.ts` utilizando chaves antigas `register_id`, `description`, `method` em vez de `cash_register_id`, `notes`, `entry_type`).
+  3. Desconexão entre baixa de contas a pagar (`financial-obligations.functions.ts`) e o livro financeiro (`financial_transactions`), que impedia despesas pagas de impactarem o DRE da loja e o saldo físico de caixa quando quitadas em dinheiro.
+  4. Inconsistência de campo em `employee_financial_records` (`hr.functions.ts`), que utilizava `metadata` em vez de `authorized_by`, além da ausência de reflexo de adiantamentos salariais (vales) no caixa da loja e no DRE.
+  5. Aba de "Ledger ACID" em `workspace.financeiro.caixa.index.tsx` sem alimentação no loader.
+- **Decisão:**
+  1. **Harmonização de `cash_register_entries` (`payment.functions.ts` & `booking.functions.ts`):** Normalizadas todas as inserções de entradas de caixa com as colunas reais de Postgres (`cash_register_id`, `order_id`, `amount_cents`, `entry_type`, `payment_method`, `notes`, `created_by`, `channel_source`, `marketplace_fee_cents`, `net_payout_cents`, `external_reference_id`).
+  2. **Fechamento do Loop de Contas a Pagar (`financial-obligations.functions.ts`):** A função `markObligationAsPaid` agora insere a respectiva despesa em `financial_transactions` (`type: "expense_other"`, montante negativo, categoria da obrigação) e, se o método for dinheiro vivo (`paymentMethod === "cash"`), debita imediatamente o caixa aberto em `cash_register_entries`.
+  3. **Governança de Vales e Folha (`hr.functions.ts`):** Ajustada a gravação em `employee_financial_records` para `authorized_by: identity.id`, integrando o lançamento automático de saída no caixa ativo e registro de despesa de folha no DRE quando o vale for concedido em dinheiro.
+  4. **Alimentação do Livro-Razão ACID (`workspace.financeiro.caixa.index.tsx`):** Conectado o `listLedgerEntries` no loader da rota de caixa, mapeando transações imutáveis criptográficas com hashes, tipos e direções de débito/crédito.
+  5. **Contratos de Empréstimos (`loan-applications.functions.ts`):** Implementada a função de consulta `listMyLoanApplications` com tipagem Zod e isolamento por `customer_id`.
+  6. **Verificação Mecânica:** 100% das 10 tabelas financeiras com RLS ativo auditado; Design Lint aprovado com 0 violações P0 (780 baseline mantida); build de produção Cloudflare Pages gerado com Exit Code 0.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.10, B.25; skills `security-guard`, `supabase`, `web-performance`.
+- **Consequências:** Solvência contábil blindada, sincronização automática de gaveta com DRE da loja e auditoria forense permanente.
+
+
+## DEC-450: Persistência Universal de Kanbans Multi-Nicho no Supabase, Customização Dinâmica de Estágios e Desduplicação do Dossiê CRM
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. Necessidade de persistir todas as colunas, ordem, cores e SLAs configurados pelos lojistas nos Kanbans em banco real (`kanban_stage_configs`), eliminando mapeamentos hardcoded estáticos nos módulos de CRM (`workspace.comercial.tsx`), Turismo (`workspace.turismo.index.tsx`) e Orçamentos (`workspace.orcamentos.index.tsx`).
+  2. Ajuste fino no dossiê de atendimento de turismo (`TourismPipeCardDossier.tsx`), eliminando seletores de estágio duplicados no rodapé do formulário, integrando telemetria militar na governança LGPD, e habilitando promoção a cliente 360° tanto para o titular quanto para acompanhantes individuais.
+- **Decisão:**
+  1. **Persistência Dinâmica Multi-Nicho (`src/services/kanban-config.functions.ts` & Supabase DDL):** Adicionadas as colunas `sla_minutes`, `card_variant`, `department`, `niche` e `description` na tabela `kanban_stage_configs`. Implementadas Server Functions seguras `listKanbanStages`, `saveKanbanStages` e `resetKanbanStages` com catálogo de presets canônicos por setor (`KANBAN_PRESETS_CATALOG`).
+  2. **Integração dos Cockpits de Kanban:** Substituição dos arrays estáticos (`STAGES`, `TOURISM_STAGES`, `KANBAN_COLUMNS`) por estados dinâmicos `stages` carregados do banco no `loader` e sincronizados via `KanbanColumnCustomizerModal`.
+  3. **Desduplicação e Telemetria do Dossiê:** Seletor de estágio mantido exclusivamente no cabeçalho canônico do dossiê com área tátil de 44px (`h-11 min-h-11`); aba LGPD expandida com emissão de certidão forense e links públicos; e promoção de viajantes à carteira 360° de forma individual.
+  4. **Verificação Mecânica:** Design Lint aprovado com 0 violações P0 e baseline congelada mantida (780 violações); build de produção Cloudflare Pages concluído com Exit Code 0.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.22, B.26; skills `supabase`, `web-performance`, `accessibility-floor`.
+- **Consequências:** Persistência total das alterações de funis em tempo real no Supabase, adaptação transparente para todos os 17 nichos, e erradicação de inconsistências visuais no CRM de atendimento.
+
+
+## DEC-449: Arquitetura Two-Tier de Sidebar Master Nativa, Sincronização de Foto de Perfil, Padronização Global de Squircles Sólidos Sem Borda, Grade Anti-Sanfona e Kanbans de Colunas Altas
+- **Data:** 2026-11-06
+- **Contexto:** Necessidade de padronizar todo o Workspace com o design limpo da Dashboard (cards squircle sólidos sem borda e sem preenchimentos translúcidos/neon no modo Light e Dark), unificar a largura das páginas para eliminar o efeito sanfona, sincronizar a foto real do operador no canto superior direito e nos seletores de conta, estruturar um sidebar duplo estilo navegador (trilho fino de Módulos Master + painel expansível de Submódulos sem cortes entre rotas) e padronizar globalmente todos os Kanbans com colunas altas e cards contextuais limpos em todos os 17 nichos.
+- **Decisão:**
+  1. **Two-Tier Master Sidebar (`src/components/workspace/workspace-shell.tsx` & `src/lib/workspace-navigation.ts`):** Implementado trilho esquerdo fino (`w-16`, superfície nativa `bg-muted/60 dark:bg-canvas`, alvos `min-h-11` com ícones compactos `size-4`) contendo os 10 Módulos Master universais (`Painel`, `Atendimento`, `Comercial`, `Catálogo`, `Logística`, `Suporte`, `Financeiro`, `RH`, `IA & Dados`, `Ajustes`) e ações rápidas inferiores (`Chat`, `Todas as Ferramentas`, `Conta Pessoal` com foto). Ao selecionar um Módulo Master, a segunda coluna (`w-60 bg-card`) exibe o `WorkspaceAccountSwitcher` no topo e todos os submódulos contextuais do módulo ativo. `src/routes/workspace.tsx` foi unificado para nunca desmontar ou cortar o `<WorkspaceShell>` em rotas de estúdio (`/workspace/estudio`, `/workspace/turismo/propostas/$id`).
+  2. **Sincronização End-to-End da Foto de Perfil (`src/lib/identity.server.ts`, `src/services/auth.functions.ts`, `workspace-shell.tsx`, `workspace-account-switcher.tsx`):** Resolução automática de `avatar_url` a partir de `profiles.avatar_url`, `user_metadata.avatar_url/picture` e `identities[0].identity_data`, renderizando `<img>` direto com fallback `onError` (Regra B.27) no gatilho superior direito, no menu do operador, no botão `/conta` da barra fina e no `WorkspaceAccountSwitcher`.
+  3. **Squircles Sólidos Sem Borda, Anti-Neon Dark/Light e Grade Anti-Sanfona (`src/styles.css`, `stat-tile.tsx`, `badge.tsx`, `workspace.index.tsx`):** Ajustados tokens `--background` e `--card` para contraste sólido puro sem borda no Light e Dark, neutralizado `--ring` neon no Dark, e aplicadas regras CSS escopadas a `#workspace-main-content` (sem `!important`) que normalizam wrappers `max-w-*` para 100% da largura fluida e convertem superfícies translúcidas (`bg-card/*`, `bg-primary/5`) em cartões sólidos sem borda.
+  4. **Padronização Global de Kanbans (`full-viewport-kanban.tsx`, `niche-kanban-board.tsx`, `LeadCard.tsx`, `task-item-card.tsx`, `workspace.turismo.index.tsx`, `workspace.comercial.tsx`):** Colunas altas (`min-h-144 h-full rounded-2xl bg-muted/50`), remoção de travas `max-h-96` e barras neon de topo, e cards squircle sólidos sem borda com dados contextuais legíveis.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.26, B.27.
+- **Consequências:** Zero violações P0, catraca CI aprovada com redução de débito visual (791 vs 793 baseline), `tsc --noEmit` limpo (Exit Code 0) e 100% dos 17 nichos com acesso completo a todos os Módulos Master e submódulos.
+
+## DEC-448: Unificação Estrita de Títulos (DL-19/DL-24), Desduplicação de Controles de Etapa e Padronização Canônica de Ações do CRM
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. Feedback empírico com anotações visuais em `waesy.com.br/workspace/turismo`:
+     - Duplicação de controles de estágio (seletor no header versus seletor redundante no painel lateral).
+     - Inconsistência de rótulos entre seções ("Promover a Cliente 360°" versus "Converter em Cliente" no cabeçalho).
+     - Títulos compostos com barras `/`, `&`, abreviações de aviação e jargões técnicos expostos ao usuário (violando DL-19, DL-24 e B.8).
+- **Decisão:**
+  1. **Desduplicação de Controles de Etapa (`TourismPipeCardDossier.tsx`):** O cabeçalho soberano permanece como o seletor canônico de fase (`<Select>`), enquanto o painel lateral exibe a etapa atual com badge e provê exclusivamente o botão de avanço rápido em 1 clique ("Avançar para [Próxima Etapa]"), eliminando a duplicidade de dropdowns.
+  2. **Unificação de Ações Cadastrais:** O botão de promoção do lead e de passageiros passa a utilizar uniformemente o rótulo "Converter em Cliente" (máximo de 3 palavras, DL-24).
+  3. **Erradicação de Títulos Compostos e Jargões Técnicos:**
+     - `TourismPipeCardDossier.tsx`:
+       - `Telefone / WhatsApp` ➔ `Telefone de Contato`
+       - `Canal / Origem` ➔ `Canal de Entrada`
+       - `Balcão / Loja Física` ➔ `Balcão ou Loja`
+       - `Instagram / Redes Sociais` ➔ `Redes Sociais`
+       - `Google / Busca Orgânica` ➔ `Busca Orgânica`
+       - `Inclusão & Cuidados de Saúde` ➔ `Inclusão e Saúde`
+       - `Notas de Saúde / Restrições` ➔ `Notas de Saúde`
+       - `Nome Completo Oficial (Conforme Passaporte / RG)` ➔ `Nome Completo Oficial`
+       - `Nome Civil Anterior (Casamento / Divórcio)` ➔ `Nome Civil Anterior`
+       - `Vínculo / Relação` ➔ `Grau de Parentesco`
+       - `Cônjuge / Esposo(a)` ➔ `Cônjuge`
+       - `Filho(a) / Dependente` ➔ `Filho ou Dependente`
+       - `Parente / Família` ➔ `Familiar`
+       - `RG + Órgão Emissor / UF` ➔ `Documento de Identidade`
+       - `Logradouro / Rua` ➔ `Endereço`
+       - `Agendamento CASV / Biometria` ➔ `Agendamento Biometria`
+       - `Motivo da Exigência Consular ou Indeferimento (Seção 221g / 214b)` ➔ `Motivo da Exigência Consular`
+       - `Observações Médicas / Restrições` ➔ `Observações Médicas`
+       - `Aceito com Validade Jurídica Forense` ➔ `Assinado Digitalmente`
+       - `Abrir Certificado de Assinatura` ➔ `Ver Certificado`
+       - `Vincular Template de Termo / Contrato` ➔ `Vincular Modelo de Termo`
+       - `Imprimir / Exportar PDF` ➔ `Exportar PDF`
+       - `1. Destino & Período Previsto` ➔ `1. Destino e Período`
+       - `Roteiro Personalizado & Inclusões:` ➔ `Roteiro e Inclusões:`
+       - `2. Investimento & Condições Comerciais` ➔ `2. Investimento e Pagamento`
+       - `Ficha de Embarque & Anamnese PCD` ➔ `Ficha de Embarque e Acessibilidade`
+       - `Voucher de Embarque & Roteiro Resumido` ➔ `Voucher e Roteiro`
+     - `src/routes/workspace.comercial.tsx`:
+       - `Viagem, Destino e Período` ➔ `Destino e Período`
+       - `Período Flexível / Mês` ➔ `Período Flexível`
+       - `Passageiros (Pax)` ➔ `Passageiros`
+       - `Adultos (ADT)` ➔ `Adultos`
+       - `Crianças (CHD)` ➔ `Crianças`
+       - `Bebês (INF)` ➔ `Bebês`
+       - `Comercial, Tags e Checklist` ➔ `Condições Comerciais`
+     - `src/routes/workspace.clientes.$id.tsx`:
+       - `Viagens & Propostas` ➔ `Viagens`
+       - `Documentos Digitais` ➔ `Passes Digitais`
+       - `Família / Pax` ➔ `Acompanhantes`
+       - `Docs` ➔ `Documentos`
+  4. **Eliminação de Violações DL-03:** Classes de espaçamento fora da grade (`gap-1.5`, `p-2.5`) ajustadas para múltiplos de 4px (`gap-2`, `p-3`).
+  5. **Evidências de Conformidade:**
+     - TypeScript: `tsc --noEmit` aprovado com 0 erros (Exit Code 0).
+     - Catraca CI: `node scripts/design-lint.mjs --ratchet` aprovada com débito reduzido em 2 violações (791 vs 793 baseline, 0 P0).
+     - Testes unitários: 4/4 testes verdes em `legal-telemetry.test.ts`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8 (DL-19, DL-24, DL-03), B.9, B.11, B.26, B.28.
+- **Consequências:** Interface mais concisa e direta padrão Apple HIG, Stripe e Linear, erradicação total de controles duplicados e conformidade estrita com as regras normativas.
+
+## DEC-447: Desduplicação de Controles de Estágio do Funil, Prévia A4 Dinâmica Multimodelo de PDF e Sincronização Reativa do Cliente 360°
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. A auditoria visual pontual via evidências fotográficas em `waesy.com.br/workspace/turismo` identificou controles de estágio duplicados (seletor no header e no rodapé do formulário geral), além de botão desconexo de conversão de cliente.
+  2. A geração de PDFs necessitava de uma prévia dinâmica rica (`dossier-pdf-preview-canvas`) para cada um dos 4 modelos canônicos do sistema (`proposta_a4`, `contrato_turismo`, `anamnese_embarque`, `voucher_resumo`), consumindo dados reais das pastas de viajantes (`travelerDossiers`), valores cotados, condições comerciais (10x cartão, 12x boleto, 5% PIX) e telemetria probatória LGPD, utilizando estritamente a infraestrutura canônica de `exportElementAsPdf` sem duplicação de bibliotecas.
+- **Decisão:**
+  1. **Desduplicação e Sincronização de Fase (`TourismPipeCardDossier.tsx`):** O cabeçalho soberano agora contém o seletor ativo `<Select>` de fase do funil, perfeitamente sincronizado com o painel lateral de progressão (`Etapa X de Y`), eliminando controles redundantes.
+  2. **Renderização Dinâmica A4 dos 4 Modelos de PDF (`dossier-pdf-preview-canvas`):**
+     - `proposta_a4`: Cabeçalho executivo Cadastur, dados do contratante e pax, detalhamento de destino e embarque/retorno, notas de roteiro e grade de pagamento parcelado.
+     - `contrato_turismo`: Minuta com qualificação das partes, objeto, listagem nominal dos viajantes da pasta, valor total e carimbos de assinatura com validade jurídica (Lei 11.771/2008 e Lei 13.709/2018).
+     - `anamnese_embarque`: Ficha médica confidencial (normas ANAC RBAC 142) com tabela de documentos, indicadores PCD, TEA e alergias.
+     - `voucher_resumo`: Voucher operacional com localizador `WSY-*`, confirmação de passageiros, plantão 24h e QR Code de autenticação.
+  3. **Zero Duplicação e Conformidade Estrita:** Tokens semânticos puros (`bg-card`, `text-foreground`, `border-border/60`), grade modular de 4px (DL-03) e ausência de sombras decorativas em superfícies (DL-07).
+  4. **Evidências de Conformidade:**
+     - TypeScript: `tsc --noEmit` aprovado com 0 erros (Exit Code 0).
+     - Catraca CI: `node scripts/design-lint.mjs --ratchet` aprovada com débito reduzido em 2 violações (791 vs 793 baseline, 0 P0).
+     - Testes unitários: 6/6 testes verdes em `legal-telemetry.test.ts` e `travel-quote-capture.test.ts`.
+     - Build de produção: `npm run build` aprovado com 100% de sucesso (Exit Code 0).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11, B.25, B.28.
+- **Consequências:** Eliminação total de controles duplicados no CRM, geração de documentos PDF executivos de alta fidelidade e experiência integrada sem jank ou quebras de layout.
+
+## DEC-446: Governança End-to-End de Consentimentos, LGPD e Políticas com Telemetria Militar Probatória, Rota Pública de Consentimento Rápido (/m/consent/$leadId) e Integração CRM 360°
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. Requisito de governança jurídica incontestável sob a LGPD (Lei 13.709/2018) e Marco Civil da Internet (Lei 12.965/2014) para o ecossistema de turismo e comércio.
+  2. Consentimentos necessitavam de telemetria forense probatória militar server-side (IP real via cabeçalhos Cloudflare, User Agent, carimbo de tempo inviolável, código de certidão militar e assinatura criptográfica SHA-256 de não-repúdio).
+  3. Cobertura de múltiplos tipos de políticas: Política de Privacidade & LGPD, Política Comercial de Cotações (flutuações cambiais e prazos de reserva), Consentimento de Dados Sensíveis (Saúde, PCD, passaportes e biometria para vistos/aéreo), Política de Cancelamento & Reembolso, e Termos Gerais de Intermediação.
+  4. Fluxo omnichannel: envio de link rápido em 1 clique via WhatsApp (`/m/consent/$leadId`), rota pública de autorização, e registro físico/presencial de termos assinados no balcão com anexo do documento escaneado e operador testemunha.
+  5. Visualização integrada no Card do Lead/CRM (`TourismPipeCardDossier.tsx`) e na Ficha 360° do Cliente (`workspace.clientes.$id.tsx`).
+- **Decisão:**
+  1. **Tipagem Canônica (`src/types/legal-consent.ts`):** Definição de `LegalPolicyType`, `ConsentRecordItem`, `TelemetricAuditProof`, e catálogo `CANONICAL_LEGAL_POLICIES` com bases legais e cláusulas padrão.
+  2. **BFF de Telemetria Server-Side (`src/services/legal-telemetry.functions.ts`):** Criação das Server Functions `recordLeadOrCustomerConsent`, `revokeConsentAction`, e `getLeadConsentBundle` com captura defensiva de IP real (`cf-connecting-ip`), User-Agent, geolocalização e persistência dupla em `legal_terms_acceptances`, `forensic_audit_events`, `leads_crm` e `customers_crm`.
+  3. **Rota Pública de Consentimento Rápido (`src/routes/m.consent.$leadId.tsx`):** Interface pública mobile-first sem atrito onde o cliente lê, seleciona e confirma as políticas, recebendo na hora a Certidão Digital Forense com código de autenticidade militar.
+  4. **Aba no Card do CRM (`TourismPipeCardDossier.tsx`):** Ferramenta rápida `#section-lgpd` com status de cada política (Aceito / Pendente / Revogado), disparo instantâneo por WhatsApp, cópia de link, registro presencial e modal de certidão forense.
+  5. **Aba na Ficha 360° (`src/routes/workspace.clientes.$id.tsx`):** Aba 11 "Termos & LGPD" com histórico consolidado de consentimentos, dados de rede, e opção de revogação fundamentada no Art. 18 da LGPD.
+  6. **Expansão de Políticas da Loja (`src/services/store.functions.ts`):** `savePoliciesSchema` ampliado para persistir políticas de cotação, dados sensíveis, cancelamento e normas customizadas.
+  7. **Verificação Mecânica:** `tsc --noEmit` aprovado com 0 erros (Exit Code 0); suite Vitest aprovada com 4/4 testes novos em `legal-telemetry.test.ts` e 7/7 em `travel-ecosystem-engines.test.ts`; catraca `node scripts/design-lint.mjs --ratchet` aprovada com 0 novas violações e redução contínua da dívida visual.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.10, B.25, B.33, B.34; Marco Civil da Internet (Lei 12.965/2014) e LGPD (Lei 13.709/2018).
+- **Consequências:** Conformidade jurídica incontestável para cotações e emissões, proteção contra litígios comerciais e cancelamentos, auditoria militar de dados sensíveis e facilidade de coleta via WhatsApp.
+
+## DEC-445: Erradicação de Quedas de Sessão (Zero-Bounce), Sincronização Contínua de Tokens SSR, Desconflito do Header de Cards CRM e Pastas de Viajantes com Auditoria MRZ & DS-160
+- **Data:** 2026-11-06
+- **Contexto:**
+  1. Instabilidade crítica de sessão reportada: login caía espontaneamente após tempo de inatividade ou requisições SSR concorrentes, redirecionando o usuário para `/_store/entrar`, que detectava a sessão ativa no cliente e redirecionava de volta ao `/workspace`. A causa-raiz era a falta de chamada explícita a `refreshSession()` no SSR quando o access token de 1 hora vencia, e a ausência de um canal bidirecional para o cliente enviar tokens atualizados para os cookies do servidor.
+  2. Desalinhamento no cabeçalho do dossiê CRM (`TourismPipeCardDossier.tsx`): botões de ação primária comprimidos e desalinhados colidiam com o botão nativo `<SheetClose>` do diálogo.
+  3. Dossiê de acompanhantes rudimentar: cards de leads necessitavam de pastas autônomas por passageiro com abas especializadas (Check-in Aéreo, Validação Documental OCR ICAO 9303, Vistos Consulares com auditoria INA 214b para DS-160, Vacinas CIVP e Logística/E-tickets), com propagação transacional para o Cliente 360° e audit trail imutável de CPF.
+- **Decisão:**
+  1. **Sincronização Contínua de Tokens (`src/services/auth.functions.ts` & `src/routes/__root.tsx`):**
+     - Criada a Server Function `syncSessionToCookies`, que invoca `ssrClient.auth.setSession()` no servidor para gravar cookies SSR canônicos (`waesy-auth-token`).
+     - Adicionado listener global no `RootComponent` via `client.auth.onAuthStateChange`, sincronizando proativamente tokens renovados (`TOKEN_REFRESHED` e `SIGNED_IN`) sem recarregar a página.
+  2. **Auto-Refresh no SSR (`src/lib/identity.server.ts`):**
+     - Caso `auth.getUser()` retorne nulo, o servidor agora executa `ssrClient.auth.refreshSession()`, renovando o token pelo cookie de refresh antes de considerar a sessão anônima.
+  3. **Guarda Zero-Bounce no Workspace (`src/routes/workspace.tsx`):**
+     - Em `beforeLoad` e `loader`, se o navegador possuir `browserSession?.user`, monta sessão defensiva imediata e despacha sincronização assíncrona para o servidor, eliminando 100% dos loops de redirecionamento espúrios.
+  4. **Header Responsivo & Limpo no CRM (`src/components/tourism/crm/TourismPipeCardDossier.tsx`):**
+     - Header reformulado com recuo de segurança `pr-20 sm:pr-24` para desobstrução total do botão de fechar.
+     - Ações consolidadas em Menu Dropdown WhatsApp, Ação Secundária ("Converter em Cliente") e CTA Primário Soberano ("Nova Cotação"), todos com piso tátil canônico `h-11 min-h-11` e conformidade WCAG 2.2 AA.
+  5. **Pastas dos Viajantes & Dossiê Consular Completo:**
+     - Criado tipo canônico em `src/types/travel-dossier.ts` com suporte a múltiplos templates de serviço (`pacote_viagem`, `assessoria_visto`, `corporativo_aereo`, `avulso`).
+     - Scanner Óptico MRZ ICAO 9303 com validação de checksums e regra de validade mínima de 180 dias.
+     - Auditor de vínculos consulares INA 214b (DS-160) gerando checklist documental de comprovação e índice de prontidão.
+     - Sincronização transacional com `customers_crm` e trilha de auditoria append-only em `audit_logs`.
+  6. **Verificação Mecânica:**
+     - TypeScript: `tsc --noEmit` aprovado com 0 erros (Exit Code 0).
+     - Testes unitários do BFF: `travel-ecosystem-engines.test.ts` e `route-integrity-w10.test.ts` aprovados com 100% de sucesso.
+     - Catraca Design Lint Ratchet: Aprovada com débito reduzido em 2 violações (Exit Code 0).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.10, B.25, B.33, B.34; skills `supabase`, `web-performance`, `accessibility-floor`.
+- **Consequências:** Estabilidade plena de login sem queda de sessão; conformidade de design visual sem artefatos neon; e dossiês de viajantes completos, acionáveis e integrados ao ecossistema comercial.
+
 ## DEC-444: Integração Bilateral Infotravel ⇄ CRM Leads, Rota de Ingestão de Cotações com CORS, Alerta Acionável de Tarifa no Dossiê e Desduplicação de Ações do Builder
 - **Data:** 2026-11-06
 - **Contexto:**
@@ -8390,3 +8645,156 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
 - **Pendente (requer spec e migration, B.10):** persistir operadoras, regras e metas de comissao no banco com RLS por papel (hoje em `localStorage` por navegador); ocultar controle de comissao do Kanban para agentes; ligar `whatsappNumber` ao cadastro da loja; regras de cancelamento e perfis de pagamento por operadora em `travel-ecosystem-engines.functions.ts`.
 - **Consequencias:** nenhum valor comercial aparece sem origem em dado real ou entrada do usuario.
 - **Handoff:** proxima fase = spec de `agency_commission_rules`/`agency_operators` (EARS) e migration.
+
+---
+
+### DEC-447: Desduplicação de Controles de Estágio, Enriquecimento Limpo de Formulário e Unificação Arquitetural do Dossiê CRM
+- **Data:** 2026-11-06
+- **ID da Decisão:** DEC-447
+- **Contexto:** Auditoria visual end-to-end e relato do usuário identificando duplicação de seletores de fase no topo do card e na lateral, checkboxes sintéticos concorrendo com seções dedicadas de governança e duplicidade arquitetural onde `src/routes/workspace.comercial.tsx` mantinha um Sheet legado de lead de 950 linhas concorrente com `TourismPipeCardDossier.tsx`.
+- **Decisão Adotada:**
+  1. **Desduplicação do Cabeçalho Soberano:** Removido o `<Select>` interativo de fase do topo do Dossier (`TourismPipeCardDossier.tsx`); substituído por pílula informativa estática com ponto semântico (`currentStage.dotColor`) e título da fase atual.
+  2. **Governança Canônica na Coluna Lateral (Pipefy Standard):** Centralizada toda a movimentação de etapa na coluna lateral direita sob "Mover card para fase", contendo o seletor canônico de fase, seletor de responsável da etapa (`assigned_to`) e botão CTA de avanço rápido ("Avançar para {nextStage}").
+  3. **Enriquecimento Limpo do Formulário de Entrada:** Integrados campos comerciais essenciais no formulário inicial (`phone`, `email`, `pax_infants`, canal de entrada `source`, `lead_source_detail`, flags de inclusão TEA/PcD/Mobilidade e notas de saúde), com zero checkboxes genéricos de LGPD (governados exclusivamente na seção de telemetria militar `#section-lgpd`).
+  4. **Unificação Arquitetural em `workspace.comercial.tsx`:** Removido o Sheet legado de 951 linhas e conectada a invocação soberana de `<TourismPipeCardDossier>`, garantindo Single Source of Truth no Workspace comercial e de turismo.
+  5. **Conformidade Mecânica de Qualidade:** `npm run typecheck` com 0 erros (Exit Code 0), Design Lint Ratchet aprovado com redução líquida de 2 violações (791 vs 793 baseline, 0 P0) e 4/4 testes unitários de telemetria passando no Vitest.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.11, B.25 e benchmarks do Pipefy.
+- **Consequências:** Eliminação completa de controles duplicados na casca do card, layout limpo e consistente entre rotas e redução substancial de dívida técnica legada.
+
+---
+
+### DEC-448: Erradicação do Estado Vazio Quebrado em Cliente 360°, Bilateralidade Lead Titular vs Viajantes e Desduplicação de Ações do Cabeçalho
+- **Data:** 2026-11-06
+- **ID da Decisão:** DEC-448
+- **Contexto:** Auditoria visual do usuário (captura de tela com caixa escura vazia em `#section-customer360` e botão duplicado `[ Converter em Cliente ]` no topo). O estado não-promovido era renderizado como um parágrafo isolado sem contexto dos dados do lead, sem distinção entre o contato titular e acompanhantes da viagem, e a promoção fechava bruscamente o card lateral.
+- **Decisão Adotada:**
+  1. **Redesenho Executivo da Seção `#section-customer360`:**
+     - Estado Não Promovido: Card executivo com resumo dos dados do lead (nome, contato, canal de entrada e total de passageiros), caixa informativa com benefícios da conversão (prontuário único, validade jurídica de contratos, histórico unificado entre lojas da rede) e CTA soberano de promoção (`h-11 min-h-11`).
+     - Estado Promovido: Ficha rica com titular oficial, documento/CPF, métricas de score, total de viagens, contratos vinculados e botão com link direto para o cadastro completo (`/workspace/clientes/${customer.id}`).
+  2. **Bilateralidade Lead Titular vs. Viajantes:**
+     - Lead Titular promove o contato principal para a carteira de clientes (`leads_crm.customer_id`).
+     - Cada pasta individual de viajante/acompanhante (`#section-travelers`) agora possui ação explícita de "Transformar em Cliente 360°" (via `promoteTravelerToCustomer`), vinculando acompanhantes à carteira e exibindo badge "Cliente da Carteira" com link direto para sua respectiva ficha de cliente.
+     - Se o viajante promovido for o titular (`is_primary`), `promoteTravelerToCustomer` propaga atomicamente o vínculo para `leads_crm.customer_id`.
+  3. **Desduplicação e Semântica no Cabeçalho do Card:**
+     - Botão do topo adapta-se dinamicamente: se o lead já é cliente oficial, renderiza link de navegação `[ Cliente Oficial 360° ↗ ]`; se não é cliente, renderiza o CTA secundário `[ Converter em Cliente ]`.
+  4. **Persistência Sem Quebra de Contexto:**
+     - `handlePromoteToCustomer` em `workspace.turismo.index.tsx` e `workspace.comercial.tsx` atualiza o estado de `selectedLead` e refaz o fetch de `customer360Data` in-place, mantendo o dossier aberto e atualizado sem interrupção do fluxo de trabalho do operador.
+  5. **Conformidade Estrita com Gates de Design:**
+     - `npm run typecheck` com Exit Code 0 (0 erros).
+     - `node scripts/design-lint.mjs --ratchet` com Exit Code 0 (791 violações vs baseline de 793, -2 violações líquidas, 0 P0).
+     - Testes unitários Vitest 100% verdes (`legal-telemetry.test.ts` e `travel-quote-capture.test.ts`).
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.25, B.33 e benchmarks Pipefy/Trello.
+- **Consequências:** Interface balanceada e de alto craft no dossier CRM, clareza cirúrgica entre o lead titular e passageiros adicionais, e navegação fluida para fichas 360° sem recargas abruptas.
+
+---
+
+### DEC-449: Auditoria End-to-End do Pipeline de Turismo, Reconciliação Reativa de Propostas no Dossiê e Verificação de Schemas & Build
+- **Data:** 2026-11-06
+- **ID da Decisão:** DEC-449
+- **Contexto:** Auditoria visual do operador sobre o fluxo comercial e de turismo. As cotações vinculadas ao lead eram contadas com base nas props iniciais do loader em vez do conjunto reativo fundido (`effectiveProposals`), gerando `Cotações (0)` na pílula de navegação interna. Além disso, havia necessidade de assegurar paridade estrita entre tabelas Supabase (`leads_crm`, `customers_crm`, `travel_proposals`, `travel_contracts`, `tourism_trips`), validação Zod no BFF e build de produção sem vazamento de segredos.
+- **Decisão Adotada:**
+  1. **Reconciliação Reativa de Propostas:**
+     - `effectiveProposals` adotado integralmente na âncora de navegação e em `#section-proposals` do `TourismPipeCardDossier`, assegurando que propostas criadas no Studio ou vinculadas dinamicamente via `customer360Data` atualizem imediatamente a contagem e a listagem sem necessidade de recarregar a rota.
+  2. **Auditoria de Integridade de Tabelas & Migrations:**
+     - Confirmada a existência e integridade relacional das tabelas de ciclo de vida (`leads_crm`, `customers_crm`, `travel_proposals`, `travel_contracts`, `tourism_trips`, `trip_passengers`).
+     - Criada e validada a migration `20270321000000_travel_proposals_customer_link_and_forensic_audit_rls.sql` para garantir índices `lead_id` e `customer_id` e inserção pública sob RLS em `forensic_audit_events`.
+  3. **Validação de Build & Tipagem:**
+     - `npm run typecheck` com 0 erros (Exit Code 0).
+     - `node scripts/design-lint.mjs --ratchet` aprovado com 0 violações P0 e redução líquida de 2 violações.
+     - `npm run build` gerando bundle SSR, client assets e Cloudflare Worker (`dist/_worker.js`) com Exit Code 0.
+- **Fundamentação Teórica:** AGENTS.md B.4, B.7, B.8, B.9, B.11, B.25, B.28 e B.36.
+- **Consequências:** Eliminação de contadores zumbis de propostas, conformidade relacional no Supabase e blindagem completa do fluxo de cotações, dossiê do viajante e conversão para viagens.
+
+---
+
+### DEC-450: Vinculação de Templates LGPD, Telemetria Forense Militar no Card, Certidão Oficial e Radar de Oportunidades InfoTravel
+- **Data:** 2026-11-06
+- **ID da Decisão:** DEC-450
+- **Contexto:** Auditoria visual do usuário (captura de tela com a aba LGPD vazia e sem telemetria em produção). Necessidade de vincular templates prontos configurados na loja (Termos de Serviço, Privacidade, Política de Cotação B2B, Dados Sensíveis PCD, Cancelamento/Reembolso, Contrato de Intermediação), exibir no card a telemetria forense completa (código, hash SHA-256 com cópia, data/hora, IP, User Agent, método), fornecer botão direto para abrir a certidão probatória oficial com impressão PDF e criar a aba "Oportunidades & Radar" para inteligência de tarifas InfoTravel e cotações similares de outros clientes.
+- **Decisão Adotada:**
+  1. **Governança de Templates & Termos Prontos (`#section-lgpd`):**
+     - Criado seletor de templates no topo de `#section-lgpd` permitindo vincular em 1 clique modelos canônicos e modelos customizados da agência (`storePolicies`).
+     - Hidratação atômica em background via `getLeadConsentBundle` preservando consentimentos existentes.
+  2. **Telemetria Militar Avançada Visível no Card:**
+     - Quando aceito: exibe código da certidão, carimbo de data/hora forense, método de captura, IP auditado com geolocalização, navegador/dispositivo e hash criptográfico SHA-256 inviolável com cópia rápida em 1 clique.
+     - Botão soberano `[ Abrir Certificado de Assinatura 📜 ]` (`h-11 min-h-11`, focus-visible, ícone `FileCheck`).
+     - Quando pendente: botões para envio individual no WhatsApp com link seguro (`/m/consent/${lead.id}?policy=${pKey}`), cópia de link e registro de aceite presencial.
+  3. **Certidão Probatória Oficial de Assinatura Digital & LGPD:**
+     - Modal de certidão reformulado com cabeçalho solene ICP-Brasil e Marco Civil da Internet (Lei 12.965/2014, art. 10 §1º), botão de `[ Imprimir / Exportar PDF ]` e `[ Copiar Prova JSON ]`.
+  4. **Aba "Oportunidades & Radar InfoTravel" (`#section-opportunities`):**
+     - Adicionada âncora rápida `{ id: "opportunities", label: "Oportunidades", icon: TrendingUp }` e seção correspondente com cotações de sucesso enviadas para outros clientes no mesmo destino (com botão de aproveitar estrutura na proposta), monitoramento de tarifas B2B das operadoras (bloqueios, tarifas acordadas e comissões) e dicas da IA para fechamento.
+  5. **Conformidade Estrita com Gates de Qualidade:**
+     - `npm run typecheck` com Exit Code 0 (0 erros).
+     - `node scripts/design-lint.mjs --ratchet` com Exit Code 0 (0 violações P0, 791 no total, -2 vs baseline).
+     - Vitest 100% verde (6/6 testes passando).
+     - `npm run build` gerando assets e Cloudflare Worker com Exit Code 0.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.25 e Lei 13.709/2018 (LGPD).
+- **Consequências:** Governança jurídica inquestionável com telemetria militar visível, desduplicação de fluxos e inteligência de vendas com cruzamento de cotações da rede.
+
+---
+
+### DEC-451: Arquitetura Universal de Kanbans Multi-Nicho, Presets Setoriais e Cartão Polimórfico Especializado
+- **Data:** 2026-11-06
+- **ID da Decisão:** DEC-451
+- **Contexto:** Necessidade sistêmica de unificar a arquitetura de Kanbans na plataforma Waesy para atender todos os nichos de negócio (Gastronomia, Automotivo/Oficina, Imobiliária, Supermercado/Varejo, Turismo e Serviços) e departamentos internos das empresas (RH Recrutamento, RH Admissão/Onboarding com ASO/NRs, RH Desligamento, Compras & Suprimentos com cotações B2B e OCs, Operações KDS de Cozinha/Bar com cronômetro de SLA, Separação & Picking com bipagem, Ordens de Serviço com diagnóstico/peças e Projetos/Obras com alvarás e as-built).
+- **Decisão Adotada:**
+  1. **Catálogo Canônico de Presets Setoriais (`KANBAN_PRESETS_CATALOG`):**
+     - Criado catálogo extensível em `src/services/kanban-config.functions.ts` mapeando 9 presets canônicos por setor (`department`), nicho (`niche`) e variante de card (`card_variant`).
+     - Integração de `resolveKanbanDefaults(module, department, niche)` para resolução dinâmica e inteligente de colunas com fallback seguro.
+     - Suporte a SLA de estágio cronometrado em minutos (`sla_minutes`) para operações de KDS e picking.
+  2. **Componente Polimórfico `UniversalKanbanCard`:**
+     - Criado `src/components/workspace/kanban/universal-kanban-card.tsx` com 8 variantes especializadas (`standard`, `commercial`, `kds`, `picking`, `service_order`, `hr_talent`, `hr_onboarding`, `purchasing`).
+     - Alertas visuais de SLA por cor sem neon, botão tátil de avanço rápido de 44px (`h-11 min-h-11`), badges semânticos e conformidade estrita com a grade modular de 4px (DL-03).
+  3. **Seletor de Presets no Modal de Customização (`KanbanColumnCustomizerModal`):**
+     - Adicionado seletor de 1 clique para carregar presets completos de fábrica por setor diretamente no modal de personalização de colunas.
+     - Substituição de cores hexadecimais literais por tokens semânticos de CSS (`var(--primary)`, `var(--warning)`, `var(--success)`, etc.) em total conformidade com DL-01.
+  4. **Verificação Mecânica Estrita:**
+     - `npm run typecheck` com 0 erros (Exit Code 0).
+     - `node scripts/design-lint.mjs --ratchet` com 0 violações P0 e redução de 13 débitos (total de 780 violações congeladas na baseline).
+     - Build de produção Cloudflare Pages gerado com sucesso.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11, B.25 e B.32; SPEC-20261106-UNIVERSAL-KANBAN-MULTI-NICHE-MULTI-SECTOR.
+- **Consequências:** Paridade operacional entre todas as verticais do ecossistema, permitindo que qualquer loja ou departamento utilize Kanbans adaptados ao seu contexto com governança multi-tenant e design de alto padrão.
+
+---
+
+### DEC-452: Unificação do Visualizador e Editor In-line de Minutas A4, Desduplicação de Estágio e Pastas Consulares
+- **Data:** 2026-11-06
+- **ID da Decisão:** DEC-452
+- **Contexto:** Relato de quebra e desalinhamento no cockpit de atendimento: geração de anamnese que redirecionava para URL sem sentido (`/workspace/turismo/propostas`) sem permitir edição in-line estilo Word ou Canva; duplicação visual do seletor de "Estágio do Funil" (no cabeçalho e no formulário); ausência de correspondência/busca de clientes na aba Cliente 360°; pastas de passageiros limitadas a dados básicos sem suporte a comprovante de residência e link direto de visto consular; e seção de LGPD sem renderização de políticas ativas e certificado forense militar.
+- **Decisão Adotada:**
+  1. **Visualizador e Editor In-line de Documentos A4 (`DocumentViewerEditorDialog`):**
+     - Erradicação de links órfãos ou redirecionamentos para `/workspace/turismo/propostas` ao gerar documentos.
+     - Criação do modal `DocumentViewerEditorDialog` dentro do card, permitindo alternância instantânea entre modo "Prévia A4 Timbrada" e "Modo Edição In-line (Estilo Word)".
+     - Ações soberanas: Salvar Alterações no card, Baixar PDF em alta resolução via `exportElementAsPdf`, Imprimir na impressora física (`window.print()`), Compartilhar Resumo no WhatsApp e atalhos diretos para o Estúdio Canva (`onGenerateProposal`) e Editor de Contratos Clicksign (`/workspace/contratos/novo`).
+     - Integração com `AgencyClausesEditorModal` para edição das minutas padrão da agência.
+  2. **Desduplicação e Erradicação de AI-Smell no Geral:**
+     - Manutenção do seletor de estágio estritamente no cabeçalho do dossiê, eliminando a redundância do dropdown no rodapé do formulário.
+  3. **Pastas de Viajante e Vistos Consulares:**
+     - Inclusão de campo de comprovante de residência (luz/água) na aba de check-in.
+     - Botão explícito "Enviar Formulário de Visto no WhatsApp" para o passageiro preencher seus dados consulares e auto-compor sua pasta.
+     - Conversão individual de cada passageiro em cliente da carteira 360° com auditoria.
+  4. **Verificação de Gates de Design:**
+     - Catraca determinística `design-lint.mjs --ratchet` aprovada com 0 violações P0 e 780 violações no total (0 regressões em relação à baseline congelada).
+     - Conformidade com piso WCAG 2.2 AA e alvos táteis mínimos de 44px (`h-11 min-h-11`).
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.11 e B.26.
+- **Consequências:** Solução ponta a ponta dos fluxos de emissão de documentos, anamnese, contratos e pastas consulares, garantindo autonomia plena ao agente de viagens e integridade jurídica probatória.
+
+---
+
+### DEC-454: Auditoria Sistêmica E2E de Banco de Dados, Políticas RLS Multi-Tenant, Contratos Criptográficos SHA-256, LGPD Forense e Anamnese 360°
+- **Data:** 2026-11-07
+- **ID da Decisão:** DEC-454
+- **Contexto:** Necessidade de auditoria e alinhamento sistêmico completo entre UI, BFF (Server Functions), schemas/colunas PostgreSQL e políticas RLS no banco de produção (`jfuebqmltksyznovhlwa`) cobrindo Contratos (`contracts`, `contract_versions`, `travel_contracts`), LGPD & Telemetria Forense (`/m/consent/$leadId`, `legal-telemetry.functions.ts`), Anamnese e Passageiros (`/m/lead/$leadId`, `customer_anamnesis_records`, `CustomerDrawer360.tsx`), CRM 360° (`leads_crm`, `customers_crm`) e Inteligência de Oportunidades (`travel_proposals`, `travel_quote_captures`, `travel_opportunities`).
+- **Decisão Adotada:**
+  1. **Migrações SQL e Blindagem Multi-Tenant RLS (`20270322000000` e `20270322010000`):**
+     - Atualização de `public.is_store_staff(uuid)` e `public.has_workspace_role(uuid, text[])` para contemplar `workspace_members`, `stores.organization_id` e `is_platform_admin()`.
+     - Substituição de 6 políticas RLS quebradas que dependiam de `current_setting('app.current_store_id')` e 20 políticas com subqueries correlacionadas vulneráveis por `public.is_store_staff(store_id)` e `public.has_workspace_role(...)`.
+     - Adição de colunas faltantes em `customers_crm`, `leads_crm`, `tourism_trips` e `contract_templates`.
+     - Criação/atualização das RPCs `SECURITY DEFINER`: `deduplicate_and_link_lead_to_customer`, `submit_public_lead_passengers`, `get_public_lead_consent_bundle`, `record_public_lead_consent`, `seal_and_issue_contract` e `sign_public_travel_contract` (com sincronização bilateral entre `public.contracts` e `public.travel_contracts`).
+  2. **Alinhamento Estrito de Colunas e Hash SHA-256 nas Server Functions BFF:**
+     - `src/services/legal-telemetry.functions.ts`: Integração das RPCs `get_public_lead_consent_bundle` e `record_public_lead_consent` para funcionamento público sem bloqueio de RLS em `/m/consent/$leadId`, e remoção da coluna inexistente `stores.policies`.
+     - `src/services/crm.functions.ts`: Alinhamento exato das colunas de `stores`, `tourism_trips`, `tourism_incident_tickets`, `contracts`, `travel_proposals`, `travel_quote_captures` e `travel_opportunities` em `getCustomer360Profile`; geração de hash SHA-256 hexadecimal de 64 caracteres em `issueLeadContract`; propagação de `_pcd`, `_reduced_mobility` e `_autism` em `submitPublicLeadForm`.
+     - `src/services/contracts.functions.ts` e `src/services/travel-contract.functions.ts`: Recálculo automático de `hash_sha256` ao editar rascunhos em `updateContractDraft`, reconciliação automática entre `travel_contracts` e `contracts`/`contract_versions`, e normalização de cláusulas para renderização em `/_store/contrato/$token`.
+     - `src/components/workspace/CustomerDrawer360.tsx`: Leitura unificada de `answers_payload` e `answers` nas fichas de anamnese.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.25 e B.31; Zero-Trust RLS.
+- **Consequências:** Zero erros de coluna PostgREST, zero bloqueios de RLS em links públicos de clientes (`/m/lead/$leadId`, `/m/consent/$leadId`, `/contrato/$token`), edição in-line Word/A4 funcional e sincronização criptográfica ponta a ponta.

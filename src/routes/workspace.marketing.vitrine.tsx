@@ -362,7 +362,7 @@ function WorkspaceSitesHubPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-28 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-0 space-y-6 pb-28 animate-in fade-in duration-200">
  {/* ── Header Canônico Studio Apple HIG ── */}
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Marketing & Design"
@@ -720,7 +720,7 @@ function WorkspaceSitesHubPage() {
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  <div className="absolute top-2.5 right-2.5">
- <Badge variant="secondary" className="text-xs font-semibold bg-background/90 backdrop-blur-md">
+ <Badge variant="secondary" className="text-xs font-semibold bg-background/90 ">
  {tpl.badge}
  </Badge>
  </div>

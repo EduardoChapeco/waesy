@@ -13,6 +13,7 @@ interface WorkspaceAccountSwitcherProps {
   activeStore?: any;
   userDisplayName: string;
   userEmail?: string;
+  userAvatarUrl?: string | null;
   isSwitching: boolean;
   onSwitchStore: (storeId: string) => void;
   onSwitchToPersonal?: () => void;
@@ -24,12 +25,14 @@ export function WorkspaceAccountSwitcher({
   activeStore,
   userDisplayName,
   userEmail,
+  userAvatarUrl,
   isSwitching,
   onSwitchStore,
   onSwitchToPersonal,
 }: WorkspaceAccountSwitcherProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   const filteredStores = useMemo(() => {
     if (!searchQuery.trim()) return memberships;
@@ -60,7 +63,7 @@ export function WorkspaceAccountSwitcher({
         <button
           type="button"
           disabled={isSwitching}
-          className="flex w-full items-center justify-between h-11 min-h-11 px-3 rounded-lg border border-border/60 bg-card hover:bg-muted/70 hover:border-foreground/20 transition-colors duration-200 text-left group cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex w-full items-center justify-between h-11 min-h-11 px-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors duration-200 text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           title={`Espaço de Trabalho: ${activeStore?.name || "Meu Negócio"}`}
         >
           <div className="flex items-center gap-3 min-w-0">
@@ -68,15 +71,15 @@ export function WorkspaceAccountSwitcher({
               <img
                 src={activeStore.logo_url}
                 alt={activeStore.name}
-                className="size-8 rounded-lg object-cover shrink-0 border border-border/60 bg-muted"
+                className="size-8 rounded-lg object-cover shrink-0 bg-muted"
               />
             ) : (
-              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
+              <div className="size-8 rounded-lg bg-foreground text-background flex items-center justify-center font-bold text-xs shrink-0">
                 <Store className="size-4" />
               </div>
             )}
             <div className="min-w-0">
-              <h2 className="text-xs font-bold text-foreground truncate leading-tight group-hover:text-primary transition-colors">
+              <h2 className="text-xs font-bold text-foreground truncate leading-tight">
                 {activeStore?.name || "Meu Negócio"}
               </h2>
               <p className="text-2xs text-muted-foreground truncate leading-tight mt-1">
@@ -92,19 +95,19 @@ export function WorkspaceAccountSwitcher({
       <PopoverContent
         align="start"
         sideOffset={6}
-        className="w-80 sm:w-88 p-2 rounded-xl border border-border/80 bg-background/98 backdrop-blur-xl  overflow-hidden space-y-2"
+        className="w-80 sm:w-88 p-2 rounded-2xl border border-border/60 bg-card overflow-hidden space-y-2"
       >
         {/* ── 1. Topo: Empresa Ativa em Destaque ── */}
-        <div className="p-3 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between gap-2">
+        <div className="p-3 rounded-xl bg-muted/50 flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 min-w-0">
             {activeStore?.logo_url ? (
               <img
                 src={activeStore.logo_url}
                 alt=""
-                className="size-9 rounded-lg object-cover shrink-0 border border-border/60 bg-muted"
+                className="size-9 rounded-lg object-cover shrink-0 bg-muted"
               />
             ) : (
-              <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
+              <div className="size-9 rounded-lg bg-foreground text-background flex items-center justify-center font-bold text-xs shrink-0">
                 {activeStore?.name ? activeStore.name.slice(0, 2).toUpperCase() : "LJ"}
               </div>
             )}
@@ -114,8 +117,8 @@ export function WorkspaceAccountSwitcher({
                   {activeStore?.name || "Loja Ativa"}
                 </h3>
                 <Badge
-                  variant="outline"
-                  className="text-3xs font-mono font-bold uppercase px-2 py-0 h-4 bg-primary/10 text-primary border-primary/30 shrink-0"
+                  variant="secondary"
+                  className="text-3xs font-mono font-bold uppercase px-2 py-0 h-4 shrink-0"
                 >
                   Ativa
                 </Badge>
@@ -129,7 +132,7 @@ export function WorkspaceAccountSwitcher({
           <Link
             to="/workspace/configuracoes"
             onClick={() => setOpen(false)}
-            className="size-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+            className="size-9 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
             title="Configurações da Empresa"
           >
             <Settings className="size-4" />
@@ -144,7 +147,7 @@ export function WorkspaceAccountSwitcher({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar empresa..."
-              className="h-9 pl-8 pr-3 text-xs rounded-lg bg-muted/30 border-border/60 focus-visible:ring-1 focus-visible:ring-primary"
+              className="h-9 pl-8 pr-3 text-xs rounded-lg bg-muted/40 border-border/50 focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
         )}
@@ -158,7 +161,7 @@ export function WorkspaceAccountSwitcher({
             <Link
               to="/workspace/lojas"
               onClick={() => setOpen(false)}
-              className="text-2xs font-bold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="text-2xs font-bold text-foreground hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span>Gerenciar</span>
               <ExternalLink className="size-2.5" />
@@ -183,10 +186,10 @@ export function WorkspaceAccountSwitcher({
                     }
                   }}
                   className={cn(
-                    "w-full flex items-center justify-between p-2 rounded-lg transition-colors cursor-pointer text-left h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    "w-full flex items-center justify-between p-2 rounded-xl transition-colors cursor-pointer text-left h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isCurrent
-                      ? "bg-primary/10 border border-primary/25 text-foreground"
-                      : "hover:bg-muted/60 text-muted-foreground hover:text-foreground border border-transparent"
+                      ? "bg-muted text-foreground"
+                      : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -194,15 +197,15 @@ export function WorkspaceAccountSwitcher({
                       <img
                         src={m.logo_url}
                         alt=""
-                        className="size-7 rounded-lg object-cover shrink-0 border border-border/50 bg-muted"
+                        className="size-7 rounded-lg object-cover shrink-0 bg-muted"
                       />
                     ) : (
-                      <div className="size-7 rounded-lg bg-muted text-muted-foreground flex items-center justify-center font-bold text-xs shrink-0 border border-border/50">
+                      <div className="size-7 rounded-lg bg-muted text-muted-foreground flex items-center justify-center font-bold text-xs shrink-0">
                         {m.name ? m.name.slice(0, 2).toUpperCase() : "LJ"}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className={cn("text-xs font-bold truncate", isCurrent ? "text-primary" : "text-foreground")}>
+                      <p className="text-xs font-bold truncate text-foreground">
                         {m.name || "Empresa"}
                       </p>
                       <p className="text-2xs text-muted-foreground truncate">
@@ -212,7 +215,7 @@ export function WorkspaceAccountSwitcher({
                     </div>
                   </div>
                   {isCurrent && (
-                    <div className="size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                    <div className="size-5 rounded-full bg-foreground text-background flex items-center justify-center shrink-0">
                       <Check className="size-3" />
                     </div>
                   )}
@@ -230,18 +233,27 @@ export function WorkspaceAccountSwitcher({
           <button
             type="button"
             onClick={handlePersonalClick}
-            className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-pointer text-left h-11 min-h-11 border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary group"
+            className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-muted/60 transition-colors cursor-pointer text-left h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
-                <User className="size-3.5" />
-              </div>
+              {userAvatarUrl && !avatarFailed ? (
+                <img
+                  src={userAvatarUrl}
+                  alt={userDisplayName}
+                  onError={() => setAvatarFailed(true)}
+                  className="size-7 rounded-full object-cover shrink-0 bg-muted"
+                />
+              ) : (
+                <div className="size-7 rounded-full bg-muted text-foreground flex items-center justify-center font-bold text-xs shrink-0">
+                  {userInitial || <User className="size-3.5" />}
+                </div>
+              )}
               <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                <p className="text-xs font-bold text-foreground truncate">
                   {userDisplayName}
                 </p>
                 <p className="text-2xs text-muted-foreground truncate">
-                  Acessar conta civil, pedidos e favoritos
+                  {userEmail || "Acessar conta civil, pedidos e favoritos"}
                 </p>
               </div>
             </div>
