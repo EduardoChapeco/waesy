@@ -15,7 +15,7 @@ jobs:
   quality-gates:
     name: 5 Quality Gates
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
 
     steps:
       - name: Checkout Codebase
