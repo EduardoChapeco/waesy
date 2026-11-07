@@ -66,7 +66,7 @@ function AfiliadosFinanceiroPage() {
   ) || [];
 
   return (
-    <div className="flex flex-col h-full gap-6 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pb-20 font-sans animate-in fade-in duration-200">
+    <div className="flex flex-col h-full gap-6 w-full px-0 sm:px-4 md:px-0 pb-20 font-sans animate-in fade-in duration-200">
       {/* Header Canônico */}
       <PageHeader
         title="Comissões de Parceiros"
@@ -218,7 +218,7 @@ function AfiliadosFinanceiroPage() {
  <Button
  variant="ghost"
  size="icon"
- className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+ className="size-8 opacity-0 group-hover:opacity-100 transition-opacity min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <MoreVertical className="size-4 text-muted-foreground" />
  </Button>

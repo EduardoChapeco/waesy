@@ -352,20 +352,20 @@ function PostThreadPage() {
             const isVideo = isVideoUrl(singleUrl);
             const postRatio = (post as any).aspect_ratio || post.metadata?.aspect_ratio;
 
-            let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-[640px]";
+            let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-160";
             let objectFitClass = "object-cover";
 
             if (post.post_type === "moment" || postRatio === "9:16") {
-              containerAspectClass = "aspect-post-moment max-w-sm mx-auto max-h-[640px]";
+              containerAspectClass = "aspect-post-moment max-w-sm mx-auto max-h-160";
               objectFitClass = isVideo ? "object-contain bg-foreground/95" : "object-cover";
             } else if (postRatio === "1:1") {
-              containerAspectClass = "aspect-square max-h-[580px]";
+              containerAspectClass = "aspect-square max-h-145";
             } else if (postRatio === "4:5") {
-              containerAspectClass = "aspect-post-vertical max-h-[640px]";
+              containerAspectClass = "aspect-post-vertical max-h-160";
             } else if (postRatio === "16:9") {
-              containerAspectClass = "aspect-video max-h-[540px]";
+              containerAspectClass = "aspect-video max-h-135";
             } else if (isVideo) {
-              containerAspectClass = "aspect-post-vertical max-h-[640px]";
+              containerAspectClass = "aspect-post-vertical max-h-160";
               objectFitClass = "object-contain bg-foreground/95";
             }
 

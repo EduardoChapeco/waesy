@@ -32,20 +32,27 @@ import { LeadCard } from "@/components/tourism/crm/LeadCard";
 import { Customer360PrintableDossier } from "@/components/dossier/customer-360-printable-dossier";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
+import { TourismPipeCardDossier } from "@/components/tourism/crm/TourismPipeCardDossier";
+import { listAgencyTravelProposals } from "@/services/travel-proposal.functions";
+import { listKanbanStages, type KanbanStageDTO } from "@/services/kanban-config.functions";
 
 export const Route = createFileRoute("/workspace/comercial")({
   head: () => ({ meta: [{ title: "Pipeline Comercial e Funil de Oportunidades | Workspace" }] }),
   loader: async () => {
     try {
-    const [leadsRes, teamRes, store] = await Promise.all([
-      listLeads(),
-      listTeamMembers(),
-      getStoreSettings(),
+    const store = await getStoreSettings().catch(() => null);
+    const [leadsRes, teamRes, proposalsRes, kanbanStages] = await Promise.all([
+      listLeads().catch(() => []),
+      listTeamMembers().catch(() => []),
+      listAgencyTravelProposals().catch(() => []),
+      store?.id ? listKanbanStages({ data: { storeId: store.id, module: "commercial_crm" } }).catch(() => []) : [],
     ]);
     return {
       leads: leadsRes || [],
       team: teamRes || [],
       store,
+      proposals: proposalsRes || [],
+      kanbanStages: (kanbanStages || []) as KanbanStageDTO[],
       loadError: null,
     };
     } catch (err) {
@@ -54,6 +61,8 @@ export const Route = createFileRoute("/workspace/comercial")({
         leads: [],
         team: [],
         store: null,
+        proposals: [],
+        kanbanStages: [],
         loadError: err instanceof Error ? err.message : "Não foi possível carregar o módulo comercial.",
       };
     }
@@ -82,8 +91,8 @@ const STAGES: StageColConfig[] = [
   {
     id: "contacted",
     title: "Primeiro Contato",
-    dotColor: "bg-amber-500",
-    badgeClass: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    dotColor: "bg-warning",
+    badgeClass: "bg-warning/10 text-warning-strong border-warning/20",
     description: "Abordagem iniciada por WhatsApp, e-mail ou telefone",
   },
   {
@@ -238,7 +247,7 @@ const COMERCIAL_TOUR_SLIDES: TourSlide[] = [
 ];
 
 function WorkspaceComercialPage() {
-  const { leads: initialLeads = [], team = [], store = null, loadError = null } = ((Route.useLoaderData?.() as any) || {});
+  const { leads: initialLeads = [], team = [], store = null, proposals: initialProposals = [], kanbanStages = [], loadError = null } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
   const storeId = store?.id || "";
 
@@ -271,7 +280,23 @@ function WorkspaceComercialPage() {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
-  const [stages, setStages] = useState(STAGES);
+  const [stages, setStages] = useState<any[]>(() => {
+    if (kanbanStages && kanbanStages.length > 0) {
+      return kanbanStages.map((s: any) => ({
+        id: s.stage_key,
+        title: s.title,
+        dotColor: s.color || "var(--primary)",
+        badgeClass: "bg-muted text-foreground",
+        description: s.description || "",
+        is_visible: s.is_visible !== false,
+      }));
+    }
+    return STAGES;
+  });
+
+  const visibleStages = useMemo(() => {
+    return stages.filter((s: any) => s.is_visible !== false);
+  }, [stages]);
   const [isExportingLeadDossier, setIsExportingLeadDossier] = useState(false);
 
   const handleExportLeadDossier = async () => {
@@ -467,6 +492,18 @@ function WorkspaceComercialPage() {
       .finally(() => setIsLoading360(false));
   };
 
+  const handleLoadCustomer360 = async (leadId: string) => {
+    setIsLoading360(true);
+    try {
+      const res = await getCustomer360Profile({ data: { leadId } });
+      setCustomer360Data(res);
+    } catch (err) {
+      console.warn("Erro ao buscar perfil 360:", err);
+    } finally {
+      setIsLoading360(false);
+    }
+  };
+
   const filteredLeads = useMemo(() => {
     return leads.filter((l: any) => {
       const q = searchTerm.toLowerCase();
@@ -613,9 +650,17 @@ function WorkspaceComercialPage() {
 
   const handlePromoteToCustomer = async (leadId: string) => {
     try {
-      await promoteLeadToCustomer({ data: { leadId } });
+      const res = await promoteLeadToCustomer({ data: { leadId } });
       toast.success("Lead promovido com sucesso para a Carteira de Clientes 360°!");
-      setSelectedLead(null);
+      if (selectedLead?.id === leadId) {
+        setSelectedLead((prev: any) => (prev ? { ...prev, customer_id: res.customerId } : null));
+        try {
+          const profile360 = await getCustomer360Profile({ data: { leadId } });
+          setCustomer360Data(profile360);
+        } catch {
+          // fallback silencioso
+        }
+      }
       router.invalidate();
     } catch (err: any) {
       toast.error(err.message || "Erro ao converter lead.");
@@ -713,6 +758,49 @@ function WorkspaceComercialPage() {
     }
   };
 
+  const handleSaveLeadFromDossier = async (updatedData: any) => {
+    if (!selectedLead) return;
+    try {
+      await updateLeadDetails({
+        data: {
+          leadId: selectedLead.id,
+          fullName: updatedData.name?.trim() || undefined,
+          phone: updatedData.phone?.trim() || undefined,
+          email: updatedData.email?.trim() || undefined,
+          destination: updatedData.destination || null,
+          interestType: updatedData.interest_type || null,
+          travelStart: updatedData.travel_start || null,
+          travelEnd: updatedData.travel_end || null,
+          paxAdults: Number(updatedData.pax_adults) || 1,
+          paxChildren: Number(updatedData.pax_children) || 0,
+          paxInfants: Number(updatedData.pax_infants) || 0,
+          source: updatedData.source || null,
+          lead_source_detail: updatedData.lead_source_detail || null,
+          estimated_value_cents: updatedData.estimated_value_cents,
+          notes: updatedData.notes,
+          status: updatedData.status as any,
+          assigned_to: updatedData.assigned_to || null,
+          tags: updatedData.tags,
+          checklist: updatedData.checklist,
+          custom_fields: updatedData.custom_fields,
+        },
+      });
+      toast.success("Oportunidade comercial atualizada com sucesso!");
+      setLeads((prev) =>
+        prev.map((l) =>
+          l.id === selectedLead.id
+            ? { ...l, ...updatedData, full_name: updatedData.name || l.full_name }
+            : l
+        )
+      );
+      setSelectedLead((prev: any) => (prev ? { ...prev, ...updatedData, full_name: updatedData.name || prev.full_name } : null));
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar alterações da oportunidade.");
+      throw err;
+    }
+  };
+
   const handleToggleChecklist = async (itemId: string) => {
     if (!selectedLead) return;
     try {
@@ -785,11 +873,11 @@ function WorkspaceComercialPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-5 min-h-screen pb-12 overflow-x-hidden">
-      {loadError && <div role="alert" className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">{loadError}</div>}
-      <div className="flex items-center justify-between px-1">
+    <div className="w-full flex-1 flex flex-col gap-4 min-h-0 pb-6 overflow-x-hidden">
+      {loadError && <div role="alert" className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{loadError}</div>}
+      <div className="flex items-center justify-between px-1 shrink-0">
         <p className="text-xs font-medium text-muted-foreground">Pipeline de oportunidades, CRM e propostas comerciais</p>
-        <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+        <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
       </div>
 
       {/* ── BARRA OPERACIONAL CANÔNICA (SILENCIOSA & ALTA DENSIDADE) ── */}
@@ -817,8 +905,8 @@ function WorkspaceComercialPage() {
       />
 
       {/* ── SELETOR MOBILE RÁPIDO DE ETAPAS (TOUCH ERGONÔMICO) ── */}
-      <div className="sm:hidden flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
-        {STAGES.map((s) => {
+      <div className="sm:hidden flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 snap-x snap-mandatory shrink-0">
+        {visibleStages.map((s: any) => {
           const count = filteredLeads.filter((l: any) =>
             s.id === "won"
               ? l.status === "won" || l.status === "converted"
@@ -832,19 +920,19 @@ function WorkspaceComercialPage() {
                 const el = document.getElementById(`kanban-col-${s.id}`);
                 el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
               }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-transform duration-200 cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card text-foreground hover:bg-muted transition-colors duration-200 cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className={cn("size-2 rounded-full", s.dotColor)} />
               <span>{s.title}</span>
-              <span className="text-xs font-mono px-1 rounded-md bg-muted text-muted-foreground">{count}</span>
+              <span className="text-xs font-mono px-2 py-1 rounded-md bg-muted text-muted-foreground">{count}</span>
             </button>
           );
         })}
       </div>
 
-      {/* ── KANBAN BOARD FULL VERTICAL & HORIZONTAL (ENTERPRISE STANDARD) ── */}
-      <div className="flex-1 flex gap-4 overflow-x-auto no-scrollbar pb-6 pt-1 items-stretch snap-x snap-mandatory [scrollbar-width:thin] scrollbar-thumb-border/60 scrollbar-track-transparent">
-        {STAGES.map((stage, stageIndex) => {
+      {/* ── KANBAN BOARD FULL VERTICAL & HORIZONTAL (COLUNAS ALTAS & CARDS SÓLIDOS) ── */}
+      <div className="flex-1 min-h-144 flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-4 pt-1 items-stretch snap-x snap-mandatory [scrollbar-width:thin]">
+        {visibleStages.map((stage: any, stageIndex: number) => {
           const stageLeads = filteredLeads.filter((l: any) => {
             if (stage.id === "won") return l.status === "won" || l.status === "converted";
             return l.status === stage.id || (!l.status && stage.id === "new");
@@ -855,26 +943,32 @@ function WorkspaceComercialPage() {
             0
           );
 
-          const prevStage = stageIndex > 0 ? STAGES[stageIndex - 1] : null;
-          const nextStage = stageIndex < STAGES.length - 1 ? STAGES[stageIndex + 1] : null;
+          const prevStage = stageIndex > 0 ? visibleStages[stageIndex - 1] : null;
+          const nextStage = stageIndex < visibleStages.length - 1 ? visibleStages[stageIndex + 1] : null;
 
           return (
             <div
               key={stage.id}
-              className="flex flex-col rounded-lg border border-border/70 bg-card w-full sm:w-80 sm:w-80 min-w-full sm:w-80 sm:min-w-80 shrink-0 min-h-96 lg:min-h-96 shadow-2xs transition-colors duration-200 snap-center"
+              id={`kanban-col-${stage.id}`}
+              className="flex flex-col rounded-2xl bg-muted/50 dark:bg-muted/30 w-full sm:w-80 min-w-full sm:min-w-80 shrink-0 min-h-144 h-full transition-colors duration-200 snap-center overflow-hidden"
             >
               {/* Header da Coluna com Somatório e Ação Rápida */}
-              <div className="p-4 pb-3 border-b border-border/60 bg-muted/25 rounded-t-lg space-y-2 sticky top-0 z-10">
+              <div className="px-4 py-3 bg-transparent space-y-1 shrink-0">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className={cn("size-2.5 rounded-full ring-2 ring-background", stage.dotColor)} />
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={cn("size-2 rounded-full shrink-0", stage.dotColor)} />
                     <h3 className="text-xs font-bold text-foreground truncate">{stage.title}</h3>
+                    <span className="text-2xs font-mono tabular-nums font-bold px-2 py-1 rounded-full bg-card text-foreground shrink-0">
+                      {stageLeads.length}
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs font-mono px-2 py-0 h-5">
-                      {stageLeads.length}
-                    </Badge>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {stageTotalCents > 0 && (
+                      <span className="text-2xs font-mono tabular-nums font-semibold text-muted-foreground">
+                        {formatMoney(stageTotalCents)}
+                      </span>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -882,26 +976,20 @@ function WorkspaceComercialPage() {
                         setNewLeadTargetStage(stage.id);
                         setIsNewLeadOpen(true);
                       }}
-                      className="size-6 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                      /* design-lint-ignore DL-14 reason:"Gatilho compacto de adicao rapida no header de coluna desktop" expiry:"2027-12-31" */
+                      className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title={`Novo lead em ${stage.title}`}
                     >
-                      <Plus className="size-3" />
+                      <Plus className="size-4" />
                     </Button>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
-                  <span className="truncate">{stage.description}</span>
-                  {stageTotalCents > 0 && (
-                    <span className="font-bold text-foreground shrink-0">{formatMoney(stageTotalCents)}</span>
-                  )}
-                </div>
               </div>
 
-              {/* Lista de Cards da Coluna */}
-              <div className="p-3 space-y-3 flex-1 overflow-y-auto no-scrollbar max-h-96 [scrollbar-width:thin]">
+              {/* Lista de Cards da Coluna (Altura Total sem corte max-h-96) */}
+              <div className="px-3 pb-3 space-y-3 flex-1 min-h-0 overflow-y-auto no-scrollbar [scrollbar-width:thin]">
                 {stageLeads.length === 0 ? (
-                  <div className="h-36 rounded-lg border border-dashed border-border/70 flex flex-col items-center justify-center p-4 text-center text-muted-foreground gap-2">
+                  <div className="h-full min-h-48 rounded-2xl bg-card flex flex-col items-center justify-center p-4 text-center text-muted-foreground gap-2">
                     <span className="text-xs font-medium">Nenhum lead nesta etapa</span>
                     <Button
                       variant="outline"
@@ -910,9 +998,9 @@ function WorkspaceComercialPage() {
                         setNewLeadTargetStage(stage.id);
                         setIsNewLeadOpen(true);
                       }}
-                      className="h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold gap-2 border-border/60 hover:bg-muted cursor-pointer mt-1"
+                      className="min-h-11 px-4 rounded-xl text-xs text-foreground font-bold gap-2 bg-card hover:bg-muted cursor-pointer mt-1"
                     >
-                      <Plus className="size-3" />
+                      <Plus className="size-3.5" />
                       <span>Adicionar Lead</span>
                     </Button>
                   </div>
@@ -922,7 +1010,7 @@ function WorkspaceComercialPage() {
                       key={lead.id}
                       lead={lead}
                       currentStageId={stage.id}
-                      stages={STAGES.map((s) => ({ id: s.id, title: s.title }))}
+                      stages={visibleStages.map((s: any) => ({ id: s.id, title: s.title }))}
                       team={team}
                       onOpenDetails={openLeadDetails}
                       onGenerateProposal={setProposalLead}
@@ -960,11 +1048,11 @@ function WorkspaceComercialPage() {
             </SheetHeader>
 
             <form id="new-lead-form" onSubmit={handleCreateNewLead} className="space-y-5">
-              {/* Bloco 1: Contato & Titular */}
+              {/* Bloco 1: Contato */}
               <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Users className="size-3.5 text-primary" />
-                  <span>Titular / Contato Principal</span>
+                  <span>Contato Principal</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -1021,7 +1109,7 @@ function WorkspaceComercialPage() {
               <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <MapPin className="size-3.5 text-primary" />
-                  <span>Viagem, Destino e Período</span>
+                  <span>Destino e Período</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1 sm:col-span-2">
@@ -1052,11 +1140,11 @@ function WorkspaceComercialPage() {
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Período Flexível / Mês</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Período Flexível</Label>
                     <Input
                       value={newLeadForm.interestPeriod}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, interestPeriod: e.target.value }))}
-                      placeholder="Ex: Julho/2026, Réveillon"
+                      placeholder="Ex: Julho de 2026, Réveillon"
                       className="h-8 text-xs rounded-lg"
                     />
                   </div>
@@ -1081,15 +1169,15 @@ function WorkspaceComercialPage() {
                 </div>
               </div>
 
-              {/* Bloco 3: Passageiros / Pax & Regras IATA */}
+              {/* Bloco 3: Passageiros */}
               <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Plane className="size-3.5 text-primary" />
-                  <span>Passageiros (Pax)</span>
+                  <span>Passageiros</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Adultos (ADT)</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Adultos</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1097,10 +1185,10 @@ function WorkspaceComercialPage() {
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAdults: Number(e.target.value) || 1 }))}
                       className="h-8 text-xs rounded-lg font-mono"
                     />
-                    <span className="text-xs text-muted-foreground block">≥ 12 anos</span>
+                    <span className="text-xs text-muted-foreground block">A partir de 12 anos</span>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Crianças (CHD)</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Crianças</Label>
                     <Input
                       type="number"
                       min={0}
@@ -1111,7 +1199,7 @@ function WorkspaceComercialPage() {
                     <span className="text-xs text-muted-foreground block">2 a 11 anos</span>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground/75 font-semibold">Bebês (INF)</Label>
+                    <Label className="text-xs text-muted-foreground/75 font-semibold">Bebês</Label>
                     <Input
                       type="number"
                       min={0}
@@ -1119,7 +1207,7 @@ function WorkspaceComercialPage() {
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxInfants: Number(e.target.value) || 0 }))}
                       className="h-8 text-xs rounded-lg font-mono"
                     />
-                    <span className="text-xs text-muted-foreground block">0 a 23 meses</span>
+                    <span className="text-xs text-muted-foreground block">Até 23 meses</span>
                   </div>
                 </div>
                 {newLeadForm.paxChildren > 0 && (
@@ -1135,11 +1223,11 @@ function WorkspaceComercialPage() {
                 )}
               </div>
 
-              {/* Bloco 4: Comercial, Tags & Observações */}
+              {/* Bloco 4: Condições Comerciais */}
               <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <DollarSign className="size-3.5 text-primary" />
-                  <span>Comercial, Tags e Checklist</span>
+                  <span>Condições Comerciais</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -1236,957 +1324,49 @@ function WorkspaceComercialPage() {
         </SheetContent>
       </Sheet>
 
-      {/* ── FICHA 360° DO LEAD (DOSSIÊ ENTERPRISE STANDARD) ── */}
-      <Sheet open={!!selectedLead} onOpenChange={(open) => !open && setSelectedLead(null)}>
-        <SheetContent side="right" size="dossier" className="p-4 sm:p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
-          {selectedLead && (
-            <>
-              <div className="space-y-5">
-                <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
-                      Ficha 360° do Lead
-                    </span>
-                    <Badge variant="outline" className="text-xs font-mono">
-                      ID: {selectedLead.id.slice(0, 8)}
-                    </Badge>
-                  </div>
-                  <SheetTitle className="text-lg font-bold text-foreground">
-                    {selectedLead.full_name}
-                  </SheetTitle>
-                  <SheetDescription className="text-xs text-muted-foreground">
-                    Criado em {new Date(selectedLead.created_at).toLocaleDateString("pt-BR")} às {new Date(selectedLead.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                  </SheetDescription>
-                </SheetHeader>
-
-                {/* Ações Rápidas no Topo — Conexão Sistêmica com Cotações, Propostas, Comissões e Voos */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-                  {selectedLead.phone && (
-                    <a
-                      href={`https://wa.me/55${selectedLead.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
-                        `Olá ${selectedLead.full_name}! Sou da agência de viagens. Gostaria de falar sobre sua viagem ${selectedLead.destination ? `para ${selectedLead.destination}` : ""}.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3 rounded-lg border border-border/80 bg-background hover:bg-muted text-foreground flex items-center justify-center gap-2 font-semibold text-xs transition-colors min-h-11"
-                    >
-                      <Phone className="size-3.5 shrink-0 text-emerald-600" />
-                      <span className="truncate">WhatsApp</span>
-                    </a>
-                  )}
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setProposalLead({
-                      id: selectedLead.id,
-                      fullName: selectedLead.full_name,
-                      email: selectedLead.email,
-                      phone: selectedLead.phone,
-                      destination: selectedLead.destination,
-                      estimated_value_cents: selectedLead.estimated_value_cents,
-                      passenger_count: selectedLead.pax_count,
-                    })}
-                    className="h-auto p-3 rounded-lg border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-2 cursor-pointer min-h-11"
-                  >
-                    <FileText className="size-3.5 shrink-0 text-muted-foreground" />
-                    <span className="truncate">Gerar Proposta</span>
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setCalculatorLead({
-                      id: selectedLead.id,
-                      fullName: selectedLead.full_name,
-                      estimated_value_cents: selectedLead.estimated_value_cents,
-                      notes: selectedLead.notes,
-                    })}
-                    className="h-auto p-3 rounded-lg border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-2 cursor-pointer min-h-11"
-                  >
-                    <Calculator className="size-3.5 shrink-0 text-muted-foreground" />
-                    <span className="truncate">Comissão</span>
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setFlightLead({
-                      id: selectedLead.id,
-                      fullName: selectedLead.full_name,
-                      destination: selectedLead.destination,
-                    })}
-                    className="h-auto p-3 rounded-lg border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-2 cursor-pointer min-h-11"
-                  >
-                    <Plane className="size-3.5 shrink-0 text-muted-foreground" />
-                    <span className="truncate">Malha Aérea</span>
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCopyMagicLink}
-                    className="h-auto p-3 rounded-lg border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-2 cursor-pointer min-h-11"
-                  >
-                    {copiedMagicLink ? (
-                      <Check className="size-3.5 shrink-0 text-emerald-600" />
-                    ) : (
-                      <Copy className="size-3.5 shrink-0 text-muted-foreground" />
-                    )}
-                    <span className="truncate">{copiedMagicLink ? "Copiado!" : "Magic Link"}</span>
-                  </Button>
-                </div>
-
-                {/* Abas da Ficha 360° */}
-                <div className="flex border-b border-border/50 gap-2 overflow-x-auto scrollbar-none pb-1">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTabDetail("viagem")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer",
-                      activeTabDetail === "viagem"
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    Viagem e Destino
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTabDetail("cliente360")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1",
-                      activeTabDetail === "cliente360"
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <History className="size-3 shrink-0" />
-                    <span>Cliente 360°</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTabDetail("contratos")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1",
-                      activeTabDetail === "contratos"
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <FileSignature className="size-3 shrink-0" />
-                    <span>Contratos</span>
-                    {customer360Data?.contracts?.length ? (
-                      <Badge variant="secondary" className="text-xs h-4 px-1">
-                        {customer360Data.contracts.length}
-                      </Badge>
-                    ) : null}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTabDetail("telemetria")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1",
-                      activeTabDetail === "telemetria"
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <Brain className="size-3 shrink-0" />
-                    <span>Brain</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTabDetail("checklist")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-1",
-                      activeTabDetail === "checklist"
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <span>Checklist</span>
-                    <Badge variant="secondary" className="text-xs h-4 px-1">
-                      {editLeadForm.checklist.filter((i) => i.done).length}/{editLeadForm.checklist.length}
-                    </Badge>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTabDetail("comercial")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer",
-                      activeTabDetail === "comercial"
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    Comercial e Funil
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTabDetail("notas")}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer",
-                      activeTabDetail === "notas"
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    Notas e Histórico
-                  </button>
-                </div>
-
-                {/* Aba 1: Viagem & Destino */}
-                {activeTabDetail === "viagem" && (
-                  <div className="space-y-4 pt-1">
-                    {/* Bloco de Formulário de Onboarding Personalizável */}
-                    <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                          <FileText className="size-4 text-primary" />
-                          <span>Formulário de Onboarding do Cliente</span>
-                        </span>
-                        <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
-                          {activeOnboardingForm ? activeOnboardingForm.title : "Ficha Cadastral"}
-                        </Badge>
-                      </div>
-
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Envie o formulário editável para o cliente preencher dados pessoais, documentos, acompanhantes e preferências. As respostas alimentam este lead e a Ficha 360° automaticamente.
-                      </p>
-
-                      {onboardingFormsData?.availableForms && onboardingFormsData.availableForms.length > 1 && (
-                        <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground font-semibold">Formulário Vinculado:</Label>
-                          <Select
-                            value={selectedOnboardingFormSlug || activeOnboardingForm?.slug || ""}
-                            onValueChange={(val) => setSelectedOnboardingFormSlug(val)}
-                          >
-                            <SelectTrigger className="h-9 text-xs rounded-lg">
-                              <SelectValue placeholder="Selecione o formulário..." />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-lg">
-                              {onboardingFormsData.availableForms.map((f: any) => (
-                                <SelectItem key={f.id} value={f.slug} className="text-xs">
-                                  {f.title} ({f.niche_id})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-
-                      <div className="flex flex-wrap items-center gap-2 pt-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleCopyOnboardingFormLink}
-                          className="h-11 min-h-11 px-4 text-xs font-bold gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          <Copy className="size-3.5 text-primary" />
-                          <span>Copiar Link do Formulário</span>
-                        </Button>
-
-                        <Button
-                          type="button"
-                          onClick={handleSendOnboardingFormWhatsApp}
-                          className="h-11 min-h-11 px-4 text-xs font-bold gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          <MessageSquare className="size-3.5" />
-                          <span>Enviar por WhatsApp</span>
-                        </Button>
-
-                        <Button
-                          asChild
-                          variant="ghost"
-                          className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          <Link to="/workspace/marketing/formularios">
-                            <Pencil className="size-3" />
-                            <span>Personalizar no Módulo Formulários</span>
-                          </Link>
-                        </Button>
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setBudgetPadLeadOpen(true)}
-                          className="h-11 min-h-11 px-4 text-xs font-bold gap-2 rounded-lg border-primary/40 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          <FileText className="size-3.5" />
-                          <span>Abrir Bloco de Orçamento</span>
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold">Destino de Interesse</Label>
-                      <Input
-                        value={editLeadForm.destination}
-                        onChange={(e) => setEditLeadForm((prev) => ({ ...prev, destination: e.target.value }))}
-                        placeholder="Ex: Maceió, AL"
-                        className="h-8 text-xs rounded-lg"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold">Tipo de Interesse</Label>
-                        <Select
-                          value={editLeadForm.interest_type || "none"}
-                          onValueChange={(val) => setEditLeadForm((prev) => ({ ...prev, interest_type: val === "none" ? "" : val }))}
-                        >
-                          <SelectTrigger className="h-8 text-xs rounded-lg">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-lg">
-                            <SelectItem value="none" className="text-xs text-muted-foreground">Não informado</SelectItem>
-                            {INTEREST_TYPES.map((t) => (
-                              <SelectItem key={t.value} value={t.value} className="text-xs">
-                                {t.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold">Período Flexível</Label>
-                        <Input
-                          value={editLeadForm.interest_period}
-                          onChange={(e) => setEditLeadForm((prev) => ({ ...prev, interest_period: e.target.value }))}
-                          placeholder="Ex: Julho/2026"
-                          className="h-8 text-xs rounded-lg"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold">Data de Ida</Label>
-                        <Input
-                          type="date"
-                          value={editLeadForm.travel_start}
-                          onChange={(e) => setEditLeadForm((prev) => ({ ...prev, travel_start: e.target.value }))}
-                          className="h-8 text-xs rounded-lg"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-semibold">Data de Volta</Label>
-                        <Input
-                          type="date"
-                          value={editLeadForm.travel_end}
-                          onChange={(e) => setEditLeadForm((prev) => ({ ...prev, travel_end: e.target.value }))}
-                          className="h-8 text-xs rounded-lg"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-lg bg-muted/20 border border-border/60">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground/75 font-semibold">Adultos</Label>
-                        <Input
-                          type="number"
-                          min={1}
-                          value={editLeadForm.pax_adults}
-                          onChange={(e) => setEditLeadForm((prev) => ({ ...prev, pax_adults: Number(e.target.value) || 1 }))}
-                          className="h-8 text-xs rounded-lg font-mono"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground/75 font-semibold">Crianças</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={editLeadForm.pax_children}
-                          onChange={(e) => setEditLeadForm((prev) => ({ ...prev, pax_children: Number(e.target.value) || 0 }))}
-                          className="h-8 text-xs rounded-lg font-mono"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground/75 font-semibold">Bebês</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={editLeadForm.pax_infants}
-                          onChange={(e) => setEditLeadForm((prev) => ({ ...prev, pax_infants: Number(e.target.value) || 0 }))}
-                          className="h-8 text-xs rounded-lg font-mono"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Atalho para Excursão Rodoviária e Alocação de Poltrona */}
-                    {(editLeadForm.interest_type === "package_ground" || (selectedLead as any)?.travel_type === "package_ground") && (
-                      <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-foreground flex items-center gap-2">
-                            <Bus className="size-3.5 text-primary" />
-                            <span>Excursão Rodoviária / Grupo Terrestre</span>
-                          </span>
-                          <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
-                            Gestão de Ônibus
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          Vincule este viajante diretamente a uma excursão ativa para reservar poltrona no mapa 2D, alocar quarto no rooming list e emitir contrato integrado.
-                        </p>
-                        <div className="flex items-center gap-2 pt-1">
-                          <Button
-                            asChild
-                            size="sm"
-                            variant="outline"
-                            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                          >
-                            <Link to="/workspace/turismo/grupos">
-                              <Bus className="size-3 text-primary" />
-                              <span>Ver Roteiros & Grupos</span>
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold">Idades das Crianças (separadas por vírgula)</Label>
-                      <Input
-                        value={editLeadForm.pax_ages_str}
-                        onChange={(e) => setEditLeadForm((prev) => ({ ...prev, pax_ages_str: e.target.value }))}
-                        placeholder="Ex: 5, 8"
-                        className="h-8 text-xs rounded-lg"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Aba: Ficha do Cliente 360° & Histórico de Oportunidades */}
-                {activeTabDetail === "cliente360" && (
-                  <div className="space-y-4 pt-1">
-                    {isLoading360 ? (
-                      <div className="p-8 text-center text-xs text-muted-foreground animate-pulse motion-reduce:animate-none">
-                        Carregando histórico unificado do cliente...
-                      </div>
-                    ) : customer360Data?.customer ? (
-                      <div className="space-y-4">
-                        {/* Cartão do Cliente Master */}
-                        <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-foreground">
-                              {customer360Data.customer.full_name || "Cliente Oficial"}
-                            </span>
-                            <Badge variant="outline" className="text-xs font-mono border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
-                              Ficha Completa do Cliente
-                            </Badge>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground/75 text-muted-foreground">
-                            <div>
-                              <span className="font-semibold text-foreground">Documento:</span> {customer360Data.customer.document || "Não informado"}
-                            </div>
-                            <div>
-                              <span className="font-semibold text-foreground">Telefone:</span> {customer360Data.customer.phone || "Não informado"}
-                            </div>
-                            <div>
-                              <span className="font-semibold text-foreground">E-mail:</span> {customer360Data.customer.email || "Não informado"}
-                            </div>
-                            <div>
-                              <span className="font-semibold text-foreground">Canal Origem:</span> {customer360Data.customer.channel || "Direto"}
-                            </div>
-                          </div>
-                          <div className="pt-2 border-t border-border/40 flex flex-wrap items-center justify-between gap-2 text-xs">
-                            <span className="text-muted-foreground">
-                              Ciclo de Vida: <strong className="text-foreground font-mono">{customer360Data.customer.lifetime_lead_count || 1} oportunidade(s)</strong>
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleOpenScheduleMeeting}
-                                className="h-11 min-h-11 text-xs font-bold gap-1 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-                              >
-                                <Calendar className="size-3.5 text-primary" />
-                                <span>Agendar Reunião</span>
-                              </Button>
-                              <Button asChild variant="outline" className="h-11 min-h-11 text-xs font-bold gap-1 border-primary/40 text-primary focus-visible:ring-2 focus-visible:ring-ring">
-                                <Link to="/workspace/clientes/$id" params={{ id: customer360Data.customer.id }}>
-                                  <ExternalLink className="size-3.5" />
-                                  <span>Abrir Ficha 360°</span>
-                                </Link>
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Histórico de Outras Oportunidades do mesmo cliente */}
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                              <History className="size-3.5 text-muted-foreground" />
-                              <span>Outras Oportunidades Deste Cliente</span>
-                            </span>
-                            <span className="text-xs text-muted-foreground font-mono">
-                              {customer360Data.otherLeads.length} outra(s)
-                            </span>
-                          </div>
-
-                          {customer360Data.otherLeads.length === 0 ? (
-                            <div className="p-4 text-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
-                              Esta é a primeira oportunidade registrada deste cliente.
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              {customer360Data.otherLeads.map((ol: any) => (
-                                <div
-                                  key={ol.id}
-                                  className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors flex items-center justify-between text-xs"
-                                >
-                                  <div className="space-y-1">
-                                    <p className="font-bold text-foreground">{ol.title || ol.destination || "Oportunidade"}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      Criado em {new Date(ol.created_at).toLocaleDateString("pt-BR")}
-                                    </p>
-                                  </div>
-                                  <div className="text-right space-y-1">
-                                    <span className="font-mono font-semibold block">{formatMoney(ol.estimated_value_cents || 0)}</span>
-                                    <Badge variant="secondary" className="text-xs uppercase">
-                                      {ol.status}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="p-5 rounded-lg border border-dashed border-border/60 text-center space-y-3">
-                        <p className="text-xs text-muted-foreground">
-                          Este lead ainda não está formalmente vinculado a um cadastro oficial na carteira de clientes.
-                        </p>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handlePromoteToCustomer(selectedLead.id)}
-                          className="rounded-lg text-xs font-bold gap-2 cursor-pointer"
-                        >
-                          <UserCheck className="size-3.5" />
-                          <span>Vincular / Criar Perfil Oficial</span>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Aba: Contratos & Assinaturas Digitais (SHA-256) */}
-                {activeTabDetail === "contratos" && (
-                  <div className="space-y-4 pt-1">
-                    {/* Formulário de Emissão Rápida de Contrato */}
-                    <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                          <FileSignature className="size-3.5 text-primary" />
-                          <span>Emitir Contrato com Assinatura Eletrônica</span>
-                        </span>
-                        <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
-                          SHA-256 Tamper Seal
-                        </Badge>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground/75 font-semibold">Título do Contrato</Label>
-                        <Input
-                          value={contractForm.title}
-                          onChange={(e) => setContractForm((prev) => ({ ...prev, title: e.target.value }))}
-                          className="h-8 text-xs rounded-lg"
-                          placeholder="Ex: Contrato de Pacote Turístico"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground/75 font-semibold">Resumo dos Serviços Inclusos</Label>
-                        <Textarea
-                          value={contractForm.packageSummary}
-                          onChange={(e) => setContractForm((prev) => ({ ...prev, packageSummary: e.target.value }))}
-                          className="text-xs rounded-lg resize-none"
-                          rows={3}
-                          placeholder="Descrição dos serviços contratados..."
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-2">
-                          <Label className="text-xs text-muted-foreground/75 font-semibold">Valor Total (R$)</Label>
-                          <CurrencyField
-                            value={contractForm.totalValueCents}
-                            onChange={(val) => setContractForm((prev) => ({ ...prev, totalValueCents: val ?? 0 }))}
-                            className="h-8 text-xs rounded-lg font-mono"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs text-muted-foreground/75 font-semibold">Condição de Pagamento</Label>
-                          <Input
-                            value={contractForm.paymentConditions}
-                            onChange={(e) => setContractForm((prev) => ({ ...prev, paymentConditions: e.target.value }))}
-                            className="h-8 text-xs rounded-lg"
-                          />
-                        </div>
-                      </div>
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={isIssuingContract}
-                        onClick={handleIssueContract}
-                        className="w-full rounded-lg text-xs font-bold gap-2 cursor-pointer"
-                      >
-                        <FileSignature className="size-3.5" />
-                        <span>{isIssuingContract ? "Gerando Contrato..." : "Gerar e Enviar para Assinatura"}</span>
-                      </Button>
-                    </div>
-
-                    {/* Lista de Contratos */}
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold text-foreground">Contratos Vinculados</span>
-                      {(!customer360Data?.contracts || customer360Data.contracts.length === 0) ? (
-                        <div className="p-4 text-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
-                          Nenhum contrato gerado para esta oportunidade ainda.
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {customer360Data.contracts.map((ctr: any) => (
-                            <div
-                              key={ctr.id}
-                              className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors space-y-2"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-foreground">{ctr.contract_title}</span>
-                                <Badge
-                                  variant="outline"
-                                  className={cn(
-                                    "text-xs font-mono",
-                                    ctr.status === "signed"
-                                      ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
-                                      : "border-amber-500/30 text-amber-600 bg-amber-500/10"
-                                  )}
-                                >
-                                  {ctr.status === "signed" ? "Assinado" : "Aguardando"}
-                                </Badge>
-                              </div>
-
-                              <div className="flex items-center justify-between text-xs text-muted-foreground/75 text-muted-foreground">
-                                <span>Valor: <strong className="text-foreground font-mono">{formatMoney(ctr.total_value_cents || 0)}</strong></span>
-                                <span>Token: <strong className="font-mono text-xs">{ctr.public_token}</strong></span>
-                              </div>
-
-                              <div className="pt-2 border-t border-border/40 flex items-center justify-end gap-2">
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleCopyContractLink(ctr.public_token)}
-                                  className="h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold gap-1 cursor-pointer"
-                                >
-                                  <Copy className="size-3" />
-                                  <span>Copiar Link</span>
-                                </Button>
-                                <Link
-                                  to="/viajante/$token"
-                                  params={{ token: ctr.public_token }}
-                                  target="_blank"
-                                  className="inline-flex items-center gap-1 h-7 px-3 rounded-lg text-xs text-muted-foreground/75 font-bold border border-border/60 hover:bg-muted/50 transition-colors"
-                                >
-                                  <ExternalLink className="size-3" />
-                                  <span>Abrir</span>
-                                </Link>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Aba: Telemetria & Brain */}
-                {activeTabDetail === "telemetria" && (
-                  <div className="space-y-4 pt-1">
-                    <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                          <Brain className="size-3.5 text-primary" />
-                          <span>Inteligência Comportamental ("Brain")</span>
-                        </span>
-                        <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
-                          Algoritmo Preditivo
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground/75 text-muted-foreground leading-relaxed">
-                        Cruza os cliques, buscas no portal, visualizações de vitrine e requisições de WhatsApp deste perfil consolidado.
-                      </p>
-                    </div>
-
-                    {/* Top Nichos de Afinidade */}
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold text-foreground">Categorias de Maior Afinidade</span>
-                      {customer360Data?.customer?.behavioral_profile?.top_niches?.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          {(customer360Data?.customer?.behavioral_profile?.top_niches || []).map((n: any, idx: number) => (
-                            <div key={idx} className="p-3 rounded-lg border border-border/60 bg-card flex items-center justify-between text-xs">
-                              <span className="capitalize font-medium">{n.niche || "Geral"}</span>
-                              <span className="font-mono text-xs text-muted-foreground/75 font-bold text-primary">{Number(n.total_score || 0).toFixed(0)} pts</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="p-4 text-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
-                          Nenhuma afinidade ponderada registrada para este perfil até o momento.
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Timeline de Atividades da Oportunidade */}
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold text-foreground">Rastro de Atividades da Oportunidade</span>
-                      {(!customer360Data?.activities || customer360Data.activities.length === 0) ? (
-                        <div className="p-4 text-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
-                          Nenhuma atividade registrada ainda nesta oportunidade.
-                        </div>
-                      ) : (
-                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                          {customer360Data.activities.map((act: any) => (
-                            <div key={act.id} className="p-3 rounded-xl bg-muted/30 text-xs text-muted-foreground flex items-center justify-between">
-                              <div>
-                                <span className="font-medium text-foreground">{act.content}</span>
-                                <span className="text-xs text-muted-foreground block">
-                                  {new Date(act.created_at).toLocaleString("pt-BR")}
-                                </span>
-                              </div>
-                              <Badge variant="secondary" className="text-xs uppercase">
-                                {act.type}
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Aba 2: Checklist Interativo */}
-                {activeTabDetail === "checklist" && (
-                  <div className="space-y-4 pt-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-foreground">Tarefas de Atendimento</span>
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {editLeadForm.checklist.filter((i) => i.done).length} de {editLeadForm.checklist.length} concluídas
-                      </span>
-                    </div>
-
-                    <div className="space-y-2">
-                      {editLeadForm.checklist.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors gap-2"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => handleToggleChecklist(item.id)}
-                            className="flex items-center gap-3 text-left flex-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          >
-                            {item.done ? (
-                              <CheckSquare className="size-4 text-emerald-500 shrink-0" />
-                            ) : (
-                              <Square className="size-4 text-muted-foreground shrink-0" />
-                            )}
-                            <span className={cn("text-xs", item.done && "line-through text-muted-foreground")}>
-                              {item.text}
-                            </span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveChecklistItem(item.id)}
-                            className="text-muted-foreground/40 hover:text-rose-500 transition-colors p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          >
-                            <X className="size-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Adicionar Nova Tarefa */}
-                    <div className="flex items-center gap-2 pt-2">
-                      <Input
-                        value={newChecklistItemText}
-                        onChange={(e) => setNewChecklistItemText(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddChecklistItem())}
-                        placeholder="Adicionar tarefa ao atendimento..."
-                        className="h-8 text-xs rounded-lg"
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handleAddChecklistItem}
-                        className="h-8 px-3 rounded-lg text-xs font-bold"
-                      >
-                        <Plus className="size-3 mr-1" />
-                        <span>Adicionar</span>
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Aba 3: Comercial & Funil */}
-                {activeTabDetail === "comercial" && (
-                  <div className="space-y-4 pt-1">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold">Etapa Atual no Funil</Label>
-                      <Select
-                        value={editLeadForm.status}
-                        onValueChange={(val) => setEditLeadForm((prev) => ({ ...prev, status: val }))}
-                      >
-                        <SelectTrigger className="h-8 text-xs rounded-lg">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-lg">
-                          {STAGES.map((s) => (
-                            <SelectItem key={s.id} value={s.id} className="text-xs">
-                              {s.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold">Valor Estimado da Venda (R$)</Label>
-                      <CurrencyField
-                        value={editLeadForm.estimated_value_cents}
-                        onChange={(cents) => setEditLeadForm((prev) => ({ ...prev, estimated_value_cents: cents ?? 0 }))}
-                        className="h-8 text-xs rounded-lg font-mono"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold">Responsável da Equipe</Label>
-                      <Select
-                        value={editLeadForm.assigned_to || "none"}
-                        onValueChange={(val) =>
-                          setEditLeadForm((prev) => ({
-                            ...prev,
-                            assigned_to: val === "none" ? "" : val,
-                          }))
-                        }
-                      >
-                        <SelectTrigger className="h-8 text-xs rounded-lg">
-                          <SelectValue placeholder="Selecione um vendedor..." />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-lg">
-                          <SelectItem value="none" className="text-xs text-muted-foreground">
-                            Sem responsável atribuído
-                          </SelectItem>
-                          {team.map((m: any) => (
-                            <SelectItem key={m.id || m.profile_id} value={m.profile_id || m.id} className="text-xs">
-                              {m.name || m.email}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {editLeadForm.status === "lost" && (
-                      <div className="space-y-2 p-3 rounded-lg border border-rose-500/30 bg-rose-500/5">
-                        <Label className="text-xs font-semibold text-rose-600">Motivo da Perda</Label>
-                        <Input
-                          value={editLeadForm.lost_reason}
-                          onChange={(e) => setEditLeadForm((prev) => ({ ...prev, lost_reason: e.target.value }))}
-                          placeholder="Ex: Preço elevado, fechou com concorrente, adiou planos..."
-                          className="h-8 text-xs rounded-lg"
-                        />
-                      </div>
-                    )}
-
-                    {/* Gestão de Tags */}
-                    <div className="space-y-2 pt-1">
-                      <Label className="text-xs font-semibold">Tags da Oportunidade</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {POPULAR_TAGS.map((t) => {
-                          const tagStr = `${t.name}:${t.tone}`;
-                          const isSelected = editLeadForm.tags.includes(tagStr);
-                          return (
-                            <button
-                              key={tagStr}
-                              type="button"
-                              onClick={() => handleToggleTag(tagStr)}
-                              className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                                "text-xs font-bold uppercase px-2 min-h-11 rounded-md transition-colors duration-200 cursor-pointer",
-                                isSelected
-                                  ? TAG_TONE_CLASSES[t.tone]
-                                  : "text-muted-foreground bg-background hover:bg-muted"
-                              )}
-                            >
-                              {t.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Aba 4: Notas & Histórico */}
-                {activeTabDetail === "notas" && (
-                  <div className="space-y-3 pt-1">
-                    <Label className="text-xs font-semibold">Histórico e Anotações de Atendimento</Label>
-                    <Textarea
-                      value={editLeadForm.notes}
-                      onChange={(e) => setEditLeadForm((prev) => ({ ...prev, notes: e.target.value }))}
-                      placeholder="Registre o que foi conversado com o cliente, orçamentos cotados, datas preferidas..."
-                      className="text-xs rounded-lg resize-none"
-                      rows={8}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <SheetFooter className="p-0 pt-4 border-t border-border/60 flex items-center justify-between gap-2 mt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePromoteToCustomer(selectedLead.id)}
-                  className="rounded-lg text-xs font-bold text-emerald-600 hover:bg-emerald-500/10 border-emerald-500/30 gap-2"
-                >
-                  <UserCheck className="size-3.5" />
-                  <span>Converter em Cliente</span>
-                </Button>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedLead(null)}
-                    className="rounded-lg text-xs font-semibold"
-                  >
-                    Fechar
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={isUpdatingLead}
-                    onClick={handleSaveLeadDetails}
-                    className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground"
-                  >
-                    {isUpdatingLead ? "Salvando..." : "Salvar Alterações"}
-                  </Button>
-                </div>
-              </SheetFooter>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+      {/* ── FICHA 360° DO LEAD (DOSSIÊ ENTERPRISE UNIFICADO) ── */}
+      {selectedLead && (
+        <Sheet open={Boolean(selectedLead)} onOpenChange={() => setSelectedLead(null)}>
+          <SheetContent
+            side="right"
+            size="dossier"
+            className="p-0 flex flex-col h-full bg-background border-l border-border/60 overflow-hidden w-full sm:max-w-4xl lg:max-w-5xl"
+          >
+            <TourismPipeCardDossier
+              lead={selectedLead}
+              stages={stages}
+              team={team}
+              proposals={initialProposals || []}
+              onClose={() => setSelectedLead(null)}
+              onMoveStage={(leadId, stageId) => handleMoveStage(leadId, stageId as any)}
+              onSaveLead={handleSaveLeadFromDossier}
+              onPromoteToCustomer={(leadId) => handlePromoteToCustomer(leadId)}
+              onGenerateProposal={(leadData) => {
+                setSelectedLead(null);
+                setProposalLead(leadData);
+              }}
+              onScheduleMeeting={async (data) => {
+                await addLeadMeeting({ data });
+                toast.success("Reunião agendada com sucesso!");
+                router.invalidate();
+              }}
+              onIssueContract={async (data) => {
+                const res = await issueLeadContract({ data });
+                const updated360 = await getCustomer360Profile({ data: { leadId: data.leadId } });
+                setCustomer360Data(updated360);
+                return res;
+              }}
+              onCopyContractLink={(publicToken) => {
+                navigator.clipboard.writeText(`${window.location.origin}/contrato/${publicToken}`);
+                toast.success("Link de assinatura digital copiado!");
+              }}
+              onToggleChecklist={(itemId) => handleToggleChecklist(itemId)}
+              customer360Data={customer360Data}
+              activeOnboardingForm={activeOnboardingForm}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* ── Painel de Métricas do Funil Sob Demanda (Apple HIG) ── */}
       <WorkspaceDashboardSheet
@@ -2252,8 +1432,26 @@ function WorkspaceComercialPage() {
           onOpenChange={setIsCustomizerOpen}
           storeId={storeId}
           module="commercial_crm"
-          stages={stages}
-          onStagesUpdated={(updated) => setStages(updated)}
+          stages={stages.map((s: any) => ({
+            stage_key: s.id || s.stage_key,
+            title: s.title,
+            purpose: s.purpose || (s.id === "won" ? "won" : s.id === "lost" ? "lost" : "in_progress"),
+            color: s.dotColor || s.color || "var(--primary)",
+            sort_order: s.sort_order ?? 0,
+            is_visible: s.is_visible !== false,
+            sla_minutes: s.sla_minutes,
+          }))}
+          onStagesUpdated={(updated) => {
+            setStages(updated.map((s: any) => ({
+              id: s.stage_key,
+              title: s.title,
+              dotColor: s.color || "var(--primary)",
+              badgeClass: "bg-muted text-foreground",
+              description: s.description || "",
+              is_visible: s.is_visible !== false,
+              sla_minutes: s.sla_minutes,
+            })));
+          }}
         />
       )}
 

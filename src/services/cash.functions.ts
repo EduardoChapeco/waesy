@@ -237,27 +237,53 @@ export async function _addRegisterEntry(
  throw new Error("Caixa indisponível ou já fechado");
  }
 
+ // Proteção Atômica Anti-Concorrência em Sangria (Zero Saldo Negativo em Gaveta)
+ try {
+  const { data: atomicRes, error: rpcErr } = await supabase.rpc("record_cash_entry_atomic", {
+   p_register_id: registerId,
+   p_store_id: identity.store_id,
+   p_amount_cents: amountCents,
+   p_entry_type: method,
+   p_notes: description || null,
+   p_created_by: identity.id || null,
+   p_channel_source: options?.channelSource || "storefront",
+   p_external_reference_id: options?.externalReferenceId || null,
+  });
+
+  if (!rpcErr && atomicRes && typeof atomicRes === "object") {
+   if (!(atomicRes as any).success) {
+    throw new Error((atomicRes as any).message || "Operação de caixa recusada.");
+   }
+   return { status: "success" };
+  }
+ } catch (rpcEx: any) {
+  if (rpcEx?.message && (rpcEx.message.includes("Sangria") || rpcEx.message.includes("insuficiente") || rpcEx.message.includes("INSUFFICIENT"))) {
+   throw rpcEx;
+  }
+  console.warn("[cash.functions] record_cash_entry_atomic fallback:", rpcEx?.message);
+ }
+
  // Strict validation: check if cash drawer balance goes negative on manual sangria
  if (amountCents < 0 && method === "cash") {
- const entries = await getEntriesForRegister(registerId);
- const summary = summarizeCashEntries(register.initial_balance_cents, entries);
- if (summary.currentBalanceCents + amountCents < 0) {
- throw new Error(
- `Sangria indisponível: o saldo em gaveta (${summary.currentBalanceCents / 100} BRL) é insuficiente.`,
- );
- }
+  const entries = await getEntriesForRegister(registerId);
+  const summary = summarizeCashEntries(register.initial_balance_cents, entries);
+  if (summary.currentBalanceCents + amountCents < 0) {
+   throw new Error(
+    `Sangria indisponível: o saldo em gaveta (${summary.currentBalanceCents / 100} BRL) é insuficiente.`,
+   );
+  }
  }
 
  const { error } = await supabase.from("cash_register_entries").insert({
- cash_register_id: registerId,
- amount_cents: amountCents,
- entry_type: method,
- notes: description,
- created_by: identity.id,
- channel_source: options?.channelSource || "storefront",
- marketplace_fee_cents: options?.marketplaceFeeCents || 0,
- net_payout_cents: options?.netPayoutCents || (amountCents - (options?.marketplaceFeeCents || 0)),
- external_reference_id: options?.externalReferenceId || null,
+  cash_register_id: registerId,
+  amount_cents: amountCents,
+  entry_type: method,
+  notes: description,
+  created_by: identity.id,
+  channel_source: options?.channelSource || "storefront",
+  marketplace_fee_cents: options?.marketplaceFeeCents || 0,
+  net_payout_cents: options?.netPayoutCents || (amountCents - (options?.marketplaceFeeCents || 0)),
+  external_reference_id: options?.externalReferenceId || null,
  });
 
  if (error) throw new Error("Erro ao registrar movimentação: " + error.message);

@@ -166,7 +166,7 @@ export function SectionItinerary({ draft, save }: Props) {
                 <Button
                   type="button"
                   onClick={() => setShowAssetPicker(showAssetPicker === i ? null : i)} /* focus-visible:ring-2 */
-                  className="flex h-6 items-center justify-center rounded border border-border/60 bg-surface px-2 ds-meta hover:bg-surface-alt transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex h-6 items-center justify-center rounded border border-border/60 bg-surface px-2 ds-meta hover:bg-surface-alt transition-colors focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                   title="Mídia da Agência"
                 >
                   <Plus className="h-3 w-3 mr-1" /> Adicionar

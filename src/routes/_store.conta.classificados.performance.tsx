@@ -225,7 +225,7 @@ function AccountClassifiedsPerformanceRoute() {
                 <span className="text-2xl font-black font-mono tracking-tight text-foreground">
                   {formatMoney(dashboard.totalInvestedCents)}
                 </span>
-                <Badge variant="outline" className="text-2xs font-bold border-amber-500/30 text-amber-700 dark:text-amber-400">
+                <Badge variant="outline" className="text-2xs font-bold border-warning/30 text-warning-strong ">
                   {dashboard.boostedAds} boosts
                 </Badge>
               </div>
@@ -410,9 +410,9 @@ function AccountClassifiedsPerformanceRoute() {
 
           {/* ── 5. DIAGNÓSTICO & ANÚNCIOS QUE DEMANDAM ATENÇÃO ── */}
           {safeUnderperforming.length > 0 && (
-            <div className="p-4 sm:p-5 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-3">
+            <div className="p-4 sm:p-5 rounded-lg border border-warning/30 bg-warning/5 space-y-3">
               <div className="flex items-center gap-2">
-                <AlertCircle className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <AlertCircle className="size-4 text-warning-strong  shrink-0" />
                 <span className="text-xs font-bold text-foreground">Anúncios que Precisam de Atenção</span>
               </div>
 
@@ -424,7 +424,7 @@ function AccountClassifiedsPerformanceRoute() {
                   >
                     <div className="space-y-1">
                       <span className="font-bold text-foreground block break-words text-wrap leading-tight">{item.title}</span>
-                      <p className="text-2xs text-amber-700 dark:text-amber-400 font-medium">{item.reason}</p>
+                      <p className="text-2xs text-warning-strong  font-medium">{item.reason}</p>
                       <p className="text-2xs text-muted-foreground leading-relaxed">{item.suggestion}</p>
                     </div>
 

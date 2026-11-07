@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bus, FolderPlus, MapPin, Calendar, Clock, DollarSign, Plus, Trash, CheckCircle2, ShieldCheck, Building, Image as ImageIcon, Users, Compass } from "lucide-react";
+import { Bus, FolderPlus, MapPin, Calendar, Clock, DollarSign, Plus, Trash, CheckCircle2, ShieldCheck, Building, Image as ImageIcon, Users, Compass, X } from "lucide-react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { createGroupTour } from "@/services/group-tours.functions";
@@ -20,129 +20,9 @@ interface NewGroupTourSheetProps {
  onSuccess: (newTourId: string) => void;
 }
 
-// 5 Presets canônicos de viagens rodoviárias no Sul/Brasil
-const TOUR_PRESETS = [
- {
- id: "beto_carrero",
- title: "Excursão Beto Carrero World e Praias",
- destination: "Penha / Balneário Camboriú, SC",
- departureTime: "19:30",
- returnTime: "22:00",
- priceBrl: "790,00",
- priceCents: 79000,
- coverImage: "",
- included: [
- "Transporte Rodoviário Semi-Leito",
- "02 Diárias de Hotel com Café da Manhã",
- "Passaporte Beto Carrero 01 Dia",
- "Seguro Viagem & ANTT",
- "Guia Cadastur Acompanhante",
- "Serviço de Bordo",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "19:30", location: "Posto Central / Rodoviária" },
- { city: "Maravilha, SC", time: "20:30", location: "Trevo de Acesso BR-282" },
- { city: "Chapecó, SC", time: "21:45", location: "Posto Carga Pesada" },
- ],
- payment: "Entrada R$ 190 + 6x de R$ 100 no cartão ou carnê",
- },
- {
- id: "gramado_canela",
- title: "Gramado e Canela — Serra Gaúcha & Natal Luz",
- destination: "Gramado / Canela, RS",
- departureTime: "20:00",
- returnTime: "23:00",
- priceBrl: "1.150,00",
- priceCents: 115000,
- coverImage: "",
- included: [
- "Transporte Rodoviário Leito Turismo",
- "03 Noites em Hotel Central com Café",
- "Passeio Trem Maria Fumaça com Degustação",
- "Noite Gaúcha com Churrasco e Show",
- "Seguro Viagem & ANTT",
- "Guia Credenciado",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "20:00", location: "Agência / Rodoviária" },
- { city: "Chapecó, SC", time: "22:00", location: "Trevo Chapecó" },
- { city: "Erechim, RS", time: "23:30", location: "Posto Master" },
- ],
- payment: "Entrada R$ 250 + 9x de R$ 100 sem juros",
- },
- {
- id: "aparecida",
- title: "Aparecida do Norte e Frei Galvão — Circuito da Fé",
- destination: "Aparecida / Guaratinguetá, SP",
- departureTime: "12:00",
- returnTime: "18:00",
- priceBrl: "980,00",
- priceCents: 98000,
- coverImage: "",
- included: [
- "Transporte Double Decker Leito Cama",
- "03 Diárias em Hotel Próximo à Basílica",
- "Pensão Completa (Café, Almoço e Jantar)",
- "Visita ao Santuário Frei Galvão",
- "Seguro Viagem ANTT",
- "Acompanhamento Pastoral",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "12:00", location: "Rodoviária Municipal" },
- { city: "Chapecó, SC", time: "14:30", location: "Shopping Pátio Chapecó" },
- { city: "Curitiba, PR", time: "22:00", location: "Posto Pelanda BR-116" },
- ],
- payment: "Em até 10x de R$ 98 no cartão ou Pix com 5% de desconto",
- },
- {
- id: "foz_cataratas",
- title: "Foz do Iguaçu, Cataratas e Compras Paraguai",
- destination: "Foz do Iguaçu, PR / CDE",
- departureTime: "22:00",
- returnTime: "23:30",
- priceBrl: "890,00",
- priceCents: 89000,
- coverImage: "",
- included: [
- "Transporte Rodoviário Executivo",
- "02 Diárias de Hotel com Piscina e Café",
- "Ingresso Parque Nacional das Cataratas",
- "Transporte Seguro para Compras em Ciudad del Este",
- "Visita ao Marco das Três Fronteiras",
- "Guia Bilíngue",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "22:00", location: "Rodoviária" },
- { city: "Dionísio Cerqueira, SC", time: "23:00", location: "Aduana / Trevo" },
- { city: "Cascavel, PR", time: "02:00", location: "Posto Pra Frente Brasil" },
- ],
- payment: "Entrada R$ 190 + 7x de R$ 100 no cartão",
- },
- {
- id: "piratuba",
- title: "Termas de Piratuba e Machadinho — Águas Termais",
- destination: "Piratuba, SC",
- departureTime: "06:00",
- returnTime: "20:00",
- priceBrl: "680,00",
- priceCents: 68000,
- coverImage: "",
- included: [
- "Transporte Rodoviário Semi-Leito",
- "02 Diárias de Hotel com Piscinas Termais",
- "Café da Manhã e Jantar Inclusos",
- "Passeio de Maria Fumaça Histórica",
- "Seguro Viagem",
- "Guia da Agência",
- ],
- boardingPoints: [
- { city: "São Miguel do Oeste, SC", time: "06:00", location: "Praça Central" },
- { city: "Maravilha, SC", time: "07:00", location: "Trevo BR-282" },
- { city: "Chapecó, SC", time: "08:15", location: "Terminal Rodoviário" },
- ],
- payment: "Entrada R$ 180 + 5x de R$ 100 sem juros",
- },
-];
+// Modelos de excursao vem do cadastro da agencia (nenhum modelo embutido)
+interface TourPreset { id: string; title: string; destination: string; departureTime: string; returnTime: string; priceBrl: string; priceCents: number; coverImage: string; included: string[]; boardingPoints: { city: string; time: string; location: string }[]; payment: string }
+const TOUR_PRESETS: TourPreset[] = [];
 
 const COMMON_INCLUSIONS = [
  "Transporte Rodoviário Leito/Semi-Leito",
@@ -195,12 +75,11 @@ export function NewGroupTourSheet({
  "Seguro Viagem & ANTT",
  "Guia Cadastur Acompanhante",
  ]);
+ const [newInclusionInput, setNewInclusionInput] = useState("");
 
  // Form State — Aba 4: Tarifário & Condições
  const [priceBrl, setPriceBrl] = useState("850,00");
- const [paymentConditions, setPaymentConditions] = useState(
- "Entrada de 20% + até 10x sem juros no cartão ou carnê da agência"
- );
+ const [paymentConditions, setPaymentConditions] = useState("");
  const [notes, setNotes] = useState("");
 
  // Cálculo da capacidade e nome do layout selecionado
@@ -384,6 +263,7 @@ export function NewGroupTourSheet({
  <div className="flex-1 overflow-y-auto no-scrollbar p-5 text-xs space-y-6">
  {/* ── ABA 1: ROTEIRO & PRESETS ── */}
  <TabsContent value="roteiro" className="m-0 space-y-5">
+ {TOUR_PRESETS.length > 0 && (<>
  {/* Presets de 1 Clique */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
@@ -417,6 +297,7 @@ export function NewGroupTourSheet({
  </div>
 
  <hr className="border-border/60" />
+ </>)}
 
  {/* Informações Principais */}
  <div className="space-y-3">
@@ -655,7 +536,7 @@ export function NewGroupTourSheet({
  size="sm"
  variant="outline"
  onClick={addBoardingPoint}
- className="rounded-lg text-xs font-bold h-8 gap-1"
+ className="rounded-lg text-xs font-bold h-8 gap-1 min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Ponto</span>
@@ -728,32 +609,91 @@ export function NewGroupTourSheet({
  </p>
  </div>
 
- <div className="flex flex-wrap gap-2">
- {COMMON_INCLUSIONS.map((item) => {
+ {/* Campo de Busca / Adição Personalizada */}
+ <div className="flex items-center gap-2">
+ <Input
+ value={newInclusionInput}
+ onChange={(e) => setNewInclusionInput(e.target.value)}
+ onKeyDown={(e) => {
+ if (e.key === "Enter" && newInclusionInput.trim()) {
+ e.preventDefault();
+ if (!includedItems.includes(newInclusionInput.trim())) {
+ setIncludedItems([...includedItems, newInclusionInput.trim()]);
+ }
+ setNewInclusionInput("");
+ }
+ }}
+ placeholder="Digite para filtrar sugestões ou adicionar item (ex: Almoço Típico Incluso)..."
+ className="h-10 text-xs flex-1 rounded-lg"
+ />
+ <Button
+ type="button"
+ variant="secondary"
+ disabled={!newInclusionInput.trim()}
+ onClick={() => {
+ if (newInclusionInput.trim() && !includedItems.includes(newInclusionInput.trim())) {
+ setIncludedItems([...includedItems, newInclusionInput.trim()]);
+ }
+ setNewInclusionInput("");
+ }}
+ className="h-10 px-3 text-xs font-semibold gap-1 shrink-0"
+ >
+ <Plus className="size-3.5" />
+ <span>Adicionar</span>
+ </Button>
+ </div>
+
+ {/* Sugestões Rápidas em Linha Única com Scroll Horizontal */}
+ <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-1.5 py-1">
+ <span className="text-2xs text-muted-foreground mr-1 shrink-0">Sugestões rápidas:</span>
+ {COMMON_INCLUSIONS.filter((item) =>
+ !newInclusionInput.trim() || item.toLowerCase().includes(newInclusionInput.toLowerCase())
+ ).map((item) => {
  const isSelected = includedItems.includes(item);
  return (
- <Badge
-    key={item}
-    variant={isSelected ? "default" : "outline"}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggleInclusion(item);
-      }
-    }}
-    onClick={() => toggleInclusion(item)}
-    className={`cursor-pointer text-xs py-2 px-3 rounded-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
- isSelected ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+ <button
+ key={item}
+ type="button"
+ onClick={() => toggleInclusion(item)}
+ className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1 ${
+ isSelected
+ ? "bg-primary text-primary-foreground font-bold"
+ : "bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border"
  }`}
  >
- {isSelected && <CheckCircle2 className="size-3.5 mr-1" />}
+ {isSelected ? <CheckCircle2 className="size-3" /> : <Plus className="size-3" />}
  <span>{item}</span>
- </Badge>
+ </button>
  );
  })}
  </div>
+
+ {/* Lista de Itens Inclusos Ativos */}
+ {includedItems.length > 0 && (
+ <div className="space-y-1.5 pt-2 border-t border-border/30">
+ <span className="text-2xs font-bold text-muted-foreground block">
+ Itens Ativos no Pacote ({includedItems.length}):
+ </span>
+ <div className="flex flex-wrap gap-1.5">
+ {includedItems.map((item) => (
+ <span
+ key={item}
+ className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-primary/10 text-primary border border-primary/20 font-medium"
+ >
+ <span>{item}</span>
+ <button
+ type="button"
+ onClick={() => setIncludedItems(includedItems.filter((i) => i !== item))}
+ className="size-4 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ title="Remover"
+ >
+ <X className="size-3" />
+ </button>
+ </span>
+ ))}
+ </div>
+ </div>
+ )}
  </div>
  </TabsContent>
 
@@ -785,7 +725,7 @@ export function NewGroupTourSheet({
  <div className="space-y-1">
  <Label className="text-xs font-bold">Condições de Pagamento e Parcelamento</Label>
  <Input
- placeholder="Ex: Entrada de 20% + até 10x sem juros no cartão ou 4x no carnê"
+ placeholder="Ex: Até 10x sem juros no cartão ou consulte condições no boleto"
  value={paymentConditions}
  onChange={(e) => setPaymentConditions(e.target.value)}
  className="h-10 text-xs rounded-lg"
@@ -814,7 +754,7 @@ export function NewGroupTourSheet({
  variant="outline"
  size="sm"
  onClick={() => onOpenChange(false)}
- className="rounded-lg text-xs h-10 px-4"
+ className="rounded-lg text-xs h-10 px-4 min-h-11 sm:min-h-0"
  >
  Cancelar
  </Button>
@@ -824,7 +764,7 @@ export function NewGroupTourSheet({
  size="sm"
  disabled={createMutation.isPending || !title || !destination || !departureDate || !returnDate}
  onClick={() => createMutation.mutate()}
- className="rounded-lg text-xs font-bold h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
+ className="rounded-lg text-xs font-bold h-10 px-6 bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer min-h-11 sm:min-h-0"
  >
  <CheckCircle2 className="size-4 text-emerald-500" />
  <span>{createMutation.isPending ? "Cadastrando Excursão..." : "Cadastrar e Abrir Mapa 2D"}</span>

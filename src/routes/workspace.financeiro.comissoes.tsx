@@ -208,7 +208,7 @@ function CommissionsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Financeiro"
         title="Comissões de Vendas"
@@ -243,10 +243,10 @@ function CommissionsPage() {
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Clock className="size-3.5 text-amber-500" />
+            <Clock className="size-3.5 text-warning-strong" />
             Pendente a Quitar
           </span>
-          <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-2xl font-mono font-bold text-warning-strong ">
             {formatMoney(kpis.totalPendingCents)}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
@@ -411,7 +411,7 @@ function CommissionsPage() {
                             Estorno Pendente
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-amber-600 border-amber-500/30 bg-amber-500/10 text-xs font-bold">
+                          <Badge variant="outline" className="text-warning-strong border-warning/30 bg-warning/10 text-xs font-bold">
                             A Pagar
                           </Badge>
                         )}
@@ -423,7 +423,7 @@ function CommissionsPage() {
                             size="sm"
                             disabled={payingId === c.id}
                             onClick={() => handlePay(c.id, c.sellerName)}
-                            className="h-8 rounded-lg text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                            className="h-8 rounded-lg text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer min-h-11 sm:min-h-0"
                           >
                             <CheckCircle className="size-3.5 mr-1" />
                             {payingId === c.id ? "Quitando..." : "Pagar"}
@@ -500,7 +500,7 @@ function CommissionsPage() {
                         </TableCell>
                         <TableCell className="font-mono text-xs">
                           {pendingInfo.totalPendingCents > 0 ? (
-                            <span className="font-bold text-amber-600 dark:text-amber-400">
+                            <span className="font-bold text-warning-strong ">
                               {formatMoney(pendingInfo.totalPendingCents)} ({pendingInfo.count} vendas)
                             </span>
                           ) : (
@@ -515,14 +515,14 @@ function CommissionsPage() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setEditingSellerId(null)}
-                                  className="h-8 rounded-lg text-xs font-bold"
+                                  className="h-8 rounded-lg text-xs font-bold min-h-11 sm:min-h-0"
                                 >
                                   Cancelar
                                 </Button>
                                 <Button
                                   size="sm"
                                   onClick={() => handleSaveRate(seller.id)}
-                                  className="h-8 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+                                  className="h-8 rounded-lg text-xs font-bold bg-primary text-primary-foreground min-h-11 sm:min-h-0"
                                 >
                                   Salvar
                                 </Button>

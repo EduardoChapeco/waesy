@@ -157,7 +157,7 @@ export default function WorkspaceCrmPage() {
         "w-full flex-1 flex flex-col min-h-0 px-0 animate-in fade-in duration-200",
         activeTab === "funil"
           ? "h-full min-h-0 overflow-hidden space-y-2 pb-0"
-          : "max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0"
+          : "w-full space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0"
       )}
     >
       {/* ── 1. TopBar Direta (Linha 1 no Mobile: Título + Badge + Menu Kebab) ── */}
@@ -351,7 +351,7 @@ export default function WorkspaceCrmPage() {
         <Card className="p-4 rounded-lg bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">LTV Médio</span>
-            <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+            <div className="size-8 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center">
               <DollarSign className="size-4" />
             </div>
           </div>

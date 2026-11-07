@@ -33,7 +33,7 @@ interface UnifiedEntityTimelineProps {
 
 function getEventIcon(eventName: DomainEventName) {
   if (eventName.startsWith("lead")) return <User className="size-3.5 text-sky-500" />;
-  if (eventName.startsWith("quote") || eventName.startsWith("proposal")) return <FileText className="size-3.5 text-amber-500" />;
+  if (eventName.startsWith("quote") || eventName.startsWith("proposal")) return <FileText className="size-3.5 text-warning-strong" />;
   if (eventName.startsWith("reservation")) return <Calendar className="size-3.5 text-emerald-500" />;
   if (eventName.startsWith("contract")) return <FileCheck className="size-3.5 text-indigo-500" />;
   if (eventName.startsWith("boarding") || eventName.startsWith("flight")) return <Plane className="size-3.5 text-purple-500" />;

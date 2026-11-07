@@ -119,7 +119,7 @@ export function FounderSignupSheet({
     <Sheet open={effectiveOpen} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-lg max-w-lg mx-auto p-6 space-y-5 border-t border-border/80 shadow-md max-h-screen overflow-y-auto"
+        className="rounded-t-lg max-w-lg mx-auto p-6 space-y-5 border-t border-border/80 shadow-overlay max-h-screen overflow-y-auto"
       >
         <SheetHeader className="text-left space-y-2">
           <div className="flex items-center justify-between">

@@ -504,7 +504,7 @@ export function UniversalNicheCard({
             {/* Linha de Prova Social Honesta (B.33) — Renderizada Apenas com Dados Reais */}
             {hasRealReviews && (
               <div className="mt-2 flex items-center gap-2 text-xs text-foreground font-medium">
-                <Star className="size-4 fill-amber-400 text-amber-400 shrink-0" />
+                <Star className="size-4 fill-warning text-warning-strong shrink-0" />
                 <span className="font-bold font-mono">{rating.toFixed(1)}</span>
                 <span className="text-muted-foreground font-normal">
                   ({reviewsCount} {reviewsCount === 1 ? "avaliação" : "avaliações"})

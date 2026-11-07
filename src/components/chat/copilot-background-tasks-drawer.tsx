@@ -204,7 +204,7 @@ export function CopilotBackgroundTasksDrawer({
 
                       {task.cost_wz !== undefined && task.cost_wz > 0 && (
                         <div className="flex items-center gap-1 text-2xs font-semibold text-muted-foreground shrink-0 bg-muted/40 px-2 py-1 rounded-md">
-                          <Coins className="size-3 text-amber-500" />
+                          <Coins className="size-3 text-warning-strong" />
                           <span>{task.cost_wz} $WZ</span>
                         </div>
                       )}

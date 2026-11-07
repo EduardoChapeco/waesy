@@ -58,6 +58,12 @@ export interface OperatorPaymentCampaignRule {
   boletoMinDownpaymentPct: number;
   maxCardInstallments: number;
   pixCashDiscountPct: number;
+  hasDownpayment?: boolean;
+  downpaymentType?: "percentage" | "fixed_cents";
+  downpaymentFixedCents?: number;
+  firstBoletoDueDays?: number;
+  firstBoletoDueDescription?: string;
+  customConditionsText?: string;
 }
 
 export interface CalculatedRoomBreakdown {
@@ -417,7 +423,13 @@ export function calculateMultiRoomQuoteBreakdown(
 ): MultiRoomQuoteCalculationResult {
   const maxBoleto = Math.max(1, campaign.maxBoletoInstallments || 15);
   const maxCard = Math.max(1, campaign.maxCardInstallments || 10);
-  const downpaymentPct = Math.max(0, Math.min(90, campaign.boletoMinDownpaymentPct ?? 20));
+  const hasDownpayment =
+    campaign.hasDownpayment !== undefined
+      ? campaign.hasDownpayment
+      : (campaign.boletoMinDownpaymentPct > 0);
+  const downpaymentPct = hasDownpayment
+    ? Math.max(0, Math.min(90, campaign.boletoMinDownpaymentPct ?? 0))
+    : 0;
   const pixDiscountPct = Math.max(0, Math.min(30, campaign.pixCashDiscountPct ?? 5));
 
   const calculatedRooms: CalculatedRoomBreakdown[] = rooms.map((room, index) => {
@@ -436,7 +448,15 @@ export function calculateMultiRoomQuoteBreakdown(
     const roomAddonsCents = addons.reduce((acc, item) => acc + Math.max(0, item.priceCents || 0), 0);
     const roomTotalCents = roomBaseCents + roomAddonsCents;
 
-    const boletoDownpaymentCents = Math.round((roomTotalCents * downpaymentPct) / 100);
+    let boletoDownpaymentCents = 0;
+    if (hasDownpayment) {
+      if (campaign.downpaymentType === "fixed_cents" && (campaign.downpaymentFixedCents || 0) > 0) {
+        boletoDownpaymentCents = Math.round((campaign.downpaymentFixedCents || 0) / Math.max(1, rooms.length));
+      } else {
+        boletoDownpaymentCents = Math.round((roomTotalCents * downpaymentPct) / 100);
+      }
+    }
+
     const financedBalance = Math.max(0, roomTotalCents - boletoDownpaymentCents);
     const remainingInstallments = Math.max(1, maxBoleto - (boletoDownpaymentCents > 0 ? 1 : 0));
     const boletoInstallmentCents = Math.round(financedBalance / remainingInstallments);
@@ -498,44 +518,70 @@ export function calculateMultiRoomQuoteBreakdown(
 
 export function getOperatorPaymentGuidance(
   channel: PaymentChannelType,
-  operatorName: string = "Operadora"
+  operatorName: string = "Operadora",
+  customOperatorConfig?: {
+    paymentGuidanceTitle?: string;
+    paymentGuidanceInstructions?: string;
+    paymentPortalUrl?: string;
+    badgeLabel?: string;
+    actionButtonLabel?: string;
+  }
 ): {
   badgeLabel: string;
   headline: string;
   instructionsPt: string;
   actionButtonLabel: string;
+  paymentPortalUrl?: string;
 } {
+  if (
+    customOperatorConfig &&
+    (customOperatorConfig.paymentGuidanceTitle || customOperatorConfig.paymentGuidanceInstructions)
+  ) {
+    return {
+      badgeLabel: customOperatorConfig.badgeLabel || `Pagamento · ${operatorName}`,
+      headline:
+        customOperatorConfig.paymentGuidanceTitle || `Parcelamento e Pagamentos — ${operatorName}`,
+      instructionsPt:
+        customOperatorConfig.paymentGuidanceInstructions ||
+        "Confira os vencimentos da sua viagem abaixo e compartilhe o comprovante após o pagamento para conciliação automática.",
+      actionButtonLabel:
+        customOperatorConfig.actionButtonLabel ||
+        (customOperatorConfig.paymentPortalUrl ? `Abrir Portal ${operatorName}` : "Enviar Comprovante"),
+      paymentPortalUrl: customOperatorConfig.paymentPortalUrl || undefined,
+    };
+  }
+
   switch (channel) {
     case "incomum_chat":
       return {
-        badgeLabel: "Boleto Operadora Incomum",
-        headline: "Boletos geridos em parceria com a Incomum Operadora",
+        badgeLabel: `Boleto · ${operatorName || "Incomum"}`,
+        headline: `Boletos geridos junto à ${operatorName || "Incomum Operadora"}`,
         instructionsPt:
-          "Os boletos do seu pacote são emitidos pela Incomum e anexados diretamente aqui pela nossa equipe. Após realizar o pagamento no seu banco, basta enviar ou compartilhar o comprovante abaixo que o sistema identifica e dá baixa na sua parcela automaticamente.",
+          "Os boletos do seu pacote são emitidos pela operadora e anexados diretamente aqui pela nossa equipe. Após realizar o pagamento no seu banco, basta enviar ou compartilhar o comprovante abaixo que o sistema identifica e dá baixa na sua parcela automaticamente.",
         actionButtonLabel: "Solicitar 2ª Via à Agência",
       };
     case "frt_funpay":
       return {
-        badgeLabel: "Funpay · FRT Operadora",
-        headline: "Pagamento processado via Portal Funpay (FRT)",
+        badgeLabel: `Funpay · ${operatorName || "FRT Operadora"}`,
+        headline: `Pagamento processado via Portal Funpay (${operatorName || "FRT"})`,
         instructionsPt:
-          "Sua viagem conta com parcelamento oficial via Funpay da FRT Operadora. Você pode baixar o boleto da parcela abaixo, copiar o código de barras ou acessar o link direto do Funpay. Envie o comprovante após o pagamento para conciliação automática.",
+          "Sua viagem conta com parcelamento oficial via Funpay. Você pode baixar o boleto da parcela abaixo, copiar o código de barras ou acessar o link direto do portal. Envie o comprovante após o pagamento para conciliação automática.",
         actionButtonLabel: "Abrir Portal Funpay",
       };
     case "santander_app":
       return {
-        badgeLabel: "Financiamento Santander",
-        headline: "Parcelas disponíveis no App Santander e no Portal",
+        badgeLabel: `Financiamento · ${operatorName || "Santander"}`,
+        headline: `Parcelas disponíveis no App ${operatorName || "Santander"} e no Portal`,
         instructionsPt:
-          "O financiamento da sua viagem foi contratado junto ao Banco Santander. Os boletos podem ser pagos diretamente pelo aplicativo do Santander (em Financiamentos / Boletos) ou através do PDF anexado abaixo pela agência.",
-        actionButtonLabel: "Ver Instruções Santander",
+          "O financiamento da sua viagem foi contratado junto à instituição financeira. Os boletos podem ser pagos diretamente pelo aplicativo bancário ou através do PDF anexado abaixo pela agência.",
+        actionButtonLabel: `Ver Instruções ${operatorName || "Santander"}`,
       };
     case "orinter_portal":
       return {
-        badgeLabel: "Orinter Tour & Travel",
-        headline: "Parcelamento Oficial Orinter",
+        badgeLabel: `${operatorName || "Orinter Tour & Travel"}`,
+        headline: `Parcelamento Oficial ${operatorName || "Orinter"}`,
         instructionsPt:
-          "Os boletos ou cobranças da sua reserva Orinter estão listados abaixo por ordem de vencimento. Copie a linha digitável ou anexe seu comprovante bancário para atualização imediata do seu recibo.",
+          "Os boletos ou cobranças da sua reserva estão listados abaixo por ordem de vencimento. Copie a linha digitável ou anexe seu comprovante bancário para atualização imediata do seu recibo.",
         actionButtonLabel: "Baixar Boleto da Parcela",
       };
     default:
@@ -547,6 +593,65 @@ export function getOperatorPaymentGuidance(
         actionButtonLabel: "Enviar Comprovante",
       };
   }
+}
+
+export function calculateApplicableCancellationPenalty(params: {
+  departureDateIso: string;
+  requestDateIso?: string;
+  totalContractCents: number;
+  policy?: {
+    policyName?: string;
+    freeCancellationWindowDays?: number;
+    defaultFinePct?: number;
+    nonRefundableAirfareRule?: string;
+    fineTiers?: Array<{ daysBeforeDeparture: number; finePct: number; label?: string }>;
+  };
+}): {
+  daysBeforeDeparture: number;
+  appliedFinePct: number;
+  penaltyAmountCents: number;
+  refundableAmountCents: number;
+  matchedTierLabel: string;
+  explanationPt: string;
+} {
+  const depMs = Date.parse(params.departureDateIso);
+  const reqMs = params.requestDateIso ? Date.parse(params.requestDateIso) : Date.now();
+  const daysBeforeDeparture =
+    Number.isFinite(depMs) && Number.isFinite(reqMs)
+      ? Math.max(0, Math.ceil((depMs - reqMs) / 86400000))
+      : 0;
+
+  const tiers = [...(params.policy?.fineTiers || [])].sort(
+    (a, b) => b.daysBeforeDeparture - a.daysBeforeDeparture
+  );
+
+  let appliedFinePct = Number(params.policy?.defaultFinePct ?? 0);
+  let matchedTierLabel = params.policy?.policyName || "Regra contratual configurada pela agência";
+
+  if (tiers.length > 0) {
+    // Procura a faixa aplicável para a antecedência atual
+    const matched =
+      tiers.find((t) => daysBeforeDeparture >= t.daysBeforeDeparture) ||
+      tiers[tiers.length - 1];
+    if (matched) {
+      appliedFinePct = Number(matched.finePct || 0);
+      matchedTierLabel =
+        matched.label || `Até ${matched.daysBeforeDeparture} dias antes do embarque (${appliedFinePct}%)`;
+    }
+  }
+
+  const totalCents = Math.max(0, Math.round(params.totalContractCents || 0));
+  const penaltyAmountCents = Math.round((totalCents * appliedFinePct) / 100);
+  const refundableAmountCents = Math.max(0, totalCents - penaltyAmountCents);
+
+  return {
+    daysBeforeDeparture,
+    appliedFinePct,
+    penaltyAmountCents,
+    refundableAmountCents,
+    matchedTierLabel,
+    explanationPt: `Antecedência calculada: ${daysBeforeDeparture} dia(s) para o embarque. Faixa aplicada: ${matchedTierLabel} (${appliedFinePct}% de retenção contratual${params.policy?.nonRefundableAirfareRule ? ` — ${params.policy.nonRefundableAirfareRule}` : ""}).`,
+  };
 }
 
 export function autoMatchCustomerReceiptToInstallment(
@@ -736,10 +841,10 @@ export function answerTripCopilotGroundedQuestion(
         ? ctx.fineSchedule
             .map((s) => `• Até ${s.daysBeforeDeparture} dias antes do embarque: retenção contratual de ${s.penaltyPct}%`)
             .join("\n")
-        : "• Mais de 30 dias antes do embarque: multa administrativa de 20% + taxas não reembolsáveis de emissão aérea.\n• Menos de 30 dias do embarque: aplicação das retenções de tarifa da operadora e hotelaria.";
+        : "• As faixas percentuais de multa e retenção seguem a política contratual configurada pela agência e pela operadora para a sua reserva.";
 
     return {
-      answerPt: `Analisei o seu **Contrato de Prestação de Serviços Turísticos (Reserva ${ctx.reservationCode})** e as diretrizes da **Resolução nº 400 da ANAC**:\n\n1. **Regra Contratual da Operadora (${ctx.operatorName}):**\n${ctx.cancellationRulesText || scheduleStr}\n\n2. **Direito de Arrependimento e Alterações involuntárias (ANAC 400):**\n• Para passagens aéreas compradas com no mínimo 7 dias de antecedência da data do voo, a ANAC garante desistência sem ônus em até 24h após o recebimento do comprovante.\n• Caso a própria companhia aérea altere seu voo em mais de 30 minutos (voos domésticos) ou 1 hora (voos internacionais), você tem direito a **reacomodação gratuita** ou **reembolso integral**.`,
+      answerPt: `Analisei o seu **Contrato de Prestação de Serviços Turísticos (Reserva ${ctx.reservationCode})** e as diretrizes da **Resolução nº 400 da ANAC**:\n\n1. **Regra Contratual Configurada (${ctx.operatorName}):**\n${ctx.cancellationRulesText ? `${ctx.cancellationRulesText}\n${ctx.fineSchedule && ctx.fineSchedule.length > 0 ? scheduleStr : ""}`.trim() : scheduleStr}\n\n2. **Direito de Arrependimento e Alterações involuntárias (ANAC 400):**\n• Para passagens aéreas compradas com no mínimo 7 dias de antecedência da data do voo, a ANAC garante desistência sem ônus em até 24h após o recebimento do comprovante.\n• Caso a própria companhia aérea altere seu voo em mais de 30 minutos (voos domésticos) ou 1 hora (voos internacionais), você tem direito a **reacomodação gratuita** ou **reembolso integral**.`,
       citations: [
         `Contrato Assinado — Reserva #${ctx.reservationCode}`,
         `Resolução ANAC nº 400/2016 — Art. 11 e Art. 28`,

@@ -77,6 +77,7 @@ try {
     minify: true,
     treeShaking: true,
     legalComments: "none",
+    drop: ["console", "debugger"],
     target: "es2022",
     format: "esm",
     external: ["node:*", "cloudflare:*"],
@@ -121,10 +122,17 @@ const cleanRoutesJson = {
   exclude: [
     "/assets/*",
     "/favicon.ico",
+    "/favicon.svg",
     "/manifest.json",
     "/robots.txt",
     "/sw.js",
-    "/icons/*"
+    "/icons/*",
+    "/apple-touch-icon.png",
+    "/brand-favicon.png",
+    "/brand-logo.png",
+    "/offline.html",
+    "/llms.txt",
+    "/llms-full.txt"
   ]
 };
 fs.writeFileSync(routesJsonPath, JSON.stringify(cleanRoutesJson, null, 2));

@@ -52,6 +52,15 @@ export interface TravelWeatherDay {
 }
 
 export interface PaymentConditions {
+  accepts_boleto?: boolean;
+  boleto_installments?: number;
+  has_boleto_downpayment?: boolean;
+  boleto_downpayment_type?: "percentage" | "fixed_cents";
+  boleto_downpayment_pct?: number;
+  boleto_downpayment_fixed_cents?: number;
+  first_boleto_due?: string;
+  first_boleto_condition?: string;
+  custom_terms_text?: string;
  installments_max?: number;
  installments_fee_free?: number;
  accepts_pix?: boolean;

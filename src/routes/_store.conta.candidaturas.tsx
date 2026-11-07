@@ -48,7 +48,7 @@ function MinhasCandidaturasPage() {
       case "shortlisted":
         return <Badge variant="outline" className="text-xs text-primary border-primary/30">Selecionado</Badge>;
       case "interview_scheduled":
-        return <Badge className="text-xs bg-amber-500 hover:bg-amber-600 text-foreground">Entrevista</Badge>;
+        return <Badge className="text-xs bg-warning hover:bg-warning text-foreground">Entrevista</Badge>;
       case "hired":
       case "approved":
         return <Badge className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground">Aprovado</Badge>;
@@ -139,7 +139,7 @@ function MinhasCandidaturasPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleWithdraw(app.id, app.job_title)}
- className="size-8 text-muted-foreground hover:text-destructive shrink-0"
+ className="size-8 text-muted-foreground hover:text-destructive shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Cancelar Candidatura"
  >
  <Trash2 className="size-4" />
@@ -148,8 +148,8 @@ function MinhasCandidaturasPage() {
 
  {/* Informações de Entrevista se Agendada */}
  {app.status === "interview_scheduled" && app.interview_at && (
- <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
- <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-semibold">
+ <div className="p-4 rounded-lg bg-warning/10 border border-warning/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+ <div className="flex items-center gap-2 text-warning-strong  font-semibold">
  <Calendar className="size-4 shrink-0" />
  <span>
  Entrevista Agendada para{" "}
@@ -183,7 +183,7 @@ function MinhasCandidaturasPage() {
  {new Date(app.created_at).toLocaleDateString("pt-BR")}
  </span>
 
- <Button asChild variant="ghost" size="sm" className="h-7 text-xs font-bold gap-1">
+ <Button asChild variant="ghost" size="sm" className="h-7 text-xs font-bold gap-1 min-h-11 sm:min-h-0">
  <Link to="/empregos/$id" params={{ id: app.job_id }}>
  Ver Vaga
  <ArrowRight className="size-3.5" />

@@ -106,7 +106,7 @@ export function QuickProfilePeekModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="w-[92vw] max-w-sm sm:max-w-md p-0 overflow-hidden rounded-3xl border border-border/60 bg-card text-foreground shadow-2xl z-50 pt-[max(1.25rem,env(safe-area-inset-top))]"
+        className="w-[92vw] max-w-sm sm:max-w-md p-0 overflow-hidden rounded-3xl border border-border/60 bg-card text-foreground shadow-overlay z-50 pt-[max(1.25rem,env(safe-area-inset-top))]"
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Perfil de {memberName}</DialogTitle>
@@ -118,7 +118,7 @@ export function QuickProfilePeekModal({
         {/* ─── Corpo do Perfil (Apple HIG & Anti-AI Smell) ─────────────── */}
         <div className="px-5 pb-5 -mt-10 space-y-4">
           <div className="flex items-end justify-between gap-3">
-            <Avatar className="size-20 rounded-2xl border-4 border-card shadow-md">
+            <Avatar className="size-20 rounded-2xl border-4 border-card shadow-overlay">
               {memberAvatar && (
                 <AvatarImage
                   src={memberAvatar}

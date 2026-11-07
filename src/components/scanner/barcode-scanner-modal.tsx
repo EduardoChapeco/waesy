@@ -230,7 +230,7 @@ export function BarcodeScannerModal({
                 variant="outline"
                 size="sm"
                 onClick={toggleTorch} // focus-visible:ring-ring
-                className="h-9 px-3 gap-2 text-xs text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className="h-9 px-3 gap-2 text-xs text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none min-h-11 sm:min-h-0"
               >
                 <Flashlight className="w-3.5 h-3.5" />
                 {torchOn ? "Desligar" : "Lanterna"}

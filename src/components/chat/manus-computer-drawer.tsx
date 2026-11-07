@@ -230,7 +230,7 @@ export function ManusComputerDrawer({
               </div>
 
               {/* design-lint-ignore DL-30 reason:"Área de código de editor inline requer rolagem horizontal para diffs extensos" expiry:"2027-10-30" */}
-              <div className="p-4 font-mono text-xs leading-relaxed overflow-x-auto">
+              <div className="p-4 font-mono text-xs leading-relaxed overflow-x-auto scroll-area-carousel">
                 {editorMode === 'original' && (
                   <pre className="text-muted-foreground whitespace-pre-wrap">
                     {currentStep?.fileDiff?.original || DEFAULT_STEPS[2].fileDiff?.original}
@@ -269,7 +269,7 @@ export function ManusComputerDrawer({
 
           {activeToolTab === 'bash' && (
             /* design-lint-ignore DL-30 reason:"Terminal bash VPS requer rolagem horizontal para comandos longos" expiry:"2027-10-30" */
-            <div className="rounded-xl border border-border/80 bg-neutral-950 text-neutral-100 p-4 font-mono text-xs leading-relaxed overflow-x-auto">
+            <div className="rounded-xl border border-border/80 bg-neutral-950 text-neutral-100 p-4 font-mono text-xs leading-relaxed overflow-x-auto scroll-area-carousel">
               <pre className="whitespace-pre-wrap">
                 {currentStep?.terminalOutput || DEFAULT_STEPS[0].terminalOutput}
               </pre>

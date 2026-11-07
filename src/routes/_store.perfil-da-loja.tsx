@@ -165,6 +165,12 @@ export const Route = createFileRoute("/_store/perfil-da-loja")({
           docRes?.status === "ok" && (docRes.data as any).tree?.length > 0
             ? (docRes.data as any).tree
             : null,
+        omniPageDoc:
+          docRes?.status === "ok"
+            ? (docRes.data as any)?.document?.settings?.omni_page_published ||
+              (docRes.data as any)?.document?.settings?.omni_page ||
+              null
+            : null,
       };
     } catch (err) {
       console.error("[loader:_store.perfil-da-loja] Unhandled error:", err);
@@ -183,6 +189,7 @@ export const Route = createFileRoute("/_store/perfil-da-loja")({
         employerStats: null,
         isOwner: false,
         builderTree: null,
+        omniPageDoc: null,
       };
     }
   },
@@ -205,6 +212,7 @@ function StorePerfilPage() {
     sponsors,
     employerStats,
     builderTree,
+    omniPageDoc,
     isOwner,
   } = ((Route.useLoaderData?.() as any) || {});
 
@@ -227,11 +235,13 @@ function StorePerfilPage() {
       flyers={flyers}
       hotpages={hotpages}
       jobs={jobs}
+      ads={ads}
       posts={posts}
       reviews={reviews}
       sponsors={sponsors}
       employerStats={employerStats}
       builderTree={builderTree}
+      omniPageDoc={omniPageDoc}
       initialTab={search.aba || "vitrine"}
       isOwner={isOwner ?? false}
       source="storefront"

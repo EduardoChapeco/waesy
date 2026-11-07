@@ -74,7 +74,7 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
  <ImageIcon className="size-3" />
  Evidências anexadas ({payload.photo_urls.length})
  </span>
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
  {payload.photo_urls.map((url, idx) => (
  <a
  key={idx}
@@ -102,7 +102,7 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
  <Button
  size="sm"
  onClick={onReviewTicket}
- className="h-8 text-xs font-bold rounded-lg"
+ className="h-8 text-xs font-bold rounded-lg min-h-11 sm:min-h-0"
  >
  Gerenciar Ocorrência
  </Button>

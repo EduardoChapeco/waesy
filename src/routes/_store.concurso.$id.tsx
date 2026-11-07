@@ -129,7 +129,7 @@ function ConcursoDetailPage() {
       </div>
 
       {/* ── Imagem Principal no Aspecto Exato (16:9) ── */}
-      <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted border border-border/70 shadow-sm">
+      <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted border border-border/70 ">
         {raffle.imageUrl ? (
           <img
             src={raffle.imageUrl}
@@ -220,8 +220,8 @@ function ConcursoDetailPage() {
 
       {/* ── Vencedor (Caso Concluído) ── */}
       {isCompleted && raffle.winnerTicketNumber && (
-        <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-4 flex items-center gap-4">
-          <Trophy className="size-6 text-amber-500 shrink-0" />
+        <div className="rounded-lg bg-warning/10 border border-warning/30 p-4 flex items-center gap-4">
+          <Trophy className="size-6 text-warning-strong shrink-0" />
           <div className="text-xs">
             <span className="font-bold text-foreground block text-sm">
               Cupom Vencedor #{raffle.winnerTicketNumber}
@@ -248,7 +248,7 @@ function ConcursoDetailPage() {
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
           <div className="hidden sm:block text-xs text-muted-foreground">
             {hasReachedLimit ? (
-              <span className="text-amber-600 font-semibold">
+              <span className="text-warning-strong font-semibold">
                 Você já atingiu o limite máximo de {raffle.maxTicketsPerUser} cupons.
               </span>
             ) : (

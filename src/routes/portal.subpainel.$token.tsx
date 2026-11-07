@@ -322,12 +322,12 @@ function EventSubpanelPortalPage() {
 
           {/* Calculadora de Pesagem (Buffet Kg) ou Valor Avulso */}
           {allowCustomPrice && (
-            <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-3">
+            <div className="p-4 rounded-lg border border-warning/30 bg-warning/5 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">
                   {templateTipo === "buffet_kg" ? "Balança & Pesagem de Prato (Buffet a Quilo)" : "Lançamento de Valor Avulso"}
                 </span>
-                <Badge variant="outline" className="text-xs font-mono border-amber-500/40 text-amber-600">
+                <Badge variant="outline" className="text-xs font-mono border-warning/40 text-warning-strong">
                   {templateTipo === "buffet_kg" ? "Kg / Gramas" : "Valor Livre"}
                 </Badge>
               </div>

@@ -142,7 +142,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
           </p>
         </div>
 
-        <Button onClick={handleOpenCreate} size="sm" className="gap-2 font-bold h-9">
+        <Button onClick={handleOpenCreate} size="sm" className="gap-2 font-bold h-9 min-h-11 sm:min-h-0">
           <Plus className="size-4" />
           Novo Produto / Combo
         </Button>
@@ -212,7 +212,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleOpenEdit(prod)}
-                  className="h-7 px-2 text-xs gap-1"
+                  className="h-7 px-2 text-xs gap-1 min-h-11 sm:min-h-0"
                 >
                   <Edit className="size-3" /> Editar
                 </Button>
@@ -220,7 +220,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDeleteProduct(prod.id)}
-                  className="h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive"
+                  className="h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive min-h-11 sm:min-h-0"
                 >
                   <Trash2 className="size-3" /> Excluir
                 </Button>

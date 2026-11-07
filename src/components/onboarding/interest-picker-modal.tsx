@@ -10,7 +10,7 @@ const NICHES_LIST = [
  id: "all",
  label: "Tudo na Cidade",
  icon: Layers,
- color: "from-amber-500/20 to-orange-500/20",
+ color: "from-warning/20 to-orange-500/20",
  },
  {
  id: "ofertas",
@@ -22,7 +22,7 @@ const NICHES_LIST = [
  id: "gastronomia",
  label: "Gastronomia e Lanches",
  icon: Utensils,
- color: "from-orange-500/20 to-amber-500/20",
+ color: "from-orange-500/20 to-warning/20",
  },
  {
  id: "mercado",
@@ -194,7 +194,7 @@ export function InterestPickerModal() {
  onClick={() => toggleNiche(item.id)}
  className={`relative flex flex-col items-start justify-between p-4 rounded-lg border text-left transition-colors duration-200 select-none cursor-pointer group ${
  isSelected
- ? "bg-primary text-primary-foreground border-primary scale-[1.02]"
+ ? "bg-primary text-primary-foreground border-primary scale-102"
  : "bg-card text-foreground border-border/80 hover:border-primary/40 hover:bg-muted/40"
  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
  >

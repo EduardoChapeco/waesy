@@ -176,7 +176,7 @@ function AdminMasterModulosPage() {
 
       {/* ─── Barra de Filtros & Abas ─────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0">
           <button
             type="button"
             onClick={() => setCategoryTab("all")}
@@ -280,7 +280,7 @@ function AdminMasterModulosPage() {
                         : "Vitrine Pública"}
                     </Badge>
                     <span>•</span>
-                    <span className={module.enabled ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-amber-600 dark:text-amber-400 font-medium"}>
+                    <span className={module.enabled ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-warning-strong  font-medium"}>
                       {module.enabled ? "Ativo no Sistema" : "Pausado Globalmente"}
                     </span>
                   </div>
@@ -301,7 +301,7 @@ function AdminMasterModulosPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => openEditModal(module)}
-                    className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 rounded-lg"
+                    className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 rounded-lg min-h-11 sm:min-h-0"
                   >
                     <Edit2 className="size-3.5" />
                     <span>Editar</span>
@@ -349,7 +349,7 @@ function AdminMasterModulosPage() {
                 <Textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  className="rounded-lg text-xs bg-background resize-none min-h-[70px]"
+                  className="rounded-lg text-xs bg-background resize-none min-h-18"
                 />
               </div>
 

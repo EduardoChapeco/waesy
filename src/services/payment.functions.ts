@@ -253,17 +253,22 @@ export const confirmPayment = createServerFn({ method: "POST" })
  .limit(1)
  .maybeSingle();
 
- if (activeRegister) {
- await supabase.from("cash_register_entries").insert({
- register_id: activeRegister.id,
- amount_cents: existingTx ? existingTx.amount_cents : order.total_cents,
- type: "in",
- method: "cash",
- description: `Venda #${orderId.split("-")[0]}`,
- reference_type: "order",
- reference_id: orderId,
- });
- }
+  if (activeRegister) {
+    const entryAmount = existingTx ? existingTx.amount_cents : order.total_cents;
+    await supabase.from("cash_register_entries").insert({
+      cash_register_id: activeRegister.id,
+      order_id: orderId,
+      amount_cents: entryAmount,
+      entry_type: "sale",
+      payment_method: "cash",
+      notes: `Venda #${orderId.split("-")[0]}`,
+      created_by: identity.id,
+      channel_source: "pos_counter",
+      marketplace_fee_cents: 0,
+      net_payout_cents: entryAmount,
+      external_reference_id: orderId,
+    });
+  }
  }
 
  // 5. Check for Ticket Lots and generate real Tickets (Waesy Community)

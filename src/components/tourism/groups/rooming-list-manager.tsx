@@ -176,7 +176,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  variant="outline"
  size="sm"
  onClick={handleCopyReceptionSummary}
- className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+ className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
  title="Copiar lista para WhatsApp"
  >
  <Copy className="size-3.5 text-muted-foreground" />
@@ -187,7 +187,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  variant="outline"
  size="sm"
  onClick={handleExportCSV}
- className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+ className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
  title="Exportar planilha CSV"
  >
  <FileSpreadsheet className="size-3.5 text-emerald-600" />
@@ -199,7 +199,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  size="sm"
  disabled={isExportingPdf}
  onClick={handleExportPDF}
- className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+ className="h-8 rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
  title="Exportar documento PDF"
  >
  <Download className="size-3.5 text-blue-600" />
@@ -210,7 +210,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
 
  <Dialog open={isAddRoomOpen} onOpenChange={setIsAddRoomOpen}>
  <DialogTrigger asChild>
- <Button size="sm" className="h-8 rounded-lg text-xs font-bold gap-1 bg-foreground text-background cursor-pointer">
+ <Button size="sm" className="h-8 rounded-lg text-xs font-bold gap-1 bg-foreground text-background cursor-pointer min-h-11 sm:min-h-0">
  <Plus className="size-3.5" /> Adicionar Quarto
  </Button>
  </DialogTrigger>
@@ -327,7 +327,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  variant="ghost"
  size="sm"
  onClick={() => handleRemoveRoom(r.room_id)}
- className="size-6 p-0 text-destructive"
+ className="size-6 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash className="size-3.5" />
  </Button>

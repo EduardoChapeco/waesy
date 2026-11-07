@@ -20,8 +20,8 @@ export function PlacesHighlightBadge({ className, subtle = false, style }: Place
       <span className="relative inline-block px-1 text-neutral-950 dark:text-neutral-950 font-bold text-[0.82em] leading-tight select-none">
         <span
           className={cn(
-            "absolute inset-x-0 bottom-0.5 top-0.5 bg-amber-300/90 -rotate-1 rounded-xs -z-10 shadow-2xs transition-transform",
-            subtle ? "bg-amber-300/75" : "bg-amber-300/90"
+            "absolute inset-x-0 bottom-0.5 top-0.5 bg-warning/90 -rotate-1 rounded-xs -z-10 shadow-2xs transition-transform",
+            subtle ? "bg-warning/75" : "bg-warning/90"
           )}
           aria-hidden="true"
         />

@@ -64,7 +64,7 @@ export function ContractEditorSheet({
 
  return (
  <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
- <div className="w-full max-w-5xl h-[90vh] bg-card border border-border rounded-lg shadow-2xl flex flex-col overflow-hidden">
+ <div className="w-full max-w-5xl h-vh-90 bg-card border border-border rounded-lg shadow-overlay flex flex-col overflow-hidden">
  {/* Header */}
  <div className="p-4 border-b border-border flex items-center justify-between bg-muted/20">
  <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ export function ContractEditorSheet({
  type="button"
  onClick={() => setActiveTab('editor')}
  className={'px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 ' + (
- activeTab === 'editor' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+ activeTab === 'editor' ? 'bg-card text-foreground shadow-overlay' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <Edit3 className="w-3.5 h-3.5 inline mr-1" />
@@ -97,7 +97,7 @@ export function ContractEditorSheet({
  type="button"
  onClick={() => setActiveTab('library')}
  className={'px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 ' + (
- activeTab === 'library' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+ activeTab === 'library' ? 'bg-card text-foreground shadow-overlay' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <BookOpen className="w-3.5 h-3.5 inline mr-1" />
@@ -107,7 +107,7 @@ export function ContractEditorSheet({
  type="button"
  onClick={() => setActiveTab('preview')}
  className={'px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 ' + (
- activeTab === 'preview' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+ activeTab === 'preview' ? 'bg-card text-foreground shadow-overlay' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <Eye className="w-3.5 h-3.5 inline mr-1" />
@@ -117,7 +117,7 @@ export function ContractEditorSheet({
  type="button"
  onClick={() => setActiveTab('sign')}
  className={'px-3 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 ' + (
- activeTab === 'sign' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+ activeTab === 'sign' ? 'bg-card text-foreground shadow-overlay' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  <Shield className="w-3.5 h-3.5 inline mr-1" />
@@ -128,7 +128,7 @@ export function ContractEditorSheet({
  <Button
  type="button"
  onClick={handleSave}
- className="min-h-10 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
+ className="min-h-10 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold min-h-11 sm:min-h-0"
  >
  Salvar Contrato
  </Button>
@@ -138,7 +138,7 @@ export function ContractEditorSheet({
  type="button"
  variant="ghost"
  onClick={onClose}
- className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="h-9 w-9 p-0 rounded-lg text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
  >
  <X className="w-5 h-5" />
  </Button>
@@ -191,7 +191,7 @@ export function ContractEditorSheet({
  value={content}
  onChange={(e) => setContent(e.target.value)}
  placeholder="Insira as cláusulas do contrato..."
- className="flex-1 min-h-[400px] font-mono text-xs leading-relaxed p-4 rounded-lg bg-card border-border shadow-inner resize-none focus-visible:ring-1"
+ className="flex-1 min-h-100 font-mono text-xs leading-relaxed p-4 rounded-lg bg-card border-border shadow-inner resize-none focus-visible:ring-1"
  />
  <p className="text-2xs text-muted-foreground">
  Dica: Use tags como <code className="bg-muted px-2 py-1 rounded text-foreground">{'{{cliente.nome}}'}</code>, <code className="bg-muted px-2 py-1 rounded text-foreground">{'{{valor_total}}'}</code> para substituição automática.
@@ -204,7 +204,7 @@ export function ContractEditorSheet({
  )}
 
  {activeTab === 'preview' && (
- <div className="max-w-3xl mx-auto p-8 bg-card border border-border rounded-lg shadow-lg space-y-6 text-foreground">
+ <div className="max-w-3xl mx-auto p-8 bg-card border border-border rounded-lg shadow-overlay space-y-6 text-foreground">
  <div className="text-center border-b border-border/80 pb-4">
  <h2 className="text-xl font-bold uppercase tracking-wider">{title}</h2>
  <p className="text-xs text-muted-foreground mt-1">{storeName}</p>
@@ -225,7 +225,7 @@ export function ContractEditorSheet({
  <img
  src={sig.signatureBase64}
  alt="Assinatura"
- className="h-12 w-auto max-w-52 aspect-[4/1] object-contain filter invert dark:invert-0" width={192} height={48} loading="lazy"
+ className="h-12 w-auto max-w-52 aspect-4/1 object-contain filter invert dark:invert-0" width={192} height={48} loading="lazy"
  />
  <div className="text-2xs font-medium text-foreground">
  {sig.signerName} ({sig.signerCpf})

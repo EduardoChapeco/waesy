@@ -253,7 +253,7 @@ function ProductTypesPage() {
  type="button"
  variant="ghost"
  size="icon"
- className="absolute right-2 top-2 size-6 text-rose-500 hover:bg-rose-500/10 rounded-lg"
+ className="absolute right-2 top-2 size-6 text-rose-500 hover:bg-rose-500/10 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  onClick={() => remove(index)}
  >
  <Trash2 className="size-3.5" />
@@ -365,7 +365,7 @@ function ProductTypesPage() {
  <EmptyState title="Nenhum tipo de produto cadastrado" />
  ) : (
  <div className="bg-card rounded-lg border border-border/60 overflow-hidden">
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/30 border-b border-border/40">
@@ -373,7 +373,7 @@ function ProductTypesPage() {
  <TableHead className="text-xs font-bold text-foreground">Slug</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Campos e Atributos</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Criado em</TableHead>
- <TableHead className="w-[80px] text-right text-xs font-bold text-foreground">Ações</TableHead>
+ <TableHead className="w-20 text-right text-xs font-bold text-foreground">Ações</TableHead>
  </TableRow>
  </TableHeader>
  <TableBody>

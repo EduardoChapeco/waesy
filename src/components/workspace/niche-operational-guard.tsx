@@ -35,7 +35,7 @@ export function NicheOperationalGuard({
     if (dismissed && effectiveNiches.length > 0 && !effectiveNiches.includes(semantics.nicheId)) {
       return (
         <div className="space-y-4">
-          <div className="p-3 px-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3">
+          <div className="p-3 px-4 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  text-xs flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <ShieldAlert className="size-4 shrink-0" />
               <span>
@@ -47,7 +47,7 @@ export function NicheOperationalGuard({
               variant="ghost"
               size="sm"
               onClick={() => setDismissed(false)}
-              className="h-7 text-xs px-2 hover:bg-amber-500/20"
+              className="h-7 text-xs px-2 hover:bg-warning/20 min-h-11 sm:min-h-0"
             >
               Reativar proteção
             </Button>
@@ -193,7 +193,7 @@ export function NicheOperationalGuard({
  variant="ghost"
  size="sm"
  onClick={() => setDismissed(true)}
- className="text-xs font-semibold hover:text-foreground h-9 px-3 rounded-lg cursor-pointer"
+ className="text-xs font-semibold hover:text-foreground h-9 px-3 rounded-lg cursor-pointer min-h-11 sm:min-h-0"
  >
  Acessar esta ferramenta mesmo assim
  </Button>

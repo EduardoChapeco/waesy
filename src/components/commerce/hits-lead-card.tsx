@@ -23,7 +23,7 @@ export interface HitsLeadCardProps {
 export function HitsLeadCard({
   actionTo,
   coverImage,
-  gradient = "from-amber-500 via-orange-500 to-red-600",
+  gradient = "from-warning via-orange-500 to-red-600",
   ariaLabel = "Destaque da Seção",
   title,
   subtitle,
@@ -69,7 +69,7 @@ export function HitsLeadCard({
 
           {title ? (
             <div className="space-y-1 z-10">
-              <h3 className="font-extrabold text-sm sm:text-base leading-tight drop-shadow-sm text-foreground line-clamp-2">
+              <h3 className="font-extrabold text-sm sm:text-base leading-tight  text-foreground line-clamp-2">
                 {title}
               </h3>
               {subtitle && (
@@ -95,7 +95,7 @@ export function HitsLeadCard({
             </span>
           )}
           <div className="space-y-1">
-            <h3 className="font-extrabold text-sm sm:text-base leading-tight drop-shadow-sm text-foreground line-clamp-2">
+            <h3 className="font-extrabold text-sm sm:text-base leading-tight  text-foreground line-clamp-2">
               {title}
             </h3>
             {subtitle && (

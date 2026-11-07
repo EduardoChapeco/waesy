@@ -69,7 +69,7 @@ export function CommunityFeed({ content, resolvedClassifieds, isEditing }: any) 
  elevation="sm"
  padding="md"
  className={cn(
- "break-inside-avoid relative transition-transform duration-300 hover:z-10 hover:scale-[1.02]",
+ "break-inside-avoid relative transition-transform duration-300 hover:z-10 hover:scale-102",
  layout === "masonry" ? rotation : "",
  )}
  >

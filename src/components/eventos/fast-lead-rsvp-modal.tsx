@@ -246,7 +246,7 @@ export function FastLeadRsvpModal({
                   variant="outline"
                   size="sm"
                   onClick={handleCopyCode}
-                  className="h-9 px-3 rounded-xl text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-9 px-3 rounded-xl text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                 >
                   <Copy className="size-3.5 mr-2" />
                   Copiar

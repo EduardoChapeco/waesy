@@ -443,7 +443,7 @@ function CustomerOrderDetailPage() {
                         <p className="font-semibold text-sm text-foreground flex items-center gap-2 flex-wrap">
                           {item.product_title}
                           {isBackorderItem && (
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-md">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 bg-warning/10 text-warning-strong  border border-warning/20 rounded-md">
                               ⏱ Sob Encomenda
                             </span>
                           )}
@@ -475,12 +475,12 @@ function CustomerOrderDetailPage() {
                           </div>
                         )}
                         {item.notes && (
-                          <p className="text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md inline-block mt-1">
+                          <p className="text-xs font-medium text-warning-strong  bg-warning/10 border border-warning/20 px-2 py-1 rounded-md inline-block mt-1">
                             Observação: {item.notes}
                           </p>
                         )}
                         {isBackorderItem && (
-                          <p className="text-xs text-amber-700 dark:text-amber-400">
+                          <p className="text-xs text-warning-strong ">
                             Este item será produzido sob encomenda.
                           </p>
                         )}
@@ -743,8 +743,8 @@ function CustomerOrderDetailPage() {
 
           {/* Payment status messages */}
           {order.status === "payment_processing" && (
-            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs p-4 rounded-lg">
-              <Info className="size-4 shrink-0 mt-1 text-amber-600 dark:text-amber-400" />
+            <div className="flex items-start gap-3 bg-warning/10 border border-warning/20 text-warning-strong  text-xs p-4 rounded-lg">
+              <Info className="size-4 shrink-0 mt-1 text-warning-strong " />
               <div>
                 <p className="font-bold">Comprovante em análise</p>
                 <p className="mt-1 opacity-90">
@@ -869,7 +869,7 @@ function CustomerOrderDetailPage() {
               Resumo do Pedido 9:16 (WhatsApp)
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 max-h-[85vh] overflow-y-auto no-scrollbar flex justify-center">
+          <div className="p-4 max-h-vh-85 overflow-y-auto no-scrollbar flex justify-center">
             {companionData && (
               <DigitalCompanionCard {...companionData} />
             )}

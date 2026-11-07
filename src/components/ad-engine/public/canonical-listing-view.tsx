@@ -209,10 +209,10 @@ export function CanonicalListingView({
       {isOwner && (
         <aside
           aria-label="Aviso de Modo Proprietário"
-          className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between text-xs"
+          className="bg-warning/10 border-b border-warning/20 px-4 py-2 flex items-center justify-between text-xs"
         >
-          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
-            <span className="size-2 rounded-full bg-amber-500 shrink-0" />
+          <div className="flex items-center gap-2 text-warning-strong ">
+            <span className="size-2 rounded-full bg-warning shrink-0" />
             <span>
               <strong>Modo Proprietário:</strong> Você está visualizando seu
               anúncio publicado.
@@ -224,7 +224,7 @@ export function CanonicalListingView({
               variant="outline"
               size="sm"
               onClick={onEditClick}
-              className="h-11 rounded-lg text-2xs font-semibold gap-1 border-amber-500/30 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              className="h-11 rounded-lg text-2xs font-semibold gap-1 border-warning/30 text-warning-strong  hover:bg-warning/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             >
               <Edit3 className="size-4" />
               <span>Editar</span>
@@ -336,7 +336,7 @@ export function CanonicalListingView({
 
             {/* Miniaturas de Navegação */}
             {images.length > 1 && (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+              <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar">
                 {images.map((img: string, idx: number) => (
                   <button
                     key={`${img}-${idx}`}

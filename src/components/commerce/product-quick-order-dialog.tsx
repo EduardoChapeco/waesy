@@ -137,7 +137,7 @@ export function ProductQuickOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-5 sm:p-6 rounded-lg bg-card border-border/60 shadow-xl overflow-hidden">
+      <DialogContent className="max-w-md p-5 sm:p-6 rounded-lg bg-card border-border/60 shadow-overlay overflow-hidden">
         <DialogHeader className="text-left space-y-1">
           <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
             <ShoppingBag className="size-5 text-primary" />
@@ -327,7 +327,7 @@ export function ProductQuickOrderDialog({
           <Button
             type="submit"
             size="lg"
-            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground cursor-pointer active:scale-95 transition-transform duration-200 shadow-md"
+            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground cursor-pointer active:scale-95 transition-transform duration-200 shadow-overlay"
             disabled={isSubmitting}
           >
             {isSubmitting ? (

@@ -296,7 +296,7 @@ Hash de Verificação: SHA256-${Math.random().toString(36).substring(2, 15)}
         <div className="space-y-4">
           {/* Status Tabs & Search */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
               {[
                 { id: "all", label: "Todos", count: requests.length },
                 {
@@ -391,7 +391,7 @@ Hash de Verificação: SHA256-${Math.random().toString(36).substring(2, 15)}
 
                     {/* Fotos */}
                     {req.photos && req.photos.length > 0 && (
-                      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
                         {req.photos.map((photo, i) => (
                           <a
                             key={i}

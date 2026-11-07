@@ -358,7 +358,7 @@ function PainelEmpresaPage() {
           </div>
           <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-1">
             <span className="text-xs text-muted-foreground font-medium">Em Andamento</span>
-            <p className="text-2xl font-bold text-amber-600 font-mono">{pendingCount}</p>
+            <p className="text-2xl font-bold text-warning-strong font-mono">{pendingCount}</p>
           </div>
           <div className="bg-card rounded-lg p-4 border border-border/60 shadow-2xs space-y-1">
             <span className="text-xs text-muted-foreground font-medium">Concluídas</span>
@@ -420,7 +420,7 @@ function PainelEmpresaPage() {
                   : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
               )}
             >
-              <Star className="size-4 shrink-0 fill-amber-400 text-amber-500" />
+              <Star className="size-4 shrink-0 fill-warning text-warning-strong" />
               <span>Avaliações ({reviewsData?.reviews?.length || 0})</span>
             </button>
           </div>
@@ -450,7 +450,7 @@ function PainelEmpresaPage() {
               <div className="space-y-3">
                 {leads.map((lead: any) => {
                   const statusColors: Record<string, string> = {
-                    pending: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+                    pending: "bg-warning/10 text-warning-strong border-warning/20",
                     contacted: "bg-sky-500/10 text-sky-600 border-sky-500/20",
                     negotiating: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
                     completed: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
@@ -581,10 +581,10 @@ function PainelEmpresaPage() {
                                 title: lead.classified_title || "Negociação Concluída",
                               })
                             }
-                            className="h-11 rounded-lg text-xs gap-2 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                            className="h-11 rounded-lg text-xs gap-2 border-warning/30 text-warning-strong hover:bg-warning/10"
                             title="Registrar avaliação auditada"
                           >
-                            <Star className="size-4 fill-amber-400 text-amber-500" />
+                            <Star className="size-4 fill-warning text-warning-strong" />
                             <span>Avaliar</span>
                           </Button>
                         )}
@@ -726,11 +726,11 @@ function PainelEmpresaPage() {
                 {applications.map((app: any) => {
                   const statusLabels: Record<string, { label: string; color: string }> = {
                     submitted: { label: "Recebida", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
-                    reviewing: { label: "Em Análise", color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+                    reviewing: { label: "Em Análise", color: "bg-warning/10 text-warning-strong border-warning/20" },
                     shortlisted: { label: "Pré-selecionado", color: "bg-purple-500/10 text-purple-600 border-purple-500/20" },
                     hired: { label: "Contratado", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
                     rejected: { label: "Descartado", color: "bg-muted text-muted-foreground border-border" },
-                    pending: { label: "Pendente", color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+                    pending: { label: "Pendente", color: "bg-warning/10 text-warning-strong border-warning/20" },
                   };
 
                   const currentStatus = statusLabels[app.status] || statusLabels.submitted;

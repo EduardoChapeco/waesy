@@ -41,7 +41,7 @@ export function CanonicalDrawer({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs transition-opacity" />
         <DialogPrimitive.Content
           className={cn(
-            "fixed z-50 bg-card text-foreground shadow-2xl dialog-content duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none flex flex-col justify-between",
+            "fixed z-50 bg-card text-foreground shadow-overlay dialog-content duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none flex flex-col justify-between",
             sideClasses,
             className
           )}
@@ -111,7 +111,7 @@ export function CanonicalConfirmDialog({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs transition-opacity" />
         <DialogPrimitive.Content
-          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-6 shadow-2xl dialog-content duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-6 shadow-overlay dialog-content duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           {isLoading ? (
             <div className="space-y-4">

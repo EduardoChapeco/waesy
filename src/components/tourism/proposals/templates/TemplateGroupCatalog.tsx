@@ -5,7 +5,7 @@
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Users, MapPin, Calendar, Clock, Bus, CheckCircle2, Building2 } from "lucide-react";
+import { Users, MapPin, Calendar, Clock, Bus, CheckCircle2, Building2, Sparkles, Plane } from "lucide-react";
 
 interface TemplateProps {
   proposal: Proposal;
@@ -19,7 +19,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
   return (
     <div className="flex flex-col w-full font-sans bg-slate-50 text-slate-900 pb-16">
       {/* CAPA - ESTILO BANNER DE E-COMMERCE */}
-      <div className="relative w-full h-[400px] break-inside-avoid overflow-hidden">
+      <div className="relative w-full h-100 break-inside-avoid overflow-hidden">
         {p.cover_image_url ? (
           <img
             src={p.cover_image_url}
@@ -37,32 +37,38 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-10 w-auto max-w-40 aspect-[4/1] object-contain brightness-0 invert"
+              className="h-10 w-auto max-w-40 aspect-4/1 object-contain drop-shadow-md"
               width={160}
               height={40}
             />
           ) : (
-            <div className="text-xl font-black tracking-tighter text-foreground uppercase">
+            <div className="text-xl font-black tracking-tighter text-white uppercase drop-shadow-md">
               {vm.agency.name}
             </div>
           )}
         </div>
 
-        <div className="absolute bottom-12 left-12 max-w-xl text-foreground">
-          <div className="inline-flex items-center gap-2 bg-red-600 px-3 py-1 rounded-full ds-meta font-black uppercase tracking-widest mb-4">
-            <Users className="w-3 h-3" /> Excursão em Grupo
-          </div>
+        <div className="absolute bottom-12 left-12 max-w-xl text-white">
+          {(p as any).package_type === "group" || (p as any).is_group ? (
+            <div className="inline-flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-full ds-meta font-black uppercase tracking-widest mb-4 shadow-sm">
+              <Users className="w-3 h-3" /> Excursão em Grupo
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1 rounded-full ds-meta font-black uppercase tracking-widest mb-4 shadow-sm">
+              <Sparkles className="w-3 h-3" /> Proposta de Viagem
+            </div>
+          )}
           <h1
-            className="text-5xl font-black tracking-tighter mb-4 leading-none"
-            style={{ textShadow: "0 4px 12px rgba(0,0,0,0.5)" }}
+            className="text-5xl font-black tracking-tighter mb-4 leading-none text-white drop-shadow-md"
+            style={{ color: "#ffffff", textShadow: "0 4px 12px rgba(0,0,0,0.8)" }}
           >
-            {p.title || "Pacote Grupo Rodoviário"}
+            {p.title || "Proposta de Viagem"}
           </h1>
-          <div className="flex items-center gap-4 font-bold text-lg">
+          <div className="flex items-center gap-4 font-bold text-lg text-white/95">
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-red-500" /> {p.destination || "Destino"}
             </div>
-            <div className="w-1.5 h-1.5 rounded-full bg-foreground/50" />
+            <div className="w-1.5 h-1.5 rounded-full bg-white/50" />
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-red-500" />{" "}
               {p.travel_start ? formatDate(p.travel_start) : "A definir"}
@@ -79,9 +85,10 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               Sobre a Viagem
             </h2>
             <p className="text-slate-600 leading-relaxed text-lg">
-              Um roteiro cuidadosamente planejado para você não se preocupar com nada. Apenas
-              embarque no nosso ônibus executivo e aproveite a companhia de outros viajantes em uma
-              experiência única para {p.destination}.
+              {p.notes ||
+                p.description ||
+                (p as any).subtitle ||
+                `Um roteiro cuidadosamente planejado para você aproveitar o melhor de ${p.destination || "seu destino"} com total conforto, segurança e assistência.`}
             </p>
           </div>
 
@@ -150,16 +157,17 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               </div>
             </div>
 
-            {/* BOTÃO FALSO PARA MOSTRAR QUE É UM CATALOGO */}
             <div
-              className="w-full py-4 rounded-card text-center text-foreground font-black uppercase tracking-widest text-lg border-b-4 opacity-90"
-              style={{ backgroundColor: brand, borderBottomColor: "rgba(0,0,0,0.2)" }}
+              className="w-full py-4 rounded-card text-center text-white font-black uppercase tracking-widest text-lg border-b-4 shadow-sm"
+              style={{ backgroundColor: brand, borderBottomColor: "rgba(0,0,0,0.3)" }}
             >
-              Garantir Vaga
+              {(p as any).package_type === "group" ? "Garantir Vaga" : "Aprovar Proposta"}
             </div>
-            <div className="text-center text-xs text-slate-400 font-bold mt-4">
-              Restam poucas vagas!
-            </div>
+            {Boolean((p as any).package_type === "group" && (p as any).remaining_spots) && (
+              <div className="text-center text-xs text-slate-500 font-bold mt-4">
+                {(p as any).remaining_spots} vagas restantes
+              </div>
+            )}
           </div>
 
           <div className="bg-card rounded-lg p-6 border border-slate-200 break-inside-avoid">
@@ -167,10 +175,18 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
               O Pacote Inclui
             </h3>
             <ul className="space-y-3">
-              <li className="flex items-start gap-2 text-sm font-semibold text-slate-700">
-                <Bus className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
-                Transporte Rodoviário Executivo Ida/Volta
-              </li>
+              {vm.hasTransfers && (
+                <li className="flex items-start gap-2 text-sm font-semibold text-slate-700">
+                  <Bus className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
+                  {p.transfers?.[0]?.description || p.transfers?.[0]?.vehicle || "Transporte"}
+                </li>
+              )}
+              {vm.hasFlights && (
+                <li className="flex items-start gap-2 text-sm font-semibold text-slate-700">
+                  <Plane className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
+                  Passagens Aéreas Ida e Volta
+                </li>
+              )}
               {vm.hasHotels && (
                 <li className="flex items-start gap-2 text-sm font-semibold text-slate-700">
                   <Building2 className="w-4 h-4 text-slate-400 shrink-0 mt-1" />

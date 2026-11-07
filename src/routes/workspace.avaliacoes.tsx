@@ -112,18 +112,18 @@ export default function WorkspaceReviewsPage() {
   const replyRate = reviews.length > 0 ? Math.round((repliedCount / reviews.length) * 100) : 100;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6">
+    <div className="w-full px-0 sm:px-4 md:px-0 py-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-2 rounded-lg bg-amber-500/10 text-amber-600">
-              <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
+            <span className="p-2 rounded-lg bg-warning/10 text-warning-strong">
+              <Star className="w-5 h-5 fill-warning text-warning-strong" />
             </span>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               Avaliações
             </h1>
-            <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-600 bg-amber-500/10">
+            <Badge variant="outline" className="text-xs border-warning/40 text-warning-strong bg-warning/10">
               {stats.total_reviews > 0 ? `${stats.average_rating.toFixed(1)} / 5 (${stats.total_reviews})` : "Sem avaliações"}
             </Badge>
           </div>
@@ -136,7 +136,7 @@ export default function WorkspaceReviewsPage() {
           variant="outline"
           size="sm"
           onClick={handleCopyReviewLink}
-          className="rounded-lg h-10 px-4 gap-2 text-xs"
+          className="rounded-lg h-10 px-4 gap-2 text-xs min-h-11 sm:min-h-0"
         >
           {copiedLink ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
           <span>{copiedLink ? "Link Copiado" : "Copiar Link de Avaliação"}</span>
@@ -154,13 +154,13 @@ export default function WorkspaceReviewsPage() {
             </span>
             <span className="text-xs text-muted-foreground">de 5.0</span>
           </div>
-          <div className="flex items-center gap-1 text-amber-500 pt-1">
+          <div className="flex items-center gap-1 text-warning-strong pt-1">
             {[1, 2, 3, 4, 5].map((s) => (
               <Star
                 key={s}
                 className={cn(
                   "w-4 h-4",
-                  s <= Math.round(stats.average_rating) && stats.total_reviews > 0 ? "fill-amber-500" : "text-muted-foreground/30"
+                  s <= Math.round(stats.average_rating) && stats.total_reviews > 0 ? "fill-warning" : "text-muted-foreground/30"
                 )}
               />
             ))}
@@ -195,30 +195,30 @@ export default function WorkspaceReviewsPage() {
         <div className="bg-card border border-border/60 rounded-lg p-4 space-y-2 shadow-xs text-xs">
           <span className="text-xs text-muted-foreground font-medium block mb-1">Distribuição de Notas</span>
           <div className="flex items-center gap-2">
-            <span className="w-7 text-muted-foreground text-xs flex items-center gap-1">5<Star className="size-2.5 fill-amber-500 text-amber-500" /></span>
+            <span className="w-7 text-muted-foreground text-xs flex items-center gap-1">5<Star className="size-2.5 fill-warning text-warning-strong" /></span>
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-amber-500 rounded-full"
+                className="h-full bg-warning rounded-full"
                 style={{ width: `${stats.total_reviews > 0 ? (stats.count_5_stars / stats.total_reviews) * 100 : 0}%` }}
               />
             </div>
             <span className="w-5 text-right font-mono text-xs">{stats.count_5_stars}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-7 text-muted-foreground text-xs flex items-center gap-1">4<Star className="size-2.5 fill-amber-400 text-amber-400" /></span>
+            <span className="w-7 text-muted-foreground text-xs flex items-center gap-1">4<Star className="size-2.5 fill-warning text-warning-strong" /></span>
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-amber-400 rounded-full"
+                className="h-full bg-warning rounded-full"
                 style={{ width: `${stats.total_reviews > 0 ? (stats.count_4_stars / stats.total_reviews) * 100 : 0}%` }}
               />
             </div>
             <span className="w-5 text-right font-mono text-xs">{stats.count_4_stars}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-7 text-muted-foreground text-xs flex items-center gap-1">3<Star className="size-2.5 fill-amber-300 text-amber-300" /></span>
+            <span className="w-7 text-muted-foreground text-xs flex items-center gap-1">3<Star className="size-2.5 fill-warning text-warning-strong" /></span>
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-amber-300 rounded-full"
+                className="h-full bg-warning/30 rounded-full"
                 style={{ width: `${stats.total_reviews > 0 ? (stats.count_3_stars / stats.total_reviews) * 100 : 0}%` }}
               />
             </div>
@@ -229,7 +229,7 @@ export default function WorkspaceReviewsPage() {
 
       {/* Barra de Filtros e Busca */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 text-xs">
           <button
             type="button"
             onClick={() => setFilterRating("all")}
@@ -342,13 +342,13 @@ export default function WorkspaceReviewsPage() {
                       <span className="truncate">{review.classified.title}</span>
                     </Badge>
                   )}
-                  <div className="flex items-center gap-1 text-amber-500">
+                  <div className="flex items-center gap-1 text-warning-strong">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
                         className={cn(
                           "w-4 h-4",
-                          star <= review.rating ? "fill-amber-500" : "text-muted-foreground/30"
+                          star <= review.rating ? "fill-warning" : "text-muted-foreground/30"
                         )}
                       />
                     ))}
@@ -399,7 +399,7 @@ export default function WorkspaceReviewsPage() {
                           setReplyingToId(null);
                           setReplyText("");
                         }}
-                        className="h-8 text-xs rounded-lg"
+                        className="h-8 text-xs rounded-lg min-h-11 sm:min-h-0"
                       >
                         Cancelar
                       </Button>
@@ -407,7 +407,7 @@ export default function WorkspaceReviewsPage() {
                         size="sm"
                         onClick={() => handleSendReply(review.id)}
                         disabled={respondMutation.isPending}
-                        className="h-8 text-xs rounded-lg gap-2"
+                        className="h-8 text-xs rounded-lg gap-2 min-h-11 sm:min-h-0"
                       >
                         <Send className="w-3 h-3" />
                         <span>{respondMutation.isPending ? "Enviando..." : "Publicar Resposta"}</span>
@@ -422,7 +422,7 @@ export default function WorkspaceReviewsPage() {
                       setReplyingToId(review.id);
                       setReplyText("");
                     }}
-                    className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-2"
+                    className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 min-h-11 sm:min-h-0"
                   >
                     <CornerDownRight className="w-3.5 h-3.5" />
                     <span>Responder Cliente</span>

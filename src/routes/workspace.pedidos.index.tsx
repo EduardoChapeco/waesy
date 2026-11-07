@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { ShoppingBag, Search, MoreVertical, Eye, CheckCircle2, Truck, PackageCheck, XCircle, ReceiptText, Clock, Filter, Volume2, VolumeX, Printer, LayoutGrid, List, ChefHat, ArrowRight, Plane, Compass, FileText, Layers, Users, Calendar, MessageCircle, Store, Ticket, BadgeAlert, ArrowUpRight } from 'lucide-react';
 
-import { PageHeader } from "@/components/commerce/page-header";
+import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { formatHumanOrderId } from "@/lib/order-id";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -287,100 +287,78 @@ function AdminOrdersPage() {
  : "Vendas";
 
  return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
- {/* ── Header da Página ── */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
- <PageHeader
- eyebrow={pageEyebrow}
- title={pageTitle}
- actions={
- isTourism ? (
- <div className="flex items-center gap-2">
- <Button
- asChild
- variant="outline"
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
+ {/* ── Toolbar Canônica do Workspace (AGENTS.md B.26 & NC-001) ── */}
+ <WorkspaceCanonicalToolbar
+  title={pageTitle}
+  viewModes={availableViewModes.map((m) => ({
+   id: m.id,
+   label: m.label,
+   icon: m.icon,
+  }))}
+  activeViewMode={viewMode}
+  onViewModeChange={(m) => setViewMode(m as ViewMode)}
+  primaryAction={
+   isTourism ? (
+    <div className="flex items-center gap-2">
+     <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+     >
+      <Link to="/workspace/turismo/grupos">
+       <Users className="size-3.5 text-primary" />
+       <span>Grupos e Excursões</span>
+      </Link>
+     </Button>
+     <Button
+      asChild
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
+     >
+      <Link to="/workspace/turismo/propostas" search={{ new: true }}>
+       <Layers className="size-3.5" />
+       <span>+ Nova Proposta</span>
+      </Link>
+     </Button>
+    </div>
+   ) : isServices ? (
+    <Button
+     asChild
+     size="sm"
+     className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
+    >
+     <Link to="/workspace/agenda">
+      <Calendar className="size-3.5" />
+      <span>Grade de Agendamentos</span>
+     </Link>
+    </Button>
+   ) : (
+    <Button
+     asChild
+     variant="outline"
+     size="sm"
+     className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+    >
+     <Link to="/workspace/pdv">
+      <Store className="size-3.5 text-primary" />
+      <span>Frente de Caixa (PDV)</span>
+     </Link>
+    </Button>
+   )
+  }
  >
- <Link to="/workspace/turismo/grupos">
- <Users className="size-3.5 text-primary" />
- <span>Grupos e Excursões</span>
- </Link>
- </Button>
- <Button
- asChild
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
- >
- <Link to="/workspace/turismo/propostas" search={{ new: true }}>
- <Layers className="size-3.5" />
- <span>+ Nova Proposta</span>
- </Link>
- </Button>
- </div>
- ) : isServices ? (
- <Button
- asChild
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
- >
- <Link to="/workspace/agenda">
- <Calendar className="size-3.5" />
- <span>Grade de Agendamentos</span>
- </Link>
- </Button>
- ) : (
- <Button
- asChild
- variant="outline"
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
- >
- <Link to="/workspace/pdv">
- <Store className="size-3.5 text-primary" />
- <span>Frente de Caixa (PDV)</span>
- </Link>
- </Button>
- )
- }
- />
-
- {/* Action Controls & Seletor de Modo Contextual */}
- <div className="flex items-center gap-2 shrink-0">
- <Button
- variant="outline"
- size="sm"
- onClick={() => setSoundEnabled(!soundEnabled)}
- className={`rounded-lg text-xs gap-2 font-bold ${soundEnabled ? "border-primary/40 text-primary" : "text-muted-foreground"}`}
- >
- {soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
- <span>{soundEnabled ? "Notificações On" : "Mudo"}</span>
- </Button>
-
- {availableViewModes.length > 1 && (
- <div className="flex items-center rounded-lg p-1 bg-muted/40 border border-border/60 overflow-x-auto no-scrollbar max-w-full">
- {availableViewModes.map((mode) => {
- const Icon = mode.icon;
- const isActive = viewMode === mode.id;
- return (
- <button
- key={mode.id}
- onClick={() => setViewMode(mode.id)}
- className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer ${
- isActive
- ? "bg-card text-foreground shadow-xs"
- : "text-muted-foreground hover:text-foreground"
- } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
- >
- <Icon className={`size-3.5 ${isActive ? "text-primary" : ""}`} />
- <span>{mode.label}</span>
- </button>
- );
- })}
- </div>
- )}
- </div>
- </div>
+  <Button
+   variant="outline"
+   size="sm"
+   onClick={() => setSoundEnabled(!soundEnabled)}
+   className={`h-11 min-h-11 sm:h-9 rounded-lg text-xs gap-2 font-bold ${soundEnabled ? "border-primary/40 text-primary" : "text-muted-foreground"}`}
+  >
+   {soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+   <span>{soundEnabled ? "Notificações On" : "Mudo"}</span>
+  </Button>
+ </WorkspaceCanonicalToolbar>
 
  {/* ── KPIs Operacionais de Pedidos via StatTile ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -415,23 +393,23 @@ function AdminOrdersPage() {
       {/* ── MODO 1: KANBAN DE EMISSÕES & VIAGENS (TURISMO) ── */}
  {viewMode === "emissions" && isTourism ? (
  <div className="space-y-4">
- <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+ <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
  {/* Coluna 1: Novas Reservas & Pendentes de Pagamento */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144 flex flex-col justify-between">
  <div className="space-y-3">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-amber-500 animate-pulse motion-reduce:animate-none" />
+ <span className="size-2.5 rounded-full bg-warning animate-pulse motion-reduce:animate-none" />
  <h3 className="text-sm font-bold text-foreground">Novas Reservas</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {newOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {newOrders.length === 0 ? (
- <div className="py-12 text-center text-xs text-muted-foreground">
+ <div className="py-12 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhuma nova reserva pendente de pagamento
  </div>
  ) : (
@@ -443,7 +421,7 @@ function AdminOrdersPage() {
  return (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors shadow-2xs"
+ className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -488,7 +466,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="WhatsApp do Cliente"
  >
  <a
@@ -504,7 +482,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Ver Ficha do Passageiro"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -521,21 +499,21 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 2: Em Emissão (Aéreo & Hospedagem) */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144 flex flex-col justify-between">
  <div className="space-y-3">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-primary" />
  <h3 className="text-sm font-bold text-foreground">Em Emissão</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {processingOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {processingOrders.length === 0 ? (
- <div className="py-12 text-center text-xs text-muted-foreground">
+ <div className="py-12 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhuma viagem em processo de emissão
  </div>
  ) : (
@@ -546,7 +524,7 @@ function AdminOrdersPage() {
  return (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors shadow-2xs"
+ className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -554,7 +532,7 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-primary/10 text-primary uppercase">
+ <span className="inline-block px-2 py-1 rounded-md text-xs font-bold bg-muted text-foreground uppercase">
  Emitindo Bilhetes
  </span>
  </div>
@@ -585,7 +563,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Imprimir Contrato"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
@@ -602,28 +580,28 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 3: Vouchers Emitidos & Prontos p/ Embarque */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144 flex flex-col justify-between">
  <div className="space-y-3">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-emerald-500" />
+ <span className="size-2.5 rounded-full bg-success" />
  <h3 className="text-sm font-bold text-foreground">Vouchers Emitidos</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {readyOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {readyOrders.length === 0 ? (
- <div className="py-12 text-center text-xs text-muted-foreground">
+ <div className="py-12 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhum voucher aguardando embarque
  </div>
  ) : (
  readyOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 shadow-2xs"
+ className="p-4 rounded-2xl bg-card space-y-3"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -631,7 +609,7 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
+ <span className="inline-block px-2 py-1 rounded-md text-xs font-bold bg-muted text-success-strong uppercase">
  Pronto p/ Embarque
  </span>
  </div>
@@ -660,7 +638,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Ver Voucher Digital"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -676,28 +654,28 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 4: Viagens Concluídas & Pós-Venda */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144 flex flex-col justify-between">
  <div className="space-y-3">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-blue-500" />
  <h3 className="text-sm font-bold text-foreground">Viagens Concluídas</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {completedOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {completedOrders.length === 0 ? (
- <div className="py-12 text-center text-xs text-muted-foreground">
+ <div className="py-12 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhuma viagem concluída recentemente
  </div>
  ) : (
  completedOrders.slice(0, 5).map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-2 opacity-90 hover:opacity-100 transition-opacity"
+ className="p-4 rounded-2xl bg-card space-y-2 opacity-90 hover:opacity-100 transition-opacity"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -733,29 +711,29 @@ function AdminOrdersPage() {
 
  {/* ── MODO 2: COCKPIT DE COZINHA (EXCLUSIVO PARA GASTRONOMIA) ── */}
  {viewMode === "kitchen" && isGastro ? (
- <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
  {/* Coluna 1: Novos Pedidos */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-destructive animate-pulse motion-reduce:animate-none" />
  <h3 className="text-sm font-bold text-foreground">Novos Pedidos</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {newOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {newOrders.length === 0 ? (
- <div className="py-8 text-center text-xs text-muted-foreground">
+ <div className="py-8 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhum pedido novo pendente
  </div>
  ) : (
  newOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors"
+ className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -767,7 +745,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-primary/10 text-primary uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-muted text-foreground uppercase">
  {order.shipping_method === "pickup" ? "Retirada Balcão" : "Entrega Parceira"}
  </span>
  </div>
@@ -796,7 +774,7 @@ function AdminOrdersPage() {
  {item.title || item.product_name || item.name || "Item"}
  </p>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">
+ <p className="text-xs text-warning-strong  font-mono">
  Obs: {item.notes}
  </p>
  )}
@@ -820,7 +798,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Ver Comanda"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
@@ -835,27 +813,27 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 2: Em Preparo na Cozinha */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-amber-500" />
+ <span className="size-2.5 rounded-full bg-warning" />
  <h3 className="text-sm font-bold text-foreground">Em Preparo</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {processingOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {processingOrders.length === 0 ? (
- <div className="py-8 text-center text-xs text-muted-foreground">
+ <div className="py-8 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhum pedido em produção na cozinha
  </div>
  ) : (
  processingOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors"
+ className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -867,7 +845,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-amber-500/10 text-amber-600 uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-muted text-warning-strong uppercase">
  Cozinha Produzindo
  </span>
  </div>
@@ -890,7 +868,7 @@ function AdminOrdersPage() {
  {item.title || item.product_name || item.name || "Item"}
  </p>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">
+ <p className="text-xs text-warning-strong  font-mono">
  Obs: {item.notes}
  </p>
  )}
@@ -920,7 +898,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
  <Printer className="size-4" />
@@ -931,7 +909,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
+ className="size-11 sm:size-9 rounded-lg shrink-0 text-success-strong border-success/30 hover:bg-success/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Baixar DANFE (PDF da Nota Fiscal)"
  >
  <a href={(order as any).danfe_pdf_url} target="_blank" rel="noopener noreferrer">
@@ -947,27 +925,27 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 3: Prontos / Em Rota */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-emerald-500" />
+ <span className="size-2.5 rounded-full bg-success" />
  <h3 className="text-sm font-bold text-foreground">Prontos / Em Rota</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {readyOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {readyOrders.length === 0 ? (
- <div className="py-8 text-center text-xs text-muted-foreground">
+ <div className="py-8 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhum pedido despachado
  </div>
  ) : (
  readyOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3"
+ className="p-4 rounded-2xl bg-card space-y-3"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -979,7 +957,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-600 uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-muted text-success-strong uppercase">
  {order.status === "ready_for_pickup"
  ? "Aguardando Retirada"
  : "Entregador a Caminho"}
@@ -1004,7 +982,7 @@ function AdminOrdersPage() {
  {item.title || item.product_name || item.name || "Item"}
  </p>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">
+ <p className="text-xs text-warning-strong  font-mono">
  Obs: {item.notes}
  </p>
  )}
@@ -1029,7 +1007,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0"
+ className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
  <Eye className="size-4" />
@@ -1144,7 +1122,7 @@ function AdminOrdersPage() {
     }
     className={`flex items-center justify-between p-3 rounded-lg border transition-colors duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isChecked
- ? "bg-emerald-500/10 border-emerald-500/30 text-foreground"
+ ? "bg-success/10 border-success/30 text-foreground"
  : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/60"
  }`}
  >
@@ -1152,7 +1130,7 @@ function AdminOrdersPage() {
  <div
  className={`size-5 rounded-md border flex items-center justify-center transition-colors shrink-0 ${
  isChecked
- ? "bg-emerald-600 border-emerald-600 text-foreground"
+ ? "bg-success border-success text-foreground"
  : "border-border bg-card"
  }`}
  >
@@ -1209,9 +1187,9 @@ function AdminOrdersPage() {
  disabled={isProcessing}
  className={`flex-1 rounded-lg font-bold text-xs h-10 transition-colors duration-200 ${
  isAllChecked
- ? "bg-emerald-600 hover:bg-emerald-700 text-foreground"
+ ? "bg-success hover:bg-success/90 text-foreground"
  : "bg-foreground text-background"
- }`}
+ } min-h-11 sm:min-h-0`}
  >
  <CheckCircle2 className="size-4 mr-2" />
  <span>
@@ -1225,7 +1203,7 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-10 rounded-lg shrink-0"
+ className="size-10 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Ver Comanda Completa"
  >
  <Link to={`/workspace/pedidos/${order.id}` as never}>
@@ -1462,7 +1440,7 @@ function AdminOrdersPage() {
         ) : (
           /* ── VISÃO DESKTOP (>= 840px): Tabela Analítica de Alta Densidade com Rolagem Interna Independente ── */
           <div className="flex flex-col bg-card overflow-hidden rounded-xl border border-border/70 shadow-2xs flex-1 min-h-0">
-          <div className="overflow-x-auto overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
+          <div className="overflow-x-auto scroll-area-carousel overflow-y-auto native-scroll flex-1 flex-1 min-h-0">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40">

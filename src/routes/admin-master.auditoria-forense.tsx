@@ -153,7 +153,7 @@ function AdminMasterAuditoriaForensePage() {
         <Button
           onClick={handleRunFullAudit}
           disabled={isCheckingIntegrity}
-          className="rounded-lg h-10 px-4 text-xs font-bold gap-2 cursor-pointer shadow-sm"
+          className="rounded-lg h-10 px-4 text-xs font-bold gap-2 cursor-pointer  min-h-11 sm:min-h-0"
         >
           <RefreshCw className={`size-3.5 ${isCheckingIntegrity ? "animate-spin motion-reduce:animate-none" : ""}`} />
           <span>Auditar Cadeia Agora</span>
@@ -220,7 +220,7 @@ function AdminMasterAuditoriaForensePage() {
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">Telemetria de Origem</span>
-            <Globe className="size-5 text-amber-600 dark:text-amber-400" />
+            <Globe className="size-5 text-warning-strong " />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-xl sm:text-2xl font-black font-mono text-foreground">
@@ -236,7 +236,7 @@ function AdminMasterAuditoriaForensePage() {
 
       {/* ── Toolbar: Abas e Busca Unificada ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto scroll-area-carousel no-scrollbar py-1">
           <button
             type="button"
             onClick={() => setActiveTab("ledger")}
@@ -301,7 +301,7 @@ function AdminMasterAuditoriaForensePage() {
             </div>
           ) : (
             <div className="border border-border/70 rounded-lg overflow-hidden bg-card shadow-2xs">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scroll-area-carousel">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-border/40 bg-muted/30 text-muted-foreground font-semibold">
@@ -386,7 +386,7 @@ function AdminMasterAuditoriaForensePage() {
             </div>
           ) : (
             <div className="border border-border/70 rounded-lg overflow-hidden bg-card shadow-2xs">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scroll-area-carousel">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-border/40 bg-muted/30 text-muted-foreground font-semibold">

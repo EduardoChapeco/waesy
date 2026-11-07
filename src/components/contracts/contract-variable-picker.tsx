@@ -37,7 +37,7 @@ const NICHE_COLORS: Record<string, { bg: string; text: string; border: string; h
   financeiro: { bg: "bg-emerald-500/10", text: "text-emerald-700 dark:text-emerald-300", border: "border-emerald-500/25", hover: "hover:bg-emerald-500/20" },
   turismo: { bg: "bg-sky-500/10", text: "text-sky-700 dark:text-sky-300", border: "border-sky-500/25", hover: "hover:bg-sky-500/20" },
   automotivo: { bg: "bg-purple-500/10", text: "text-purple-700 dark:text-purple-300", border: "border-purple-500/25", hover: "hover:bg-purple-500/20" },
-  imobiliario: { bg: "bg-amber-500/10", text: "text-amber-700 dark:text-amber-300", border: "border-amber-500/25", hover: "hover:bg-amber-500/20" },
+  imobiliario: { bg: "bg-warning/10", text: "text-warning-strong ", border: "border-warning/25", hover: "hover:bg-warning/20" },
   juridico: { bg: "bg-rose-500/10", text: "text-rose-700 dark:text-rose-300", border: "border-rose-500/25", hover: "hover:bg-rose-500/20" },
   condicional: { bg: "bg-pink-500/10", text: "text-pink-700 dark:text-pink-300", border: "border-pink-500/25", hover: "hover:bg-pink-500/20" },
   rh: { bg: "bg-indigo-500/10", text: "text-indigo-700 dark:text-indigo-300", border: "border-indigo-500/25", hover: "hover:bg-indigo-500/20" },
@@ -115,7 +115,7 @@ export function ContractVariablePicker({
 
       {/* Abas dos Nichos (Scroll Horizontal Ergonômico) */}
       {!searchTerm.trim() && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-2 no-scrollbar">
           {CONTRACT_SEMANTIC_GROUPS.map((group) => {
             const isActive = group.id === activeNiche;
             const colors = NICHE_COLORS[group.id] || NICHE_COLORS.geral;
@@ -160,7 +160,7 @@ export function ContractVariablePicker({
                       type="button"
                       onClick={() => handleSelect(variable)}
                       className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors duration-200 cursor-pointer min-h-9",
+                        "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors duration-200 cursor-pointer min-h-9 min-h-11 sm:min-h-0",
                         colors.bg,
                         colors.text,
                         colors.border,

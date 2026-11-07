@@ -13,7 +13,7 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { listContracts } from "@/services/contracts.functions";
+import { listContracts, createContract } from "@/services/contracts.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { WorkspaceCanonicalToolbar, type WorkspaceToolbarTab } from "@/components/workspace/workspace-canonical-toolbar";
@@ -117,7 +117,7 @@ function ContractsDashboard() {
       id: "signed_contracts",
       label: "Contratos Assinados",
       value: String(signedContracts),
-      description: `${signedRate}% de taxa de efetivaÃ§Ã£o jurÃ­dica`,
+      description: `${signedRate}% de taxa de efetivação jurídica`,
       icon: CheckCircle2,
       variant: "success",
     },
@@ -133,34 +133,41 @@ function ContractsDashboard() {
       id: "total_value",
       label: "Volume Negociado",
       value: formatMoney(totalValueCents),
-      description: "Valor econÃ´mico protegido por contratos",
+      description: "Valor econômico protegido por contratos",
       icon: DollarSign,
       variant: "info",
     },
   ];
 
-  const handleCopyLink = (e: React.MouseEvent, contractId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const url = `${window.location.origin}/workspace/contratos/${contractId}/editor`;
+  const handleCopyLink = (e: React.MouseEvent | undefined, contract: any) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    const contractId = typeof contract === "string" ? contract : contract.id;
+    const url = typeof contract === "object" && contract?.verification_code
+      ? (contract.category === "tourism" || contract.category === "tourism_package"
+          ? `${window.location.origin}/contrato/${contract.verification_code}`
+          : `${window.location.origin}/verify/document/${contract.verification_code}`)
+      : `${window.location.origin}/workspace/contratos/${contractId}/editor`;
     navigator.clipboard.writeText(url);
     setCopiedContractId(contractId);
     toast.success("Link do contrato copiado com sucesso!");
     setTimeout(() => setCopiedContractId(null), 2500);
   };
 
-  const handleShareWhatsApp = (e: React.MouseEvent, contract: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleShareWhatsApp = (e: React.MouseEvent | undefined, contract: any) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     const link = contract.verification_code
-      ? `${window.location.origin}/verify/document/${contract.verification_code}`
+      ? (contract.category === "tourism" || contract.category === "tourism_package"
+          ? `${window.location.origin}/contrato/${contract.verification_code}`
+          : `${window.location.origin}/verify/document/${contract.verification_code}`)
       : `${window.location.origin}/workspace/contratos/${contract.id}/editor`;
     const text = `Olá! Segue o link de acesso ao contrato *${contract.title}*: ${link}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pb-20">
+    <div className="space-y-6 w-full px-0 sm:px-4 md:px-0 pb-20">
       {queryError && <ErrorState title="Não foi possível atualizar os contratos" description="A listagem de contratos está temporariamente indisponível. Os dados anteriores continuam disponíveis quando houver cache local." />}
       {/* ── 1. Top Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -219,7 +226,7 @@ function ContractsDashboard() {
               ? "Tente ajustar o termo de busca ou selecione outra aba de status."
               : "Comece criando o seu primeiro documento legal ou utilize um template inteligente de prestação de serviços."}
           </p>
-          <Button asChild size="sm" variant="outline" className="rounded-lg h-10 px-4 text-xs font-semibold mt-2 cursor-pointer">
+          <Button asChild size="sm" variant="outline" className="rounded-lg h-10 px-4 text-xs font-semibold mt-2 cursor-pointer min-h-11 sm:min-h-0">
             <Link to="/workspace/contratos/novo">Criar Primeiro Contrato</Link>
           </Button>
         </div>
@@ -254,7 +261,7 @@ function ContractsDashboard() {
                         <CheckCircle2 size={11} /> Assinado
                       </Badge>
                     ) : isSigning ? (
-                      <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-semibold gap-1">
+                      <Badge variant="secondary" className="bg-warning/10 text-warning-strong  border border-warning/20 text-xs font-semibold gap-1">
                         <Clock size={11} /> Em Assinatura
                       </Badge>
                     ) : (
@@ -285,7 +292,7 @@ function ContractsDashboard() {
                 </div>
 
                 <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
- <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-2 flex-1">
+ <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-2 flex-1 min-h-11 sm:min-h-0">
  <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
  <FileSignature className="size-3.5" />
  <span>Abrir Contrato</span>
@@ -299,7 +306,7 @@ function ContractsDashboard() {
  {
  label: isCopied ? "Link Copiado!" : "Copiar Link de Assinatura",
  icon: isCopied ? Check : Copy,
- onClick: () => handleCopyLink(undefined as any, contract.id),
+ onClick: () => handleCopyLink(undefined, contract),
  },
  {
  label: "Enviar via WhatsApp",
@@ -343,9 +350,28 @@ function ContractsDashboard() {
           <div className="bg-card border border-border rounded-lg w-full max-w-4xl max-h-screen overflow-y-auto p-6">
             <ContractEditorSheet
               onClose={() => setQuickEditorOpen(false)}
-              onSaveDocument={() => {
-                toast.success("Minuta salva com sucesso!");
-                setQuickEditorOpen(false);
+              onSaveDocument={async (doc) => {
+                try {
+                  const res = await createContract({
+                    data: {
+                      title: doc.title || "Minuta Contratual",
+                      category: "service_agreement",
+                      contentMarkdown: doc.content || "Minuta contratual emitida.",
+                      clauses: [],
+                      variables: (doc as any).variables || {},
+                      signatureFields: [],
+                      pageCount: 1,
+                    },
+                  });
+                  toast.success("Minuta salva na Central de Contratos!");
+                  setQuickEditorOpen(false);
+                  await refetch();
+                  if (res?.contract?.id) {
+                    router.navigate({ to: "/workspace/contratos/$id/editor", params: { id: res.contract.id } });
+                  }
+                } catch (err: any) {
+                  toast.error(err?.message || "Erro ao salvar minuta no banco.");
+                }
               }}
             />
           </div>

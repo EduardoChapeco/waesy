@@ -173,7 +173,7 @@ export default function WorkspaceTokensPage() {
 
  <Button
  onClick={() => handleOpenRecharge(wallet.packages[1] || wallet.packages[0])}
- className="gap-2 text-xs font-semibold h-9"
+ className="gap-2 text-xs font-semibold h-9 min-h-11 sm:min-h-0"
  >
  <Coins className="size-3.5" />
  Recarregar Tokens
@@ -243,7 +243,7 @@ export default function WorkspaceTokensPage() {
  size="sm"
  variant="outline"
  onClick={handleCopyReferral}
- className="gap-2 text-xs h-8 shrink-0"
+ className="gap-2 text-xs h-8 shrink-0 min-h-11 sm:min-h-0"
  >
  <Copy className="size-3" />
  Copiar Link
@@ -330,7 +330,7 @@ export default function WorkspaceTokensPage() {
  <Button
  size="sm"
  onClick={() => handleOpenRecharge(pkg)}
- className="w-full mt-4 text-xs h-8 font-medium"
+ className="w-full mt-4 text-xs h-8 font-medium min-h-11 sm:min-h-0"
  variant={pkg.popular ? "default" : "outline"}
  >
  Comprar
@@ -347,7 +347,7 @@ export default function WorkspaceTokensPage() {
             <span className="text-xs text-muted-foreground">Atualizado em tempo real</span>
           </div>
 
-          <div className="rounded-lg border border-border/50 bg-card/60 backdrop-blur-sm divide-y divide-border/40 overflow-hidden shadow-xs">
+          <div className="rounded-lg border border-border/50 bg-card divide-y divide-border/40 overflow-hidden shadow-xs">
             {wallet.transactions.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground text-xs">
                 Nenhuma movimentação registrada até o momento.
@@ -534,7 +534,7 @@ export default function WorkspaceTokensPage() {
  </div>
 
  <div className="flex justify-end pt-2">
- <Button type="submit" disabled={isSavingBilling} className="text-xs h-9 font-semibold">
+ <Button type="submit" disabled={isSavingBilling} className="text-xs h-9 font-semibold min-h-11 sm:min-h-0">
  {isSavingBilling && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
  Salvar Preferências de Faturamento
  </Button>
@@ -585,13 +585,13 @@ export default function WorkspaceTokensPage() {
  </div>
 
  <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
- <Button type="button" variant="outline" onClick={() => setRechargeModalOpen(false)} className="w-full sm:w-auto text-xs h-9">
+ <Button type="button" variant="outline" onClick={() => setRechargeModalOpen(false)} className="w-full sm:w-auto text-xs h-9 min-h-11 sm:min-h-0">
  Cancelar
  </Button>
  <Button
  onClick={handleConfirmPurchase}
  disabled={isProcessing}
- className="w-full sm:w-auto text-xs h-9 font-semibold"
+ className="w-full sm:w-auto text-xs h-9 font-semibold min-h-11 sm:min-h-0"
  >
  {isProcessing && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
  Confirmar Pagamento

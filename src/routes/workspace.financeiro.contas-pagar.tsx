@@ -35,7 +35,7 @@ export const Route = createFileRoute("/workspace/financeiro/contas-pagar")({
 const CATEGORY_LABELS: Record<ObligationCategory, { label: string; icon: any; color: string }> = {
   supplier: { label: "Fornecedor", icon: Briefcase, color: "text-blue-600 bg-blue-500/10 border-blue-500/20" },
   rent: { label: "Aluguel e Imóvel", icon: Building2, color: "text-purple-600 bg-purple-500/10 border-purple-500/20" },
-  utilities: { label: "Água / Luz / Net", icon: Zap, color: "text-amber-600 bg-amber-500/10 border-amber-500/20" },
+  utilities: { label: "Água / Luz / Net", icon: Zap, color: "text-warning-strong bg-warning/10 border-warning/20" },
   payroll: { label: "Folha / Equipe", icon: Layers, color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20" },
   tax: { label: "Tributos e DAS", icon: Landmark, color: "text-rose-600 bg-rose-500/10 border-rose-500/20" },
   marketing: { label: "Marketing / Ads", icon: Tag, color: "text-pink-600 bg-pink-500/10 border-pink-500/20" },
@@ -280,7 +280,7 @@ function ContasPagarPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Financeiro"
         title="Contas a Pagar"
@@ -345,10 +345,10 @@ function ContasPagarPage() {
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Calendar className="size-3.5 text-amber-500" />
+            <Calendar className="size-3.5 text-warning-strong" />
             Vence Hoje
           </span>
-          <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-2xl font-mono font-bold text-warning-strong ">
             {formatMoney(kpis.todayCents)}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
@@ -415,7 +415,7 @@ function ContasPagarPage() {
           </Select>
 
           {/* Filtro de Status */}
-          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 overflow-x-auto scroll-area-carousel no-scrollbar">
             <button
               type="button"
               onClick={() => setStatusFilter("all")}
@@ -523,7 +523,7 @@ function ContasPagarPage() {
                           Vencido
                         </Badge>
                       ) : isToday ? (
-                        <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-bold px-2 py-1">
+                        <Badge className="bg-warning/10 text-warning-strong border border-warning/20 text-xs font-bold px-2 py-1">
                           Vence Hoje
                         </Badge>
                       ) : (
@@ -568,7 +568,7 @@ function ContasPagarPage() {
                       type="button"
                       variant="outline"
                       onClick={() => handleCopyBarcode(ob.id, ob.barcode!)}
-                      className="h-10 w-full rounded-lg text-xs font-mono gap-2 border-dashed border-border/80 text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="h-10 w-full rounded-lg text-xs font-mono gap-2 border-dashed border-border/80 text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
                     >
                       {copiedId === ob.id ? (
                         <>
@@ -692,7 +692,7 @@ function ContasPagarPage() {
                               Vencido
                             </Badge>
                           ) : isToday ? (
-                            <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-bold">
+                            <Badge className="bg-warning/10 text-warning-strong border border-warning/20 text-xs font-bold">
                               Vence Hoje
                             </Badge>
                           ) : (
@@ -713,7 +713,7 @@ function ContasPagarPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleCopyBarcode(ob.id, ob.barcode!)}
-                            className="h-7 px-2 text-xs font-mono gap-1 text-muted-foreground hover:text-foreground cursor-pointer rounded-lg"
+                            className="h-7 px-2 text-xs font-mono gap-1 text-muted-foreground hover:text-foreground cursor-pointer rounded-lg min-h-11 sm:min-h-0"
                           >
                             {copiedId === ob.id ? (
                               <>
@@ -738,7 +738,7 @@ function ContasPagarPage() {
                             <Button
                               size="sm"
                               onClick={() => setPayModal({ isOpen: true, obligation: ob })}
-                              className="h-8 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1 cursor-pointer"
+                              className="h-8 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1 cursor-pointer min-h-11 sm:min-h-0"
                             >
                               <CheckCircle2 className="size-3.5" />
                               <span>Pagar</span>

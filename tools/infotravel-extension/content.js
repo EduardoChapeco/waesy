@@ -287,3 +287,160 @@ function closeCurrentReservationTab(targetId) {
     }
   }
 }
+
+// ============================================================================
+// M�DULO: Captura Inteligente e Passiva de Cota��es & Carrinho (Infotravel Quote Watcher)
+// NORMAS: SPEC-INFOTRAVEL-QUOTE-CAPTURE-AND-OPPORTUNITY-RADAR
+// ============================================================================
+
+let lastCapturedHash = null;
+
+function parseCurrencyCents(raw) {
+  if (!raw) return 0;
+  const cleaned = raw.replace(/[^\d,\.]/g, '').trim();
+  if (cleaned.includes(',')) {
+    const norm = cleaned.replace(/\./g, '').replace(',', '.');
+    return Math.round(parseFloat(norm) * 100) || 0;
+  }
+  return Math.round(parseFloat(cleaned) * 100) || 0;
+}
+
+function parseDateIso(raw) {
+  if (!raw) return new Date().toISOString().split('T')[0];
+  const dmy = raw.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (dmy) {
+    return `${dmy[3]}-${dmy[2]}-${dmy[1]}`;
+  }
+  return new Date().toISOString().split('T')[0];
+}
+
+function inspectAndCaptureInfotravelQuotes() {
+  try {
+    // 1. Detec��o do Carrinho Aberto / Monte Seu Pacote (#frmCarrinhoView / #pnlCarrinho)
+    const carrinhoForm = document.getElementById('frmCarrinhoView') || document.querySelector('.frmCarrinhoView');
+    if (carrinhoForm) {
+      const pnlCarrinho = carrinhoForm.querySelector('#pnlCarrinho') || carrinhoForm;
+      const productCards = pnlCarrinho.querySelectorAll('.product-card');
+
+      if (productCards && productCards.length > 0) {
+        let totalCents = 0;
+        let dest = 'Destino Desconhecido';
+        let startDate = null;
+        let endDate = null;
+        const items = [];
+
+        productCards.forEach((card) => {
+          const descEl = card.querySelector('.product-card__description-text');
+          const descText = descEl ? descEl.innerText : '';
+          
+          const totalCol = card.querySelector('.TexAlRight:last-of-type, .price_text_important');
+          const lineTotal = totalCol ? parseCurrencyCents(totalCol.innerText) : 0;
+          totalCents += lineTotal;
+
+          const dateMatch = descText.match(/(\d{2}\/\d{2}\/\d{4})/g);
+          if (dateMatch && dateMatch.length > 0) {
+            if (!startDate) startDate = parseDateIso(dateMatch[0]);
+            if (dateMatch.length > 1) endDate = parseDateIso(dateMatch[1]);
+          }
+
+          const destMatch = descText.match(/([A-Z]{3})\s*\(([^)]+)\)/g);
+          if (destMatch && destMatch.length > 0) {
+            const lastDest = destMatch[destMatch.length - 1];
+            const cleanDest = lastDest.match(/\(([^)]+)\)/);
+            if (cleanDest) dest = cleanDest[1];
+          }
+
+          items.push({
+            itemType: descText.includes('Voo') || card.querySelector('.lucide-plane-takeoff') ? 'flight' : 'hotel',
+            title: descText.split('\n')[0] || 'Item de Turismo',
+            totalAmountCents: lineTotal
+          });
+        });
+
+        if (totalCents > 0) {
+          emitQuoteCapture({
+            sourcePage: 'carrinho',
+            destinationCity: dest,
+            startDate: startDate || new Date().toISOString().split('T')[0],
+            endDate,
+            totalCents,
+            items
+          });
+          return;
+        }
+      }
+    }
+
+    // 2. Detec��o de Resultado de Busca de A�reo (frmResultadoProduto:pnlResultadoAereo)
+    const pnlAereo = document.getElementById('frmResultadoProduto:pnlResultadoAereo');
+    if (pnlAereo) {
+      const firstFlight = pnlAereo.querySelector('.flight-search-container');
+      if (firstFlight) {
+        const priceTotalEl = firstFlight.querySelector('.price_total_container .price_text_important');
+        const pricePerPersonEl = firstFlight.querySelector('.price_per_person');
+
+        const totalCents = priceTotalEl ? parseCurrencyCents(priceTotalEl.innerText) : 0;
+        const perAdultCents = pricePerPersonEl ? parseCurrencyCents(pricePerPersonEl.innerText) : 0;
+
+        let dest = 'Destino A�reo';
+        const allBold = Array.from(firstFlight.querySelectorAll('.font-bold')).map(e => e.innerText);
+        const lisboaMatch = allBold.find(b => b.includes('LIS') || b.includes('Lisboa') || b.includes('-'));
+        if (lisboaMatch) {
+          dest = lisboaMatch.split('-')[1]?.trim() || lisboaMatch;
+        }
+
+        const dateEl = firstFlight.querySelector('.text-xs');
+        const dateText = dateEl ? dateEl.innerText : '';
+
+        if (totalCents > 0) {
+          emitQuoteCapture({
+            sourcePage: 'aereo_resultado',
+            destinationCity: dest,
+            startDate: parseDateIso(dateText),
+            totalCents,
+            perAdultCents,
+            items: [
+              {
+                itemType: 'flight',
+                title: `Voo ${dest} - ${priceTotalEl?.innerText || ''}`,
+                totalAmountCents: totalCents
+              }
+            ]
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Waesy Sync] Falha defensiva no observador de cota��es:', err);
+  }
+}
+
+function emitQuoteCapture(data) {
+  const hash = `${data.sourcePage}:${data.destinationCity}:${data.startDate}:${data.totalCents}`;
+  if (lastCapturedHash === hash) return;
+  lastCapturedHash = hash;
+
+  console.log('[Waesy Sync] Nova cota��o/or�amento detectado no Infotravel:', data);
+  notifyLog(`Cota��o identificada: ${data.destinationCity} por R$ ${(data.totalCents / 100).toFixed(2)}`, 'info');
+
+  chrome.runtime.sendMessage({
+    type: 'QUOTE_CAPTURED',
+    payload: {
+      ...data,
+      capturedAt: new Date().toISOString()
+    }
+  });
+}
+
+const domObserver = new MutationObserver(() => {
+  inspectAndCaptureInfotravelQuotes();
+});
+
+if (document.body) {
+  domObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
+inspectAndCaptureInfotravelQuotes();

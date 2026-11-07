@@ -36,37 +36,39 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
         <div className="absolute inset-0 bg-slate-950/60" />
 
         {/* TOPO: LOGO E REFERÊNCIA */}
-        <div className="absolute top-0 left-0 w-full p-12 flex justify-between items-start">
+        <div className="absolute top-0 left-0 w-full p-12 flex justify-between items-start text-white">
           {vm.agency.logo_url ? (
             <img
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
               alt="Logo"
-              className="h-10 w-auto max-w-40 aspect-banner-ultrawide object-contain brightness-0 invert" width={160} height={40}
+              className="h-10 w-auto max-w-40 aspect-banner-ultrawide object-contain drop-shadow-md" width={160} height={40}
             />
           ) : (
-            <div className="text-2xl font-bold tracking-widest text-foreground uppercase">
+            <div className="text-2xl font-bold tracking-widest text-white uppercase drop-shadow-sm">
               {vm.agency.name}
             </div>
           )}
-          <div className="text-right text-foreground">
-            <div className="ds-label-caps opacity-80">Proposta Oficial</div>
-            <div className="text-xl font-mono">#{p.number}</div>
+          <div className="text-right text-white">
+            <div className="ds-label-caps opacity-80 text-white/80">Proposta Oficial</div>
+            <div className="text-xl font-mono font-bold">#{p.number}</div>
           </div>
         </div>
 
         {/* Título Centralizado na Capa */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pt-16 px-12 text-center text-foreground">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pt-16 px-12 text-center text-white">
           <h1
-            className="text-6xl font-bold tracking-tight mb-6"
+            className="text-6xl font-bold tracking-tight mb-6 text-white drop-shadow-md"
             style={{
+              color: "#ffffff",
               fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)",
+              textShadow: "0 4px 16px rgba(0,0,0,0.7)",
             }}
           >
             {p.title || "Proposta Exclusiva"}
           </h1>
           <div
-            className="text-lg font-medium opacity-90 max-w-lg"
+            className="text-lg font-medium opacity-90 max-w-lg text-white/90 drop-shadow-sm"
           >
             {p.destination || "Roteiro Personalizado"}
           </div>
@@ -143,31 +145,31 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                   className="border border-slate-200 rounded-lg overflow-hidden break-inside-avoid"
                 >
                   <div className="bg-blue-50 px-6 py-3 flex justify-between items-center border-b border-blue-100">
-                    <span className="ds-label-caps text-blue-600">{f.airline || "Companhia"}</span>
+                    <span className="ds-label-caps text-blue-600">{f.airline_name || f.airline || "Companhia Aérea"}</span>
                     <span className="text-xs font-mono font-bold text-blue-800 bg-blue-100/50 px-3 py-1 rounded-full">
-                      {f.flight_number}
+                      {f.flight_number || "Voo Confirmado"}
                     </span>
                   </div>
                   <div className="p-6 bg-card flex items-center">
                     <div className="w-1/3 text-center">
                       <div className="text-4xl font-bold text-slate-900">
-                        {(f.origin || "---").slice(0, 3).toUpperCase()}
+                        {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                       </div>
                       <div className="text-sm font-bold text-slate-500 mt-1">
-                        {f.departure_time}
+                        {f.departure_time || "--:--"}
                       </div>
                     </div>
                     <div className="flex-1 px-4 relative flex items-center justify-center">
                       <div className="w-full border-t border-dashed border-slate-300 absolute" />
                       <div className="bg-card border border-slate-200 px-4 py-1 rounded-full z-10 ds-meta font-bold text-slate-400 uppercase tracking-widest">
-                        {f.date ? formatDate(f.date) : "—"}
+                        {f.departure_date ? formatDate(f.departure_date) : f.date ? formatDate(f.date) : "—"}
                       </div>
                     </div>
                     <div className="w-1/3 text-center">
                       <div className="text-4xl font-bold text-slate-900">
-                        {(f.destination || "---").slice(0, 3).toUpperCase()}
+                        {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                       </div>
-                      <div className="text-sm font-bold text-slate-500 mt-1">{f.arrival_time}</div>
+                      <div className="text-sm font-bold text-slate-500 mt-1">{f.arrival_time || "--:--"}</div>
                     </div>
                   </div>
                 </div>
@@ -183,7 +185,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3"
               style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
             >
-              <Hotel className="w-6 h-6 text-amber-500" /> Acomodação
+              <Hotel className="w-6 h-6 text-warning-strong" /> Acomodação
             </h2>
             <div className="space-y-6">
               {p.hotels!.map((h, i) => (
@@ -191,9 +193,9 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                   key={i}
                   className="border border-slate-200 rounded-lg overflow-hidden break-inside-avoid"
                 >
-                  <div className="bg-amber-50 px-6 py-3 flex justify-between items-center border-b border-amber-100">
-                    <span className="ds-label-caps text-amber-700">Hotel e Resort</span>
-                    <span className="ds-label-caps text-amber-800 bg-amber-100/50 px-3 py-1 rounded-full">
+                  <div className="bg-warning/10 px-6 py-3 flex justify-between items-center border-b border-warning/30">
+                    <span className="ds-label-caps text-warning-strong">Hotel e Resort</span>
+                    <span className="ds-label-caps text-warning-strong bg-warning/50 px-3 py-1 rounded-full">
                       {h.meal_plan || "Só Hospedagem"}
                     </span>
                   </div>
@@ -282,7 +284,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                   {formatCurrency(vm.totals.valorParcelaCartao, p.currency)}
                 </div>
               </div>
-              <div className="bg-amber-400/10 rounded-lg p-6 border border-amber-400/30 backdrop-blur relative">
+              <div className="bg-warning/10 rounded-lg p-6 border border-warning/30 backdrop-blur relative">
                 <div className="ds-meta uppercase font-bold tracking-widest text-zinc-400 mb-2">
                   À vista (PIX)
                 </div>

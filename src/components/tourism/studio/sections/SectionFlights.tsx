@@ -179,11 +179,11 @@ export function SectionFlights({ draft, save }: Props) {
                   connectionAlert.type === "negative"
                     ? "border-destructive/40 bg-destructive/10 text-destructive"
                     : connectionAlert.type === "tight"
-                      ? "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200"
+                      ? "border-warning/40 bg-warning/10 text-warning-strong "
                       : "border-blue-500/40 bg-blue-500/10 text-blue-800 dark:text-blue-200"
                 }`}
               >
-                <AlertTriangle className="size-4 shrink-0 mt-1 text-amber-600 dark:text-amber-400" />
+                <AlertTriangle className="size-4 shrink-0 mt-1 text-warning-strong " />
                 <span>{connectionAlert.message}</span>
               </div>
             )}
@@ -293,7 +293,7 @@ export function SectionFlights({ draft, save }: Props) {
         <Button
           type="button"
           onClick={() => setInfotravelOpen(true)}
-          className="flex-1 inline-flex items-center justify-center gap-2 h-[34px] rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-colors duration-200 cursor-pointer"
+          className="flex-1 inline-flex items-center justify-center gap-2 h-9 rounded border border-border bg-surface text-xs font-semibold text-muted-foreground hover:bg-surface-alt hover:text-foreground transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0"
         >
           <Search className="h-3.5 w-3.5" /> Buscar no Infotravel
         </Button>
@@ -302,7 +302,7 @@ export function SectionFlights({ draft, save }: Props) {
       {infotravelOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">
           <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
-            className="w-full max-w-lg rounded-lg border border-border bg-surface p-5 flex flex-col max-h-[85vh] overflow-hidden shadow-none"
+            className="w-full max-w-lg rounded-lg border border-border bg-surface p-5 flex flex-col max-h-vh-85 overflow-hidden shadow-none"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-border pb-3 mb-4">

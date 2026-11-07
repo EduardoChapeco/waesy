@@ -52,7 +52,7 @@ export function PrometheeNewsPortalBlock({
       <div
         id={id}
         style={sectionStyle.style}
-        className={`light bg-background text-foreground ${sectionStyle.className} ${className}`}
+        className={`bg-background text-foreground ${sectionStyle.className} ${className}`}
       >
         <PrometheeNewsHeaderBlock
           id={`${id}-header`}

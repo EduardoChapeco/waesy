@@ -80,21 +80,21 @@ function KDSPage() {
 
  const getChannelInfo = (order: any) => {
  if (order.channel_origin === "ifood") {
- return { label: "iFood", color: "bg-rose-500/10 text-rose-600 border-rose-500/30" };
+ return { label: "iFood", color: "bg-destructive/10 text-destructive border-destructive/30" };
  }
  if (order.channel_origin === "whatsapp") {
- return { label: "WhatsApp", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" };
+ return { label: "WhatsApp", color: "bg-success/10 text-success border-success/30" };
  }
  if (order.origin_type === "table" || order.table_identifier) {
  return {
  label: `Mesa ${order.table_identifier || ""}`,
- color: "bg-blue-500/10 text-blue-600 border-blue-500/30",
+ color: "bg-info/10 text-info border-info/30",
  };
  }
  if (order.origin_type === "counter" || order.shipping_method === "pickup") {
- return { label: "Balcão", color: "bg-amber-500/10 text-amber-600 border-amber-500/30" };
+ return { label: "Balcão", color: "bg-warning/10 text-warning-strong border-warning/30" };
  }
- return { label: "Cardápio Próprio", color: "bg-purple-500/10 text-purple-600 border-purple-500/30" };
+ return { label: "Cardápio Próprio", color: "bg-primary/10 text-primary border-primary/30" };
  };
 
  const delayedOrders = useMemo(() => {
@@ -428,7 +428,7 @@ function KDSPage() {
             Ativar Áudio
           </Badge>
         )}
- <Button variant="outline" size="sm" onClick={toggleFullscreen} className="gap-2 text-xs font-bold">
+ <Button variant="outline" size="sm" onClick={toggleFullscreen} className="h-11 min-h-11 sm:h-9 px-3 gap-2 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
  <Maximize className="size-3.5" />
  {isFullscreen ? "Sair" : "Tela Cheia"}
  </Button>
@@ -443,7 +443,7 @@ function KDSPage() {
  type="button"
  onClick={() => setTimingTab("now")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
+ "h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2 cursor-pointer",
  timingTab === "now"
  ? "bg-background text-foreground shadow-2xs"
  : "text-muted-foreground hover:text-foreground",
@@ -474,7 +474,7 @@ function KDSPage() {
 
  {/* Chips de Canais Omnichannel */}
  {/* design-lint-ignore DL-30 reason:"Barra horizontal de chips de canais com scroll tátil elástico" expiry:"2027-10-30" */}
- <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+ <div className="flex items-center gap-1 overflow-x-auto scroll-area-carousel no-scrollbar py-1">
  {[
  { id: "all", label: "Todos os Canais" },
  { id: "ifood", label: "iFood" },
@@ -488,7 +488,7 @@ function KDSPage() {
  type="button"
  onClick={() => setChannelFilter(ch.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border",
+ "h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border flex items-center justify-center",
  channelFilter === ch.id
  ? "bg-foreground text-background border-foreground"
  : "bg-background text-muted-foreground border-border hover:text-foreground hover:border-foreground/40",
@@ -505,7 +505,7 @@ function KDSPage() {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar cliente, pedido, rua..."
- className="h-8 text-xs rounded-lg pl-3 pr-8 bg-background border-border/80"
+ className="h-11 min-h-11 sm:h-9 text-xs rounded-lg pl-3 pr-8 bg-background border-border/80"
  />
  {searchQuery && (
  <button
@@ -568,7 +568,7 @@ function KDSPage() {
  <p className="text-lg font-black text-foreground font-mono truncate">{formatMoney(kpis.avgTicket)}</p>
  </div>
  <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
- <span className="text-xs text-muted-foreground/75 font-bold text-amber-600 uppercase">TMP (Preparo)</span>
+ <span className="text-xs text-muted-foreground/75 font-bold text-warning-strong uppercase">TMP (Preparo)</span>
  <p className="text-xl font-black text-foreground font-mono">~{kpis.avgPrepTime}m</p>
  </div>
  <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
@@ -645,7 +645,7 @@ function KDSPage() {
  <div
  className={cn(
  "h-full transition-colors duration-200",
- isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
+ isLate ? "bg-rose-500" : elapsed > 20 ? "bg-warning" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
  />
@@ -744,7 +744,7 @@ function KDSPage() {
  <div
  className={cn(
  "h-full transition-colors duration-200",
- isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
+ isLate ? "bg-rose-500" : elapsed > 20 ? "bg-warning" : "bg-emerald-500",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
  />
@@ -853,7 +853,7 @@ function KDSPage() {
  </div>
  ) : (
  /* Kanban Board */
- <main /* design-lint-ignore DL-30 reason:"Quadro Kanban de pedidos com colunas de rolagem horizontal contínua" expiry:"2027-10-30" */ className="flex-1 overflow-x-auto no-scrollbar p-4 flex gap-4 bg-muted/30 no-print">
+ <main /* design-lint-ignore DL-30 reason:"Quadro Kanban de pedidos com colunas de rolagem horizontal contínua" expiry:"2027-10-30" */ className="flex-1 overflow-x-auto scroll-area-carousel no-scrollbar p-4 flex gap-4 bg-muted/30 no-print">
  {columns.map((col) => {
  const isPrepCol = col.id === "processing";
  const colOrders = orders
@@ -898,20 +898,20 @@ function KDSPage() {
  .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
  return (
- <div key={col.id} className="flex-shrink-0 w-88 flex flex-col gap-3 h-full">
+ <div key={col.id} className="flex-shrink-0 w-88 min-h-144 h-full rounded-2xl bg-muted/50 dark:bg-muted/30 p-3 flex flex-col gap-3">
  <div
- className={`rounded-lg border ${col.color} p-3 flex items-center justify-between bg-surface-paper `}
+ className="rounded-xl px-2 py-2 flex items-center justify-between"
  >
- <div className="flex items-center gap-2 font-bold text-sm">
+ <div className="flex items-center gap-2 font-bold text-sm text-foreground">
  {col.icon}
  {col.title}
  </div>
- <Badge variant="secondary" className="font-mono text-sm">
+ <Badge variant="secondary" className="font-mono text-xs bg-card">
  {colOrders.length}
  </Badge>
  </div>
 
- <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-3 pb-6">
+ <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-3 pb-4">
  {colOrders.map((order) => {
  const elapsedMinutes = Math.floor(
  (Date.now() - new Date(order.created_at).getTime()) / 60000,
@@ -929,7 +929,7 @@ function KDSPage() {
         setSelectedOrder(order);
       }
     }}
-    className="bg-card border border-border/80 rounded-lg p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/50 transition-colors duration-200 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="bg-card rounded-2xl p-4 flex flex-col gap-3 cursor-pointer hover:bg-card/90 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     onClick={() => setSelectedOrder(order)}
   >
  <div className="flex justify-between items-start gap-2">
@@ -985,7 +985,7 @@ function KDSPage() {
  elapsedMinutes > 30
  ? "bg-rose-500"
  : elapsedMinutes > 20
- ? "bg-amber-500"
+ ? "bg-warning"
  : "bg-emerald-500",
  )}
  style={{
@@ -1243,7 +1243,7 @@ function KDSPage() {
 
  {/* Observações da Comanda */}
  {selectedOrder.customer_snapshot?.notes && (
- <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 space-y-1">
+ <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  space-y-1">
  <span className="font-bold text-xs text-muted-foreground/75 uppercase">Observações do Cliente:</span>
  <p className="text-xs">{selectedOrder.customer_snapshot.notes}</p>
  </div>
@@ -1307,7 +1307,7 @@ function KDSPage() {
  Tipo de Atendimento
  </span>
  {selectedOrder.shipping_method === "pickup" ? (
- <div className="flex items-center gap-2 text-amber-600 font-bold">
+ <div className="flex items-center gap-2 text-warning-strong font-bold">
  <Users className="size-4" />
  <span>Retirada no Balcão da Loja</span>
  </div>
@@ -1391,7 +1391,7 @@ function KDSPage() {
  <span className={cn(
  "absolute -left-6 top-1 size-3.5 rounded-full border-2 border-background",
  selectedOrder.prep_started_at || selectedOrder.status !== "paid"
- ? "bg-amber-500"
+ ? "bg-warning"
  : "bg-muted-foreground/40",
  )} />
  <p className="font-bold text-foreground">Início do Preparo na Cozinha</p>

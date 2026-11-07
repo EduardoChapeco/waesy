@@ -26,7 +26,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
         CAPA SPLIT SCREEN - 450px 
         break-inside-avoid para não quebrar a capa no PDF
       */}
-      <div className="w-full h-[450px] grid grid-cols-2 break-inside-avoid">
+      <div className="w-full h-113 grid grid-cols-2 break-inside-avoid">
         {/* Esquerda: Sólido com Cor Primária */}
         <div
           className="flex flex-col justify-center px-12 py-16"
@@ -149,7 +149,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       <div className="flex items-center gap-2">
                         <Plane className="w-4 h-4" style={{ color: brand }} />
                         <span className="ds-label-caps" style={{ color: brand }}>
-                          {f.airline || "Companhia"}
+                          {f.airline_name || f.airline || "Companhia Aérea"}
                         </span>
                       </div>
                       <span className="bg-card px-3 py-1 rounded-full ds-meta font-mono font-bold text-slate-700 border border-slate-200">
@@ -157,28 +157,28 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       </span>
                     </div>
                     <div className="p-6 flex items-center">
-                      <div className="w-[30%] text-center">
+                      <div className="w-3/10 text-center">
                         <div className="text-4xl font-bold font-sans tracking-tighter text-slate-900">
-                          {(f.origin || "---").slice(0, 3).toUpperCase()}
+                          {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-sm font-semibold text-slate-700 mt-2">
                           {f.departure_time || "--:--"}
                         </div>
-                        {f.date && (
-                          <div className="text-xs text-slate-500 mt-1">{formatDate(f.date)}</div>
+                        {(f.departure_date || f.date) && (
+                          <div className="text-xs text-slate-500 mt-1">{formatDate(f.departure_date || f.date!)}</div>
                         )}
                       </div>
                       <div className="flex-1 flex flex-col items-center relative px-4">
                         <div className="w-full border-t-2 border-dashed border-slate-200 absolute top-1/2 -translate-y-1/2 z-0" />
                         <div className="bg-card z-10 px-3 py-1 rounded-full border border-slate-200 ds-meta font-semibold text-slate-500 uppercase tracking-wider">
-                          {f.stops === 0
+                          {(f.stops_count ?? f.stops ?? 0) === 0
                             ? "Voo Direto"
-                            : `${f.stops} Parada${f.stops > 1 ? "s" : ""}`}
+                            : `${f.stops_count ?? f.stops} Parada${(f.stops_count ?? f.stops ?? 1) > 1 ? "s" : ""}`}
                         </div>
                       </div>
-                      <div className="w-[30%] text-center">
+                      <div className="w-3/10 text-center">
                         <div className="text-4xl font-bold font-sans tracking-tighter text-slate-900">
-                          {(f.destination || "---").slice(0, 3).toUpperCase()}
+                          {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-sm font-semibold text-slate-700 mt-2">
                           {f.arrival_time || "--:--"}
@@ -205,8 +205,8 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                     key={i}
                     className="rounded-lg overflow-hidden border border-slate-200 bg-card break-inside-avoid"
                   >
-                    <div className="bg-[#FFFBEB] px-5 py-3 flex items-center gap-2 border-b border-amber-100">
-                      <span className="ds-label-caps text-amber-700">Hospedagem</span>
+                    <div className="bg-[#FFFBEB] px-5 py-3 flex items-center gap-2 border-b border-warning/30">
+                      <span className="ds-label-caps text-warning-strong">Hospedagem</span>
                     </div>
                     <div className="p-6">
                       <h3 className="text-2xl font-bold text-slate-900 mb-6">{h.name}</h3>
@@ -290,11 +290,11 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
               >
                 Mapa da Rota
               </h2>
-              <div className="w-full h-auto max-h-[280px] rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex justify-center">
+              <div className="w-full h-auto max-h-70 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex justify-center">
                 <img
                   src={p.map_image_url}
                   crossOrigin="anonymous"
-                  className="max-w-full max-h-[280px] object-contain"
+                  className="max-w-full max-h-70 object-contain"
                 />
               </div>
             </div>
@@ -408,7 +408,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 src={vm.agency.logo_url}
                 crossOrigin="anonymous"
                 alt="Logo Agência"
-                className="h-10 w-auto max-w-40 aspect-[4/1] object-contain"
+                className="h-10 w-auto max-w-40 aspect-4/1 object-contain"
                 width={160}
                 height={40}
               />

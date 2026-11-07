@@ -180,7 +180,7 @@ function WorkspaceNewMuralPostPage() {
                   <button
                     type="button"
                     onClick={() => handleRemoveMedia(idx)}
-                    className="absolute top-1 right-1 size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute top-1 right-1 size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                   >
                     ×
                   </button>
@@ -199,7 +199,7 @@ function WorkspaceNewMuralPostPage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="h-10 px-5 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer shadow-sm"
+            className="h-10 px-5 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground cursor-pointer  min-h-11 sm:min-h-0"
           >
             {isSubmitting ? (
               <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />

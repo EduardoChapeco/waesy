@@ -207,6 +207,27 @@ export const respondToDealProposal = createServerFn({ method: "POST" })
  nextBookingStatus = "completed";
  }
 
+ // Transição Atômica de Aceite de Negociação (Proteção Anti-Concorrência em Classificados)
+ if (input.action === "accept") {
+ const { data: atomicRes, error: rpcErr } = await supabase.rpc("accept_deal_proposal_atomic", {
+ p_deal_id: deal.id,
+ p_sender_id: identity.id,
+ p_message: input.message || null,
+ p_counter_price_cents: input.counterPriceCents || null,
+ });
+
+ if (!rpcErr && atomicRes && (atomicRes as any).success) {
+ return { success: true, deal: { ...deal, status: "accepted" } };
+ }
+ if (rpcErr || (atomicRes && !(atomicRes as any).success)) {
+ throw new Error(
+ (atomicRes as any)?.message ||
+ rpcErr?.message ||
+ "Não foi possível aceitar a proposta. O anúncio pode já estar reservado por outra negociação."
+ );
+ }
+ }
+
  const updatePayload: Record<string, any> = {
  status: nextStatus,
  booking_status: nextBookingStatus,

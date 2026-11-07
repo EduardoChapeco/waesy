@@ -54,7 +54,7 @@ export function SupplierAutocomplete({
  </div>
 
  {isOpen && (
- <div className="absolute left-0 right-0 top-11 z-50 rounded-lg border border-border bg-card shadow-2xl p-2 space-y-2 animate-in fade-in zoom-in-95">
+ <div className="absolute left-0 right-0 top-11 z-50 rounded-lg border border-border bg-card shadow-overlay p-2 space-y-2 animate-in fade-in zoom-in-95">
  <Input
  value={search}
  onChange={(e) => setSearch(e.target.value)}
@@ -99,7 +99,7 @@ export function SupplierAutocomplete({
  setIsOpen(false);
  onOpenCreate();
  }}
- className="w-full h-8 text-xs rounded-lg border-dashed gap-1 text-primary"
+ className="w-full h-8 text-xs rounded-lg border-dashed gap-1 text-primary min-h-11 sm:min-h-0"
  >
  <Plus className="size-3" /> Cadastrar Novo Fornecedor
  </Button>

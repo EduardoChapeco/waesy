@@ -29,7 +29,7 @@ export interface TaskCardProps {
 
 const PRIORITY_BADGES: Record<string, { label: string; className: string }> = {
   urgent: { label: "Urgente", className: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30" },
-  high: { label: "Alta", className: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30" },
+  high: { label: "Alta", className: "bg-warning/10 text-warning-strong  border-warning/30" },
   medium: { label: "Média", className: "bg-primary/10 text-primary border-primary/20" },
   low: { label: "Baixa", className: "bg-muted text-muted-foreground border-border/60" },
 };

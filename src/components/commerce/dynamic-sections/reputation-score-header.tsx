@@ -34,7 +34,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  return (
  <div className={cn("w-full py-10 px-4 bg-muted/20 border-b border-border/40", design_tokens?.className)}>
  <div className="max-w-5xl mx-auto space-y-6">
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card p-6 sm:p-8 rounded-lg border border-border/70 shadow-sm">
+ <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card p-6 sm:p-8 rounded-lg border border-border/70 ">
  <div className="flex items-center gap-5">
  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-emerald-500/10 border-2 border-emerald-500/30 flex flex-col items-center justify-center p-2 text-center">
 	 <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
@@ -61,7 +61,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
 
  <Button
  size="lg"
- className="min-h-11 gap-2 bg-rose-600 hover:bg-rose-700 text-foreground font-semibold shadow-sm w-full md:w-auto"
+ className="min-h-11 gap-2 bg-rose-600 hover:bg-rose-700 text-foreground font-semibold  w-full md:w-auto"
  onClick={() => setIsComplaintModalOpen(true)}
  >
  <AlertCircle className="w-4 h-4" />
@@ -82,7 +82,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
 
  <div className="p-4 rounded-lg border border-border/60 bg-card space-y-1">
  <div className="flex items-center gap-2 text-xs text-muted-foreground">
- <Star className="w-3.5 h-3.5 text-amber-500" />
+ <Star className="w-3.5 h-3.5 text-warning-strong" />
  <span>Voltariam a Fazer Negócio</span>
  </div>
 	 <div className="text-xl sm:text-2xl font-bold text-foreground">{wouldBuyAgain === null ? "Sem dados" : `${wouldBuyAgain}%`}</div>

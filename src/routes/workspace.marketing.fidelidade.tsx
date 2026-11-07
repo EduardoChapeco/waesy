@@ -398,11 +398,11 @@ export default function LoyaltyDashboardPage() {
 
  {/* Simulador de Cartão Wallet em Tempo Real */}
  <div className="lg:col-span-5 flex flex-col items-center">
- <div className="w-full max-w-full max-w-[340px] bg-card rounded-lg border-4 border-foreground/10 p-4 shadow-xs space-y-4">
+ <div className="w-full max-w-full max-w-85 bg-card rounded-lg border-4 border-foreground/10 p-4 shadow-xs space-y-4">
  {/* Cartão de Fidelidade Digital (Wallet Pass) */}
  <div
  style={{ backgroundColor: cardBgColor, color: cardTextColor }}
- className="rounded-lg p-5 shadow-xs flex flex-col justify-between min-h-[360px] relative overflow-hidden transition-colors duration-200 duration-300"
+ className="rounded-lg p-5 shadow-xs flex flex-col justify-between min-h-90 relative overflow-hidden transition-colors duration-200 duration-300"
  >
  {/* Topo do Cartão */}
  <div className="flex items-start justify-between">
@@ -414,13 +414,13 @@ export default function LoyaltyDashboardPage() {
  {name || "Seu Cartão Fidelidade"}
  </h4>
  </div>
- <div className="size-8 rounded-full bg-card/20 backdrop-blur-md flex items-center justify-center">
+ <div className="size-8 rounded-full bg-card flex items-center justify-center">
  <SelectedIconComponent className="size-4" />
  </div>
  </div>
 
  {/* Grade de Selos */}
- <div className="my-4 py-3 bg-card/10 backdrop-blur-xs rounded-lg p-3">
+ <div className="my-4 py-3 bg-card rounded-lg p-3">
  <div className="flex items-center justify-between text-xs font-bold mb-2">
  <span>Selos: 3/{targetStamps}</span>
  <span className="text-xs uppercase opacity-80">

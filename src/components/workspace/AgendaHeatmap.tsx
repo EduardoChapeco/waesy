@@ -82,7 +82,7 @@ export function AgendaHeatmap({ slots = [], appointments, onSlotClick }: AgendaH
     if (ratio < 0.25) return "bg-primary/10 text-primary border-primary/20 hover:border-primary";
     if (ratio < 0.5) return "bg-primary/25 text-primary border-primary/30 font-semibold hover:border-primary";
     if (ratio < 0.75) return "bg-primary/50 text-primary-foreground border-primary/50 font-bold hover:border-primary";
-    return "bg-primary text-primary-foreground border-primary font-bold shadow-sm hover:ring-2 hover:ring-primary";
+    return "bg-primary text-primary-foreground border-primary font-bold  hover:ring-2 hover:ring-primary";
   };
 
   const handleCellClick = (dayOfWeek: number, hour: number) => {
@@ -116,10 +116,10 @@ export function AgendaHeatmap({ slots = [], appointments, onSlotClick }: AgendaH
         </div>
       </div>
 
-      <div className="overflow-x-auto pb-2">
-        <div className="min-w-[480px]">
+      <div className="overflow-x-auto scroll-area-carousel pb-2">
+        <div className="min-w-120">
           {/* Header Dias */}
-          <div /* design-lint-ignore DL-29 reason:"Grade fixa de 8 colunas para heatmap semanal contido em scroll horizontal" expiry:"2027-12-31" */ className="grid grid-cols-8 gap-1.5 mb-1.5 text-center text-xs font-semibold text-muted-foreground">
+          <div /* design-lint-ignore DL-29 reason:"Grade fixa de 8 colunas para heatmap semanal contido em scroll horizontal" expiry:"2027-12-31" */ className="grid grid-cols-8 gap-2 mb-2 text-center text-xs font-semibold text-muted-foreground">
             <div className="text-left pl-2">Hora</div>
             {DAYS.map((d) => (
               <div key={d.key}>{d.label}</div>
@@ -127,9 +127,9 @@ export function AgendaHeatmap({ slots = [], appointments, onSlotClick }: AgendaH
           </div>
 
           {/* Linhas de Horário */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {HOURS.map((h) => (
-              <div /* design-lint-ignore DL-29 reason:"Grade fixa de 8 colunas para heatmap semanal contido em scroll horizontal" expiry:"2027-12-31" */ key={h} className="grid grid-cols-8 gap-1.5 items-center">
+              <div /* design-lint-ignore DL-29 reason:"Grade fixa de 8 colunas para heatmap semanal contido em scroll horizontal" expiry:"2027-12-31" */ key={h} className="grid grid-cols-8 gap-2 items-center">
                 <div className="text-xs font-medium text-muted-foreground pl-2">{h}:00</div>
                 {DAYS.map((d) => {
                   const count = slotMap.get(`${d.key}-${h}`) || 0;

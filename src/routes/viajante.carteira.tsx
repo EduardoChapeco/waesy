@@ -216,7 +216,7 @@ export default function ViajanteCarteiraPage() {
                             e.stopPropagation();
                             handleDownloadPdf(pass);
                           }}
-                          className="size-7 rounded-md text-zinc-300 hover:text-foreground hover:bg-card/10"
+                          className="size-7 rounded-md text-zinc-300 hover:text-foreground hover:bg-card/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                         >
                           <Download className="size-3.5" />
                         </Button>
@@ -227,7 +227,7 @@ export default function ViajanteCarteiraPage() {
                             e.stopPropagation();
                             setSelectedPass(null);
                           }}
-                          className="size-7 rounded-md text-zinc-300 hover:text-foreground hover:bg-card/10"
+                          className="size-7 rounded-md text-zinc-300 hover:text-foreground hover:bg-card/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                         >
                           <X className="size-3.5" />
                         </Button>
@@ -248,7 +248,7 @@ export default function ViajanteCarteiraPage() {
                           e.stopPropagation();
                           setFullscreenQrPass(pass);
                         }}
-                        className="p-3 rounded-lg bg-card border border-border/40 hover:shadow-sm transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="p-3 rounded-lg bg-card border border-border/40  transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         title="Toque para tela cheia de embarque"
                       >
                         <img
@@ -322,7 +322,7 @@ export default function ViajanteCarteiraPage() {
 
                       variant="outline"
                       onClick={() => handleDownloadPdf(pass)}
-                      className="h-8 px-3 rounded-lg text-xs font-medium"
+                      className="h-8 px-3 rounded-lg text-xs font-medium min-h-11 sm:min-h-0"
                     >
                       <Download className="size-3.5 mr-1" />
                       PDF
@@ -330,7 +330,7 @@ export default function ViajanteCarteiraPage() {
                     <Button
 
                       onClick={() => setFullscreenQrPass(pass)}
-                      className="h-8 px-3 rounded-lg text-xs font-medium"
+                      className="h-8 px-3 rounded-lg text-xs font-medium min-h-11 sm:min-h-0"
                     >
                       Exibir
                     </Button>

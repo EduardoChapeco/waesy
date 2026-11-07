@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { microCache } from "@/lib/cache/micro-cache";
 
 export interface FlashOfferDTO {
   id: string;
@@ -260,15 +261,17 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
       .optional(),
   )
   .handler(async ({ data: params }) => {
-    const supabase = getServerClient();
     const rawNiche = params?.niche;
     const isGlobal =
       !rawNiche || rawNiche === "todos" || rawNiche === "ofertas" || rawNiche === "home";
     const normalizedNiche = isGlobal ? "global" : rawNiche.toLowerCase().trim();
+    const cacheKey = `marketplace:feed:${normalizedNiche}:${params?.mealTime || "all"}`;
 
-    const nicheKeywords = NICHE_STORE_KEYWORDS[normalizedNiche] || [normalizedNiche];
+    return microCache.getOrSet(cacheKey, 30_000, async () => {
+      const supabase = getServerClient();
+      const nicheKeywords = NICHE_STORE_KEYWORDS[normalizedNiche] || [normalizedNiche];
 
-    // 1. Busca lojas ativas reais no Supabase, filtradas pelo nicho se aplicável
+      // 1. Busca lojas ativas reais no Supabase, filtradas pelo nicho se aplicável
     let storesQuery = supabase
       .from("stores")
       .select("id, name, slug, settings, logo_url")
@@ -434,7 +437,8 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
       });
     }
 
-    return { sections, allProducts: products };
+      return { sections, allProducts: products };
+    });
   });
 
 // ─── 5. FUNÇÃO SERVER BFF: getGlobalDealsPage (Cross-Marketplace) ─────────────
@@ -606,7 +610,7 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
         nicho: "pet",
         label: "Pet Shop",
         emoji: "",
-        color: "from-amber-600 to-orange-600",
+        color: "from-warning to-orange-600",
         to: "/pet",
       },
       {
@@ -620,7 +624,7 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
         nicho: "bebidas",
         label: "Bebidas e Adega",
         emoji: "",
-        color: "from-yellow-600 to-amber-600",
+        color: "from-warning to-warning",
         to: "/bebidas",
       },
       {

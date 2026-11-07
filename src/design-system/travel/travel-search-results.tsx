@@ -62,7 +62,7 @@ export function TravelSearchResults({
           <button
             type="button"
             onClick={onGenerateQuote}
-            className="inline-flex items-center gap-2 min-h-10 px-4 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+            className="inline-flex items-center gap-2 min-h-10 px-4 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-0"
           >
             <FileText className="size-3.5" />
             <span>Gerar Cotação</span>
@@ -71,7 +71,7 @@ export function TravelSearchResults({
       </div>
 
       {/* Fast Filter Chips */}
-      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel scrollbar-none pb-1">
         {filterOptions.map((opt) => {
           const isActive = activeFilter === opt.id;
           return (

@@ -12,8 +12,8 @@ interface DealDeliveryTrackingCardProps {
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string; step: number }> = {
-  pending: { label: "Aguardando Coleta pelo Motoboy", color: "text-amber-600 bg-amber-500/10 border-amber-500/20", step: 1 },
-  link_generated: { label: "Aguardando Coleta pelo Motoboy", color: "text-amber-600 bg-amber-500/10 border-amber-500/20", step: 1 },
+  pending: { label: "Aguardando Coleta pelo Motoboy", color: "text-warning-strong bg-warning/10 border-warning/20", step: 1 },
+  link_generated: { label: "Aguardando Coleta pelo Motoboy", color: "text-warning-strong bg-warning/10 border-warning/20", step: 1 },
   accepted: { label: "Motoboy a Caminho da Loja", color: "text-blue-600 bg-blue-500/10 border-blue-500/20", step: 2 },
   picked_up: { label: "A Caminho do seu Endereço", color: "text-purple-600 bg-purple-500/10 border-purple-500/20", step: 3 },
   in_transit: { label: "A Caminho do seu Endereço", color: "text-purple-600 bg-purple-500/10 border-purple-500/20", step: 3 },
@@ -223,7 +223,7 @@ export function DealDeliveryTrackingCard({ dealId, orderId }: DealDeliveryTracki
         </span>
 
         {dispatch.token && (
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 h-8 self-end sm:self-auto">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 h-8 self-end sm:self-auto min-h-11 sm:min-h-0">
             <Link to="/entrega/$token" params={{ token: dispatch.token }}>
               <ExternalLink className="size-3.5" />
               <span>Painel do Entregador</span>

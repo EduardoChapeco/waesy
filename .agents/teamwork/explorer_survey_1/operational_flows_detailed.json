@@ -1,0 +1,817 @@
+[
+  {
+    "file": "workspace.agenda.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "TanStack useQuery",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 2,
+    "currentModes": [
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": true,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.agenda.recursos.tsx",
+    "exists": true,
+    "dataFetchMethod": "TanStack useQuery",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.agenda.servicos.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "TanStack useQuery",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Tabela",
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.clientes.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.clientes.$id.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.crm.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Kanban",
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.comercial.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 4,
+    "currentModes": [
+      "Kanban",
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.captacao.imoveis.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.captacao.veiculos.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.pedidos.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 4,
+    "currentModes": [
+      "Kanban",
+      "Tabela",
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": true,
+    "missingR2Modes": [],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.pedidos.gestor.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Kanban",
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": true,
+    "missingR2Modes": [],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.pedidos.cozinha.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.pedidos.expedicao.tsx",
+    "exists": true,
+    "dataFetchMethod": "TanStack useQuery",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 4,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.pedidos.trocas.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Kanban",
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": true,
+    "missingR2Modes": [],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.pedidos.historico.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.pedidos.entregadores.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.pedidos.entregadores.novo.tsx",
+    "exists": true,
+    "dataFetchMethod": "Local state / none",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.pdv.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 7,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.pdv.mesas.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.tarefas.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Kanban",
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": true,
+    "missingR2Modes": [
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.squads.tsx",
+    "exists": true,
+    "dataFetchMethod": "TanStack useQuery",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.skills.tsx",
+    "exists": true,
+    "dataFetchMethod": "TanStack useQuery",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.orcamentos.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Kanban",
+      "Cards"
+    ],
+    "hasViewModeToggle": true,
+    "missingR2Modes": [
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.orcamentos.$id.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 2,
+    "currentModes": [
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.orcamentos.novo.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 5,
+    "currentModes": [
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.turismo.propostas.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.turismo.propostas.$id.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.turismo.cotacoes.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 6,
+    "currentModes": [
+      "Kanban",
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": true,
+    "missingR2Modes": [
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.turismo.corporativo.tsx",
+    "exists": true,
+    "dataFetchMethod": "TanStack useQuery",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.turismo.reservas.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.contratos.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.contratos.$id.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.contratos.modelos.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.advocacia.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Tabela",
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.imoveis.index.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.estoque.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.estoque.lotes.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.estoque.movimentacoes.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.eventos.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 2,
+    "currentModes": [
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.eventos.$id.subpaineis.tsx",
+    "exists": true,
+    "dataFetchMethod": "TanStack useQuery",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.reservas.index.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.atendimento.index.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 9,
+    "currentModes": [
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.suporte.index.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.whatsapp.central.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.rh.ponto.tsx",
+    "exists": true,
+    "dataFetchMethod": "TanStack useQuery",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.configuracoes.equipe.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.associacao.membros.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.financeiro.caixa.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.financeiro.contas-a-pagar.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.financeiro.contas-a-receber.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.financeiro.extrato.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.financeiro.reconciliacao.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.financeiro.faturas.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": true,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "workspace.financeiro.metas.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.financeiro.dre.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.logistica.rastreamento.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.logistica.rotas.tsx",
+    "exists": false
+  },
+  {
+    "file": "workspace.logistica.faturas.tsx",
+    "exists": true,
+    "dataFetchMethod": "Local state / none",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards",
+      "Calendário"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.denuncias.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.entregadores.auditoria.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.kyc.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.hubs.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 3,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.lojas.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 2,
+    "currentModes": [
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.usuarios.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 5,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.faturas.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.boost-payments.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.carnes.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.curadoria.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Tabela",
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban"
+    ],
+    "r2Eligible": true
+  },
+  {
+    "file": "admin-master.modulos.tsx",
+    "exists": true,
+    "dataFetchMethod": "Route loader",
+    "hasServerFunctions": true,
+    "importedFunctionsCount": 1,
+    "currentModes": [
+      "Cards"
+    ],
+    "hasViewModeToggle": false,
+    "missingR2Modes": [
+      "Kanban",
+      "Tabela"
+    ],
+    "r2Eligible": true
+  }
+]

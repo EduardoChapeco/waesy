@@ -106,8 +106,8 @@ export function MobilityRatingModal({
       <DialogContent className="sm:max-w-md p-6 bg-card border border-border">
         <DialogHeader className="space-y-1 text-left pb-2 border-b border-border/60">
           <div className="flex items-center gap-2">
-            <div className="size-9 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
-              <Star className="size-4 fill-amber-500" />
+            <div className="size-9 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center font-bold">
+              <Star className="size-4 fill-warning" />
             </div>
             <div>
               <DialogTitle className="text-sm font-black text-foreground">
@@ -139,7 +139,7 @@ export function MobilityRatingModal({
                     <Star
                       className={`size-8 transition-colors ${
                         isActive
-                          ? "fill-amber-400 text-amber-400"
+                          ? "fill-warning text-warning-strong"
                           : "text-muted-foreground/40"
                       }`}
                     />

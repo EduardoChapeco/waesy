@@ -17,7 +17,7 @@ export function MosaicBanners({ content }: { content: Record<string, unknown> })
           const link = String(banner.link || "");
 
           const inner = (
-            <div className="group relative aspect-[16/10] @md:aspect-square overflow-hidden rounded-lg bg-muted transition-transform hover:opacity-95 flex items-center justify-center">
+            <div className="group relative aspect-16/10 @md:aspect-square overflow-hidden rounded-lg bg-muted transition-transform hover:opacity-95 flex items-center justify-center">
               {bg_url ? (
                 <>
                   <img
@@ -43,7 +43,7 @@ export function MosaicBanners({ content }: { content: Record<string, unknown> })
               {/* Content */}
               {title && (
                 <div className="absolute bottom-0 left-0 p-6 @md:p-8 z-10 pointer-events-none">
-                  <h3 className="text-xl sm:text-2xl font-semibold text-foreground drop-shadow-sm">{title}</h3>
+                  <h3 className="text-xl sm:text-2xl font-semibold text-foreground ">{title}</h3>
                 </div>
               )}
             </div>

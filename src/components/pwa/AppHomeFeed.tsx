@@ -40,7 +40,7 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
   return (
     <div className="w-full space-y-4 pb-4 select-none">
       {/* Story / Highlights Bar */}
-      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-1 py-1">
+      <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar px-1 py-1">
         {highlights.map((h, i) => (
           <div key={i} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer">
             <div
@@ -167,7 +167,7 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
                     onAddToCart?.(prod.id);
                   }}
                   style={{ backgroundColor: themeColor }}
-                  className="w-full h-8 rounded-lg text-foreground font-semibold text-xs flex items-center justify-center gap-1 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full h-8 rounded-lg text-foreground font-semibold text-xs flex items-center justify-center gap-1 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                 >
                   <ShoppingBag className="size-3" />
                   <span>Adicionar</span>

@@ -485,9 +485,9 @@ export function ClassifiedDetailDesktop({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-11 min-h-11 px-3 rounded-lg border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-2"
+              className="h-11 min-h-11 px-3 rounded-lg border-warning/40 bg-warning/10 text-warning-strong  text-xs font-bold flex items-center gap-2"
             >
-              <Edit3 className="size-3.5 text-amber-600" />
+              <Edit3 className="size-3.5 text-warning-strong" />
               <span>Editar Anúncio</span>
             </Button>
           )}
@@ -846,8 +846,8 @@ export function ClassifiedDetailDesktop({
                           <span className="uppercase tracking-wider">Hospedagem & Hotel</span>
                         </div>
                         {travelDetails.hotelStars > 0 && (
-                          <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
-                            <Star className="size-3.5 fill-amber-500" />
+                          <div className="flex items-center gap-1 text-warning-strong font-bold text-xs">
+                            <Star className="size-3.5 fill-warning" />
                             <span>{travelDetails.hotelStars} estrelas</span>
                           </div>
                         )}
@@ -867,7 +867,7 @@ export function ClassifiedDetailDesktop({
                         <div className="space-y-2">
                           <span className="text-xs text-muted-foreground block font-medium">Fotos da Acomodação</span>
                           {/* design-lint-ignore DL-30 reason:"Galeria horizontal de fotos da hospedagem desktop com snap-x" expiry:"2027-12-31" */}
-                          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 snap-x">
+                          <div className="flex gap-3 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 snap-x">
                             {travelDetails.hotelPhotos.map((photo, pIdx) => (
                               <button
                                 key={pIdx}
@@ -1102,8 +1102,8 @@ export function ClassifiedDetailDesktop({
                   )}
 
                   {acceptsCarne && (
-                    <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-1">
-                      <div className="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-400">
+                    <div className="p-3 rounded-lg border border-warning/30 bg-warning/5 space-y-1">
+                      <div className="flex items-center gap-2 text-xs font-bold text-warning-strong ">
                         <FileSpreadsheet className="size-3.5" />
                         <span>Carnê Digital</span>
                       </div>
@@ -1260,7 +1260,7 @@ export function ClassifiedDetailDesktop({
                   </div>
                   {classified.rating && Number(classified.rating) > 0 ? (
                     <div className="flex items-center gap-2">
-                      <Star className="size-4 text-amber-500 fill-amber-500 shrink-0" />
+                      <Star className="size-4 text-warning-strong fill-warning shrink-0" />
                       <div>
                         <span className="text-muted-foreground block font-medium">Avaliação da Empresa</span>
                         <span className="font-semibold text-foreground">

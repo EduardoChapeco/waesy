@@ -262,7 +262,7 @@ function SystemLogsPage() {
                 </p>
                 <p className="text-2xs text-muted-foreground mt-1">Interceptados em BFF</p>
               </div>
-              <div className="p-3 bg-amber-500/10 text-amber-600 rounded-lg">
+              <div className="p-3 bg-warning/10 text-warning-strong rounded-lg">
                 <AlertCircle className="size-5" />
               </div>
             </Surface>
@@ -295,12 +295,12 @@ function SystemLogsPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto scroll-area-carousel no-scrollbar">
               <Button
                 variant={severityFilter === "all" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSeverityFilter("all")}
-                className="h-8 text-xs px-3"
+                className="h-8 text-xs px-3 min-h-11 sm:min-h-0"
               >
                 Todos ({logs.length})
               </Button>
@@ -308,7 +308,7 @@ function SystemLogsPage() {
                 variant={severityFilter === "critical" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSeverityFilter("critical")}
-                className={`h-8 text-xs px-3 ${severityFilter === "critical" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}`}
+                className={`h-8 text-xs px-3 ${severityFilter === "critical" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""} min-h-11 sm:min-h-0`}
               >
                 Críticos ({stats.critical})
               </Button>
@@ -316,7 +316,7 @@ function SystemLogsPage() {
                 variant={severityFilter === "error" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSeverityFilter("error")}
-                className="h-8 text-xs px-3"
+                className="h-8 text-xs px-3 min-h-11 sm:min-h-0"
               >
                 Erros ({stats.errors})
               </Button>
@@ -324,7 +324,7 @@ function SystemLogsPage() {
                 variant={severityFilter === "warn" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSeverityFilter("warn")}
-                className="h-8 text-xs px-3"
+                className="h-8 text-xs px-3 min-h-11 sm:min-h-0"
               >
                 Avisos ({stats.warnings})
               </Button>
@@ -367,7 +367,7 @@ function SystemLogsPage() {
                             log.severity === "critical"
                               ? "bg-destructive/15 text-destructive"
                               : log.severity === "warn"
-                              ? "bg-amber-500/15 text-amber-600"
+                              ? "bg-warning/15 text-warning-strong"
                               : "bg-destructive/10 text-destructive"
                           }`}
                         >
@@ -414,7 +414,7 @@ function SystemLogsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopyLog(log)}
-                          className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-1"
+                          className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground gap-1 min-h-11 sm:min-h-0"
                         >
                           {isCopied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
                           <span className="hidden sm:inline">{isCopied ? "Copiado" : "Copiar"}</span>
@@ -425,7 +425,7 @@ function SystemLogsPage() {
                           size="sm"
                           onClick={() => handleDeleteLog(log.id)}
                           disabled={isDeleting}
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0"
                         >
                           <Trash2 className="size-3.5" />
                         </Button>
@@ -460,7 +460,7 @@ function SystemLogsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => toggleExpand(log.id)}
-                          className="h-7 text-2xs text-muted-foreground hover:text-foreground gap-1 p-0"
+                          className="h-7 text-2xs text-muted-foreground hover:text-foreground gap-1 p-0 min-h-11 sm:min-h-0"
                         >
                           {isExpanded ? (
                             <>
@@ -480,7 +480,7 @@ function SystemLogsPage() {
                                 <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                                   <Terminal className="size-3" /> Payload da Requisição
                                 </span>
-                                <pre className="bg-muted/70 p-3 rounded-lg text-2xs overflow-x-auto no-scrollbar border border-border/50 text-foreground font-mono max-h-48">
+                                <pre className="bg-muted/70 p-3 rounded-lg text-2xs overflow-x-auto scroll-area-carousel no-scrollbar border border-border/50 text-foreground font-mono max-h-48">
                                   {JSON.stringify(log.payload, null, 2)}
                                 </pre>
                               </div>
@@ -491,7 +491,7 @@ function SystemLogsPage() {
                                 <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                                   Stack Trace
                                 </span>
-                                <pre className="bg-muted/70 p-3 rounded-lg text-2xs overflow-x-auto no-scrollbar border border-border/50 text-foreground/75 font-mono max-h-48">
+                                <pre className="bg-muted/70 p-3 rounded-lg text-2xs overflow-x-auto scroll-area-carousel no-scrollbar border border-border/50 text-foreground/75 font-mono max-h-48">
                                   {log.stack_trace}
                                 </pre>
                               </div>
@@ -595,7 +595,7 @@ function SystemLogsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={toggleForensicExpand}
-                          className="h-7 text-2xs text-muted-foreground hover:text-foreground gap-1 p-0"
+                          className="h-7 text-2xs text-muted-foreground hover:text-foreground gap-1 p-0 min-h-11 sm:min-h-0"
                         >
                           {isExpanded ? (
                             <>
@@ -609,7 +609,7 @@ function SystemLogsPage() {
                         </Button>
 
                         {isExpanded && (
-                          <pre className="bg-muted/70 p-3 rounded-lg text-2xs overflow-x-auto no-scrollbar border border-border/50 text-foreground font-mono max-h-48 mt-2">
+                          <pre className="bg-muted/70 p-3 rounded-lg text-2xs overflow-x-auto scroll-area-carousel no-scrollbar border border-border/50 text-foreground font-mono max-h-48 mt-2">
                             {JSON.stringify(ev.payload_snapshot, null, 2)}
                           </pre>
                         )}

@@ -35,7 +35,7 @@ function WorkspaceCaptacaoNdasPage() {
     return <ErrorState title="Não foi possível carregar os NDAs" description="O registro de assinaturas está temporariamente indisponível." />;
   }
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── CABEÇALHO & VOLTAR ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
@@ -77,7 +77,7 @@ function WorkspaceCaptacaoNdasPage() {
                 Assim que investidores acessarem seus anúncios confidenciais e assinarem o termo digital de sigilo, seus registros auditáveis aparecerão aqui.
               </p>
             </div>
-            <Button asChild variant="outline" size="sm" className="h-9 px-4 rounded-lg text-xs font-semibold">
+            <Button asChild variant="outline" size="sm" className="h-9 px-4 rounded-lg text-xs font-semibold min-h-11 sm:min-h-0">
               <Link to="/workspace/captacao">
                 <span>Ver Minhas Empresas Listadas</span>
               </Link>
@@ -137,7 +137,7 @@ function WorkspaceCaptacaoNdasPage() {
             </div>
 
             {/* ── BIFURCAÇÃO DESKTOP: Tabela Corporativa Densa (>=640px) ── */}
-            <div className="hidden sm:block overflow-x-auto">
+            <div className="hidden sm:block overflow-x-auto scroll-area-carousel">
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted/40 text-muted-foreground font-medium border-b border-border/40 uppercase tracking-wider text-xs">
                   <tr>

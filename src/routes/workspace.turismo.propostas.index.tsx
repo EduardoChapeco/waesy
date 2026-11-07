@@ -596,7 +596,7 @@ function WorkspaceProposalsIndexPage() {
          label: "Rascunhos",
          value: draftCount,
          total: Math.max(totalCount, 1),
-         color: "bg-amber-500",
+         color: "bg-warning",
        },
      ],
    }}

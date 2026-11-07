@@ -236,7 +236,7 @@ function NovoAnuncioPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Topbar Silenciosa */}
  <div className="flex items-center justify-between pb-4 border-b border-border/40">
  <div className="flex items-center gap-3">
@@ -302,7 +302,7 @@ function NovoAnuncioPage() {
  variant="outline"
  onClick={handleExtractWithAI}
  disabled={isAiExtracting}
- className="h-10 rounded-lg text-xs font-semibold px-4 cursor-pointer shrink-0"
+ className="h-10 rounded-lg text-xs font-semibold px-4 cursor-pointer shrink-0 min-h-11 sm:min-h-0"
  >
  {isAiExtracting ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : "Estruturar"}
  </Button>

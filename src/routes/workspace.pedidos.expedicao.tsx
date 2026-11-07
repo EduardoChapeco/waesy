@@ -221,7 +221,7 @@ function WmsExpedicaoPage() {
   };
 
   return (
-    <div className="space-y-6 pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
+    <div className="space-y-6 pb-20 w-full px-0 sm:px-4 md:px-0">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader 
@@ -371,7 +371,7 @@ function WmsExpedicaoPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs rounded-lg sm:rounded-lg gap-2 cursor-pointer shrink-0 font-medium"
+                      className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs rounded-lg sm:rounded-lg gap-2 cursor-pointer shrink-0 font-medium min-h-11 sm:min-h-0"
                       onClick={() => setSelectedShippingLabelOrderId(oId)}
                     >
                       <Printer className="size-3.5 text-primary" /> Etiqueta
@@ -393,7 +393,7 @@ function WmsExpedicaoPage() {
             </h3>
             <p className="text-xs text-muted-foreground">Pedidos do Mercado Livre, iFood, Shopee e loja própria.</p>
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0">
             {["all", "mercadolivre", "ifood", "shopee"].map((ch) => (
               <button
                 key={ch}
@@ -401,7 +401,7 @@ function WmsExpedicaoPage() {
                 onClick={() => setChannelFilter(ch)}
                 className={`h-10 sm:h-8 px-4 rounded-lg sm:rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                   channelFilter === ch ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
               >
                 {ch === "all" ? "Todos" : ch === "mercadolivre" ? "Mercado Livre" : ch === "ifood" ? "iFood" : "Shopee"}
               </button>

@@ -379,7 +379,7 @@ function ServicosVerticalPage() {
               {serviceStores.map((store: any) => (
                 <div
                   key={store.id}
-                  className="group relative overflow-hidden rounded-lg bg-card border border-border/60 hover:border-foreground/30 transition-colors duration-200 min-h-[132px] pl-32 sm:pl-40 pr-4 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                  className="group relative overflow-hidden rounded-lg bg-card border border-border/60 hover:border-foreground/30 transition-colors duration-200 min-h-33 pl-32 sm:pl-40 pr-4 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
                 >
                   <Link
                     to="/diretorio/$id"
@@ -409,11 +409,11 @@ function ServicosVerticalPage() {
                     <Button
                       onClick={() => handleOpenQuote(store)}
                       size="sm"
-                      className="flex-1 sm:flex-initial bg-primary text-primary-foreground font-bold text-xs h-9 rounded-lg"
+                      className="flex-1 sm:flex-initial bg-primary text-primary-foreground font-bold text-xs h-9 rounded-lg min-h-11 sm:min-h-0"
                     >
                       Pedir Orçamento
                     </Button>
-                    <Button asChild variant="outline" size="sm" className="h-9 px-3 text-xs rounded-lg font-semibold">
+                    <Button asChild variant="outline" size="sm" className="h-9 px-3 text-xs rounded-lg font-semibold min-h-11 sm:min-h-0">
                       <Link to="/diretorio/$id" params={{ id: store.id }}>
                         Perfil
                       </Link>
@@ -474,11 +474,11 @@ function ServicosVerticalPage() {
               <Button
                 onClick={() => handleOpenQuote(store)}
                 size="sm"
-                className="w-full bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold text-xs h-10 rounded-lg transition-colors duration-200"
+                className="w-full bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold text-xs h-10 rounded-lg transition-colors duration-200 min-h-11 sm:min-h-0"
               >
                 Pedir Orçamento
               </Button>
-              <Button asChild variant="ghost" size="sm" className="h-10 px-3 text-xs rounded-lg font-semibold shrink-0">
+              <Button asChild variant="ghost" size="sm" className="h-10 px-3 text-xs rounded-lg font-semibold shrink-0 min-h-11 sm:min-h-0">
                 <Link to="/diretorio/$id" params={{ id: store.id }}>
                   Perfil
                 </Link>

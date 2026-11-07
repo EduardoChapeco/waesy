@@ -345,7 +345,7 @@ export function TravelFlightItineraryCard({
                   <div
                     className={`px-2 py-1 rounded-lg border text-xs font-bold flex items-center gap-2 ${
                       isConnection
-                        ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300"
+                        ? "bg-warning/10 border-warning/30 text-warning-strong "
                         : "bg-card border-border/60 text-foreground"
                     }`}
                   >
@@ -443,7 +443,7 @@ export function TravelFlightItineraryCard({
                         Array.from({ length: stopsCount }).map((_, stopIdx) => (
                           <span
                             key={stopIdx}
-                            className="size-2.5 rounded-full bg-amber-500 ring-2 ring-background"
+                            className="size-2.5 rounded-full bg-warning ring-2 ring-background"
                             title="Parada / Conexão"
                           />
                         ))}
@@ -454,7 +454,7 @@ export function TravelFlightItineraryCard({
                     className={`text-xs font-bold mt-1 text-center ${
                       stopsCount === 0
                         ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-amber-600 dark:text-amber-400"
+                        : "text-warning-strong "
                     }`}
                   >
                     {stopsCount === 0
@@ -543,7 +543,7 @@ export function TravelFlightItineraryCard({
 
                         {/* Barra de Tempo de Espera / Conexão entre Voos */}
                         {hasLayoverAfter && (
-                          <div className="ml-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-2 text-xs text-amber-800 dark:text-amber-300">
+                          <div className="ml-2 p-3 rounded-lg bg-warning/10 border border-warning/30 flex items-center justify-between gap-2 text-xs text-warning-strong ">
                             <div className="flex items-center gap-2 font-semibold">
                               <Clock className="size-4 shrink-0" />
                               <span>

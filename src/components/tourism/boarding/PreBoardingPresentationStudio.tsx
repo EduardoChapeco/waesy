@@ -27,488 +27,155 @@ import {
   type PresentationLocale,
 } from "@/services/travel-pre-boarding-and-commissions.functions";
 
-const PRESET_TEMPLATES: Record<string, PreBoardingTripInput> = {
-  caribe_resort: {
-    presentationType: "pre_boarding_guide",
-    agencyName: "Excelência Tour",
-    agencyEmergencyPhone: "+55 (49) 99999-1372",
-    tripTitle: "Guia Oficial de Pré-Embarque — Punta Cana",
-    conceptSubtitle: "Caribe entre Amigas — Punta Cana All-Inclusive",
-    travelerProfileType: "amigos_grupo",
-    passengersNames: ["Fernanda Costa", "Camila Rocha", "Juliana Mendes"],
-    adultsCount: 3,
-    childrenCount: 0,
-    startDate: "05/12/2026",
-    endDate: "12/12/2026",
-    originCity: "Chapecó",
-    destinations: ["Punta Cana"],
-    countries: ["República Dominicana"],
-    flights: [
-      {
-        direction: "ida",
-        date: "05/12/2026",
-        airline: "Copa Airlines",
-        flightNumber: "CM 758",
-        originIata: "GRU",
-        destinationIata: "PTY",
-        departureTime: "01:50",
-        arrivalTime: "06:45",
-        durationText: "6h55m",
-        connectionWaitText: "1h35m no Hub das Américas (Panamá)",
-        connectionHubIata: "PTY",
-        sameTicket: true,
-        carryOnBagRule: "1 mala de bordo até 10 kg + 1 bolsa pessoal",
-        checkedBagRule: "1 mala despachada de até 23 kg inclusa",
-      },
-      {
-        direction: "ida",
-        date: "05/12/2026",
-        airline: "Copa Airlines",
-        flightNumber: "CM 108",
-        originIata: "PTY",
-        destinationIata: "PUJ",
-        departureTime: "08:20",
-        arrivalTime: "12:05",
-        durationText: "2h45m",
-        sameTicket: true,
-      },
-      {
-        direction: "volta",
-        date: "12/12/2026",
-        airline: "Copa Airlines",
-        flightNumber: "CM 109",
-        originIata: "PUJ",
-        destinationIata: "GRU",
-        departureTime: "13:15",
-        arrivalTime: "23:40",
-        durationText: "8h25m (via Panamá PTY)",
-        sameTicket: true,
-      },
-    ],
-    hotels: [
-      {
-        name: "Barceló Bávaro Palace All-Inclusive",
-        city: "Punta Cana",
-        neighborhood: "Playa Bávaro",
-        address: "Carretera Bávaro Km 1, Punta Cana, República Dominicana",
-        mealPlan: "All-Inclusive 24 Horas (Restaurantes, Bares e Praia)",
-        checkInTime: "15:00",
-        checkOutTime: "12:00",
-        nearbyHighlights: [
-          {
-            name: "Praia de Bávaro (Frente Mar)",
-            distanceText: "Acesso direto pé na areia",
-            practicalNote: "Espreguiçadeiras, toalhas e serviço de bar inclusos na pulseira do resort",
-          },
-          {
-            name: "Coco Bongo Punta Cana & Downtown Mall",
-            distanceText: "15 min de transfer receptivo",
-            practicalNote: "Ingressos com transporte de ida e volta saindo do lobby do resort",
-          },
-          {
-            name: "Embarque Catamarã Isla Saona",
-            distanceText: "Passeio de dia inteiro com almoço na ilha",
-            practicalNote: "Levar protetor solar biodegradável, óculos de sol e notas pequenas de dólar",
-          },
-        ],
-        structureHighlights: [
-          "11 restaurantes (7 à la carte que exigem reserva no Guest Service logo no 1º dia)",
-          "4 piscinas amplas, spa, cassino, teatro noturno e quadras esportivas",
-        ],
-      },
-    ],
-    hasReceptiveTransfer: true,
-    receptiveCompanyName: "Transatour Receptivo Oficial",
-    receptiveMeetingPoint: "Saída B do Desembarque Internacional de Punta Cana (funcionário uniformizado com placa)",
-    receptiveEmergencyWhatsapp: "+1 (809) 555-0192",
-    insuranceProvider: "Assist Card AC 60 Internacional",
-    insurancePolicyNumber: "AC-9988412-RD",
-    commercialPriceTotalCents: 2190000,
-    commercialPaymentConditions: "Entrada de 20% via Pix + 10x sem juros no cartão ou boleto operadora",
-  },
-  orlando_parques: {
-    presentationType: "pre_boarding_guide",
-    agencyName: "Excelência Tour",
-    agencyEmergencyPhone: "+55 (49) 99999-1372",
-    tripTitle: "Guia Oficial de Pré-Embarque — Orlando & Parques",
-    conceptSubtitle: "Disney & Universal em Família — Orlando, Flórida",
-    travelerProfileType: "familia_criancas",
-    passengersNames: ["Ricardo Oliveira", "Patrícia Oliveira", "Lucas (9 anos)", "Sofia (6 anos)"],
-    adultsCount: 2,
-    childrenCount: 2,
-    startDate: "10/01/2027",
-    endDate: "21/01/2027",
-    originCity: "Chapecó",
-    destinations: ["Orlando"],
-    countries: ["Estados Unidos"],
-    flights: [
-      {
-        direction: "ida",
-        date: "10/01/2027",
-        airline: "Azul Linhas Aéreas",
-        flightNumber: "AD 8706",
-        originIata: "VCP",
-        destinationIata: "MCO",
-        departureTime: "23:15",
-        arrivalTime: "06:30",
-        durationText: "9h15m (Voo Direto)",
-        sameTicket: true,
-      },
-      {
-        direction: "volta",
-        date: "21/01/2027",
-        airline: "Azul Linhas Aéreas",
-        flightNumber: "AD 8707",
-        originIata: "MCO",
-        destinationIata: "VCP",
-        departureTime: "09:45",
-        arrivalTime: "20:30",
-        durationText: "8h45m",
-        sameTicket: true,
-      },
-    ],
-    hotels: [
-      {
-        name: "Disney's All-Star Movies Resort",
-        city: "Orlando",
-        neighborhood: "Walt Disney World Resort (Lake Buena Vista)",
-        address: "1901 West Buena Vista Drive, Lake Buena Vista, FL 32830",
-        mealPlan: "Hospedagem com Caneca Refil (Quick Service nos Parques)",
-        checkInTime: "15:00",
-        checkOutTime: "11:00",
-        hasResortFee: false,
-        parkingNote: "Estacionamento gratuito no hotel e nos 4 parques temáticos para hóspedes Disney",
-        nearbyHighlights: [
-          {
-            name: "Magic Kingdom, EPCOT, Hollywood Studios e Animal Kingdom",
-            distanceText: "10 a 15 min no ônibus oficial gratuito da Disney",
-            practicalNote: "Hóspedes têm Early Theme Park Entry (entrada 30 minutos antes nos parques todos os dias)",
-          },
-          {
-            name: "Orlando International Premium Outlets",
-            distanceText: "20 min de carro ou transporte por aplicativo",
-            practicalNote: "Cadastre-se no site VIP Shopper Club antes para pegar o caderno de descontos digitais",
-          },
-        ],
-      },
-    ],
-    hasReceptiveTransfer: false,
-    hasRentalCar: true,
-    rentalCarCompany: "Alamo Rent a Car (Retirada no próprio Aeroporto de Orlando MCO)",
-    hasThemeParks: true,
-    themeParksList: [
-      "Magic Kingdom",
-      "EPCOT",
-      "Disney's Hollywood Studios",
-      "Disney's Animal Kingdom",
-      "Universal Studios Florida & Islands of Adventure",
-    ],
-    insuranceProvider: "Universal Assistance / Assist Card AC 150 EUA",
-    insurancePolicyNumber: "UA-554190-USA",
-    commercialPriceTotalCents: 4480000,
-    commercialPaymentConditions: "12x sem juros no cartão ou financiamento Santander/Operadora",
-  },
-  italia_multicidade: {
-    presentationType: "pre_boarding_guide",
-    agencyName: "Excelência Tour",
-    agencyEmergencyPhone: "+55 (49) 99999-1372",
-    tripTitle: "Guia Oficial de Pré-Embarque — Itália Clássica",
-    conceptSubtitle: "Itália em Casal — Roma, Florença e Veneza (Com Trens de Alta Velocidade)",
-    travelerProfileType: "casal",
-    passengersNames: ["Paulo Henrique", "Beatriz Albuquerque"],
-    adultsCount: 2,
-    childrenCount: 0,
-    startDate: "14/10/2026",
-    endDate: "25/10/2026",
-    originCity: "Chapecó",
-    destinations: ["Roma", "Florença", "Veneza"],
-    countries: ["Itália"],
-    flights: [
-      {
-        direction: "ida",
-        date: "14/10/2026",
-        airline: "LATAM Airlines",
-        flightNumber: "LA 8120",
-        originIata: "GRU",
-        destinationIata: "FCO",
-        departureTime: "17:35",
-        arrivalTime: "09:15",
-        durationText: "11h40m (Voo Direto para Roma)",
-        sameTicket: true,
-      },
-      {
-        direction: "volta",
-        date: "25/10/2026",
-        airline: "ITA Airways / LATAM",
-        flightNumber: "AZ 674",
-        originIata: "VCE",
-        destinationIata: "GRU",
-        departureTime: "19:10",
-        arrivalTime: "06:25",
-        durationText: "14h15m (Conexão em Roma Fiumicino FCO)",
-        sameTicket: true,
-      },
-    ],
-    hotels: [
-      {
-        name: "Hotel Artemide Roma (4 Estrelas)",
-        city: "Roma",
-        neighborhood: "Via Nazionale / Repubblica (Centro Histórico)",
-        address: "Via Nazionale 22, 00184 Roma RM, Itália",
-        mealPlan: "Café da Manhã Completo Incluso",
-        checkInTime: "14:00",
-        checkOutTime: "11:00",
-        hasCityTax: true,
-        cityTaxNote: "EUR 6,00 por pessoa/noite pagos diretamente no check-out (Tassa di Soggiorno de Roma)",
-        nearbyHighlights: [
-          {
-            name: "Fontana di Trevi & Panteão",
-            distanceText: "12 minutos de caminhada plana",
-            practicalNote: "Excelente para caminhar à noite com segurança após o jantar",
-          },
-          {
-            name: "Coliseu e Fórum Romano",
-            distanceText: "15 minutos a pé pela Via dei Fori Imperiali",
-            practicalNote: "Apresentar ingresso com horário marcado e documento original",
-          },
-          {
-            name: "Estação Roma Termini (Embarque do Trem para Florença)",
-            distanceText: "7 minutos a pé (600 metros)",
-            practicalNote: "Muito prático para ir caminhando ou em 3 minutos de táxi no dia do trem",
-          },
-        ],
-      },
-      {
-        name: "Hotel Brunelleschi Firenze (4 Estrelas)",
-        city: "Florença",
-        neighborhood: "Piazza Santa Elisabetta (Coração do Duomo)",
-        address: "Piazza Santa Elisabetta 3, 50122 Firenze FI, Itália",
-        mealPlan: "Café da Manhã Incluso",
-        checkInTime: "14:00",
-        checkOutTime: "11:00",
-        hasCityTax: true,
-        cityTaxNote: "EUR 5,50 por pessoa/noite pagos na recepção",
-        nearbyHighlights: [
-          {
-            name: "Catedral Duomo di Firenze (Santa Maria del Fiore)",
-            distanceText: "2 minutos a pé (180 metros)",
-            practicalNote: "Você faz 100% de Florença a pé a partir deste hotel",
-          },
-          {
-            name: "Ponte Vecchio & Galleria degli Uffizi",
-            distanceText: "6 minutos a pé",
-            practicalNote: "Caminhada histórica plana pelo centro renascentista",
-          },
-        ],
-      },
-      {
-        name: "Hotel Canal Grande Venezia (Boutique)",
-        city: "Veneza",
-        neighborhood: "Santa Croce (Em frente ao Grande Canal)",
-        address: "Campo San Simeone Grande 932, 30135 Venezia VE, Itália",
-        mealPlan: "Café da Manhã Veneziano",
-        checkInTime: "14:00",
-        checkOutTime: "11:00",
-        hasCityTax: true,
-        cityTaxNote: "EUR 4,50 por pessoa/noite pagos no hotel",
-        nearbyHighlights: [
-          {
-            name: "Estação de Trem Venezia Santa Lucia",
-            distanceText: "5 minutos a pé (atravessando apenas 1 ponte)",
-            practicalNote: "Localização estratégica para não carregar malas por dezenas de pontes em Veneza",
-          },
-          {
-            name: "Parada do Vaporetto Riva de Biasio (Barco Público)",
-            distanceText: "2 minutos do hotel",
-            practicalNote: "Leva direto à Ponte Rialto e Praça São Marcos pelo Grande Canal",
-          },
-        ],
-      },
-    ],
-    hasReceptiveTransfer: true,
-    receptiveCompanyName: "Welcome Pickups / Receptivo Itália Roma",
-    receptiveMeetingPoint: "Coluna de Encontro nº 4 no saguão de desembarque do Terminal 3 de Roma Fiumicino (FCO)",
-    trains: [
-      {
-        originStation: "Roma Termini",
-        destinationStation: "Firenze Santa Maria Novella (Centro de Florença)",
-        operatorName: "Trenitalia Frecciarossa (Alta Velocidade 300 km/h)",
-        departureTime: "10:20",
-        arrivalTime: "11:56",
-        seatAndCarriageInfo: "Vagão (Carrozza) 3 • Assentos (Posti) 4A e 4B",
-      },
-      {
-        originStation: "Firenze Santa Maria Novella",
-        destinationStation: "Venezia Santa Lucia (Ilha de Veneza)",
-        operatorName: "Trenitalia Frecciarossa",
-        departureTime: "11:30",
-        arrivalTime: "13:44",
-        seatAndCarriageInfo: "Vagão (Carrozza) 4 • Assentos (Posti) 8A e 8B",
-      },
-    ],
-    insuranceProvider: "Assist Card Tratado de Schengen (EUR 60.000)",
-    insurancePolicyNumber: "AC-771209-ITA",
-    commercialPriceTotalCents: 3450000,
-    commercialPaymentConditions: "Entrada + 10x sem juros",
-  },
-  europa_multipais: {
-    presentationType: "pre_boarding_guide",
-    agencyName: "Excelência Tour",
-    agencyEmergencyPhone: "+55 (49) 99999-1372",
-    tripTitle: "Guia Oficial de Pré-Embarque — Paris, Londres e Amsterdã",
-    conceptSubtitle: "Europa Clássica Multi-País — França, Reino Unido e Holanda",
-    travelerProfileType: "casal",
-    passengersNames: ["André Luiz", "Carolina Viana"],
-    adultsCount: 2,
-    childrenCount: 0,
-    startDate: "02/11/2026",
-    endDate: "15/11/2026",
-    originCity: "Chapecó",
-    destinations: ["Paris", "Londres", "Amsterdã"],
-    countries: ["França", "Reino Unido", "Holanda"],
-    flights: [
-      {
-        direction: "ida",
-        date: "02/11/2026",
-        airline: "Air France",
-        flightNumber: "AF 457",
-        originIata: "GRU",
-        destinationIata: "CDG",
-        departureTime: "18:55",
-        arrivalTime: "11:00",
-        durationText: "11h05m (Voo Direto para Paris)",
-        sameTicket: true,
-      },
-      {
-        direction: "volta",
-        date: "15/11/2026",
-        airline: "KLM Royal Dutch Airlines",
-        flightNumber: "KL 791",
-        originIata: "AMS",
-        destinationIata: "GRU",
-        departureTime: "12:35",
-        arrivalTime: "20:20",
-        durationText: "11h45m (Voo Direto de Amsterdã para São Paulo)",
-        sameTicket: true,
-      },
-    ],
-    hotels: [
-      {
-        name: "Hôtel Astotel Opera (Paris)",
-        city: "Paris",
-        neighborhood: "9º Arrondissement (Opéra / Galeries Lafayette)",
-        address: "30 Rue Joubert, 75009 Paris, França",
-        mealPlan: "Café da Manhã + Open Bar de Snacks/Bebidas não alcoólicas à tarde",
-        checkInTime: "15:00",
-        checkOutTime: "12:00",
-        hasCityTax: true,
-        cityTaxNote: "EUR 5,20 por pessoa/noite (Taxe de Séjour)",
-        nearbyHighlights: [
-          {
-            name: "Ópera Garnier & Galeries Lafayette",
-            distanceText: "4 minutos a pé",
-            practicalNote: "Estação de metrô Chaussée d'Antin a 200m conectando direto ao Louvre e Torre Eiffel",
-          },
-        ],
-      },
-      {
-        name: "Park Plaza Westminster Bridge (Londres)",
-        city: "Londres",
-        neighborhood: "South Bank / Westminster",
-        address: "200 Westminster Bridge Rd, London SE1 7UT, Reino Unido",
-        mealPlan: "English Breakfast Incluso",
-        checkInTime: "15:00",
-        checkOutTime: "12:00",
-        nearbyHighlights: [
-          {
-            name: "Big Ben, Parlamento Britânico e London Eye",
-            distanceText: "5 minutos a pé atravessando a ponte de Westminster",
-            practicalNote: "Use seu cartão por aproximação (Contactless/Apple Pay) diretamente nas catracas do metrô de Londres",
-          },
-        ],
-      },
-      {
-        name: "NH City Centre Amsterdam",
-        city: "Amsterdã",
-        neighborhood: "Canal Singel / Dam Square",
-        address: "Spuistraat 288-292, 1012 VX Amsterdam, Holanda",
-        mealPlan: "Café da Manhã Holandês",
-        checkInTime: "15:00",
-        checkOutTime: "12:00",
-        hasCityTax: true,
-        cityTaxNote: "Imposto municipal turístico de Amsterdã pago no check-out",
-        nearbyHighlights: [
-          {
-            name: "Praça Dam, Casa de Anne Frank e Mercado de Flores",
-            distanceText: "6 minutos de caminhada pelos canais",
-            practicalNote: "Cuidado ao caminhar sobre as ciclovias vermelhas exclusivas para bicicletas",
-          },
-        ],
-      },
-    ],
-    hasReceptiveTransfer: true,
-    receptiveCompanyName: "Receptivo Paris CDG",
-    trains: [
-      {
-        originStation: "Paris Gare du Nord",
-        destinationStation: "London St Pancras International",
-        operatorName: "Eurostar (Trem Internacional sob o Canal da Mancha)",
-        departureTime: "10:13",
-        arrivalTime: "11:30",
-        seatAndCarriageInfo: "Coach 8 • Seats 41 e 42 (Chegar 90 min antes para imigração britânica em Paris)",
-      },
-      {
-        originStation: "London St Pancras International",
-        destinationStation: "Amsterdam Centraal",
-        operatorName: "Eurostar Direto Londres -> Amsterdã",
-        departureTime: "11:04",
-        arrivalTime: "16:15",
-        seatAndCarriageInfo: "Coach 5 • Seats 21 e 22",
-      },
-    ],
-    insuranceProvider: "Assist Card Europa + Reino Unido",
-    insurancePolicyNumber: "AC-882910-EUR",
-    commercialPriceTotalCents: 3980000,
-    commercialPaymentConditions: "10x sem juros",
-  },
+const EMPTY_TRIP_INPUT: PreBoardingTripInput = {
+  presentationType: "pre_boarding_guide",
+  agencyName: "",
+  agencyEmergencyPhone: "",
+  tripTitle: "",
+  conceptSubtitle: "",
+  travelerProfileType: "casal",
+  passengersNames: [],
+  adultsCount: 2,
+  childrenCount: 0,
+  startDate: "",
+  endDate: "",
+  originCity: "",
+  destinations: [],
+  countries: [],
+  flights: [],
+  hotels: [],
+  hasReceptiveTransfer: false,
+  commercialPriceTotalCents: 0,
+  commercialPaymentConditions: "",
 };
 
 export function PreBoardingPresentationStudio({
   initialArchetypeKey = "caribe_resort",
   isPassengerPortal = false,
-  tripId = "13725136",
+  tripId = "",
+  initialTripInput,
+  departures = [],
 }: {
   initialArchetypeKey?: "caribe_resort" | "orlando_parques" | "italia_multicidade" | "europa_multipais";
   isPassengerPortal?: boolean;
   tripId?: string;
+  initialTripInput?: Partial<PreBoardingTripInput>;
+  departures?: any[];
 }) {
-  const [selectedPresetKey, setSelectedPresetKey] = useState<string>(initialArchetypeKey);
   const [presentationMode, setPresentationMode] = useState<"pre_boarding_guide" | "commercial_quote">(
-    "pre_boarding_guide",
+    initialTripInput?.presentationType || "pre_boarding_guide",
   );
-  const [locale, setLocale] = useState<PresentationLocale>("pt-BR");
+  const [locale, setLocale] = useState<PresentationLocale>(initialTripInput?.locale || "pt-BR");
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+
+  // Estado configurável pelo agente ou alimentado pela viagem real
+  const [customTitle, setCustomTitle] = useState(initialTripInput?.tripTitle || "");
+  const [customOriginCity, setCustomOriginCity] = useState(initialTripInput?.originCity || "");
+  const [customDestination, setCustomDestination] = useState(initialTripInput?.destinations?.[0] || "");
+  const [customCountry, setCustomCountry] = useState(initialTripInput?.countries?.[0] || "");
+  const [customStartDate, setCustomStartDate] = useState(initialTripInput?.startDate || "");
+  const [customEndDate, setCustomEndDate] = useState(initialTripInput?.endDate || "");
+  const [customPassengerName, setCustomPassengerName] = useState(initialTripInput?.passengersNames?.[0] || "");
+  const [customAirline, setCustomAirline] = useState(initialTripInput?.flights?.[0]?.airline || "");
+  const [customFlightNumber, setCustomFlightNumber] = useState(initialTripInput?.flights?.[0]?.flightNumber || "");
+  const [customOriginIata, setCustomOriginIata] = useState(initialTripInput?.flights?.[0]?.originIata || "");
+  const [customDestIata, setCustomDestIata] = useState(initialTripInput?.flights?.[0]?.destinationIata || "");
+  const [customHotelName, setCustomHotelName] = useState(initialTripInput?.hotels?.[0]?.name || "");
+  const [customMealPlan, setCustomMealPlan] = useState(initialTripInput?.hotels?.[0]?.mealPlan || "");
 
   // Agendamento de reunião de pré-embarque
   const [meetingModality, setMeetingModality] = useState<"online_video" | "in_person_agency">("online_video");
-  const [slot1, setSlot1] = useState("2026-11-25T19:00");
-  const [slot2, setSlot2] = useState("2026-11-26T14:30");
-  const [meetingLinkOrAddress, setMeetingLinkOrAddress] = useState(
-    "https://meet.google.com/wae-tur-emb (Sala Exclusiva de Pré-Embarque)",
-  );
+  const [slot1, setSlot1] = useState("");
+  const [slot2, setSlot2] = useState("");
+  const [meetingLinkOrAddress, setMeetingLinkOrAddress] = useState("");
   const [meetingStatus, setMeetingStatus] = useState<
     "not_scheduled" | "proposed_by_agency" | "accepted_by_client"
-  >("proposed_by_agency");
+  >("not_scheduled");
   const [confirmedSlot, setConfirmedSlot] = useState<string | null>(null);
 
+  const handleLoadDepartureIntoStudio = (dep: any) => {
+    setCustomTitle(`Guia de Pré-Embarque — ${dep.destination || ""}`);
+    setCustomDestination(dep.destination || "");
+    setCustomPassengerName(dep.client_name || "");
+    setCustomStartDate(dep.departure_date ? new Date(dep.departure_date).toLocaleDateString("pt-BR") : "");
+    setCustomEndDate(dep.return_date ? new Date(dep.return_date).toLocaleDateString("pt-BR") : "");
+    setCustomAirline(dep.airline_code || "");
+    setCustomFlightNumber(dep.flight_number || "");
+    setCustomHotelName(dep.hotel_name || "");
+    setActiveSlideIndex(0);
+    toast.success(`Dados do embarque de ${dep.client_name || "passageiro"} carregados no estúdio!`);
+  };
+
   const activeTripInput: PreBoardingTripInput = useMemo(() => {
-    const base = PRESET_TEMPLATES[selectedPresetKey] || PRESET_TEMPLATES.caribe_resort;
+    const mergedFlights =
+      initialTripInput?.flights && initialTripInput.flights.length > 0 && !customAirline && !customOriginIata
+        ? initialTripInput.flights
+        : customAirline || customFlightNumber || customOriginIata || customDestIata
+          ? [
+              {
+                direction: "ida" as const,
+                date: customStartDate || "",
+                airline: customAirline || "Companhia Aérea",
+                flightNumber: customFlightNumber || "",
+                originIata: customOriginIata || "",
+                destinationIata: customDestIata || "",
+                departureTime: "",
+                arrivalTime: "",
+                durationText: "",
+                sameTicket: true,
+              },
+            ]
+          : [];
+
+    const mergedHotels =
+      initialTripInput?.hotels && initialTripInput.hotels.length > 0 && !customHotelName
+        ? initialTripInput.hotels
+        : customHotelName
+          ? [
+              {
+                name: customHotelName,
+                city: customDestination || "",
+                mealPlan: customMealPlan || "Conforme reserva",
+              },
+            ]
+          : [];
+
     return {
-      ...base,
+      ...EMPTY_TRIP_INPUT,
+      ...initialTripInput,
       presentationType: presentationMode,
       locale,
+      tripTitle: customTitle || initialTripInput?.tripTitle || (customDestination ? `Guia de Pré-Embarque — ${customDestination}` : "Guia Oficial de Pré-Embarque"),
+      conceptSubtitle: initialTripInput?.conceptSubtitle || customDestination || "Roteiro Personalizado",
+      originCity: customOriginCity || initialTripInput?.originCity || "",
+      destinations: customDestination ? [customDestination] : initialTripInput?.destinations || [],
+      countries: customCountry ? [customCountry] : initialTripInput?.countries || [],
+      startDate: customStartDate || initialTripInput?.startDate || "",
+      endDate: customEndDate || initialTripInput?.endDate || "",
+      passengersNames: customPassengerName
+        ? [customPassengerName]
+        : initialTripInput?.passengersNames || [],
+      flights: mergedFlights,
+      hotels: mergedHotels,
     };
-  }, [selectedPresetKey, presentationMode, locale]);
+  }, [
+    initialTripInput,
+    presentationMode,
+    locale,
+    customTitle,
+    customOriginCity,
+    customDestination,
+    customCountry,
+    customStartDate,
+    customEndDate,
+    customPassengerName,
+    customAirline,
+    customFlightNumber,
+    customOriginIata,
+    customDestIata,
+    customHotelName,
+    customMealPlan,
+  ]);
 
   const generated = useMemo(
     () => generateDynamicTravelPresentation(activeTripInput),
@@ -521,12 +188,12 @@ export function PreBoardingPresentationStudio({
     try {
       await schedulePreBoardingMeetingFn({
         data: {
-          tripId,
+          tripId: tripId || "viagem",
           clientName: activeTripInput.passengersNames[0] || "Passageiro",
           modality: meetingModality,
           proposedSlotsIso: [slot1, slot2].filter(Boolean),
           meetingLinkOrAddress,
-          agentName: "Consultor Especialista — Excelência Tour",
+          agentName: activeTripInput.agencyName || "Consultor da Agência",
         },
       });
       setMeetingStatus("proposed_by_agency");
@@ -541,7 +208,7 @@ export function PreBoardingPresentationStudio({
 
   return (
     <div className="space-y-6">
-      {/* Cabeçalho do Estúdio / Seletor de Arquétipo ("A Viagem Define a Apresentação") */}
+      {/* Cabeçalho do Estúdio / Configurador Dinâmico da Viagem */}
       <div className="p-5 rounded-lg border border-border bg-card space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
@@ -626,43 +293,137 @@ export function PreBoardingPresentationStudio({
           </div>
         </div>
 
-        {/* Seletor de Exemplos Reais (Punta Cana / Orlando / Itália / Europa Multi-País) */}
-        <div className="tab-list flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar pt-2 border-t border-border/60">
-          {[
-            {
-              key: "caribe_resort",
-              label: "Caso 1: Punta Cana (All-Inclusive + Conexão Panamá PTY + E-Ticket/Vacina)",
-            },
-            {
-              key: "orlando_parques",
-              label: "Caso 2: Orlando em Família (Disney/Universal + Visto EUA + Carro)",
-            },
-            {
-              key: "italia_multicidade",
-              label: "Caso 3: Itália Multicidade (Roma, Florença e Veneza + Trens + 3 Hotéis)",
-            },
-            {
-              key: "europa_multipais",
-              label: "Caso 4: Europa Multi-País (Paris, Londres e Amsterdã + Euro vs Libra + Tomada UK)",
-            },
-          ].map((preset) => (
-            <button
-              key={preset.key}
-              type="button"
-              onClick={() => {
-                setSelectedPresetKey(preset.key);
-                setActiveSlideIndex(0);
-              }}
-              className={`h-11 min-h-11 px-4 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                selectedPresetKey === preset.key
-                  ? "bg-primary/15 text-primary border border-primary/40 font-bold"
-                  : "bg-muted/50 text-muted-foreground hover:text-foreground border border-transparent"
-              }`}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
+        {/* Seletor de Embarques Reais da Agência + Campos Configuráveis (Zero Hardcode) */}
+        {!isPassengerPortal && (
+          <div className="pt-3 border-t border-border/60 space-y-3">
+            {departures && departures.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-muted-foreground">Carregar de Embarque Real:</span>
+                {departures.slice(0, 8).map((dep: any) => (
+                  <button
+                    key={dep.id}
+                    type="button"
+                    onClick={() => handleLoadDepartureIntoStudio(dep)}
+                    className="h-11 min-h-11 px-3 rounded-lg border border-border bg-muted/40 hover:bg-muted text-xs font-semibold text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {dep.client_name} · {dep.destination}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Passageiro Principal</Label>
+                <Input
+                  value={customPassengerName}
+                  onChange={(e) => setCustomPassengerName(e.target.value)}
+                  placeholder="Nome do passageiro"
+                  className="h-11 min-h-11 text-xs mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Cidade de Origem</Label>
+                <Input
+                  value={customOriginCity}
+                  onChange={(e) => setCustomOriginCity(e.target.value)}
+                  placeholder="Cidade de saída"
+                  className="h-11 min-h-11 text-xs mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Destino Principal</Label>
+                <Input
+                  value={customDestination}
+                  onChange={(e) => setCustomDestination(e.target.value)}
+                  placeholder="Cidade ou destino"
+                  className="h-11 min-h-11 text-xs mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">País de Destino</Label>
+                <Input
+                  value={customCountry}
+                  onChange={(e) => setCustomCountry(e.target.value)}
+                  placeholder="País"
+                  className="h-11 min-h-11 text-xs mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Data de Ida</Label>
+                <Input
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  placeholder="DD/MM/AAAA"
+                  className="h-11 min-h-11 text-xs mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Data de Retorno</Label>
+                <Input
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  placeholder="DD/MM/AAAA"
+                  className="h-11 min-h-11 text-xs mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Cia Aérea & Nº Voo</Label>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <Input
+                    value={customAirline}
+                    onChange={(e) => setCustomAirline(e.target.value)}
+                    placeholder="Cia Aérea"
+                    className="h-11 min-h-11 text-xs"
+                  />
+                  <Input
+                    value={customFlightNumber}
+                    onChange={(e) => setCustomFlightNumber(e.target.value)}
+                    placeholder="Nº Voo"
+                    className="h-11 min-h-11 text-xs font-mono"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Aeroportos IATA (Origem / Destino)</Label>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <Input
+                    value={customOriginIata}
+                    onChange={(e) => setCustomOriginIata(e.target.value.toUpperCase())}
+                    placeholder="IATA Origem"
+                    maxLength={4}
+                    className="h-11 min-h-11 text-xs font-mono uppercase"
+                  />
+                  <Input
+                    value={customDestIata}
+                    onChange={(e) => setCustomDestIata(e.target.value.toUpperCase())}
+                    placeholder="IATA Destino"
+                    maxLength={4}
+                    className="h-11 min-h-11 text-xs font-mono uppercase"
+                  />
+                </div>
+              </div>
+              <div className="sm:col-span-2">
+                <Label className="text-xs text-muted-foreground">Hotel / Hospedagem Confirmada</Label>
+                <Input
+                  value={customHotelName}
+                  onChange={(e) => setCustomHotelName(e.target.value)}
+                  placeholder="Nome do hotel ou resort"
+                  className="h-11 min-h-11 text-xs mt-1"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Label className="text-xs text-muted-foreground">Regime de Alimentação</Label>
+                <Input
+                  value={customMealPlan}
+                  onChange={(e) => setCustomMealPlan(e.target.value)}
+                  placeholder="Café da manhã, Meia Pensão, All-Inclusive..."
+                  className="h-11 min-h-11 text-xs mt-1"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Palco do Slide Ativo (Visual Limpo Apple HIG — Zero Truncate) */}
@@ -844,8 +605,8 @@ export function PreBoardingPresentationStudio({
             )}
 
             {currentSlide.alertBanner && (
-              <div className="p-4 rounded-lg border border-amber-500/40 bg-amber-500/10 flex items-start gap-3 text-xs">
-                <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-1" />
+              <div className="p-4 rounded-lg border border-warning/40 bg-warning/10 flex items-start gap-3 text-xs">
+                <AlertTriangle className="size-4 text-warning-strong shrink-0 mt-1" />
                 <div>
                   <span className="font-bold text-foreground block">
                     {currentSlide.alertBanner.level}

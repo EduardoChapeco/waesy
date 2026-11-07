@@ -340,6 +340,23 @@ export const emitOrderNFeAutomated = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (!config || !config.cnpj) {
+      // Invariante B.25 & NC-005: Enfileira pendência fiscal para não haver omissão silenciosa
+      try {
+        await supabase.from("fiscal_events_queue").insert({
+          store_id: targetStoreId,
+          order_id: order.id,
+          event_type: "nfe_pending_configuration",
+          status: "pending_credentials",
+          payload: {
+            order_id: order.id,
+            total_cents: order.total_cents,
+            reason: "Loja sem CNPJ ou credencial fiscal cadastrada.",
+          },
+          created_at: new Date().toISOString(),
+        });
+      } catch (queueErr) {
+        console.warn("[fiscal] Aviso ao registrar fiscal_events_queue:", queueErr);
+      }
       return { success: false, reason: "Loja sem CNPJ cadastrado para emissão fiscal." };
     }
 

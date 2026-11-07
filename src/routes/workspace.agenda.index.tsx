@@ -15,7 +15,7 @@ import { BookingDossierModal } from "@/components/booking/booking-dossier-modal"
 import { ManualAppointmentModal } from "@/components/booking/manual-appointment-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/commerce/page-header";
+import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { formatMoney } from "@/lib/money";
@@ -98,7 +98,7 @@ function ClinicalRecordDrawer({
  className="h-20 text-xs rounded-lg"
  />
  <Button
- className="w-full h-10 rounded-lg text-xs font-bold"
+ className="w-full h-10 rounded-lg text-xs font-bold min-h-11 sm:min-h-0"
  disabled={!content.trim() || addMutation.isPending}
  onClick={() => addMutation.mutate(content)}
  >
@@ -276,7 +276,7 @@ function AdminAppointmentsPage() {
  case "pending":
  case "confirmed":
  return (
- <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs font-bold">
+ <Badge variant="outline" className="bg-warning/10 text-warning-strong border-warning/20 text-xs font-bold">
  Agendado
  </Badge>
  );
@@ -317,45 +317,31 @@ function AdminAppointmentsPage() {
 
  return (
  <div className="space-y-6 h-full flex flex-col">
- <PageHeader
- eyebrow="Atendimentos"
- title="Agenda"
- actions={
- <div className="flex items-center gap-2 flex-wrap">
- <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg">
- <Button
- size="sm"
- variant={viewMode === "daily" ? "default" : "ghost"}
- onClick={() => setViewMode("daily")}
- className="h-9 px-3 rounded-md text-xs font-bold gap-1.5 cursor-pointer"
- >
- <CalendarIcon className="size-3.5" />
- <span>Diário</span>
- </Button>
- <Button
- size="sm"
- variant={viewMode === "heatmap" ? "default" : "ghost"}
- onClick={() => setViewMode("heatmap")}
- className="h-9 px-3 rounded-md text-xs font-bold gap-1.5 cursor-pointer"
- >
- <Clock className="size-3.5" />
- <span>Heatmap</span>
- </Button>
- </div>
- <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 min-h-11">
- <Link to="/workspace/pacotes">
- <Ticket className="size-3.5 text-primary" />
- <span>Pacotes e Passes</span>
- </Link>
- </Button>
- <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 min-h-11">
- <Link to="/workspace/agenda/recursos">
- <Users className="size-3.5" />
- <span>Profissionais e Salas</span>
- </Link>
- </Button>
- </div>
- }
+ {/* ── Toolbar Canônica do Workspace (AGENTS.md B.26 & NC-002) ── */}
+ <WorkspaceCanonicalToolbar
+  title="Agenda"
+  viewModes={[
+   { id: "daily", label: "Diário", icon: CalendarIcon },
+   { id: "heatmap", label: "Heatmap", icon: Clock },
+  ]}
+  activeViewMode={viewMode}
+  onViewModeChange={(m) => setViewMode(m as any)}
+  primaryAction={
+   <div className="flex items-center gap-2">
+    <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 sm:h-9">
+     <Link to="/workspace/pacotes">
+      <Ticket className="size-3.5 text-primary" />
+      <span>Pacotes e Passes</span>
+     </Link>
+    </Button>
+    <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 sm:h-9">
+     <Link to="/workspace/agenda/recursos">
+      <Users className="size-3.5 text-primary" />
+      <span>Profissionais e Salas</span>
+     </Link>
+    </Button>
+   </div>
+  }
  />
 
       {viewMode === "heatmap" ? (
@@ -381,7 +367,7 @@ function AdminAppointmentsPage() {
  <ChevronLeft className="size-4" />
  </Button>
 
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 justify-center py-1">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar flex-1 justify-center py-1">
  {weekDays.map((d, idx) => {
  const isSelected = isSameDay(d, selectedDate);
  const isToday = isSameDay(d, new Date());
@@ -467,7 +453,7 @@ function AdminAppointmentsPage() {
  </p>
  </div>
  ) : (
- <div className="flex-1 overflow-x-auto no-scrollbar pb-4">
+ <div className="flex-1 overflow-x-auto scroll-area-carousel no-scrollbar pb-4">
  <div className="flex gap-4 min-w-max items-start">
  {Object.keys(groupedAppointments).map((resourceName) => (
  <div

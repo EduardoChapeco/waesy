@@ -501,7 +501,7 @@ export function ProductFoodSpecsCard({
       </div>
 
       {/* Aviso de Transparência */}
-      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-2xs text-amber-700 dark:text-amber-300 leading-snug">
+      <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-2xs text-warning-strong  leading-snug">
         Lembre-se: Você é legalmente responsável pela veracidade dos ingredientes e restrições alimentares declaradas, garantindo segurança aos clientes com alergias alimentares.
       </div>
     </div>

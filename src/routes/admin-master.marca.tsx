@@ -240,7 +240,7 @@ function AdminMasterMarcaPage() {
  {/* Indicador de Status */}
  <div className="flex items-center gap-2">
  {isDirty ? (
- <Badge className="bg-amber-500/10 text-amber-600 text-xs font-semibold px-3 py-1">
+ <Badge className="bg-warning/10 text-warning-strong text-xs font-semibold px-3 py-1">
  ● Alterações não salvas
  </Badge>
  ) : (
@@ -383,7 +383,7 @@ function AdminMasterMarcaPage() {
  <div className="p-5 rounded-lg bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center shrink-0">
  <Palette className="size-4" />
  </div>
  <div>
@@ -1008,7 +1008,7 @@ function AdminMasterMarcaPage() {
 
  {/* Trilho de Chips */}
  {/* design-lint-ignore DL-30 reason:"Trilho horizontal de preview de navegacao com overflow nativo" expiry:"2027-12-31" */}
- <div className="px-3 py-2 bg-muted/15 flex items-center gap-2 overflow-x-auto no-scrollbar text-2xs">
+ <div className="px-3 py-2 bg-muted/15 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar text-2xs">
  <span className="px-2 py-1 rounded-md bg-background text-foreground font-medium shrink-0">
  Início
  </span>
@@ -1169,7 +1169,7 @@ function AdminMasterMarcaPage() {
  <span>{supportEmail || "Não informado"}</span>
  </div>
  <div className="flex items-center gap-2 text-muted-foreground">
- <Clock className="size-3.5 text-amber-500" />
+ <Clock className="size-3.5 text-warning-strong" />
  <span>{supportHours || "Não informado"}</span>
  </div>
  {socialInstagram && (
@@ -1195,7 +1195,7 @@ function AdminMasterMarcaPage() {
  Configurações de Identidade Visual e CMS
  </span>
  {isDirty && (
- <span className="text-xs text-amber-600 font-medium hidden sm:inline">
+ <span className="text-xs text-warning-strong font-medium hidden sm:inline">
  (Alterações prontas para publicação)
  </span>
  )}

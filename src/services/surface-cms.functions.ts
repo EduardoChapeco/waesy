@@ -9,6 +9,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
+import { microCache } from "@/lib/cache/micro-cache";
 import { NICHE_STORE_KEYWORDS, isMatchNicheKeyword } from "@/services/marketplace.functions";
 import type { FlashOfferDTO, StoreCardDTO } from "@/services/marketplace.functions";
 import { formatStoreCategory } from "@/lib/niches/niche-manifest";
@@ -263,91 +264,83 @@ export function ensureCanonicalSurfaces(existing: MarketplaceSurfaceDTO[]): Mark
 	return copy;
 }
 
-// ─── 1. LISTAR TODAS AS SUPERFÍCIES (ADMIN MASTER) ─────────────────────────
+// ─── 1. LISTAR TODAS AS SUPERFÍCIES GLOBAIS (ADMIN MASTER) ─────────────────
 export const listAllSurfaces = createServerFn({ method: "GET" }).handler(async () => {
- const supabase = getServerClient();
- const { data, error } = await supabase
- .from("marketplace_surfaces")
- .select("*")
- .order("is_global", { ascending: false })
- .order("title", { ascending: true });
+	const { requirePlatformAdmin } = await import("@/lib/server-access");
+	await requirePlatformAdmin();
 
- if (error) {
- console.error("[surface-cms] Error listing surfaces:", error.message);
- return [];
- }
+	const supabase = getServerClient();
+	const { data, error } = await supabase
+		.from("marketplace_surfaces")
+		.select("*")
+		.or("is_global.eq.true,store_id.is.null")
+		.order("title", { ascending: true });
+
+	if (error) {
+		console.error("[surface-cms] Error listing surfaces:", error.message);
+		return ensureCanonicalSurfaces([]);
+	}
 
 	return ensureCanonicalSurfaces((data || []) as MarketplaceSurfaceDTO[]);
 });
 
-// ─── 2. LISTAR SEÇÕES DE UMA SUPERFÍCIE (PARA O EDITOR DO ADMIN/WORKSPACE) ──
+// ─── 2. LISTAR SEÇÕES DE UMA SUPERFÍCIE (LEITURA PURA SEM INSERT EM GET) ──
 export const listSurfaceSections = createServerFn({ method: "GET" })
- .validator(
- z.object({
- surfaceSlug: z.string(),
- storeId: z.string().optional(),
- })
- )
- .handler(async ({ data: { surfaceSlug, storeId } }) => {
- const supabase = getServerClient();
- let targetSurfaceSlug = surfaceSlug;
- let targetStoreId = storeId;
-	const canonicalMatch = CANONICAL_PLATFORM_SURFACES.find((s) => s.slug === surfaceSlug);
-	if (canonicalMatch && surfaceSlug !== "store_private") {
-		try {
-			const { data: surfCheck } = await supabase
-				.from("marketplace_surfaces")
-				.select("id, slug, title")
-				.eq("slug", surfaceSlug)
-				.maybeSingle();
-			if (!surfCheck) {
-				await supabase.from("marketplace_surfaces").insert({
-					slug: canonicalMatch.slug,
-					title: canonicalMatch.title,
-					description: canonicalMatch.description || null,
-					is_global: true,
-				});
+	.validator(
+		z.object({
+			surfaceSlug: z.string(),
+			storeId: z.string().optional(),
+		}),
+	)
+	.handler(async ({ data: { surfaceSlug, storeId } }) => {
+		const supabase = getServerClient();
+		let targetSurfaceSlug = surfaceSlug;
+		let targetStoreId = storeId;
+		const canonicalMatch = CANONICAL_PLATFORM_SURFACES.find((s) => s.slug === surfaceSlug);
+
+		if (surfaceSlug === "store_private") {
+			const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+			const authCtx = await authorizeBuilderStoreContext().catch(() => null);
+			if (!authCtx?.storeId) {
+				return { surface: null, sections: [] };
 			}
-		} catch {}
-	}
+			targetStoreId = authCtx.storeId;
+			targetSurfaceSlug = `vitrine-${authCtx.storeId}`;
+		}
 
- if (surfaceSlug === "store_private") {
- const { getServerIdentity } = await import("@/lib/server-access");
- const identity = await getServerIdentity().catch(() => ({ store_id: null }));
- if (!identity?.store_id) {
- return { surface: null, sections: [] };
- }
- targetStoreId = identity.store_id;
- targetSurfaceSlug = `vitrine-${identity.store_id}`;
- }
+		let surfaceQuery = supabase
+			.from("marketplace_surfaces")
+			.select("id, slug, title, store_id, is_global")
+			.eq("slug", targetSurfaceSlug);
 
- // 1. Busca a superfície
- let surfaceQuery = supabase
- .from("marketplace_surfaces")
- .select("id, slug, title")
- .eq("slug", targetSurfaceSlug);
+		if (targetStoreId) {
+			surfaceQuery = surfaceQuery.eq("store_id", targetStoreId);
+		}
 
- if (targetStoreId) {
- surfaceQuery = surfaceQuery.eq("store_id", targetStoreId);
- }
+		const { data: surface } = await surfaceQuery.maybeSingle();
 
- let { data: surface } = await surfaceQuery.maybeSingle();
-
- // Auto-cria a superfície privada da loja se ainda não existir
- if (!surface && targetStoreId && targetSurfaceSlug.startsWith("vitrine-")) {
- const { data: newSurf } = await supabase
- .from("marketplace_surfaces")
- .insert({
- store_id: targetStoreId,
- slug: targetSurfaceSlug,
- title: "Vitrine da Loja",
- type: "store",
- })
- .select("id, slug, title")
- .maybeSingle();
-
- surface = newSurf;
- }
+		if (!surface) {
+			if (canonicalMatch && surfaceSlug !== "store_private") {
+				return {
+					surface: {
+						id: canonicalMatch.id,
+						slug: canonicalMatch.slug,
+						title: canonicalMatch.title,
+					},
+					sections: [],
+				};
+			}
+			if (targetStoreId && targetSurfaceSlug.startsWith("vitrine-")) {
+				return {
+					surface: {
+						id: "store_private",
+						slug: targetSurfaceSlug,
+						title: "Vitrine da Loja",
+					},
+					sections: [],
+				};
+			}
+		}
 
  if (!surface) {
   const canonicalFallback = CANONICAL_PLATFORM_SURFACES.find((s) => s.slug === targetSurfaceSlug);
@@ -591,14 +584,31 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
     }
 
 
- // 3.5 Busca banners ativos da plataforma para seções de banner
+ // 3.5 Busca banners ativos da plataforma usando colunas reais e janela temporal (B.29)
+ const nowMs = Date.now();
  const { data: rawBanners } = await supabase
  .from("banners")
- .select("id, title, subtitle, image_url, mobile_image_url, link_url, target_type, placement, position, is_active, city_filter")
+ .select("id, title, subtitle, badge_text, media_url, media_desktop_url, media_mobile_url, media_type, target_url, target_type, cta_label, placement, sort_order, is_active, city_filter, starts_at, ends_at, auto_archive_at")
  .eq("is_active", true)
- .order("position", { ascending: true });
+ .order("sort_order", { ascending: true });
 
- const platformBanners = rawBanners || [];
+ const platformBanners = (rawBanners || [])
+   .filter((b: any) => {
+     if (b.starts_at && new Date(b.starts_at).getTime() > nowMs) return false;
+     if (b.ends_at && new Date(b.ends_at).getTime() < nowMs) return false;
+     if (b.auto_archive_at && new Date(b.auto_archive_at).getTime() < nowMs) return false;
+     if (cleanCity && b.city_filter && b.city_filter !== "all" && b.city_filter.toLowerCase() !== cleanCity.toLowerCase()) {
+       return false;
+     }
+     return true;
+   })
+   .map((b: any) => ({
+     ...b,
+     image_url: b.media_desktop_url || b.media_url || "",
+     mobile_image_url: b.media_mobile_url || b.media_url || "",
+     link_url: b.target_url || "/",
+     position: b.sort_order ?? 0,
+   }));
 
  // 4. Hidrata cada seção com sua data_source e ranking_strategy (inclusive random_shuffle)
  const usedProductIds = new Set<string>();
@@ -824,19 +834,16 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  )
  .handler(async ({ data: payload }) => {
  const supabase = getServerClient();
+ const { authorizeBuilderStoreContext, requirePlatformAdmin } = await import("@/lib/server-access");
  let realSurfaceId = payload.surface_id;
 
  if (realSurfaceId === "store_private") {
- const { getServerIdentity } = await import("@/lib/server-access");
- const identity = await getServerIdentity().catch(() => ({ store_id: null }));
- if (!identity?.store_id) {
- throw new Error("Loja ativa não identificada. Selecione um espaço de trabalho.");
- }
- const targetSlug = `vitrine-${identity.store_id}`;
+ const authCtx = await authorizeBuilderStoreContext();
+ const targetSlug = `vitrine-${authCtx.storeId}`;
  let { data: existingSurf } = await supabase
  .from("marketplace_surfaces")
  .select("id")
- .eq("store_id", identity.store_id)
+ .eq("store_id", authCtx.storeId)
  .eq("slug", targetSlug)
  .maybeSingle();
 
@@ -844,7 +851,7 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  const { data: newSurf, error: createSurfErr } = await supabase
  .from("marketplace_surfaces")
  .insert({
- store_id: identity.store_id,
+ store_id: authCtx.storeId,
  slug: targetSlug,
  title: "Vitrine da Loja",
  type: "store",
@@ -858,9 +865,8 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  existingSurf = newSurf;
  }
  realSurfaceId = existingSurf.id;
- }
-
- if (realSurfaceId.startsWith("canonical-surface-")) {
+ } else if (realSurfaceId.startsWith("canonical-surface-")) {
+  await requirePlatformAdmin();
   const targetSlug = realSurfaceId.replace(/^canonical-surface-/, "");
   const canonicalDef = CANONICAL_PLATFORM_SURFACES.find((s) => s.slug === targetSlug);
   const { data: existingCanonicalSurf } = await supabase
@@ -886,6 +892,31 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
     throw new Error("Falha ao materializar superfície canônica: " + (createCanonicalErr?.message || targetSlug));
    }
    realSurfaceId = createdCanonicalSurf.id;
+  }
+ } else {
+  const { data: targetSurf } = await supabase
+   .from("marketplace_surfaces")
+   .select("id, store_id, is_global")
+   .eq("id", realSurfaceId)
+   .maybeSingle();
+  if (!targetSurf) {
+   throw new Error("Superfície de vitrine não encontrada.");
+  }
+  if (targetSurf.store_id && !targetSurf.is_global) {
+   await authorizeBuilderStoreContext({ requestedStoreId: targetSurf.store_id });
+  } else {
+   await requirePlatformAdmin();
+  }
+ }
+
+ if (payload.id) {
+  const { data: existingSec } = await supabase
+   .from("marketplace_sections")
+   .select("id, surface_id")
+   .eq("id", payload.id)
+   .maybeSingle();
+  if (existingSec && existingSec.surface_id !== realSurfaceId) {
+   throw new Error("Forbidden: Seção pertence a outra superfície.");
   }
  }
 
@@ -1107,21 +1138,34 @@ async function buildHydratedPlatformOmniDocument(
    ? [...sec.items].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
    : [];
   const key = sec.section_key || "";
+  const layoutVar = sec.layout_variant || sec.section_type || "";
 
-  if (key === "quick_categories" || key === "explore_categories" || sec.section_type === "grid_2d") {
+  if (
+   key === "quick_categories" ||
+   key === "quick_categories_ifood" ||
+   key === "explore_categories" ||
+   key === "marketplace_categories" ||
+   layoutVar === "grid_2d" ||
+   layoutVar === "native_dock" ||
+   layoutVar === "custom_buttons"
+  ) {
    return {
     id: `blk_${key}`,
     type: "vitrine_buttons_dock",
+    isVisible: sec.is_active !== false,
+    cityFilter: sec.city_filter || undefined,
+    startsAt: sec.starts_at || undefined,
+    endsAt: sec.ends_at || undefined,
     config: {
      cmsSectionKey: key,
      cmsSectionId: sec.id,
      sectionTitle: sec.title || "",
      sectionSubtitle: sec.subtitle || "",
      dataSource: "manual",
-     desktopLayout: "noor_dock",
+     desktopLayout: layoutVar === "grid_2d" ? "ifood_grid" : "noor_dock",
      mobileLayout: "ifood_grid",
-     desktopColumns: sec.layout_config?.cols_desktop || 8,
-     mobileColumns: sec.layout_config?.cols_mobile || 4,
+     desktopColumns: sec.metadata?.cols_desktop || 8,
+     mobileColumns: sec.metadata?.cols_mobile || 4,
      defaultShape: "squircle",
      items: items.map((it: any) => ({
       id: it.id,
@@ -1129,9 +1173,9 @@ async function buildHydratedPlatformOmniDocument(
       subtitle: it.subtitle || "",
       badge: it.badge_text || "",
       iconName: it.icon_name || "Tag",
-      imageMobileUrl: it.mobile_image_url || it.image_url || "",
-      imageDesktopUrl: it.image_url || "",
-      imageUrl: it.image_url || "",
+      imageMobileUrl: it.image_mobile_url || it.mobile_image_url || it.image_url || "",
+      imageDesktopUrl: it.image_desktop_url || it.image_url || "",
+      imageUrl: it.image_url || it.image_desktop_url || it.image_mobile_url || "",
       href: it.target_url || "/",
       shape: it.button_shape || "squircle",
       bgColor: it.bg_color || "",
@@ -1148,17 +1192,28 @@ async function buildHydratedPlatformOmniDocument(
    };
   }
 
-  if (key === "chat_noor_bento" || key === "explore_pillars" || sec.section_type === "cards_action_grid") {
+  if (
+   key === "chat_noor_bento" ||
+   key === "explore_pillars" ||
+   key === "hotpages_grid" ||
+   key === "mosaic_gallery_showcase" ||
+   layoutVar === "bento_grid" ||
+   layoutVar === "cards_action_grid"
+  ) {
    return {
     id: `blk_${key}`,
     type: "vitrine_bento_tetris",
+    isVisible: sec.is_active !== false,
+    cityFilter: sec.city_filter || undefined,
+    startsAt: sec.starts_at || undefined,
+    endsAt: sec.ends_at || undefined,
     config: {
      cmsSectionKey: key,
      cmsSectionId: sec.id,
      sectionTitle: sec.title || "",
      sectionSubtitle: sec.subtitle || "",
-     desktopColumns: sec.layout_config?.cols_desktop || 3,
-     mobileColumns: sec.layout_config?.cols_mobile || 2,
+     desktopColumns: sec.metadata?.cols_desktop || 3,
+     mobileColumns: sec.metadata?.cols_mobile || 2,
      tiles: items.map((it: any) => ({
       id: it.id,
       tag: it.badge_text || "",
@@ -1166,17 +1221,17 @@ async function buildHydratedPlatformOmniDocument(
       subtitle: it.subtitle || "",
       ctaLabel: "Acessar",
       href: it.target_url || "/",
-      imageMobileUrl: it.mobile_image_url || it.image_url || "",
-      imageDesktopUrl: it.image_url || "",
-      imageUrl: it.image_url || "",
+      imageMobileUrl: it.image_mobile_url || it.mobile_image_url || it.image_url || "",
+      imageDesktopUrl: it.image_desktop_url || it.image_url || "",
+      imageUrl: it.image_url || it.image_desktop_url || "",
       iconName: it.icon_name || "Sparkles",
       bgColor: it.bg_color || "",
       textColor: it.text_color || "",
       gradient: it.metadata?.gradient || "",
       shadowMode: it.metadata?.shadow_mode || "none",
-      spanX: Number(it.metadata?.span || 1),
-      spanY: 1,
-      mobileSpanX: Number(it.metadata?.span || 1) >= 2 ? 2 : 1,
+      spanX: Number(it.grid_span_x || it.metadata?.span || 1),
+      spanY: Number(it.grid_span_y || 1),
+      mobileSpanX: Number(it.grid_span_x || it.metadata?.span || 1) >= 2 ? 2 : 1,
       cityFilter: it.city_filter || "",
       startsAt: it.starts_at || "",
       endsAt: it.ends_at || "",
@@ -1186,11 +1241,19 @@ async function buildHydratedPlatformOmniDocument(
    };
   }
 
-  if (key === "promo_strip_timer" || key === "promo_coupon" || sec.section_type === "promo_strip" || sec.section_type === "promo_strip_timer") {
+  if (
+   key === "promo_strip_timer" ||
+   key === "promo_coupon" ||
+   key === "promo_coupon_banner"
+  ) {
    const first = items[0] || {};
    return {
     id: `blk_${key}`,
     type: "vitrine_coupon_strip",
+    isVisible: sec.is_active !== false,
+    cityFilter: sec.city_filter || undefined,
+    startsAt: sec.starts_at || undefined,
+    endsAt: sec.ends_at || undefined,
     config: {
      cmsSectionKey: key,
      cmsSectionId: sec.id,
@@ -1201,19 +1264,24 @@ async function buildHydratedPlatformOmniDocument(
      couponCode: first.metadata?.coupon_code || "WAESY10",
      ctaLabel: "Aproveitar",
      href: first.target_url || "/ofertas",
-     timerExpiresAt: first.ends_at || "",
+     timerExpiresAt: first.ends_at || sec.ends_at || "",
      bgColor: first.bg_color || "",
      textColor: first.text_color || "",
      gradient: first.metadata?.gradient || "",
-     cityFilter: first.city_filter || "",
-     startsAt: first.starts_at || "",
-     endsAt: first.ends_at || "",
+     cityFilter: first.city_filter || sec.city_filter || "",
+     startsAt: first.starts_at || sec.starts_at || "",
+     endsAt: first.ends_at || sec.ends_at || "",
     },
     styling: { paddingY: "none" },
    };
   }
 
-  if (key === "hero_banners" || key === "promo_banners_slim" || sec.section_type === "carousel" || sec.section_type === "slim_slider") {
+  if (
+   key === "hero_banners" ||
+   key === "promo_banners_slim" ||
+   layoutVar === "slim_slider" ||
+   (layoutVar === "carousel" && !["marketplace_products_rail", "classifieds_rail", "jobs_rail", "social_posts_vitrine"].includes(key))
+  ) {
    const mappedSectionSlides = items.map((it: any) => ({
     id: it.id,
     badge: it.badge_text || "Destaque",
@@ -1221,9 +1289,9 @@ async function buildHydratedPlatformOmniDocument(
     subtitle: it.subtitle || "",
     ctaLabel: "Conferir",
     href: it.target_url || "/ofertas",
-    imageDesktopUrl: it.image_url || "",
-    imageMobileUrl: it.mobile_image_url || it.image_url || "",
-    imageUrl: it.image_url || "",
+    imageDesktopUrl: it.image_desktop_url || it.image_url || "",
+    imageMobileUrl: it.image_mobile_url || it.mobile_image_url || it.image_url || "",
+    imageUrl: it.image_url || it.image_desktop_url || "",
     videoUrl: it.metadata?.video_url || "",
     showOverlay: it.show_text !== false,
     bgColor: it.bg_color || "",
@@ -1241,6 +1309,7 @@ async function buildHydratedPlatformOmniDocument(
    return {
     id: `blk_${key}`,
     type: "vitrine_metamorphic_banner",
+    isVisible: sec.is_active !== false,
     config: {
      cmsSectionKey: key,
      cmsSectionId: sec.id,
@@ -1248,7 +1317,7 @@ async function buildHydratedPlatformOmniDocument(
      sectionTitle: sec.title || "",
      sectionSubtitle: sec.subtitle || "",
      dataSource: "manual",
-     desktopAspectRatio: sec.section_type === "slim_slider" ? "slim" : "ifood",
+     desktopAspectRatio: layoutVar === "slim_slider" || sec.aspect_ratio === "slim_desktop" ? "slim" : "ifood",
      mobileAspectRatio: "cinema",
      autoPlay: true,
      intervalSeconds: 5,
@@ -1261,15 +1330,67 @@ async function buildHydratedPlatformOmniDocument(
    };
   }
 
+  if (key === "marketplace_products_rail") {
+   return {
+    id: `blk_${key}`,
+    type: "vitrine_product_shelf",
+    isVisible: sec.is_active !== false,
+    dataBinding: { entity: "products", limit: 12, sort: "newest" },
+    config: {
+     cmsSectionKey: key,
+     cmsSectionId: sec.id,
+     sectionTitle: sec.title || "Marketplace de Empresas",
+     sectionSubtitle: sec.subtitle || "",
+     dataSource: "products",
+    },
+    styling: { paddingY: "none" },
+   };
+  }
+
+  if (key === "classifieds_rail") {
+   return {
+    id: `blk_${key}`,
+    type: "vitrine_classifieds_rail",
+    isVisible: sec.is_active !== false,
+    dataBinding: { entity: "classifieds", limit: 12, sort: "newest" },
+    config: {
+     cmsSectionKey: key,
+     cmsSectionId: sec.id,
+     sectionTitle: sec.title || "Classificados & Desapegos",
+     sectionSubtitle: sec.subtitle || "",
+     dataSource: "classifieds",
+    },
+    styling: { paddingY: "none" },
+   };
+  }
+
+  if (key === "social_posts_vitrine") {
+   return {
+    id: `blk_${key}`,
+    type: "vitrine_social_stream",
+    isVisible: sec.is_active !== false,
+    dataBinding: { entity: "posts", limit: 10, sort: "newest" },
+    config: {
+     cmsSectionKey: key,
+     cmsSectionId: sec.id,
+     sectionTitle: sec.title || "Feed da Cidade",
+     sectionSubtitle: sec.subtitle || "",
+     dataSource: "posts",
+    },
+    styling: { paddingY: "none" },
+   };
+  }
+
   if (key === "subcategory_pills") {
    return {
     id: `blk_${key}`,
     type: "vitrine_subcategory_pills",
+    isVisible: sec.is_active !== false,
     config: {
      cmsSectionKey: key,
      cmsSectionId: sec.id,
-     showText: sec.layout_config?.show_text !== false,
-     textPosition: sec.layout_config?.text_position || "below",
+     showText: sec.metadata?.show_text !== false,
+     textPosition: sec.metadata?.text_position || "below",
      items: items.map((it: any) => ({
       id: it.id,
       label: it.title || "Subcategoria",
@@ -1286,6 +1407,7 @@ async function buildHydratedPlatformOmniDocument(
    return {
     id: `blk_${key}`,
     type: "vitrine_feature_mini_banners",
+    isVisible: sec.is_active !== false,
     config: {
      cmsSectionKey: key,
      cmsSectionId: sec.id,
@@ -1303,27 +1425,38 @@ async function buildHydratedPlatformOmniDocument(
    };
   }
 
-  if (key === "visual_spotlight" || sec.section_type === "spotlight_rail") {
+  if (
+   key === "visual_spotlight" ||
+   key === "spotlight_restaurants" ||
+   key === "spotlight_pharmacies"
+  ) {
    return {
     id: `blk_${key}`,
     type: "vitrine_visual_spotlight_rail",
+    isVisible: sec.is_active !== false,
+    dataBinding: {
+     entity: "stores",
+     nicheFilter: key === "spotlight_pharmacies" ? "farmacia" : "gastronomia",
+     limit: 12,
+    },
     config: {
      cmsSectionKey: key,
      cmsSectionId: sec.id,
-     title: sec.title || "Restaurantes com Cupom",
+     title: sec.title || "Restaurantes em Destaque",
      subtitle: sec.subtitle || "",
-     isAd: true,
-     viewMoreTo: "/gastronomia",
+     viewMoreTo: key === "spotlight_pharmacies" ? "/farmacia" : "/gastronomia",
      viewMoreLabel: "Ver mais",
     },
     styling: { paddingY: "none" },
    };
   }
 
-  if (key === "recent_stores" || sec.section_type === "avatar_rail") {
+  if (key === "recent_stores" || key === "recent_stores_rail") {
    return {
     id: `blk_${key}`,
     type: "vitrine_recent_stores_rail",
+    isVisible: sec.is_active !== false,
+    dataBinding: { entity: "stores", limit: 12, sort: "newest" },
     config: {
      cmsSectionKey: key,
      cmsSectionId: sec.id,
@@ -1337,6 +1470,8 @@ async function buildHydratedPlatformOmniDocument(
   return {
    id: `blk_${key || sec.id}`,
    type: "vitrine_stores_feed_list",
+   isVisible: sec.is_active !== false,
+   dataBinding: { entity: "stores", limit: 16 },
    config: {
     cmsSectionKey: key,
     cmsSectionId: sec.id,
@@ -1621,48 +1756,61 @@ async function buildHydratedPlatformOmniDocument(
  };
 }
 
+export async function ensurePlatformRootStore(supabase: any): Promise<string> {
+  const { ensureCanonicalPlatformRootStoreId } = await import("@/lib/server-access");
+  return ensureCanonicalPlatformRootStoreId(supabase);
+}
+
 export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST" })
  .validator(
   z.object({
    pageSlug: z.string().min(1),
    pageTitle: z.string().optional(),
+   citySlug: z.string().nullable().optional(),
    forceRehydrate: z.boolean().optional(),
   }),
  )
- .handler(async ({ data: { pageSlug, pageTitle, forceRehydrate } }) => {
+ .handler(async ({ data: { pageSlug, pageTitle, citySlug, forceRehydrate } }) => {
   const supabase = getServerClient();
-  const { getServerIdentity } = await import("@/lib/server-access");
-  const identity = await getServerIdentity().catch(() => ({ store_id: null }));
-
-  let targetStoreId = identity?.store_id || null;
-  if (!targetStoreId) {
-   const { data: rootStore } = await supabase
-    .from("stores")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-   targetStoreId = rootStore?.id || null;
-  }
-  if (!targetStoreId) {
-   throw new Error("Nenhuma loja base ativa encontrada para ancorar o documento Omni Builder.");
-  }
+  const {
+   requirePlatformAdmin,
+   authorizeBuilderStoreContext,
+   ensureCanonicalPlatformRootStoreId,
+  } = await import("@/lib/server-access");
 
   const normalizedSlug = pageSlug.trim().toLowerCase();
   const canonical = CANONICAL_PLATFORM_SURFACES.find((s) => s.slug === normalizedSlug);
-  const docName = pageTitle || canonical?.title || `Página ${normalizedSlug}`;
+  const isGlobalCanonicalPage =
+   Boolean(canonical) ||
+   ["home", "menus", "explorar", "chat_noor"].includes(normalizedSlug);
 
+  let targetStoreId: string;
+  if (isGlobalCanonicalPage) {
+   await requirePlatformAdmin();
+   targetStoreId = await ensureCanonicalPlatformRootStoreId(supabase);
+  } else {
+   const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
+   targetStoreId = authCtx.storeId;
+  }
+
+  const docTitle = pageTitle || canonical?.title || `Página ${normalizedSlug}`;
+
+  // 1. Encontra documento existente ancorado estritamente à loja resolvida (usa coluna real `title`)
   const { data: existingDoc } = await supabase
    .from("experience_documents")
-   .select("id, slug, name, settings")
+   .select("id, slug, title, settings, store_id")
    .eq("store_id", targetStoreId)
    .eq("slug", normalizedSlug)
+   .order("created_at", { ascending: false })
+   .limit(1)
    .maybeSingle();
 
   if (existingDoc?.id) {
    const existingSettings = (existingDoc.settings as Record<string, any>) || {};
-   const existingDraft = existingSettings.omni_page_draft || existingSettings.omni_page;
+   const existingDraft =
+    existingSettings.omni_page_draft ||
+    existingSettings.omni_page_published ||
+    existingSettings.omni_page;
    const hasBlocks = Array.isArray(existingDraft?.blocks) && existingDraft.blocks.length > 0;
 
    if (!hasBlocks || forceRehydrate) {
@@ -1670,7 +1818,7 @@ export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST
      supabase,
      normalizedSlug,
      existingDoc.id,
-     existingDoc.name || docName,
+     existingDoc.title || docTitle,
      targetStoreId,
     );
     await supabase
@@ -1678,19 +1826,38 @@ export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST
      .update({
       settings: {
        ...existingSettings,
-       is_platform_surface: true,
-       platform_page_slug: normalizedSlug,
+       ...(isGlobalCanonicalPage
+        ? { is_platform_surface: true, platform_page_slug: normalizedSlug }
+        : {}),
        omni_page_draft: hydratedSnapshot,
-       omni_page: hydratedSnapshot,
       },
+      updated_at: new Date().toISOString(),
      })
-     .eq("id", existingDoc.id);
+     .eq("id", existingDoc.id)
+     .eq("store_id", targetStoreId);
 
-    await supabase
+    const { data: existingDraftVer } = await supabase
      .from("experience_versions")
-     .update({ document_snapshot: hydratedSnapshot })
+     .select("id")
      .eq("document_id", existingDoc.id)
-     .eq("status", "draft");
+     .eq("status", "draft")
+     .order("version_number", { ascending: false })
+     .limit(1)
+     .maybeSingle();
+
+    if (existingDraftVer?.id) {
+     await supabase
+      .from("experience_versions")
+      .update({ document_snapshot: hydratedSnapshot })
+      .eq("id", existingDraftVer.id);
+    } else {
+     await supabase.from("experience_versions").insert({
+      document_id: existingDoc.id,
+      version_number: 1,
+      status: "draft",
+      document_snapshot: hydratedSnapshot,
+     });
+    }
    }
 
    return { documentId: existingDoc.id, slug: existingDoc.slug };
@@ -1701,7 +1868,7 @@ export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST
    supabase,
    normalizedSlug,
    tempId,
-   docName,
+   docTitle,
    targetStoreId,
   );
 
@@ -1710,15 +1877,15 @@ export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST
    .insert({
     id: tempId,
     store_id: targetStoreId,
-    name: docName,
+    title: docTitle,
     slug: normalizedSlug,
     document_type: normalizedSlug === "home" ? "storefront" : "landing_page",
     is_active: true,
     settings: {
-     is_platform_surface: true,
-     platform_page_slug: normalizedSlug,
+     ...(isGlobalCanonicalPage
+      ? { is_platform_surface: true, platform_page_slug: normalizedSlug }
+      : {}),
      omni_page_draft: hydratedSnapshot,
-     omni_page: hydratedSnapshot,
     },
    })
    .select("id, slug")
@@ -1738,37 +1905,80 @@ export const openOrCreatePageExperienceDocument = createServerFn({ method: "POST
   return { documentId: newDoc.id, slug: newDoc.slug };
  });
 
-// ─── 5. EXCLUIR UMA SEÇÃO ──────────────────────────────────────────────────
+// ─── 5. EXCLUIR UMA SEÇÃO (COM GUARDA MULTI-TENANT / ADMIN MASTER) ─────────
 export const deleteSurfaceSection = createServerFn({ method: "POST" })
  .validator(z.object({ sectionId: z.string() }))
  .handler(async ({ data: { sectionId } }) => {
- const supabase = getServerClient();
- const { error } = await supabase.from("marketplace_sections").delete().eq("id", sectionId);
- if (error) throw new Error(error.message);
- return { success: true };
+  const supabase = getServerClient();
+  const { authorizeBuilderStoreContext, requirePlatformAdmin } = await import("@/lib/server-access");
+
+  const { data: secRow } = await supabase
+   .from("marketplace_sections")
+   .select("id, surface_id")
+   .eq("id", sectionId)
+   .maybeSingle();
+
+  if (!secRow) {
+   return { success: true };
+  }
+
+  const { data: surfRow } = await supabase
+   .from("marketplace_surfaces")
+   .select("id, store_id, is_global")
+   .eq("id", secRow.surface_id)
+   .maybeSingle();
+
+  if (surfRow?.store_id && !surfRow.is_global) {
+   await authorizeBuilderStoreContext({ requestedStoreId: surfRow.store_id });
+  } else {
+   await requirePlatformAdmin();
+  }
+
+  const { error } = await supabase.from("marketplace_sections").delete().eq("id", sectionId);
+  if (error) throw new Error(error.message);
+  return { success: true };
  });
 
-// ─── 6. REORDENAR SEÇÕES ATOMICAMENTE ──────────────────────────────────────
+// ─── 6. REORDENAR SEÇÕES ATOMICAMENTE (COM GUARDA MULTI-TENANT / ADMIN MASTER) ──
 export const reorderSurfaceSections = createServerFn({ method: "POST" })
  .validator(
- z.object({
- surfaceId: z.string(),
- sectionIds: z.array(z.string()),
- })
+  z.object({
+   surfaceId: z.string(),
+   sectionIds: z.array(z.string()),
+  }),
  )
  .handler(async ({ data: { surfaceId, sectionIds } }) => {
- const supabase = getServerClient();
+  const supabase = getServerClient();
+  const { authorizeBuilderStoreContext, requirePlatformAdmin } = await import("@/lib/server-access");
 
- const updates = sectionIds.map((id, index) =>
- supabase
- .from("marketplace_sections")
- .update({ sort_order: index + 1, updated_at: new Date().toISOString() })
- .eq("id", id)
- .eq("surface_id", surfaceId)
- );
+  if (surfaceId === "store_private") {
+   await authorizeBuilderStoreContext();
+  } else if (surfaceId.startsWith("canonical-surface-")) {
+   await requirePlatformAdmin();
+  } else {
+   const { data: surfRow } = await supabase
+    .from("marketplace_surfaces")
+    .select("id, store_id, is_global")
+    .eq("id", surfaceId)
+    .maybeSingle();
+   if (!surfRow) throw new Error("Superfície não encontrada.");
+   if (surfRow.store_id && !surfRow.is_global) {
+    await authorizeBuilderStoreContext({ requestedStoreId: surfRow.store_id });
+   } else {
+    await requirePlatformAdmin();
+   }
+  }
 
- await Promise.all(updates);
- return { success: true };
+  const updates = sectionIds.map((id, index) =>
+   supabase
+    .from("marketplace_sections")
+    .update({ sort_order: index + 1, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("surface_id", surfaceId),
+  );
+
+  await Promise.all(updates);
+  return { success: true };
  });
 
 // ─── 7. MOTOR PROCEDURAL DE SCROLL INFINITO VERTICAL (DIVERSITY & DISCOVERY) ──
@@ -2058,4 +2268,223 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
       hasMore: false,
       nextPageIndex: pageIndex,
     };
+  });
+
+// ─── 8. RESOLVEDOR CANÔNICO DE EXPERIÊNCIA DE PÁGINA (PARIDADE WYSIWYG SOMENTE PUBLICADOS) ───
+export const resolveSurfacePageExperienceDocument = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      surfaceSlug: z.string(),
+      city: z.string().optional(),
+      storeId: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: { surfaceSlug, city, storeId } }) => {
+    const normalizedSlug = surfaceSlug.trim().toLowerCase();
+    const cacheKey = `surface_cms:doc:${normalizedSlug}:${city || "all"}:${storeId || "root"}`;
+
+    return microCache.getOrSet(cacheKey, 60_000, async () => {
+      const supabase = getServerClient();
+      const { findPlatformRootStoreIdReadOnly } = await import("@/lib/server-access");
+
+      const effectiveStoreId = storeId || (await findPlatformRootStoreIdReadOnly(supabase));
+      if (!effectiveStoreId) {
+        return {
+          mode: "canonical_cms" as const,
+          documentId: null,
+          document: null,
+          liveData: null,
+        };
+      }
+
+    // 1. Busca documento correspondente em experience_documents (usa coluna real `title`, NUNCA `name`)
+    const { data: docRows } = await supabase
+      .from("experience_documents")
+      .select("id, slug, title, document_type, is_active, settings, store_id")
+      .eq("store_id", effectiveStoreId)
+      .eq("slug", normalizedSlug)
+      .eq("is_active", true)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    const existingDoc = docRows?.[0] || null;
+
+    if (existingDoc) {
+      const settings = (existingDoc.settings as Record<string, any>) || {};
+      if (!storeId && !settings.is_platform_surface && !settings.platform_page_slug) {
+        return {
+          mode: "canonical_cms" as const,
+          documentId: null,
+          document: null,
+          liveData: null,
+        };
+      }
+
+      // 2. Estritamente versão publicada (NUNCA vaza settings.omni_page_draft para visitantes públicos!)
+      const { data: publishedVer } = await supabase
+        .from("experience_versions")
+        .select("id, version_number, document_snapshot")
+        .eq("document_id", existingDoc.id)
+        .eq("status", "published")
+        .order("version_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const omniDoc = publishedVer?.document_snapshot || settings.omni_page_published || null;
+
+      if (omniDoc && Array.isArray(omniDoc.blocks) && omniDoc.blocks.length > 0) {
+        const cleanCity =
+          city && city !== "all" && city !== "Todas as Cidades" && city !== "Global"
+            ? city.trim()
+            : null;
+        const nowMs = Date.now();
+
+        let bannerQuery = supabase
+          .from("banners")
+          .select("*")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true })
+          .limit(24);
+        if (cleanCity) {
+          bannerQuery = bannerQuery.or(
+            `city_filter.eq."${cleanCity}",city_filter.is.null,city_filter.eq.all`,
+          );
+        }
+
+        const { getUnifiedShowcasePosts } = await import("@/services/admin-home-cms.functions");
+
+        const [
+          productsRes,
+          storesRes,
+          bannersRes,
+          newsRes,
+          eventsRes,
+          jobsRes,
+          classifiedsRes,
+          hotpagesRes,
+          showcasePosts,
+        ] = await Promise.all([
+          Promise.resolve(
+            supabase
+              .from("products")
+              .select("id, store_id, title, slug, price_cents, compare_at_cents, status, attributes, stores(id, name, slug, city, settings), product_media(url, sort_order)")
+              .eq("status", "published")
+              .is("deleted_at", null)
+              .order("created_at", { ascending: false })
+              .limit(40),
+          ).catch(() => ({ data: [] })),
+          Promise.resolve(
+            supabase
+              .from("stores")
+              .select("id, name, slug, city, state, description, settings, is_active, verified_badge_url, google_rating, google_review_count, created_at")
+              .eq("is_active", true)
+              .limit(32),
+          ).catch(() => ({ data: [] })),
+          Promise.resolve(bannerQuery).catch(() => ({ data: [] })),
+          Promise.resolve(
+            supabase
+              .from("news_articles")
+              .select("id, title, slug, summary, cover_image, category, published_at")
+              .eq("status", "published")
+              .order("published_at", { ascending: false })
+              .limit(12),
+          ).catch(() => ({ data: [] })),
+          Promise.resolve(
+            supabase
+              .from("events")
+              .select("id, title, slug, location_name, city, event_date, cover_image_url, status")
+              .eq("status", "published")
+              .order("event_date", { ascending: true })
+              .limit(12),
+          ).catch(() => ({ data: [] })),
+          Promise.resolve(
+            supabase
+              .from("jobs")
+              .select("id, title, company_name, city, employment_type, salary_range, status, created_at")
+              .eq("status", "open")
+              .order("created_at", { ascending: false })
+              .limit(12),
+          ).catch(() => ({ data: [] })),
+          Promise.resolve(
+            supabase
+              .from("classifieds")
+              .select("id, title, slug, price_cents, media_urls, category_slug, city, state, status, created_at")
+              .eq("status", "active")
+              .order("created_at", { ascending: false })
+              .limit(24),
+          ).catch(() => ({ data: [] })),
+          Promise.resolve(
+            supabase.from("hotpages").select("*").eq("is_active", true).order("sort_order", { ascending: true }).limit(24),
+          ).catch(() => ({ data: [] })),
+          getUnifiedShowcasePosts({ data: { city: cleanCity || undefined, limit: 12 } }).catch(() => []),
+        ]);
+
+        const normalizedProducts = ((productsRes as any)?.data || []).map((p: any) => {
+          const mediaArr = Array.isArray(p.product_media)
+            ? [...p.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+            : [];
+          const primaryImage = mediaArr[0]?.url || p.attributes?.cover_image || "";
+          return {
+            ...p,
+            image_url: primaryImage,
+            imageUrl: primaryImage,
+            cover_image: primaryImage,
+            priceCents: p.price_cents,
+            compareAtCents: p.compare_at_cents,
+            storeName: p.stores?.name || "",
+            store_name: p.stores?.name || "",
+            city: p.stores?.city || "",
+          };
+        });
+
+        const normalizedStores = ((storesRes as any)?.data || []).map((s: any) => {
+          const stSettings = (s.settings as Record<string, any>) || {};
+          return {
+            ...s,
+            logo_url: s.logo_url || stSettings.logoUrl || stSettings.logo_url || "",
+            banner_url: s.banner_url || stSettings.bannerUrl || stSettings.banner_url || "",
+            niche: stSettings.niche || stSettings.segment || "",
+          };
+        });
+
+        const activeBanners = ((bannersRes as any)?.data || []).filter((b: any) => {
+          if (b.starts_at && new Date(b.starts_at).getTime() > nowMs) return false;
+          if (b.ends_at && new Date(b.ends_at).getTime() < nowMs) return false;
+          if (b.auto_archive_at && new Date(b.auto_archive_at).getTime() < nowMs) return false;
+          return true;
+        });
+
+        const activeHotpages = ((hotpagesRes as any)?.data || []).filter((hp: any) => {
+          if (hp.starts_at && new Date(hp.starts_at).getTime() > nowMs) return false;
+          if (hp.ends_at && new Date(hp.ends_at).getTime() < nowMs) return false;
+          if (hp.auto_archive_at && new Date(hp.auto_archive_at).getTime() < nowMs) return false;
+          return true;
+        });
+
+        return {
+          mode: "omni_published" as const,
+          documentId: existingDoc.id,
+          document: omniDoc,
+          liveData: {
+            products: normalizedProducts,
+            stores: normalizedStores,
+            banners: activeBanners,
+            newsArticles: (newsRes as any)?.data || [],
+            events: (eventsRes as any)?.data || [],
+            jobs: (jobsRes as any)?.data || [],
+            classifieds: (classifiedsRes as any)?.data || [],
+            hotpages: activeHotpages,
+            posts: Array.isArray(showcasePosts) ? showcasePosts : [],
+          },
+        };
+      }
+    }
+
+      return {
+        mode: "canonical_cms" as const,
+        documentId: null,
+        document: null,
+        liveData: null,
+      };
+    });
   });

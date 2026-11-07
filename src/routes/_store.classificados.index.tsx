@@ -9,6 +9,8 @@ import { resolveActiveCity } from "@/lib/city-helper";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { getPublicClassifieds } from "@/services/classifieds.functions";
+import { resolveSurfacePageExperienceDocument } from "@/services/surface-cms.functions";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import {
   useClassifiedCatalog,
   ClassifiedCatalogHeader,
@@ -50,16 +52,20 @@ export const Route = createFileRoute("/_store/classificados/")({
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [banners, hotpages, classifieds] = await Promise.all([
+      const [banners, hotpages, classifieds, surfaceExperience] = await Promise.all([
         listActiveBanners({ data: { placement: "classificados", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "classificados" } }).catch(() => []),
         getPublicClassifieds({ data: {} }).catch(() => []),
+        resolveSurfacePageExperienceDocument({
+          data: { surfaceSlug: "classificados", city: activeCity },
+        }).catch(() => ({ mode: "canonical_cms" as const, documentId: null, document: null, liveData: null })),
       ]);
 
       return {
         banners: banners || [],
         hotpages: hotpages || [],
         classifieds: classifieds || [],
+        surfaceExperience: surfaceExperience || null,
       };
     } catch (err) {
       console.warn("[classificados] Loader fallback acionado:", err);
@@ -102,7 +108,7 @@ function ClassifiedsIndexErrorComponent({ error }: { error: any }) {
 }
 
 function ClassifiedsMasterPage() {
-  const { banners = [], hotpages = [], classifieds: initialClassifieds = [] } = Route.useLoaderData();
+  const { banners = [], hotpages = [], classifieds: initialClassifieds = [], surfaceExperience = null } = (Route.useLoaderData() as any) || {};
   const searchParams = Route.useSearch();
 
   const catalog = useClassifiedCatalog({
@@ -110,6 +116,21 @@ function ClassifiedsMasterPage() {
     hotpages,
     searchParams,
   });
+
+  if (surfaceExperience?.mode === "omni_published" && surfaceExperience.document) {
+    const live = surfaceExperience.liveData || {};
+    return (
+      <main className="min-h-screen bg-background pb-24">
+        <OmniPageRenderer
+          document={surfaceExperience.document}
+          classifieds={live.classifieds?.length ? live.classifieds : initialClassifieds}
+          banners={live.banners?.length ? live.banners : banners}
+          hotpages={live.hotpages?.length ? live.hotpages : hotpages}
+          stores={live.stores?.length ? live.stores : []}
+        />
+      </main>
+    );
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto pb-24">

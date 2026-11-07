@@ -174,7 +174,7 @@ export function ProductDetailMobile({
             <FavoriteButton
               itemId={product.id}
               itemType="product"
-              className="size-9 text-foreground hover:text-foreground"
+              className="size-9 text-foreground hover:text-foreground min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
             />
           </div>
         </div>
@@ -182,7 +182,7 @@ export function ProductDetailMobile({
 
       {/* Miniaturas horizontais caso haja mais de 1 foto */}
       {mediaList.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 py-3 bg-card border-b border-border/40 snap-x snap-mandatory">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar px-4 py-3 bg-card border-b border-border/40 snap-x snap-mandatory">
           {mediaList.map((m: ProductMediaDTO) => {
             const active = activeMedia?.id === m.id;
             return (
@@ -215,7 +215,7 @@ export function ProductDetailMobile({
               </Badge>
             )}
             {isBackorder ? (
-              <Badge variant="outline" className="text-2xs font-semibold text-amber-600 border-amber-500/30 bg-amber-500/10">
+              <Badge variant="outline" className="text-2xs font-semibold text-warning-strong border-warning/30 bg-warning/10">
                 Sob Encomenda
               </Badge>
             ) : isOutOfStock ? (
@@ -291,7 +291,7 @@ export function ProductDetailMobile({
                             setSelectedAttributes((prev) => ({ ...prev, [key]: val }));
                           }}
                           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                            "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center",
+                            "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-colors duration-200 cursor-pointer active:scale-95 flex items-center justify-center min-h-11 sm:min-h-0",
                             isSelected
                               ? "border-primary bg-primary text-primary-foreground shadow-xs"
                               : "border-border/70 bg-card text-foreground hover:bg-muted/30"
@@ -511,7 +511,7 @@ export function ProductDetailMobile({
           <button
             type="button"
             onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-            className="size-8 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="size-8 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
             aria-label="Diminuir"
           >
             <Minus className="size-3.5" />
@@ -522,7 +522,7 @@ export function ProductDetailMobile({
           <button
             type="button"
             onClick={() => setQuantity((prev) => prev + 1)}
-            className="size-8 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="size-8 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
             aria-label="Aumentar"
           >
             <Plus className="size-3.5" />
@@ -553,7 +553,7 @@ export function ProductDetailMobile({
             </Button>
             <Button
               size="lg"
-              className="rounded-lg font-bold text-xs h-11 px-2 bg-emerald-600 hover:bg-emerald-700 text-foreground flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform duration-200 shadow-sm"
+              className="rounded-lg font-bold text-xs h-11 px-2 bg-emerald-600 hover:bg-emerald-700 text-foreground flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform duration-200 "
               onClick={() => setIsQuickOrderOpen(true)}
             >
               <MessageCircle className="size-4 shrink-0" />

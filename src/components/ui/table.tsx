@@ -10,9 +10,9 @@ export interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
 const Table = React.forwardRef<HTMLTableElement, TableProps>(
   ({ className, windowVariant = "auto", ...props }, ref) => {
     const containerClasses = {
-      compact: "relative w-full overflow-x-auto no-scrollbar snap-x rounded-lg border border-border/60",
-      expanded: "relative w-full overflow-x-auto rounded-lg border border-border/50",
-      auto: "relative w-full overflow-x-auto no-scrollbar sm:overflow-visible rounded-lg sm:rounded-lg border border-border/50",
+      compact: "relative w-full overflow-x-auto scroll-area-carousel no-scrollbar snap-x rounded-lg border border-border/60",
+      expanded: "relative w-full overflow-x-auto scroll-area-carousel rounded-lg border border-border/50",
+      auto: "relative w-full overflow-x-auto scroll-area-carousel no-scrollbar sm:overflow-visible rounded-lg sm:rounded-lg border border-border/50",
     }[windowVariant];
 
     const tableTypography = {

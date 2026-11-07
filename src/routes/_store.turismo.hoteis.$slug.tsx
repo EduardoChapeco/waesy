@@ -172,8 +172,8 @@ function PublicHotelDetailPage() {
               {hotel.name}
             </h1>
             {hotel.stars > 0 && (
-              <span className="inline-flex items-center gap-1 text-sm font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md">
-                <Star className="size-4 fill-amber-500" />
+              <span className="inline-flex items-center gap-1 text-sm font-bold text-warning-strong bg-warning/10 px-2 py-1 rounded-md">
+                <Star className="size-4 fill-warning" />
                 {hotel.stars} Estrelas
               </span>
             )}
@@ -195,7 +195,7 @@ function PublicHotelDetailPage() {
         {/* Galeria de Fotos em Alta Resolução */}
         {allPhotos.length > 0 && (
           <div className="space-y-3">
-            <div className="relative aspect-video sm:aspect-[21/9] w-full overflow-hidden rounded-lg bg-muted border border-border/80">
+            <div className="relative aspect-video sm:aspect-21/9 w-full overflow-hidden rounded-lg bg-muted border border-border/80">
               <img
                 src={allPhotos[selectedPhotoIndex] || allPhotos[0]}
                 alt={hotel.name}

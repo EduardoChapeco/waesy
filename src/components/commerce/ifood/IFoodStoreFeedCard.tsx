@@ -71,7 +71,7 @@ export function IFoodStoreFeedCard({
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center bg-muted text-primary">
               <span className="text-2xl font-black">{initial}</span>
-              <span className="text-3xs font-bold text-muted-foreground mt-1 max-w-[80%] truncate">
+              <span className="text-3xs font-bold text-muted-foreground mt-1 max-w-4/5 truncate">
                 {store.name}
               </span>
             </div>
@@ -80,10 +80,10 @@ export function IFoodStoreFeedCard({
           {/* Badge de Nota e Coroa Superior Esquerda (Apenas se houver avaliação real) */}
           {hasRealRating && (
             <div className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-background/75 backdrop-blur-xs text-primary-foreground text-xs font-black flex items-center gap-1 shadow-xs">
-              <Star size={13} weight="fill" className="text-amber-400" />
+              <Star size={13} weight="fill" className="text-warning-strong" />
               <span>{store.rating!.toFixed(1)}</span>
               {store.hasHighlightCrown && (
-                <Crown size={12} weight="fill" className="text-amber-300 ml-1" />
+                <Crown size={12} weight="fill" className="text-warning-strong ml-1" />
               )}
             </div>
           )}
@@ -97,7 +97,7 @@ export function IFoodStoreFeedCard({
               onFavoriteToggle?.(store.id);
             }}
             aria-label="Favoritar loja"
-            className="absolute top-2.5 right-2.5 size-8 rounded-full bg-background/60 hover:bg-background/80 backdrop-blur-xs text-primary-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute top-2.5 right-2.5 size-8 rounded-full bg-background/60 hover:bg-background/80 backdrop-blur-xs text-primary-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
           >
             <Heart size={16} weight={store.isFavorite ? "fill" : "bold"} className={store.isFavorite ? "text-destructive" : ""} />
           </button>

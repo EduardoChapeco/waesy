@@ -216,7 +216,7 @@ export function EventSubvitrineView({
             onClick={() => setViewMode("grid")}
             aria-label="Visualização em Grade"
             className={cn(
-              "size-10 min-w-10 min-h-10 rounded-lg flex items-center justify-center transition-colors cursor-pointer",
+              "size-10 min-w-10 min-h-10 rounded-lg flex items-center justify-center transition-colors cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               viewMode === "grid" ? "bg-foreground text-background shadow-xs font-bold" : "text-muted-foreground hover:text-foreground",
             )}
@@ -228,7 +228,7 @@ export function EventSubvitrineView({
             onClick={() => setViewMode("list")}
             aria-label="Visualização em Lista"
             className={cn(
-              "size-10 min-w-10 min-h-10 rounded-lg flex items-center justify-center transition-colors cursor-pointer",
+              "size-10 min-w-10 min-h-10 rounded-lg flex items-center justify-center transition-colors cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               viewMode === "list" ? "bg-foreground text-background shadow-xs font-bold" : "text-muted-foreground hover:text-foreground",
             )}
@@ -241,7 +241,7 @@ export function EventSubvitrineView({
       {/* ── 2. RÉGUA DE SUB-FILTROS RÁPIDOS ESPECÍFICOS DO NICHO ── */}
       {manifest.subFilters.length > 1 && (
         <section aria-label="Subfiltros">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
             {manifest.subFilters.map((sub) => {
               const isSelected = activeSubFilter === sub.id;
               return (
@@ -271,7 +271,7 @@ export function EventSubvitrineView({
           <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight">
             Destaques em {manifest.label}
           </h2>
-          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+          <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar snap-x snap-mandatory">
             {filteredSubEvents.slice(0, 4).map((ev) => (
               <EventSpotlightCard
                 key={ev.id}

@@ -13,16 +13,27 @@ import { toast } from "sonner";
 
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
+import { KanbanColumnCustomizerModal } from "@/components/workspace/kanban/kanban-column-customizer-modal";
+import { listKanbanStages, type KanbanStageDTO } from "@/services/kanban-config.functions";
+import { getStoreSettings } from "@/services/store.functions";
 
 export const Route = createFileRoute("/workspace/orcamentos/")({
   head: () => ({ meta: [{ title: "Orçamentos | Workspace Waesy" }] }),
   loader: async () => {
     try {
-    const res = await listQuotes({ data: { limit: 50 } }).catch(() => ({ items: [], total: 0 }));
-    return { initialData: res };
+      const store = await getStoreSettings().catch(() => null);
+      const [quotesRes, kanbanStages] = await Promise.all([
+        listQuotes({ data: { limit: 50 } }).catch(() => ({ items: [], total: 0 })),
+        store?.id ? listKanbanStages({ data: { storeId: store.id, module: "quotes" } }).catch(() => []) : [],
+      ]);
+      return {
+        initialData: quotesRes,
+        store,
+        kanbanStages: (kanbanStages || []) as KanbanStageDTO[],
+      };
     } catch (err) {
       console.error("[loader:workspace.orcamentos.index] Unhandled error:", err);
-      return { initialData: null };
+      return { initialData: null, store: null, kanbanStages: [] };
     }
   },
   component: QuotesListPage,
@@ -35,7 +46,7 @@ const STATUS_CONFIG: Record<
 > = {
   draft: { label: "Rascunho", variant: "outline", icon: FileText, color: "border-border text-muted-foreground" },
   sent: { label: "Enviado", variant: "secondary", icon: Send, color: "border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10" },
-  negotiating: { label: "Em Negociação", variant: "secondary", icon: Clock, color: "border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10" },
+  negotiating: { label: "Em Negociação", variant: "secondary", icon: Clock, color: "border-warning/30 text-warning-strong  bg-warning/10" },
   approved: { label: "Aprovado", variant: "default", icon: CheckCircle2, color: "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10" },
   rejected: { label: "Recusado", variant: "destructive", icon: XCircle, color: "border-destructive/30 text-destructive bg-destructive/10" },
   expired: { label: "Expirado", variant: "destructive", icon: AlertTriangle, color: "border-destructive/30 text-destructive bg-destructive/10" },
@@ -61,13 +72,33 @@ const KANBAN_COLUMNS = [
 ];
 
 function QuotesListPage() {
-  const { initialData } = ((Route.useLoaderData?.() as any) || {});
+  const { initialData, store, kanbanStages = [] } = ((Route.useLoaderData?.() as any) || {});
+  const storeId = store?.id || "";
   const router = useRouter();
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState("");
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isBudgetPadOpen, setIsBudgetPadOpen] = useState(false);
+  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+
+  const [stages, setStages] = useState<any[]>(() => {
+    if (kanbanStages && kanbanStages.length > 0) {
+      return kanbanStages.map((s: any) => ({
+        id: s.stage_key,
+        title: s.title,
+        color: s.color || "var(--primary)",
+        statuses: s.stage_key === "draft" ? ["draft"] : s.stage_key === "sent" ? ["sent"] : s.stage_key === "negotiating" ? ["negotiating"] : s.stage_key === "approved" || s.stage_key === "won" ? ["approved", "converted"] : [s.stage_key],
+        is_visible: s.is_visible !== false,
+        sla_minutes: s.sla_minutes,
+      }));
+    }
+    return KANBAN_COLUMNS.map((c) => ({ ...c, is_visible: true, color: "var(--primary)" }));
+  });
+
+  const visibleStages = useMemo(() => {
+    return stages.filter((s: any) => s.is_visible !== false);
+  }, [stages]);
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
@@ -145,6 +176,7 @@ function QuotesListPage() {
         ]}
         onMetricsClick={() => setIsDashboardOpen(true)}
         metricsBadge={totalVolumeCents > 0 ? formatMoney(totalVolumeCents) : undefined}
+        onColumnsClick={viewMode === "kanban" && storeId ? () => setIsCustomizerOpen(true) : undefined}
         secondaryAction={{
           label: "Bloco de Orçamento",
           icon: Receipt,
@@ -172,7 +204,7 @@ function QuotesListPage() {
       )}
 
       {!isLoading && !isError && quotes.length === 0 && (
-        <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+        <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card">
           <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
             <FileText className="size-6" />
           </div>
@@ -182,7 +214,7 @@ function QuotesListPage() {
               Crie propostas e orçamentos para enviar a clientes e negociar pedidos.
             </p>
           </div>
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0">
             <Link to="/workspace/orcamentos/novo">
               <Plus className="size-3.5 mr-1" />
               Criar Primeiro Orçamento
@@ -200,21 +232,21 @@ function QuotesListPage() {
       )}
 
       {!isLoading && !isError && quotes.length > 0 && viewMode === "kanban" && (
-        <div className="flex gap-4 items-stretch pb-2 overflow-x-auto no-scrollbar h-[calc(100dvh-10.5rem)] sm:h-[calc(100dvh-9.5rem)] select-none">
-          {KANBAN_COLUMNS.map((col) => {
+        <div className="flex gap-4 items-stretch pb-2 overflow-x-auto scroll-area-carousel no-scrollbar min-h-144 h-[calc(100dvh-10.5rem)] sm:h-[calc(100dvh-9.5rem)] select-none">
+          {visibleStages.map((col: any) => {
             const colQuotes = quotes.filter((q: QuoteSummaryDTO) => col.statuses.includes(q.status));
             const colTotalCents = colQuotes.reduce((acc: number, q: QuoteSummaryDTO) => acc + q.total_cents, 0);
 
             return (
               <div
                 key={col.id}
-                className="bg-card/60 border border-border/70 rounded-lg p-4 flex flex-col w-[310px] min-w-[310px] sm:w-[330px] sm:min-w-[330px] shrink-0 h-full shadow-2xs overflow-hidden"
+                className="bg-muted/50 dark:bg-muted/30 rounded-2xl p-3 flex flex-col w-78 min-w-78 sm:w-83 sm:min-w-83 shrink-0 min-h-144 h-full overflow-hidden"
               >
                 {/* Header da Coluna */}
-                <div className="flex items-center justify-between pb-2 border-b border-border/50 shrink-0">
+                <div className="flex items-center justify-between px-1 pb-3 shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-foreground">{col.title}</span>
-                    <Badge variant="secondary" className="text-xs font-mono px-2 py-0 h-4">
+                    <Badge variant="secondary" className="text-xs font-mono px-2 py-0 h-5 bg-card">
                       {colQuotes.length}
                     </Badge>
                   </div>
@@ -226,14 +258,14 @@ function QuotesListPage() {
                 {/* Cards com scroll interno */}
                 <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-3 pt-1">
                   {colQuotes.length === 0 ? (
-                    <div className="h-28 flex items-center justify-center text-xs text-muted-foreground border border-dashed border-border/50 rounded-lg">
+                    <div className="h-28 flex items-center justify-center text-xs text-muted-foreground bg-card rounded-xl">
                       Nenhum orçamento
                     </div>
                   ) : (
                     colQuotes.map((q: QuoteSummaryDTO) => (
                       <div
                         key={q.id}
-                        className="bg-card border border-border/60 hover:border-border rounded-lg p-3 space-y-2 transition-shadow shadow-2xs group"
+                        className="bg-card rounded-2xl p-4 space-y-2 transition-colors group"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <Link
@@ -267,7 +299,7 @@ function QuotesListPage() {
                               size="sm"
                               disabled={updateStatusMutation.isPending}
                               onClick={() => updateStatusMutation.mutate({ quote_id: q.id, status: "sent" })}
-                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10 min-h-11 sm:min-h-0"
                             >
                               <span>Enviar</span>
                               <ArrowRight className="size-2.5" />
@@ -279,7 +311,7 @@ function QuotesListPage() {
                               size="sm"
                               disabled={updateStatusMutation.isPending}
                               onClick={() => updateStatusMutation.mutate({ quote_id: q.id, status: "negotiating" })}
-                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-warning-strong hover:text-warning-strong hover:bg-warning/10 min-h-11 sm:min-h-0"
                             >
                               <span>Negociar</span>
                               <ArrowRight className="size-2.5" />
@@ -302,6 +334,35 @@ function QuotesListPage() {
       />
 
       {/* ── 3. Painel de Métricas / Dashboard Sob Demanda ── */}
+      {storeId && (
+        <KanbanColumnCustomizerModal
+          open={isCustomizerOpen}
+          onOpenChange={setIsCustomizerOpen}
+          storeId={storeId}
+          module="quotes"
+          stages={stages.map((s: any) => ({
+            stage_key: s.id || s.stage_key,
+            title: s.title,
+            purpose: s.purpose || (s.id === "won" ? "won" : s.id === "draft" ? "inbox" : "in_progress"),
+            color: s.color || "var(--primary)",
+            sort_order: s.sort_order ?? 0,
+            is_visible: s.is_visible !== false,
+            sla_minutes: s.sla_minutes,
+          }))}
+          onStagesUpdated={(updated) => {
+            setStages(updated.map((s: any) => ({
+              id: s.stage_key,
+              title: s.title,
+              color: s.color || "var(--primary)",
+              statuses: s.stage_key === "draft" ? ["draft"] : s.stage_key === "sent" ? ["sent"] : s.stage_key === "negotiating" ? ["negotiating"] : s.stage_key === "approved" || s.stage_key === "won" ? ["approved", "converted"] : [s.stage_key],
+              is_visible: s.is_visible !== false,
+              sla_minutes: s.sla_minutes,
+            })));
+            queryClient.invalidateQueries({ queryKey: ["quotes"] });
+          }}
+        />
+      )}
+
       <WorkspaceDashboardSheet
         open={isDashboardOpen}
         onOpenChange={setIsDashboardOpen}
@@ -359,7 +420,7 @@ function QuotesListPage() {
               label: "Em Negociação",
               value: negotiatingCount,
               total: Math.max(quotes.length, 1),
-              color: "bg-amber-500",
+              color: "bg-warning",
             },
             {
               label: "Enviados",
@@ -397,7 +458,7 @@ function QuoteRow({ quote }: { quote: QuoteSummaryDTO }) {
           <span className="text-xs font-mono font-bold text-foreground">{quote.quote_number}</span>
           <StatusBadge status={quote.status} />
           {isExpiring && (
-            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+            <span className="text-xs text-warning-strong  font-medium flex items-center gap-1">
               <AlertTriangle className="size-3" />
               Vence em breve
             </span>

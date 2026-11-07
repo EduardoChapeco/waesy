@@ -46,7 +46,7 @@ export function CareersJobFilters({
  />
  </div>
 
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
  {departments.map((dept, i) => {
  const key = i === 0 ? "all" : dept;
  const isSelected = selectedDepartment === key;
@@ -57,7 +57,7 @@ export function CareersJobFilters({
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors duration-200 min-h-11 border",
  isSelected
- ? "bg-primary text-primary-foreground border-primary shadow-sm"
+ ? "bg-primary text-primary-foreground border-primary "
  : "bg-card text-muted-foreground border-border/60 hover:border-border hover:text-foreground"
  )}
  >

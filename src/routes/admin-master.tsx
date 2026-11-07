@@ -76,13 +76,13 @@ export const Route = createFileRoute("/admin-master")({
   },
   errorComponent: ({ error, reset }: { error: any; reset: () => void }) => (
     <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md w-full p-6 rounded-lg bg-card border border-border space-y-4 shadow-sm">
+      <div className="max-w-md w-full p-6 rounded-lg bg-card border border-border space-y-4 ">
         <div className="size-12 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
           <ShieldAlert className="size-6" />
         </div>
         <h2 className="text-lg font-bold text-foreground">Diagnóstico do Painel Master</h2>
         <p className="text-xs text-muted-foreground">Ocorreu uma instabilidade ao inicializar o módulo administrativo.</p>
-        <div className="p-3 rounded-lg bg-muted/60 text-destructive text-left overflow-x-auto text-2xs font-mono border border-border/50">
+        <div className="p-3 rounded-lg bg-muted/60 text-destructive text-left overflow-x-auto scroll-area-carousel text-2xs font-mono border border-border/50">
           {error?.message || String(error)}
         </div>
         <div className="flex gap-2">
@@ -113,12 +113,12 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: "Omni Studio & Vitrines CMS",
+    title: "Vitrines & Páginas CMS",
     items: [
-      { to: "/admin-master/home-editor", label: "Editor Visual de Páginas (Omni)", icon: Layout },
-      { to: "/admin-master/vitrines", label: "Vitrines e Superfícies (Omni)", icon: Layout },
-      { to: "/admin-master/banners", label: "Banners e Criativos (Omni)", icon: ImageIcon },
-      { to: "/admin-master/botoes", label: "Menus e Hotpages (Omni)", icon: Layers },
+      { to: "/admin-master/home-editor", label: "Páginas & Seções", icon: Layout },
+      { to: "/admin-master/vitrines", label: "Vitrines Verticais", icon: Store },
+      { to: "/admin-master/banners", label: "Banners & Destaques", icon: ImageIcon },
+      { to: "/admin-master/botoes", label: "Categorias & Hotpages", icon: Layers },
       { to: "/admin-master/hubs", label: "Hubs e Cidades", icon: Globe },
       { to: "/admin-master/marca", label: "Identidade e Marca", icon: Palette },
       { to: "/admin-master/portal-completo", label: "Portal Completo", icon: Building2 },
@@ -289,7 +289,7 @@ function AdminMasterLayout() {
             asChild
             variant="outline"
             size="sm"
-            className="w-full justify-between h-8 px-3 text-xs font-medium rounded-lg bg-card border-border/60 cursor-pointer"
+            className="w-full justify-between h-8 px-3 text-xs font-medium rounded-lg bg-card border-border/60 cursor-pointer min-h-11 sm:min-h-0"
           >
             <Link to="/workspace">
               <span className="flex items-center gap-2">
@@ -304,7 +304,7 @@ function AdminMasterLayout() {
             asChild
             variant="ghost"
             size="sm"
-            className="w-full justify-between h-8 px-3 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+            className="w-full justify-between h-8 px-3 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
           >
             <Link to="/" target="_blank" rel="noopener noreferrer">
               <span className="flex items-center gap-2">
@@ -399,7 +399,7 @@ function AdminMasterLayout() {
               asChild
               size="sm"
               variant="outline"
-              className="h-8 rounded-lg text-xs font-medium gap-2 bg-card hover:bg-muted border-border/60 cursor-pointer"
+              className="h-8 rounded-lg text-xs font-medium gap-2 bg-card hover:bg-muted border-border/60 cursor-pointer min-h-11 sm:min-h-0"
             >
               <Link to="/workspace">
                 <Store className="size-3.5 text-primary" />
@@ -410,7 +410,7 @@ function AdminMasterLayout() {
               asChild
               size="sm"
               variant="ghost"
-              className="h-8 rounded-lg text-xs font-medium gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-8 rounded-lg text-xs font-medium gap-1 text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
             >
               <Link to="/" target="_blank" rel="noopener noreferrer">
                 <span>Vitrine</span>
@@ -421,8 +421,8 @@ function AdminMasterLayout() {
         </header>
 
         {/* Content Container with Independent Internal Scroll */}
-        <main className="flex-1 overflow-y-auto no-scrollbar min-h-0 p-4 sm:p-6 md:p-8 bg-background">
-          <div className="max-w-7xl mx-auto w-full">
+        <main className="flex-1 overflow-y-auto no-scrollbar min-h-0 p-4 sm:p-6 lg:p-8 bg-background">
+          <div className="w-full max-w-7xl 2xl:max-w-screen-2xl mx-auto space-y-6">
             <Outlet />
           </div>
         </main>

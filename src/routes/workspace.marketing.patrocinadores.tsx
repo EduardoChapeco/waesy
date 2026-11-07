@@ -152,7 +152,7 @@ function WorkspacePatrocinadoresPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -180,7 +180,7 @@ function WorkspacePatrocinadoresPage() {
 
       {/* Grid de Patrocinadores */}
       {sponsors.length === 0 ? (
-        <div className="py-16 text-center rounded-lg border bg-card/50 space-y-4">
+        <div className="py-16 text-center rounded-lg border bg-card space-y-4">
           <Megaphone className="size-12 text-muted-foreground/40 mx-auto" />
           <div className="space-y-1">
             <h3 className="text-base font-bold text-foreground">Nenhum patrocinador cadastrado</h3>
@@ -210,7 +210,7 @@ function WorkspacePatrocinadoresPage() {
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
                         sp.tier === "gold"
-                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                          ? "bg-warning/15 text-warning-strong  border border-warning/30"
                           : sp.tier === "silver"
                           ? "bg-zinc-500/15 text-zinc-600 dark:text-zinc-300 border border-zinc-500/30"
                           : "bg-primary/10 text-primary border border-primary/20"
@@ -319,7 +319,7 @@ function WorkspacePatrocinadoresPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenEdit(sp)}
-                      className="h-10 px-3 text-xs font-bold text-muted-foreground hover:text-foreground rounded-lg min-h-10"
+                      className="h-10 px-3 text-xs font-bold text-muted-foreground hover:text-foreground rounded-lg min-h-10 min-h-11 sm:min-h-0"
                     >
                       Editar Dados
                     </Button>
@@ -363,7 +363,7 @@ function WorkspacePatrocinadoresPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSave} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto no-scrollbar">
+          <form onSubmit={handleSave} className="p-6 space-y-4 max-h-vh-75 overflow-y-auto no-scrollbar">
             <div className="space-y-2">
               <Label className="text-xs font-bold">Nome da Empresa / Marca</Label>
               <Input

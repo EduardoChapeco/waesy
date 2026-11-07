@@ -47,6 +47,7 @@ import { getStoreSettings } from "@/services/store.functions";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
+import { WhatsAppGroupIngestModal } from "@/components/commercial/whatsapp-group-ingest-modal";
 import {
   publishExtractedTravelPackageToCatalogAndMatchRadar,
   type ExtractedTravelAdDTO,
@@ -90,6 +91,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
   const [isNewInterestOpen, setIsNewInterestOpen] = useState(false);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [isOcrScannerOpen, setIsOcrScannerOpen] = useState(false);
+  const [isWhatsAppExtensionOpen, setIsWhatsAppExtensionOpen] = useState(false);
   const [boardGrouping, setBoardGrouping] = useState<"stage" | "month" | "destination" | "temperature" | "grid">("stage");
   const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
 
@@ -334,7 +336,7 @@ export default function WorkspaceTurismoOportunidadesPage() {
       />
 
       {/* Navegação entre Abas */}
-      <div className="px-4 py-2 border-b border-border bg-card/50 flex flex-wrap items-center justify-between gap-4">
+      <div className="px-4 py-2 border-b border-border bg-card flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Button
             variant={activeTab === "opportunities" ? "default" : "outline"}
@@ -371,6 +373,15 @@ export default function WorkspaceTurismoOportunidadesPage() {
           >
             <Upload className="size-4 mr-2" />
             Escanear Oferta OCR & Cruzar Leads
+          </Button>
+          <Button
+            variant={isWhatsAppExtensionOpen ? "default" : "outline"}
+            size="sm"
+            onClick={() => setIsWhatsAppExtensionOpen(true)}
+            className="h-11 min-h-11 px-4 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Phone className="size-4 mr-2 text-emerald-600 dark:text-emerald-400" />
+            Extensão WhatsApp
           </Button>
         </div>
 
@@ -781,6 +792,12 @@ export default function WorkspaceTurismoOportunidadesPage() {
           queryClient.invalidateQueries({ queryKey: ["commercial-contacts"] });
           setIsBulkImportOpen(false);
         }}
+      />
+
+      {/* Modal de Gestão de Integração da Extensão WhatsApp */}
+      <WhatsAppGroupIngestModal
+        isOpen={isWhatsAppExtensionOpen}
+        onClose={() => setIsWhatsAppExtensionOpen(false)}
       />
 
       {/* Sheet de Métricas Dashboard */}

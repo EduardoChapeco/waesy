@@ -38,7 +38,7 @@ const formatTimer = (totalSeconds: number) => {
 
 const PRIORITY_DOT: Record<TaskPriority, string> = {
   urgent: "bg-rose-500",
-  high: "bg-amber-500",
+  high: "bg-warning",
   medium: "bg-sky-500",
   low: "bg-slate-400",
 };
@@ -288,13 +288,13 @@ export function TaskDetailSheet({
                 type="button"
                 onClick={() => handleStatusChange(isDone ? "todo" : "done")}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "size-8 rounded-lg border flex items-center justify-center transition-colors duration-200 cursor-pointer shrink-0",
+                  "size-8 rounded-lg border flex items-center justify-center transition-colors duration-200 cursor-pointer shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                   isDone
                     ? "bg-primary border-primary text-primary-foreground"
                     : "border-border/80 bg-background hover:border-primary text-transparent hover:text-primary/40"
                 )}
               >
-                <Check className="size-4 stroke-[2.5]" />
+                <Check className="size-4 stroke-bold" />
               </button>
 
               <div className="min-w-0">
@@ -322,13 +322,13 @@ export function TaskDetailSheet({
                 onClick={handleMyDayToggle}
                 title={currentTask?.is_my_day ? "Remover de Meu Dia" : "Adicionar a Meu Dia"}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "size-9 flex items-center justify-center rounded-lg transition-colors cursor-pointer",
+                  "size-9 flex items-center justify-center rounded-lg transition-colors cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                   currentTask?.is_my_day
-                    ? "text-amber-500 hover:bg-amber-500/10"
+                    ? "text-warning-strong hover:bg-warning/10"
                     : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted"
                 )}
               >
-                <Star className={cn("size-4", currentTask?.is_my_day && "fill-amber-500")} />
+                <Star className={cn("size-4", currentTask?.is_my_day && "fill-warning")} />
               </button>
 
               {/* Arquivar */}
@@ -336,7 +336,7 @@ export function TaskDetailSheet({
                 type="button"
                 onClick={() => setArchiveDialogOpen(true)}
                 title="Arquivar atividade"
-                className="size-9 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="size-9 flex items-center justify-center rounded-lg text-muted-foreground/60 hover:text-warning-strong hover:bg-warning/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               >
                 <Archive className="size-4" />
               </button>
@@ -426,7 +426,7 @@ export function TaskDetailSheet({
                   variant={isTimerRunning ? "destructive" : "default"}
                   size="sm"
                   onClick={handleToggleTimer}
-                  className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer gap-2 shadow-sm"
+                  className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer gap-2 shadow-overlay min-h-11 sm:min-h-0"
                 >
                   {isTimerRunning ? (
                     <><Pause className="size-3.5 fill-current" /> Pausar</>
@@ -441,7 +441,7 @@ export function TaskDetailSheet({
                   size="sm"
                   onClick={() => setResetTimerDialogOpen(true)}
                   disabled={timerSeconds === 0 && !isTimerRunning}
-                  className="h-9 w-9 p-0 rounded-lg cursor-pointer text-muted-foreground hover:text-foreground"
+                  className="h-9 w-9 p-0 rounded-lg cursor-pointer text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
                   title="Zerar cronômetro"
                 >
                   <RotateCcw className="size-3.5" />
@@ -539,7 +539,7 @@ export function TaskDetailSheet({
                         ? "bg-primary border-primary text-primary-foreground"
                         : "border-border/80 bg-background"
                     )}>
-                      {item.is_completed && <Check className="size-3 stroke-[2.5]" />}
+                      {item.is_completed && <Check className="size-3 stroke-bold" />}
                     </div>
                     <span className={cn(
                       "text-xs text-foreground flex-1 select-none",
@@ -562,7 +562,7 @@ export function TaskDetailSheet({
                     variant="outline"
                     size="sm"
                     disabled={!newChecklistTitle.trim()}
-                    className="h-9 px-3 rounded-lg text-xs cursor-pointer shrink-0"
+                    className="h-9 px-3 rounded-lg text-xs cursor-pointer shrink-0 min-h-11 sm:min-h-0"
                   >
                     <Plus className="size-3.5 mr-1" /> Adicionar
                   </Button>
@@ -582,14 +582,14 @@ export function TaskDetailSheet({
                   value={newCommentText}
                   onChange={(e) => setNewCommentText(e.target.value)}
                   placeholder="Escreva um comentário ou registro de atualização..."
-                  className="min-h-[72px] rounded-lg text-xs resize-none"
+                  className="min-h-18 rounded-lg text-xs resize-none"
                 />
                 <div className="flex justify-end">
                   <Button
                     type="submit"
                     size="sm"
                     disabled={submittingComment || !newCommentText.trim()}
-                    className="h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                    className="h-8 px-3 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <Send className="size-3 mr-2" /> Enviar
                   </Button>
@@ -634,7 +634,7 @@ export function TaskDetailSheet({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <Archive className="size-5 text-amber-500" />
+              <Archive className="size-5 text-warning-strong" />
               Arquivar Atividade
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -645,7 +645,7 @@ export function TaskDetailSheet({
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
               onClick={handleArchiveTask}
-              className="bg-amber-600 hover:bg-amber-700 text-foreground"
+              className="bg-warning hover:bg-warning-strong text-foreground"
             >
               Arquivar
             </AlertDialogAction>

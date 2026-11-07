@@ -180,7 +180,7 @@ function MyContractsPage() {
                       className={`text-xs font-semibold ${
                         isSigned
                           ? "bg-emerald-600 hover:bg-emerald-600 text-foreground"
-                          : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                          : "bg-warning/10 text-warning-strong  border border-warning/30"
                       }`}
                     >
                       {isSigned ? (

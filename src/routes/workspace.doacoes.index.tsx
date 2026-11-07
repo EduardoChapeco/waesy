@@ -34,7 +34,7 @@ function WorkspaceDoacoesHubPage() {
     return <ErrorState title="Não foi possível carregar as campanhas" description="As doações reais estão temporariamente indisponíveis." />;
   }
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── CABEÇALHO COM AÇÃO RÁPIDA ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -44,7 +44,7 @@ function WorkspaceDoacoesHubPage() {
           </p>
         </div>
 
-        <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs">
+        <Button asChild size="sm" className="h-9 px-4 gap-2 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shadow-xs min-h-11 sm:min-h-0">
           <Link to="/conta/classificados/novo" search={{ tipo: "doacao" }}>
             <Plus className="size-3.5" />
             <span>Cadastrar Doação Gratuita</span>
@@ -111,7 +111,7 @@ function WorkspaceDoacoesHubPage() {
                 Ajude famílias e projetos sociais da sua cidade doando itens excedentes, mostruários ou organizando campanhas solidárias.
               </p>
             </div>
-            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold">
+            <Button asChild size="sm" className="h-9 px-4 rounded-lg text-xs font-bold min-h-11 sm:min-h-0">
               <Link to="/conta/classificados/novo" search={{ tipo: "doacao" }}>
                 <Plus className="size-3.5 mr-2" />
                 <span>Criar Primeira Doação</span>

@@ -125,7 +125,7 @@ function ReceiptsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Financeiro"
         title="Auditoria de Comprovantes"
@@ -136,7 +136,7 @@ function ReceiptsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Clock className="size-3.5 text-amber-500" />
+            <Clock className="size-3.5 text-warning-strong" />
             Comprovantes Pendentes
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
@@ -244,7 +244,7 @@ function ReceiptsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setPreviewTarget(r)}
-                          className="h-8 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 gap-2 cursor-pointer"
+                          className="h-8 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 gap-2 cursor-pointer min-h-11 sm:min-h-0"
                         >
                           <Eye className="size-3.5" />
                           <span>Inspecionar</span>
@@ -258,7 +258,7 @@ function ReceiptsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 rounded-lg text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 hover:text-emerald-700 cursor-pointer"
+                          className="h-8 rounded-lg text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 hover:text-emerald-700 cursor-pointer min-h-11 sm:min-h-0"
                           disabled={approvingId === orderId}
                           onClick={() => handleApprove(orderId, order.public_token)}
                         >
@@ -268,7 +268,7 @@ function ReceiptsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 rounded-lg text-xs font-bold text-rose-600 border-rose-500/30 hover:bg-rose-500/10 hover:text-rose-700 cursor-pointer"
+                          className="h-8 rounded-lg text-xs font-bold text-rose-600 border-rose-500/30 hover:bg-rose-500/10 hover:text-rose-700 cursor-pointer min-h-11 sm:min-h-0"
                           onClick={() => setRejectTarget(r)}
                         >
                           <X className="size-3.5 mr-1" />
@@ -324,18 +324,18 @@ function ReceiptsPage() {
               </div>
 
               {/* Imagem do Comprovante */}
-              <div className="relative rounded-lg border border-border/70 bg-foreground/5 dark:bg-foreground/40 overflow-hidden max-h-[380px] flex items-center justify-center p-2">
+              <div className="relative rounded-lg border border-border/70 bg-foreground/5 dark:bg-foreground/40 overflow-hidden max-h-95 flex items-center justify-center p-2">
                 {previewTarget.receipt_url?.toLowerCase().endsWith(".pdf") ? (
                   <iframe
                     src={previewTarget.receipt_url}
-                    className="w-full h-[360px] rounded-lg"
+                    className="w-full h-90 rounded-lg"
                     title="Comprovante PDF"
                   />
                 ) : (
                   <img
                     src={previewTarget.receipt_url}
                     alt="Comprovante de Pagamento"
-                    className="max-h-[360px] max-w-full object-contain rounded-lg shadow-xs"
+                    className="max-h-90 max-w-full object-contain rounded-lg shadow-xs"
                   />
                 )}
               </div>

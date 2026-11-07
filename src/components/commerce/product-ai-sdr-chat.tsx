@@ -193,7 +193,7 @@ export function ProductAiSdrChat({
         {triggerVariant === "floating" ? (
           <Button
             type="button"
-            className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 z-40 h-12 px-4 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center gap-2 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+            className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 z-40 h-12 px-4 rounded-full bg-primary text-primary-foreground shadow-overlay flex items-center gap-2 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
           >
             <ChatCircleDots className="size-4" weight="fill" />
             <span>Tirar Duvidas com IA</span>
@@ -219,7 +219,7 @@ export function ProductAiSdrChat({
         )}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md w-full h-[85vh] max-h-[620px] p-0 flex flex-col bg-card border-border rounded-lg overflow-hidden">
+      <DialogContent className="sm:max-w-md w-full h-vh-85 max-h-155 p-0 flex flex-col bg-card border-border rounded-lg overflow-hidden">
         {/* Cabecalho da Conversa */}
         <DialogHeader className="p-4 border-b border-border bg-muted/30 flex flex-row items-center justify-between space-y-0">
           <div className="flex items-center gap-3">
@@ -276,7 +276,7 @@ export function ProductAiSdrChat({
               )}
 
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-3 text-xs leading-relaxed ${
+                className={`max-w-4/5 rounded-lg px-4 py-3 text-xs leading-relaxed ${
                   m.role === "user"
                     ? "bg-primary text-primary-foreground font-medium"
                     : "bg-muted text-foreground border border-border/60"

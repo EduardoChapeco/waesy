@@ -110,3 +110,26 @@ export async function clearIdentityCache(): Promise<void> {
   const mod = await import("@/lib/identity.server");
   mod.clearIdentityCache();
 }
+
+
+/** Autoriza contexto multi-tenant estrito para Builder Omni e CMS sem vazamento entre lojas. Servidor apenas. */
+export async function authorizeBuilderStoreContext(options?: {
+  requestedStoreId?: string | null;
+  documentId?: string | null;
+  allowPlatformRootForGlobalAdmin?: boolean;
+}) {
+  const mod = await import("@/lib/builder/builder-auth.server");
+  return mod.authorizeBuilderStoreContext(options);
+}
+
+/** Busca somente-leitura do ID da loja raiz da plataforma. Servidor apenas. */
+export async function findPlatformRootStoreIdReadOnly(supabase?: SupabaseClient): Promise<string | null> {
+  const mod = await import("@/lib/builder/builder-auth.server");
+  return mod.findPlatformRootStoreIdReadOnly(supabase);
+}
+
+/** Resolve ou inicializa idempotentemente a loja raiz institucional da plataforma. Servidor apenas. */
+export async function ensureCanonicalPlatformRootStoreId(supabase?: SupabaseClient): Promise<string> {
+  const mod = await import("@/lib/builder/builder-auth.server");
+  return mod.ensureCanonicalPlatformRootStoreId(supabase);
+}

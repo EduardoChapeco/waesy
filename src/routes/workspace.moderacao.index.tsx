@@ -85,7 +85,7 @@ function ModerationQueuePage() {
  const pendingCount = (reports || []).filter((r: any) => r.status === "pending").length;
 
  return (
- <div className="space-y-6 max-w-6xl">
+ <div className="space-y-6 w-full">
  {/* ── Header Operacional ─────────────────────────────────── */}
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
  <div>
@@ -213,7 +213,7 @@ function ModerationQueuePage() {
  asChild
  variant="ghost"
  size="sm"
- className="h-6 px-2 text-xs gap-1"
+ className="h-6 px-2 text-xs gap-1 min-h-11 sm:min-h-0"
  >
  <Link
  to="/classificados/$id"
@@ -281,7 +281,7 @@ function ModerationQueuePage() {
  })}
  </div>
  ) : (
- <div className="border-0 bg-card/60 rounded-lg p-12 text-center space-y-3">
+ <div className="border-0 bg-card rounded-lg p-12 text-center space-y-3">
  <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
  <ShieldCheck className="size-6" />
  </div>

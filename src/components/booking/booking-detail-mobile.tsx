@@ -30,7 +30,7 @@ export function BookingDetailMobile({
   return (
     <div className="w-full min-h-dvh bg-background text-foreground pb-24 font-sans select-none antialiased">
       {/* ── 1. Hero Edge-to-Edge com Ações Flutuantes ── */}
-      <div className="relative w-full aspect-video sm:aspect-[16/9] bg-muted overflow-hidden">
+      <div className="relative w-full aspect-video sm:aspect-16/9 bg-muted overflow-hidden">
         {service.image_url ? (
           <img
             src={service.image_url}
@@ -93,7 +93,7 @@ export function BookingDetailMobile({
             Profissional Certificado
           </span>
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
-            <Star size={12} weight="bold" className="text-amber-500" />
+            <Star size={12} weight="bold" className="text-warning-strong" />
             Biossegurança 100%
           </span>
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
@@ -210,7 +210,7 @@ export function BookingDetailMobile({
       </div>
 
       {/* ── 7. Sticky Bottom Action Bar (Thumb Zone & Safe-Area) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background  border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background  border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-overlay">
         <div className="min-w-0 flex-1">
           <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider block">
             Valor da Sessão
@@ -222,7 +222,7 @@ export function BookingDetailMobile({
 
         <Button
           onClick={onStartBooking}
-          className="h-12 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 shadow-sm shrink-0"
+          className="h-12 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2  shrink-0"
         >
           <CalendarDots size={16} weight="bold" />
           <span>Agendar Horário</span>

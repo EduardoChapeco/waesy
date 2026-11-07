@@ -117,7 +117,7 @@ function CommunityPage() {
   // Se comunidade não for encontrada
   if (!community) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center space-y-4 max-w-md mx-auto">
+      <div className="min-h-vh-80 flex flex-col items-center justify-center p-6 text-center space-y-4 max-w-md mx-auto">
         <div className="size-16 rounded-full bg-muted/60 border border-border/60 flex items-center justify-center text-muted-foreground">
           <Users className="size-8" />
         </div>

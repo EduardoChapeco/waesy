@@ -139,12 +139,12 @@ export interface PreBoardingTripInput {
   hotels: Array<{
     name: string;
     city: string;
-    neighborhood: string;
-    address: string;
+    neighborhood?: string;
+    address?: string;
     mealPlan: string;
-    checkInTime: string;
-    checkOutTime: string;
-    nearbyHighlights: Array<{ name: string; distanceText: string; practicalNote: string }>;
+    checkInTime?: string;
+    checkOutTime?: string;
+    nearbyHighlights?: Array<{ name: string; distanceText: string; practicalNote: string }>;
     hasResortFee?: boolean;
     resortFeeNote?: string;
     hasCityTax?: boolean;
@@ -387,6 +387,204 @@ export function generateDynamicTravelPresentation(
         })),
       });
     }
+
+    // ── SLIDE DE DOCUMENTAÇÃO & REQUISITOS DE ENTRADA (INTELIGÊNCIA DE VENDA) ──
+    const entryCards: PreBoardingSlideCard[] = [];
+    if (archetype === "orlando_parques") {
+      entryCards.push(
+        {
+          label: "Passaporte Brasileiro",
+          value: "Válido durante toda a estadia",
+          practicalExplanation: "Exigido para embarque internacional e controle migratório americano.",
+          badge: "OBRIGATÓRIO",
+        },
+        {
+          label: "Visto Americano (B1/B2)",
+          value: "Visto consular emitido",
+          practicalExplanation: "Obrigatório para turismo nos EUA. Nossa assessoria apoia no agendamento consular.",
+          badge: "OBRIGATÓRIO",
+        }
+      );
+    } else if (archetype === "caribe_resort") {
+      entryCards.push(
+        {
+          label: "Passaporte Brasileiro",
+          value: "Validade mínima de 6 meses",
+          practicalExplanation: "Isento de visto consular prévio para brasileiros no Caribe (Punta Cana / Curaçao).",
+          badge: "OBRIGATÓRIO",
+        },
+        {
+          label: "Vacina Febre Amarela (CIVP)",
+          value: "Emitido pela ANVISA / ConecteSUS",
+          practicalExplanation: "Tomar com no mínimo 10 dias de antecedência do embarque.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else if (archetype === "europa_multipais" || archetype === "italia_multicidade") {
+      entryCards.push(
+        {
+          label: "Passaporte Brasileiro",
+          value: "Validade mínima de 6 meses além da volta",
+          practicalExplanation: "Isenção de visto consular para viagens de turismo de até 90 dias no Espaço Schengen.",
+          badge: "OBRIGATÓRIO",
+        },
+        {
+          label: "Seguro Viagem Internacional",
+          value: "Cobertura mínima de € 30.000",
+          practicalExplanation: "Exigência formal do Tratado de Schengen para entrada na Europa.",
+          badge: "OBRIGATÓRIO",
+        }
+      );
+    } else {
+      entryCards.push(
+        {
+          label: "Documento com Foto (RG ou CNH)",
+          value: "Físico ou digital oficial",
+          practicalExplanation: "Para voos e traslados nacionais, aceito em todo o território nacional.",
+          badge: "OBRIGATÓRIO",
+        },
+        {
+          label: "Crianças e Menores de Idade",
+          value: "Certidão de nascimento ou RG",
+          practicalExplanation: "Acompanhados de ambos os pais ou com autorização registrada.",
+          badge: "OBRIGATÓRIO",
+        }
+      );
+    }
+
+    pushPage("entry_requirements", {
+      eyebrow: "Documentação & Requisitos de Viagem",
+      title: "O que você precisa para viajar com tranquilidade",
+      subtitle: `Assessoria completa de embarque inclusa pela ${input.agencyName}`,
+      humanNarrative:
+        "Cuidamos da verificação prévia de todos os seus documentos para que nenhum imprevisto ocorra no dia do embarque.",
+      cards: entryCards,
+    });
+
+    // ── SLIDE DE CLIMA & DICAS SAZONAIS DA ÉPOCA (INTELIGÊNCIA DE VENDA) ──
+    const weatherCards: PreBoardingSlideCard[] = [];
+    if (archetype === "orlando_parques") {
+      weatherCards.push(
+        {
+          label: "Temperatura Média",
+          value: "20°C a 27°C (Clima Ameno a Quente)",
+          practicalExplanation: "Ideal para longas caminhadas nos parques temáticos sem exaustão térmica.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "O que Levar na Mala",
+          value: "Tênis confortável + Casaco leve",
+          practicalExplanation: "Roupas respiráveis de dia e casaco leve para as noites e atrações climatizadas.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else if (archetype === "caribe_resort") {
+      weatherCards.push(
+        {
+          label: "Temperatura Média",
+          value: "26°C a 30°C (Sol & Mar Quente)",
+          practicalExplanation: "Águas mornas e sol pleno para aproveitar as praias e piscinas do resort.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "O que Levar na Mala",
+          value: "Roupas leves e protetor solar",
+          practicalExplanation: "Trajes de banho, chapéu e protetor solar biodegradável para passeios ecológicos.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else if (archetype === "europa_multipais" || archetype === "italia_multicidade") {
+      weatherCards.push(
+        {
+          label: "Estação no Destino",
+          value: "Clima equilibrado para passeios a pé",
+          practicalExplanation: "Centros históricos perfeitos para explorar a pé e fotografar sem aglomeração extrema.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "O que Levar na Mala",
+          value: "Calçado ergonômico + Camadas",
+          practicalExplanation: "Look em camadas (cebola) para adaptar entre ambientes abertos e museus aquecidos.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else {
+      weatherCards.push(
+        {
+          label: "Clima Local",
+          value: "Condições favoráveis para o roteiro",
+          practicalExplanation: "Selecionamos as melhores janelas de viagem para máxima comodidade e lazer.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "O que Levar",
+          value: "Mala versátil para o período",
+          practicalExplanation: "Roupas casuais e calçados confortáveis para passeios diurnos e jantares.",
+          badge: "RECOMENDADO",
+        }
+      );
+    }
+
+    pushPage("weather", {
+      eyebrow: "Clima & Época da Viagem",
+      title: `Como estará o tempo em ${input.destinations[0] || "seu destino"}`,
+      subtitle: `Período planejado: ${input.startDate} a ${input.endDate}`,
+      humanNarrative:
+        "Saber o clima exato da época permite fazer a mala ideal e aproveitar cada atração na melhor hora do dia.",
+      cards: weatherCards,
+    });
+
+    // ── SLIDE DE CÂMBIO & FORMAS DE PAGAMENTO NO DESTINO (INTELIGÊNCIA DE VENDA) ──
+    const currencyCards: PreBoardingSlideCard[] = [];
+    if (archetype === "orlando_parques" || archetype === "caribe_resort") {
+      currencyCards.push(
+        {
+          label: "Moeda no Destino",
+          value: "Dólar Americano (USD)",
+          practicalExplanation: "Aceito amplamente em todos os estabelecimentos, parques e restaurantes.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "Forma de Pagamento Mais Econômica",
+          value: "Cartão de Conta Global (Wise / Nomad)",
+          practicalExplanation: "IOF reduzido de 1,1% (vs 4,38% de cartões de crédito convencionais) e cotação comercial.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else if (archetype === "europa_multipais" || archetype === "italia_multicidade") {
+      currencyCards.push(
+        {
+          label: "Moeda no Destino",
+          value: "Euro (EUR)",
+          practicalExplanation: "Moeda unificada em toda a zona do euro sem necessidade de novas trocas.",
+          badge: "RECOMENDADO",
+        },
+        {
+          label: "Cartão Internacional & Dinheiro",
+          value: "Conta Global + Pequena quantia em espécie",
+          practicalExplanation: "Uso de aproximação (Apple Pay / Google Pay) é padrão em quase 100% dos locais.",
+          badge: "RECOMENDADO",
+        }
+      );
+    } else {
+      currencyCards.push(
+        {
+          label: "Pagamentos Locais",
+          value: "PIX e Cartões de Crédito/Débito",
+          practicalExplanation: "Ampla aceitação digital em todo o território nacional sem custos extras.",
+          badge: "RECOMENDADO",
+        }
+      );
+    }
+
+    pushPage("currency", {
+      eyebrow: "Câmbio & Economia Inteligente",
+      title: "Moeda, Câmbio e Como Economizar no Destino",
+      subtitle: "Dicas práticas da nossa curadoria para suas compras e alimentação",
+      humanNarrative:
+        "Orientamos a melhor estratégia de pagamentos no destino para você não pagar taxas abusivas de IOF nem perder tempo com casas de câmbio caras.",
+      cards: currencyCards,
+    });
 
     pushPage("payments", {
       eyebrow: "Investimento & Condições Comerciais",
@@ -1404,12 +1602,26 @@ export type CommissionCalculationBasis = "net_sale_plus_over" | "agency_commissi
 export type OverPaymentMethod = "pix_direto_agencia" | "operadora_financiado";
 
 export interface OperatorOverRetentionConfig {
+  operatorKey?: string;
   operatorName: string;
   defaultRetentionPctWhenFinanced: number; // ex: Orinter 16%, FRT 15%, Incomum 14%, Cativa 12%
   baseAgencyCommissionPct: number; // ex: 10% ou 12%
+  maxBoletoInstallments?: number;
+  boletoRequiresDownpayment?: boolean;
+  boletoDownpaymentPct?: number;
+  maxCardInstallments?: number;
+  pixDiscountPct?: number;
+  paymentChannelCode?: string;
+  paymentGuidanceTitle?: string;
+  paymentGuidanceInstructions?: string;
+  paymentPortalUrl?: string;
+  cancellationFinePct?: number;
+  cancellationFreeDaysBefore?: number;
+  cancellationPolicyNotes?: string;
 }
 
-export const DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS: OperatorOverRetentionConfig[] = [
+export const DEFAULT_OPERATOR_OVER_RETENTION_CONFIGS: OperatorOverRetentionConfig[] = [];
+const _LEGACY_OPERATOR_CONFIGS_UNUSED: OperatorOverRetentionConfig[] = [
   { operatorName: "Orinter", defaultRetentionPctWhenFinanced: 16, baseAgencyCommissionPct: 10 },
   { operatorName: "FRT Operadora", defaultRetentionPctWhenFinanced: 15, baseAgencyCommissionPct: 12 },
   { operatorName: "Incomum", defaultRetentionPctWhenFinanced: 14, baseAgencyCommissionPct: 10 },
@@ -2125,3 +2337,465 @@ export const importUniversalCrmSpreadsheetBatchFn = createServerFn({ method: "PO
     };
   });
 
+
+// ============================================================================
+// 6. PERSISTÊNCIA ERP MULTI-TENANT DE PLANILHA DE VENDAS, OPERADORAS E COMISSÕES
+//    (Tabelas Relacionais: agency_operator_rules, agency_agent_commission_profiles,
+//     agency_sales_commission_ledger, agency_contract_cancellation_policies + RLS)
+// ============================================================================
+
+export interface CancellationFineTierRule {
+  minDaysBefore: number;
+  maxDaysBefore: number;
+  daysBeforeDeparture?: number;
+  finePct: number;
+  label?: string;
+}
+
+export interface AgencyCancellationPolicyConfig {
+  id?: string;
+  policyKey?: string;
+  policyName: string;
+  isDefault: boolean;
+  freeCancellationWindowDays: number;
+  anacRegretHours: number;
+  anacMinAdvanceDays: number;
+  defaultFinePct: number;
+  fineTiers: CancellationFineTierRule[];
+  nonRefundableAirfareRule?: string;
+  allowOperatorCreditConversion: boolean;
+  creditValidityMonths: number;
+  contractClausesTemplate: string;
+  reschedulingPolicyText: string;
+}
+
+const GetAgencySalesAndCommissionConfigSchema = z.object({
+  storeId: z.string().optional(),
+});
+
+export const getAgencySalesAndCommissionConfigFn = createServerFn({ method: "GET" })
+  .validator(GetAgencySalesAndCommissionConfigSchema)
+  .handler(async ({ data }) => {
+    const requestedStoreId = data?.storeId;
+    try {
+      const supabase = getServerClient();
+      const { getServerIdentity } = await import("@/lib/server-access");
+      const identity = await getServerIdentity();
+      const targetStoreId =
+        requestedStoreId && requestedStoreId !== "default"
+          ? requestedStoreId
+          : identity?.store_id || null;
+
+      const rawRole = String(identity?.role || "").toLowerCase();
+      let isManagerOrOwner = ["owner", "admin", "manager", "gerente", "diretor", "master", "platform_admin"].includes(rawRole);
+
+      if (!targetStoreId) {
+        return {
+          storeId: null,
+          userRole: rawRole || "agent",
+          isManagerOrOwner,
+          rows: [] as InlineSaleSpreadsheetRowInput[],
+          agents: [] as AgentCommissionProfile[],
+          operatorConfigs: [] as OperatorOverRetentionConfig[],
+          cancellationPolicies: [] as AgencyCancellationPolicyConfig[],
+          updatedAt: null as string | null,
+        };
+      }
+
+      if (identity?.user_id && !isManagerOrOwner) {
+        const { data: memberRow } = await supabase
+          .from("store_members")
+          .select("role")
+          .eq("store_id", targetStoreId)
+          .eq("user_id", identity.user_id)
+          .maybeSingle();
+        const memberRole = String(memberRow?.role || "").toLowerCase();
+        if (["owner", "admin", "manager", "gerente", "diretor", "master"].includes(memberRole)) {
+          isManagerOrOwner = true;
+        }
+      }
+
+      const [opRes, agentRes, ledgerRes, cancelRes, storeRes] = await Promise.all([
+        supabase
+          .from("agency_operator_rules")
+          .select("*")
+          .eq("store_id", targetStoreId)
+          .order("operator_name", { ascending: true }),
+        supabase
+          .from("agency_agent_commission_profiles")
+          .select("*")
+          .eq("store_id", targetStoreId)
+          .order("agent_name", { ascending: true }),
+        supabase
+          .from("agency_sales_commission_ledger")
+          .select("*")
+          .eq("store_id", targetStoreId)
+          .order("sale_date", { ascending: false }),
+        supabase
+          .from("agency_contract_cancellation_policies")
+          .select("*")
+          .eq("store_id", targetStoreId)
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("stores")
+          .select("id, owner_id, settings")
+          .eq("id", targetStoreId)
+          .maybeSingle(),
+      ]);
+
+      if (identity?.user_id && storeRes.data?.owner_id === identity.user_id) {
+        isManagerOrOwner = true;
+      }
+
+      const settingsObj =
+        storeRes.data?.settings && typeof storeRes.data.settings === "object"
+          ? (storeRes.data.settings as Record<string, any>)
+          : {};
+      const erpBlock =
+        settingsObj.travel_commissions_erp && typeof settingsObj.travel_commissions_erp === "object"
+          ? settingsObj.travel_commissions_erp
+          : {};
+
+      const operatorConfigs: OperatorOverRetentionConfig[] =
+        Array.isArray(opRes.data) && opRes.data.length > 0
+          ? opRes.data.map((r: any) => ({
+              operatorName: r.operator_name,
+              baseAgencyCommissionPct: Number(r.base_agency_commission_pct) || 0,
+              defaultRetentionPctWhenFinanced: Number(r.over_retention_pct_when_financed) || 0,
+              maxBoletoInstallments: Number(r.max_boleto_installments) || 1,
+              boletoRequiresDownpayment: Boolean(r.boleto_requires_downpayment),
+              boletoDownpaymentPct: Number(r.boleto_downpayment_pct) || 0,
+              maxCardInstallments: Number(r.max_card_installments) || 1,
+              pixDiscountPct: Number(r.pix_discount_pct) || 0,
+              paymentChannelCode: r.payment_channel_code || "portal_operadora",
+              paymentGuidanceTitle: r.payment_guidance_title || "",
+              paymentGuidanceInstructions: r.payment_guidance_instructions || "",
+              paymentPortalUrl: r.payment_portal_url || "",
+              cancellationFinePct: Number(r.cancellation_fine_pct) || 0,
+              cancellationFreeDaysBefore: Number(r.cancellation_free_days_before) || 0,
+              cancellationPolicyNotes: r.cancellation_policy_notes || "",
+            }))
+          : Array.isArray(erpBlock.operatorConfigs)
+            ? erpBlock.operatorConfigs
+            : [];
+
+      const agents: AgentCommissionProfile[] =
+        Array.isArray(agentRes.data) && agentRes.data.length > 0
+          ? agentRes.data.map((a: any) => ({
+              agentId: a.agent_identifier,
+              agentName: a.agent_name,
+              goalEvaluationBasis: (a.goal_evaluation_basis as GoalEvaluationBasis) || "gross_sale",
+              commissionCalculationBasis:
+                (a.commission_calculation_basis as CommissionCalculationBasis) || "net_sale_plus_over",
+              baseCommissionPct: Number(a.base_commission_pct) || 0,
+              defaultOverCommissionPct: Number(a.default_over_commission_pct) || 0,
+              currentMonthAgencyRevenueCents: Number(a.current_month_revenue_cents) || 0,
+              tiers: Array.isArray(a.tiers) ? a.tiers : [],
+            }))
+          : Array.isArray(erpBlock.agents)
+            ? erpBlock.agents
+            : [];
+
+      const rows: InlineSaleSpreadsheetRowInput[] =
+        Array.isArray(ledgerRes.data) && ledgerRes.data.length > 0
+          ? ledgerRes.data.map((row: any) => ({
+              id: row.row_code || row.id,
+              saleDate: String(row.sale_date || "").slice(0, 10),
+              clientName: row.client_name || "",
+              passengersCount: Number(row.passengers_count) || 1,
+              operatorName: row.operator_name || "",
+              operatorPackageCode: row.operator_package_code || "",
+              contractSigned: Boolean(row.contract_signed),
+              bookingStatus: (row.booking_status as any) || "confirmada",
+              grossSaleCents: Number(row.gross_sale_cents) || 0,
+              taxesAndFeesCents: Number(row.taxes_and_fees_cents) || 0,
+              operatorTablePriceCents: Number(row.operator_table_price_cents) || 0,
+              baseCommissionPct: Number(row.base_commission_pct) || 0,
+              overRetentionFeePct: Number(row.over_retention_fee_pct) || 0,
+              paid100PctViaOperator: Boolean(row.paid_100pct_via_operator),
+              overPaymentMethod: (row.over_payment_method as OverPaymentMethod) || "operadora_financiado",
+              agentId: row.agent_id || "",
+              agentName: row.agent_name || "",
+              agentCommissionPctOverride:
+                row.agent_commission_pct_override != null ? Number(row.agent_commission_pct_override) : null,
+              agentOverCommissionPctOverride:
+                row.agent_over_commission_pct_override != null
+                  ? Number(row.agent_over_commission_pct_override)
+                  : null,
+              agentCommissionCentsOverride:
+                row.agent_commission_cents_override != null
+                  ? Number(row.agent_commission_cents_override)
+                  : null,
+              deductCommissionOnCancel: Boolean(row.deduct_commission_on_cancel),
+              managerCommissionClawbackCents:
+                row.manager_commission_clawback_cents != null
+                  ? Number(row.manager_commission_clawback_cents)
+                  : null,
+            }))
+          : Array.isArray(erpBlock.rows)
+            ? erpBlock.rows
+            : [];
+
+      const cancellationPolicies: AgencyCancellationPolicyConfig[] =
+        Array.isArray(cancelRes.data) && cancelRes.data.length > 0
+          ? cancelRes.data.map((p: any) => ({
+              id: p.id,
+              policyName: p.policy_name,
+              isDefault: Boolean(p.is_default),
+              freeCancellationWindowDays: Number(p.free_cancellation_window_days) || 0,
+              anacRegretHours: Number(p.anac_regret_hours) || 24,
+              anacMinAdvanceDays: Number(p.anac_min_advance_days) || 7,
+              defaultFinePct: Number(p.default_fine_pct) || 0,
+              fineTiers: Array.isArray(p.fine_tiers) ? p.fine_tiers : [],
+              allowOperatorCreditConversion: Boolean(p.allow_operator_credit_conversion),
+              creditValidityMonths: Number(p.credit_validity_months) || 12,
+              contractClausesTemplate: p.contract_clauses_template || "",
+              reschedulingPolicyText: p.rescheduling_policy_text || "",
+            }))
+          : Array.isArray(erpBlock.cancellationPolicies)
+            ? erpBlock.cancellationPolicies
+            : [];
+
+      return {
+        storeId: targetStoreId,
+        userRole: isManagerOrOwner ? "manager" : rawRole || "agent",
+        isManagerOrOwner,
+        rows,
+        agents,
+        operatorConfigs,
+        cancellationPolicies,
+        updatedAt: typeof erpBlock.updatedAt === "string" ? erpBlock.updatedAt : null,
+      };
+    } catch {
+      return {
+        storeId: requestedStoreId || null,
+        userRole: "agent",
+        isManagerOrOwner: false,
+        rows: [] as InlineSaleSpreadsheetRowInput[],
+        agents: [] as AgentCommissionProfile[],
+        operatorConfigs: [] as OperatorOverRetentionConfig[],
+        cancellationPolicies: [] as AgencyCancellationPolicyConfig[],
+        updatedAt: null as string | null,
+      };
+    }
+  });
+
+const SaveAgencySalesAndCommissionConfigSchema = z.object({
+  storeId: z.string().optional(),
+  rows: z.array(z.any()).optional(),
+  agents: z.array(z.any()).optional(),
+  operatorConfigs: z.array(z.any()).optional(),
+  cancellationPolicies: z.array(z.any()).optional(),
+});
+
+export const saveAgencySalesAndCommissionConfigFn = createServerFn({ method: "POST" })
+  .validator(SaveAgencySalesAndCommissionConfigSchema)
+  .handler(async ({ data }) => {
+    const { storeId: requestedStoreId, rows, agents, operatorConfigs, cancellationPolicies } = data;
+    const nowIso = new Date().toISOString();
+
+    try {
+      const supabase = getServerClient();
+      const { getServerIdentity } = await import("@/lib/server-access");
+      const identity = await getServerIdentity();
+      const targetStoreId =
+        requestedStoreId && requestedStoreId !== "default"
+          ? requestedStoreId
+          : identity?.store_id || null;
+
+      if (!targetStoreId) {
+        return { success: false, updatedAt: nowIso };
+      }
+
+      const rawRole = String(identity?.role || "").toLowerCase();
+      let isManagerOrOwner = ["owner", "admin", "manager", "gerente", "diretor", "master", "platform_admin"].includes(rawRole);
+
+      const { data: storeRow } = await supabase
+        .from("stores")
+        .select("id, owner_id, settings")
+        .eq("id", targetStoreId)
+        .maybeSingle();
+
+      if (identity?.user_id && storeRow?.owner_id === identity.user_id) {
+        isManagerOrOwner = true;
+      }
+
+      if (identity?.user_id && !isManagerOrOwner) {
+        const { data: memberRow } = await supabase
+          .from("store_members")
+          .select("role")
+          .eq("store_id", targetStoreId)
+          .eq("user_id", identity.user_id)
+          .maybeSingle();
+        const memberRole = String(memberRow?.role || "").toLowerCase();
+        if (["owner", "admin", "manager", "gerente", "diretor", "master"].includes(memberRole)) {
+          isManagerOrOwner = true;
+        }
+      }
+
+      // 1. Persistir Operadoras em agency_operator_rules (exclusivo Gestor/Owner)
+      if (isManagerOrOwner && Array.isArray(operatorConfigs)) {
+        await supabase.from("agency_operator_rules").delete().eq("store_id", targetStoreId);
+        if (operatorConfigs.length > 0) {
+          await supabase.from("agency_operator_rules").insert(
+            operatorConfigs
+              .filter((op: any) => op?.operatorName?.trim())
+              .map((op: any) => ({
+                store_id: targetStoreId,
+                operator_name: String(op.operatorName).trim(),
+                operator_slug: String(op.operatorName)
+                  .trim()
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "_"),
+                base_agency_commission_pct: Number(op.baseAgencyCommissionPct) || 0,
+                over_retention_pct_when_financed: Number(op.defaultRetentionPctWhenFinanced) || 0,
+                max_boleto_installments: Number(op.maxBoletoInstallments) || 1,
+                boleto_requires_downpayment: Boolean(op.boletoRequiresDownpayment),
+                boleto_downpayment_pct: Number(op.boletoDownpaymentPct) || 0,
+                max_card_installments: Number(op.maxCardInstallments) || 1,
+                pix_discount_pct: Number(op.pixDiscountPct) || 0,
+                payment_channel_code: op.paymentChannelCode || "portal_operadora",
+                payment_guidance_title: op.paymentGuidanceTitle || "",
+                payment_guidance_instructions: op.paymentGuidanceInstructions || "",
+                payment_portal_url: op.paymentPortalUrl || null,
+                cancellation_fine_pct: Number(op.cancellationFinePct) || 0,
+                cancellation_free_days_before: Number(op.cancellationFreeDaysBefore) || 0,
+                cancellation_policy_notes: op.cancellationPolicyNotes || "",
+                updated_at: nowIso,
+              })),
+          );
+        }
+      }
+
+      // 2. Persistir Perfis de Comissionamento de Agentes em agency_agent_commission_profiles (exclusivo Gestor/Owner)
+      if (isManagerOrOwner && Array.isArray(agents)) {
+        await supabase.from("agency_agent_commission_profiles").delete().eq("store_id", targetStoreId);
+        if (agents.length > 0) {
+          await supabase.from("agency_agent_commission_profiles").insert(
+            agents
+              .filter((ag: any) => ag?.agentId && ag?.agentName)
+              .map((ag: any) => ({
+                store_id: targetStoreId,
+                agent_identifier: String(ag.agentId),
+                agent_name: String(ag.agentName),
+                goal_evaluation_basis: ag.goalEvaluationBasis || "gross_sale",
+                commission_calculation_basis: ag.commissionCalculationBasis || "net_sale_plus_over",
+                base_commission_pct: Number(ag.baseCommissionPct) || 0,
+                default_over_commission_pct: Number(ag.defaultOverCommissionPct) || 0,
+                current_month_revenue_cents: Number(ag.currentMonthAgencyRevenueCents) || 0,
+                tiers: Array.isArray(ag.tiers) ? ag.tiers : [],
+                updated_at: nowIso,
+              })),
+          );
+        }
+      }
+
+      // 3. Persistir Políticas de Cancelamento e Contrato em agency_contract_cancellation_policies (exclusivo Gestor/Owner)
+      if (isManagerOrOwner && Array.isArray(cancellationPolicies)) {
+        await supabase.from("agency_contract_cancellation_policies").delete().eq("store_id", targetStoreId);
+        if (cancellationPolicies.length > 0) {
+          await supabase.from("agency_contract_cancellation_policies").insert(
+            cancellationPolicies
+              .filter((pol: any) => pol?.policyName?.trim())
+              .map((pol: any) => ({
+                store_id: targetStoreId,
+                policy_name: String(pol.policyName).trim(),
+                is_default: Boolean(pol.isDefault),
+                free_cancellation_window_days: Number(pol.freeCancellationWindowDays) || 0,
+                anac_regret_hours: Number(pol.anacRegretHours) || 24,
+                anac_min_advance_days: Number(pol.anacMinAdvanceDays) || 7,
+                default_fine_pct: Number(pol.defaultFinePct) || 0,
+                fine_tiers: Array.isArray(pol.fineTiers) ? pol.fineTiers : [],
+                allow_operator_credit_conversion: Boolean(pol.allowOperatorCreditConversion),
+                credit_validity_months: Number(pol.creditValidityMonths) || 12,
+                contract_clauses_template: pol.contractClausesTemplate || "",
+                rescheduling_policy_text: pol.reschedulingPolicyText || "",
+                updated_at: nowIso,
+              })),
+          );
+        }
+      }
+
+      // 4. Persistir Planilha de Vendas em agency_sales_commission_ledger
+      if (Array.isArray(rows)) {
+        if (isManagerOrOwner) {
+          await supabase.from("agency_sales_commission_ledger").delete().eq("store_id", targetStoreId);
+        }
+        if (rows.length > 0) {
+          await supabase.from("agency_sales_commission_ledger").upsert(
+            rows.map((r: any) => ({
+              store_id: targetStoreId,
+              row_code: String(r.id || `row-${Date.now()}`),
+              sale_date: r.saleDate || nowIso.slice(0, 10),
+              client_name: r.clientName || "",
+              passengers_count: Number(r.passengersCount) || 1,
+              operator_name: r.operatorName || "",
+              operator_package_code: r.operatorPackageCode || "",
+              contract_signed: Boolean(r.contractSigned),
+              booking_status: r.bookingStatus || "confirmada",
+              gross_sale_cents: Number(r.grossSaleCents) || 0,
+              taxes_and_fees_cents: Number(r.taxesAndFeesCents) || 0,
+              operator_table_price_cents: Number(r.operatorTablePriceCents) || 0,
+              base_commission_pct: Number(r.baseCommissionPct) || 0,
+              over_retention_fee_pct: Number(r.overRetentionFeePct) || 0,
+              paid_100pct_via_operator: Boolean(r.paid100PctViaOperator),
+              over_payment_method: r.overPaymentMethod || "operadora_financiado",
+              agent_id: r.agentId || "",
+              agent_name: r.agentName || "",
+              agent_commission_pct_override: isManagerOrOwner ? r.agentCommissionPctOverride ?? null : null,
+              agent_over_commission_pct_override: isManagerOrOwner ? r.agentOverCommissionPctOverride ?? null : null,
+              agent_commission_cents_override: isManagerOrOwner ? r.agentCommissionCentsOverride ?? null : null,
+              deduct_commission_on_cancel: Boolean(r.deductCommissionOnCancel),
+              manager_commission_clawback_cents: isManagerOrOwner ? r.managerCommissionClawbackCents ?? null : null,
+              updated_at: nowIso,
+            })),
+            { onConflict: "store_id,row_code" },
+          );
+        }
+      }
+
+      // Espelho sincronizado em stores.settings.travel_commissions_erp para resiliência
+      const currentSettings =
+        storeRow?.settings && typeof storeRow.settings === "object"
+          ? (storeRow.settings as Record<string, any>)
+          : {};
+      const currentErp =
+        currentSettings.travel_commissions_erp &&
+        typeof currentSettings.travel_commissions_erp === "object"
+          ? currentSettings.travel_commissions_erp
+          : {};
+
+      const nextErp = {
+        ...currentErp,
+        ...(rows !== undefined ? { rows } : {}),
+        ...(isManagerOrOwner && agents !== undefined ? { agents } : {}),
+        ...(isManagerOrOwner && operatorConfigs !== undefined ? { operatorConfigs } : {}),
+        ...(isManagerOrOwner && cancellationPolicies !== undefined ? { cancellationPolicies } : {}),
+        updatedAt: nowIso,
+        updatedBy: identity?.user_id || null,
+      };
+
+      await supabase
+        .from("stores")
+        .update({
+          settings: {
+            ...currentSettings,
+            travel_commissions_erp: nextErp,
+          },
+          updated_at: nowIso,
+        })
+        .eq("id", targetStoreId);
+
+      return {
+        success: true,
+        storeId: targetStoreId,
+        isManagerOrOwner,
+        updatedAt: nowIso,
+      };
+    } catch {
+      return {
+        success: false,
+        updatedAt: nowIso,
+      };
+    }
+  });

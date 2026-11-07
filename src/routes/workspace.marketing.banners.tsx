@@ -206,7 +206,7 @@ function WorkspaceStoreBannersPage() {
   );
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Marketing"
         title="Banners"
@@ -236,7 +236,7 @@ function WorkspaceStoreBannersPage() {
       )}
 
       {banners.length === 0 ? (
-        <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+        <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card">
           <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
             <ImageIcon className="size-6" />
           </div>
@@ -257,7 +257,7 @@ function WorkspaceStoreBannersPage() {
           </Button>
         </div>
       ) : filteredBanners.length === 0 ? (
-        <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card/40">
+        <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card">
           <h3 className="text-sm font-bold text-foreground">Nenhum banner encontrado</h3>
           <p className="text-xs text-muted-foreground">
             Nenhum resultado corresponde à busca &ldquo;{searchQuery}&rdquo;.
@@ -315,7 +315,7 @@ function WorkspaceStoreBannersPage() {
                   {b.city_filter && (
                     <Badge
                       variant="outline"
-                      className="text-xs font-semibold bg-background/80 backdrop-blur-sm gap-1 border-border/60"
+                      className="text-xs font-semibold bg-background/80 gap-1 border-border/60"
                     >
                       <MapPin className="size-2.5 text-primary" />
                       <span>{b.city_filter}</span>

@@ -60,7 +60,7 @@ export function ListingEmptyState({
         ? "O período de veiculação terminou. Você pode renovar a publicação para torná-lo visível novamente."
         : "O período de veiculação deste anúncio chegou ao fim. Explore itens semelhantes disponíveis na sua região.",
       icon: Clock,
-      colorClass: "text-amber-500 bg-amber-500/10",
+      colorClass: "text-warning-strong bg-warning/10",
     },
     out_of_stock: {
       badge: "Esgotado",

@@ -26,11 +26,9 @@ export function PrometheeNewsBreakingBlock({
     const rawPool =
       Array.isArray(newsArticles) && newsArticles.length > 0
         ? newsArticles
-        : Array.isArray(products) && products.length > 0
-          ? products
-          : Array.isArray(data?.articles)
-            ? data.articles
-            : [];
+        : Array.isArray(data?.articles)
+          ? data.articles
+          : [];
 
     const normalized = rawPool.map((item, idx) => normalizePrometheeArticle(item, idx));
     const filteredCity =

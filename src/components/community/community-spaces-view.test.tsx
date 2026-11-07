@@ -15,7 +15,38 @@ describe("Community — CommunitySpacesView (Espaços de Comunidade & Publicaç�
     };
 
     const html = renderToStaticMarkup(
-      <CommunitySpacesView community={community} />
+      <CommunitySpacesView
+        community={community}
+        threads={[
+          {
+            id: "t-1",
+            authorName: "Lucas Alencar",
+            authorUsername: "lucas",
+            timeAgo: "há 2 horas",
+            content: "Primeira discussão sobre tecnologia e inovação",
+            likesCount: 12,
+            repliesCount: 3,
+          },
+        ]}
+        sessions={[
+          {
+            id: "s-1",
+            title: "Meetup Tech",
+            dateStr: "Quinta às 19h",
+            location: "Auditório Central",
+            priceCents: 0,
+            rsvpsCount: 25,
+          },
+        ]}
+        products={[
+          {
+            id: "p-1",
+            title: "Adesivo Dev",
+            priceCents: 1500,
+            category: "Swag",
+          },
+        ]}
+      />
     );
 
     expect(html).toContain("Tecnologia &amp; Inovação SMO");

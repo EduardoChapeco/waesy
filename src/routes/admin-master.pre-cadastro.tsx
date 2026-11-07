@@ -266,7 +266,7 @@ export default function AdminPreCadastroPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1">
               {(
                 [
                   { id: "all", label: "Todos" },
@@ -310,7 +310,7 @@ export default function AdminPreCadastroPage() {
             </div>
           ) : (
             <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-xs">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scroll-area-carousel">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-bold">
                     <tr>
@@ -545,7 +545,7 @@ export default function AdminPreCadastroPage() {
                     </div>
 
                     {slide.image_url && (
-                      <div className="aspect-[16/10] w-full rounded-lg overflow-hidden border border-border/80 bg-muted mt-2">
+                      <div className="aspect-16/10 w-full rounded-lg overflow-hidden border border-border/80 bg-muted mt-2">
                         <img
                           src={slide.image_url}
                           alt={slide.title}

@@ -224,6 +224,52 @@ export const markObligationAsPaid = createServerFn({ method: "POST" })
 
     if (updateError) throw new Error("Erro ao liquidar conta: " + updateError.message);
 
+    // ── Sincronização Transacional com DRE (financial_transactions) & Caixa Ativo ──
+    try {
+      const expenseAmountCents = -Math.abs(target.amount_cents);
+
+      // 1. Registro da Despesa no DRE e Livro Financeiro da Loja
+      await supabase.from("financial_transactions").insert({
+        store_id: identity.store_id,
+        type: "expense_other",
+        amount_cents: expenseAmountCents,
+        description: `Pagamento: ${target.title}${target.supplier_name ? ` (${target.supplier_name})` : ""}`,
+        category: target.category || "other",
+        reference_date: (paidAt || now).slice(0, 10),
+        created_by: identity.id,
+      });
+
+      // 2. Se a baixa foi feita em dinheiro vivo, registra a saída no Caixa Ativo (se houver turno aberto)
+      if (paymentMethod === "cash") {
+        const { data: openRegister } = await supabase
+          .from("cash_registers")
+          .select("id")
+          .eq("store_id", identity.store_id)
+          .eq("status", "open")
+          .order("opened_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (openRegister) {
+          await supabase.from("cash_register_entries").insert({
+            cash_register_id: openRegister.id,
+            order_id: null,
+            amount_cents: expenseAmountCents,
+            entry_type: "cash",
+            payment_method: "cash",
+            notes: `Pagamento Conta: ${target.title}`,
+            created_by: identity.id,
+            channel_source: "pos_counter",
+            marketplace_fee_cents: 0,
+            net_payout_cents: expenseAmountCents,
+            external_reference_id: target.id,
+          });
+        }
+      }
+    } catch (syncErr) {
+      console.warn("[financial-obligations] Falha defensiva na sincronização de despesa com DRE/Caixa:", syncErr);
+    }
+
     return target;
   });
 

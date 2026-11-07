@@ -50,7 +50,7 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     key: "sunset",
     label: "Sunset Glow",
     description: "Vibração calorosa inspirada no pôr-do-sol, com energia e destaque.",
-    previewBg: "bg-amber-500/20 border-rose-500/30",
+    previewBg: "bg-warning/20 border-rose-500/30",
     cardStyle: "bg-card/40 backdrop-blur-md border-border text-foreground",
     buttonClass: "bg-background text-foreground hover:bg-background/90 font-bold",
   },

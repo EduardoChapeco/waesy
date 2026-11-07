@@ -135,7 +135,7 @@ function CalendarioEditorialPage() {
  };
 
  return (
- <div className="space-y-6 max-w-6xl pb-16">
+ <div className="space-y-6 w-full pb-16">
  {/* Header */}
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
  <div>
@@ -308,7 +308,7 @@ function CalendarioEditorialPage() {
  variant="outline"
  size="sm"
  onClick={() => handleMoveDay(post.id, -1)}
- className="size-11 sm:size-9 p-0 rounded-lg"
+ className="size-11 sm:size-9 p-0 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Voltar 1 dia"
  >
  <ChevronLeft className="size-3.5" />
@@ -318,7 +318,7 @@ function CalendarioEditorialPage() {
  variant="outline"
  size="sm"
  onClick={() => handleMoveDay(post.id, 1)}
- className="size-11 sm:size-9 p-0 rounded-lg"
+ className="size-11 sm:size-9 p-0 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Avançar 1 dia"
  >
  <ChevronRight className="size-3.5" />

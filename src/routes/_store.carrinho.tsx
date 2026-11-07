@@ -92,7 +92,7 @@ function StoreCartPage() {
       {!carts || carts.length === 0 ? (
         <div className="py-14 px-2 flex flex-col items-center justify-center text-center">
           <div className="size-16 rounded-lg bg-muted/60 flex items-center justify-center mb-4 text-muted-foreground">
-            <ShoppingBag className="size-8 stroke-[1.5]" />
+            <ShoppingBag className="size-8 stroke-thin" />
           </div>
           <h2 className="text-xl font-bold tracking-tight text-foreground">Seu carrinho está vazio</h2>
           <p className="text-xs text-muted-foreground max-w-xs mt-1 mb-6">
@@ -154,7 +154,7 @@ function StoreCartPage() {
                           />
                         ) : (
                           <div className="h-full w-full bg-muted flex items-center justify-center text-muted-foreground/30">
-                            <ShoppingBag className="size-6 stroke-[1.5]" />
+                            <ShoppingBag className="size-6 stroke-thin" />
                           </div>
                         )}
                       </div>

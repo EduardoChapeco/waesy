@@ -214,12 +214,12 @@ export function LeadCommissionCalculatorSheet({
             </p>
           </div>
 
-          <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-1">
-            <div className="flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+          <div className="p-4 rounded-lg bg-warning/5 border border-warning/20 space-y-1">
+            <div className="flex items-center gap-1 text-xs font-bold text-warning-strong ">
               <User className="size-3.5" />
               <span>Comissão Consultor</span>
             </div>
-            <p className="text-base font-black font-mono text-amber-700 dark:text-amber-300">
+            <p className="text-base font-black font-mono text-warning-strong ">
               R$ {calculations.sellerCommission.toFixed(2)}
             </p>
           </div>

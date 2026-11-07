@@ -41,7 +41,7 @@ export function TaskRow({
           onClick={() => onToggleComplete?.(!completed)}
           aria-label={completed ? "Marcar como pendente" : "Marcar como concluída"}
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "size-5 rounded-md border flex items-center justify-center transition-colors cursor-pointer",
+            "size-5 rounded-md border flex items-center justify-center transition-colors cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
             completed
               ? "bg-primary border-primary text-primary-foreground"
               : "border-border/80 hover:border-primary"
@@ -71,7 +71,7 @@ export function TaskRow({
           className={cn(
             "text-3xs font-semibold px-2 py-1 rounded-full uppercase font-mono",
             priority === "high" && "bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20",
-            priority === "medium" && "bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20",
+            priority === "medium" && "bg-warning/10 text-warning-strong  border border-warning/20",
             priority === "low" && "bg-muted text-muted-foreground"
           )}
         >

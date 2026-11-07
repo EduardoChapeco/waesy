@@ -198,7 +198,7 @@ export function OnboardingReviewPage() {
   return (
     <div className="flex-1 flex flex-col w-full min-h-full bg-background text-foreground pb-20">
       {/* TopBar Operacional */}
-      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/40 px-4 sm:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <header className="sticky top-0 z-30 bg-background/95 border-b border-border/40 px-4 sm:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
             <Cpu className="size-5 text-foreground" />
@@ -260,7 +260,7 @@ export function OnboardingReviewPage() {
       </header>
 
       {/* Conteúdo Principal */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-0 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
+      <div className="flex-1 w-full px-0 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
         {/* ABA 1: REVISÃO MULTIMODAL HUMAN-IN-THE-LOOP */}
         {activeTab === "multimodal" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -320,7 +320,7 @@ export function OnboardingReviewPage() {
 
               <div className="space-y-3">
                 {items.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-border/80 p-8 text-center space-y-2 bg-card/40">
+                  <div className="rounded-lg border border-dashed border-border/80 p-8 text-center space-y-2 bg-card">
                     <Package className="size-8 mx-auto text-muted-foreground/60" />
                     <p className="text-xs font-semibold text-foreground">Nenhum item pendente de revisão</p>
                     <p className="text-xs text-muted-foreground">Envie fotos na etapa multimodal ou utilize o catálogo mestre ao lado para adicionar produtos.</p>

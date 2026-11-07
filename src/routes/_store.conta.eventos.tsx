@@ -375,14 +375,14 @@ function CivilianEventsPage() {
 
         {/* ── Search & Filter Tabs ── */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-xl overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-xl overflow-x-auto scroll-area-carousel no-scrollbar">
             <button
               onClick={() => setActiveTab("all")}
               className={`h-9 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeTab === "all"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground "
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } min-h-11 sm:min-h-0`}
             >
               Todos ({eventsList.length})
             </button>
@@ -390,9 +390,9 @@ function CivilianEventsPage() {
               onClick={() => setActiveTab("active")}
               className={`h-9 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeTab === "active"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground "
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } min-h-11 sm:min-h-0`}
             >
               Ativos ({eventsList.filter((e) => !e.archived_at && e.status !== "draft").length})
             </button>
@@ -400,9 +400,9 @@ function CivilianEventsPage() {
               onClick={() => setActiveTab("drafts")}
               className={`h-9 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeTab === "drafts"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground "
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } min-h-11 sm:min-h-0`}
             >
               Rascunhos ({eventsList.filter((e) => e.status === "draft" && !e.archived_at).length})
             </button>
@@ -410,9 +410,9 @@ function CivilianEventsPage() {
               onClick={() => setActiveTab("archived")}
               className={`h-9 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeTab === "archived"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground "
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+              } min-h-11 sm:min-h-0`}
             >
               Arquivados ({eventsList.filter((e) => !!e.archived_at).length})
             </button>
@@ -464,14 +464,14 @@ function CivilianEventsPage() {
               return (
                 <div
                   key={ev.id}
-                  className="bg-card border border-border/60 rounded-3xl p-4 sm:p-5 flex flex-col justify-between space-y-4 hover:border-border transition-colors shadow-sm"
+                  className="bg-card border border-border/60 rounded-3xl p-4 sm:p-5 flex flex-col justify-between space-y-4 hover:border-border transition-colors "
                 >
                   <div className="space-y-3">
                     {/* Top Badges */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         {isArchived ? (
-                          <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-500">
+                          <Badge variant="outline" className="text-xs border-warning/30 text-warning-strong">
                             Arquivado
                           </Badge>
                         ) : ev.status === "draft" ? (
@@ -832,7 +832,7 @@ function CivilianEventsPage() {
                         formStoryType === "image"
                           ? "bg-background text-foreground border-primary"
                           : "text-muted-foreground border-transparent hover:bg-muted"
-                      }`}
+                      } min-h-11 sm:min-h-0`}
                     >
                       <ImageIcon className="size-3" />
                       Imagem
@@ -844,7 +844,7 @@ function CivilianEventsPage() {
                         formStoryType === "video"
                           ? "bg-background text-foreground border-primary"
                           : "text-muted-foreground border-transparent hover:bg-muted"
-                      }`}
+                      } min-h-11 sm:min-h-0`}
                     >
                       <Video className="size-3" />
                       Vídeo

@@ -412,7 +412,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
               <button
                 type="button"
                 onClick={() => setAttachment(null)}
-                className="size-7 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+                className="size-7 rounded hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 title="Remover anexo"
               >
                 <X className="size-3.5" />

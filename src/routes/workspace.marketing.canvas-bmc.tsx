@@ -312,7 +312,7 @@ export function BusinessModelCanvasPage() {
               variant="secondary"
               size="sm"
               disabled={!newItemText[key]?.trim()}
-              className="h-8 w-8 p-0 flex-shrink-0"
+              className="h-8 w-8 p-0 flex-shrink-0 min-h-11 sm:min-h-0"
               title="Adicionar"
             >
               <Plus className="h-4 w-4" />
@@ -326,8 +326,8 @@ export function BusinessModelCanvasPage() {
   return (
     <div className="w-full min-h-full bg-background text-foreground pb-24">
       {/* ── BARRA SUPERIOR SILENCIOSA ── */}
-      <div className="sticky top-0 z-20 border-b border-border/40 bg-card/60 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div className="sticky top-0 z-20 border-b border-border/40 bg-card ">
+        <div className="w-full px-4 sm:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -386,7 +386,7 @@ export function BusinessModelCanvasPage() {
       </div>
 
       {/* ── GRID CANÔNICO DE OSTERWALDER (5 COLUNAS SUPERIORES + 2 COLUNAS DE CUSTO/RECEITA) ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+      <div className="w-full px-4 sm:px-6 py-6 space-y-4">
         {/* PARTE SUPERIOR: 5 COLUNAS */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* COLUNA 1: Parcerias-Chave (Altura dupla) */}
@@ -402,7 +402,7 @@ export function BusinessModelCanvasPage() {
 
           {/* COLUNA 3: Propostas de Valor (Centro - Altura dupla) */}
           <div className="md:col-span-1 flex flex-col">
-            {renderBlock("value_propositions", "h-full min-h-96 border-primary/40 bg-card/80")}
+            {renderBlock("value_propositions", "h-full min-h-96 border-primary/40 bg-card")}
           </div>
 
           {/* COLUNA 4: Relacionamento (superior) + Canais (inferior) */}

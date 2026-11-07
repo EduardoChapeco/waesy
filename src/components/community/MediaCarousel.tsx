@@ -43,8 +43,8 @@ export function MediaCarousel({
     aspectRatio === "square"
       ? "aspect-square"
       : aspectRatio === "16/9"
-      ? "aspect-[16/9]"
-      : "aspect-[4/5]";
+      ? "aspect-16/9"
+      : "aspect-4/5";
 
   const handleScroll = () => {
     const el = scrollContainerRef.current;
@@ -82,7 +82,7 @@ export function MediaCarousel({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex w-full overflow-x-auto snap-x snap-mandatory no-scrollbar touch-pan-x"
+        className="flex w-full overflow-x-auto scroll-area-carousel snap-x snap-mandatory no-scrollbar touch-pan-x"
         style={{ scrollSnapType: "x mandatory" }}
       >
         {mediaUrls.map((url, idx) => {
@@ -105,7 +105,7 @@ export function MediaCarousel({
                     loop
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-foreground/20 group-hover:bg-foreground/30 transition-colors pointer-events-none">
-                    <div className="size-12 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center text-foreground shadow-md">
+                    <div className="size-12 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center text-foreground ">
                       <Play className="size-6 ml-1 fill-foreground" />
                     </div>
                   </div>
@@ -115,7 +115,7 @@ export function MediaCarousel({
                   src={url}
                   alt={`Mídia ${idx + 1}`}
                   loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.01] pointer-events-none"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-101 pointer-events-none"
                   onError={(e) => {
                     (e.currentTarget as HTMLElement).style.display = "none";
                   }}
@@ -140,7 +140,7 @@ export function MediaCarousel({
           {activeIndex > 0 && (
             <button
               type="button"
-              className="focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary absolute left-2 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-background hover:bg-muted text-foreground flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-md cursor-pointer z-10"
+              className="focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary absolute left-2 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-background hover:bg-muted text-foreground flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity  cursor-pointer z-10"
               onClick={() => scrollToSlide(activeIndex - 1)}
               aria-label="Foto anterior"
             >
@@ -151,7 +151,7 @@ export function MediaCarousel({
           {activeIndex < mediaUrls.length - 1 && (
             <button
               type="button"
-              className="focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary absolute right-2 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-background hover:bg-muted text-foreground flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-md cursor-pointer z-10"
+              className="focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary absolute right-2 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 rounded-full bg-background hover:bg-muted text-foreground flex items-center justify-center opacity-0 sm:group-hover:opacity-100 transition-opacity  cursor-pointer z-10"
               onClick={() => scrollToSlide(activeIndex + 1)}
               aria-label="Próxima foto"
             >
@@ -170,7 +170,7 @@ export function MediaCarousel({
                     type="button"
                     className={`focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary h-1.5 transition-colors duration-200 duration-300 rounded-full pointer-events-auto cursor-pointer ${
                       isActive ? "w-4 bg-foreground" : "w-1.5 bg-foreground/30 hover:bg-foreground/50"
-                    }`}
+                    } min-h-11 sm:min-h-0`}
                     onClick={(e) => {
                       e.stopPropagation();
                       scrollToSlide(dotIdx);

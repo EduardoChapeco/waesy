@@ -143,7 +143,7 @@ export type DepartureStatus = "confirmed" | "filling_fast" | "few_seats" | "sold
 
 export const DEPARTURE_STATUS_CONFIG: Record<DepartureStatus, { label: string; color: string; icon: string }> = {
   confirmed: { label: "Confirmada", color: "text-emerald-600 bg-emerald-50 border-emerald-200", icon: "check" },
-  filling_fast: { label: "Quase Esgotando", color: "text-amber-600 bg-amber-50 border-amber-200", icon: "flame" },
+  filling_fast: { label: "Quase Esgotando", color: "text-warning-strong bg-warning/10 border-warning/30", icon: "flame" },
   few_seats: { label: "Últimas Vagas", color: "text-orange-600 bg-orange-50 border-orange-200", icon: "alert" },
   sold_out: { label: "Esgotada", color: "text-red-600 bg-red-50 border-red-200", icon: "x" },
   on_request: { label: "Sob Consulta", color: "text-blue-600 bg-blue-50 border-blue-200", icon: "message" },

@@ -134,7 +134,7 @@ export function ContractSignPad({
  };
 
  return (
- <div className={'p-6 rounded-lg bg-card border border-border shadow-xl space-y-5 ' + className}>
+ <div className={'p-6 rounded-lg bg-card border border-border  space-y-5 ' + className}>
  <div className="flex items-start justify-between">
  <div>
  <div className="flex items-center gap-2 text-primary font-semibold text-xs tracking-wider uppercase">
@@ -155,7 +155,7 @@ export function ContractSignPad({
  </div>
 
  <div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-xs text-muted-foreground flex items-center gap-3">
- <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+ <AlertCircle className="w-4 h-4 text-warning-strong shrink-0" />
  <span>
  Desenhe sua assinatura no quadro abaixo utilizando o mouse ou a tela touch do seu celular.
  </span>
@@ -166,7 +166,7 @@ export function ContractSignPad({
  ref={canvasRef}
  width={500}
  height={200}
- className="w-full h-[200px] touch-none cursor-crosshair block"
+ className="w-full h-50 touch-none cursor-crosshair block"
  onMouseDown={startDrawing}
  onMouseMove={draw}
  onMouseUp={stopDrawing}
@@ -208,7 +208,7 @@ export function ContractSignPad({
  type="button"
  disabled={!hasDrawn || isSubmitting}
  onClick={handleConfirm}
- className="min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-md hover:opacity-90 disabled:opacity-50 transition-colors duration-200"
+ className="min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2  hover:opacity-90 disabled:opacity-50 transition-colors duration-200"
  >
  <CheckCircle2 className="w-4 h-4" />
  {isSubmitting ? 'Gravando Hash...' : 'Concluir Assinatura Digital'}

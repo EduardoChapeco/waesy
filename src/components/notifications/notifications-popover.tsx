@@ -125,7 +125,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  <PopoverContent
  align="end"
  sideOffset={8}
- className="w-[360px] sm:w-[400px] p-0 rounded-lg bg-card overflow-hidden"
+ className="w-90 sm:w-100 p-0 rounded-lg bg-card overflow-hidden"
  >
  {/* ── 1. Header do Painel de Notificações ── */}
  <div className="p-4 pb-3 flex items-center justify-between">
@@ -152,7 +152,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  </div>
 
  {/* ── 2. Filtros por Categoria em Chips ── */}
- <div className="px-3 py-2 bg-muted/20 flex items-center gap-2 overflow-x-auto no-scrollbar">
+ <div className="px-3 py-2 bg-muted/20 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar">
  {FILTER_TABS.map((tab) => {
  const isActive = activeTab === tab.id;
  return (
@@ -174,7 +174,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  </div>
 
  {/* ── 3. Lista de Notificações com Scroll Interno Nativo ── */}
- <div className="max-h-[380px] overflow-y-auto divide-y divide-border/40 overscroll-contain">
+ <div className="max-h-95 overflow-y-auto divide-y divide-border/40 overscroll-contain">
  {notifications.length > 0 ? (
  <div className="p-1 space-y-1">
  {notifications.map((item) => (
@@ -238,7 +238,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  e.stopPropagation();
  markReadMutation.mutate(item.id);
  }}
- className="hidden sm:group-hover:flex items-center justify-center size-5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="hidden sm:group-hover:flex items-center justify-center size-5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Check className="size-3" />
  </button>

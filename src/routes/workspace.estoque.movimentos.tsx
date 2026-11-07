@@ -304,14 +304,14 @@ function MovementsPage() {
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
               disabled={isSubmitting}
-              className="rounded-lg text-xs h-9"
+              className="rounded-lg text-xs h-9 min-h-11 sm:min-h-0"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || !variantId}
-              className="rounded-lg text-xs h-9 font-bold gap-2"
+              className="rounded-lg text-xs h-9 font-bold gap-2 min-h-11 sm:min-h-0"
             >
               {isSubmitting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Plus className="size-3.5" />}
               Registrar

@@ -80,7 +80,7 @@ export function BeforeAfterSlider({
 
  <div
  ref={containerRef}
- className="relative w-full h-[350px] md:h-[500px] overflow-hidden select-none cursor-ew-resize "
+ className="relative w-full h-88 md:h-125 overflow-hidden select-none cursor-ew-resize "
  onMouseDown={() => setIsDragging(true)}
  onMouseUp={() => setIsDragging(false)}
  onMouseLeave={() => setIsDragging(false)}

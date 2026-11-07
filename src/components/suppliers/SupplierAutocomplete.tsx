@@ -149,7 +149,7 @@ export function SupplierAutocomplete({
       {isOpen && !value && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 top-full left-0 right-0 mt-1 border border-border rounded-lg bg-surface shadow-lg overflow-hidden"
+          className="absolute z-50 top-full left-0 right-0 mt-1 border border-border rounded-lg bg-surface shadow-overlay overflow-hidden"
         >
           {debouncedSearch.length < 2 && (
             <div className="px-4 py-3 text-xs text-muted-foreground">
@@ -178,8 +178,8 @@ export function SupplierAutocomplete({
                       </span>
                       <span className="text-sm font-medium text-foreground">{supplier.name}</span>
                       {supplier.rating != null && (
-                        <span className="ml-auto flex items-center gap-1 text-xs text-amber-500 shrink-0">
-                          <Star className="h-3 w-3 fill-amber-400" />
+                        <span className="ml-auto flex items-center gap-1 text-xs text-warning-strong shrink-0">
+                          <Star className="h-3 w-3 fill-warning" />
                           {supplier.rating.toFixed(1)}
                         </span>
                       )}

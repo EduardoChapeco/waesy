@@ -90,7 +90,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  <div
  key={bill.id}
  className={cn(
- "p-5 rounded-lg border transition-colors duration-200 duration-200 shadow-sm flex flex-col justify-between gap-4",
+ "p-5 rounded-lg border transition-colors duration-200 duration-200  flex flex-col justify-between gap-4",
  bill.status === "paid"
  ? "bg-card/60 border-border/50 opacity-85"
  : bill.status === "overdue"
@@ -198,7 +198,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  size="sm"
  variant="ghost"
  onClick={() => copyPix(selectedBill?.pix_copy_paste || "")}
- className="absolute right-1 top-1 bottom-1 px-3 min-h-9"
+ className="absolute right-1 top-1 bottom-1 px-3 min-h-9 min-h-11 sm:min-h-0"
  >
  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
  </Button>

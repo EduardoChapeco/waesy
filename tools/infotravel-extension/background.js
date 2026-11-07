@@ -20,7 +20,46 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ ok: true });
     return true;
   }
+  if (message.type === 'QUOTE_CAPTURED') {
+    handleQuoteCaptured(message.payload);
+    sendResponse({ ok: true });
+    return true;
+  }
 });
+
+async function handleQuoteCaptured(q) {
+  try {
+    const data = await chrome.storage.local.get(['waesyStoreId']);
+    const payload = {
+      storeId: data.waesyStoreId || undefined,
+      operatorSlug: q.operatorSlug || 'infotravel_default',
+      sourcePage: q.sourcePage || 'carrinho',
+      originCity: q.originCity || null,
+      destinationCity: q.destinationCity,
+      startDate: q.startDate,
+      endDate: q.endDate || null,
+      adultsCount: q.adultsCount || 1,
+      childrenCount: q.childrenCount || 0,
+      currency: q.currency || 'BRL',
+      totalCents: q.totalCents,
+      perAdultCents: q.perAdultCents || null,
+      taxesCents: q.taxesCents || 0,
+      items: q.items || [],
+      rawPayloadJson: q
+    };
+
+    fetch('https://waesy.com.br/api/v1/ingest/infotravel-quotes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(data.waesyStoreId ? { 'x-waesy-store-id': data.waesyStoreId } : {})
+      },
+      body: JSON.stringify(payload)
+    }).catch(() => {});
+  } catch {
+    // Silencioso em caso de ausência de rede
+  }
+}
 
 async function handleNewReservation(reservation) {
   const data = await chrome.storage.local.get([

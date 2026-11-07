@@ -123,7 +123,7 @@ function ConfigParceirosPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 max-w-4xl">
+    <div className="flex flex-col gap-8 w-full">
       {/* ── 1. Meu Perfil de Parceiro & Afiliado ── */}
       <div className="space-y-4">
         <div>
@@ -174,7 +174,7 @@ function ConfigParceirosPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Pendente:</span>
-                  <span className="font-mono font-medium text-amber-500">
+                  <span className="font-mono font-medium text-warning-strong">
                     {formatMoney(profile?.pendingCents ?? 0)}
                   </span>
                 </div>
@@ -283,7 +283,7 @@ function ConfigParceirosPage() {
                       onClick={() => {
                         revokeMutation.mutate(acc.id);
                       }}
-                      className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg text-xs gap-2 h-8 px-3"
+                      className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg text-xs gap-2 h-8 px-3 min-h-11 sm:min-h-0"
                     >
                       <Trash2 className="size-3.5" />
                       Revogar Acesso

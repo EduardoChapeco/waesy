@@ -126,7 +126,7 @@ export function EventsShowcaseMobileView({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
+                <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
                   {eventsForYou.map((ev) => (
                     <EventHorizontalCard
                       key={ev.id}
@@ -159,7 +159,7 @@ export function EventsShowcaseMobileView({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
+                <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
                   {trendingEvents.map((ev) => (
                     <EventSpotlightCard
                       key={ev.id}
@@ -189,7 +189,7 @@ export function EventsShowcaseMobileView({
             {/* ── 9. RÉGUA DE FILTROS RÁPIDOS POR DATA ── */}
             {onSelectDateFilter && (
               <section aria-label="Filtro Rápido de Data" className="space-y-2 px-3 sm:px-4">
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
                   {[
                     { id: "all", label: "Todos os Dias" },
                     { id: "today", label: "Hoje" },
@@ -236,7 +236,7 @@ export function EventsShowcaseMobileView({
                   </button>
                 </div>
 
-                <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
+                <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
                   {rail.items.map((ev) => (
                     <EventSpotlightCard
                       key={ev.id}

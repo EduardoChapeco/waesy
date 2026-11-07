@@ -270,7 +270,7 @@ function OptionGroupsPage() {
  </div>
  <Button
  size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 h-9"
+ className="rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 h-9 min-h-11 sm:min-h-0"
  onClick={() => {
  form.reset({
  internal_name: "",
@@ -293,12 +293,12 @@ function OptionGroupsPage() {
  <Table>
  <TableHeader>
  <TableRow className="hover:bg-transparent">
- <TableHead className="w-[36px]"></TableHead>
+ <TableHead className="w-9"></TableHead>
  <TableHead className="text-xs font-bold text-foreground">Nome de Exibição</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Tipo de Seleção</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Regras</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Adicionais e Fotos</TableHead>
- <TableHead className="w-[80px]"></TableHead>
+ <TableHead className="w-20"></TableHead>
  </TableRow>
  </TableHeader>
  <TableBody>
@@ -511,7 +511,7 @@ function OptionGroupsPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs font-bold gap-2 h-8"
+ className="rounded-lg text-xs font-bold gap-2 h-8 min-h-11 sm:min-h-0"
  onClick={() =>
  append({
  label: "",
@@ -726,7 +726,7 @@ function OptionItemCard({
  type="button"
  variant="ghost"
  size="icon"
- className="size-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
+ className="size-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  onClick={onRemove}
  >
  <Trash2 className="size-3.5" />

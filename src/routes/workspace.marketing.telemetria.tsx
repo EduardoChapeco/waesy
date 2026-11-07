@@ -61,7 +61,7 @@ export const Route = createFileRoute("/workspace/marketing/telemetria")({
 // ─── Status Config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
  initiated: { label: "Iniciado", color: "bg-muted text-muted-foreground border-border" },
- opened: { label: "Aberto", color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+ opened: { label: "Aberto", color: "bg-warning/10 text-warning-strong border-warning/20" },
  responded: { label: "Respondido", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
  converted: { label: "Convertido", color: "bg-primary/10 text-primary border-primary/20" },
  lost: { label: "Perdido", color: "bg-destructive/10 text-destructive border-destructive/20" },
@@ -160,7 +160,7 @@ function WorkspaceTelemetriaPage() {
  const wa = whatsappAnalytics;
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>
@@ -176,13 +176,13 @@ function WorkspaceTelemetriaPage() {
  </p>
  </div>
  <div className="flex items-center gap-2">
- <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-9">
+ <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-9 min-h-11 sm:min-h-0">
  <Link to="/workspace/marketing/pixels">
  <CursorClick size={16} weight="bold" className="mr-2 text-primary" />
  Pixels e CAPI
  </Link>
  </Button>
- <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-9">
+ <Button asChild variant="outline" className="rounded-lg font-bold text-xs h-9 min-h-11 sm:min-h-0">
  <Link to="/workspace/marketing/patrocinadores">
  <Megaphone size={16} weight="bold" className="mr-2" />
  Patrocinadores
@@ -220,7 +220,7 @@ function WorkspaceTelemetriaPage() {
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
  {[
  { label: "Total de Leads", value: wa.total_leads, sub: "Últimos 30 dias", icon: <WhatsappLogo size={18} weight="bold" className="text-emerald-500" /> },
- { label: "Respondidos", value: wa.responded_leads, sub: "Confirmaram interesse", icon: <ChatCircle size={18} weight="bold" className="text-amber-500" /> },
+ { label: "Respondidos", value: wa.responded_leads, sub: "Confirmaram interesse", icon: <ChatCircle size={18} weight="bold" className="text-warning-strong" /> },
  { label: "Convertidos", value: wa.converted_leads, sub: "Fecharam negócio", icon: <CheckCircle size={18} weight="bold" className="text-primary" /> },
  { label: "Taxa de Conversão", value: `${(wa.conversion_rate ?? 0).toFixed(1)}%`, sub: "De leads → fechados", icon: <TrendUp size={18} weight="bold" className="text-info" /> },
  ].map((card) => (
@@ -323,7 +323,7 @@ function WorkspaceTelemetriaPage() {
  </p>
  </div>
  ) : (
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <table className="w-full text-left text-xs border-collapse">
  <thead>
  <tr className=" text-muted-foreground">
@@ -387,7 +387,7 @@ function WorkspaceTelemetriaPage() {
  Nenhum dado de telemetria registrado ainda. Cadastre patrocinadores e publique matérias para iniciar a mensuração.
  </div>
  ) : (
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <table className="w-full text-left text-xs border-collapse">
  <thead>
  <tr className=" text-muted-foreground">

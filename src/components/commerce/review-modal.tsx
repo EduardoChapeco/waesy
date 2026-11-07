@@ -65,9 +65,9 @@ export function ReviewModal({
  <Button
  variant="outline"
  size="sm"
- className="mt-2 text-xs h-7 font-bold tracking-wide hover:bg-primary hover:text-primary-foreground transition-colors duration-200 cursor-pointer"
+ className="mt-2 text-xs h-7 font-bold tracking-wide hover:bg-primary hover:text-primary-foreground transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0"
  >
- <Star className="size-3.5 mr-1 fill-amber-400 text-amber-500" />
+ <Star className="size-3.5 mr-1 fill-warning text-warning-strong" />
  Avaliar Produto
  </Button>
  </DialogTrigger>
@@ -97,7 +97,7 @@ export function ReviewModal({
  >
  <Star
  className={`size-8 transition-colors ${
- star <= rating ? "fill-amber-400 text-amber-500" : "text-border"
+ star <= rating ? "fill-warning text-warning-strong" : "text-border"
  }`}
  />
  </button>

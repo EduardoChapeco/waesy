@@ -1,20 +1,35 @@
-# DISPATCH — Challenger 1 (M1 Supabase Migration)
+# Dispatch: Challenger M1_1
 
-Scope: Empirical verification and stress testing of SQL syntax and invariants in `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`.
-Read `ORIGINAL_REQUEST.md` at `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md` (specifically ## 2026-10-05T04:01:31Z, R1).
-Read `PROJECT.md` at `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\orchestrator_6\PROJECT.md`.
-Write an empirical test script (e.g. Node.js regex/ast/sql parsing or validation) in your working directory `.agents/teamwork/challenger_m1_1/` to verify:
-1. All tables, check constraints, foreign keys, triggers and functions parse cleanly.
-2. Every table has RLS enabled.
-3. Every RLS policy with auth.uid has `(SELECT auth.uid())`.
-4. Unique constraint `uq_customer_store_affinity` is strictly defined.
-Issue your empirical verdict (APPROVE or REQUEST_CHANGES) in `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_1\handoff.md` and communicate back.
-## 2026-10-05T04:22:20Z
-You are Challenger M1_1.
-Your working directory is: c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_1
-Read DISPATCH.md in your working directory.
-Read ORIGINAL_REQUEST.md at: c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md (specifically section ## 2026-10-05T04:01:31Z, R1).
-Read PROJECT.md at: c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\orchestrator_6\PROJECT.md.
-Empirically test `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql` using automated script/tests in your working directory.
-Verify syntax balance, table definitions, RLS enablement, subquery caching `(SELECT auth.uid())`, unique constraint.
-Provide your verdict (APPROVE or REQUEST_CHANGES) in `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_1\handoff.md` and communicate back.
+## Objective
+Empirically verify Milestone M1 solution correctness and robustness:
+- Stress test `workspace-view-preferences.functions.ts` with boundary cases, concurrent calls, invalid payloads, SQL injection payloads, and extreme data types.
+- Verify `UniversalViewManager` and `ViewModeSwitcher` keyboard events and state transitions under rapid switching.
+
+## Mandatory Inputs to Read
+1. `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md`
+2. `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\PROJECT.md`
+3. `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\worker_m1\handoff.md`
+
+## Instructions
+- Write generators/oracles or execute empirical stress tests.
+- Verify that no unhandled exceptions or regressions occur.
+- Write your report to `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_1\handoff.md`.
+- State your verdict: **APPROVE** or **REQUEST_CHANGES**.
+- Message orchestrator (`71cb6393-bf04-4e51-946b-1dd9ac61e734`) when complete.
+
+
+## 2026-11-04T11:12:52Z
+You are Challenger M1_1 for Milestone M1.
+Your working directory is c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_1.
+Your parent orchestrator is conversation ID: 71cb6393-bf04-4e51-946b-1dd9ac61e734.
+
+Read your task instructions in c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_1\DISPATCH.md.
+Also read:
+- c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md
+- c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\PROJECT.md
+- c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\worker_m1\handoff.md
+
+Empirically verify solution correctness and robustness for `workspace-view-preferences.functions.ts` and view mode state transitions with boundary cases, stress testing, and invalid inputs.
+Write your report to c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_1\handoff.md.
+State your verdict explicitly: APPROVE or REQUEST_CHANGES.
+Send a message to your parent when complete.

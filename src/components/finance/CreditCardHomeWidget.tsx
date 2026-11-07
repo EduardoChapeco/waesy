@@ -51,7 +51,7 @@ export function CreditCardHomeWidget({
           className
         )}
       >
-        <div className="bg-lime-400 px-4 py-2 flex items-center justify-between text-zinc-950 font-extrabold text-xs">
+        <div className="bg-warning px-4 py-2 flex items-center justify-between text-zinc-950 font-extrabold text-xs">
           <span className="flex items-center gap-1">
             <span>Cartão de crédito</span>
             <ChevronRight className="size-4" />
@@ -63,7 +63,7 @@ export function CreditCardHomeWidget({
 
         <div className="p-4 sm:p-5 space-y-3">
           <div className="flex items-start gap-3">
-            <div className="size-11 rounded-2xl bg-lime-500/10 border border-lime-500/20 text-lime-600 flex items-center justify-center shrink-0">
+            <div className="size-11 rounded-2xl bg-warning/10 border border-warning/20 text-warning-strong flex items-center justify-center shrink-0">
               <CreditCard className="size-5" />
             </div>
             <div className="min-w-0">
@@ -80,7 +80,7 @@ export function CreditCardHomeWidget({
             type="button"
             onClick={onRequestCard}
             disabled={isLoadingCard}
-            className="w-full h-11 min-h-11 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-extrabold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 disabled:opacity-50"
+            className="w-full h-11 min-h-11 rounded-xl bg-warning hover:bg-warning active:bg-warning text-zinc-950 font-extrabold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning disabled:opacity-50"
           >
             <Plus className="size-4" />
             <span>{isLoadingCard ? "Ativando Cartão..." : "Ativar Cartão Gratuito"}</span>
@@ -103,12 +103,12 @@ export function CreditCardHomeWidget({
         }
       }}
       className={cn(
-        "w-full rounded-3xl bg-card border border-zinc-200/80 overflow-hidden shadow-xs select-none transition-colors cursor-pointer hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+        "w-full rounded-3xl bg-card border border-zinc-200/80 overflow-hidden shadow-xs select-none transition-colors cursor-pointer  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning",
         className
       )}
     >
       {/* ── Top Banner Verde-Limão com "Cartão de crédito >" ── */}
-      <div className="bg-lime-400 px-4 py-2 flex items-center justify-between text-zinc-950 font-extrabold text-xs">
+      <div className="bg-warning px-4 py-2 flex items-center justify-between text-zinc-950 font-extrabold text-xs">
         <span className="flex items-center gap-1">
           <span>Cartão de crédito</span>
           <ChevronRight className="size-4" />
@@ -143,7 +143,7 @@ export function CreditCardHomeWidget({
           <span className="text-xs font-bold text-muted-foreground">
             Limite disponível
           </span>
-          <span className="text-xs sm:text-sm font-black text-lime-600 font-mono">
+          <span className="text-xs sm:text-sm font-black text-warning-strong font-mono">
             {formatCents(availableLimitCents)}
           </span>
         </div>
@@ -151,7 +151,7 @@ export function CreditCardHomeWidget({
         {/* Barra de Progresso Verde-Limão */}
         <div className="w-full bg-zinc-100 rounded-full h-2 overflow-hidden">
           <div
-            className="h-full bg-lime-400 rounded-full transition-colors duration-300"
+            className="h-full bg-warning rounded-full transition-colors duration-300"
             style={{ width: `${usedPercentage}%` }}
           />
         </div>
@@ -159,7 +159,7 @@ export function CreditCardHomeWidget({
         {/* Legenda de Limite Utilizado e Total */}
         <div className="flex items-center justify-between text-2xs text-muted-foreground pt-1">
           <div className="flex items-center gap-2 font-medium">
-            <span className="size-2 rounded-full bg-lime-500 shrink-0" />
+            <span className="size-2 rounded-full bg-warning shrink-0" />
             <span>Utilizado</span>
           </div>
           <span className="font-medium font-mono">

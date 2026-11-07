@@ -121,7 +121,7 @@ export function FacetedSearchSheet({
       */}
       <SheetContent
         side="bottom"
-        className="sm:hidden p-0 max-h-[90dvh] flex flex-col rounded-t-lg border-t border-border bg-background"
+        className="sm:hidden p-0 max-h-vh-90 flex flex-col rounded-t-lg border-t border-border bg-background"
       >
         <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30 mx-auto mt-3 mb-1 shrink-0" />
         <SheetHeader className="px-5 py-3 border-b border-border/40 shrink-0 text-left">
@@ -134,7 +134,7 @@ export function FacetedSearchSheet({
               variant="ghost"
               size="sm"
               onClick={handleReset}
-              className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+              className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
             >
               <RotateCcw className="size-3 mr-1" /> Limpar
             </Button>
@@ -284,7 +284,7 @@ export function FacetedSearchSheet({
       {/* Desktop Sheet (Slide-over Direito) */}
       <SheetContent
         side="right"
-        className="hidden sm:flex sm:flex-col sm:w-[420px] p-0 border-l border-border bg-background"
+        className="hidden sm:flex sm:flex-col sm:w-105 p-0 border-l border-border bg-background"
       >
         <SheetHeader className="p-6 border-b border-border/40 shrink-0 text-left">
           <SheetTitle className="text-lg font-bold flex items-center justify-between">
@@ -296,7 +296,7 @@ export function FacetedSearchSheet({
               variant="ghost"
               size="sm"
               onClick={handleReset}
-              className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+              className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
             >
               <RotateCcw className="size-3 mr-1" /> Limpar
             </Button>

@@ -98,19 +98,19 @@ function StoreRouteError({ error }: { error: unknown }) {
  onClick={() => {
  if (typeof window !== "undefined") window.location.reload();
  }}
- className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
  >
  Tentar novamente
  </button>
  <a
  href="/"
- className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-semibold border border-border hover:bg-muted flex items-center justify-center text-foreground transition-colors"
+ className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-semibold border border-border hover:bg-muted flex items-center justify-center text-foreground transition-colors min-h-11 sm:min-h-0"
  >
  Voltar ao início
  </a>
  <a
  href="/workspace"
- className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-semibold bg-muted hover:bg-muted/80 flex items-center justify-center text-foreground transition-colors"
+ className="w-full sm:w-auto h-10 px-5 rounded-lg text-xs font-semibold bg-muted hover:bg-muted/80 flex items-center justify-center text-foreground transition-colors min-h-11 sm:min-h-0"
  >
  Entrar no Workspace
  </a>

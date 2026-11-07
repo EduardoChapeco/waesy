@@ -23,7 +23,7 @@ export function VideoStudioEditor({
 
  return (
  <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
- <div className="w-full max-w-5xl h-[85vh] bg-card border border-border rounded-lg shadow-2xl flex flex-col overflow-hidden">
+ <div className="w-full max-w-5xl h-vh-85 bg-card border border-border rounded-lg  flex flex-col overflow-hidden">
  {/* Header */}
  <div className="p-4 border-b border-border flex items-center justify-between bg-muted/20">
  <div className="flex items-center gap-3">
@@ -46,7 +46,7 @@ export function VideoStudioEditor({
  type="button"
  onClick={() => setAspect('9:16')}
  className={'px-3 py-1 rounded-lg text-xs font-bold ' + (
- aspect === '9:16' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+ aspect === '9:16' ? 'bg-card text-foreground ' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  9:16 (Reels/TikTok)
@@ -55,7 +55,7 @@ export function VideoStudioEditor({
  type="button"
  onClick={() => setAspect('16:9')}
  className={'px-3 py-1 rounded-lg text-xs font-bold ' + (
- aspect === '16:9' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+ aspect === '16:9' ? 'bg-card text-foreground ' : 'text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
  )}
  >
  16:9 (Vitrine/YT)
@@ -67,7 +67,7 @@ export function VideoStudioEditor({
  type="button"
  variant="ghost"
  onClick={onClose}
- className="h-8 w-8 p-0 rounded-lg text-muted-foreground"
+ className="h-8 w-8 p-0 rounded-lg text-muted-foreground min-h-11 sm:min-h-0"
  >
  <X className="w-4 h-4" />
  </Button>
@@ -78,8 +78,8 @@ export function VideoStudioEditor({
  {/* Video Canvas Preview */}
  <div className="flex-1 bg-foreground/40 flex items-center justify-center p-6 overflow-hidden">
  <div
- className={'relative rounded-lg overflow-hidden shadow-2xl bg-foreground border border-white/10 flex items-center justify-center ' + (
- aspect === '9:16' ? 'h-full aspect-[9/16]' : 'w-full max-w-2xl aspect-video'
+ className={'relative rounded-lg overflow-hidden  bg-foreground border border-white/10 flex items-center justify-center ' + (
+ aspect === '9:16' ? 'h-full aspect-9/16' : 'w-full max-w-2xl aspect-video'
  )}
  >
  <div className="text-center p-6 space-y-3">
@@ -87,7 +87,7 @@ export function VideoStudioEditor({
  {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
  </div>
  <p className="text-xs text-foreground/80 font-medium">Prévia do Vídeo Promocional Waesy</p>
- <div className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-2xs font-bold inline-block">
+ <div className="px-3 py-1 rounded-full bg-warning/20 text-warning-strong text-2xs font-bold inline-block">
  Legenda Ativa: "Venha conhecer nossa nova coleção!"
  </div>
  </div>

@@ -146,7 +146,7 @@ export function ItineraryDayEditor({
                   <p className="text-xs font-bold text-foreground break-words text-wrap">
                     {day.title || `Dia ${day.day_number} — sem título`}
                   </p>
-                  <p className="text-[10.5px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     {day.date} {day.hotel_name ? `• ${day.hotel_name}` : ""}
                   </p>
                 </div>
@@ -159,7 +159,7 @@ export function ItineraryDayEditor({
                       e.stopPropagation();
                       removeDay(index);
                     }}
-                    className="size-6 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="size-6 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     aria-label={`Remover dia ${day.day_number}`}
                   >
                     <Trash className="size-3.5" />
@@ -308,7 +308,7 @@ export function ItineraryDayEditor({
                       <button
                         type="button"
                         onClick={() => addActivity(index)}
-                        className="h-9 px-3 rounded-lg bg-primary/10 text-primary border border-primary/30 text-xs font-semibold hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-9 px-3 rounded-lg bg-primary/10 text-primary border border-primary/30 text-xs font-semibold hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                       >
                         + Adicionar
                       </button>
@@ -324,7 +324,7 @@ export function ItineraryDayEditor({
                             <button
                               type="button"
                               onClick={() => removeActivity(index, act)}
-                              className="size-3.5 rounded-md hover:bg-destructive/20 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="size-3.5 rounded-md hover:bg-destructive/20 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                             >
                               ×
                             </button>
@@ -353,7 +353,7 @@ export function ItineraryDayEditor({
                           <button
                             type="button"
                             onClick={() => removeImage(index, imgIdx)}
-                            className="absolute -top-1.5 -right-1.5 size-5 rounded-md bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="absolute -top-1.5 -right-1.5 size-5 rounded-md bg-destructive text-destructive-foreground flex items-center justify-center  opacity-0 group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                           >
                             <span className="text-2xs font-bold">×</span>
                           </button>
@@ -399,7 +399,7 @@ export function ItineraryDayEditor({
         <button
           type="button"
           onClick={addDay}
-          className="w-full h-11 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/60 bg-transparent hover:bg-muted/20 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-transform duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full h-11 rounded-lg border-2 border-dashed border-border/50 hover:border-primary/60 bg-transparent hover:bg-muted/20 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-transform duration-200 active:scale-99 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Plus className="size-4" weight="bold" />
           Adicionar Dia

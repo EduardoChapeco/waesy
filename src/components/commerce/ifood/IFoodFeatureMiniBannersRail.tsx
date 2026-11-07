@@ -22,6 +22,7 @@ export interface IFoodFeatureMiniBannersRailProps {
   title?: string | null;
   subtitle?: string | null;
   items?: FeatureMiniBannerItem[];
+  allowDemoFallback?: boolean;
   className?: string;
 }
 
@@ -61,11 +62,11 @@ const DEFAULT_MINI_BANNERS: FeatureMiniBannerItem[] = [
 ];
 
 const DEFAULT_COLORS = [
-  "bg-purple-700",
-  "bg-amber-700",
-  "bg-rose-700",
-  "bg-emerald-700",
-  "bg-neutral-800",
+  "bg-primary",
+  "bg-warning-strong",
+  "bg-destructive",
+  "bg-success",
+  "bg-foreground",
 ];
 
 function resolveMiniBannerIcon(iconName?: string | null, fallbackId?: string) {
@@ -91,10 +92,13 @@ export type FeatureMiniBannersRailProps = IFoodFeatureMiniBannersRailProps;
 export function IFoodFeatureMiniBannersRail({
   title = "No Waesy também tem",
   subtitle,
-  items = DEFAULT_MINI_BANNERS,
+  items,
+  allowDemoFallback = false,
   className,
 }: IFoodFeatureMiniBannersRailProps) {
-  if (!items || items.length === 0) return null;
+  const resolvedItems =
+    items && items.length > 0 ? items : allowDemoFallback ? DEFAULT_MINI_BANNERS : [];
+  if (resolvedItems.length === 0) return null;
 
   return (
     <section
@@ -116,8 +120,8 @@ export function IFoodFeatureMiniBannersRail({
       )}
 
       {/* Trilho Snap-Scroll de Mini Banners Verticais */}
-      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_92%,transparent_100%)]">
-        {items.map((item, index) => {
+      <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
+        {resolvedItems.map((item, index) => {
           const fallbackColor = DEFAULT_COLORS[index % DEFAULT_COLORS.length];
           const hasCustomBg = Boolean(item.bgColor && item.bgColor.trim());
           const IconComponent = resolveMiniBannerIcon(item.iconName, item.id);

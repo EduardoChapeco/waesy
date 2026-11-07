@@ -110,7 +110,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
               variant="outline"
               size="icon"
               onClick={() => scroll("left")}
-              className="size-10 rounded-xl cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              className="size-10 rounded-xl cursor-pointer focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               aria-label="Rolar para a esquerda"
             >
               <ChevronLeft className="size-4" />
@@ -120,7 +120,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
               variant="outline"
               size="icon"
               onClick={() => scroll("right")}
-              className="size-10 rounded-xl cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              className="size-10 rounded-xl cursor-pointer focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               aria-label="Rolar para a direita"
             >
               <ChevronRight className="size-4" />
@@ -131,7 +131,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
         {/* Trilho Snap Scroll */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth pb-4"
+          className="flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar snap-x snap-mandatory scroll-smooth pb-4"
         >
           {items.map((pkg) => {
             const installments = pkg.installmentsCount || 12;
@@ -140,7 +140,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             return (
               <div
                 key={pkg.id}
-                className="w-72 sm:w-80 shrink-0 snap-start rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs hover:shadow-md transition-colors duration-200 group flex flex-col justify-between"
+                className="w-72 sm:w-80 shrink-0 snap-start rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs  transition-colors duration-200 group flex flex-col justify-between"
               >
                 {/* Imagem de Capa com Badges */}
                 <div className="relative aspect-4/3 w-full bg-muted/30 overflow-hidden">

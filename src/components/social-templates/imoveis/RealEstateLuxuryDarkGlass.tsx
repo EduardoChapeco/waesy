@@ -41,16 +41,16 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
     <div className={`relative w-full h-full overflow-hidden bg-slate-950 text-foreground select-none p-6 sm:p-8 flex flex-col justify-between ${className}`}>
       {/* ── 1. Header Noturno com Identidade de Luxo ── */}
       <div className="pt-2 text-center space-y-2 shrink-0">
-        <div className="inline-flex items-center gap-2 text-2xs font-mono uppercase tracking-[0.25em] text-amber-300 font-bold">
-          <Star className="size-3.5 text-amber-400" />
+        <div className="inline-flex items-center gap-2 text-2xs font-mono uppercase tracking-[0.25em] text-warning-strong font-bold">
+          <Star className="size-3.5 text-warning-strong" />
           <span>{storeName || "Private Properties"}</span>
-          <Star className="size-3.5 text-amber-400" />
+          <Star className="size-3.5 text-warning-strong" />
         </div>
-        <div className="w-16 h-0.5 bg-amber-400/40 mx-auto" />
+        <div className="w-16 h-0.5 bg-warning/40 mx-auto" />
       </div>
 
       {/* ── 2. Fotografia Central em Moldura Squircle Iluminada (62% da área) ── */}
-      <div className="relative w-full h-[58%] my-3 rounded-lg overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-amber-400/20 bg-neutral-900 shrink-0">
+      <div className="relative w-full h-29/50 my-3 rounded-lg overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-warning/20 bg-neutral-900 shrink-0">
         <img
           src={backgroundImageUrl}
           alt={title}
@@ -62,8 +62,8 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
 
         {/* Selo Dourado de Oportunidade */}
         <div className="absolute top-4 left-4">
-          <span className="px-4 py-2 rounded-full bg-foreground/75 backdrop-blur-md border border-amber-400/30 text-amber-300 font-mono text-2xs font-black uppercase tracking-wider shadow-lg flex items-center gap-2">
-            <Key className="size-3.5 text-amber-400" />
+          <span className="px-4 py-2 rounded-full bg-foreground/75 backdrop-blur-md border border-warning/30 text-warning-strong font-mono text-2xs font-black uppercase tracking-wider  flex items-center gap-2">
+            <Key className="size-3.5 text-warning-strong" />
             <span>{promoBadge}</span>
           </span>
         </div>
@@ -71,17 +71,17 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
         {/* Localização Nobre */}
         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
           <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/80 backdrop-blur-md border border-white/10 text-foreground/90 text-xs font-medium">
-            <MapPin className="size-3.5 text-amber-400 shrink-0" />
+            <MapPin className="size-3.5 text-warning-strong shrink-0" />
             <span className="truncate max-w-60">{destinationOrLocation || "Localização Nobre"}</span>
           </div>
         </div>
       </div>
 
       {/* ── 3. Card Flutuante em Vidro Negro Fumê (Base) ── */}
-      <div className="flex-1 min-h-0 rounded-lg bg-foreground/85 backdrop-blur-2xl border border-amber-400/25 p-5 flex flex-col justify-between shadow-2xl">
+      <div className="flex-1 min-h-0 rounded-lg bg-foreground/85 backdrop-blur-2xl border border-warning/25 p-5 flex flex-col justify-between ">
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-2xs font-mono uppercase tracking-widest text-amber-300/80 font-bold">
+            <span className="text-2xs font-mono uppercase tracking-widest text-warning-strong/80 font-bold">
               {subtitle || "Imóvel de Alto Padrão"}
             </span>
             <div className="flex items-center gap-1 text-2xs text-foreground/60">
@@ -99,7 +99,7 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
           {resolvedSpecs.map((spec, i) => (
             <span
               key={i}
-              className="px-3 py-1 rounded-lg bg-neutral-900/80 border border-amber-400/15 text-foreground/90 text-2xs font-semibold"
+              className="px-3 py-1 rounded-lg bg-neutral-900/80 border border-warning/15 text-foreground/90 text-2xs font-semibold"
             >
               {spec}
             </span>
@@ -110,14 +110,14 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
         <div className="space-y-3 pt-2 border-t border-white/10">
           <div className="flex items-baseline justify-between">
             <span className="text-xs text-foreground/60 font-medium">Investimento</span>
-            <div className="text-2xl sm:text-3xl font-black font-mono text-amber-300 tracking-tight">
+            <div className="text-2xl sm:text-3xl font-black font-mono text-warning-strong tracking-tight">
               {formatMoney(priceCents)}
             </div>
           </div>
 
-          <div className="w-full h-12 rounded-lg bg-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 cursor-pointer">
+          <div className="w-full h-12 rounded-lg bg-warning text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 cursor-pointer">
             <span>{ctaLabel}</span>
-            <ArrowRight className="size-4 stroke-[3]" />
+            <ArrowRight className="size-4 stroke-3" />
           </div>
         </div>
       </div>

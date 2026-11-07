@@ -101,8 +101,8 @@ function KycVerificationPage() {
             </div>
           </div>
         ) : kyc?.status === "under_review" ? (
-          <div className="mb-6 flex items-center gap-4 rounded-lg border border-amber-500/20 bg-amber-500/10 p-5 text-amber-500">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-500/20 shrink-0">
+          <div className="mb-6 flex items-center gap-4 rounded-lg border border-warning/20 bg-warning/10 p-5 text-warning-strong">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-warning/20 shrink-0">
               <Clock className="h-7 w-7" />
             </div>
             <div>

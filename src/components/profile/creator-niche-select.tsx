@@ -24,7 +24,7 @@ export function CreatorNicheSelect({
           {value ? getCreatorNicheLabel(value) : placeholder}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className="max-h-80 rounded-lg p-1 shadow-lg">
+      <SelectContent className="max-h-80 rounded-lg p-1 shadow-overlay">
         {CREATOR_NICHE_GROUPS.map((group) => (
           <SelectGroup key={group.name} className="py-1">
             <SelectLabel className="text-2xs font-bold uppercase tracking-wider text-muted-foreground px-2 py-1 bg-muted/30 rounded-md">

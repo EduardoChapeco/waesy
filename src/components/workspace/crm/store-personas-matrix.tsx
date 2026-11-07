@@ -42,7 +42,7 @@ const INTENT_MAP: Record<IntentKey, { label: string; color: string; desc: string
   },
   warm: {
     label: "Interesse Ativo",
-    color: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+    color: "bg-warning/10 text-warning-strong  border-warning/20",
     desc: "Múltiplas visualizações com tempo de tela superior a 20s",
   },
   bargain_hunter: {
@@ -314,7 +314,7 @@ export function StorePersonasMatrix() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setActivePersona(p)}
-                        className="h-8 px-3 rounded-lg text-xs font-semibold gap-1"
+                        className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 min-h-11 sm:min-h-0"
                       >
                         <Eye className="size-3.5" />
                         <span>Inspecionar</span>
@@ -414,7 +414,7 @@ export function StorePersonasMatrix() {
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono mb-2">
                       Prompt Injection Context
                     </h3>
-                    <pre className="p-3 rounded-lg bg-zinc-950 text-zinc-100 text-2xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed border border-zinc-800">
+                    <pre className="p-3 rounded-lg bg-zinc-950 text-zinc-100 text-2xs font-mono overflow-x-auto scroll-area-carousel whitespace-pre-wrap leading-relaxed border border-zinc-800">
                       {JSON.stringify(activePersona.token_dense_context, null, 2)}
                     </pre>
                   </div>

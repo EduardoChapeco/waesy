@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CampaignDraftCard } from "@/components/adtech/campaign-draft-card";
@@ -228,6 +228,8 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Tabelas de Frete", path: "/workspace/logistica/tabelas", icon: Truck },
       { title: "Faturas de Frete", path: "/workspace/logistica/faturas", icon: Receipt },
       { title: "Pontos PUDO e Coleta", path: "/workspace/logistica/pudo", icon: Building2 },
+      { title: "Frota de Entregas", path: "/workspace/pedidos/frota", icon: Truck },
+      { title: "Atacado & Portal B2B", path: "/workspace/b2b", icon: Briefcase },
       { title: "Integração Marketplaces", path: "/workspace/integracoes/marketplaces", icon: Globe },
       { title: "Receitas Gastronômicas", path: "/workspace/conteudo/receitas", icon: ChefHat },
     ],
@@ -238,6 +240,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Atendimento multicanal, base de contatos, CRM, contratos digitais e jurídico",
     tools: [
       { title: "Central de Chat", path: "/workspace/atendimento", icon: MessageSquare },
+      { title: "Automações de WhatsApp", path: "/workspace/whatsapp/automacoes", icon: Zap },
       { title: "Notificações", path: "/workspace/notificacoes", icon: Bell },
       { title: "Clientes", path: "/workspace/clientes", icon: Users },
       { title: "CRM Comercial", path: "/workspace/crm", icon: Target },
@@ -256,6 +259,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Moderação", path: "/workspace/moderacao", icon: ShieldCheck },
       { title: "Validação KYC", path: "/workspace/moderacao/kyc", icon: ShieldCheck },
       { title: "Doações e Causas", path: "/workspace/doacoes", icon: Heart },
+      { title: "Associação & Entidades", path: "/workspace/associacao", icon: Users },
     ],
   },
   {
@@ -274,6 +278,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Cupons e Promoções", path: "/workspace/marketing/promocoes", icon: Ticket },
       { title: "Programa de Fidelidade", path: "/workspace/marketing/fidelidade", icon: Award },
       { title: "Programa de Afiliados", path: "/workspace/marketing/afiliados", icon: Target },
+      { title: "Conciliação de Afiliados", path: "/workspace/afiliados/conciliacao", icon: Coins },
       { title: "Anúncios e Campanhas", path: "/workspace/marketing/anuncios", icon: Zap },
       { title: "Briefings de Campanha", path: "/workspace/marketing/briefing", icon: FileText },
       { title: "Encartes e Folhetos", path: "/workspace/marketing/encartes", icon: Newspaper },
@@ -294,7 +299,9 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Stories da Loja", path: "/workspace/marketing/stories", icon: Globe },
       { title: "Stories e Vídeos", path: "/workspace/cms/stories", icon: Globe },
       { title: "Publicações da Loja", path: "/workspace/marketing/publicacoes", icon: Newspaper },
+      { title: "Nova Publicação no Mural", path: "/workspace/mural/novo", icon: Megaphone },
       { title: "Artigos e Notícias", path: "/workspace/noticias", icon: Newspaper },
+      { title: "Novo Artigo Editorial", path: "/workspace/noticias/novo", icon: Newspaper },
     ],
   },
   {
@@ -302,6 +309,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     title: "Turismo & Viagens",
     description: "Cotações, estúdio de lâminas, contratos com assinatura digital, excursões e frota",
     tools: [
+      { title: "Painel de Turismo", path: "/workspace/turismo", icon: Plane },
       { title: "Central de Cotações", path: "/workspace/turismo/cotacoes", icon: Plane },
       { title: "Radar Comercial & Oportunidades", path: "/workspace/turismo/oportunidades", icon: Sparkles },
       { title: "Lâminas Studio", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
@@ -318,6 +326,10 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Frota de Veículos", path: "/workspace/turismo/frota", icon: Bus },
       { title: "Assessoria de Vistos", path: "/workspace/turismo/vistos", icon: Globe },
       { title: "Emissões Aéreas", path: "/workspace/turismo/aereos", icon: Plane },
+      { title: "Viagens Corporativas", path: "/workspace/turismo/corporativo", icon: Briefcase },
+      { title: "Gestão de Viagens B2B", path: "/workspace/empresa/viagens", icon: Briefcase },
+      { title: "Comissões de Agentes", path: "/workspace/turismo/comissoes", icon: Percent },
+      { title: "Leitor OCR de Passaportes", path: "/workspace/turismo/documentos-ocr", icon: ShieldCheck },
       { title: "Vouchers Digitais", path: "/workspace/turismo/vouchers", icon: Ticket },
       { title: "Passeios e Ingressos", path: "/workspace/eventos", icon: Calendar },
     ],
@@ -328,6 +340,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Indicadores de faturamento, fluxo de caixa, turnos, conciliação e fiscal",
     tools: [
       { title: "Visão Geral", path: "/workspace", icon: BarChart3 },
+      { title: "Painel Financeiro", path: "/workspace/financeiro", icon: DollarSign },
       { title: "Fluxo de Caixa", path: "/workspace/financeiro/caixa", icon: DollarSign },
       { title: "Lançamentos de Caixa", path: "/workspace/financeiro/caixa/lancamentos", icon: DollarSign },
       { title: "Turnos de Caixa", path: "/workspace/financeiro/caixa/turnos", icon: Receipt },
@@ -337,6 +350,8 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Emissão de NF-e", path: "/workspace/fiscal/nfe", icon: FileText },
       { title: "Gestão Contábil", path: "/workspace/contador", icon: FileSpreadsheet },
       { title: "Comissões da Equipe", path: "/workspace/financeiro/comissoes", icon: Percent },
+      { title: "Repasses de Afiliados", path: "/workspace/financeiro/afiliados", icon: Coins },
+      { title: "Resultados por Canal", path: "/workspace/financeiro/relatorios-canal", icon: BarChart3 },
       { title: "Faturas de Cobrança", path: "/workspace/financeiro/faturas", icon: Receipt },
       { title: "Folha de Pagamento", path: "/workspace/financeiro/funcionarios", icon: Users },
       { title: "Metas de Vendas", path: "/workspace/relatorios/metas", icon: Target, badge: "Preditivo" },
@@ -350,8 +365,10 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     title: "Inteligência & Automações",
     description: "Equipes de assistência inteligente, importações automáticas, regras e consumo de consultas",
     tools: [
+      { title: "Assessor Executivo IA", path: "/workspace/copilot", icon: Sparkles },
       { title: "Squads de IA", path: "/workspace/squads", icon: Zap },
       { title: "Habilidades de IA", path: "/workspace/skills", icon: Zap },
+      { title: "Estudo de Viabilidade", path: "/workspace/viabilidade", icon: Target },
       { title: "SimLab & Validação", path: "/workspace/simulacao", icon: Sliders },
       { title: "Focus Group Virtual", path: "/workspace/simlab/focus-group", icon: Users },
       { title: "Radar de Mercado", path: "/workspace/inteligencia/radar", icon: Target },
@@ -368,8 +385,13 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     tools: [
       { title: "Identidade da Loja", path: "/workspace/configuracoes", icon: Settings },
       { title: "Dados da Empresa", path: "/workspace/configuracoes/loja", icon: Building2 },
+      { title: "Ativação Guiada", path: "/workspace/onboarding", icon: Layers },
       { title: "Revisão de Ativação", path: "/workspace/onboarding/revisao", icon: Layers },
       { title: "Conexões e Chaves de Acesso", path: "/workspace/configuracoes/ai", icon: Zap },
+      { title: "Governança de IA", path: "/workspace/configuracoes/inteligencia-artificial", icon: Sparkles },
+      { title: "Integrações Externas", path: "/workspace/configuracoes/integracoes", icon: Globe },
+      { title: "Rede de Parceiros", path: "/workspace/configuracoes/parceiros", icon: Users },
+      { title: "Sessões e Dispositivos", path: "/workspace/configuracoes/sessoes", icon: ShieldCheck },
       { title: "App Instalável (PWA)", path: "/workspace/configuracoes/pwa", icon: Globe },
       { title: "Privacidade & LGPD", path: "/workspace/configuracoes/privacidade-loja", icon: ShieldCheck },
       { title: "Equipe de Trabalho", path: "/workspace/configuracoes/equipe", icon: Users },
@@ -380,6 +402,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Conformidade e Regras", path: "/workspace/configuracoes/conformidade", icon: ShieldCheck },
       { title: "Cotações de Frete", path: "/workspace/configuracoes/fretes/cotacoes", icon: Truck },
       { title: "Unidades e Filiais", path: "/workspace/lojas", icon: Building2 },
+      { title: "Padrões Visuais", path: "/workspace/design-system", icon: Layers },
       { title: "Central de Suporte", path: "/workspace/suporte", icon: HelpCircle },
     ],
   },
@@ -518,12 +541,12 @@ export function WorkspaceAllToolsDialog({
 
  return (
  <Dialog open={open} onOpenChange={onOpenChange}>
- <DialogContent className="sm:max-w-4xl max-h-5/6 sm:max-h-160 p-0 rounded-lg border border-border/80 bg-background/98 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col">
+ <DialogContent className="sm:max-w-4xl max-h-5/6 sm:max-h-160 p-0 rounded-2xl border border-border/40 bg-background shadow-overlay overflow-hidden flex flex-col">
  {/* ── 1. Top Header com Busca Ampla (Padrão Meta Studio) ── */}
- <div className="p-4 sm:p-6 pb-4 border-b border-border/60 bg-muted/15 shrink-0 space-y-3">
+ <div className="p-4 sm:p-6 pb-4 border-b border-border/40 bg-card shrink-0 space-y-3">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
+ <div className="size-8 rounded-xl bg-muted text-foreground flex items-center justify-center font-bold">
  <Sliders className="size-4" />
  </div>
  <DialogTitle className="text-base sm:text-lg font-black tracking-tight text-foreground">
@@ -550,7 +573,7 @@ export function WorkspaceAllToolsDialog({
                 }
               }}
               placeholder="Pesquisar ferramentas ou ditar campanha (ex: Instagram, R$ 50/dia, 7 dias, produto X)..."
-              className="h-11 min-h-11 pl-10 pr-20 text-base sm:text-sm rounded-lg bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
+              className="h-11 min-h-11 pl-10 pr-20 text-base sm:text-sm rounded-xl bg-muted/60 border-transparent focus-visible:ring-2 focus-visible:ring-ring shadow-none"
               autoFocus
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -559,7 +582,7 @@ export function WorkspaceAllToolsDialog({
                 onClick={handleToggleVoice}
                 title={isListeningVoice ? "Ouvindo... clique para parar" : "Falar comando por voz"}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "size-7 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer",
+                  "size-7 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                   isListeningVoice
                     ? "bg-rose-500 text-foreground animate-pulse motion-reduce:animate-none"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -575,7 +598,7 @@ export function WorkspaceAllToolsDialog({
                     setSearchQuery("");
                     setMcpBlock(null);
                   }}
-                  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -587,10 +610,10 @@ export function WorkspaceAllToolsDialog({
           {searchQuery.trim().length >= 3 && !mcpBlock && !isOrchestrating && (
             <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
               onClick={() => handleExecuteAiCommand()}
-              className="p-3 px-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between cursor-pointer group animate-in fade-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="p-3 px-3 rounded-xl bg-muted hover:bg-muted/80 transition-colors flex items-center justify-between cursor-pointer group animate-in fade-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className="size-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                <div className="size-6 rounded-lg bg-card text-foreground flex items-center justify-center shrink-0">
                   <Layers className="size-3.5" />
                 </div>
                 <div className="truncate">
@@ -615,8 +638,8 @@ export function WorkspaceAllToolsDialog({
           <div className="space-y-6 max-w-5xl mx-auto pb-4">
             {/* Estado de Carregamento da IA MCP */}
             {isOrchestrating && (
-              <div className="py-12 p-6 rounded-lg border border-border/80 bg-card text-center space-y-3 animate-pulse motion-reduce:animate-none">
-                <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
+              <div className="py-12 p-6 rounded-2xl bg-card text-center space-y-3 animate-pulse motion-reduce:animate-none">
+                <div className="size-12 rounded-xl bg-muted text-foreground flex items-center justify-center mx-auto">
                   <Loader2 className="size-6 animate-spin motion-reduce:animate-none" />
                 </div>
                 <h4 className="text-sm font-bold text-foreground">
@@ -661,84 +684,84 @@ export function WorkspaceAllToolsDialog({
             {!isOrchestrating && !mcpBlock && (
               <>
             {/* Seção: Usadas com frequência (Exibida quando não há busca ativa) */}
- {!searchQuery && (
- <div className="space-y-3 pb-5 border-b border-border/60">
- <span className="text-2xs font-mono font-bold uppercase tracking-wider text-muted-foreground block">
- Usadas com frequência
- </span>
- <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
- {frequentTools.map((tool) => {
- const Icon = tool.icon;
- return (
- <Link
- key={tool.path}
- to={tool.path}
- onClick={() => onOpenChange(false)}
- className="group flex flex-col items-center justify-center p-3 rounded-lg border border-border/60 bg-card hover:border-primary/40 hover:bg-primary/5 transition-colors duration-200 text-center gap-2 shadow-2xs cursor-pointer active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
- >
- <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
- <Icon className="size-5" />
- </div>
- <div className="space-y-1">
- <p className="text-xs font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
- {tool.title}
- </p>
- <span className="text-3xs font-mono text-muted-foreground block truncate">
- {tool.badge}
- </span>
- </div>
- </Link>
- );
- })}
- </div>
- </div>
- )}
+            {!searchQuery && (
+              <div className="space-y-3 pb-5 border-b border-border/40">
+                <span className="text-2xs font-mono font-bold uppercase tracking-wider text-muted-foreground block">
+                  Usadas com frequência
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                  {frequentTools.map((tool) => {
+                    const Icon = tool.icon;
+                    return (
+                      <Link
+                        key={tool.path}
+                        to={tool.path}
+                        onClick={() => onOpenChange(false)}
+                        className="group flex flex-col items-center justify-center p-3 rounded-2xl bg-muted/50 hover:bg-muted transition-colors duration-200 text-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <div className="size-11 rounded-xl bg-card text-foreground flex items-center justify-center">
+                          <Icon className="size-5" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-foreground line-clamp-1">
+                            {tool.title}
+                          </p>
+                          <span className="text-3xs font-mono text-muted-foreground block truncate">
+                            {tool.badge}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
- {/* Grade de Setores Multicolunas */}
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- {filteredSectors.map((sector) => (
- <div
- key={sector.id}
- className="rounded-lg border border-border/60 bg-card/60 p-4 space-y-3 shadow-2xs"
- >
- <div className="border-b border-border/40 pb-2">
- <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
- <span>{sector.title}</span>
- </h3>
- <p className="text-2xs text-muted-foreground leading-tight">
- {sector.description}
- </p>
- </div>
+            {/* Grade de Setores Multicolunas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredSectors.map((sector) => (
+                <div
+                  key={sector.id}
+                  className="rounded-2xl bg-muted/40 p-4 space-y-3"
+                >
+                  <div className="border-b border-border/40 pb-2">
+                    <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
+                      <span>{sector.title}</span>
+                    </h3>
+                    <p className="text-2xs text-muted-foreground leading-tight mt-1">
+                      {sector.description}
+                    </p>
+                  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
- {sector.tools.map((tool) => {
- const Icon = tool.icon;
- return (
- <Link
- key={tool.path}
- to={tool.path}
- onClick={() => onOpenChange(false)}
- className="flex items-center justify-between p-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
- >
- <div className="flex items-center gap-2 min-w-0">
- <Icon className="size-3.5 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
- <span className="truncate">{tool.title}</span>
- </div>
- {tool.badge && (
- <Badge
- variant="outline"
- className="text-3xs font-mono font-bold uppercase px-1 py-0 h-3.5 bg-primary/10 text-primary border-primary/20 shrink-0 ml-1"
- >
- {tool.badge}
- </Badge>
- )}
- </Link>
- );
- })}
- </div>
- </div>
- ))}
- </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {sector.tools.map((tool) => {
+                      const Icon = tool.icon;
+                      return (
+                        <Link
+                          key={tool.path}
+                          to={tool.path}
+                          onClick={() => onOpenChange(false)}
+                          className="flex items-center justify-between p-2 min-h-11 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-card transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Icon className="size-4 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" />
+                            <span className="truncate">{tool.title}</span>
+                          </div>
+                          {tool.badge && (
+                            <Badge
+                              variant="secondary"
+                              className="text-3xs font-mono font-bold uppercase px-2 py-0 shrink-0 ml-1"
+                            >
+                              {tool.badge}
+                            </Badge>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
 
  {filteredSectors.length === 0 && (
  <div className="py-12 text-center text-muted-foreground space-y-2">

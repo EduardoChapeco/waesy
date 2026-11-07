@@ -95,7 +95,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
           {/* Título Editorial Display */}
           <div className="mb-8">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-800 mb-3">
-              <Star className="size-3.5 text-amber-500" />
+              <Star className="size-3.5 text-warning-strong" />
               <span>Proposta Comercial Executiva</span>
             </span>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight leading-tight break-words">

@@ -127,7 +127,7 @@ export function ListingPricingSection({
               <TrendingUp className="size-4 text-emerald-500 shrink-0" />
               <div>
                 <span className="text-muted-foreground">Margem Bruta: </span>
-                <strong className={cn(marginPercent && marginPercent > 20 ? "text-emerald-500" : "text-amber-500")}>
+                <strong className={cn(marginPercent && marginPercent > 20 ? "text-emerald-500" : "text-warning-strong")}>
                   {marginPercent !== null ? `${marginPercent}%` : "0%"}
                 </strong>
               </div>

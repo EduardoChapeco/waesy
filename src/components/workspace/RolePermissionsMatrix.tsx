@@ -224,7 +224,7 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
             <ShieldCheck className="size-5 text-primary" />
             <span>Matriz de Permissões por Cargo</span>
           </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-1">
             Defina o acesso visual e funcional por setor com comandos táteis em linha de 44px.
           </p>
         </div>
@@ -276,7 +276,7 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
             >
               <div className="mb-2">
                 <span className="text-sm font-semibold text-foreground">{mod.label}</span>
-                <p className="text-xs text-muted-foreground mt-0.5">{mod.description}</p>
+                <p className="text-xs text-muted-foreground mt-1">{mod.description}</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -288,15 +288,15 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
                       type="button"
                       onClick={() => toggleAction(mod.key, act.key)}
                       className={cn(
-                        "h-11 px-4 rounded-xl text-xs font-semibold border transition-all select-none inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        "h-11 px-4 rounded-xl text-xs font-semibold border transition select-none inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                         isActive
                           ? act.isSpecial
-                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                            ? "bg-primary text-primary-foreground border-primary "
                             : "bg-primary/15 text-primary border-primary/30"
                           : "bg-muted/40 text-muted-foreground border-border hover:bg-muted/80 hover:text-foreground",
                       )}
                     >
-                      {isActive && <Check className="mr-1.5 h-3.5 w-3.5" />}
+                      {isActive && <Check className="mr-2 h-3.5 w-3.5" />}
                       {act.label}
                     </button>
                   );

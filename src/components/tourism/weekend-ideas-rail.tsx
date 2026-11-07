@@ -38,7 +38,7 @@ export function WeekendIdeasRail({
       </div>
 
       {/* ── Trilho Horizontal com Snap Scroll e Física Tátil ── */}
-      <div className="flex items-stretch gap-4 overflow-x-auto no-scrollbar py-2 px-1 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_92%,transparent_100%)]">
+      <div className="flex items-stretch gap-4 overflow-x-auto scroll-area-carousel no-scrollbar py-2 px-1 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_92%,transparent_100%)]">
         {items.map((item) => {
           const priceCents = item.price_cents || 0;
           const displayPrice = item.price_display || (priceCents > 0 ? formatMoney(priceCents) : "Consulte");
@@ -67,7 +67,7 @@ export function WeekendIdeasRail({
                 )}
 
                 {/* Badge "a partir de R$ ..." Estilo iFood / Decolar */}
-                <div className="absolute bottom-2 left-2 z-10 px-3 py-2 rounded-lg bg-indigo-950/90 backdrop-blur-md text-primary-foreground border border-white/10 shadow-sm">
+                <div className="absolute bottom-2 left-2 z-10 px-3 py-2 rounded-lg bg-indigo-950/90 backdrop-blur-md text-primary-foreground border border-white/10 ">
                   <span className="text-3xs block opacity-80 leading-tight">a partir de</span>
                   <span className="text-xs sm:text-sm font-black font-mono leading-tight">
                     {displayPrice}
@@ -77,7 +77,7 @@ export function WeekendIdeasRail({
                 {/* Badge de Nota / Avaliação */}
                 {ratingVal > 0 && (
                   <div className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-foreground border border-border/40 text-3xs font-extrabold shadow-2xs">
-                    <Star size={12} weight="fill" className="text-amber-500" />
+                    <Star size={12} weight="fill" className="text-warning-strong" />
                     <span>{ratingVal.toFixed(1)}</span>
                   </div>
                 )}

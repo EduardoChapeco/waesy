@@ -217,7 +217,7 @@ export function CourierDashboardHeader({
       <Sheet open={isBluetoothModalOpen} onOpenChange={setIsBluetoothModalOpen}>
         <SheetContent
           side="bottom"
-          className="w-full max-w-md mx-auto rounded-t-2xl sm:rounded-2xl p-5 bg-card border-border/80 shadow-xl"
+          className="w-full max-w-md mx-auto rounded-t-2xl sm:rounded-2xl p-5 bg-card border-border/80 "
         >
           <SheetHeader className="pb-3 border-b border-border/40 text-left">
             <SheetTitle className="text-base font-bold tracking-tight text-foreground flex items-center gap-2">

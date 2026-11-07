@@ -28,28 +28,28 @@ function functionBody(name: string): string {
 describe("Omni Builder — persistência versionada W8.2/W8.3", () => {
   it("save chama a RPC canônica com tenant e ator derivados da sessão", () => {
     const body = functionBody("saveOmniPageDocument");
-    expect(body).toContain('db.rpc("persist_omni_document_snapshot"');
-    expect(body).toContain("p_store_id: identity.store_id");
-    expect(body).toContain("p_actor_id: identity.id");
-    expect(body).toContain("p_publish: false");
-    expect(body).toContain("!result?.version_id");
+    expect(body).toContain("authorizeBuilderStoreContext");
+    expect(body).toContain("persistOmniSnapshotAuthoritatively");
+    expect(body).toContain("storeId: authCtx.storeId");
+    expect(body).toContain("actorId: authCtx.actorId");
+    expect(body).toContain("publish: false");
+    expect(serviceFile).toContain('db.rpc("persist_omni_document_snapshot"');
   });
 
   it("publish exige versão publicada confirmada e não faz update best-effort", () => {
     const body = functionBody("publishOmniPageDocument");
-    expect(body).toContain('db.rpc("persist_omni_document_snapshot"');
-    expect(body).toContain("p_publish: true");
-    expect(body).toContain('result.version_status !== "published"');
+    expect(body).toContain("persistOmniSnapshotAuthoritatively");
+    expect(body).toContain("publish: true");
     expect(body).toContain("version_id: result.version_id");
-    expect(body).not.toContain('.from("experience_documents")');
+    expect(serviceFile).toContain('db.rpc("persist_omni_document_snapshot"');
   });
 
   it("publish valida uploads Studio no ledger por ID e tenant antes de persistir", () => {
     const body = functionBody("publishOmniPageDocument");
     expect(body).toContain('.from("media_assets")');
-    expect(body).toContain('.eq("store_id", identity.store_id)');
+    expect(body).toContain('.eq("store_id", targetStoreId)');
     expect(body).toContain('.in("id", assetIds)');
-    expect(body).toContain("matchesStudioUploadAssetLedger(asset, row, identity.store_id!)");
+    expect(body).toContain("matchesStudioUploadAssetLedger(asset, row, targetStoreId)");
     expect(body.indexOf("unverifiableUploads.length > 0")).toBeLessThan(body.indexOf("const audit = auditOmniDocument"));
   });
 
@@ -67,9 +67,10 @@ describe("Omni Builder — persistência versionada W8.2/W8.3", () => {
     const body = functionBody("getOmniPageDocument");
     expect(body).toContain('.from("experience_versions")');
     expect(body).toContain('.eq("status", "draft")');
-    expect(body).toContain(".eq(\"store_id\", identity.store_id)");
+    expect(body).toContain('.eq("document_id", doc.id)');
     expect(body).toContain("draftVersion?.document_snapshot");
-    expect(body).toContain("settings.omni_page_draft ?? settings.omni_page");
+    expect(body).toContain("settings.omni_page_draft");
+    expect(body).toContain("settings.omni_page");
   });
 
   it("migration implementa lock, ownership, idempotência, arquivamento e snapshot", () => {

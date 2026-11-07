@@ -59,7 +59,8 @@ export interface CarRentalOfferItem {
   billingModalityLabel?: string;
 }
 
-export const DEFAULT_B2C_CAR_OFFERS: CarRentalOfferItem[] = [
+export const DEFAULT_B2C_CAR_OFFERS: CarRentalOfferItem[] = [];
+const _LEGACY_B2C_CAR_OFFERS_UNUSED: CarRentalOfferItem[] = [
   {
     id: "car-b2c-compact-1",
     rentalCompany: "Localiza",
@@ -146,7 +147,8 @@ export const DEFAULT_B2C_CAR_OFFERS: CarRentalOfferItem[] = [
   },
 ];
 
-export const DEFAULT_B2B_WOOBA_CAR_OFFERS: CarRentalOfferItem[] = [
+export const DEFAULT_B2B_WOOBA_CAR_OFFERS: CarRentalOfferItem[] = [];
+const _LEGACY_B2B_WOOBA_CAR_OFFERS_UNUSED: CarRentalOfferItem[] = [
   {
     id: "car-b2b-wooba-1",
     rentalCompany: "Localiza · Wooba Corporate",
@@ -239,7 +241,7 @@ export function CarRentalOfferCard({
 
   const effectiveDays = Math.max(1, days);
   const effectivePickup = pickupOverride || offer.pickupLocation;
-  const discountMultiplier = paymentPreference === "pay_now" && !offer.isCorporateB2B ? 0.95 : 1;
+  const discountMultiplier = 1;
   const effectiveDailyBrl = Math.round(offer.dailyRateBrl * discountMultiplier);
   const totalForDaysBrl =
     effectiveDays === 3 && offer.totalThreeDaysBrl && discountMultiplier === 1
@@ -249,7 +251,7 @@ export function CarRentalOfferCard({
   const paymentLabel = offer.isCorporateB2B
     ? "Faturado Corporativo"
     : paymentPreference === "pay_now"
-      ? "Pague agora (5% OFF)"
+      ? "Pagamento Antecipado"
       : "Pague ao retirar";
 
   return (
@@ -412,7 +414,7 @@ export function CarRentalDetailModal({
 
   const effectiveDays = Math.max(1, days);
   const effectivePickup = pickupLocation || offer.pickupLocation;
-  const discountMultiplier = paymentPreference === "pay_now" && !offer.isCorporateB2B ? 0.95 : 1;
+  const discountMultiplier = 1;
   const effectiveDailyBrl = Math.round(offer.dailyRateBrl * discountMultiplier);
   const totalForDaysBrl =
     effectiveDays === 3 && offer.totalThreeDaysBrl && discountMultiplier === 1

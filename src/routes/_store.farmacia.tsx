@@ -14,7 +14,8 @@ import {
 } from "@phosphor-icons/react";
 
 import { PageSkeleton } from "@/components/state/loading";
-import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
+import { getModularSurfaceFeed, resolveSurfacePageExperienceDocument } from "@/services/surface-cms.functions";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublishedProducts } from "@/services/catalog.functions";
@@ -64,7 +65,7 @@ export const Route = createFileRoute("/_store/farmacia")({
   loader: async ({ location, deps: search }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
+      const [banners, hotpages, marketplaceFeed, productsRes, surfaceExperience] = await Promise.all([
         listActiveBanners({ data: { placement: "farmacia", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "farmacia" } }).catch(() => []),
         getModularSurfaceFeed({ data: { surfaceSlug: "farmacia", city: activeCity } }).catch(() => ({
@@ -74,6 +75,9 @@ export const Route = createFileRoute("/_store/farmacia")({
         listPublishedProducts({
           data: { niche: "farmacia", limit: 40, sort: search.sort ?? "newest" },
         }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
+        resolveSurfacePageExperienceDocument({
+          data: { surfaceSlug: "farmacia", city: activeCity },
+        }).catch(() => ({ mode: "canonical_cms" as const, documentId: null, document: null, liveData: null })),
       ]);
 
       return {
@@ -81,10 +85,11 @@ export const Route = createFileRoute("/_store/farmacia")({
         hotpages,
         marketplaceFeed,
         catalogProducts: productsRes.status === "ok" ? (productsRes as any).data ?? [] : [],
+        surfaceExperience: surfaceExperience || null,
       };
     } catch (err) {
       console.error("[loader:_store.farmacia] Unhandled error:", err);
-      return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
+      return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null, surfaceExperience: null };
     }
   },
   pendingComponent: PageSkeleton,
@@ -92,7 +97,7 @@ export const Route = createFileRoute("/_store/farmacia")({
 });
 
 function FarmaciaMasterPage() {
-  const { banners, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
+  const { banners, hotpages, marketplaceFeed, catalogProducts, surfaceExperience } = ((Route.useLoaderData?.() as any) || {});
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
 
@@ -180,6 +185,22 @@ function FarmaciaMasterPage() {
   const spotlightStores = useMemo(() => {
     return stores.filter((s) => Boolean(s.couponBadge));
   }, [stores]);
+
+  if (surfaceExperience?.mode === "omni_published" && surfaceExperience.document) {
+    const live = surfaceExperience.liveData || {};
+    return (
+      <main className="min-h-screen bg-background">
+        <OmniPageRenderer
+          document={surfaceExperience.document}
+          products={live.products?.length ? live.products : catalogProducts || []}
+          stores={live.stores?.length ? live.stores : rawStores}
+          banners={live.banners?.length ? live.banners : banners || []}
+          hotpages={live.hotpages?.length ? live.hotpages : hotpages || []}
+          categories={FARMACIA_SUBCATEGORIES as any}
+        />
+      </main>
+    );
+  }
 
   return (
     <CommercialShowcaseTemplate

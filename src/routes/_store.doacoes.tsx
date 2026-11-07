@@ -47,7 +47,7 @@ const DOACOES_CATEGORIES: DonationCategoryItem[] = [
     shortSubtitle: "Retirada direta local",
     icon: Armchair,
     bentoSpan: "md:col-span-5",
-    accentClass: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
+    accentClass: "text-warning-strong bg-warning/10 ",
   },
   {
     id: "roupas",
@@ -326,7 +326,7 @@ function DoacoesPage() {
               type="button"
               onClick={() => handleSearchChange("")}
               aria-label="Limpar busca"
-              className="absolute right-2.5 size-7 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+              className="absolute right-2.5 size-7 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
             >
               <X size={14} weight="bold" />
             </button>
@@ -336,7 +336,7 @@ function DoacoesPage() {
 
       {/* ══════════════════════════════════════════════════════════════════════
           FASE 2: HORIZONTAL PHYSICS (SNAP & FADE MASK)
-          Base matemática exata: flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-2 px-4 py-2
+          Base matemática exata: flex overflow-x-auto scroll-area-carousel snap-x snap-mandatory scrollbar-hide gap-2 px-4 py-2
           Com máscara de gradiente transparente na extremidade direita.
          ══════════════════════════════════════════════════════════════════════ */}
       <div className="relative w-full overflow-hidden">
@@ -347,7 +347,7 @@ function DoacoesPage() {
         <div
           role="tablist"
           aria-label="Categorias de Doação"
-          className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 px-4 sm:px-0 py-2 pr-12"
+          className="flex overflow-x-auto scroll-area-carousel snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 px-4 sm:px-0 py-2 pr-12"
         >
           {DOACOES_CATEGORIES.map((cat) => {
             const Icon = cat.icon;
@@ -360,7 +360,7 @@ function DoacoesPage() {
                 aria-selected={isActive}
                 onClick={() => handleCategoryChange(cat.id)}
                 className={cn(
-                  "snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 transition-colors duration-200 whitespace-nowrap select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
+                  "snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 transition-colors duration-200 whitespace-nowrap select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer min-h-11 sm:min-h-0",
                   isActive
                     ? "bg-foreground text-background shadow-xs"
                     : "bg-card text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"
@@ -395,7 +395,7 @@ function DoacoesPage() {
                   handleCategoryChange(isSelected ? "todos" : cat.id)
                 }
                 className={cn(
-                  "w-full min-h-[54px] px-4 py-3 flex items-center justify-between gap-3 text-left transition-colors active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
+                  "w-full min-h-14 px-4 py-3 flex items-center justify-between gap-3 text-left transition-colors active:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
                   isSelected && "bg-primary/5"
                 )}
               >
@@ -453,7 +453,7 @@ function DoacoesPage() {
               }
               className={cn(
                 cat.bentoSpan,
-                "group relative overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:border-primary/40 transition-transform duration-200 duration-200 min-h-[176px] flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "group relative overflow-hidden cursor-pointer hover:-translate-y-0.5 hover:border-primary/40 transition-transform duration-200 duration-200 min-h-44 flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 isSelected && "ring-2 ring-primary border-primary"
               )}
             >
@@ -577,7 +577,7 @@ function DoacoesPage() {
                       className="h-full overflow-hidden hover:-translate-y-0.5 hover:border-primary/40 transition-transform duration-200"
                     >
                       {thumb && (
-                        <div className="aspect-[16/10] w-full overflow-hidden bg-muted">
+                        <div className="aspect-16/10 w-full overflow-hidden bg-muted">
                           <img
                             src={thumb}
                             alt={item.title}
@@ -638,7 +638,7 @@ function DoacoesPage() {
         type="button"
         onClick={() => setIsDonationSheetOpen(true)}
         aria-label="Anunciar Doação"
-        className="md:hidden fixed bottom-20 right-4 z-40 size-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+        className="md:hidden fixed bottom-20 right-4 z-40 size-14 rounded-full bg-primary text-primary-foreground shadow-overlay flex items-center justify-center active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
       >
         <Plus size={24} weight="bold" />
       </button>
@@ -655,7 +655,7 @@ function DoacoesPage() {
           aria-label="Anunciar Doação"
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/60 backdrop-blur-xs animate-in fade-in duration-150"
         >
-          <div className="w-full h-dvh sm:h-auto sm:max-h-[90dvh] sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden shadow-2xl">
+          <div className="w-full h-dvh sm:h-auto sm:max-h-vh-90 sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden ">
             {/* Sheet Top Bar */}
             <div className="px-4 h-14 border-b border-border/60 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
@@ -670,7 +670,7 @@ function DoacoesPage() {
                 type="button"
                 onClick={() => setIsDonationSheetOpen(false)}
                 aria-label="Fechar"
-                className="size-10 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                className="size-10 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               >
                 <X size={20} weight="bold" />
               </button>
@@ -686,7 +686,7 @@ function DoacoesPage() {
                 <label className="text-xs font-semibold text-muted-foreground">
                   Categoria do Item
                 </label>
-                <div className="flex overflow-x-auto scrollbar-hide no-scrollbar gap-2 py-1">
+                <div className="flex overflow-x-auto scroll-area-carousel scrollbar-hide no-scrollbar gap-2 py-1">
                   {DOACOES_CATEGORIES.filter((c) => c.id !== "todos").map(
                     (cat) => {
                       const active = subCategory === cat.id;
@@ -696,7 +696,7 @@ function DoacoesPage() {
                           type="button"
                           onClick={() => setSubCategory(cat.id)}
                           className={cn(
-                            "shrink-0 h-9 px-4 rounded-full text-xs font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
+                            "shrink-0 h-9 px-4 rounded-full text-xs font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer min-h-11 sm:min-h-0",
                             active
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted text-muted-foreground"
@@ -824,7 +824,7 @@ function DoacoesPage() {
                 <label className="text-xs font-semibold text-muted-foreground">
                   Fotos do Item (Opcional)
                 </label>
-                <div className="flex items-center gap-3 overflow-x-auto py-1">
+                <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel py-1">
                   <label className="size-16 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary text-muted-foreground hover:text-primary shrink-0">
                     {isUploadingPhoto ? (
                       <SpinnerGap size={18} className="animate-spin motion-reduce:animate-none" />
@@ -856,7 +856,7 @@ function DoacoesPage() {
                             prev.filter((_, i) => i !== idx)
                           )
                         }
-                        className="absolute top-1 right-1 size-5 rounded-full bg-foreground/70 text-foreground flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                        className="absolute top-1 right-1 size-5 rounded-full bg-foreground/70 text-foreground flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       >
                         <X size={11} />
                       </button>

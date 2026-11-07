@@ -165,7 +165,7 @@ export function UnifiedNewProductPage() {
         {(() => {
           const tabsContent = (
             <Tabs value={editor.activeTab} onValueChange={editor.setActiveTab} className="w-full space-y-4">
-              <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
+              <div className="flex items-center justify-between gap-2 overflow-x-auto scroll-area-carousel pb-1">
                 <TabsList className="justify-start overflow-x-auto bg-muted p-1 rounded-lg h-auto flex flex-nowrap gap-1">
                   {editor.isTravelPackageMode ? (
                     <>
@@ -230,7 +230,7 @@ export function UnifiedNewProductPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsWideMode((prev) => !prev)}
-                  className="h-9 px-3 text-xs font-semibold gap-2 text-primary hover:bg-primary/10 rounded-lg focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer"
+                  className="h-9 px-3 text-xs font-semibold gap-2 text-primary hover:bg-primary/10 rounded-lg focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer min-h-11 sm:min-h-0"
                   title={isWideMode ? "Restaurar layout dividido com preview" : "Expandir para tela cheia (Modo Amplo focado na grade)"}
                 >
                   {isWideMode ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}

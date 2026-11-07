@@ -83,7 +83,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
   const renderMedia = () => {
     if (!mediaUrl) {
       return (
-        <div className="w-full min-h-[320px] h-full flex flex-col items-center justify-center p-8 text-center bg-muted/30 border border-border/40 rounded-lg">
+        <div className="w-full min-h-80 h-full flex flex-col items-center justify-center p-8 text-center bg-muted/30 border border-border/40 rounded-lg">
           <Star className="size-8 text-muted-foreground/40 mb-2" />
           <span className="text-xs font-semibold text-muted-foreground">
             Mídia não configurada
@@ -97,7 +97,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     if (ytId) {
       return (
-        <div className="relative w-full h-full min-h-[340px] rounded-lg overflow-hidden shadow-2xs">
+        <div className="relative w-full h-full min-h-85 rounded-lg overflow-hidden shadow-2xs">
           <iframe
             src={`https://www.youtube.com/embed/${ytId}?autoplay=${autoPlay ? 1 : 0}&loop=${loop ? 1 : 0}&playlist=${ytId}&mute=1`}
             className="absolute inset-0 w-full h-full border-0"
@@ -111,7 +111,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     if (vimeoId) {
       return (
-        <div className="relative w-full h-full min-h-[340px] rounded-lg overflow-hidden shadow-2xs">
+        <div className="relative w-full h-full min-h-85 rounded-lg overflow-hidden shadow-2xs">
           <iframe
             src={`https://player.vimeo.com/video/${vimeoId}?autoplay=${autoPlay ? 1 : 0}&loop=${loop ? 1 : 0}&muted=1`}
             className="absolute inset-0 w-full h-full border-0"
@@ -125,7 +125,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     if (isVideoFile) {
       return (
-        <div className="relative w-full h-full min-h-[340px] rounded-lg overflow-hidden bg-foreground/90 shadow-2xs group">
+        <div className="relative w-full h-full min-h-85 rounded-lg overflow-hidden bg-foreground/90 shadow-2xs group">
           <video
             src={mediaUrl}
             autoPlay={autoPlay}
@@ -141,7 +141,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     // Default: Imagem de alta resolução ou GIF animado
     return (
-      <div className="relative w-full h-full min-h-[220px] sm:min-h-[340px] aspect-[16/10] sm:aspect-auto rounded-lg overflow-hidden bg-muted/20 shadow-2xs flex items-center justify-center">
+      <div className="relative w-full h-full min-h-55 sm:min-h-85 aspect-16/10 sm:aspect-auto rounded-lg overflow-hidden bg-muted/20 shadow-2xs flex items-center justify-center">
         {/* Camada Ambiente Desfocada para Preenchimento Limpo */}
         <img
           src={mediaUrl}
@@ -172,7 +172,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
           {/* Mídia (Esquerda ou Direita) */}
           <div
             className={cn(
-              "w-full h-full flex items-center justify-center min-h-[320px] md:min-h-[440px]",
+              "w-full h-full flex items-center justify-center min-h-80 md:min-h-110",
               isMediaLeft ? "md:order-1" : "md:order-2",
             )}
           >
@@ -196,7 +196,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
             )}
 
             {title && (
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-tight">
                 {title}
               </h2>
             )}

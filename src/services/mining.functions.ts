@@ -3251,23 +3251,24 @@ export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
     const startTime = Date.now();
 
     const runRssDiscovery = async () => {
-      const sourcesResult = await pollActiveCrawlerSources(10);
+      // Confinamento defensivo de lote (SPEC-20261104): limita processamento concorrente no worker
+      const sourcesResult = await pollActiveCrawlerSources(2);
       const { data: feeds } = await supabase
         .from("rss_feeds")
         .select("id, feed_url, name")
         .eq("is_active", true)
-        .limit(10);
+        .limit(3);
 
       let totalParsed = 0;
       let totalQueued = 0;
 
       if (feeds && feeds.length > 0) {
         // Concorrência paralela controlada (StormCrawler / Crawlee Concurrency Pattern)
-        const feedPromises = feeds.slice(0, 5).map(async (feed) => {
+        const feedPromises = feeds.slice(0, 2).map(async (feed) => {
           try {
             const parsed = await parseFeed(feed.feed_url);
             if (parsed && parsed.items && parsed.items.length > 0) {
-              const queueInserts = parsed.items.slice(0, 8).map((item) => ({
+              const queueInserts = parsed.items.slice(0, 3).map((item) => ({
                 url: item.link,
                 domain: extractDomain(item.link),
                 discovered_via: "rss_cron",

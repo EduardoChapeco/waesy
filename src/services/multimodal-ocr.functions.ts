@@ -178,7 +178,7 @@ Texto extraído mecanicamente (fonte não confiável; valide contra o documento)
         temperature: 0.1,
         expectJson: true,
         preferProvider: allMechanicallyReadable ? "groq" : "gemini",
-        modelOverride: allMechanicallyReadable ? "llama-3.1-8b-instant" : undefined,
+        modelOverride: allMechanicallyReadable ? "openai/gpt-oss-120b" : undefined,
       });
 
       return parseOcrResponse(aiRes.parsedJson || aiRes.content, validatedNiche);

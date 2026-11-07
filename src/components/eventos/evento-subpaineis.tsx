@@ -38,12 +38,12 @@ interface EventoSubpaineisProps {
 }
 
 const TIPOS_SUBPAINEL = [
-  { value: "bar", label: "Bar & Bebidas", icon: Beer, color: "text-amber-500", desc: "Controle de fichas, chopp e vendas rápidas no balcão" },
+  { value: "bar", label: "Bar & Bebidas", icon: Beer, color: "text-warning-strong", desc: "Controle de fichas, chopp e vendas rápidas no balcão" },
   { value: "foodtruck", label: "Alimentação & Lanches", icon: Utensils, color: "text-orange-500", desc: "Comandas de comida, pedidos e praça de alimentação" },
   { value: "restaurant", label: "Restaurante / Buffet", icon: Store, color: "text-emerald-500", desc: "Mesas, garçons, pesagem por quilo e consumo consolidado" },
   { value: "merchandise", label: "Loja Oficial / Merch", icon: Store, color: "text-purple-500", desc: "Venda de copos, camisetas e recordações" },
   { value: "ticketing_box", label: "Bilheteria / Portaria", icon: Ticket, color: "text-blue-500", desc: "Validação de ingressos e venda local" },
-  { value: "vip_lounge", label: "Camarote / Lounge VIP", icon: Sparkles, color: "text-yellow-500", desc: "Acesso e atendimento exclusivo" },
+  { value: "vip_lounge", label: "Camarote / Lounge VIP", icon: Sparkles, color: "text-warning-strong", desc: "Acesso e atendimento exclusivo" },
   { value: "security_checkpoint", label: "Posto de Segurança", icon: ShieldCheck, color: "text-rose-500", desc: "Controle de fluxo e ocorrências" },
   { value: "other", label: "Outro Ponto Especial", icon: Store, color: "text-muted-foreground", desc: "Terminal customizado" },
 ];
@@ -437,7 +437,7 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
                       </Badge>
                     )}
                     {(p.allow_custom_price || p.template_tipo === "buffet_kg") && (
-                      <Badge variant="outline" className="text-xs gap-1 border-amber-500/30 text-amber-600 bg-amber-500/10">
+                      <Badge variant="outline" className="text-xs gap-1 border-warning/30 text-warning-strong bg-warning/10">
                         <Scale className="size-3" />
                         Pesagem / Avulso
                       </Badge>

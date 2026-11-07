@@ -102,7 +102,7 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
 
  {/* Bottom Title */}
  <div className="relative z-10 mt-auto">
- <p className="text-2xs font-bold text-foreground leading-tight line-clamp-2 drop-shadow-sm">
+ <p className="text-2xs font-bold text-foreground leading-tight line-clamp-2 ">
  {story.title}
  </p>
  </div>

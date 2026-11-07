@@ -733,10 +733,10 @@ export function SmartTravelBookingModal({
                         }
                       }}
                       className={`p-3 rounded-lg border transition-colors cursor-pointer text-center space-y-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                        paymentMethod === "carne" ? "border-amber-500 bg-amber-500/5" : "border-border hover:bg-muted/30"
+                        paymentMethod === "carne" ? "border-warning bg-warning/5" : "border-border hover:bg-muted/30"
                       }`}
                     >
-                      <Calendar className="size-5 mx-auto text-amber-600" />
+                      <Calendar className="size-5 mx-auto text-warning-strong" />
                       <span className="text-xs font-bold block">Carnê da Viagem</span>
                       <span className="text-2xs text-muted-foreground block">Até o embarque</span>
                     </div>

@@ -32,12 +32,10 @@ export default function ContaLojasPage() {
  const handleSelectStore = async (storeId: string, storeName: string) => {
  setSwitchingId(storeId);
  try {
- if (typeof window !== "undefined") {
- window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
- }
- const res = await setTenantContext({ data: { store_id: storeId } });
+      setClientContextCookies({ context: "store", storeId });
+      const res = await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
       toast.success(`Acessando painel de ${res?.storeName || storeName}`);
-      window.location.href = "/workspace";
+      window.location.href = `/workspace?storeId=${encodeURIComponent(storeId)}`;
     } catch (err: any) {
       toast.error(err?.message || "Erro ao alternar loja.");
       setSwitchingId(null);

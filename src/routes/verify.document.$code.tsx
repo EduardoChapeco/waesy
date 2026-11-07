@@ -191,7 +191,7 @@ function DocumentVerificationPage() {
 
         {/* Ações Inferiores */}
         <div className="flex items-center justify-between pt-2">
-          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-10 px-4">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-10 px-4 min-h-11 sm:min-h-0">
             <Link to="/">
               <ArrowLeft className="size-4 mr-2" />
               Voltar ao Início
@@ -203,7 +203,7 @@ function DocumentVerificationPage() {
             variant="outline"
             size="sm"
             onClick={() => window.print()}
-            className="rounded-lg text-xs h-10 px-4"
+            className="rounded-lg text-xs h-10 px-4 min-h-11 sm:min-h-0"
           >
             <Download className="size-4 mr-2" />
             Imprimir Certificado

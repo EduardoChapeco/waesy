@@ -136,12 +136,12 @@ export function CampaignDraftCard({
               Proveniência: {metadata.provenance.provider || "provedor não informado"} · {metadata.provenance.model || "modelo não informado"} · rascunho não testado.
             </p>
             {metadata.planningAssumptions.map((assumption, index) => (
-              <p key={index} className="text-2xs text-amber-700 dark:text-amber-300">Premissa: {assumption}</p>
+              <p key={index} className="text-2xs text-warning-strong ">Premissa: {assumption}</p>
             ))}
           </div>
         </div>
 
-        <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-2xs font-bold w-fit">
+        <Badge className="bg-warning/15 text-warning-strong  border border-warning/30 text-2xs font-bold w-fit">
           Aguardando Revisão Humana
         </Badge>
       </div>
@@ -154,7 +154,7 @@ export function CampaignDraftCard({
             Prévia ilustrativa (não publicada)
           </span>
 
-          <div className="w-full max-w-[340px] rounded-lg border border-border/90 bg-background overflow-hidden text-xs">
+          <div className="w-full max-w-85 rounded-lg border border-border/90 bg-background overflow-hidden text-xs">
             {/* Top Bar do Anúncio Instagram */}
             <div className="p-3 flex items-center justify-between border-b border-border/40">
               <div className="flex items-center gap-3">
@@ -233,7 +233,7 @@ export function CampaignDraftCard({
               variant="outline"
               size="sm"
               onClick={() => setIsEditing((prev) => !prev)}
-              className="h-8 text-xs rounded-lg gap-2 cursor-pointer"
+              className="h-8 text-xs rounded-lg gap-2 cursor-pointer min-h-11 sm:min-h-0"
             >
               <Sliders className="size-3.5" />
               <span>{isEditing ? "Ver Resumo" : "Editar"}</span>
@@ -371,7 +371,7 @@ export function CampaignDraftCard({
                 </div>
               </div>
 
-              <div className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-3 text-2xs leading-relaxed text-amber-700 dark:text-amber-300">
+              <div className="rounded-lg border border-warning/25 bg-warning/5 p-3 text-2xs leading-relaxed text-warning-strong ">
                 Alcance, impressões e CPA não estimados: não há dados de entrega do canal nem desempenho histórico desta campanha. Segmentação sem valor informado permanece vazia.
               </div>
             </div>
@@ -383,7 +383,7 @@ export function CampaignDraftCard({
               type="button"
               onClick={handleApprove}
               disabled={isSubmitting}
-              className="w-full sm:flex-1 h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold gap-2 cursor-pointer active:scale-95 shadow-sm transition-transform duration-200"
+              className="w-full sm:flex-1 h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold gap-2 cursor-pointer active:scale-95  transition-transform duration-200"
             >
               {isSubmitting ? (
                 <>

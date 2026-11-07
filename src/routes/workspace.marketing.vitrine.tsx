@@ -352,7 +352,7 @@ function WorkspaceSitesHubPage() {
  case "biolink":
  return <Badge variant="outline" className="text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">Link da Bio</Badge>;
  case "campaign":
- return <Badge variant="outline" className="text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">Hotpage / Oferta</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-warning/10 text-warning-strong  border-warning/20">Hotpage / Oferta</Badge>;
  case "landing_page":
  case "custom":
  return <Badge variant="outline" className="text-xs font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">Landing Page</Badge>;
@@ -362,7 +362,7 @@ function WorkspaceSitesHubPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-28 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-0 space-y-6 pb-28 animate-in fade-in duration-200">
  {/* ── Header Canônico Studio Apple HIG ── */}
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Marketing & Design"
@@ -388,7 +388,7 @@ function WorkspaceSitesHubPage() {
  variant={activeTab === "sites" ? "secondary" : "ghost"}
  size="sm"
  onClick={() => setActiveTab("sites")}
- className="rounded-lg text-xs font-semibold h-8 cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-8 cursor-pointer min-h-11 sm:min-h-0"
  >
  Minhas Páginas ({documents.length})
  </Button>
@@ -396,7 +396,7 @@ function WorkspaceSitesHubPage() {
  variant={activeTab === "templates" ? "secondary" : "ghost"}
  size="sm"
  onClick={() => setActiveTab("templates")}
- className="rounded-lg text-xs font-semibold h-8 cursor-pointer gap-2"
+ className="rounded-lg text-xs font-semibold h-8 cursor-pointer gap-2 min-h-11 sm:min-h-0"
  >
  <Grid className="size-3 text-primary" />
  <span>Biblioteca de Modelos</span>
@@ -452,7 +452,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "all" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("all")}
- className="h-7 text-xs rounded-lg cursor-pointer"
+ className="h-7 text-xs rounded-lg cursor-pointer min-h-11 sm:min-h-0"
  >
  Todas ({documents.length})
  </Button>
@@ -460,7 +460,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "storefront" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("storefront")}
- className="h-7 text-xs rounded-lg cursor-pointer gap-1"
+ className="h-7 text-xs rounded-lg cursor-pointer gap-1 min-h-11 sm:min-h-0"
  >
  <Store className="size-3" />
  <span>Vitrines Virtuais ({storefrontsCount})</span>
@@ -469,7 +469,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "biolink" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("biolink")}
- className="h-7 text-xs rounded-lg cursor-pointer gap-1"
+ className="h-7 text-xs rounded-lg cursor-pointer gap-1 min-h-11 sm:min-h-0"
  >
  <Smartphone className="size-3" />
  <span>Links da Bio ({biolinksCount})</span>
@@ -478,7 +478,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "landing_page" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("landing_page")}
- className="h-7 text-xs rounded-lg cursor-pointer gap-1"
+ className="h-7 text-xs rounded-lg cursor-pointer gap-1 min-h-11 sm:min-h-0"
  >
  <Laptop className="size-3" />
  <span>Landing Pages ({landingPagesCount})</span>
@@ -487,7 +487,7 @@ function WorkspaceSitesHubPage() {
  variant={docTypeFilter === "campaign" ? "default" : "outline"}
  size="sm"
  onClick={() => setDocTypeFilter("campaign")}
- className="h-7 text-xs rounded-lg cursor-pointer gap-1"
+ className="h-7 text-xs rounded-lg cursor-pointer gap-1 min-h-11 sm:min-h-0"
  >
  <Flame className="size-3" />
  <span>Campanhas & Hotpages ({campaignsCount})</span>
@@ -561,7 +561,7 @@ function WorkspaceSitesHubPage() {
 
  <DropdownMenu>
  <DropdownMenuTrigger asChild>
- <Button variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground hover:text-foreground">
+ <Button variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0 min-w-11 sm:min-w-0">
  <MoreVertical className="size-3.5" />
  </Button>
  </DropdownMenuTrigger>
@@ -610,7 +610,7 @@ function WorkspaceSitesHubPage() {
  <Button
  onClick={() => handleOpenBuilder(doc.id)}
  size="sm"
- className="flex-1 h-8 rounded-lg text-xs font-semibold bg-secondary hover:bg-secondary/80 text-secondary-foreground cursor-pointer"
+ className="flex-1 h-8 rounded-lg text-xs font-semibold bg-secondary hover:bg-secondary/80 text-secondary-foreground cursor-pointer min-h-11 sm:min-h-0"
  >
  Abrir Studio
  </Button>
@@ -652,13 +652,13 @@ function WorkspaceSitesHubPage() {
  onClick={() => handleOpenBuilder(doc.id)}
  size="sm"
  variant="secondary"
- className="h-8 rounded-lg text-xs font-semibold cursor-pointer"
+ className="h-8 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
  >
  Studio
  </Button>
  <DropdownMenu>
  <DropdownMenuTrigger asChild>
- <Button variant="ghost" size="icon" className="size-8 rounded-lg text-muted-foreground">
+ <Button variant="ghost" size="icon" className="size-8 rounded-lg text-muted-foreground min-h-11 sm:min-h-0 min-w-11 sm:min-w-0">
  <MoreVertical className="size-3.5" />
  </Button>
  </DropdownMenuTrigger>
@@ -700,7 +700,7 @@ function WorkspaceSitesHubPage() {
  variant={templateNicheFilter === cat ? "default" : "outline"}
  size="sm"
  onClick={() => setTemplateNicheFilter(cat)}
- className="h-7 text-xs rounded-lg capitalize cursor-pointer"
+ className="h-7 text-xs rounded-lg capitalize cursor-pointer min-h-11 sm:min-h-0"
  >
  {cat === "all" ? "Todos" : cat}
  </Button>
@@ -720,7 +720,7 @@ function WorkspaceSitesHubPage() {
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  <div className="absolute top-2.5 right-2.5">
- <Badge variant="secondary" className="text-xs font-semibold bg-background/90 backdrop-blur-md">
+ <Badge variant="secondary" className="text-xs font-semibold bg-background/90 ">
  {tpl.badge}
  </Badge>
  </div>
@@ -736,7 +736,7 @@ function WorkspaceSitesHubPage() {
  <Button
  onClick={() => handleApplyTemplate(tpl.id)}
  disabled={isApplyingTemplate}
- className="w-full h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-primary text-primary-foreground"
+ className="w-full h-10 rounded-lg text-xs font-semibold gap-2 cursor-pointer bg-primary text-primary-foreground min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" />
  <span>Usar Este Modelo</span>
@@ -849,7 +849,7 @@ function WorkspaceSitesHubPage() {
  variant="outline"
  size="sm"
  onClick={() => setIsCreateSheetOpen(false)}
- className="flex-1 h-9 rounded-lg text-xs font-semibold"
+ className="flex-1 h-9 rounded-lg text-xs font-semibold min-h-11 sm:min-h-0"
  >
  Cancelar
  </Button>
@@ -858,7 +858,7 @@ function WorkspaceSitesHubPage() {
  type="submit"
  disabled={isSubmittingPage}
  size="sm"
- className="flex-1 h-9 rounded-lg text-xs font-semibold bg-primary text-primary-foreground"
+ className="flex-1 h-9 rounded-lg text-xs font-semibold bg-primary text-primary-foreground min-h-11 sm:min-h-0"
  >
  {isSubmittingPage ? "Criando..." : "Criar no Studio"}
  </Button>

@@ -410,7 +410,7 @@ export function ClassifiedAnalyticsSheet({
                           ? "bg-indigo-500"
                           : idx === 3
                           ? "bg-emerald-500"
-                          : "bg-amber-500"
+                          : "bg-warning"
                       )}
                       style={{ width: `${Math.max(2, Math.min(100, step.ratePercent))}%` }}
                     />
@@ -481,11 +481,11 @@ export function ClassifiedAnalyticsSheet({
         <div className="p-4 rounded-lg border border-border/60 bg-card space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Zap className="size-4 text-amber-500 fill-current" />
+              <Zap className="size-4 text-warning-strong fill-current" />
               <span className="text-xs font-bold text-foreground">Impulsionamento & Tráfego Pago</span>
             </div>
             {stats.boostEfficiency.isBoosted ? (
-              <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-2xs">
+              <Badge className="bg-warning/20 text-warning-strong  border border-warning/30 text-2xs">
                 Ativo • {stats.boostEfficiency.daysRemaining} dias restantes
               </Badge>
             ) : (
@@ -541,7 +541,7 @@ export function ClassifiedAnalyticsSheet({
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+            <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-warning/10 border border-warning/20">
               <div className="space-y-1">
                 <span className="text-xs font-bold text-foreground block">Acelere as Vendas com Destaque</span>
                 <p className="text-2xs text-muted-foreground leading-relaxed">
@@ -553,7 +553,7 @@ export function ClassifiedAnalyticsSheet({
                   type="button"
                   size="default"
                   onClick={onOpenBoostModal}
-                  className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-amber-500 text-primary-foreground hover:bg-amber-400 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-warning text-primary-foreground hover:bg-warning shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Zap className="size-3.5 fill-current mr-1" />
                   <span>Impulsionar</span>
@@ -567,7 +567,7 @@ export function ClassifiedAnalyticsSheet({
         {safeRecs.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Lightbulb className="size-4 text-amber-500" />
+              <Lightbulb className="size-4 text-warning-strong" />
               <span className="text-xs font-bold text-foreground">O que você pode melhorar?</span>
             </div>
 
@@ -578,14 +578,14 @@ export function ClassifiedAnalyticsSheet({
                   className={cn(
                     "p-3 rounded-lg border text-xs space-y-2",
                     rec.type === "warning"
-                      ? "bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300"
+                      ? "bg-warning/10 border-warning/30 text-warning-strong "
                       : "bg-muted/30 border-border/50 text-foreground"
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-bold flex items-center gap-2">
                       {rec.type === "warning" ? (
-                        <AlertCircle className="size-3.5 text-amber-600 shrink-0" />
+                        <AlertCircle className="size-3.5 text-warning-strong shrink-0" />
                       ) : (
                         <Sparkles className="size-3.5 text-primary shrink-0" />
                       )}

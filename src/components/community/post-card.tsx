@@ -508,20 +508,20 @@ export function PostCard(props: PostCardProps) {
           const isVideo = isVideoUrl(item.media_urls[0]);
           const postRatio = item.aspect_ratio || item.metadata?.aspect_ratio;
 
-          let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-[580px]";
+          let containerAspectClass = "aspect-post-vertical sm:aspect-post-card max-h-145";
           let objectFitClass = "object-cover";
 
           if (item.post_type === "moment" || postRatio === "9:16") {
-            containerAspectClass = "aspect-post-moment max-w-xs mx-auto max-h-[580px]";
+            containerAspectClass = "aspect-post-moment max-w-xs mx-auto max-h-145";
             objectFitClass = "object-cover";
           } else if (postRatio === "1:1") {
-            containerAspectClass = "aspect-square max-h-[540px]";
+            containerAspectClass = "aspect-square max-h-135";
           } else if (postRatio === "4:5") {
-            containerAspectClass = "aspect-post-vertical max-h-[580px]";
+            containerAspectClass = "aspect-post-vertical max-h-145";
           } else if (postRatio === "16:9") {
-            containerAspectClass = "aspect-video max-h-[500px]";
+            containerAspectClass = "aspect-video max-h-125";
           } else if (isVideo) {
-            containerAspectClass = "aspect-post-vertical max-h-[580px]";
+            containerAspectClass = "aspect-post-vertical max-h-145";
             objectFitClass = "object-cover";
           }
 
@@ -612,7 +612,7 @@ export function PostCard(props: PostCardProps) {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <span className="text-xs font-bold uppercase text-amber-600 tracking-wider">
+            <span className="text-xs font-bold uppercase text-warning-strong tracking-wider">
               Classificado
             </span>
             <p className="text-sm font-bold text-foreground truncate">

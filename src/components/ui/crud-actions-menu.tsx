@@ -113,7 +113,7 @@ export function CrudActionsMenu({
             size="icon"
             aria-label={triggerAriaLabel || `Ações de ${entityName}`}
             className={cn(
-              "size-9 rounded-lg hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer shrink-0 transition-colors",
+              "size-9 rounded-lg hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer shrink-0 transition-colors min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
               triggerClassName
             )}
           >
@@ -276,7 +276,7 @@ export function CrudActionsMenu({
                 variant="ghost"
                 onClick={() => setIsDeleteModalOpen(false)}
                 disabled={isDeleting}
-                className="rounded-lg text-xs h-9 cursor-pointer"
+                className="rounded-lg text-xs h-9 cursor-pointer min-h-11 sm:min-h-0"
               >
                 Cancelar
               </Button>
@@ -285,7 +285,7 @@ export function CrudActionsMenu({
                 variant="destructive"
                 disabled={isDeleting}
                 onClick={handleDeleteConfirm}
-                className="rounded-lg text-xs h-9 font-semibold gap-2 cursor-pointer shadow-2xs"
+                className="rounded-lg text-xs h-9 font-semibold gap-2 cursor-pointer shadow-2xs min-h-11 sm:min-h-0"
               >
                 {isDeleting ? (
                   <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />

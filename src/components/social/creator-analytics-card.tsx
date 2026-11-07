@@ -61,7 +61,7 @@ export function CreatorAnalyticsCard({
  asChild
  size="sm"
  variant="outline"
- className="h-8 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer"
+ className="h-8 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer min-h-11 sm:min-h-0"
  >
  <Link to="/conta/metricas">
  <span>Painel Completo</span>

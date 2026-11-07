@@ -113,7 +113,7 @@ export function SignatureCanvasPad({ onSave, className }: SignatureCanvasPadProp
  size="sm"
  onClick={handleClear}
  disabled={!hasDrawn}
- className="h-7 px-2 text-2xs font-semibold text-muted-foreground hover:text-rose-600 gap-1 cursor-pointer"
+ className="h-7 px-2 text-2xs font-semibold text-muted-foreground hover:text-rose-600 gap-1 cursor-pointer min-h-11 sm:min-h-0"
  >
  <Eraser className="size-3" /> Limpar
  </Button>

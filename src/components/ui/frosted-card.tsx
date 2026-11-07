@@ -6,7 +6,7 @@ export interface FrostedCardProps extends React.HTMLAttributes<HTMLDivElement> {
    * Nivel de contraste da superficie:
    * - "subtle": superficie suave (bg-muted/40).
    * - "standard": cartao solido padrao (bg-card).
-   * - "deep": cartao solido com sombra minima de elevacao (bg-card shadow-sm).
+   * - "deep": cartao solido com sombra minima de elevacao (bg-card ).
    */
   intensity?: "subtle" | "standard" | "deep";
   /**
@@ -28,7 +28,7 @@ const FrostedCard = React.forwardRef<HTMLDivElement, FrostedCardProps>(
     const intensityMap = {
       subtle: "bg-muted/40",
       standard: "bg-card",
-      deep: "bg-card shadow-sm",
+      deep: "bg-card ",
     };
 
     return (

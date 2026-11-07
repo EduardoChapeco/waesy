@@ -65,10 +65,10 @@ const TABLE_STATUS_STYLE: Record<TableStatus, {
  label: "Reservada",
  },
  pending: {
- border: "border-amber-500/60",
- bg: "bg-amber-500/10 hover:bg-amber-500/20",
- text: "text-amber-700 dark:text-amber-400",
- badgeCn: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
+ border: "border-warning/60",
+ bg: "bg-warning/10 hover:bg-warning/20",
+ text: "text-warning-strong ",
+ badgeCn: "bg-warning/10 text-warning-strong  border-warning/30",
  label: "Pendente",
  },
  seated: {
@@ -334,7 +334,7 @@ export default function TableReservationsPage() {
  {(Object.entries(TABLE_STATUS_STYLE) as [TableStatus, typeof TABLE_STATUS_STYLE[TableStatus]][]).map(
  ([status, style]) => (
  <div key={status} className="flex items-center gap-2">
- <div className={cn("size-2.5 rounded-full", status === "free" ? "bg-emerald-500" : status === "reserved" ? "bg-blue-500" : status === "pending" ? "bg-amber-500" : "bg-purple-500")} />
+ <div className={cn("size-2.5 rounded-full", status === "free" ? "bg-emerald-500" : status === "reserved" ? "bg-blue-500" : status === "pending" ? "bg-warning" : "bg-purple-500")} />
  <span className="text-xs font-semibold text-muted-foreground">
  {style.label} ({statusCounts[status]})
  </span>
@@ -742,7 +742,7 @@ export default function TableReservationsPage() {
 
 function ReservationStatusBadge({ status }: { status: string }) {
  const map: Record<string, { label: string; cn: string }> = {
- pending: { label: "Pendente", cn: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30" },
+ pending: { label: "Pendente", cn: "bg-warning/10 text-warning-strong  border-warning/30" },
  confirmed: { label: "Confirmada", cn: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" },
  seated: { label: "Acomodado", cn: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30" },
  cancelled: { label: "Cancelada", cn: "bg-destructive/10 text-destructive border-destructive/30" },
@@ -891,7 +891,7 @@ function ReservationForm({
  <Button
  onClick={onSubmit}
  disabled={!customerName || !customerPhone || isSubmitting}
- className="w-full font-bold mt-2 h-10"
+ className="w-full font-bold mt-2 h-10 min-h-11 sm:min-h-0"
  >
  {isSubmitting ? "Salvando..." : "Salvar Reserva"}
  </Button>

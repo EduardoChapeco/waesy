@@ -55,6 +55,16 @@
 /robots.txt
   Cache-Control: public, max-age=3600
 
+# ── 8.1 Rotas privadas e APIs sensíveis (NUNCA armazenar em CDN de borda)
+/workspace/*
+  Cache-Control: private, no-cache, no-store, must-revalidate
+/admin/*
+  Cache-Control: private, no-cache, no-store, must-revalidate
+/conta/*
+  Cache-Control: private, no-cache, no-store, must-revalidate
+/api/*
+  Cache-Control: private, no-cache, no-store, must-revalidate
+
 # ── 9. Rotas HTML (navegação SPA/SSR) — network-first via must-revalidate.
 #       Garante que o utilizador sempre recebe o HTML mais recente,
 #       que por sua vez carrega os assets com hash corretos.

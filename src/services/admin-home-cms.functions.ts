@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
-import { getUserSession } from "@/services/auth.functions";
+import { requirePlatformAdmin } from "@/lib/server-access";
 import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
+import { microCache } from "@/lib/cache/micro-cache";
 
 export type HomeLayoutVariant =
   | "carousel"
@@ -1213,14 +1214,17 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
       .optional(),
   )
   .handler(async ({ data: input }): Promise<HomePageSectionDTO[]> => {
-    try {
-      const { city } = input || {};
-      const supabase = getAnonServerClient();
+    const { city } = input || {};
+    const cacheKey = `home_cms:sections:${city || "all"}`;
 
-      const { data: dbSections, error: secErr } = await supabase
-        .from("home_page_sections")
-        .select("*")
-        .order("sort_order", { ascending: true });
+    return microCache.getOrSet(cacheKey, 60_000, async () => {
+      try {
+        const supabase = getAnonServerClient();
+
+        const { data: dbSections, error: secErr } = await supabase
+          .from("home_page_sections")
+          .select("*")
+          .order("sort_order", { ascending: true });
 
       if (secErr || !dbSections || dbSections.length === 0) {
         return CANONICAL_DEFAULT_HOME_SECTIONS.filter((s) => s.is_active);
@@ -1290,16 +1294,18 @@ export const listPublicHomePageSections = createServerFn({ method: "GET" })
         if (sec.city_filter && city && sec.city_filter !== "all" && sec.city_filter !== city) return false;
         return true;
       });
-    } catch (err) {
-      console.warn("[listPublicHomePageSections] Fallback ativado:", err);
-      return CANONICAL_DEFAULT_HOME_SECTIONS.filter((s) => s.is_active);
-    }
+      } catch (err) {
+        console.warn("[listPublicHomePageSections] Fallback ativado:", err);
+        return CANONICAL_DEFAULT_HOME_SECTIONS.filter((s) => s.is_active);
+      }
+    });
   });
 
-// ── 2. LISTAGEM ADMINISTRATIVA DE SEÇÕES COM TODOS OS ITENS ──
+// ── 2. LISTAGEM ADMINISTRATIVA DE SEÇÕES COM TODOS OS ITENS (RESTRITA A ADMIN MASTER) ──
 export const listAdminHomePageSections = createServerFn({ method: "GET" })
   .validator(z.object({}).optional())
   .handler(async (): Promise<HomePageSectionDTO[]> => {
+    await requirePlatformAdmin();
     try {
       const supabase = getServerClient();
 
@@ -1530,11 +1536,8 @@ const UpsertSectionSchema = z.object({
 export const upsertHomePageSection = createServerFn({ method: "POST" })
   .validator(UpsertSectionSchema)
   .handler(async ({ data: payload }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) {
-      throw new Error("Não autenticado.");
-    }
 
     const {
       id,
@@ -1580,6 +1583,7 @@ export const upsertHomePageSection = createServerFn({ method: "POST" })
         .select()
         .single();
       if (error) throw error;
+      microCache.invalidatePrefix("home_cms:");
       return data;
     } else {
       const { data: existing } = await supabase
@@ -1596,6 +1600,7 @@ export const upsertHomePageSection = createServerFn({ method: "POST" })
           .select()
           .single();
         if (error) throw error;
+        microCache.invalidatePrefix("home_cms:");
         return data;
       }
 
@@ -1605,6 +1610,7 @@ export const upsertHomePageSection = createServerFn({ method: "POST" })
         .select()
         .single();
       if (error) throw error;
+      microCache.invalidatePrefix("home_cms:");
       return data;
     }
   });
@@ -1613,9 +1619,8 @@ export const upsertHomePageSection = createServerFn({ method: "POST" })
 export const deleteHomePageSection = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().min(1) }))
   .handler(async ({ data: { id } }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     if (id.startsWith("canonical-")) {
       const { realSectionId } = await ensureCanonicalHomeSectionMaterialized(supabase, id);
@@ -1623,11 +1628,13 @@ export const deleteHomePageSection = createServerFn({ method: "POST" })
         .from("home_page_sections")
         .update({ is_active: false, updated_at: new Date().toISOString() })
         .eq("id", realSectionId);
+      microCache.invalidatePrefix("home_cms:");
       return { success: true };
     }
 
     const { error } = await supabase.from("home_page_sections").delete().eq("id", id);
     if (error) throw error;
+    microCache.invalidatePrefix("home_cms:");
     return { success: true };
   });
 
@@ -1661,9 +1668,8 @@ const UpsertItemSchema = z.object({
 export const upsertHomeSectionItem = createServerFn({ method: "POST" })
   .validator(UpsertItemSchema)
   .handler(async ({ data: payload }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     const {
       id,
@@ -1731,6 +1737,7 @@ export const upsertHomeSectionItem = createServerFn({ method: "POST" })
         .select()
         .single();
       if (error) throw error;
+      microCache.invalidatePrefix("home_cms:");
       return data;
     } else {
       const { data, error } = await supabase
@@ -1739,6 +1746,7 @@ export const upsertHomeSectionItem = createServerFn({ method: "POST" })
         .select()
         .single();
       if (error) throw error;
+      microCache.invalidatePrefix("home_cms:");
       return data;
     }
   });
@@ -1747,9 +1755,8 @@ export const upsertHomeSectionItem = createServerFn({ method: "POST" })
 export const deleteHomeSectionItem = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().min(1) }))
   .handler(async ({ data: { id } }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     if (id.startsWith("item-")) {
       const canonicalSec = CANONICAL_DEFAULT_HOME_SECTIONS.find((s) =>
@@ -1766,11 +1773,13 @@ export const deleteHomeSectionItem = createServerFn({ method: "POST" })
           if (error) throw error;
         }
       }
+      microCache.invalidatePrefix("home_cms:");
       return { success: true };
     }
 
     const { error } = await supabase.from("home_section_items").delete().eq("id", id);
     if (error) throw error;
+    microCache.invalidatePrefix("home_cms:");
     return { success: true };
   });
 
@@ -1778,9 +1787,8 @@ export const deleteHomeSectionItem = createServerFn({ method: "POST" })
 export const reorderHomeSections = createServerFn({ method: "POST" })
   .validator(z.object({ sectionIds: z.array(z.string()) }))
   .handler(async ({ data: { sectionIds } }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     for (let index = 0; index < sectionIds.length; index++) {
       const rawId = sectionIds[index];
@@ -1797,9 +1805,8 @@ export const reorderHomeSections = createServerFn({ method: "POST" })
 export const reorderHomeSectionItems = createServerFn({ method: "POST" })
   .validator(z.object({ itemIds: z.array(z.string()) }))
   .handler(async ({ data: { itemIds } }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const session = await getUserSession();
-    if (!session) throw new Error("Não autenticado.");
 
     for (let index = 0; index < itemIds.length; index++) {
       const rawItemId = itemIds[index];
@@ -1838,14 +1845,16 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
       .optional(),
   )
   .handler(async ({ data: input }): Promise<NormalizedShowcasePost[]> => {
-    const supabase = getAnonServerClient();
     const { limit = 12, city } = input || {};
     const cleanCity = city ? city.split("-")[0].trim().toLowerCase() : "";
+    const cacheKey = `home_cms:showcase_posts:${cleanCity || "all"}:${limit}`;
 
-    const normalizedList: NormalizedShowcasePost[] = [];
+    return microCache.getOrSet(cacheKey, 30_000, async () => {
+      const supabase = getAnonServerClient();
+      const normalizedList: NormalizedShowcasePost[] = [];
 
-    try {
-      // 1. Busca publicações reais ativas (prioriza correspondências da cidade e mantém cobertura regional)
+      try {
+        // 1. Busca publicações reais ativas (prioriza correspondências da cidade e mantém cobertura regional)
       const { data: rawPostsData } = await supabase
         .from("posts")
         .select(`
@@ -2031,11 +2040,12 @@ export const getUnifiedShowcasePosts = createServerFn({ method: "GET" })
         });
       }
 
-      return normalizedList.slice(0, limit);
-    } catch (err) {
-      console.warn("[getUnifiedShowcasePosts] Erro:", err);
-      return [];
-    }
+        return normalizedList.slice(0, limit);
+      } catch (err) {
+        console.warn("[getUnifiedShowcasePosts] Erro:", err);
+        return [];
+      }
+    });
   });
 
 // ── 7. BUSCAR SEÇÃO DO MENU NOOR PARA A TELA DE CHAT ──

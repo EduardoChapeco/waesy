@@ -37,8 +37,8 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* Gradientes de Profundidade Cinematográfica (Anti-Jank / Legibilidade) */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90 pointer-events-none" />
+      {/* Scrim de Profundidade Cinematográfica (Anti-Jank / Legibilidade) */}
+      <div className="absolute inset-0 bg-foreground/65 pointer-events-none" />
 
       {/* Safe Zone Superior: Identidade da Agência & Widget de Clima/Destino */}
       <div className="relative z-10 px-12 pt-16 flex items-center justify-between">
@@ -52,7 +52,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
               className="w-7 h-7 rounded-full object-cover"
             />
           ) : (
-            <Star className="w-5 h-5 text-amber-400" />
+            <Star className="w-5 h-5 text-warning-strong" />
           )}
           <span className="text-foreground text-lg font-bold tracking-wide">
             {data.storeName || "Waesy Experience"}
@@ -63,8 +63,8 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
         </div>
 
         {/* Pílula Climática / Destino */}
-        <div className="flex items-center gap-3 bg-foreground/40 backdrop-blur-xl border border-white/20 px-5 py-3 rounded-full text-amber-300">
-          <Sun className="w-5 h-5 text-amber-400" />
+        <div className="flex items-center gap-3 bg-foreground/40 backdrop-blur-xl border border-white/20 px-5 py-3 rounded-full text-warning-strong">
+          <Sun className="w-5 h-5 text-warning-strong" />
           <span className="text-foreground text-base font-semibold">
             {data.destinationOrLocation ? `Destino Solar • ${data.destinationOrLocation}` : "Melhor Época do Ano"}
           </span>
@@ -76,7 +76,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
 
       {/* Safe Zone Inferior: Cartão Flutuante de Vidro Fosco Profundo */}
       <div className="relative z-10 px-10 pb-16">
-        <div className="bg-foreground/55 backdrop-blur-2xl border border-white/20 rounded-lg p-10 shadow-2xl">
+        <div className="bg-foreground/55 backdrop-blur-2xl border border-white/20 rounded-lg p-10 ">
           {/* Badge de Oferta & Local */}
           <div className="flex items-center justify-between mb-4">
             {data.destinationOrLocation && (
@@ -86,14 +86,14 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
               </div>
             )}
             {data.promoBadge && (
-              <span className="bg-amber-400 text-foreground px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+              <span className="bg-warning text-foreground px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider">
                 {data.promoBadge}
               </span>
             )}
           </div>
 
           {/* Título Principal */}
-          <h1 className="text-4xl lg:text-[44px] font-black text-foreground leading-tight tracking-tight mb-4 drop-shadow-sm">
+          <h1 className="text-4xl lg:text-[44px] font-black text-foreground leading-tight tracking-tight mb-4 ">
             {data.title}
           </h1>
 
@@ -129,7 +129,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
             </div>
 
             {/* Botão de Ação com Alto Contraste */}
-            <div className="bg-card hover:bg-slate-100 text-slate-950 px-8 py-5 rounded-lg font-black text-xl flex items-center gap-3 shadow-2xl shrink-0 transition-transform active:scale-95">
+            <div className="bg-card hover:bg-slate-100 text-slate-950 px-8 py-5 rounded-lg font-black text-xl flex items-center gap-3  shrink-0 transition-transform active:scale-95">
               <span>{data.ctaLabel || "Reservar Vaga"}</span>
               <ArrowRight className="w-6 h-6 text-slate-950" />
             </div>

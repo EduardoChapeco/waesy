@@ -142,7 +142,7 @@ function DeliveryCourierPage() {
   if (!delivery) {
     return (
       <div className="min-h-dvh bg-background text-foreground flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full border border-border/80 bg-card rounded-lg p-6 text-center space-y-4 shadow-sm">
+        <div className="max-w-md w-full border border-border/80 bg-card rounded-lg p-6 text-center space-y-4 ">
           <div className="size-12 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <Truck className="size-6" />
           </div>
@@ -268,7 +268,7 @@ function DeliveryCourierPage() {
           className={`text-xs font-bold uppercase tracking-wider ${
             isDelivered
               ? "text-emerald-600 dark:text-emerald-400"
-              : "text-amber-600 dark:text-amber-400"
+              : "text-warning-strong "
           }`}
         >
           {isDelivered ? "Entregue" : "Em Trânsito"}
@@ -289,14 +289,14 @@ function DeliveryCourierPage() {
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-foreground flex items-center gap-2">
             {delivery.delivery_to_door ? (
-              <Building2 className="size-4 text-amber-600 dark:text-amber-400" />
+              <Building2 className="size-4 text-warning-strong " />
             ) : (
               <ShieldCheck className="size-4 text-primary" />
             )}
             {delivery.delivery_to_door ? "Subir no Apartamento" : "Entrega na Portaria / Portão"}
           </span>
           {delivery.delivery_to_door && (
-            <Badge variant="outline" className="text-2xs font-bold text-amber-600 dark:text-amber-400 border-amber-500/30">
+            <Badge variant="outline" className="text-2xs font-bold text-warning-strong  border-warning/30">
               Taxa de Subida Paga
             </Badge>
           )}
@@ -405,7 +405,7 @@ function DeliveryCourierPage() {
  variant="outline"
  size="sm"
  onClick={handleOpenMaps}
- className="rounded-lg text-xs font-semibold gap-2 h-9"
+ className="rounded-lg text-xs font-semibold gap-2 h-9 min-h-11 sm:min-h-0"
  >
  <Navigation className="size-3.5 text-primary" />
  Maps
@@ -415,7 +415,7 @@ function DeliveryCourierPage() {
  variant="outline"
  size="sm"
  onClick={handleOpenWaze}
- className="rounded-lg text-xs font-semibold gap-2 h-9"
+ className="rounded-lg text-xs font-semibold gap-2 h-9 min-h-11 sm:min-h-0"
  >
  <Navigation className="size-3.5 text-info" />
  Waze
@@ -426,7 +426,7 @@ function DeliveryCourierPage() {
  variant="outline"
  size="sm"
  onClick={handleCallRecipient}
- className="rounded-lg text-xs font-semibold gap-2 h-9"
+ className="rounded-lg text-xs font-semibold gap-2 h-9 min-h-11 sm:min-h-0"
  >
  <Phone className="size-3.5 text-emerald-600" />
  Ligar
@@ -477,7 +477,7 @@ function DeliveryCourierPage() {
  variant={pickupStarted ? "secondary" : "default"}
  disabled={isStartingPickup || pickupStarted}
  onClick={handleStartPickup}
- className="rounded-lg text-xs font-bold h-9"
+ className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0"
  >
  {pickupStarted ? " Coletado" : isStartingPickup ? "Registrando..." : "Confirmar Coleta"}
  </Button>

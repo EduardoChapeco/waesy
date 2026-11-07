@@ -223,7 +223,7 @@ function PlaceDetailPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
-                className="h-9 sm:h-10 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 rounded-lg border border-border/60 text-xs font-semibold focus-visible:ring-2"
+                className="h-9 sm:h-10 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 rounded-lg border border-border/60 text-xs font-semibold focus-visible:ring-2 min-h-11 sm:min-h-0"
                 aria-label="Compartilhar link deste local"
               >
                 {copiedShare ? (
@@ -293,7 +293,7 @@ function PlaceDetailPage() {
                 </span>
                 <span aria-hidden="true">•</span>
                 <span className="flex items-center gap-1 font-semibold text-foreground">
-                  <Star className="size-4 fill-amber-400 text-amber-500" aria-hidden="true" />
+                  <Star className="size-4 fill-warning text-warning-strong" aria-hidden="true" />
                   {place.ratingAverage.toFixed(1)} ({place.reviewsCount} avaliações)
                 </span>
               </div>
@@ -394,7 +394,7 @@ function PlaceDetailPage() {
                 Reputação e Avaliações
               </h2>
               <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                <Star className="size-4 fill-amber-400 text-amber-500" aria-hidden="true" />
+                <Star className="size-4 fill-warning text-warning-strong" aria-hidden="true" />
                 <span>{place.ratingAverage.toFixed(1)}</span>
                 <span className="text-xs text-muted-foreground">({place.reviewsCount})</span>
               </div>
@@ -408,7 +408,7 @@ function PlaceDetailPage() {
                       <span className="text-sm font-medium text-foreground">{rev.authorName}</span>
                       <div className="flex items-center gap-1">
                         {Array.from({ length: rev.rating }).map((_, i) => (
-                          <Star key={i} className="size-4 fill-amber-400 text-amber-500" aria-hidden="true" />
+                          <Star key={i} className="size-4 fill-warning text-warning-strong" aria-hidden="true" />
                         ))}
                       </div>
                     </div>

@@ -75,7 +75,7 @@ const CATEGORY_COLORS: Record<ChecklistCategory, string> = {
   documentation: 'text-blue-600 bg-blue-500/10',
   health: 'text-emerald-600 bg-emerald-500/10',
   insurance: 'text-violet-600 bg-violet-500/10',
-  financial: 'text-amber-600 bg-amber-500/10',
+  financial: 'text-warning-strong bg-warning/10',
   logistics: 'text-orange-600 bg-orange-500/10',
   communication: 'text-sky-600 bg-sky-500/10',
   airline: 'text-primary bg-indigo-500/10',
@@ -86,7 +86,7 @@ const CATEGORY_COLORS: Record<ChecklistCategory, string> = {
 const STAGE_BAR_COLORS: Record<string, string> = {
   booked: 'bg-blue-500',
   vouchers_ready: 'bg-indigo-500',
-  checkin_48h: 'bg-amber-500',
+  checkin_48h: 'bg-warning',
   traveling: 'bg-emerald-500',
   post_trip: 'bg-purple-500',
 };
@@ -670,7 +670,7 @@ function WorkspaceBoardingPage() {
                               className={`text-xs font-medium px-2 py-1 rounded truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                                 days <= 0 ? 'bg-emerald-500/15 text-emerald-700' :
                                 days <= 2 ? 'bg-red-500/15 text-red-700' :
-                                days <= 7 ? 'bg-amber-500/15 text-amber-700' :
+                                days <= 7 ? 'bg-warning/15 text-warning-strong' :
                                 'bg-primary/10 text-primary'
                               }`}
                             >
@@ -722,25 +722,24 @@ function WorkspaceBoardingPage() {
               <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />Carregando embarques...
             </div>
           ) : (
-            <div className="flex gap-4 pb-4 min-h-96 waesy-kanban-strip">
+            <div className="flex gap-4 pb-4 min-h-144 items-stretch waesy-kanban-strip">
               {DEPARTURE_STAGES.map(col => {
                 const colCards = filteredKanban.filter(c => c.stage === col.id);
                 return (
                   <div
                     key={col.id}
-                    className="flex-none w-80 bg-muted/40 border border-border/60 rounded-3xl flex flex-col overflow-hidden"
+                    className="flex-none w-80 min-h-144 bg-muted/50 dark:bg-muted/30 rounded-2xl flex flex-col overflow-hidden"
                   >
-                    <div className={cn("h-1.5 w-full shrink-0", STAGE_BAR_COLORS[col.id] || "bg-primary/40")} />
-                    <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0">
+                    <div className="px-4 py-3 flex items-center justify-between shrink-0">
                       <div>
                         <h3 className="text-xs font-bold text-foreground">{col.label}</h3>
                         <p className="text-xs text-muted-foreground">{col.desc}</p>
                       </div>
-                      <Badge variant="outline" className="font-mono text-xs h-5 px-2">{colCards.length}</Badge>
+                      <Badge variant="outline" className="font-mono text-xs h-5 px-2 bg-card">{colCards.length}</Badge>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
+                    <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-3 no-scrollbar">
                       {colCards.length === 0 ? (
-                        <div className="h-24 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-xs text-muted-foreground/75 text-muted-foreground">
+                        <div className="h-24 rounded-xl bg-card flex items-center justify-center text-xs text-muted-foreground">
                           Sem viagens
                         </div>
                       ) : (
@@ -761,19 +760,13 @@ function WorkspaceBoardingPage() {
               <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" />Carregando linha do tempo diária...
             </div>
           ) : (
-            <div className="flex gap-3 pb-4 min-h-96 waesy-kanban-strip">
+            <div className="flex gap-4 pb-4 min-h-144 items-stretch waesy-kanban-strip">
               {dailyKanbanColumns.map(col => (
                 <div
                   key={col.dateKey}
-                  className={`flex-none w-72 rounded-lg border flex flex-col transition-colors ${
-                    col.isToday
-                      ? 'border-primary/50 bg-primary/5'
-                      : 'border-border/60 bg-muted/20'
-                  }`}
+                  className="flex-none w-72 min-h-144 rounded-2xl bg-muted/50 dark:bg-muted/30 flex flex-col transition-colors"
                 >
-                  <div className={`px-3 py-2 border-b flex items-center justify-between shrink-0 ${
-                    col.isToday ? 'border-primary/30 bg-primary/10' : 'border-border/40'
-                  }`}>
+                  <div className="px-4 py-3 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2 min-w-0">
                       {col.isToday && <span className="size-2 rounded-full bg-primary animate-pulse" />}
                       <span className={`text-xs font-bold truncate ${col.isToday ? 'text-primary' : 'text-foreground'}`}>
@@ -788,9 +781,9 @@ function WorkspaceBoardingPage() {
                     </Badge>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-3 space-y-3 max-h-96 no-scrollbar">
+                  <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-3 no-scrollbar">
                     {col.cards.length === 0 ? (
-                      <div className="h-20 rounded border border-dashed border-border/40 flex items-center justify-center text-xs text-muted-foreground/60">
+                      <div className="h-24 rounded-xl bg-card flex items-center justify-center text-xs text-muted-foreground">
                         Nenhum embarque
                       </div>
                     ) : (
@@ -812,7 +805,7 @@ function WorkspaceBoardingPage() {
 
         {/* ── PRE-BOARDING STUDIO & MEETING SCHEDULER VIEW ── */}
         {viewMode === 'pre_boarding_studio' && (
-          <PreBoardingPresentationStudio />
+          <PreBoardingPresentationStudio departures={cards} />
         )}
       </div>
 
@@ -1087,11 +1080,6 @@ function DepartureCard({
   compact?: boolean;
 }) {
   const daysUntil = Math.ceil((new Date(card.departure_date).getTime() - Date.now()) / 86400000);
-  const urgencyClass =
-    daysUntil <= 0 ? 'border-emerald-500/40 bg-emerald-500/5' :
-    daysUntil <= 2 ? 'border-red-500/40 bg-red-500/5' :
-    daysUntil <= 7 ? 'border-amber-500/30 bg-amber-500/5' :
-    'border-border bg-card';
 
   const pct = card.checklist_completed_pct || 0;
   const checkinUrl = resolveAirlineCheckinUrl(card.airline_code);
@@ -1107,7 +1095,7 @@ function DepartureCard({
           onOpen();
         }
       }}
-      className={`p-4 rounded-2xl border bg-card cursor-pointer hover:border-foreground/25 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none ${urgencyClass}`}
+      className="p-4 rounded-2xl bg-card cursor-pointer hover:bg-card/90 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none"
     >
       <div className="flex items-start justify-between gap-1 mb-2">
         <div className="min-w-0 flex-1">
@@ -1117,11 +1105,11 @@ function DepartureCard({
             <span className="truncate">{card.destination}</span>
           </p>
         </div>
-        <span className={`text-xs font-mono font-bold px-2 py-1 rounded shrink-0 ${
-          daysUntil <= 0 ? 'bg-emerald-500/20 text-emerald-700' :
-          daysUntil <= 2 ? 'bg-red-500/20 text-red-700' :
-          daysUntil <= 7 ? 'bg-amber-500/20 text-amber-700' :
-          'bg-muted text-muted-foreground'
+        <span className={`text-xs font-mono font-bold px-2 py-1 rounded-md shrink-0 bg-muted ${
+          daysUntil <= 0 ? 'text-emerald-600 dark:text-emerald-400' :
+          daysUntil <= 2 ? 'text-red-600 dark:text-red-400' :
+          daysUntil <= 7 ? 'text-warning-strong' :
+          'text-muted-foreground'
         }`}>
           {daysUntil <= 0 ? ' Hoje/Passado' : `em ${daysUntil}d`}
         </span>
@@ -1145,11 +1133,11 @@ function DepartureCard({
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Checklist</span>
-              <span className={pct === 100 ? 'text-emerald-600 font-semibold' : pct < 50 ? 'text-red-600 font-semibold' : 'text-amber-600 font-semibold'}>{pct}%</span>
+              <span className={pct === 100 ? 'text-emerald-600 font-semibold' : pct < 50 ? 'text-red-600 font-semibold' : 'text-warning-strong font-semibold'}>{pct}%</span>
             </div>
             <div className="h-1 bg-muted rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full ${pct === 100 ? 'bg-emerald-500' : pct < 50 ? 'bg-red-500' : 'bg-amber-500'}`}
+                className={`h-full rounded-full ${pct === 100 ? 'bg-emerald-500' : pct < 50 ? 'bg-red-500' : 'bg-warning'}`}
                 style={{ width: `${pct}%` }}
               />
             </div>

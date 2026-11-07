@@ -83,7 +83,7 @@ function EditProductPage() {
 
   if (!product) {
     return (
-      <div className="w-full max-w-7xl mx-auto px-4 space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="w-full px-4 space-y-6 pb-20 animate-in fade-in duration-200">
         <div className="flex items-center gap-3">
           <NativeBackButton fallbackHref="/workspace/catalogo/produtos" />
         </div>

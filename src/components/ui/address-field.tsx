@@ -337,7 +337,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
           onClick={() => setShowAiPaste(!showAiPaste)}
           className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
         >
-          <Zap className="size-3.5 text-amber-500" />
+          <Zap className="size-3.5 text-warning-strong" />
           <span>Colar com IA</span>
         </Button>
       </div>

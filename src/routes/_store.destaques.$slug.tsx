@@ -21,80 +21,80 @@ import { useCartContext } from "@/lib/cart-context";
 import { toast } from "sonner";
 import type { ProductCardDTO } from "@/types/catalog";
 
-// ── TEMPLATES & ESTILOS VISUAIS CANÔNICOS (PADRÃO IFOOD TURBO / HITS / RETROSPECTIVA) ──
+// ── TEMPLATES & ESTILOS VISUAIS CANÔNICOS (PADRÃO WAESY SILENCIOSO) ──
 const HOTPAGE_THEMES: Record<
- string,
- {
- bgGradient: string;
- accentColor: string;
- badgeBg: string;
- icon: any;
- defaultBadge: string;
- heroPills: string[];
- tagLine: string;
- featuredRailTitle: string;
- }
+  string,
+  {
+    bgGradient: string;
+    accentColor: string;
+    badgeBg: string;
+    icon: any;
+    defaultBadge: string;
+    heroPills: string[];
+    tagLine: string;
+    featuredRailTitle: string;
+  }
 > = {
- turbo: {
- bgGradient: "bg-linear-to-b from-pink-600 via-rose-600 to-fuchsia-700",
- accentColor: "text-primary",
- badgeBg: "bg-card text-primary",
- icon: Lightning,
- defaultBadge: " #turbo",
- heroPills: [" apenas + R$ 3,99", "⏱️ em até 20 min", " ou R$ 5 de volta"],
- tagLine: "Lista de ofertas que chegam rapidinho na sua porta",
- featuredRailTitle: "Promos com Turbo",
- },
- hits: {
- bgGradient: "bg-linear-to-b from-amber-500 via-orange-500 to-red-600",
- accentColor: "text-amber-600",
- badgeBg: "bg-card text-warning",
- icon: Flame,
- defaultBadge: " hits",
- heroPills: [" os mais amados", " entrega grátis", "⭐ nota 4.8+"],
- tagLine: "Os pratos e lanches mais pedidos da cidade",
- featuredRailTitle: "Top 10 Mais Pedidos",
- },
- ofertas: {
- bgGradient: "bg-linear-to-b from-red-600 via-rose-600 to-amber-600",
- accentColor: "text-destructive",
- badgeBg: "bg-amber-400 text-foreground",
- icon: Flame,
- defaultBadge: "️ Oferta Relâmpago",
- heroPills: ["️ até 50% OFF", "⏳ por tempo limitado", " entrega expressa"],
- tagLine: "Descontos imperdíveis nos melhores estabelecimentos",
- featuredRailTitle: "Ofertas em Destaque",
- },
- "frete-gratis": {
- bgGradient: "bg-linear-to-b from-emerald-600 via-teal-600 to-cyan-700",
- accentColor: "text-emerald-600",
- badgeBg: "bg-card text-emerald-700",
- icon: Truck,
- defaultBadge: " Frete Grátis",
- heroPills: [" taxa R$ 0,00", " raio de até 5km", " sem valor mínimo"],
- tagLine: "Taxa zero de entrega para economizar no seu pedido",
- featuredRailTitle: "Restaurantes com Entrega Grátis",
- },
- gastronomia: {
- bgGradient: "bg-linear-to-b from-amber-600 via-orange-600 to-red-600",
- accentColor: "text-amber-600",
- badgeBg: "bg-card text-amber-700",
- icon: Flame,
- defaultBadge: " Sabor Local",
- heroPills: [" pizzas & burgers", " opções saudáveis", " doces & cafés"],
- tagLine: "Pizzas, burgers, lanches e cafés especiais selecionados",
- featuredRailTitle: "Cardápios Recomendados",
- },
- mercado: {
- bgGradient: "bg-linear-to-b from-emerald-700 via-green-600 to-teal-700",
- accentColor: "text-emerald-700",
- badgeBg: "bg-card text-emerald-800",
- icon: Storefront,
- defaultBadge: " Feira & Hortifruti",
- heroPills: [" frescos do dia", " carnes nobres", " padaria colonial"],
- tagLine: "Alimentos frescos, mercearia e produtos da região",
- featuredRailTitle: "Supermercados & Empórios",
- },
+  turbo: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: Lightning,
+    defaultBadge: "Turbo",
+    heroPills: ["Taxa fixa", "Em até 20 min", "Entrega ágil"],
+    tagLine: "Ofertas que chegam com agilidade ao seu endereço",
+    featuredRailTitle: "Promos com Turbo",
+  },
+  hits: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: Flame,
+    defaultBadge: "Hits",
+    heroPills: ["Mais pedidos", "Alta demanda", "Seleção local"],
+    tagLine: "Os pratos e produtos mais requisitados da cidade",
+    featuredRailTitle: "Mais Pedidos",
+  },
+  ofertas: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: Flame,
+    defaultBadge: "Oferta Especial",
+    heroPills: ["Preço reduzido", "Tempo limitado", "Estoque restrito"],
+    tagLine: "Descontos nos estabelecimentos participantes",
+    featuredRailTitle: "Ofertas em Destaque",
+  },
+  "frete-gratis": {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-success",
+    badgeBg: "bg-success/10 text-success border border-success/20",
+    icon: Truck,
+    defaultBadge: "Entrega Grátis",
+    heroPills: ["Taxa zero", "Raio local", "Sem valor mínimo"],
+    tagLine: "Taxa zero de entrega para economizar no seu pedido",
+    featuredRailTitle: "Estabelecimentos com Entrega Grátis",
+  },
+  gastronomia: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: ForkKnife,
+    defaultBadge: "Gastronomia Local",
+    heroPills: ["Refeições e lanches", "Opções artesanais", "Cafés e doces"],
+    tagLine: "Cardápios, porções e cafés selecionados",
+    featuredRailTitle: "Cardápios Recomendados",
+  },
+  mercado: {
+    bgGradient: "bg-card border-b border-border/60",
+    accentColor: "text-primary",
+    badgeBg: "bg-primary/10 text-primary border border-primary/20",
+    icon: Storefront,
+    defaultBadge: "Mercearia e Feira",
+    heroPills: ["Frescos do dia", "Hortifruti", "Padaria e empório"],
+    tagLine: "Alimentos frescos, mercearia e produtos da região",
+    featuredRailTitle: "Supermercados e Empórios",
+  },
 };
 
 const MODULE_CHIPS_MAP: Record<string, Array<{ id: string; label: string; icon: any }>> = {
@@ -453,7 +453,7 @@ function DedicatedHotpageView() {
       <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-0 sm:px-4 md:px-0 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
  
         {/* ── 2.1. Sub-abas de Navegação por Nicho (Padrão Botão Grande) ── */}
-        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
+        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-area-carousel snap-x snap-mandatory sm:overflow-visible sm:flex-wrap no-scrollbar py-1">
           {activeChips.map((chip) => {
             const Icon = chip.icon;
             const isSelected = selectedSubCategory === chip.id;
@@ -462,8 +462,8 @@ function DedicatedHotpageView() {
                 key={chip.id}
                 type="button"
                 onClick={() => setSelectedSubCategory(chip.id)}
-                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 ",
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring snap-start", 
+                  "h-11 min-h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-colors duration-200 cursor-pointer select-none active:scale-98 ",
                   isSelected
                     ? "bg-foreground text-background border-foreground font-bold "
                     : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -492,11 +492,11 @@ function DedicatedHotpageView() {
  />
  </div>
 
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel snap-x snap-mandatory no-scrollbar py-1">
  <button
  type="button"
  onClick={() => setSelectedFastFilter(selectedFastFilter === "desconto" ? null : "desconto")}
- className={`h-9 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-2 ${
+ className={`h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer shrink-0 flex items-center gap-2 snap-start ${
  selectedFastFilter === "desconto"
  ? "bg-primary text-primary-foreground border-primary"
  : "bg-card border-border text-muted-foreground hover:text-foreground"
@@ -551,7 +551,7 @@ function DedicatedHotpageView() {
 
  <HorizontalRail hideHeader={true} title="Lojas">
  {relatedStores.map((store: any) => (
- <div key={store.id} className="min-w-[220px] sm:min-w-[250px] max-w-65 shrink-0">
+ <div key={store.id} className="min-w-55 sm:min-w-63 max-w-65 shrink-0">
  <StoreCard
  id={store.id}
  name={store.name}
@@ -648,7 +648,7 @@ function DedicatedHotpageView() {
  size="icon"
  disabled={isAdding}
  onClick={() => handleQuickAdd(p)}
- className="size-9 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors duration-200 cursor-pointer"
+ className="size-9 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Adicionar à Sacola"
  >
  <Plus size={16} weight="bold" />

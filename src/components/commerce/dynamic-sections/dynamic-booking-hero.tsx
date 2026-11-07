@@ -251,7 +251,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
         {/* ── CARD PRINCIPAL DO MOTOR DE BUSCA E AUTO-SERVICE ── */}
         <div className="bg-card border border-border/80 rounded-lg overflow-hidden">
           {/* Abas Superiores de Serviços (Linha Única Contínua B.39) */}
-          <div className="flex flex-nowrap items-center overflow-x-auto no-scrollbar border-b border-border/60 bg-muted/30 p-2 gap-2">
+          <div className="flex flex-nowrap items-center overflow-x-auto scroll-area-carousel no-scrollbar border-b border-border/60 bg-muted/30 p-2 gap-2">
             <button
               type="button"
               onClick={() => setActiveTab("packages")}
@@ -345,7 +345,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
                   <button
                     type="button"
                     onClick={handleSwapLocations}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 size-9 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 size-9 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     title="Inverter origem e destino"
                   >
                     <ArrowLeftRight className="size-4" />
@@ -429,7 +429,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
             </div>
 
             {/* Presets de Destinos Rápidos */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-2">
+            <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pt-2">
               <span className="text-xs font-semibold text-muted-foreground shrink-0">
                 Mais buscados:
               </span>
@@ -439,7 +439,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
                     key={preset}
                     type="button"
                     onClick={() => setDestination(preset)}
-                    className="h-9 px-3 rounded-lg border border-border/60 bg-muted/40 hover:bg-muted text-xs font-medium text-foreground transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="h-9 px-3 rounded-lg border border-border/60 bg-muted/40 hover:bg-muted text-xs font-medium text-foreground transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0"
                   >
                     {preset}
                   </button>
@@ -468,7 +468,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
                     setHasSearched(false);
                     setSelectedItemForQuote(null);
                   }}
-                  className="h-9 px-3 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-9 px-3 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0"
                 >
                   <X className="size-4" />
                   <span>Fechar busca</span>

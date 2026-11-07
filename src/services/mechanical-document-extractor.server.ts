@@ -3,27 +3,71 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { inflateSync } from "node:zlib";
+import { inflateSync, inflateRawSync } from "node:zlib";
+
+function decodeHexPdfString(hex: string): string {
+  if (!hex) return "";
+  // Se for múltiplo de 4 e parecer UTF-16BE (caractere nulo no byte alto)
+  if (hex.length >= 4 && hex.length % 4 === 0 && hex.startsWith("00")) {
+    let utf16 = "";
+    for (let i = 0; i < hex.length; i += 4) {
+      const code = parseInt(hex.substring(i, i + 4), 16);
+      if (code >= 32 && code <= 65535) {
+        utf16 += String.fromCharCode(code);
+      } else if (code === 10 || code === 13 || code === 9) {
+        utf16 += " ";
+      }
+    }
+    if (utf16.trim().length > 0) return utf16;
+  }
+  // Padrão ASCII / Latin1 de 2 dígitos hexadecimais
+  let latin = "";
+  for (let i = 0; i < hex.length; i += 2) {
+    const code = parseInt(hex.substring(i, i + 2), 16);
+    if (code >= 32 && code <= 255) {
+      latin += String.fromCharCode(code);
+    } else if (code === 10 || code === 13 || code === 9) {
+      latin += " ";
+    }
+  }
+  return latin;
+}
+
 function extractPdfTextPureNode(pdfBuffer: Buffer): string {
   const chunks: string[] = [];
   const rawLatin = pdfBuffer.toString("latin1");
-  const streamRegex = /stream[\r\n]+([\s\S]*?)[\r\n]+endstream/g;
+  const streamRegex = /stream(?:\r\n|\n|\r)([\s\S]*?)(?:\r\n|\n|\r)endstream/g;
   let match: RegExpExecArray | null;
 
   const extractStringsFromContent = (content: string) => {
-    const tjRegex = /\(([^()\\]*(?:\\.[^()\\]*)*)\)\s*Tj/g;
+    // Operadores Tj, ' e " com strings literais entre parênteses
+    const tjRegex = /\(([^()\\]*(?:\\.[^()\\]*)*)\)\s*(?:Tj|'|")/g;
     let m: RegExpExecArray | null;
     while ((m = tjRegex.exec(content)) !== null) {
       chunks.push(m[1].replace(/\\([nrtbf()\\])/g, "$1"));
     }
+
+    // Operadores Tj com strings hexadecimais entre sinais de menor e maior <HEX>
+    const hexTjRegex = /<([0-9a-fA-F]+)>\s*(?:Tj|'|")/g;
+    while ((m = hexTjRegex.exec(content)) !== null) {
+      const decoded = decodeHexPdfString(m[1]);
+      if (decoded) chunks.push(decoded);
+    }
+
+    // Operador TJ (array com posições e strings literais ou hexadecimais)
     const tjArrRegex = /\[([^\]]+)\]\s*TJ/g;
     while ((m = tjArrRegex.exec(content)) !== null) {
       const inner = m[1];
-      const strRegex = /\(([^()\\]*(?:\\.[^()\\]*)*)\)/g;
+      const partRegex = /\(([^()\\]*(?:\\.[^()\\]*)*)\)|<([0-9a-fA-F]+)>/g;
       let sm: RegExpExecArray | null;
       const lineParts: string[] = [];
-      while ((sm = strRegex.exec(inner)) !== null) {
-        lineParts.push(sm[1].replace(/\\([nrtbf()\\])/g, "$1"));
+      while ((sm = partRegex.exec(inner)) !== null) {
+        if (sm[1] !== undefined) {
+          lineParts.push(sm[1].replace(/\\([nrtbf()\\])/g, "$1"));
+        } else if (sm[2] !== undefined) {
+          const decoded = decodeHexPdfString(sm[2]);
+          if (decoded) lineParts.push(decoded);
+        }
       }
       if (lineParts.length > 0) chunks.push(lineParts.join(""));
     }
@@ -31,13 +75,24 @@ function extractPdfTextPureNode(pdfBuffer: Buffer): string {
 
   while ((match = streamRegex.exec(rawLatin)) !== null) {
     const streamBinary = Buffer.from(match[1], "latin1");
+    let decompressed: string | null = null;
     try {
-      const decompressed = inflateSync(streamBinary).toString("latin1");
-      extractStringsFromContent(decompressed);
+      decompressed = inflateSync(streamBinary).toString("latin1");
     } catch {
+      try {
+        decompressed = inflateRawSync(streamBinary).toString("latin1");
+      } catch {
+        // Fluxo não comprimido ou cifra desconhecida
+      }
+    }
+
+    if (decompressed) {
+      extractStringsFromContent(decompressed);
+    } else {
       extractStringsFromContent(match[1]);
     }
   }
+
   return normalizeText(chunks.join(" ").replace(/\s+/g, " "));
 }
 

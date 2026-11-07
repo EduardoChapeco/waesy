@@ -72,7 +72,8 @@ export const Route = createFileRoute("/_store/entrar")({
             throw redirect({ to: returnUrl as any });
           }
         }
-        throw redirect({ to: isMaster ? "/admin-master" : "/workspace" });
+        const hasStore = Boolean(session?.memberships && session.memberships.length > 0);
+        throw redirect({ to: hasStore ? "/workspace" : isMaster ? "/admin-master" : "/workspace" });
       }
     } catch (e: any) {
       if (isRedirect(e)) {
@@ -532,9 +533,9 @@ function StepByStepAuthPage() {
  </>
  ) : isPortalMode ? (
  <>
- <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step1" ? "w-6 bg-amber-500" : "w-2 bg-muted"}`} />
- <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step2" ? "w-6 bg-amber-500" : "w-2 bg-muted"}`} />
- <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step3" ? "w-6 bg-amber-500" : "w-2 bg-muted"}`} />
+ <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step1" ? "w-6 bg-warning" : "w-2 bg-muted"}`} />
+ <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step2" ? "w-6 bg-warning" : "w-2 bg-muted"}`} />
+ <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step3" ? "w-6 bg-warning" : "w-2 bg-muted"}`} />
  </>
  ) : (
  <>

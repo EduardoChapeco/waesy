@@ -129,7 +129,7 @@ function AirportDetailPage() {
     <div className="min-h-screen bg-background pb-20">
       {/* ── Breadcrumb ── */}
       <div className="border-b border-border/50 bg-card/60 backdrop-blur-md">
-        <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto no-scrollbar">
+        <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto scroll-area-carousel no-scrollbar">
           <Link to="/" className="hover:text-foreground transition-colors shrink-0">
             Início
           </Link>
@@ -221,7 +221,7 @@ function AirportDetailPage() {
                   className={cn(
                     "rounded-lg p-4 flex items-start gap-3 border text-sm",
                     n.severity === "alert" && "bg-destructive/10 border-destructive/30 text-destructive",
-                    n.severity === "warning" && "bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200",
+                    n.severity === "warning" && "bg-warning/10 border-warning/30 text-warning-strong ",
                     n.severity === "info" && "bg-primary/10 border-primary/20 text-foreground",
                   )}
                 >
@@ -240,7 +240,7 @@ function AirportDetailPage() {
       {/* ── Régua de Abas Canônica (Linha Única Horizontal Contínua B.39) ── */}
       <section className="sticky top-11 sm:top-14 z-30 bg-background/95 backdrop-blur-md border-b border-border">
         <div className="container max-w-6xl mx-auto px-4">
-          <div className="flex flex-nowrap overflow-x-auto no-scrollbar gap-2 py-2">
+          <div className="flex flex-nowrap overflow-x-auto scroll-area-carousel no-scrollbar gap-2 py-2">
             {[
               { id: "geral", label: "Visão Geral & Terminais", icon: Building2 },
               { id: "orgaos", label: "Órgãos & Segurança (PF/RF)", icon: ShieldCheck },
@@ -410,7 +410,7 @@ function AirportDetailPage() {
                         className={cn(
                           "px-3 py-1 rounded-full text-2xs font-bold uppercase",
                           fee.mandatory
-                            ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20"
+                            ? "bg-warning/10 text-warning-strong  border border-warning/20"
                             : "bg-muted text-muted-foreground",
                         )}
                       >

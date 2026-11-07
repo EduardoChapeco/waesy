@@ -40,9 +40,9 @@ export const Route = createFileRoute("/_store/convite")({
 
 const TIER_LABELS: Record<string, { label: string; color: string }> = {
   starter: { label: "Iniciante", color: "bg-muted text-muted-foreground" },
-  bronze: { label: "Bronze", color: "bg-amber-900/30 text-amber-500 border border-amber-500/30" },
+  bronze: { label: "Bronze", color: "bg-warning/30 text-warning-strong border border-warning/30" },
   silver: { label: "Prata", color: "bg-slate-300/20 text-slate-300 border border-slate-400/40" },
-  gold: { label: "Ouro", color: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40" },
+  gold: { label: "Ouro", color: "bg-warning/20 text-warning-strong border border-warning/40" },
   platinum: { label: "Platina", color: "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" },
 };
 
@@ -132,12 +132,12 @@ function ConvitePage() {
     <div className="w-full max-w-5xl mx-auto space-y-10 pb-24 px-0 sm:px-4 md:px-0 pt-4">
       {/* ── 1. HERO & PAINEL DO MEMBRO FUNDADOR / EMBAIXADOR ── */}
       {overview ? (
-        <section className="rounded-lg border border-border/80 bg-card p-6 sm:p-8 space-y-6 shadow-sm relative overflow-hidden">
+        <section className="rounded-lg border border-border/80 bg-card p-6 sm:p-8 space-y-6  relative overflow-hidden">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className="font-mono text-xs px-3 py-1 rounded-md flex items-center gap-1">
-                  <Star className="size-3 text-amber-500" />
+                  <Star className="size-3 text-warning-strong" />
                   <span>Membro Fundador</span>
                 </Badge>
 
@@ -159,7 +159,7 @@ function ConvitePage() {
             </div>
 
             <div className="flex items-baseline gap-2 bg-muted/40 px-4 py-3 rounded-lg border border-border/50">
-              <Trophy className="size-5 text-amber-500" />
+              <Trophy className="size-5 text-warning-strong" />
               <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
                 {overview.totalTokens ?? overview.totalPoints}
               </span>
@@ -234,8 +234,8 @@ function ConvitePage() {
         </section>
       ) : (
         /* Teaser para não autenticado */
-        <section className="rounded-lg border border-border/80 bg-card p-6 sm:p-10 space-y-6 text-center shadow-sm">
-          <div className="size-14 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+        <section className="rounded-lg border border-border/80 bg-card p-6 sm:p-10 space-y-6 text-center ">
+          <div className="size-14 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center mx-auto">
             <Gift className="size-7" />
           </div>
           <div className="max-w-md mx-auto space-y-2">
@@ -249,7 +249,7 @@ function ConvitePage() {
           <div className="flex justify-center">
             <Link
               to="/entrar"
-              className="h-11 px-8 rounded-lg bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 hover:bg-foreground/90 transition-colors duration-200 shadow-sm"
+              className="h-11 px-8 rounded-lg bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 hover:bg-foreground/90 transition-colors duration-200 "
             >
               <span>Entrar com Meu Perfil</span>
               <ArrowRight className="size-4" />
@@ -287,11 +287,11 @@ function ConvitePage() {
               return (
                 <div
                   key={raffle.id}
-                  className="rounded-lg border border-border/80 bg-card p-5 sm:p-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 shadow-sm hover:border-foreground/30 transition-colors duration-200"
+                  className="rounded-lg border border-border/80 bg-card p-5 sm:p-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6  hover:border-foreground/30 transition-colors duration-200"
                 >
                   <div className="space-y-3 max-w-xl">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-mono text-2xs font-bold uppercase">
+                      <Badge className="bg-warning/20 text-warning-strong  border border-warning/30 font-mono text-2xs font-bold uppercase">
                         Concurso Aberto
                       </Badge>
 
@@ -373,7 +373,7 @@ function ConvitePage() {
               return (
                 <div
                   key={reward.id}
-                  className="rounded-lg border border-border/70 bg-card overflow-hidden flex flex-col justify-between p-4 space-y-3 hover:border-foreground/30 transition-colors duration-200 shadow-sm"
+                  className="rounded-lg border border-border/70 bg-card overflow-hidden flex flex-col justify-between p-4 space-y-3 hover:border-foreground/30 transition-colors duration-200 "
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -424,7 +424,7 @@ function ConvitePage() {
             <h2 className="text-lg sm:text-xl font-bold text-foreground">Embaixadores em Destaque</h2>
             <p className="text-xs text-muted-foreground">Membros com maior número de indicações ativas.</p>
           </div>
-          <Trophy className="size-5 text-amber-500" />
+          <Trophy className="size-5 text-warning-strong" />
         </div>
 
         <div className="rounded-lg border border-border/70 bg-card overflow-hidden divide-y divide-border/60">

@@ -116,7 +116,7 @@ function EditCollectionPage() {
  };
 
  return (
- <div className="space-y-6 max-w-4xl animate-in fade-in duration-200">
+ <div className="space-y-6 w-full animate-in fade-in duration-200">
  <PageHeader
  eyebrow="Catálogo"
  title={`Editar Coleção: ${collection.name}`}

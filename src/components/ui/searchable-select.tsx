@@ -174,7 +174,7 @@ export function SearchableSelect({
       <PopoverContent
         align="start"
         /* design-lint-ignore DL-02 reason:"Largura dinâmica ancorada à variável CSS do Radix Popover" expiry:"2027-12-31" */
-        className="w-[var(--radix-popover-trigger-width)] p-0 rounded-lg border border-border bg-popover text-popover-foreground shadow-md"
+        className="w-[var(--radix-popover-trigger-width)] p-0 rounded-lg border border-border bg-popover text-popover-foreground shadow-overlay"
       >
         {/* Search input */}
         <div className="flex items-center gap-2 border-b border-border px-3 py-2">

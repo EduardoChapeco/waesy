@@ -208,7 +208,7 @@ export function AlocarEquipeSheet({
               />
             </div>
 
-            <Button type="submit" disabled={saving} size="sm" className="w-full font-bold gap-2 h-9">
+            <Button type="submit" disabled={saving} size="sm" className="w-full font-bold gap-2 h-9 min-h-11 sm:min-h-0">
               <Plus className="size-4" />
               {saving ? "Alocando..." : "Confirmar Alocação"}
             </Button>

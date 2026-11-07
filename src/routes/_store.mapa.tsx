@@ -196,7 +196,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={handleLocateMe}
- className="size-9 rounded-lg p-0 bg-card/90 backdrop-blur-md text-foreground hover:bg-card active:scale-95 transition-transform duration-200 cursor-pointer"
+ className="size-9 rounded-lg p-0 bg-card/90 backdrop-blur-md text-foreground hover:bg-card active:scale-95 transition-transform duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Minha Localização"
  aria-label="Minha Localização"
  >
@@ -206,7 +206,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={() => setIsPublishModalOpen(true)}
- className="h-9 px-4 rounded-lg font-bold text-xs gap-2 active:scale-95 transition-transform duration-200 cursor-pointer"
+ className="h-9 px-4 rounded-lg font-bold text-xs gap-2 active:scale-95 transition-transform duration-200 cursor-pointer min-h-11 sm:min-h-0"
  >
  <Plus size={14} weight="bold" />
  <span>Publicar</span>
@@ -220,9 +220,9 @@ function FullscreenMapaPage() {
  "absolute z-30 transition-colors duration-200 duration-300 ease-out",
         /* Mobile: Bottom Sheet ancorado embaixo */
         "bottom-0 left-0 right-0 rounded-t-lg border-t border-x sm:border bg-card flex flex-col shadow-xs",
-        isExpandedMobile ? "h-[85vh]" : "h-[36vh]",
+        isExpandedMobile ? "h-vh-85" : "h-vh-36",
  /* Desktop: Sidebar flutuante à esquerda */
- "sm:bottom-4 sm:top-16 sm:left-4 sm:right-auto sm:w-[400px] sm:h-auto sm:max-h-none sm:rounded-lg"
+ "sm:bottom-4 sm:top-16 sm:left-4 sm:right-auto sm:w-100 sm:h-auto sm:max-h-none sm:rounded-lg"
  )}
  >
  {/* Drag Handle Mobile */}
@@ -276,7 +276,7 @@ function FullscreenMapaPage() {
  </div>
 
  {/* Filtros de Vibe */}
- <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar ">
+ <div className="flex gap-2 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar ">
  {VIBE_FILTERS.map((f) => {
  const isSelected = activeVibe === f.id;
  const Icon = f.icon;
@@ -286,7 +286,7 @@ function FullscreenMapaPage() {
  type="button"
  onClick={() => setActiveVibe(f.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "h-7 px-3 rounded-lg text-2xs font-bold shrink-0 transition-colors duration-200 border cursor-pointer flex items-center gap-2",
+ "h-7 px-3 rounded-lg text-2xs font-bold shrink-0 transition-colors duration-200 border cursor-pointer flex items-center gap-2 min-h-11 sm:min-h-0",
  isSelected
  ? "bg-primary/10 text-primary border-primary/30 font-bold"
  : "bg-background/80 border-border/80 text-muted-foreground hover:text-foreground"
@@ -319,7 +319,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={() => setIsPublishModalOpen(true)}
- className="rounded-lg font-bold text-xs h-8 px-4"
+ className="rounded-lg font-bold text-xs h-8 px-4 min-h-11 sm:min-h-0"
  >
  + Publicar Meu Momento
  </Button>

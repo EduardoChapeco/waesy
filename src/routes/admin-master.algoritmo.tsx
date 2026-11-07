@@ -139,7 +139,7 @@ export default function AdminAlgorithmSettingsPage() {
  onClick={handleSave}
  disabled={isSaving}
  size="sm"
- className="rounded-lg text-xs font-semibold gap-2 h-9"
+ className="rounded-lg text-xs font-semibold gap-2 h-9 min-h-11 sm:min-h-0"
  >
  {isSaving ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Save className="size-3.5" />}
  <span>Salvar Pesos em Produção</span>
@@ -161,7 +161,7 @@ export default function AdminAlgorithmSettingsPage() {
  size="sm"
  variant="outline"
  onClick={() => applyPreset("default")}
- className="text-xs h-8 rounded-lg"
+ className="text-xs h-8 rounded-lg min-h-11 sm:min-h-0"
  >
  Equilíbrio Padrão
  </Button>
@@ -169,7 +169,7 @@ export default function AdminAlgorithmSettingsPage() {
  size="sm"
  variant="outline"
  onClick={() => applyPreset("rain_hyperlocal")}
- className="text-xs h-8 rounded-lg"
+ className="text-xs h-8 rounded-lg min-h-11 sm:min-h-0"
  >
  Modo Chuva / Hiperlocal
  </Button>
@@ -177,7 +177,7 @@ export default function AdminAlgorithmSettingsPage() {
  size="sm"
  variant="outline"
  onClick={() => applyPreset("new_growth")}
- className="text-xs h-8 rounded-lg"
+ className="text-xs h-8 rounded-lg min-h-11 sm:min-h-0"
  >
  Aceleração de Novos Negócios
  </Button>
@@ -201,7 +201,7 @@ export default function AdminAlgorithmSettingsPage() {
  <div style={{ width: `${params.weight_geo * 100}%` }} className="bg-info rounded-full transition-colors duration-200" title="Geo" />
  <div style={{ width: `${params.weight_open_status * 100}%` }} className="bg-emerald-500 rounded-full transition-colors duration-200" title="Aberto Agora" />
  <div style={{ width: `${params.weight_user_affinity * 100}%` }} className="bg-primary rounded-full transition-colors duration-200" title="Afinidade" />
- <div style={{ width: `${params.weight_freshness * 100}%` }} className="bg-amber-500 rounded-full transition-colors duration-200" title="Recência" />
+ <div style={{ width: `${params.weight_freshness * 100}%` }} className="bg-warning rounded-full transition-colors duration-200" title="Recência" />
  <div style={{ width: `${params.weight_store_quality * 100}%` }} className="bg-primary rounded-full transition-colors duration-200" title="Qualidade" />
  <div style={{ width: `${params.weight_token_boost * 100}%` }} className="bg-rose-500 rounded-full transition-colors duration-200" title="Tokens" />
  </div>
@@ -288,7 +288,7 @@ export default function AdminAlgorithmSettingsPage() {
  <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center">
  <TrendingUp className="size-4" />
  </div>
  <div>

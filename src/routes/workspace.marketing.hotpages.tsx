@@ -157,7 +157,7 @@ function WorkspaceStoreHotpagesPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* ── PageHeader Canônico Clean ── */}
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Vitrine & Divulgação"
@@ -199,7 +199,7 @@ function WorkspaceStoreHotpagesPage() {
 
  {/* ── Grade de Destaques ou Empty State ── */}
  {hotpages.length === 0 ? (
- <div className="py-16 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+ <div className="py-16 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card">
  <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
  <Layers className="size-7" />
  </div>
@@ -255,7 +255,7 @@ function WorkspaceStoreHotpagesPage() {
                 onClick={() => handleOpenEdit(h)}
                 variant="outline"
                 size="sm"
-                className="h-8 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer shadow-2xs"
+                className="h-8 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer shadow-2xs min-h-11 sm:min-h-0"
               >
                 <Pencil className="size-3.5" /> Editar
               </Button>

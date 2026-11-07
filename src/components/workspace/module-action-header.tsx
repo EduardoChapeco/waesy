@@ -127,7 +127,7 @@ export function ModuleActionHeader({
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200",
                       isActive
-                        ? "bg-background text-foreground shadow-sm"
+                        ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground"
                     )}
                     title={v.label}
@@ -148,7 +148,7 @@ export function ModuleActionHeader({
             <Button
               variant="outline"
               size="sm"
-              className="h-10 px-3 rounded-lg border-border/80 text-xs font-semibold hover:bg-muted/50"
+              className="h-10 px-3 rounded-lg border-border/80 text-xs font-semibold hover:bg-muted/50 min-h-11 sm:min-h-0"
               onClick={() => setConfigDrawerOpen(true)}
               title="Ajustes rápidos do módulo"
             >
@@ -160,7 +160,7 @@ export function ModuleActionHeader({
           {/* Ação Primária de Alto Impacto */}
           {primaryAction ? (
             primaryAction.to ? (
-              <Button asChild className="h-10 sm:h-10 px-4 rounded-lg text-xs font-semibold shadow-sm">
+              <Button asChild className="h-10 sm:h-10 px-4 rounded-lg text-xs font-semibold  min-h-11 sm:min-h-0">
                 <Link to={primaryAction.to}>
                   {primaryAction.icon ? (
                     <primaryAction.icon className="size-4 mr-2" />
@@ -174,7 +174,7 @@ export function ModuleActionHeader({
               <Button
                 onClick={primaryAction.onClick}
                 disabled={primaryAction.disabled}
-                className="h-10 sm:h-10 px-4 rounded-lg text-xs font-semibold shadow-sm"
+                className="h-10 sm:h-10 px-4 rounded-lg text-xs font-semibold  min-h-11 sm:min-h-0"
               >
                 {primaryAction.icon ? (
                   <primaryAction.icon className="size-4 mr-2" />

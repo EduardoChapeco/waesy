@@ -366,7 +366,7 @@ export function TravelBookingDossierModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-5 sm:p-6 rounded-lg max-h-[92vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-xl p-5 sm:p-6 rounded-lg max-h-vh-92 overflow-y-auto">
         <DialogHeader className="space-y-1 pb-3 border-b border-border/40">
           <div className="flex items-center gap-2">
             <Badge

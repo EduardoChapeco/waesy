@@ -13,26 +13,26 @@
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
 export interface DeviceFingerprint {
- fp: string; // SHA-256 hex (64 chars)
- canvas: string; // Canvas fingerprint parcial
- platform: string; // navigator.platform
- language: string; // navigator.language
- timezone: string; // Intl timezone
- screen: string; // resolução + profundidade de cor
- cores: number; // navigator.hardwareConcurrency
- touch: boolean; // suporte a toque
- webgl: string; // WebGL renderer string parcial
+  fp: string; // SHA-256 hex (64 chars)
+  canvas: string; // Canvas fingerprint parcial
+  platform: string; // navigator.platform
+  language: string; // navigator.language
+  timezone: string; // Intl timezone
+  screen: string; // resolução + profundidade de cor
+  cores: number; // navigator.hardwareConcurrency
+  touch: boolean; // suporte a toque
+  webgl: string; // WebGL renderer string parcial
 }
 
 export type SecurityEventType =
- | 'devtools_opened'
- | 'devtools_closed'
- | 'burp_suite_detected'
- | 'suspicious_headers'
- | 'automation_detected'
- | 'rapid_requests'
- | 'uuid_enumeration'
- | 'replay_attempt';
+  | "devtools_opened"
+  | "devtools_closed"
+  | "burp_suite_detected"
+  | "suspicious_headers"
+  | "automation_detected"
+  | "rapid_requests"
+  | "uuid_enumeration"
+  | "replay_attempt";
 
 // ─── Geração de Device Fingerprint ───────────────────────────────────────────
 
@@ -42,181 +42,193 @@ export type SecurityEventType =
  * NÃO É USADO PARA AUTENTICAÇÃO. Apenas telemetria forense.
  */
 async function generateDeviceFingerprint(): Promise<DeviceFingerprint> {
- const nav = window.navigator;
- const scr = window.screen;
+  const nav = window.navigator;
+  const scr = window.screen;
 
- // 1. Canvas fingerprint (diferente por GPU + driver)
- let canvasHash = 'no_canvas';
- try {
- const canvas = document.createElement('canvas');
- const ctx = canvas.getContext('2d');
- if (ctx) {
- ctx.textBaseline = 'alphabetic';
- ctx.fillStyle = '#f60';
- ctx.fillRect(125, 1, 62, 20);
- ctx.fillStyle = '#069';
- ctx.font = '11pt no-real-font-xyz';
- ctx.fillText('Waesy  Sentinel v1', 2, 15);
- ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
- ctx.fillText('Waesy  Sentinel v1', 4, 17);
- const raw = canvas.toDataURL();
- canvasHash = raw.substring(raw.length - 32); // Últimos 32 chars são únicos
- }
- } catch {
- canvasHash = 'canvas_blocked';
- }
+  // 1. Canvas fingerprint (diferente por GPU + driver)
+  let canvasHash = "no_canvas";
+  try {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#f60";
+      ctx.fillRect(125, 1, 62, 20);
+      ctx.fillStyle = "#069";
+      ctx.font = "11pt no-real-font-xyz";
+      ctx.fillText("Waesy  Sentinel v1", 2, 15);
+      ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+      ctx.fillText("Waesy  Sentinel v1", 4, 17);
+      const raw = canvas.toDataURL();
+      canvasHash = raw.substring(raw.length - 32); // Últimos 32 chars são únicos
+    }
+  } catch {
+    canvasHash = "canvas_blocked";
+  }
 
- // 2. WebGL renderer string (identifica GPU)
- let webglRenderer = 'no_webgl';
- try {
- const glCanvas = document.createElement('canvas');
- const gl = glCanvas.getContext('webgl') || glCanvas.getContext('experimental-webgl') as WebGLRenderingContext | null;
- if (gl) {
- const ext = gl.getExtension('WEBGL_debug_renderer_info');
- if (ext) {
- const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) as string;
- webglRenderer = renderer.substring(0, 40); // Truncar para privacidade parcial
- }
- }
- } catch {
- webglRenderer = 'webgl_blocked';
- }
+  // 2. WebGL renderer string (identifica GPU)
+  let webglRenderer = "no_webgl";
+  try {
+    const glCanvas = document.createElement("canvas");
+    const gl =
+      glCanvas.getContext("webgl") ||
+      (glCanvas.getContext("experimental-webgl") as WebGLRenderingContext | null);
+    if (gl) {
+      const ext = gl.getExtension("WEBGL_debug_renderer_info");
+      if (ext) {
+        const renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) as string;
+        webglRenderer = renderer.substring(0, 40); // Truncar para privacidade parcial
+      }
+    }
+  } catch {
+    webglRenderer = "webgl_blocked";
+  }
 
- // 3. Montar string de material único
- const material = [
- canvasHash,
- nav.platform || 'unknown',
- nav.language || 'unknown',
- Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown',
- `${scr.width}x${scr.height}x${scr.colorDepth}`,
- String(nav.hardwareConcurrency || 0),
- String('ontouchstart' in window),
- webglRenderer,
- nav.userAgent.substring(0, 60), // Parte do UA
- ].join('|');
+  // 3. Montar string de material único
+  const material = [
+    canvasHash,
+    nav.platform || "unknown",
+    nav.language || "unknown",
+    Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown",
+    `${scr.width}x${scr.height}x${scr.colorDepth}`,
+    String(nav.hardwareConcurrency || 0),
+    String("ontouchstart" in window),
+    webglRenderer,
+    nav.userAgent.substring(0, 60), // Parte do UA
+  ].join("|");
 
- // 4. SHA-256 via Web Crypto API
- let fpHex = 'no_crypto';
- try {
- const msgBuffer = new TextEncoder().encode(material);
- const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
- const hashArray = Array.from(new Uint8Array(hashBuffer));
- fpHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
- } catch {
- // Fallback simples se Web Crypto não disponível
- let hash = 0;
- for (let i = 0; i < material.length; i++) {
- const char = material.charCodeAt(i);
- hash = ((hash << 5) - hash) + char;
- hash = hash & hash;
- }
- fpHex = Math.abs(hash).toString(16).padStart(64, '0');
- }
+  // 4. SHA-256 via Web Crypto API
+  let fpHex = "no_crypto";
+  try {
+    const msgBuffer = new TextEncoder().encode(material);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    fpHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  } catch {
+    // Fallback simples se Web Crypto não disponível
+    let hash = 0;
+    for (let i = 0; i < material.length; i++) {
+      const char = material.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    fpHex = Math.abs(hash).toString(16).padStart(64, "0");
+  }
 
- return {
- fp: fpHex,
- canvas: canvasHash,
- platform: nav.platform || 'unknown',
- language: nav.language || 'unknown',
- timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown',
- screen: `${scr.width}x${scr.height}x${scr.colorDepth}`,
- cores: nav.hardwareConcurrency || 0,
- touch: 'ontouchstart' in window,
- webgl: webglRenderer,
- };
+  return {
+    fp: fpHex,
+    canvas: canvasHash,
+    platform: nav.platform || "unknown",
+    language: nav.language || "unknown",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown",
+    screen: `${scr.width}x${scr.height}x${scr.colorDepth}`,
+    cores: nav.hardwareConcurrency || 0,
+    touch: "ontouchstart" in window,
+    webgl: webglRenderer,
+  };
 }
 
 // Cache do fingerprint para não recalcular em cada checkout
 let _cachedFingerprint: DeviceFingerprint | null = null;
 
 export async function getDeviceFingerprint(): Promise<DeviceFingerprint> {
- if (_cachedFingerprint) return _cachedFingerprint;
- _cachedFingerprint = await generateDeviceFingerprint();
- return _cachedFingerprint;
+  if (_cachedFingerprint) return _cachedFingerprint;
+  _cachedFingerprint = await generateDeviceFingerprint();
+  return _cachedFingerprint;
 }
 
 // ─── Detecção de DevTools ─────────────────────────────────────────────────────
 
 // Técnica 1: Diferença entre dimensões outer e inner da janela
 function detectByWindowSize(): boolean {
- const threshold = 160;
- return (
- window.outerWidth - window.innerWidth > threshold ||
- window.outerHeight - window.innerHeight > threshold
- );
+  const threshold = 160;
+  return (
+    window.outerWidth - window.innerWidth > threshold ||
+    window.outerHeight - window.innerHeight > threshold
+  );
 }
 
 // Técnica 2: Timing de debugger (DevTools abre uma pausa perceptível)
 function detectByDebuggerTiming(): boolean {
- const start = performance.now();
- // eslint-disable-next-line no-debugger
- debugger;
- const elapsed = performance.now() - start;
- return elapsed > 100; // > 100ms indica pause de debugger ativo
+  const start = performance.now();
+  // eslint-disable-next-line no-debugger
+  debugger;
+  const elapsed = performance.now() - start;
+  return elapsed > 100; // > 100ms indica pause de debugger ativo
 }
 
 // Técnica 3: Firebug / extensões de dev antigas
 function detectByFirebug(): boolean {
- return !!(
- (window as any).firebug?.version ||
- ((window as any).console && (window as any).console.firebug)
- );
+  return !!(
+    (window as any).firebug?.version ||
+    ((window as any).console && (window as any).console.firebug)
+  );
 }
 
 // Técnica 4: Checar se console tem métodos de inspeção ativos
 function detectByConsoleProbe(): boolean {
- let devtoolsOpen = false;
- const element = new Image();
- Object.defineProperty(element, 'id', {
- get() {
- devtoolsOpen = true;
- },
- });
- try {
- console.log('%c', element); // Aciona getter somente quando DevTools analisa
- console.clear();
- } catch {
- // Silencioso
- }
- return devtoolsOpen;
+  let devtoolsOpen = false;
+  const element = new Image();
+  Object.defineProperty(element, "id", {
+    get() {
+      devtoolsOpen = true;
+    },
+  });
+  try {
+    console.log("%c", element); // Aciona getter somente quando DevTools analisa
+    console.clear();
+  } catch {
+    // Silencioso
+  }
+  return devtoolsOpen;
 }
 
-// Estado atual (evita spam de eventos)
+// Estado atual (evita spam de eventos - SPEC-20261104)
 let _devtoolsWasOpen = false;
 let _sentinelActive = false;
+const _sentBeaconTypes = new Set<string>();
 
 // ─── Envio de Telemetria ──────────────────────────────────────────────────────
 
 async function sendTelemetryBeacon(eventType: SecurityEventType, details: Record<string, unknown>) {
- try {
- const fp = await getDeviceFingerprint();
- const payload = JSON.stringify({
- eventType,
- fingerprint: fp.fp,
- details: {
- ...details,
- platform: fp.platform,
- timezone: fp.timezone,
- screen: fp.screen,
- timestamp: new Date().toISOString(),
- },
- });
+  // Limita a 1 beacon por tipo de evento por sessão de navegação para evitar flood na RPC do Supabase
+  if (_sentBeaconTypes.has(eventType)) return;
+  _sentBeaconTypes.add(eventType);
 
- // Usar sendBeacon para não bloquear a navegação (fire and forget)
- if (navigator.sendBeacon) {
- navigator.sendBeacon('/api/security-telemetry', new Blob([payload], { type: 'application/json' }));
- } else {
- // Fallback assíncrono
- fetch('/api/security-telemetry', {
- method: 'POST',
- body: payload,
- headers: { 'Content-Type': 'application/json' },
- keepalive: true,
- }).catch(() => { /* silencioso */ });
- }
- } catch {
- // Nunca propagar erros de telemetria — não deve afetar o usuário
- }
+  try {
+    const fp = await getDeviceFingerprint();
+    const payload = JSON.stringify({
+      eventType,
+      fingerprint: fp.fp,
+      details: {
+        ...details,
+        platform: fp.platform,
+        timezone: fp.timezone,
+        screen: fp.screen,
+        timestamp: new Date().toISOString(),
+      },
+    });
+
+    // Usar sendBeacon para não bloquear a navegação (fire and forget)
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(
+        "/api/security-telemetry",
+        new Blob([payload], { type: "application/json" }),
+      );
+    } else {
+      // Fallback assíncrono
+      fetch("/api/security-telemetry", {
+        method: "POST",
+        body: payload,
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+      }).catch(() => {
+        /* silencioso */
+      });
+    }
+  } catch {
+    // Nunca propagar erros de telemetria — não deve afetar o usuário
+  }
 }
 
 // ─── Monitor Principal ────────────────────────────────────────────────────────
@@ -226,70 +238,71 @@ async function sendTelemetryBeacon(eventType: SecurityEventType, details: Record
  * Não bloqueia a UI, não causa re-renders, é totalmente passivo.
  */
 export function initSecuritySentinel(): () => void {
- if (_sentinelActive || typeof window === 'undefined') return () => {};
- _sentinelActive = true;
+  if (_sentinelActive || typeof window === "undefined") return () => {};
+  _sentinelActive = true;
 
- // Checar DevTools a cada 3 segundos (intervalo não agressivo)
- const interval = setInterval(async () => {
- const isOpen =
- detectByWindowSize() ||
- detectByFirebug() ||
- detectByConsoleProbe();
+  // Checar DevTools periodicamente (a cada 30 segundos, sem flood na CPU)
+  const interval = setInterval(async () => {
+    if (typeof document !== "undefined" && document.hidden) return; // Pausa quando aba estiver em segundo plano
+    const isOpen = detectByWindowSize() || detectByFirebug() || detectByConsoleProbe();
 
- if (isOpen && !_devtoolsWasOpen) {
- _devtoolsWasOpen = true;
- await sendTelemetryBeacon('devtools_opened', {
- windowDiff: window.outerWidth - window.innerWidth,
- url: window.location.pathname,
- });
- } else if (!isOpen && _devtoolsWasOpen) {
- _devtoolsWasOpen = false;
- // Não reportamos "fechamento" para evitar false positives
- }
- }, 3000);
+    if (isOpen && !_devtoolsWasOpen) {
+      _devtoolsWasOpen = true;
+      await sendTelemetryBeacon("devtools_opened", {
+        windowDiff: window.outerWidth - window.innerWidth,
+        url: window.location.pathname,
+      });
+    } else if (!isOpen && _devtoolsWasOpen) {
+      _devtoolsWasOpen = false;
+      // Não reportamos "fechamento" para evitar false positives
+    }
+  }, 30_000);
 
- // Detectar automação / headless browsers
- const checkAutomation = async () => {
- const isHeadless =
- navigator.webdriver === true ||
- !!(window as any).callPhantom ||
- !!(window as any).__nightmare ||
- !!(window as any).domAutomation ||
- !!(window as any).__selenium_evaluate;
+  // Detectar automação / headless browsers
+  const checkAutomation = async () => {
+    const isHeadless =
+      navigator.webdriver === true ||
+      !!(window as any).callPhantom ||
+      !!(window as any).__nightmare ||
+      !!(window as any).domAutomation ||
+      !!(window as any).__selenium_evaluate;
 
- if (isHeadless) {
- await sendTelemetryBeacon('automation_detected', {
- webdriver: navigator.webdriver,
- url: window.location.pathname,
- });
- }
- };
- checkAutomation();
+    if (isHeadless) {
+      await sendTelemetryBeacon("automation_detected", {
+        webdriver: navigator.webdriver,
+        url: window.location.pathname,
+      });
+    }
+  };
+  checkAutomation();
 
- // Detectar timing attack de debugger na primeira verificação
- const checkDebugger = async () => {
- if (detectByDebuggerTiming()) {
- await sendTelemetryBeacon('devtools_opened', {
- method: 'debugger_timing',
- url: window.location.pathname,
- });
- }
- };
- // Checar apenas uma vez na inicialização
- setTimeout(checkDebugger, 1000);
+  // Detectar timing attack de debugger na primeira verificação
+  const checkDebugger = async () => {
+    if (detectByDebuggerTiming()) {
+      await sendTelemetryBeacon("devtools_opened", {
+        method: "debugger_timing",
+        url: window.location.pathname,
+      });
+    }
+  };
+  // Checar apenas uma vez na inicialização
+  setTimeout(checkDebugger, 1000);
 
- // Retorna função de cleanup
- return () => {
- clearInterval(interval);
- _sentinelActive = false;
- };
+  // Retorna função de cleanup
+  return () => {
+    clearInterval(interval);
+    _sentinelActive = false;
+  };
 }
 
 /**
  * Reporta evento de segurança manualmente (ex: detecção de req. rápidas no cliente)
  */
-export async function reportSecurityEvent(eventType: SecurityEventType, details: Record<string, unknown>) {
- await sendTelemetryBeacon(eventType, details);
+export async function reportSecurityEvent(
+  eventType: SecurityEventType,
+  details: Record<string, unknown>,
+) {
+  await sendTelemetryBeacon(eventType, details);
 }
 
 /**
@@ -320,7 +333,10 @@ export function getPersistentDeviceCode(): string {
 export function formatDeviceCode(fingerprint?: string | null): string {
   if (!fingerprint) return getPersistentDeviceCode();
   if (fingerprint.startsWith("DEV-")) return fingerprint;
-  const clean = fingerprint.replace(/^fp_/, "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  const clean = fingerprint
+    .replace(/^fp_/, "")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toUpperCase();
   const c1 = clean.slice(0, 4) || "WAES";
   const c2 = clean.slice(4, 8) || "8F92";
   const c3 = clean.slice(8, 12) || "4C1A";

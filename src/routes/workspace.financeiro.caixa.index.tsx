@@ -6,7 +6,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { ArrowDownLeft, ArrowUpRight, Calculator, History, Lock, Play, ReceiptText, DollarSign, AlertTriangle, Plus, Minus, CheckCircle2, Clock, User, ShieldCheck, CreditCard, QrCode, Banknote, MonitorCheck, Layers, ExternalLink, ChevronRight, TrendingUp } from 'lucide-react';
 
-import { PageHeader } from "@/components/commerce/page-header";
+import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
 import { ErrorState, EmptyState } from "@/components/state/states";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { addRegisterEntry, closeRegister, getActiveRegister, openRegister, listRegisterHistory } from "@/services/cash.functions";
+import { listLedgerEntries } from "@/services/immutable-ledger.functions";
 import { parseCurrencyInputToCents } from "@/lib/cash";
 import { formatDateTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -31,17 +32,36 @@ export const Route = createFileRoute("/workspace/financeiro/caixa/")({
   head: () => ({ meta: [{ title: "Fluxo de Caixa | Workspace Waesy" }] }),
   loader: async () => {
    try {
- const [registerRes, historyRes] = await Promise.all([
+ const [registerRes, historyRes, ledgerRes] = await Promise.all([
  getActiveRegister().catch(() => null),
  listRegisterHistory().catch(() => []),
+ listLedgerEntries({ data: { limit: 40 } }).catch(() => ({ entries: [] })),
  ]);
+ const rawLedger = (ledgerRes as any)?.entries || [];
+ const mappedLedger = rawLedger.map((e: any) => {
+   const isDebit =
+     Number(e.amount_cents || 0) < 0 ||
+     ["token_spend", "wallet_withdraw", "pix_sent", "commission_payout", "escrow_hold"].includes(
+       e.transaction_type
+     );
+   return {
+     id: e.id,
+     direction: isDebit ? "debit" : "credit",
+     entry_type: e.transaction_type,
+     description: e.metadata?.description || e.metadata?.notes || e.metadata?.action || e.transaction_type,
+     created_at: e.created_at,
+     reference_type: e.reference_entity_type || "core",
+     amount_cents: Math.abs(Number(e.amount_cents || 0)),
+   };
+ });
  return {
  register: registerRes,
  history: historyRes || [],
+ ledger: mappedLedger,
  };
    } catch (err) {
      console.error("[loader:workspace.financeiro.caixa.index] Unhandled loader error:", err);
-     return { register: null, history: null };
+     return { register: null, history: null, ledger: [] };
    }
  },
  errorComponent: ({ error }) => <CashRegisterError error={error instanceof Error ? error : new Error(String(error))} />,
@@ -71,7 +91,7 @@ function CashRegisterError({ error }: { error: Error }) {
 
  return (
  <div className="space-y-6">
- <PageHeader eyebrow="Financeiro" title="Caixa" />
+ <WorkspaceCanonicalToolbar title="Caixa" />
  <ErrorState title="Falha ao carregar fluxo de caixa" />
  </div>
  );
@@ -121,7 +141,7 @@ function CashRegisterManagerPage() {
  function getChannelBadge(channel?: string) {
  switch (channel) {
  case "mercadolivre":
- return <Badge variant="outline" className="text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">Mercado Livre</Badge>;
+ return <Badge variant="outline" className="text-xs font-medium bg-warning/10 text-warning-strong  border-warning/30">Mercado Livre</Badge>;
  case "ifood":
  return <Badge variant="outline" className="text-xs font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">iFood</Badge>;
  case "amazon":
@@ -261,179 +281,178 @@ function CashRegisterManagerPage() {
 
  return (
  <div className="space-y-6">
- {/* ── PageHeader Canônico ── */}
- <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
- eyebrow="Financeiro"
- title="Caixa"
- actions={
- <div className="flex items-center gap-2">
- <Button
- asChild
- size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground h-11 min-h-11 sm:h-9 px-4 cursor-pointer shadow-xs"
- >
- <Link to="/workspace/pdv">
- <Layers className="size-3.5" />
- <span>Abrir Terminal PDV</span>
- </Link>
- </Button>
- {isBoxOpen ? (
- <>
- <Button
- onClick={() => openMovementDialog("suprimento")}
- size="sm"
- variant="outline"
- className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1"
- >
- <ArrowDownLeft className="size-3.5 text-emerald-500" />
- <span>Suprimento</span>
- </Button>
- <Button
- onClick={() => openMovementDialog("sangria")}
- size="sm"
- variant="outline"
- className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1"
- >
- <ArrowUpRight className="size-3.5 text-rose-500" />
- <span>Sangria</span>
- </Button>
- <Button
- onClick={() => setIsCloseModalOpen(true)}
- size="sm"
- variant="destructive"
- className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1"
- >
- <Lock className="size-3.5" />
- <span>Fechar Turno</span>
- </Button>
- </>
- ) : (
- <Button
- onClick={() => setIsOpenModalOpen(true)}
- size="sm"
- variant="outline"
- className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
- >
- <Play className="size-3.5" />
- <span>Abrir Turno de Caixa</span>
- </Button>
- )}
- </div>
- }
+ {/* ── Toolbar Canônica do Workspace (AGENTS.md B.26 & NC-001) ── */}
+ <WorkspaceCanonicalToolbar
+  title="Caixa"
+  primaryAction={
+   <div className="flex items-center gap-2">
+    <Button
+     asChild
+     size="sm"
+     className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground h-11 min-h-11 sm:h-9 px-4 cursor-pointer shadow-xs"
+    >
+     <Link to="/workspace/pdv">
+      <Layers className="size-3.5" />
+      <span>Abrir Terminal PDV</span>
+     </Link>
+    </Button>
+    {isBoxOpen ? (
+     <>
+      <Button
+       onClick={() => openMovementDialog("suprimento")}
+       size="sm"
+       variant="outline"
+       className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1"
+      >
+       <ArrowDownLeft className="size-3.5 text-emerald-500" />
+       <span>Suprimento</span>
+      </Button>
+      <Button
+       onClick={() => openMovementDialog("sangria")}
+       size="sm"
+       variant="outline"
+       className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1"
+      >
+       <ArrowUpRight className="size-3.5 text-rose-500" />
+       <span>Sangria</span>
+      </Button>
+      <Button
+       onClick={() => setIsCloseModalOpen(true)}
+       size="sm"
+       variant="destructive"
+       className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1"
+      >
+       <Lock className="size-3.5" />
+       <span>Fechar Turno</span>
+      </Button>
+     </>
+    ) : (
+     <Button
+      onClick={() => setIsOpenModalOpen(true)}
+      size="sm"
+      variant="outline"
+      className="rounded-lg text-xs font-bold h-11 min-h-11 sm:h-9 gap-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+     >
+      <Play className="size-3.5" />
+      <span>Abrir Turno de Caixa</span>
+     </Button>
+    )}
+   </div>
+  }
  />
 
- {/* ── Card de Status do Turno Atual ── */}
- <div className="p-6 rounded-lg bg-card border border-border/70 shadow-2xs space-y-5">
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-4">
- <div className="flex items-center gap-3">
- <div
- className={`size-11 rounded-lg flex items-center justify-center font-bold shrink-0 ${
- isBoxOpen
- ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
- : "bg-muted text-muted-foreground border border-border"
- }`}
- >
- {isBoxOpen ? <MonitorCheck className="size-5" /> : <Lock className="size-5" />}
- </div>
- <div>
- <div className="flex items-center gap-2">
- <h2 className="text-base font-bold text-foreground">
- {isBoxOpen ? "Turno Atual em Operação" : "Caixa Fechado"}
- </h2>
- <Badge
- variant={isBoxOpen ? "default" : "secondary"}
- className="text-xs font-bold rounded-lg"
- >
- {isBoxOpen ? (register?.isExpired ? "Expirado (>24h)" : "Aberto") : "Fechado"}
- </Badge>
- </div>
- <p className="text-xs text-muted-foreground mt-1">
- {isBoxOpen
- ? `Aberto por ${register?.opened_by_profile?.full_name || "Operador"} em ${formatDateTime(register?.opened_at)}`
- : "Nenhum turno em andamento. Abra o caixa para registrar vendas e movimentações."}
- </p>
- </div>
+ {/* ── Card Soberano de Status do Turno Atual ── */}
+ <div className="p-6 rounded-lg bg-card border border-border/70 shadow-2xs space-y-4">
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+   <div className="flex items-center gap-3">
+    <div
+     className={`size-11 rounded-lg flex items-center justify-center font-bold shrink-0 ${
+      isBoxOpen
+       ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+       : "bg-muted text-muted-foreground border border-border"
+     }`}
+    >
+     {isBoxOpen ? <MonitorCheck className="size-5" /> : <Lock className="size-5" />}
+    </div>
+    <div>
+     <div className="flex items-center gap-2">
+      <h2 className="text-base font-bold text-foreground">
+       {isBoxOpen ? "Turno Atual em Operação" : "Caixa Fechado"}
+      </h2>
+      <Badge
+       variant={isBoxOpen ? "default" : "secondary"}
+       className="text-xs font-bold rounded-lg"
+      >
+       {isBoxOpen ? (register?.isExpired ? "Expirado (>24h)" : "Aberto") : "Fechado"}
+      </Badge>
+     </div>
+     <p className="text-xs text-muted-foreground mt-1">
+      {isBoxOpen
+       ? `Aberto por ${register?.opened_by_profile?.full_name || "Operador"} em ${formatDateTime(register?.opened_at)}`
+       : "Nenhum turno em andamento. Abra o caixa para registrar vendas e movimentações."}
+     </p>
+    </div>
+   </div>
+
+   <div className="flex items-center gap-3 self-end sm:self-center">
+    {isBoxOpen && (
+     <div className="text-right">
+      <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider block">
+       Saldo em Gaveta (Dinheiro)
+      </span>
+      <span className="text-xl font-mono font-black text-emerald-600 dark:text-emerald-400">
+       {formatMoney(register?.cashBalanceCents ?? register?.currentBalanceCents ?? 0)}
+      </span>
+     </div>
+    )}
+   </div>
+  </div>
  </div>
 
- <div className="flex items-center gap-3 self-end sm:self-center">
+ {/* ── Grade Soberana de Métricas do Turno por Forma de Pagamento (Anti-Containeritis / DL-31) ── */}
  {isBoxOpen && (
- <div className="text-right">
- <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider block">
- Saldo em Gaveta (Dinheiro)
- </span>
- <span className="text-xl font-mono font-black text-emerald-600 dark:text-emerald-400">
- {formatMoney(register?.cashBalanceCents ?? register?.currentBalanceCents ?? 0)}
- </span>
- </div>
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+   <div className="p-4 rounded-lg bg-card border border-border/70 shadow-2xs space-y-1">
+    <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+     <Banknote className="size-3 text-emerald-500" />
+     <span>Dinheiro</span>
+    </span>
+    <p className="text-sm font-mono font-bold text-foreground">
+     {formatMoney(register?.cashBalanceCents ?? 0)}
+    </p>
+   </div>
+
+   <div className="p-4 rounded-lg bg-card border border-border/70 shadow-2xs space-y-1">
+    <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+     <QrCode className="size-3 text-cyan-500" />
+     <span>PIX</span>
+    </span>
+    <p className="text-sm font-mono font-bold text-foreground">
+     {formatMoney(register?.pixBalanceCents ?? 0)}
+    </p>
+   </div>
+
+   <div className="p-4 rounded-lg bg-card border border-border/70 shadow-2xs space-y-1">
+    <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+     <CreditCard className="size-3 text-blue-500" />
+     <span>Débito</span>
+    </span>
+    <p className="text-sm font-mono font-bold text-foreground">
+     {formatMoney(register?.debitBalanceCents ?? 0)}
+    </p>
+   </div>
+
+   <div className="p-4 rounded-lg bg-card border border-border/70 shadow-2xs space-y-1">
+    <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+     <CreditCard className="size-3 text-indigo-500" />
+     <span>Crédito</span>
+    </span>
+    <p className="text-sm font-mono font-bold text-foreground">
+     {formatMoney(register?.creditBalanceCents ?? 0)}
+    </p>
+   </div>
+
+   <div className="p-4 rounded-lg bg-card border border-border/70 shadow-2xs space-y-1">
+    <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+     <ArrowUpRight className="size-3 text-rose-500" />
+     <span>Sangrias</span>
+    </span>
+    <p className="text-sm font-mono font-bold text-rose-600 dark:text-rose-400">
+     -{formatMoney(register?.sangriaTotalCents ?? 0)}
+    </p>
+   </div>
+
+   <div className="p-4 rounded-lg bg-card border border-border/70 shadow-2xs space-y-1">
+    <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
+     <ArrowDownLeft className="size-3 text-emerald-500" />
+     <span>Suprimentos</span>
+    </span>
+    <p className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
+     +{formatMoney(register?.suprimentoTotalCents ?? 0)}
+    </p>
+   </div>
+  </div>
  )}
- </div>
- </div>
-
- {/* Grade de Métricas do Turno por Forma de Pagamento */}
- {isBoxOpen && (
- <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
- <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
- <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
- <Banknote className="size-3 text-emerald-500" />
- <span>Dinheiro</span>
- </span>
- <p className="text-sm font-mono font-bold text-foreground">
- {formatMoney(register?.cashBalanceCents ?? 0)}
- </p>
- </div>
-
- <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
- <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
- <QrCode className="size-3 text-cyan-500" />
- <span>PIX</span>
- </span>
- <p className="text-sm font-mono font-bold text-foreground">
- {formatMoney(register?.pixBalanceCents ?? 0)}
- </p>
- </div>
-
- <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
- <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
- <CreditCard className="size-3 text-blue-500" />
- <span>Débito</span>
- </span>
- <p className="text-sm font-mono font-bold text-foreground">
- {formatMoney(register?.debitBalanceCents ?? 0)}
- </p>
- </div>
-
- <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
- <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
- <CreditCard className="size-3 text-indigo-500" />
- <span>Crédito</span>
- </span>
- <p className="text-sm font-mono font-bold text-foreground">
- {formatMoney(register?.creditBalanceCents ?? 0)}
- </p>
- </div>
-
- <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
- <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
- <ArrowUpRight className="size-3 text-rose-500" />
- <span>Sangrias</span>
- </span>
- <p className="text-sm font-mono font-bold text-rose-600 dark:text-rose-400">
- -{formatMoney(register?.sangriaTotalCents ?? 0)}
- </p>
- </div>
-
- <div className="p-4 rounded-lg bg-muted/40 border border-border/50 space-y-1">
- <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
- <ArrowDownLeft className="size-3 text-emerald-500" />
- <span>Suprimentos</span>
- </span>
- <p className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
- +{formatMoney(register?.suprimentoTotalCents ?? 0)}
- </p>
- </div>
- </div>
- )}
- </div>
 
  {/* ── Abas de Governança: Extrato do Turno & Histórico ── */}
  <Tabs defaultValue="current" className="space-y-4">
@@ -455,7 +474,7 @@ function CashRegisterManagerPage() {
  {/* ── Conteúdo: Lançamentos do Turno Atual ── */}
  <TabsContent value="current" className="mt-0 space-y-4">
  {!isBoxOpen ? (
- <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+ <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card">
  <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
  <ReceiptText className="size-6" />
  </div>
@@ -477,7 +496,7 @@ function CashRegisterManagerPage() {
  ) : register?.recentEntries && register.recentEntries.length > 0 ? (
  <div className="space-y-3">
       {/* Seletor Rápido de Canal / Origem */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 text-xs">
         <span className="text-muted-foreground font-medium text-xs mr-1 shrink-0">Filtrar Canal:</span>
         {[
           { id: "all", label: "Todos os Canais" },
@@ -505,7 +524,7 @@ function CashRegisterManagerPage() {
       </div>
 
       {filteredEntries.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground border border-dashed border-border/70 rounded-lg bg-card/40 p-6">
+        <div className="py-12 text-center text-sm text-muted-foreground border border-dashed border-border/70 rounded-lg bg-card p-6">
           Nenhuma movimentação registrada no canal selecionado neste turno.
         </div>
       ) : (
@@ -565,7 +584,7 @@ function CashRegisterManagerPage() {
           {/* ── 2. TABLET / FOLD (640px-1024px): BIFURCAÇÃO MASTER-DETAIL EM 2 COLUNAS ── */}
           <div className="hidden sm:grid lg:hidden sm:grid-cols-12 gap-4 items-start">
             {/* Coluna Esquerda (5 cols): WhatsApp List Interativa */}
-            <div className="sm:col-span-5 rounded-lg border border-border/60 bg-card overflow-hidden divide-y divide-border/40 max-h-[600px] overflow-y-auto">
+            <div className="sm:col-span-5 rounded-lg border border-border/60 bg-card overflow-hidden divide-y divide-border/40 max-h-150 overflow-y-auto">
               {filteredEntries.map((entry: any) => {
                 const isNegative = entry.amount_cents < 0;
                 const isSelected = (selectedEntryId || filteredEntries[0]?.id) === entry.id;
@@ -578,8 +597,8 @@ function CashRegisterManagerPage() {
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "w-full text-left p-4 flex items-center justify-between gap-3 transition-colors cursor-pointer",
                       isSelected
-                        ? "bg-primary/10 border-l-4 border-l-primary"
-                        : "hover:bg-muted/30"
+                        ? "bg-muted"
+                        : "hover:bg-muted/40"
                     )}
                   >
                     <div className="min-w-0 flex-1 space-y-1">
@@ -752,7 +771,7 @@ function CashRegisterManagerPage() {
       )}
       </div>
     ) : (
-      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card/40 px-4">
+      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card px-4">
         <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
           <ReceiptText className="size-6" />
         </div>
@@ -776,7 +795,7 @@ function CashRegisterManagerPage() {
   {/* ── Conteúdo: Histórico de Turnos Anteriores ── */}
   <TabsContent value="history" className="mt-0 space-y-4">
     {history.length === 0 ? (
-      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card/40 px-4">
+      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card px-4">
         <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
           <History className="size-6" />
         </div>
@@ -947,7 +966,7 @@ function CashRegisterManagerPage() {
   {/* ── Conteúdo: Livro-Razão Financeiro Imutável (V113 Financial Ledger ACID) ── */}
   <TabsContent value="ledger" className="mt-0 space-y-4">
     {!loaderData.ledger || loaderData.ledger.length === 0 ? (
-      <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card/40">
+      <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card">
         <ShieldCheck className="size-8 text-muted-foreground mx-auto" />
         <p className="text-sm font-bold text-foreground">Livro-Razão ACID sem lançamentos</p>
         <p className="text-xs text-muted-foreground max-w-sm mx-auto">

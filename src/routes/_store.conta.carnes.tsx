@@ -270,7 +270,7 @@ function ClientCarnesPage() {
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Em Análise
           </span>
-          <div className="text-lg sm:text-xl font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-lg sm:text-xl font-bold text-warning-strong ">
             {metrics?.pendingConciliationCount || 0}
           </div>
           <div className="text-xs text-muted-foreground">Comprovante sob análise</div>
@@ -310,7 +310,7 @@ function ClientCarnesPage() {
       )}
 
       {/* Segmented Control / Tabs */}
-      <div className={cn("flex items-center gap-2 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto no-scrollbar", isCompact && "mx-2")}>
+      <div className={cn("flex items-center gap-2 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto scroll-area-carousel no-scrollbar", isCompact && "mx-2")}>
         <button
           type="button"
           onClick={() => setActiveTab("all")}
@@ -414,7 +414,7 @@ function ClientCarnesPage() {
                       )}
 
                       {carne.renegotiated_from_id && (
-                        <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20 text-xs">
+                        <Badge variant="outline" className="bg-warning/10 text-warning-strong  border-warning/20 text-xs">
                           Renegociado
                         </Badge>
                       )}
@@ -537,7 +537,7 @@ function ClientCarnesPage() {
                             )}
 
                             {!isPaid && isPendingConciliation && (
-                              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 font-medium">
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-warning/10 text-warning-strong font-medium">
                                 <Clock className="h-3 w-3" /> Em Análise
                               </span>
                             )}
@@ -621,7 +621,7 @@ function ClientCarnesPage() {
                               className={cn(
                                 "min-h-11 h-11 px-4 text-xs font-medium rounded-lg cursor-pointer",
                                 isPendingConciliation
-                                  ? "border-amber-400/50 text-amber-700 dark:text-amber-300"
+                                  ? "border-warning/50 text-warning-strong "
                                   : "bg-primary text-primary-foreground",
                               )}
                               onClick={() => handleOpenPay(carne, inst)}

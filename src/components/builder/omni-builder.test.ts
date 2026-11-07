@@ -51,7 +51,7 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
       page,
       pricingId,
       { title: "Planos Atualizados 2027" },
-      { backgroundColor: "#f4f4f5", paddingY: "lg" }
+      { backgroundColor: "var(--muted)", paddingY: "lg" }
     );
 
     // O Bloco Hero deve permanecer estritamente inalterado
@@ -62,7 +62,7 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     // O Bloco Pricing deve refletir a nova configuração e personalização profunda
     expect(updatedPage.blocks[1].id).toBe(pricingId);
     expect(updatedPage.blocks[1].config.title).toBe("Planos Atualizados 2027");
-    expect(updatedPage.blocks[1].styling?.backgroundColor).toBe("#f4f4f5");
+    expect(updatedPage.blocks[1].styling?.backgroundColor).toBe("var(--muted)");
     expect(updatedPage.blocks[1].styling?.paddingY).toBe("lg");
   });
 
@@ -153,14 +153,14 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     const customStyle = getSectionStyle({
       paddingY: "xl",
       borderRadius: "2xl",
-      backgroundColor: "#0f172a",
-      textColor: "#f8fafc",
+      backgroundColor: "var(--background)",
+      textColor: "var(--foreground)",
     });
 
     expect(customStyle.className).toContain("py-28");
-    expect(customStyle.className).toContain("rounded-lg");
-    expect(customStyle.style.backgroundColor).toBe("#0f172a");
-    expect(customStyle.style.color).toBe("#f8fafc");
+    expect(customStyle.className).toContain("rounded-2xl");
+    expect(customStyle.style.backgroundColor).toBe("var(--background)");
+    expect(customStyle.style.color).toBe("var(--foreground)");
   });
 
   it("9. Deve conter a matriz canônica expandida com 9 templates de nicho (V137 Niche Matrix)", () => {

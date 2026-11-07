@@ -26,7 +26,7 @@ const COMMON_TAGS = [
 
 const PRIORITY_CONFIG: Record<TaskPriority, { label: string; ring: string; dot: string }> = {
   urgent: { label: "Urgente", ring: "ring-rose-500 bg-rose-500/10 text-rose-700 dark:text-rose-400", dot: "bg-rose-500" },
-  high:   { label: "Alta",    ring: "ring-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-400", dot: "bg-amber-500" },
+  high:   { label: "Alta",    ring: "ring-warning bg-warning/10 text-warning-strong ", dot: "bg-warning" },
   medium: { label: "Normal",  ring: "ring-sky-500 bg-sky-500/10 text-sky-700 dark:text-sky-400", dot: "bg-sky-500" },
   low:    { label: "Baixa",   ring: "ring-slate-400 bg-muted text-muted-foreground", dot: "bg-slate-400" },
 };
@@ -155,11 +155,11 @@ export function NewTaskModal({
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer",
                 isMyDay
-                  ? "bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400"
+                  ? "bg-warning/15 border-warning/40 text-warning-strong "
                   : "bg-muted/30 border-border/60 text-muted-foreground hover:bg-muted"
               )}
             >
-              <Star className={cn("size-3.5", isMyDay && "fill-amber-500 text-amber-500")} />
+              <Star className={cn("size-3.5", isMyDay && "fill-warning text-warning-strong")} />
               Meu Dia
             </button>
           </div>
@@ -192,7 +192,7 @@ export function NewTaskModal({
                     type="button"
                     onClick={() => setPriority(p)}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "h-9 rounded-lg border text-xs font-semibold transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2",
+                      "h-9 rounded-lg border text-xs font-semibold transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2 min-h-11 sm:min-h-0",
                       priority === p
                         ? `ring-1 ${cfg.ring}`
                         : "border-border/60 bg-background text-muted-foreground hover:bg-muted/50"
@@ -326,7 +326,7 @@ export function NewTaskModal({
                 variant="outline"
                 size="sm"
                 onClick={() => handleAddTag(tagInput)}
-                className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer"
+                className="h-9 px-3 rounded-lg text-xs shrink-0 cursor-pointer min-h-11 sm:min-h-0"
               >
                 +Tag
               </Button>
@@ -364,7 +364,7 @@ export function NewTaskModal({
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="size-3.5 flex items-center justify-center hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="size-3.5 flex items-center justify-center hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     >
                       <X className="size-3" />
                     </button>
@@ -398,7 +398,7 @@ export function NewTaskModal({
                 variant="outline"
                 size="sm"
                 onClick={() => handleAddChecklist()}
-                className="h-9 px-3 rounded-lg text-xs cursor-pointer shrink-0"
+                className="h-9 px-3 rounded-lg text-xs cursor-pointer shrink-0 min-h-11 sm:min-h-0"
               >
                 +Etapa
               </Button>
@@ -420,7 +420,7 @@ export function NewTaskModal({
                     <button
                       type="button"
                       onClick={() => handleRemoveChecklist(idx)}
-                      className="size-6 flex items-center justify-center text-muted-foreground hover:text-rose-600 rounded cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="size-6 flex items-center justify-center text-muted-foreground hover:text-rose-600 rounded cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     >
                       <Trash2 className="size-3.5" />
                     </button>
@@ -447,7 +447,7 @@ export function NewTaskModal({
               variant="ghost"
               onClick={() => { reset(); onOpenChange(false); }}
               disabled={submitting}
-              className="h-10 px-4 rounded-lg text-xs cursor-pointer"
+              className="h-10 px-4 rounded-lg text-xs cursor-pointer min-h-11 sm:min-h-0"
             >
               Cancelar
             </Button>
@@ -455,7 +455,7 @@ export function NewTaskModal({
               type="button"
               onClick={handleSubmit}
               disabled={submitting || !title.trim()}
-              className="h-10 px-6 rounded-lg text-sm font-semibold cursor-pointer shadow-sm"
+              className="h-10 px-6 rounded-lg text-sm font-semibold cursor-pointer shadow-overlay min-h-11 sm:min-h-0"
             >
               {submitting ? "Criando..." : "Criar Tarefa"}
             </Button>

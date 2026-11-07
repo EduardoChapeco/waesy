@@ -739,7 +739,7 @@ function InlineFormBlock({
           label: "Formulário Secreto",
           desc: "Respostas criptografadas visíveis apenas ao criador",
           icon: Lock,
-          cls: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+          cls: "bg-warning/15 text-warning-strong  border-warning/30",
         }
       : privacyMode === "anonymous"
       ? {

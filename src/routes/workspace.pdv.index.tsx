@@ -883,7 +883,7 @@ function PdvTerminal() {
     return (
       <div className="flex min-h-140 items-center justify-center w-full px-4 sm:px-0 animate-in fade-in duration-200">
         <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 space-y-6 text-center">
-          <div className="size-14 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+          <div className="size-14 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center mx-auto">
             <Clock className="size-7" />
           </div>
           <div className="space-y-1">
@@ -1194,7 +1194,7 @@ function PdvTerminal() {
  title="Comandas"
  >
  <Link to="/workspace/pdv/comandas">
- <Utensils className="size-3.5 text-amber-500" />
+ <Utensils className="size-3.5 text-warning-strong" />
  <span className="hidden xl:inline">Comandas</span>
  </Link>
  </Button>
@@ -1232,7 +1232,7 @@ function PdvTerminal() {
  <div className="flex-1 flex flex-col min-w-0 border-r border-border/70 overflow-hidden">
  {/* Carrossel Tátil de Categorias */}
  {/* design-lint-ignore DL-30 reason:"Trilho horizontal de categorias de produtos no PDV" expiry:"2027-12-31" */}
- <div className="p-3 sm:p-3 border-b border-border/70 bg-card/60 overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0 snap-x snap-mandatory">
+ <div className="p-3 sm:p-3 border-b border-border/70 bg-card overflow-x-auto scroll-area-carousel no-scrollbar flex items-center gap-2 shrink-0 snap-x snap-mandatory">
  <button
  type="button"
  onClick={() => setSelectedCategory("all")}
@@ -1906,7 +1906,7 @@ function PdvTerminal() {
 
       {/* ── BARRA FLUTUANTE MOBILE (THUMB ZONE) ── */}
       {cart.length > 0 && (
-        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 p-3 rounded-lg bg-card/95 backdrop-blur-md border border-border shadow-xs flex items-center justify-between gap-3 animate-in slide-in-from-bottom-3">
+        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 p-3 rounded-lg bg-card border border-border shadow-xs flex items-center justify-between gap-3 animate-in slide-in-from-bottom-3">
           <div className="flex items-center gap-3 min-w-0 pl-1">
             <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <ShoppingCart className="size-4" />

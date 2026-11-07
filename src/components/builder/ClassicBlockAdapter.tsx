@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { OmniBlockStyling } from "./types";
+import type { OmniBlockStyling, BlockCapabilities, BlockDataBinding } from "./types";
 import { useCart } from "@/lib/cart-context";
 
 export interface ClassicBlockAdapterProps {
@@ -13,6 +13,21 @@ export interface ClassicBlockAdapterProps {
   categories?: any[];
   collections?: any[];
   storeData?: any;
+  classifieds?: any[];
+  posts?: any[];
+  flyers?: any[];
+  events?: any[];
+  jobs?: any[];
+  stores?: any[];
+  banners?: any[];
+  hotpages?: any[];
+  newsArticles?: any[];
+  sponsors?: any[];
+  pageSlug?: string;
+  onAddToCart?: (productId: string) => void;
+  onLeadSubmit?: (payload: any) => Promise<any>;
+  activeSubstate?: string;
+  onUpdateInlineText?: (fieldPath: string, newValue: string) => void;
 }
 
 /**
@@ -33,12 +48,32 @@ export const ClassicBlockAdapter: React.FC<ClassicBlockAdapterProps> = ({
   categories = [],
   collections = [],
   storeData = null,
+  classifieds = [],
+  posts = [],
+  flyers = [],
+  events = [],
+  jobs = [],
+  stores = [],
+  banners = [],
+  hotpages = [],
+  newsArticles = [],
+  sponsors = [],
+  pageSlug,
+  onAddToCart,
+  onLeadSubmit,
+  activeSubstate,
+  onUpdateInlineText,
 }) => {
   const { cart, refreshCart, setIsCartOpen } = useCart();
 
+  const isLegacyTwBg = Boolean(styling.backgroundColor && styling.backgroundColor.startsWith("bg-"));
   const sectionStyle: React.CSSProperties = {
-    backgroundColor: styling.backgroundColor || undefined,
-    color: styling.textColor || undefined,
+    backgroundColor: !isLegacyTwBg && styling.backgroundColor ? styling.backgroundColor : undefined,
+    color: styling.textColor && !styling.textColor.startsWith("text-") ? styling.textColor : undefined,
+    animationDelay:
+      typeof styling.animationDelayMs === "number" && styling.animationDelayMs > 0
+        ? `${styling.animationDelayMs}ms`
+        : undefined,
   };
 
   const getPaddingClass = (pad?: string) => {
@@ -55,6 +90,36 @@ export const ClassicBlockAdapter: React.FC<ClassicBlockAdapterProps> = ({
       default:
         return "py-12 sm:py-16";
     }
+  };
+
+  const ptMap: Record<string, string> = {
+    none: "pt-0",
+    sm: "pt-6 sm:pt-8",
+    md: "pt-12 sm:pt-16",
+    lg: "pt-16 sm:pt-24",
+    xl: "pt-20 sm:pt-32",
+  };
+  const pbMap: Record<string, string> = {
+    none: "pb-0",
+    sm: "pb-6 sm:pb-8",
+    md: "pb-12 sm:pb-16",
+    lg: "pb-16 sm:pb-24",
+    xl: "pb-20 sm:pb-32",
+  };
+  const surfaceMap: Record<string, string> = {
+    default: "",
+    muted: "bg-muted/40",
+    card: "bg-card border-y border-border/60",
+    accent: "bg-primary/5 border-y border-primary/20",
+  };
+  const roundedMap: Record<string, string> = {
+    none: "rounded-none",
+    sm: "rounded-sm",
+    md: "rounded-md",
+    lg: "rounded-lg",
+    xl: "rounded-xl",
+    "2xl": "rounded-2xl",
+    full: "rounded-full",
   };
 
   const getMaxWidthClass = (mw?: string) => {
@@ -75,8 +140,20 @@ export const ClassicBlockAdapter: React.FC<ClassicBlockAdapterProps> = ({
     }
   };
 
-  const paddingClass = getPaddingClass(styling.paddingY);
+  const paddingClass =
+    styling.paddingTop || styling.paddingBottom
+      ? [
+          ptMap[styling.paddingTop || styling.paddingY || "md"] || "",
+          pbMap[styling.paddingBottom || styling.paddingY || "md"] || "",
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : getPaddingClass(styling.paddingY);
   const maxWidthClass = getMaxWidthClass(styling.maxWidth);
+  const surfaceClass = styling.surfacePreset ? surfaceMap[styling.surfacePreset] || "" : "";
+  const borderClass = styling.border ? "border-y border-border/70" : "";
+  const radiusClass = styling.borderRadius ? roundedMap[styling.borderRadius] || "" : "";
+  const twBgClass = isLegacyTwBg ? styling.backgroundColor : "";
 
   // Normalização de dados do catálogo
   const resolvedProducts = Array.isArray(products) ? products : [];
@@ -86,7 +163,7 @@ export const ClassicBlockAdapter: React.FC<ClassicBlockAdapterProps> = ({
     <section
       id={id}
       style={sectionStyle}
-      className={`relative w-full ${paddingClass} ${className}`}
+      className={`relative w-full ${paddingClass} ${surfaceClass} ${twBgClass} ${borderClass} ${radiusClass} ${className}`.trim()}
     >
       <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${maxWidthClass}`}>
         <Component
@@ -100,6 +177,21 @@ export const ClassicBlockAdapter: React.FC<ClassicBlockAdapterProps> = ({
           categories={resolvedCategories}
           collections={collections}
           storeData={storeData}
+          classifieds={classifieds}
+          posts={posts}
+          flyers={flyers}
+          events={events}
+          jobs={jobs}
+          stores={stores}
+          banners={banners}
+          hotpages={hotpages}
+          newsArticles={newsArticles}
+          sponsors={sponsors}
+          pageSlug={pageSlug}
+          onAddToCart={onAddToCart}
+          onLeadSubmit={onLeadSubmit}
+          activeSubstate={activeSubstate}
+          onUpdateInlineText={onUpdateInlineText}
           cart={cart}
           onRefreshCart={refreshCart}
           onOpenCart={() => setIsCartOpen(true)}
@@ -120,18 +212,10 @@ export function createClassicOmniBlock(options: {
   component: React.ComponentType<any>;
   defaultProps: Record<string, any>;
   defaultStyling?: OmniBlockStyling;
+  capabilities?: BlockCapabilities;
+  dataRequirements?: Partial<BlockDataBinding>;
 }) {
-  const WrappedComponent: React.FC<{
-    id: string;
-    data: any;
-    styling?: OmniBlockStyling;
-    className?: string;
-    isEditing?: boolean;
-    products?: any[];
-    categories?: any[];
-    collections?: any[];
-    storeData?: any;
-  }> = (props) => {
+  const WrappedComponent: React.FC<Record<string, any>> = (props) => {
     return (
       <ClassicBlockAdapter
         id={props.id}
@@ -144,6 +228,21 @@ export function createClassicOmniBlock(options: {
         categories={props.categories}
         collections={props.collections}
         storeData={props.storeData}
+        classifieds={props.classifieds}
+        posts={props.posts}
+        flyers={props.flyers}
+        events={props.events}
+        jobs={props.jobs}
+        stores={props.stores}
+        banners={props.banners}
+        hotpages={props.hotpages}
+        newsArticles={props.newsArticles}
+        sponsors={props.sponsors}
+        pageSlug={props.pageSlug}
+        onAddToCart={props.onAddToCart}
+        onLeadSubmit={props.onLeadSubmit}
+        activeSubstate={props.activeSubstate}
+        onUpdateInlineText={props.onUpdateInlineText}
       />
     );
   };
@@ -158,5 +257,7 @@ export function createClassicOmniBlock(options: {
     component: WrappedComponent as any,
     defaultProps: options.defaultProps,
     defaultStyling: options.defaultStyling,
+    capabilities: options.capabilities,
+    dataRequirements: options.dataRequirements,
   };
 }

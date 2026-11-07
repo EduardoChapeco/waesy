@@ -857,6 +857,32 @@ export function lintSource(content, filePath, customConfig = null) {
     }
   });
 
+  // DL-33: Paleta Tailwind crua de aviso (amber|yellow|lime) fora dos tokens warning/warning-strong
+  if (!isCss && isRuleActive('DL-33')) {
+    const rawWarningPaletteRegex = /\b(?:bg|text|border(?:-[trblxy])?|ring|fill|stroke|from|to|via|divide|outline|decoration|accent)-(?:amber|yellow|lime)-\d{2,3}\b/g;
+    lines.forEach((line, lineIdx) => {
+      const lineNum = lineIdx + 1;
+      const trimmed = line.trim();
+      if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) return;
+      if (isExempt('DL-33', lineNum)) return;
+      let m;
+      rawWarningPaletteRegex.lastIndex = 0;
+      while ((m = rawWarningPaletteRegex.exec(line)) !== null) {
+        violations.push({
+          id: 'DL-33',
+          rule: 'DL-33',
+          file: relFile,
+          module: fileModule,
+          line: lineNum,
+          column: m.index + 1,
+          severity: getSeverity('DL-33'),
+          match: m[0],
+          message: `Paleta Tailwind crua "${m[0]}". Use os tokens semânticos warning e warning-strong.`
+        });
+      }
+    });
+  }
+
   // DL-14 e DL-15: Análise de blocos JSX multi-linha para elementos interativos
   if (!isCss && (isRuleActive('DL-14') || isRuleActive('DL-15'))) {
     const jsxTags = parseJsxTags(content);

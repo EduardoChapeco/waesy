@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { getPlatformStoresList, toggleStoreStatus } from "@/services/master.functions";
 import { setTenantContext } from "@/services/identity.functions";
+import { setClientContextCookies } from "@/lib/context-auth";
 import { Store, Search, Download, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,12 +62,10 @@ function MasterLojasPage() {
  const handleImpersonateStore = async (storeId: string, storeName: string) => {
  setLoadingId(storeId);
  try {
- if (typeof window !== "undefined") {
- window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
- }
- await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
- toast.success(`Acessando painel de "${storeName}"...`);
- window.location.href = "/workspace";
+      setClientContextCookies({ context: "store", storeId });
+      await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
+      toast.success(`Acessando painel de "${storeName}"...`);
+      window.location.href = `/workspace?storeId=${encodeURIComponent(storeId)}`;
  } catch (e: unknown) {
  toast.error(e instanceof Error ? e.message : "Erro ao acessar contexto da loja.");
  setLoadingId(null);
@@ -139,7 +138,7 @@ function MasterLojasPage() {
  </span>
  </div>
 
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <table className="w-full text-xs text-left">
  <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-2xs tracking-wider">
  <tr>

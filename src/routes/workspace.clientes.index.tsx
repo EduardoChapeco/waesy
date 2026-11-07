@@ -173,7 +173,7 @@ function CarteiraClientesPage() {
   ], [isTourism, totalCount, activeCount, b2cCount, b2bCount, docsExpiringCount]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <WorkspaceCanonicalToolbar
         tabs={[
           { id: "all", label: `Todos (${t("clients")})`, icon: Users, count: totalCount },
@@ -284,7 +284,7 @@ function CarteiraClientesPage() {
  setKindFilter("all");
  setChannelFilter("all");
  }}
- className="h-7 text-xs font-semibold text-primary"
+ className="h-7 text-xs font-semibold text-primary min-h-11 sm:min-h-0"
  >
  Limpar Filtros
  </Button>
@@ -294,7 +294,7 @@ function CarteiraClientesPage() {
 
       {/* ── 5. Carteira de Clientes (Dual View: Mobile Cards & Desktop Table) ── */}
       {filteredCustomers.length === 0 ? (
-        <div className="py-16 text-center rounded-lg border border-border/40 bg-card/60 space-y-4 px-4">
+        <div className="py-16 text-center rounded-lg border border-border/40 bg-card space-y-4 px-4">
           <div className="size-14 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Users className="size-6" />
           </div>
@@ -329,7 +329,7 @@ function CarteiraClientesPage() {
               return (
                 <div
                   key={c.id}
-                  className="px-4 py-4 min-h-[56px] space-y-3 active:bg-muted/30 transition-colors"
+                  className="px-4 py-4 min-h-14 space-y-3 active:bg-muted/30 transition-colors"
                 >
                   {/* Top: Avatar, Nome, Tipo & Status */}
                   <div className="flex items-start justify-between gap-3">
@@ -407,7 +407,7 @@ function CarteiraClientesPage() {
                             <span>{c.docAlerts.expired} Documento(s) Vencido(s)</span>
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 gap-1 px-3 py-1">
+                          <Badge variant="secondary" className="text-xs font-bold bg-warning/20 text-warning-strong  gap-1 px-3 py-1">
                             <Clock className="size-3" />
                             <span>{c.docAlerts.soon} Vence em breve</span>
                           </Badge>
@@ -502,7 +502,7 @@ function CarteiraClientesPage() {
             <Table>
               <TableHeader className="bg-muted/40">
                 <TableRow>
-                  <TableHead className="w-[300px] font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
+                  <TableHead className="w-75 font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     {isTourism ? "Passageiro / Titular" : "Cliente / Razão Social"}
                   </TableHead>
                   <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
@@ -600,7 +600,7 @@ function CarteiraClientesPage() {
                             <span className="text-muted-foreground text-xs">—</span>
                           )}
                           {c.email && (
-                            <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                            <span className="text-xs text-muted-foreground truncate max-w-38">
                               {c.email}
                             </span>
                           )}
@@ -624,7 +624,7 @@ function CarteiraClientesPage() {
                         ) : hasSoonDocs ? (
                           <Badge
                             variant="secondary"
-                            className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 py-0 h-5 gap-1"
+                            className="text-xs font-bold bg-warning/20 text-warning-strong  py-0 h-5 gap-1"
                           >
                             <Clock className="size-2.5" />
                             <span>{c.docAlerts.soon} Vence em breve</span>

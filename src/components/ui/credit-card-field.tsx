@@ -41,11 +41,11 @@ export const CreditCardNumberInput = forwardRef<HTMLInputElement, CreditCardNumb
           return (
             <div className="flex -space-x-2 items-center">
               <span className="size-3.5 rounded-full bg-red-500 opacity-90" />
-              <span className="size-3.5 rounded-full bg-amber-500 opacity-90" />
+              <span className="size-3.5 rounded-full bg-warning opacity-90" />
             </div>
           );
         case "elo":
-          return <span className="font-black text-amber-500 text-2xs tracking-tight">elo</span>;
+          return <span className="font-black text-warning-strong text-2xs tracking-tight">elo</span>;
         case "amex":
           return <span className="font-bold text-sky-600 text-2xs tracking-tight">AMEX</span>;
         case "hipercard":

@@ -227,7 +227,7 @@ export function ClassifiedPricingLifecycleSection({
         </div>
       )}
       {pricingType === "on_quote" && (
-        <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
+        <div className="p-4 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  text-xs">
           <p className="font-semibold flex items-center gap-2">
             <Coins className="size-4 shrink-0" />
             <span>Preço sob Orçamento / Cotação</span>

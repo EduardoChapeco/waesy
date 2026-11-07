@@ -45,7 +45,7 @@ export function SizeGuideTableSection({
  </div>
 
  <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs">
- <div className="overflow-x-auto no-scrollbar ">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar ">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted/50 border-b border-border/70 text-muted-foreground uppercase font-mono text-2xs">
  <tr>

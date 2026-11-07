@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import type { SiteBlockCategory, OmniBlockStyling } from "@/types/omni-builder";
+import type { SiteBlockCategory, OmniBlockStyling, BlockCapabilities, BlockDataBinding } from "@/types/omni-builder";
 
 export * from "@/types/omni-builder";
 
@@ -14,7 +14,7 @@ export interface SiteBuilderBlockDefinition<T = any> {
   name: string;
   category: SiteBlockCategory;
   description: string;
-  capabilities?: Array<"responsive" | "cms" | "motion" | "media" | "form" | "commerce">;
+  capabilities?: BlockCapabilities | Array<"responsive" | "cms" | "motion" | "media" | "form" | "commerce">;
   sourceOfTruth?: "waesy" | "external";
   component: React.ComponentType<{
     id: string;
@@ -36,7 +36,11 @@ export interface SiteBuilderBlockDefinition<T = any> {
     stores?: any[];
     banners?: any[];
     hotpages?: any[];
+    activeSubstate?: string;
+    onUpdateInlineText?: (fieldPath: string, newValue: string) => void;
   }>;
   defaultProps: T;
   defaultStyling?: OmniBlockStyling;
+  dataRequirements?: Partial<BlockDataBinding>;
+  editorConfig?: Record<string, any>;
 }

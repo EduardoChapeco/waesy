@@ -96,6 +96,15 @@ export function getBrowserClient(): SupabaseClient {
   // autoRefreshToken: true → Mantém sessão viva em background (standalone/installed).
   // detectSessionInUrl: false → Sem loops de redirect no contexto standalone.
   // storageKey fixo        → Browser e PWA usam exatamente o mesmo key no localStorage.
+  const isBrowser = typeof window !== "undefined";
+  const hostname = isBrowser ? window.location.hostname.toLowerCase() : "";
+  let clientDomain: string | undefined = undefined;
+  if (hostname.includes("waesy.com.br")) {
+    clientDomain = ".waesy.com.br";
+  } else if (hostname.includes("usewaesy.com")) {
+    clientDomain = ".usewaesy.com";
+  }
+
   _browserClient = createBrowserClient(
     env.data.VITE_SUPABASE_URL,
     env.data.VITE_SUPABASE_ANON_KEY,
@@ -108,12 +117,14 @@ export function getBrowserClient(): SupabaseClient {
         storageKey: "waesy-auth-token",
       },
       cookieOptions: {
+        name: "waesy-auth-token",
         maxAge: 60 * 60 * 24 * 365, // 1 ano — sessão PWA nunca expira por tempo
         sameSite: "lax",
         secure:
           typeof window !== "undefined" &&
           window.location.protocol === "https:",
         path: "/",
+        ...(clientDomain ? { domain: clientDomain } : {}),
       },
     }
   );

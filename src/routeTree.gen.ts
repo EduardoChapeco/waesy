@@ -131,6 +131,7 @@ import { Route as VerificarSerialRouteImport } from './routes/verificar.$serial'
 import { Route as ViajanteTokenRouteImport } from './routes/viajante.$token'
 import { Route as ViajanteCarteiraRouteImport } from './routes/viajante.carteira'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace.index'
+import { Route as WorkspaceAssociacaoRouteImport } from './routes/workspace.associacao'
 import { Route as WorkspaceAutomacoesRouteImport } from './routes/workspace.automacoes'
 import { Route as WorkspaceAvaliacoesRouteImport } from './routes/workspace.avaliacoes'
 import { Route as WorkspaceComercialRouteImport } from './routes/workspace.comercial'
@@ -256,6 +257,7 @@ import { Route as ApiWebhooksShipmentRouteImport } from './routes/api.webhooks.s
 import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api.webhooks.whatsapp'
 import { Route as ClaimReivindicarEntityIdRouteImport } from './routes/claim.reivindicar.$entityId'
 import { Route as ClaimReputacaoEntityIdRouteImport } from './routes/claim.reputacao.$entityId'
+import { Route as MConsentLeadIdRouteImport } from './routes/m.consent.$leadId'
 import { Route as MExcursaoTokenRouteImport } from './routes/m.excursao.$token'
 import { Route as MLeadLeadIdRouteImport } from './routes/m.lead.$leadId'
 import { Route as PortalSubpainelTokenRouteImport } from './routes/portal.subpainel.$token'
@@ -410,6 +412,9 @@ import { Route as ApiAuthAdsCallbackRouteImport } from './routes/api.auth.ads.ca
 import { Route as ApiAuthGovbrCallbackRouteImport } from './routes/api.auth.govbr.callback'
 import { Route as ApiAuthLinkedinCallbackRouteImport } from './routes/api.auth.linkedin.callback'
 import { Route as ApiAuthMarketplaceCallbackRouteImport } from './routes/api.auth.marketplace.callback'
+import { Route as ApiV1IngestInfotravelQuotesRouteImport } from './routes/api.v1.ingest.infotravel-quotes'
+import { Route as ApiV1IngestWhatsappContactsRouteImport } from './routes/api.v1.ingest.whatsapp-contacts'
+import { Route as ApiV1IngestWhoamiRouteImport } from './routes/api.v1.ingest.whoami'
 import { Route as ApiV1PublicDiscoveryRouteImport } from './routes/api.v1.public.discovery'
 import { Route as WorkspaceAgendaServicosIndexRouteImport } from './routes/workspace.agenda.servicos.index'
 import { Route as WorkspaceBuilderDocumentIdEditorRouteImport } from './routes/workspace.builder.$documentId.editor'
@@ -1065,6 +1070,11 @@ const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
   path: '/',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceAssociacaoRoute = WorkspaceAssociacaoRouteImport.update({
+  id: '/associacao',
+  path: '/associacao',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceAutomacoesRoute = WorkspaceAutomacoesRouteImport.update({
   id: '/automacoes',
   path: '/automacoes',
@@ -1698,6 +1708,11 @@ const ClaimReivindicarEntityIdRoute =
 const ClaimReputacaoEntityIdRoute = ClaimReputacaoEntityIdRouteImport.update({
   id: '/claim/reputacao/$entityId',
   path: '/claim/reputacao/$entityId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MConsentLeadIdRoute = MConsentLeadIdRouteImport.update({
+  id: '/m/consent/$leadId',
+  path: '/m/consent/$leadId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MExcursaoTokenRoute = MExcursaoTokenRouteImport.update({
@@ -2556,6 +2571,23 @@ const ApiAuthMarketplaceCallbackRoute =
     path: '/api/auth/marketplace/callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiV1IngestInfotravelQuotesRoute =
+  ApiV1IngestInfotravelQuotesRouteImport.update({
+    id: '/api/v1/ingest/infotravel-quotes',
+    path: '/api/v1/ingest/infotravel-quotes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiV1IngestWhatsappContactsRoute =
+  ApiV1IngestWhatsappContactsRouteImport.update({
+    id: '/api/v1/ingest/whatsapp-contacts',
+    path: '/api/v1/ingest/whatsapp-contacts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiV1IngestWhoamiRoute = ApiV1IngestWhoamiRouteImport.update({
+  id: '/api/v1/ingest/whoami',
+  path: '/api/v1/ingest/whoami',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1PublicDiscoveryRoute = ApiV1PublicDiscoveryRouteImport.update({
   id: '/api/v1/public/discovery',
   path: '/api/v1/public/discovery',
@@ -2920,6 +2952,7 @@ export interface FileRoutesByFullPath {
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
   '/viajante/carteira': typeof ViajanteCarteiraRoute
+  '/workspace/associacao': typeof WorkspaceAssociacaoRoute
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
@@ -3034,6 +3067,7 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
+  '/m/consent/$leadId': typeof MConsentLeadIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
   '/m/lead/$leadId': typeof MLeadLeadIdRoute
   '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
@@ -3198,6 +3232,9 @@ export interface FileRoutesByFullPath {
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
+  '/api/v1/ingest/infotravel-quotes': typeof ApiV1IngestInfotravelQuotesRoute
+  '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
+  '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -3355,6 +3392,7 @@ export interface FileRoutesByTo {
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
   '/viajante/carteira': typeof ViajanteCarteiraRoute
+  '/workspace/associacao': typeof WorkspaceAssociacaoRoute
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
@@ -3469,6 +3507,7 @@ export interface FileRoutesByTo {
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
+  '/m/consent/$leadId': typeof MConsentLeadIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
   '/m/lead/$leadId': typeof MLeadLeadIdRoute
   '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
@@ -3632,6 +3671,9 @@ export interface FileRoutesByTo {
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
+  '/api/v1/ingest/infotravel-quotes': typeof ApiV1IngestInfotravelQuotesRoute
+  '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
+  '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -3798,6 +3840,7 @@ export interface FileRoutesById {
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
   '/viajante/carteira': typeof ViajanteCarteiraRoute
+  '/workspace/associacao': typeof WorkspaceAssociacaoRoute
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
@@ -3913,6 +3956,7 @@ export interface FileRoutesById {
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
+  '/m/consent/$leadId': typeof MConsentLeadIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
   '/m/lead/$leadId': typeof MLeadLeadIdRoute
   '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
@@ -4077,6 +4121,9 @@ export interface FileRoutesById {
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
+  '/api/v1/ingest/infotravel-quotes': typeof ApiV1IngestInfotravelQuotesRoute
+  '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
+  '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -4244,6 +4291,7 @@ export interface FileRouteTypes {
     | '/verificar/$serial'
     | '/viajante/$token'
     | '/viajante/carteira'
+    | '/workspace/associacao'
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
@@ -4358,6 +4406,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/whatsapp'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
+    | '/m/consent/$leadId'
     | '/m/excursao/$token'
     | '/m/lead/$leadId'
     | '/portal/subpainel/$token'
@@ -4522,6 +4571,9 @@ export interface FileRouteTypes {
     | '/api/auth/govbr/callback'
     | '/api/auth/linkedin/callback'
     | '/api/auth/marketplace/callback'
+    | '/api/v1/ingest/infotravel-quotes'
+    | '/api/v1/ingest/whatsapp-contacts'
+    | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -4679,6 +4731,7 @@ export interface FileRouteTypes {
     | '/verificar/$serial'
     | '/viajante/$token'
     | '/viajante/carteira'
+    | '/workspace/associacao'
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
@@ -4793,6 +4846,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/whatsapp'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
+    | '/m/consent/$leadId'
     | '/m/excursao/$token'
     | '/m/lead/$leadId'
     | '/portal/subpainel/$token'
@@ -4956,6 +5010,9 @@ export interface FileRouteTypes {
     | '/api/auth/govbr/callback'
     | '/api/auth/linkedin/callback'
     | '/api/auth/marketplace/callback'
+    | '/api/v1/ingest/infotravel-quotes'
+    | '/api/v1/ingest/whatsapp-contacts'
+    | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -5121,6 +5178,7 @@ export interface FileRouteTypes {
     | '/verificar/$serial'
     | '/viajante/$token'
     | '/viajante/carteira'
+    | '/workspace/associacao'
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
@@ -5236,6 +5294,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/whatsapp'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
+    | '/m/consent/$leadId'
     | '/m/excursao/$token'
     | '/m/lead/$leadId'
     | '/portal/subpainel/$token'
@@ -5400,6 +5459,9 @@ export interface FileRouteTypes {
     | '/api/auth/govbr/callback'
     | '/api/auth/linkedin/callback'
     | '/api/auth/marketplace/callback'
+    | '/api/v1/ingest/infotravel-quotes'
+    | '/api/v1/ingest/whatsapp-contacts'
+    | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -5488,6 +5550,7 @@ export interface RootRouteChildren {
   ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRouteWithChildren
   ClaimReivindicarEntityIdRoute: typeof ClaimReivindicarEntityIdRoute
   ClaimReputacaoEntityIdRoute: typeof ClaimReputacaoEntityIdRoute
+  MConsentLeadIdRoute: typeof MConsentLeadIdRoute
   MExcursaoTokenRoute: typeof MExcursaoTokenRoute
   MLeadLeadIdRoute: typeof MLeadLeadIdRoute
   PortalSubpainelTokenRoute: typeof PortalSubpainelTokenRoute
@@ -5497,6 +5560,9 @@ export interface RootRouteChildren {
   ApiAuthGovbrCallbackRoute: typeof ApiAuthGovbrCallbackRoute
   ApiAuthLinkedinCallbackRoute: typeof ApiAuthLinkedinCallbackRoute
   ApiAuthMarketplaceCallbackRoute: typeof ApiAuthMarketplaceCallbackRoute
+  ApiV1IngestInfotravelQuotesRoute: typeof ApiV1IngestInfotravelQuotesRoute
+  ApiV1IngestWhatsappContactsRoute: typeof ApiV1IngestWhatsappContactsRoute
+  ApiV1IngestWhoamiRoute: typeof ApiV1IngestWhoamiRoute
   ApiV1PublicDiscoveryRoute: typeof ApiV1PublicDiscoveryRoute
   WorkspacePedidosIdReciboRoute: typeof WorkspacePedidosIdReciboRoute
   ApiMcpV1ToolsCallRoute: typeof ApiMcpV1ToolsCallRoute
@@ -6356,6 +6422,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/workspace/'
       preLoaderRoute: typeof WorkspaceIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/associacao': {
+      id: '/workspace/associacao'
+      path: '/associacao'
+      fullPath: '/workspace/associacao'
+      preLoaderRoute: typeof WorkspaceAssociacaoRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/automacoes': {
@@ -7231,6 +7304,13 @@ declare module '@tanstack/react-router' {
       path: '/claim/reputacao/$entityId'
       fullPath: '/claim/reputacao/$entityId'
       preLoaderRoute: typeof ClaimReputacaoEntityIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/m/consent/$leadId': {
+      id: '/m/consent/$leadId'
+      path: '/m/consent/$leadId'
+      fullPath: '/m/consent/$leadId'
+      preLoaderRoute: typeof MConsentLeadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/m/excursao/$token': {
@@ -8311,6 +8391,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthMarketplaceCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/ingest/infotravel-quotes': {
+      id: '/api/v1/ingest/infotravel-quotes'
+      path: '/api/v1/ingest/infotravel-quotes'
+      fullPath: '/api/v1/ingest/infotravel-quotes'
+      preLoaderRoute: typeof ApiV1IngestInfotravelQuotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/ingest/whatsapp-contacts': {
+      id: '/api/v1/ingest/whatsapp-contacts'
+      path: '/api/v1/ingest/whatsapp-contacts'
+      fullPath: '/api/v1/ingest/whatsapp-contacts'
+      preLoaderRoute: typeof ApiV1IngestWhatsappContactsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/ingest/whoami': {
+      id: '/api/v1/ingest/whoami'
+      path: '/api/v1/ingest/whoami'
+      fullPath: '/api/v1/ingest/whoami'
+      preLoaderRoute: typeof ApiV1IngestWhoamiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/public/discovery': {
       id: '/api/v1/public/discovery'
       path: '/api/v1/public/discovery'
@@ -9200,6 +9301,7 @@ const WorkspaceTurismoGruposIdRouteWithChildren =
   )
 
 interface WorkspaceRouteChildren {
+  WorkspaceAssociacaoRoute: typeof WorkspaceAssociacaoRoute
   WorkspaceAutomacoesRoute: typeof WorkspaceAutomacoesRoute
   WorkspaceAvaliacoesRoute: typeof WorkspaceAvaliacoesRoute
   WorkspaceComercialRoute: typeof WorkspaceComercialRoute
@@ -9380,6 +9482,7 @@ interface WorkspaceRouteChildren {
 }
 
 const WorkspaceRouteChildren: WorkspaceRouteChildren = {
+  WorkspaceAssociacaoRoute: WorkspaceAssociacaoRoute,
   WorkspaceAutomacoesRoute: WorkspaceAutomacoesRoute,
   WorkspaceAvaliacoesRoute: WorkspaceAvaliacoesRoute,
   WorkspaceComercialRoute: WorkspaceComercialRoute,
@@ -9628,6 +9731,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRouteWithChildren,
   ClaimReivindicarEntityIdRoute: ClaimReivindicarEntityIdRoute,
   ClaimReputacaoEntityIdRoute: ClaimReputacaoEntityIdRoute,
+  MConsentLeadIdRoute: MConsentLeadIdRoute,
   MExcursaoTokenRoute: MExcursaoTokenRoute,
   MLeadLeadIdRoute: MLeadLeadIdRoute,
   PortalSubpainelTokenRoute: PortalSubpainelTokenRoute,
@@ -9637,6 +9741,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthGovbrCallbackRoute: ApiAuthGovbrCallbackRoute,
   ApiAuthLinkedinCallbackRoute: ApiAuthLinkedinCallbackRoute,
   ApiAuthMarketplaceCallbackRoute: ApiAuthMarketplaceCallbackRoute,
+  ApiV1IngestInfotravelQuotesRoute: ApiV1IngestInfotravelQuotesRoute,
+  ApiV1IngestWhatsappContactsRoute: ApiV1IngestWhatsappContactsRoute,
+  ApiV1IngestWhoamiRoute: ApiV1IngestWhoamiRoute,
   ApiV1PublicDiscoveryRoute: ApiV1PublicDiscoveryRoute,
   WorkspacePedidosIdReciboRoute: WorkspacePedidosIdReciboRoute,
   ApiMcpV1ToolsCallRoute: ApiMcpV1ToolsCallRoute,

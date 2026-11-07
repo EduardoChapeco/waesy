@@ -134,9 +134,9 @@ function RelatoriosPage() {
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Carrinhos Abandon.
             </span>
-            <ShoppingCart className="size-4 text-amber-500" />
+            <ShoppingCart className="size-4 text-warning-strong" />
           </div>
-          <div className="text-2xl font-black text-amber-500">
+          <div className="text-2xl font-black text-warning-strong">
             {data.abandonedCartsCount}
           </div>
           <span className="text-xs text-muted-foreground">Últimos 7 dias</span>
@@ -153,7 +153,7 @@ function RelatoriosPage() {
               {
                 label: "Aguardando Pagamento",
                 count: data.ordersBreakdown?.awaitingPayment ?? 0,
-                color: "bg-amber-500",
+                color: "bg-warning",
                 icon: Clock,
               },
               {

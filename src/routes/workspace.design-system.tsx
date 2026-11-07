@@ -24,7 +24,7 @@ function WorkspaceDesignSystemPage() {
   const [tab, setTab] = useState<string>("overview");
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8 max-w-7xl mx-auto w-full">
+    <div className="flex flex-col gap-6 p-4 md:p-8 w-full">
       <DesignSystemHeader currentMode={mode} onSelectMode={setMode} />
 
       <Tabs value={tab} onValueChange={setTab} className="flex flex-col gap-6">

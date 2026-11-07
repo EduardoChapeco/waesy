@@ -11,6 +11,13 @@ import { BuilderAssetCredits } from "./BuilderAssetCredits";
 import { BlockErrorBoundary } from "./BlockErrorBoundary";
 import { submitOmniPageLeadFn } from "@/services/builder.functions";
 import { PrometheePortalProvider } from "@/components/news/promethee-portal-store";
+import {
+  getBlockDeviceVisibilityClass,
+  isBlockVisibleForCity,
+  isBlockWithinSchedule,
+  resolveBlockBoundData,
+  shouldApplyCustomDocumentTheme,
+} from "@/lib/builder/block-data-resolver";
 
 export interface OmniPageRendererProps {
   document: OmniPageDocument;
@@ -29,6 +36,7 @@ export interface OmniPageRendererProps {
   hotpages?: any[];
   newsArticles?: any[];
   sponsors?: any[];
+  activeCity?: string | null;
   onAddToCart?: (productId: string) => void;
 }
 
@@ -49,17 +57,23 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
   hotpages = [],
   newsArticles = [],
   sponsors = [],
+  activeCity = null,
   onAddToCart,
 }) => {
   if (!document || !document.blocks || !Array.isArray(document.blocks) || document.blocks.length === 0) {
     return null;
   }
 
-  const pageThemeStyle: React.CSSProperties = {
-    backgroundColor: document.theme?.backgroundColor,
-    color: document.theme?.textColor,
-    fontFamily: document.theme?.fontFamily,
-  };
+  const applyCustomTheme = shouldApplyCustomDocumentTheme(document.theme);
+  const pageThemeStyle: React.CSSProperties = applyCustomTheme
+    ? {
+        backgroundColor: document.theme?.backgroundColor,
+        color: document.theme?.textColor,
+        fontFamily: document.theme?.fontFamily,
+      }
+    : document.theme?.fontFamily && document.theme.fontFamily !== "Inter, sans-serif"
+      ? { fontFamily: document.theme.fontFamily }
+      : {};
 
   const getAnimationClass = (anim?: string) => {
     switch (anim) {
@@ -86,7 +100,12 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
       className={`min-h-dvh w-full flex flex-col overflow-x-hidden bg-background text-foreground ${className}`}
     >
       {document.blocks.map((block) => {
-        if (block.isHidden) return null;
+        if (block.isHidden || block.is_visible === false) return null;
+        if (!isBlockWithinSchedule(block)) return null;
+        if (!isBlockVisibleForCity(block, activeCity)) return null;
+
+        const visibilityClass = getBlockDeviceVisibilityClass(block);
+        if (visibilityClass === "hidden") return null;
 
         const def = getSiteBlockByIdStrict(block.type);
         if (!def) {
@@ -97,6 +116,34 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
         }
         const Component = def.component as any;
         const animClass = getAnimationClass(block.styling?.scrollAnimation);
+        const wrapperClasses = ["w-full", visibilityClass, animClass].filter(Boolean).join(" ");
+        const wrapperStyle: React.CSSProperties | undefined =
+          typeof block.styling?.animationDelayMs === "number" && block.styling.animationDelayMs > 0
+            ? { animationDelay: `${block.styling.animationDelayMs}ms` }
+            : undefined;
+
+        const boundDatasets = resolveBlockBoundData(
+          block,
+          {
+            products,
+            categories,
+            collections,
+            classifieds,
+            posts,
+            flyers,
+            events,
+            jobs,
+            stores,
+            banners,
+            hotpages,
+            newsArticles,
+            sponsors,
+          },
+          {
+            activeCity,
+            storeId: storeData?.id || document.store_id || null,
+          },
+        );
 
         const handleBlockLeadSubmit = async (payload: {
           name: string;
@@ -108,7 +155,7 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
         }) => {
           return submitOmniPageLeadFn({
             data: {
-              storeId: storeData?.id || null,
+              storeId: storeData?.id || document.store_id || null,
               storeSlug: storeData?.slug || null,
               pageSlug: document.slug || null,
               blockId: block.id,
@@ -127,7 +174,8 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
           <div
             key={block.id}
             id={block.sectionAnchorId}
-            className={animClass ? `w-full ${animClass}` : "w-full"}
+            style={wrapperStyle}
+            className={wrapperClasses}
           >
             <BlockErrorBoundary
               blockId={block.id}
@@ -137,23 +185,25 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
                 id={block.id}
                 data={block.config}
                 styling={block.styling}
-                products={products}
-                categories={categories}
-                collections={collections}
+                products={boundDatasets.products}
+                categories={boundDatasets.categories}
+                collections={boundDatasets.collections}
                 storeData={storeData}
-                classifieds={classifieds}
-                posts={posts}
-                flyers={flyers}
-                events={events}
-                jobs={jobs}
-                stores={stores}
-                banners={banners}
-                hotpages={hotpages}
-                newsArticles={newsArticles}
-                sponsors={sponsors}
+                classifieds={boundDatasets.classifieds}
+                posts={boundDatasets.posts}
+                flyers={boundDatasets.flyers}
+                events={boundDatasets.events}
+                jobs={boundDatasets.jobs}
+                stores={boundDatasets.stores}
+                banners={boundDatasets.banners}
+                hotpages={boundDatasets.hotpages}
+                newsArticles={boundDatasets.newsArticles}
+                sponsors={boundDatasets.sponsors}
                 onAddToCart={onAddToCart}
                 pageSlug={document.slug}
                 onLeadSubmit={handleBlockLeadSubmit}
+                activeSubstate={block.activeSubstate}
+                isEditing={false}
               />
             </BlockErrorBoundary>
             <BuilderAssetCredits assets={block.assetRefs} />

@@ -120,9 +120,9 @@ export function SocialStudioModal({
             {/* Rendered Frame Preview */}
             <div
               ref={frameRef}
-              className={`relative overflow-hidden rounded-lg border border-border/80 bg-zinc-950 text-foreground shadow-lg transition-colors duration-200 duration-300 flex flex-col justify-between ${
+              className={`relative overflow-hidden rounded-lg border border-border/80 bg-zinc-950 text-foreground shadow-overlay transition-colors duration-200 duration-300 flex flex-col justify-between ${
                 aspectRatio === "9:16"
-                  ? "w-60 aspect-[9/16] p-5"
+                  ? "w-60 aspect-9/16 p-5"
                   : aspectRatio === "1:1"
                   ? "w-72 h-72 sm:w-80 sm:h-80 aspect-square p-4"
                   : "w-80 sm:w-96 aspect-video p-3"
@@ -130,7 +130,7 @@ export function SocialStudioModal({
             >
               {/* Top Branding Pill */}
               <div className="flex items-center justify-between z-10">
-                <span className="text-2xs uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-card/20 backdrop-blur-md">
+                <span className="text-2xs uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-card ">
                   {storeName}
                 </span>
                 <span className="text-2xs font-semibold bg-emerald-500 text-foreground px-2 py-1 rounded-full flex items-center gap-1">
@@ -152,16 +152,16 @@ export function SocialStudioModal({
 
               {/* Bottom Details Overlay */}
               <div className="z-10 bg-black/70 -mx-5 -mb-5 p-5 space-y-2 pt-8">
-                <h4 className="font-bold text-sm sm:text-base leading-tight drop-shadow-sm line-clamp-2">
+                <h4 className="font-bold text-sm sm:text-base leading-tight shadow-overlay line-clamp-2">
                   {product.title}
                 </h4>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-black text-amber-400">
+                  <span className="text-lg font-black text-warning-strong">
                     {formatMoney(product.priceCents)}
                   </span>
                   <span className="text-2xs text-zinc-300 uppercase tracking-wider">à vista</span>
                 </div>
-                <div className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-center text-xs font-bold shadow-md">
+                <div className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-center text-xs font-bold shadow-overlay">
                   Peça no WhatsApp
                 </div>
               </div>

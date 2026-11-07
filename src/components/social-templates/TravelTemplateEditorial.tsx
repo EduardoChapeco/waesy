@@ -179,8 +179,8 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
           className={`w-full text-center space-y-3 ${aspectRatio === "1:1" ? "pt-4" : "pt-8"}`}
         >
           {promoBadge && (
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 font-bold uppercase tracking-widest text-sm sm:text-base backdrop-blur-md mb-2">
-              <Star className="size-4 text-amber-400 shrink-0" />
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-warning/20 border border-warning/40 text-warning-strong font-bold uppercase tracking-widest text-sm sm:text-base backdrop-blur-md mb-2">
+              <Star className="size-4 text-warning-strong shrink-0" />
               <span>{promoBadge}</span>
             </div>
           )}
@@ -250,7 +250,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
                   }`}
                 >
                   <IncIcon
-                    className={`text-amber-300 shrink-0 ${
+                    className={`text-warning-strong shrink-0 ${
                       aspectRatio === "1:1" ? "size-4" : "size-6"
                     }`}
                     strokeWidth={2.2}
@@ -301,7 +301,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
 
                 <div className="flex items-baseline gap-2">
                   <span
-                    className={`font-black text-amber-300 font-mono ${
+                    className={`font-black text-warning-strong font-mono ${
                       aspectRatio === "1:1" ? "text-2xl" : "text-4xl"
                     }`}
                   >
@@ -329,7 +329,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
 
                 <div className="pt-2 flex flex-col space-y-1 font-medium">
                   <span
-                    className={`text-amber-300 font-bold uppercase tracking-wider ${
+                    className={`text-warning-strong font-bold uppercase tracking-wider ${
                       aspectRatio === "1:1" ? "text-xs" : "text-base"
                     }`}
                   >
@@ -357,7 +357,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
               </span>
             </div>
 
-            <div className="bg-amber-400 text-slate-950 px-8 py-5 rounded-lg flex items-center gap-3">
+            <div className="bg-warning text-slate-950 px-8 py-5 rounded-lg flex items-center gap-3">
               <span className="text-xl font-black tracking-wide">
                 {ctaLabel || "Garantir Vaga"}
               </span>

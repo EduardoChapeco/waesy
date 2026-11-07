@@ -27,7 +27,7 @@ export function StoriesRing({ content }: StoriesRingProps) {
  return (
  <>
  {/* Ring / Bubbles */}
- <div className="w-full flex overflow-x-auto no-scrollbar gap-4 py-4 px-4 scrollbar-hide snap-x">
+ <div className="w-full flex overflow-x-auto scroll-area-carousel no-scrollbar gap-4 py-4 px-4 scrollbar-hide snap-x">
  {stories.map((story) => {
  const thumbImg = story.thumb || story.thumbnail_url || "";
  const isVideo =
@@ -60,7 +60,7 @@ export function StoriesRing({ content }: StoriesRingProps) {
  </div>
  </div>
  </div>
- <span className="text-xs font-medium max-w-[80px] truncate text-center">
+ <span className="text-xs font-medium max-w-20 truncate text-center">
  {story.title}
  </span>
  </button>
@@ -70,7 +70,7 @@ export function StoriesRing({ content }: StoriesRingProps) {
 
  {/* Fullscreen Story Viewer */}
  <Dialog open={!!activeStory} onOpenChange={(open) => !open && setActiveStory(null)}>
- <DialogContent className="sm:max-w-md sm:w-full sm:h-[90vh] h-full p-0 overflow-hidden bg-foreground border-none flex flex-col items-center justify-center">
+ <DialogContent className="sm:max-w-md sm:w-full sm:h-vh-90 h-full p-0 overflow-hidden bg-foreground border-none flex flex-col items-center justify-center">
  {activeStory &&
  (() => {
  const isVideo =

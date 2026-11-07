@@ -129,7 +129,7 @@ export function MasterCatalogSearchDialog({
           </div>
 
           {/* Categorias / Departamentos */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-3">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pt-3">
             {CATEGORY_TABS.map((cat) => (
               <button
                 key={cat.id}
@@ -170,7 +170,7 @@ export function MasterCatalogSearchDialog({
                 return (
                   <div
                     key={p.barcode_ean}
-                    className="p-4 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 hover:shadow-sm flex flex-col justify-between gap-3 group"
+                    className="p-4 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 hover:shadow-overlay flex flex-col justify-between gap-3 group"
                   >
                     <div className="flex items-start gap-3">
                       {/* Miniatura do Produto */}
@@ -256,7 +256,7 @@ export function MasterCatalogSearchDialog({
                       type="button"
                       size="sm"
                       onClick={() => handleSelect(p)}
-                      className="w-full h-8 rounded-lg text-xs font-bold gap-2 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 transition-colors duration-200 cursor-pointer"
+                      className="w-full h-8 rounded-lg text-xs font-bold gap-2 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0"
                     >
                       <CheckCircle2 className="size-3.5" />
                       <span>Usar Este Produto</span>

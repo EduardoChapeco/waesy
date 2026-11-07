@@ -136,7 +136,7 @@ export function ProductWaitlistSheet({
  <Button
  type="button"
  onClick={handleClose}
- className="mt-2 h-10 px-5 rounded-lg text-xs font-bold bg-emerald-600 text-foreground hover:bg-emerald-700"
+ className="mt-2 h-10 px-5 rounded-lg text-xs font-bold bg-emerald-600 text-foreground hover:bg-emerald-700 min-h-11 sm:min-h-0"
  >
  Concluir
  </Button>
@@ -181,7 +181,7 @@ export function ProductWaitlistSheet({
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 mt-4 shadow-sm"
+ className="w-full h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 mt-4 shadow-overlay"
  >
  <BellRing className="size-4" />
  <span>{isSubmitting ? "Salvando..." : "Entrar na Lista de Espera"}</span>
@@ -196,7 +196,7 @@ export function ProductWaitlistSheet({
  type="button"
  variant="ghost"
  onClick={() => onOpenChange(false)}
- className="w-full h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground"
+ className="w-full h-9 rounded-lg text-xs text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
  >
  Voltar ao produto
  </Button>

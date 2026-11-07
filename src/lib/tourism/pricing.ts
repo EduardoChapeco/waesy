@@ -78,7 +78,12 @@ export function calculateQuoteTotals(state: Partial<Proposal>): QuoteTotals {
       ? dtoTotalCents / 100
       : Math.max(0, dtoSubtotalReais - dtoDiscountCents / 100);
 
-  const subtotal = lineItemsSubtotal > 0 ? lineItemsSubtotal : hasDtoPricing ? dtoSubtotalReais : 0;
+  const subtotal =
+    lineItemsSubtotal > 0
+      ? lineItemsSubtotal
+      : hasDtoPricing
+        ? dtoSubtotalReais
+        : Number(state.subtotal || state.total || 0);
 
   // Final Total
   const flatDiscount =
@@ -92,7 +97,7 @@ export function calculateQuoteTotals(state: Partial<Proposal>): QuoteTotals {
       ? Math.max(0, subtotal - flatDiscount)
       : hasDtoPricing
         ? dtoTotalReais
-        : 0;
+        : Math.max(0, Number(state.total || state.subtotal || 0) - flatDiscount);
 
   const installmentOptions: Array<{
     installments_count: number;

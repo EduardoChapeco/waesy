@@ -90,7 +90,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div
  ref={ref}
  id="voucher-printable-area"
- className="w-full max-w-4xl mx-auto bg-card text-neutral-900 shadow-md border border-neutral-200 rounded-lg overflow-hidden print:border-none print:shadow-none print:rounded-none print:m-0 print:w-full print:max-w-none text-xs"
+ className="w-full max-w-4xl mx-auto bg-card text-neutral-900  border border-neutral-200 rounded-lg overflow-hidden print:border-none print:shadow-none print:rounded-none print:m-0 print:w-full print:max-w-none text-xs"
  style={{ fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif" }}
  >
  {/* ── HEADER DA AGÊNCIA & GUIA DE EMBARQUE ── */}

@@ -178,7 +178,7 @@ function ServicesIndexPage() {
   };
 
  return (
- <div className="space-y-6 max-w-6xl animate-in fade-in duration-200">
+ <div className="space-y-6 w-full animate-in fade-in duration-200">
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Agenda"
  title="Serviços"
@@ -190,7 +190,7 @@ function ServicesIndexPage() {
      size="sm"
      className="rounded-lg font-bold text-xs gap-2 border-border/60 hover:bg-muted/30 text-foreground"
    >
-     <Star className="size-3.5 text-amber-500" />
+     <Star className="size-3.5 text-warning-strong" />
      <span>Importar do Catálogo</span>
    </Button>
    <Button onClick={handleOpenCreate} size="sm" className="rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground">

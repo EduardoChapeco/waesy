@@ -204,7 +204,7 @@ function FrotaEntregasPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
  <div>
@@ -505,7 +505,7 @@ function FrotaEntregasPage() {
  <Copy className="size-3.5" />
  Copiar Link Mágico
  </Button>
- <Button asChild variant="ghost" size="icon" className="rounded-lg size-11 sm:size-9 cursor-pointer">
+ <Button asChild variant="ghost" size="icon" className="rounded-lg size-11 sm:size-9 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0">
  <Link to="/entrega/$token" params={{ token: d.delivery_token }} target="_blank">
  <ExternalLink className="size-4" />
  </Link>
@@ -668,7 +668,7 @@ function FrotaEntregasPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleDeletePriceTable(tbl.id)}
- className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Remover tabela de tarifa"
  >
  <Trash2 className="size-4" />

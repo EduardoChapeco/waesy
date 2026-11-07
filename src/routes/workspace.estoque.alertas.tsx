@@ -83,8 +83,8 @@ function StockAlertsMobileView({
                     Esgotado
                   </Badge>
                 ) : (
-                  <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-1">
-                    <AlertTriangle className="size-3 text-amber-500" />
+                  <Badge variant="secondary" className="gap-1 text-xs font-bold text-warning-strong bg-warning/10   px-2 py-1">
+                    <AlertTriangle className="size-3 text-warning-strong" />
                     Crítico
                   </Badge>
                 )}
@@ -101,7 +101,7 @@ function StockAlertsMobileView({
             {/* Saldo em Mãos */}
             <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
               <span className="text-xs font-medium text-muted-foreground">Saldo atual em mãos</span>
-              <span className={`text-xl font-mono font-black ${available <= 0 ? "text-destructive" : "text-amber-600 dark:text-amber-400"}`}>
+              <span className={`text-xl font-mono font-black ${available <= 0 ? "text-destructive" : "text-warning-strong "}`}>
                 {available}{" "}
                 <span className="text-xs font-normal text-muted-foreground">un.</span>
               </span>
@@ -189,7 +189,7 @@ function StockAlertsDesktopView({
                   {v.sku || "—"}
                 </TableCell>
                 <TableCell className="text-center font-mono font-bold text-sm tabular-nums">
-                  <span className={available <= 0 ? "text-destructive" : "text-amber-600 dark:text-amber-400"}>
+                  <span className={available <= 0 ? "text-destructive" : "text-warning-strong "}>
                     {available} un
                   </span>
                 </TableCell>
@@ -200,8 +200,8 @@ function StockAlertsDesktopView({
                       Esgotado
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="gap-1 text-xs font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300">
-                      <AlertTriangle className="size-3 text-amber-500" />
+                    <Badge variant="secondary" className="gap-1 text-xs font-bold text-warning-strong bg-warning/10  ">
+                      <AlertTriangle className="size-3 text-warning-strong" />
                       Crítico ({available} un)
                     </Badge>
                   )}
@@ -424,7 +424,7 @@ function StockAlertsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Alertas de Estoque"
         title="Alertas Críticos de Reposição"
@@ -447,13 +447,13 @@ function StockAlertsPage() {
 
       {/* ── BANNER DE ALERTA SE HOUVER CLIENTES ESPERANDO ITENS ESGOTADOS ── */}
       {kpis.totalWaitlist > 0 && (
-        <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 shadow-2xs">
-          <ShieldAlert className="size-5 text-amber-600 shrink-0 mt-1" />
+        <div className="p-4 rounded-lg bg-warning/10 border border-warning/30 flex items-start gap-3 shadow-2xs">
+          <ShieldAlert className="size-5 text-warning-strong shrink-0 mt-1" />
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">
+            <h3 className="text-sm font-bold text-warning-strong ">
               Demanda Reprimida Identificada: {kpis.totalWaitlist} {kpis.totalWaitlist === 1 ? "cliente aguardando" : "clientes aguardando"}
             </h3>
-            <p className="text-xs text-amber-800/80 dark:text-amber-300/80">
+            <p className="text-xs text-warning-strong/80 ">
               Existem compradores cadastrados na lista de espera aguardando notificação assim que esses itens forem repostos.
             </p>
           </div>
@@ -477,10 +477,10 @@ function StockAlertsPage() {
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <AlertTriangle className="size-3.5 text-amber-500" />
+            <AlertTriangle className="size-3.5 text-warning-strong" />
             Nível Crítico
           </span>
-          <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-2xl font-mono font-bold text-warning-strong ">
             {kpis.lowStock}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
@@ -528,7 +528,7 @@ function StockAlertsPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel w-full sm:w-auto pb-1 sm:pb-0">
             <Button
               size="sm"
               variant={filterSeverity === "all" ? "default" : "outline"}

@@ -509,8 +509,8 @@ function WorkspaceNoticiasIndexPage() {
                                 : "Rascunho"}
                         </Badge>
                         {art.is_members_only && (
-                          <Badge variant="outline" className="text-xs border-amber-500/50 text-foreground inline-flex items-center gap-1">
-                            <Lock className="size-3 text-amber-500" />
+                          <Badge variant="outline" className="text-xs border-warning/50 text-foreground inline-flex items-center gap-1">
+                            <Lock className="size-3 text-warning-strong" />
                             <span>Assinantes</span>
                           </Badge>
                         )}
@@ -935,7 +935,7 @@ function WorkspaceNoticiasIndexPage() {
           aria-label="Agendar Publicação no Instagram"
           className="fixed inset-0 z-50 bg-overlay backdrop-blur-xs flex items-center justify-center p-4"
         >
-          <div className="w-full max-w-lg bg-background text-foreground rounded-3xl border border-border p-6 space-y-5 shadow-xl">
+          <div className="w-full max-w-lg bg-background text-foreground rounded-3xl border border-border p-6 space-y-5 ">
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2">
                 <Instagram className="size-5 text-primary" />

@@ -119,7 +119,7 @@ function WorkspaceB2BShowcasePage() {
   }, [feed, searchQuery, selectedCategory]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. Topo Canônico do Hub B2B ── */}
       <PageHeader
         eyebrow="Compras Corporativas"
@@ -177,7 +177,7 @@ function WorkspaceB2BShowcasePage() {
 
         {/* Chips de Categorias B2B */}
         {/* design-lint-ignore DL-30 reason:"Carrossel horizontal de filtros de categorias B2B para rolagem tátil no mobile" expiry:"2027-10-30" */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 scrollbar-none">
           {B2B_CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             return (

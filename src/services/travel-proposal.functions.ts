@@ -14,6 +14,7 @@ export type ProposalStatus = "draft" | "sent" | "approved" | "rejected" | "expir
 export interface FlightSegmentDTO {
   id?: string;
   type?: "outbound" | "return" | "round_trip";
+  leg?: "ida" | "volta" | string;
   airline?: string;
   airline_name?: string;
   airline_code?: string;
@@ -78,6 +79,14 @@ export interface ItineraryDayDTO {
 export interface TransferDTO {
   type: string; // Ex: "Aeroporto -> Hotel (Privativo)"
   vehicle: string;
+  id?: string;
+  vehicle_type?: string;
+  route?: string;
+  route_name?: string;
+  pickup_time?: string;
+  dropoff_time?: string;
+  is_private?: boolean;
+  price_cents?: number;
   date?: string;
   notes?: string;
 }
@@ -131,11 +140,14 @@ export interface TravelProposalDTO {
   agency_phone?: string | null;
   agency_email?: string | null;
   quote_id: string;
+  lead_id?: string | null;
+  customer_id?: string | null;
   public_token: string;
   title: string;
   subtitle?: string | null;
   cover_image_url?: string | null;
   client_name: string;
+  customer_name?: string;
   client_whatsapp: string;
   client_email?: string | null;
   adults_count: number;
@@ -143,6 +155,7 @@ export interface TravelProposalDTO {
   canvas_format: ProposalCanvasFormat;
   template_theme: string;
   destination_city: string;
+  destination?: string;
   travel_start_date?: string | null;
   travel_end_date?: string | null;
   flights: FlightSegmentDTO[];
@@ -283,11 +296,14 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     agency_logo_url: storeRow?.logo_url || row.stores?.logo_url || null,
     agency_whatsapp: storeSettings.whatsapp_phone || storeSettings.phone || null,
     quote_id: row.quote_id || row.id,
+    lead_id: row.lead_id || meta.lead_id || null,
+    customer_id: row.customer_id || meta.customer_id || null,
     public_token: row.public_token || meta.public_token || row.id,
     title,
     subtitle: row.subtitle || meta.subtitle || null,
     cover_image_url: row.hero_image_url || row.cover_image_url || meta.cover_image_url || null,
     client_name: clientName,
+    customer_name: clientName,
     client_whatsapp: clientWhatsapp,
     client_email: clientEmail,
     adults_count: row.adults_count ?? meta.adults_count ?? 0,
@@ -642,6 +658,8 @@ export const createTravelProposal = createServerFn({ method: "POST" })
             store_id: effectiveStoreId,
             created_by_profile_id: identity?.id || null,
             quote_id: input.quoteId || null,
+            lead_id: input.leadId || null,
+            customer_id: input.customerId || null,
             public_token: publicToken,
             canvas_format: input.canvasFormat || "a4-portrait",
             template_theme: input.templateTheme || "editorial-flat",
@@ -676,6 +694,19 @@ export const createTravelProposal = createServerFn({ method: "POST" })
 
         if (propData?.id) {
           insertedId = propData.id;
+          if (input.leadId) {
+            supabase
+              .from("lead_activities")
+              .insert({
+                lead_id: input.leadId,
+                store_id: effectiveStoreId,
+                author_id: identity?.id || null,
+                type: "proposal_sent",
+                content: `Proposta de viagem "${title}" gerada no Studio com sucesso (Token: ${publicToken}).`,
+                metadata: { proposal_id: insertedId, public_token: publicToken, destination: destinationCity },
+              })
+              .then(() => {}, () => {});
+          }
         }
         if (propErr || !propData?.id) {
           throw new Error(`Não foi possível persistir a proposta canônica: ${propErr?.message || "ID ausente"}`);

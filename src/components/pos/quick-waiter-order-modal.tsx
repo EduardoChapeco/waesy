@@ -207,7 +207,7 @@ export function QuickWaiterOrderModal({
  </div>
 
  {categories.length > 0 && (
- <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar text-xs">
  <button
  type="button"
  onClick={() => setSelectedCategory("all")}
@@ -241,7 +241,7 @@ export function QuickWaiterOrderModal({
  </SheetHeader>
 
  {/* Lista de Produtos */}
- <ScrollArea className="flex-1 p-4 max-h-[50vh]">
+ <ScrollArea className="flex-1 p-4 max-h-vh-50">
  {isLoading ? (
  <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground">
  <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
@@ -285,7 +285,7 @@ export function QuickWaiterOrderModal({
  type="button"
  size="icon"
  variant="outline"
- className="size-7 rounded-lg h-7 w-7"
+ className="size-7 rounded-lg h-7 w-7 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  onClick={() => handleDecrement(prod.id)}
  >
  <Minus className="size-3" />
@@ -297,7 +297,7 @@ export function QuickWaiterOrderModal({
  type="button"
  size="icon"
  variant="default"
- className="size-7 rounded-lg h-7 w-7"
+ className="size-7 rounded-lg h-7 w-7 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  onClick={() => handleIncrement(prod)}
  >
  <Plus className="size-3" />
@@ -308,7 +308,7 @@ export function QuickWaiterOrderModal({
  type="button"
  size="sm"
  variant="secondary"
- className="h-7 px-2 text-xs font-bold rounded-lg gap-1 cursor-pointer"
+ className="h-7 px-2 text-xs font-bold rounded-lg gap-1 cursor-pointer min-h-11 sm:min-h-0"
  onClick={() => handleIncrement(prod)}
  >
  <Plus className="size-3" />
@@ -349,7 +349,7 @@ export function QuickWaiterOrderModal({
  size="sm"
  disabled={totalItemsCount === 0 || sendMutation.isPending}
  onClick={() => sendMutation.mutate()}
- className="h-11 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm"
+ className="h-11 px-5 rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-overlay"
  >
  {sendMutation.isPending ? (
  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />

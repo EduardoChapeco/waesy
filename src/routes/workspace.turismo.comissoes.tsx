@@ -165,12 +165,12 @@ function TravelSalesFinancialCompositionPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   // Estado dos 8 Blocos no Formulário
-  const [internalCode, setInternalCode] = useState("RES-2026-0143");
+  const [internalCode, setInternalCode] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientDocument, setClientDocument] = useState("");
-  const [sellerName, setSellerName] = useState("Consultor Principal");
+  const [sellerName, setSellerName] = useState("");
   const [agencyUnit, setAgencyUnit] = useState("Matriz");
-  const [primaryOperator, setPrimaryOperator] = useState("Orinter");
+  const [primaryOperator, setPrimaryOperator] = useState("");
   const [locatorCode, setLocatorCode] = useState("");
   const [destination, setDestination] = useState("");
   const [saleDate, setSaleDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -179,17 +179,15 @@ function TravelSalesFinancialCompositionPage() {
   const [bookingStatus, setBookingStatus] = useState<SaleFinancialRecord["booking_status"]>("confirmada");
 
   // Bloco 1: Composição da Venda
-  const [grossSaleReais, setGrossSaleReais] = useState("10000.00");
-  const [nonCommissionableDirectReais, setNonCommissionableDirectReais] = useState("1200.00");
-  const [nonCommissionableFees, setNonCommissionableFees] = useState<NonCommissionableFeeItem[]>([
-    { fee_type: "taxa_embarque", description: "Taxas de embarque aéreo", amount_cents: 120000 },
-  ]);
+  const [grossSaleReais, setGrossSaleReais] = useState("");
+  const [nonCommissionableDirectReais, setNonCommissionableDirectReais] = useState("0");
+  const [nonCommissionableFees, setNonCommissionableFees] = useState<NonCommissionableFeeItem[]>([]);
 
   // Bloco 2: Comissão
   const [commissionMode, setCommissionMode] = useState<"percentage" | "amount">("percentage");
   const [commissionBaseType, setCommissionBaseType] = useState<"net_sale" | "gross_sale" | "custom">("net_sale");
   const [commissionCustomBaseReais, setCommissionCustomBaseReais] = useState("0");
-  const [commissionPercentage, setCommissionPercentage] = useState("10");
+  const [commissionPercentage, setCommissionPercentage] = useState("0");
   const [commissionAmountReais, setCommissionAmountReais] = useState("0");
   const [commissionOverrideReais, setCommissionOverrideReais] = useState("");
   const [commissionNotes, setCommissionNotes] = useState("");
@@ -197,24 +195,12 @@ function TravelSalesFinancialCompositionPage() {
   // Bloco 3: Over
   const [overMode, setOverMode] = useState<"amount" | "percentage">("amount");
   const [overPercentage, setOverPercentage] = useState("0");
-  const [overGrossReais, setOverGrossReais] = useState("500.00");
-  const [overDeductions, setOverDeductions] = useState<OverDeductionItem[]>([
-    { deduction_type: "imposto", calc_mode: "percentage", percentage: 6, amount_cents: 3000, notes: "Imposto NF sobre Over" },
-  ]);
+  const [overGrossReais, setOverGrossReais] = useState("0");
+  const [overDeductions, setOverDeductions] = useState<OverDeductionItem[]>([]);
   const [overNetOverrideReais, setOverNetOverrideReais] = useState("");
 
   // Bloco 5: Custos Internos
-  const [internalCosts, setInternalCosts] = useState<InternalCostItem[]>([
-    {
-      cost_type: "comissao_vendedor",
-      description: "Comissão do consultor de vendas",
-      calc_mode: "amount",
-      percentage: 0,
-      amount_cents: 25000,
-      beneficiary_name: "Consultor",
-      payment_status: "previsto",
-    },
-  ]);
+  const [internalCosts, setInternalCosts] = useState<InternalCostItem[]>([]);
 
   // Bloco 7: Recebimento e Múltiplos Fornecedores
   const [settlementMethod, setSettlementMethod] = useState<SaleFinancialRecord["settlement_method"]>("fatura_abatida");
@@ -343,51 +329,37 @@ function TravelSalesFinancialCompositionPage() {
 
   const handleOpenNewSheet = () => {
     setEditingSheetId(null);
-    setInternalCode(`RES-2026-0${143 + sheets.length}`);
+    setInternalCode(`OP-${Date.now().toString().slice(-6)}`);
     setClientName("");
     setClientDocument("");
-    setSellerName("Consultor Principal");
+    setSellerName("");
     setAgencyUnit("Matriz");
-    setPrimaryOperator("Orinter");
+    setPrimaryOperator("");
     setLocatorCode("");
     setDestination("");
     setSaleDate(new Date().toISOString().slice(0, 10));
     setDepartureDate("");
     setReturnDate("");
     setBookingStatus("confirmada");
-    setGrossSaleReais("10000.00");
-    setNonCommissionableDirectReais("1200.00");
-    setNonCommissionableFees([
-      { fee_type: "taxa_embarque", description: "Taxas de embarque aéreo", amount_cents: 120000 },
-    ]);
+    setGrossSaleReais("");
+    setNonCommissionableDirectReais("0");
+    setNonCommissionableFees([]);
     setCommissionMode("percentage");
     setCommissionBaseType("net_sale");
-    setCommissionPercentage("10");
+    setCommissionPercentage("");
     setCommissionOverrideReais("");
     setOverMode("amount");
-    setOverGrossReais("500.00");
-    setOverDeductions([
-      { deduction_type: "imposto", calc_mode: "percentage", percentage: 6, amount_cents: 3000, notes: "Imposto NF sobre Over" },
-    ]);
+    setOverGrossReais("0");
+    setOverDeductions([]);
     setOverNetOverrideReais("");
-    setInternalCosts([
-      {
-        cost_type: "comissao_vendedor",
-        description: "Comissão do vendedor",
-        calc_mode: "amount",
-        percentage: 0,
-        amount_cents: 25000,
-        beneficiary_name: "",
-        payment_status: "previsto",
-      },
-    ]);
+    setInternalCosts([]);
     setSettlementMethod("fatura_abatida");
     setReceivedReais("0");
     setReceivableStatus("a_receber");
     setSupplierItems([]);
     setInvoiceStatus("solicitar");
     setInvoiceNumber("");
-    setInvoiceRecipient("Orinter");
+    setInvoiceRecipient("");
     setAuditReason("");
     setIsSheetModalOpen(true);
   };
@@ -695,9 +667,9 @@ function TravelSalesFinancialCompositionPage() {
         <div className="p-4 rounded-2xl border border-foreground/15 bg-foreground text-background space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
             <span>4. A Receber das Operadoras</span>
-            <Clock className="size-4 text-amber-500" />
+            <Clock className="size-4 text-warning-strong" />
           </div>
-          <p className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+          <p className="text-xl font-black text-warning-strong  font-mono tabular-nums">
             {formatMoney(Math.max(0, totals.expectedReceipt - totals.received))}
           </p>
           <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
@@ -785,7 +757,24 @@ function TravelSalesFinancialCompositionPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50 text-xs">
-              {filteredSheets.map((sheet) => {
+              {filteredSheets.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                    <div className="max-w-md mx-auto space-y-3">
+                      <Receipt className="size-8 mx-auto text-muted-foreground/60" />
+                      <p className="text-sm font-semibold text-foreground">Nenhuma operação lançada nesta visualização</p>
+                      <p className="text-xs text-muted-foreground">
+                        Utilize o botão "Nova Operação" acima para lançar uma venda ou ajuste os filtros selecionados.
+                      </p>
+                      <Button size="sm" onClick={handleOpenNewSheet} className="h-11 min-h-11 px-4 text-xs font-bold gap-1.5 cursor-pointer">
+                        <Plus className="size-4" />
+                        <span>Nova Operação</span>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredSheets.map((sheet) => {
                 const invBadge = INVOICE_STATUSES.find((i) => i.id === sheet.invoice_status);
                 const recBadge = RECEIVABLE_STATUSES.find((r) => r.id === sheet.receivable_status);
 
@@ -903,7 +892,7 @@ function TravelSalesFinancialCompositionPage() {
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>

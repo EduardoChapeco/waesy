@@ -315,7 +315,7 @@ export function MediaUploader({
 
  {/* ── 3. UPLOAD DIRETO OBRIGATÓRIO PARA BUCKET SUPABASE (Regra Anti-URL Manual) ── */}
         <div className="pt-2">
-          <p className="text-3xs text-muted-foreground flex items-center gap-1.5">
+          <p className="text-3xs text-muted-foreground flex items-center gap-2">
             <ShieldCheck className="size-3.5 text-primary shrink-0" />
             <span>Upload direto para o bucket Supabase Storage com enquadramento e corte proporcional.</span>
           </p>

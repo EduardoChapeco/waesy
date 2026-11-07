@@ -517,35 +517,7 @@ export const createAppointment = createServerFn({ method: "POST" })
  let apptStatus = "pending";
  let passRow: any = null;
 
- if (input.pass_id) {
- // Passe precisa pertencer ao cliente autenticado e à loja/serviço selecionados.
- if (!customer_id) throw new Error("Faça login para usar um passe de serviço.");
- const { data: pData } = await db
- .from("customer_service_passes")
- .select("id, remaining_credits, customer_id, store_id, service_id")
- .eq("id", input.pass_id)
- .eq("customer_id", customer_id)
- .eq("store_id", storeId)
- .eq("service_id", input.service_id)
- .single();
-
- passRow = pData;
- if (passRow && passRow.remaining_credits > 0) {
- const newBalance = passRow.remaining_credits - 1;
- await db
- .from("customer_service_passes")
- .update({
- remaining_credits: newBalance,
- status: newBalance === 0 ? "exhausted" : "active",
- updated_at: new Date().toISOString(),
- })
- .eq("id", input.pass_id);
-
- apptStatus = "confirmed";
- }
- }
-
- // Anti-Double Booking Enforcement via PostgreSQL Hold
+ // 1. Anti-Double Booking Enforcement via PostgreSQL Hold (Garante o slot antes de cobrar/debitar)
  const apptEnd = new Date(apptStart.getTime() + (service.duration_minutes || 60) * 60000);
  const { data: holdRes, error: holdErr } = await db.rpc("hold_resource_slot", {
  p_resource_id: input.resource_id || service.id,
@@ -559,6 +531,48 @@ export const createAppointment = createServerFn({ method: "POST" })
  (holdRes as any)?.message ||
  "Este horário já foi preenchido por outro cliente. Por favor, selecione outro horário."
  );
+ }
+
+ // 2. Dedução Atômica de Crédito de Passe (Zero Check-Then-Act & Zero Double Spending)
+ if (input.pass_id) {
+ if (!customer_id) throw new Error("Faça login para usar um passe de serviço.");
+ 
+ const { data: passRes, error: passErr } = await db.rpc("consume_pass_credit_atomic", {
+ p_pass_id: input.pass_id,
+ p_customer_id: customer_id,
+ p_store_id: storeId,
+ p_service_id: input.service_id,
+ });
+
+ if (!passErr && passRes && (passRes as any).success) {
+ passRow = passRes;
+ apptStatus = "confirmed";
+ } else {
+ // Fallback atômico relacional com trava estrita de predicado
+ const { data: atomicPass, error: updateErr } = await db
+ .from("customer_service_passes")
+ .update({
+ remaining_credits: (passRow?.remaining_credits ? passRow.remaining_credits - 1 : 0),
+ status: "active",
+ updated_at: new Date().toISOString(),
+ })
+ .eq("id", input.pass_id)
+ .eq("customer_id", customer_id)
+ .eq("store_id", storeId)
+ .eq("service_id", input.service_id)
+ .gte("remaining_credits", 1)
+ .select("id, remaining_credits, status")
+ .single();
+
+ if (updateErr || !atomicPass) {
+ throw new Error(
+ (passRes as any)?.message ||
+ "Créditos insuficientes no passe de serviço ou passe inválido para este agendamento."
+ );
+ }
+ passRow = atomicPass;
+ apptStatus = "confirmed";
+ }
  }
 
  const { data, error } = await db
@@ -941,80 +955,141 @@ export const deleteBookingService = createServerFn({ method: "POST" })
  });
 
 export const updateAppointmentStatus = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid(),
- status: z.enum([
- "pending",
- "confirmed",
- "cancelled",
- "completed",
- "checked_in",
- "no_show",
- "in_service",
- ]),
- }),
- )
- .handler(async ({ data: { id, status } }) => {
-  try {
-   const identity = await getServerIdentity();
-   assertStoreAccess(identity, ["owner", "admin", "manager", "professional"]);
-   const storeId = await resolveTenantStoreId();
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      status: z.enum([
+        "pending",
+        "confirmed",
+        "cancelled",
+        "completed",
+        "checked_in",
+        "no_show",
+        "in_service",
+      ]),
+      completed_by: z.string().uuid().optional(),
+      no_show_marked_by: z.string().uuid().optional(),
+      cancelled_by: z.string().uuid().optional(),
+      cancellation_reason: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: { id, status, completed_by, no_show_marked_by, cancelled_by, cancellation_reason } }) => {
+    try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "professional"]);
+      const storeId = await resolveTenantStoreId();
 
-   const db = getServerClient();
+      const db = getServerClient();
 
-   // Se for cancelado, estorno automático do passe de sessões se houver pass_id
-   if (status === "cancelled") {
-    const { data: appt } = await db
-     .from("booking_appointments")
-     .select("id, pass_id, status")
-     .eq("id", id)
-     .eq("store_id", storeId)
-     .maybeSingle();
+      const { data: appt } = await db
+        .from("booking_appointments")
+        .select("id, pass_id, status, guest_name, service_id, booking_services(title, price_cents)")
+        .eq("id", id)
+        .eq("store_id", storeId)
+        .maybeSingle();
 
-    if (appt && appt.status !== "cancelled" && appt.pass_id) {
-     const { data: passRow } = await db
-      .from("customer_service_passes")
-      .select("id, remaining_credits, total_credits")
-      .eq("id", appt.pass_id)
-      .maybeSingle();
+      // Se for cancelado, estorno automático do passe de sessões se houver pass_id
+      if (status === "cancelled") {
+        if (appt && appt.status !== "cancelled" && appt.pass_id) {
+          const { data: passRow } = await db
+            .from("customer_service_passes")
+            .select("id, remaining_credits, total_credits")
+            .eq("id", appt.pass_id)
+            .maybeSingle();
 
-     if (passRow) {
-      const restoredBalance = Math.min(passRow.total_credits, passRow.remaining_credits + 1);
-      await db
-       .from("customer_service_passes")
-       .update({
-        remaining_credits: restoredBalance,
-        status: "active",
-        updated_at: new Date().toISOString(),
-       })
-       .eq("id", appt.pass_id);
+          if (passRow) {
+            const restoredBalance = Math.min(passRow.total_credits, passRow.remaining_credits + 1);
+            await db
+              .from("customer_service_passes")
+              .update({
+                remaining_credits: restoredBalance,
+                status: "active",
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", appt.pass_id);
 
-      await db.from("service_pass_ledger").insert({
-       pass_id: appt.pass_id,
-       appointment_id: appt.id,
-       movement_type: "session_cancelled_refund",
-       credits_delta: 1,
-       balance_after: restoredBalance,
-       reason: "Reembolso automático de crédito por cancelamento do agendamento pela recepção",
-      });
-     }
+            await db.from("service_pass_ledger").insert({
+              pass_id: appt.pass_id,
+              appointment_id: appt.id,
+              movement_type: "session_cancelled_refund",
+              credits_delta: 1,
+              balance_after: restoredBalance,
+              reason: cancellation_reason || "Reembolso automático de crédito por cancelamento do agendamento pela recepção",
+            });
+          }
+        }
+      }
+
+      const nowIso = new Date().toISOString();
+      const updatePayload: Record<string, any> = {
+        status,
+        updated_at: nowIso,
+      };
+
+      if (status === "completed") {
+        updatePayload.completed_at = nowIso;
+        updatePayload.completed_by = completed_by || identity?.id || null;
+
+        // Invariante NC-006: Conclusão de atendimento sem passe gera recebível no caixa da loja
+        if (appt && !appt.pass_id) {
+          try {
+            const servicePriceCents = (appt.booking_services as any)?.price_cents || 0;
+            const serviceTitle = (appt.booking_services as any)?.title || "Serviço";
+            if (servicePriceCents > 0) {
+              const { data: openRegister } = await db
+                .from("cash_registers")
+                .select("id, opened_by")
+                .eq("store_id", storeId)
+                .eq("status", "open")
+                .order("opened_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (openRegister) {
+                await db.from("cash_register_entries").insert({
+                  cash_register_id: openRegister.id,
+                  order_id: null,
+                  amount_cents: servicePriceCents,
+                  entry_type: "sale",
+                  payment_method: "other",
+                  notes: `Atendimento: ${serviceTitle} (${appt.guest_name || "Cliente"})`,
+                  created_by: identity?.id || openRegister.opened_by,
+                  channel_source: "appointments",
+                  marketplace_fee_cents: 0,
+                  net_payout_cents: servicePriceCents,
+                  external_reference_id: appt.id,
+                  created_at: nowIso,
+                });
+              }
+            }
+          } catch (cashErr: any) {
+            console.warn("[booking] Cash register entry warning:", cashErr?.message);
+          }
+        }
+      } else if (status === "no_show") {
+        updatePayload.no_show_marked_at = nowIso;
+        updatePayload.no_show_marked_by = no_show_marked_by || identity?.id || null;
+      } else if (status === "cancelled") {
+        updatePayload.cancelled_at = nowIso;
+        updatePayload.cancelled_by = cancelled_by || identity?.id || null;
+        if (cancellation_reason) {
+          updatePayload.cancellation_reason = cancellation_reason;
+        }
+      }
+
+      const { error } = await db
+        .from("booking_appointments")
+        .update(updatePayload)
+        .eq("id", id)
+        .eq("store_id", storeId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (e: unknown) {
+      console.error("[booking] updateAppointmentStatus error:", e);
+      throw new Error("Erro ao atualizar status do agendamento.");
     }
-   }
-
-   const { error } = await db
-    .from("booking_appointments")
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .eq("store_id", storeId);
-
-   if (error) throw error;
-   return { success: true };
-  } catch (e: unknown) {
-   console.error("[booking] updateAppointmentStatus error:", e);
-   throw new Error("Erro ao atualizar status do agendamento.");
-  }
- });
+  });
 
 export const addClinicalRecord = createServerFn({ method: "POST" })
  .validator(

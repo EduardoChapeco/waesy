@@ -89,7 +89,7 @@ export function PixHubDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="h-[92dvh] max-h-[92dvh] p-0 flex flex-col rounded-t-3xl border-t border-border bg-background z-50 overflow-hidden"
+        className="h-vh-92 max-h-vh-92 p-0 flex flex-col rounded-t-3xl border-t border-border bg-background z-50 overflow-hidden"
       >
         {/* Apple HIG Grab Handle */}
         <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto my-3 shrink-0" />
@@ -101,7 +101,7 @@ export function PixHubDrawer({
               type="button"
               onClick={() => onOpenChange(false)}
               aria-label="Voltar"
-              className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <ArrowLeft className="size-5" />
             </button>
@@ -115,7 +115,7 @@ export function PixHubDrawer({
             title="Ajuda Pix"
             aria-label="Ajuda Pix"
             onClick={() => toast.info("Central de Ajuda Pix — Atendimento 24h")}
-            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
           >
             <HelpCircle className="size-5" />
           </button>
@@ -129,7 +129,7 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("transfer")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
                 <ArrowLeftRight className="size-5" />
@@ -143,7 +143,7 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("qrcode")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
                 <QrCode className="size-5" />
@@ -157,7 +157,7 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("receive")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
                 <ArrowDownLeft className="size-5" />
@@ -171,7 +171,7 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("schedule")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
                 <Calendar className="size-5" />
@@ -185,7 +185,7 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("copy_paste")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
                 <Copy className="size-5" />
@@ -199,7 +199,7 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("card_pix")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
                 <CreditCard className="size-5" />
@@ -250,7 +250,7 @@ export function PixHubDrawer({
                       type="button"
                       onClick={() => handleCopyKey(key)}
                       aria-label={`Copiar chave ${key.label}`}
-                      className="size-11 min-h-11 min-w-11 rounded-xl flex items-center justify-center hover:bg-zinc-200/60 active:scale-95 text-zinc-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+                      className="size-11 min-h-11 min-w-11 rounded-xl flex items-center justify-center hover:bg-zinc-200/60 active:scale-95 text-zinc-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
                     >
                       {copiedKeyId === key.id ? (
                         <Check className="size-5 text-emerald-600 font-bold" />
@@ -269,7 +269,7 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={onRegisterKeyClick || (() => toast.info("Cadastro de nova chave Pix"))}
-              className="w-full h-12 min-h-12 rounded-xl bg-lime-400 hover:bg-lime-500 active:bg-lime-600 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="w-full h-12 min-h-12 rounded-xl bg-warning hover:bg-warning active:bg-warning text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <span>Cadastrar chave</span>
             </button>
@@ -277,7 +277,7 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={onManageKeysClick || (() => toast.info("Gerenciador de chaves Pix"))}
-              className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <span>Gerenciar chaves</span>
             </button>
@@ -285,7 +285,7 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={onPixLimitsClick || (() => toast.info("Ajuste de limites de transferência Pix"))}
-              className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+              className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 text-zinc-800 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
             >
               <span>Meus limites Pix</span>
             </button>
