@@ -25,6 +25,10 @@ if (!process.env.FINANCIAL_RECEIPT_SECRET) {
   process.env.FINANCIAL_RECEIPT_SECRET = "waesy-vitest-financial-receipt-secret-2026-10-06";
 }
 
+if (!process.env.TICKET_CRYPT_SECRET) {
+  process.env.TICKET_CRYPT_SECRET = "waesy-vitest-ticket-crypt-secret-2026-10-06";
+}
+
 const createChainableMock = () => {
   let proxy: any;
   const fn: any = vi.fn((..._args: any[]) => proxy);
