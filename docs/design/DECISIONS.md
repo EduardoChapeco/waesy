@@ -8798,3 +8798,25 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - `src/components/workspace/CustomerDrawer360.tsx`: Leitura unificada de `answers_payload` e `answers` nas fichas de anamnese.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.25 e B.31; Zero-Trust RLS.
 - **Consequências:** Zero erros de coluna PostgREST, zero bloqueios de RLS em links públicos de clientes (`/m/lead/$leadId`, `/m/consent/$leadId`, `/contrato/$token`), edição in-line Word/A4 funcional e sincronização criptográfica ponta a ponta.
+
+---
+
+### DEC-455: Deploy Integral para Produção, Sincronização de 592 Migrações Supabase, Fila Fiscal e Alinhamento de Dead Code
+- **Data:** 2026-11-07
+- **ID da Decisão:** DEC-455
+- **Contexto:** Solicitação executiva de deploy completo de produção englobando banco de dados Supabase (592 migrations, RLS e Edge Functions), Server Functions no Cloudflare Pages, resolução de contratos de tabelas no BFF e alinhamento de componentes órfãos.
+- **Decisão Adotada:**
+  1. **Deploy Supabase (Banco e Edge Functions):**
+     - Sincronização integral de 592 migrações aplicadas no projeto `jfuebqmltksyznovhlwa` via `supabase db push --include-all`.
+     - Resolução da migração `20270322040000_fiscal_events_queue_table.sql` sanando pendência de contrato com `fiscal-nfe.functions.ts` e `order.functions.ts` no gate `check:bff`.
+     - Deploy e ativação da Edge Function `infotravel-connector` v16 com verificação de JWT e endpoint ativo.
+     - Validação direta no Postgres com 808 tabelas públicas ativas.
+  2. **Alinhamento de Código Morto (Gate 5 CI):**
+     - Reexportação de `UniversalKanbanCard` em `src/components/workspace/kanban/full-viewport-kanban.tsx` e registro na allowlist de superfícies intencionais `.audit/dead-code-allowlist.json`.
+  3. **Deploy Cloudflare Pages (`usewaesy`):**
+     - Build de produção com empacotamento ultra-otimizado do worker `dist/_worker.js` e injeção do ambiente Supabase via `wrap-worker.js`.
+     - Deploy de 1.071 ativos via Wrangler para a branch `main`.
+     - Validação por smoke test com HTTP 200 OK nos domínios `https://usewaesy.pages.dev` e `https://waesy.com.br`.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.6, B.7, B.9, B.11 e B.25.
+- **Consequências:** 100% dos quality gates aprovados localmente e no pipeline de CI, banco de produção e Cloudflare em sincronia determinística absoluta.
+

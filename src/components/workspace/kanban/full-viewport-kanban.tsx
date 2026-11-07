@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+export { UniversalKanbanCard, type UniversalKanbanCardProps } from "./universal-kanban-card";
 
 function getColumnColorClass(color?: string): string {
   if (!color) return "bg-primary";
