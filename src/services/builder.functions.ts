@@ -497,7 +497,7 @@ async function hydrateBindings(
 // ---------------------------------------------------------------------------
 
 export async function resolveStoreContext(
-  _identity?: {
+  identity?: {
     id: string | null;
     role?: string;
     store_id?: string | null;
@@ -506,6 +506,44 @@ export async function resolveStoreContext(
   targetStoreId?: string | null,
   documentId?: string | null,
 ): Promise<string> {
+  if (identity) {
+    const isGlobalAdmin = identity.role === "platform_admin" || identity.role === "master";
+
+    // 1. Se targetStoreId foi passado explicitamente
+    if (targetStoreId) {
+      if (isGlobalAdmin) return targetStoreId;
+      if (identity.store_id === targetStoreId) return targetStoreId;
+      if (identity.memberships?.some((m) => m.store_id === targetStoreId)) return targetStoreId;
+      if (identity.store_id) return identity.store_id;
+    }
+
+    // 2. Se documentId foi fornecido, resolve do documento no banco
+    if (documentId) {
+      const db = getServerClient();
+      const { data: doc } = await db
+        .from("experience_documents")
+        .select("store_id")
+        .eq("id", documentId)
+        .maybeSingle();
+
+      if (doc?.store_id) {
+        if (isGlobalAdmin) return doc.store_id;
+        if (identity.store_id === doc.store_id) return doc.store_id;
+        if (identity.memberships?.some((m) => m.store_id === doc.store_id)) return doc.store_id;
+        throw new Error("Acesso negado ao documento desta loja.");
+      }
+    }
+
+    // 3. Fallback para store_id ativo na identidade
+    if (identity.store_id) {
+      return identity.store_id;
+    }
+
+    // Administrador global também precisa declarar o tenant-alvo.
+    // Nunca inferir uma loja arbitrária para uma operação de escrita/leitura.
+    throw new Error("Nenhum contexto de loja válido encontrado para a operação do builder.");
+  }
+
   const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
   const authCtx = await authorizeBuilderStoreContext({
     requestedStoreId: targetStoreId || undefined,
@@ -513,7 +551,6 @@ export async function resolveStoreContext(
     allowPlatformRootForGlobalAdmin: true,
   });
   return authCtx.storeId;
-
 }
 
 export const listExperienceDocuments = createServerFn({ method: "GET" })

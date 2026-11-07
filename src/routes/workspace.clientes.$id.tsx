@@ -613,7 +613,7 @@ function CustomerDetailPage() {
           </TabsTrigger>
           <TabsTrigger value="viagens" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Plane className="size-3.5 text-primary" />
-            <span>Viagens ({(data.confirmedTrips?.length || 0) + (data.commercialLeads?.length || 0) + (data.proposals?.length || 0) + (data.contracts?.length || 0)})</span>
+            <span>Viagens & Propostas ({(data.confirmedTrips?.length || 0) + (data.commercialLeads?.length || 0) + (data.proposals?.length || 0) + (data.contracts?.length || 0)})</span>
           </TabsTrigger>
           <TabsTrigger value="preferencias" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <Compass className="size-3.5 text-sky-500" />

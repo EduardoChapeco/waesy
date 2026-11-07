@@ -21,6 +21,10 @@ if (!process.env.VAULT_MASTER_KEY) {
   process.env.VAULT_MASTER_KEY = "waesy-vitest-only-not-for-production-2026-10-06";
 }
 
+if (!process.env.FINANCIAL_RECEIPT_SECRET) {
+  process.env.FINANCIAL_RECEIPT_SECRET = "waesy-vitest-financial-receipt-secret-2026-10-06";
+}
+
 const createChainableMock = () => {
   let proxy: any;
   const fn: any = vi.fn((..._args: any[]) => proxy);
@@ -49,11 +53,15 @@ const mockIdentity = {
 };
 
 // These hoists will register the mock modules
-vi.mock("@/lib/server-access", () => ({
- getServerIdentity: vi.fn(),
- assertStoreAccess: vi.fn(),
- getSSRClient: vi.fn(),
-}));
+vi.mock("@/lib/server-access", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/server-access")>();
+  return {
+    ...actual,
+    getServerIdentity: vi.fn(),
+    assertStoreAccess: vi.fn(),
+    getSSRClient: vi.fn(),
+  };
+});
 
 vi.mock("@/lib/supabase", () => ({
  getServerClient: vi.fn(),

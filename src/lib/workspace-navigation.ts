@@ -604,7 +604,7 @@ const GROUP_SUPPORT_DESK: NavGroup = {
   icon: LifeBuoy,
   section: "corporate",
   items: [
-    { path: "/workspace/suporte", label: "Central de Suporte", icon: LifeBuoy },
+    { path: "/workspace/suporte", label: "Atendimento", icon: LifeBuoy },
     { path: "/workspace/avaliacoes", label: "Avaliações & NPS", icon: Star },
     { path: "/workspace/pedidos/trocas", label: "Trocas & Garantias", icon: ArrowRightLeft },
     { path: "/workspace/qualidade", label: "Qualidade & SLA", icon: Award },

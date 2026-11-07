@@ -210,15 +210,11 @@ export const updateContractDraft = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await requireStaff();
 
-    const accessFilter = identity.store_id
-      ? `creator_id.eq.${identity.id},store_id.eq.${identity.store_id},metadata->>store_id.eq.${identity.store_id}`
-      : `creator_id.eq.${identity.id}`;
-
     const { data: ownedContract, error: ownershipErr } = await supabase
       .from("contracts")
       .select("id")
       .eq("id", input.contractId)
-      .or(accessFilter)
+      .eq("creator_id", identity.id)
       .maybeSingle();
     if (ownershipErr || !ownedContract)
       throw new Error("Contrato não encontrado ou acesso negado.");
@@ -338,7 +334,8 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
       .from("contracts")
       .select("id, creator_id, store_id, current_version, status")
       .eq("id", input.contractId)
-      .or(`store_id.eq.${actor.store_id},creator_id.eq.${actor.id}`)
+      .eq("creator_id", actor.id)
+      .eq("store_id", actor.store_id)
       .maybeSingle();
 
     if (contractError || !contract) {

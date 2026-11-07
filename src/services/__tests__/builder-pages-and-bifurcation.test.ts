@@ -121,9 +121,9 @@ describe("Microfases 2, 3 e 4: Multi-Páginas, Bifurcação Estrita e Marketing 
       expect(surfaceCmsCode).not.toContain('name: docName');
       
       // Validação do uso correto de 'title'
-      expect(surfaceCmsCode).toContain('.select("id, slug, title, settings")');
-      expect(surfaceCmsCode).toContain('title: docName');
-      expect(surfaceCmsCode).toContain('existingDoc.title || docName');
+      expect(surfaceCmsCode).toMatch(/\.select\("id,\s*slug,\s*title,\s*settings/);
+      expect(surfaceCmsCode).toMatch(/title:\s*doc(Title|Name)/);
+      expect(surfaceCmsCode).toMatch(/existingDoc\.title\s*\|\|\s*doc(Title|Name)/);
     });
 
     it("deve garantir header canônico e erradicação de AI-smell em admin-master.home-editor", () => {
