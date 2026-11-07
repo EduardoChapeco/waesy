@@ -1,5 +1,28 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-462: Consolidação Integral de Atualizações Remotas, Deploy Produção Supabase & Cloudflare Pages, Higienização de Vínculos e Propagação da Marca "Turis"
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. A branch remota `origin/fix/cms-navigation-and-builder-clarity` acumulou melhorias e novas migrações estruturais que necessitavam de merge cuidadoso e resolução determinística de conflitos.
+  2. Necessidade de deploy completo para produção no Supabase (592 migrações e edge functions) e no Cloudflare Pages via Wrangler com variáveis de ambiente injetadas.
+  3. Solicitação de limpeza de cadastros e memberships do usuário administrador Eduardo Antônio Ramos (`meuwider@gmail.com`), retendo exclusivamente o Workspace Waesy (Principal) e a agência Excelência Tour (Turismo), com propagação da marca "Turis" e designação da Excelência Tour como "Agência Parceira Padrão".
+  4. Auditoria das empresas mineradas, notícias e scrapers/crawlers ativos, complementando logotipos oficiais, CNPJs e descrições, além da modernização integral dos Termos de Uso, Política de Privacidade (LGPD) e Central de Ajuda (FAQ).
+- **Decisão:**
+  1. **Merge e Resolução de Conflitos:**
+     - Resolvidos 11 arquivos com conflitos contíguos (`route-inventory.test.ts`, `builder.functions.ts`, `workspace.tsx`, `rh.ponto.tsx`, `orcamentos.index.tsx`, `financeiro.funcionarios.tsx`, `caixa.index.tsx`, `moderacao.index.tsx`, `pdv.comandas.tsx`, `squads.tsx`, `setup.ts`), preservando todas as defesas contra AI-smell e novas regras RLS.
+  2. **Deploy Supabase Produção:**
+     - Executado `deploy-supabase-production-complete.mjs` com 592 migrações aplicadas com sucesso e edge functions validadas em PostgreSQL 17.6 remoto com 808 tabelas públicas ativas.
+  3. **Deploy Cloudflare Pages:**
+     - Compilado bundle ultra-otimizado com Nitro/Wrangler e deployed para produção em `usewaesy.pages.dev` com 838 assets atualizados e zero vazamentos de runtime.
+  4. **Higienização de Cadastros e Propagação "Turis":**
+     - Removidos vínculos excedentes (Foodman e CDL Jovem) do usuário `meuwider@gmail.com`, mantendo estritamente Workspace Waesy e Excelência Tour.
+     - Atualizados metadados corporativos em `stores` e `companies` com logotipo oficial em alta resolução, CNPJ (66.819.671/0001-97), endereço e descrição.
+     - Propagado o nome "Turis" no módulo de turismo e chancelada a Excelência Tour como "Agência Parceira Padrão".
+  5. **Contratos e Governança LGPD:**
+     - Atualizados `_store.termos.tsx`, `_store.privacidade.tsx` e `_store.faq.tsx` com cláusulas completas para multiverticais, taxa fixa de despacho, tolerância de espera e direitos do titular LGPD.
+- **Fundamentação:** AGENTS.md B.1, B.6, B.7, B.9, B.11, B.20 a B.36; Lei 13.709/2018 (LGPD); Portaria MTE 671/2021.
+- **Consequências:** Base de código 100% unificada com o remoto, deploy ativo em produção, dados de loja e agência higienizados e termos jurídicos robustos.
+
 ## DEC-461: Erradicação Completa de Jargões Técnicos ("Canônico", "Squircle", "1:1"), Banners Explicativos e AI Smell nas Telas de Configurações e Catálogo
 - **Data:** 2026-11-07
 - **Contexto:**

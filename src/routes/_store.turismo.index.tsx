@@ -44,16 +44,16 @@ import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 export const Route = createFileRoute("/_store/turismo/")({
   head: () =>
     buildUniversalHead({
-      title: "Turismo & Viagens | Waesy & Excelência Tour",
+      title: "Turis | Turismo & Viagens — Excelência Tour",
       description:
-        "Pacotes de viagens, passagens aéreas, hotéis, ônibus e hub corporativo integrado com reservas seguras.",
+        "Pacotes de viagens, passagens aéreas, hotéis e gestão corporativa com a Excelência Tour, agência parceira oficial.",
       path: "/turismo",
       ogType: "website",
       webmcpType: "tourism_index",
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
-        name: "Turismo e Viagens",
+        name: "Turis — Turismo e Viagens",
         description: "Catálogo de experiências, pacotes e destinos turísticos no Waesy.",
         url: "https://waesy.com.br/turismo",
       },
@@ -259,13 +259,13 @@ function TourismMasterPage() {
         <div className="flex items-center justify-between pt-2 pb-3 border-b border-border/40">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <span>Turismo & Viagens</span>
+              <span>Turis</span>
               <span className="text-3xs font-extrabold uppercase px-2 py-1 rounded-full bg-primary/10 text-primary font-mono">
-                Excelência Tour
+                Excelência Tour · Agência Parceira
               </span>
             </h1>
             <p className="text-xs text-muted-foreground mt-1">
-              Pacotes completos, passagens aéreas, hotéis e gestão corporativa B2B
+              Pacotes de viagens, passagens aéreas, hotéis e gestão corporativa B2B
             </p>
           </div>
 
