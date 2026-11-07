@@ -178,7 +178,7 @@ function ServicesIndexPage() {
   };
 
  return (
- <div className="space-y-6 max-w-6xl animate-in fade-in duration-200">
+ <div className="space-y-6 w-full animate-in fade-in duration-200">
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Agenda"
  title="Serviços"

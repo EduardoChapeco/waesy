@@ -241,7 +241,7 @@ export function WorkspaceSidebarFlyout({
  {/* Flyout Flutuante à Direita (Hover / Apenas quando recolhido) */}
  {isFlyoutOpen && !isExpanded && (
  <div
- className="absolute left-full top-0 ml-2 w-56 rounded-lg border border-border/80 bg-background/98 backdrop-blur-xl p-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
+ className="absolute left-full top-0 ml-2 w-56 rounded-lg border border-border/80 bg-background/98 p-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
 
  >
  <div className="px-3 py-2 pb-2 border-b border-border/40 mb-1">

@@ -107,6 +107,7 @@ import { LeadFlightGridSheet } from "@/components/commercial/lead-flight-grid-sh
 import { KanbanColumnCustomizerModal } from "@/components/workspace/kanban/kanban-column-customizer-modal";
 import { Customer360PrintableDossier } from "@/components/dossier/customer-360-printable-dossier";
 import { EmptyState } from "@/components/state/states";
+import { listKanbanStages, type KanbanStageDTO } from "@/services/kanban-config.functions";
 
 export const Route = createFileRoute("/workspace/turismo/")({
   head: () => ({
@@ -114,7 +115,8 @@ export const Route = createFileRoute("/workspace/turismo/")({
   }),
   loader: async () => {
     try {
-      const [leadsRes, proposalsRes, tripsRes, departuresRes, sheetsRes, customersRes, teamRes, store] = await Promise.all([
+      const store = await getStoreSettings().catch(() => null);
+      const [leadsRes, proposalsRes, tripsRes, departuresRes, sheetsRes, customersRes, teamRes, kanbanStages] = await Promise.all([
         listLeads().catch(() => []),
         listAgencyTravelProposals().catch(() => []),
         listStoreTrips({ data: { status: "all" } }).catch(() => []),
@@ -122,7 +124,7 @@ export const Route = createFileRoute("/workspace/turismo/")({
         listTravelSaleFinancialSheets({ data: {} }).catch(() => []),
         listCustomers({ data: {} }).catch(() => []),
         listTeamMembers().catch(() => []),
-        getStoreSettings().catch(() => null),
+        store?.id ? listKanbanStages({ data: { storeId: store.id, module: "turismo" } }).catch(() => []) : [],
       ]);
       return {
         leads: leadsRes || [],
@@ -133,6 +135,7 @@ export const Route = createFileRoute("/workspace/turismo/")({
         customers: Array.isArray(customersRes) ? customersRes : (customersRes as any)?.customers || [],
         team: teamRes || [],
         store,
+        kanbanStages: (kanbanStages || []) as KanbanStageDTO[],
       };
     } catch (err) {
       console.error("[loader:workspace.turismo.index] Loader fallback:", err);
@@ -145,6 +148,7 @@ export const Route = createFileRoute("/workspace/turismo/")({
         customers: [],
         team: [],
         store: null,
+        kanbanStages: [],
       };
     }
   },
@@ -265,10 +269,28 @@ export default function WorkspaceTurismoCockpitPage() {
     customers: initialCustomers,
     team: initialTeam = [],
     store,
+    kanbanStages = [],
   } = Route.useLoaderData();
   const router = useRouter();
   const queryClient = useQueryClient();
   const storeId = store?.id || "";
+
+  const [stages, setStages] = useState<any[]>(() => {
+    if (kanbanStages && kanbanStages.length > 0) {
+      return kanbanStages.map((s: any) => ({
+        id: s.stage_key,
+        title: s.title,
+        dotColor: s.color || "bg-primary",
+        description: s.description || "",
+        is_visible: s.is_visible !== false,
+      }));
+    }
+    return TOURISM_STAGES;
+  });
+
+  const visibleStages = useMemo(() => {
+    return stages.filter((s: any) => s.is_visible !== false);
+  }, [stages]);
 
   const [search, setSearch] = useState("");
   const [ownerFilter, setOwnerFilter] = useState("all");
@@ -531,12 +553,20 @@ export default function WorkspaceTurismoCockpitPage() {
   // Conversão de Lead para Carteira de Clientes
   const handlePromoteToCustomer = async (leadId: string) => {
     try {
-      await promoteLeadToCustomer({ data: { leadId } });
+      const res = await promoteLeadToCustomer({ data: { leadId } });
       toast.success("Lead promovido com sucesso para a Carteira de Clientes 360°!");
       await refetchLeads();
       queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
       queryClient.invalidateQueries({ queryKey: ["crm-customers-list"] });
-      if (selectedLead?.id === leadId) setSelectedLead(null);
+      if (selectedLead?.id === leadId) {
+        setSelectedLead((prev: any) => (prev ? { ...prev, customer_id: res.customerId } : null));
+        try {
+          const profile360 = await getCustomer360Profile({ data: { leadId } });
+          setCustomer360Data(profile360);
+        } catch {
+          // fallback silencioso
+        }
+      }
     } catch (err: any) {
       toast.error(err?.message || "Erro ao converter lead.");
     }
@@ -706,6 +736,9 @@ export default function WorkspaceTurismoCockpitPage() {
           travelEnd: updatedData.travel_end || null,
           paxAdults: Number(updatedData.pax_adults) || 1,
           paxChildren: Number(updatedData.pax_children) || 0,
+          paxInfants: Number(updatedData.pax_infants) || 0,
+          source: updatedData.source || null,
+          lead_source_detail: updatedData.lead_source_detail || null,
           estimated_value_cents: updatedData.estimated_value_cents,
           notes: updatedData.notes,
           status: updatedData.status as any,
@@ -818,13 +851,21 @@ export default function WorkspaceTurismoCockpitPage() {
   };
 
   // Emissão de Contrato Digital
-  const handleIssueContract = async () => {
+  const handleIssueContract = async (contractData?: {
+    leadId?: string;
+    contractTitle?: string;
+    packageSummary?: string;
+    totalValueCents?: number;
+    paymentConditions?: string;
+  }) => {
     if (!selectedLead) return;
-    if (!contractForm.title.trim()) {
+    const targetTitle = contractData?.contractTitle || contractForm.title;
+    if (!targetTitle.trim()) {
       toast.error("Informe o título do contrato.");
       return;
     }
-    if (!contractForm.packageSummary.trim()) {
+    const targetSummary = contractData?.packageSummary !== undefined ? contractData.packageSummary : contractForm.packageSummary;
+    if (!targetSummary.trim()) {
       toast.error("Informe o resumo dos serviços contratados.");
       return;
     }
@@ -832,26 +873,27 @@ export default function WorkspaceTurismoCockpitPage() {
       setIsIssuingContract(true);
       const res = await issueLeadContract({
         data: {
-          leadId: selectedLead.id,
-          contractTitle: contractForm.title,
-          packageSummary: contractForm.packageSummary,
-          totalValueCents: contractForm.totalValueCents || selectedLead.estimated_value_cents || 0,
-          paymentConditions: contractForm.paymentConditions,
+          leadId: contractData?.leadId || selectedLead.id,
+          contractTitle: targetTitle.trim(),
+          packageSummary: targetSummary.trim(),
+          totalValueCents: contractData?.totalValueCents || contractForm.totalValueCents || selectedLead.estimated_value_cents || 0,
+          paymentConditions: contractData?.paymentConditions || contractForm.paymentConditions || "A combinar",
         },
       });
       toast.success(`Contrato gerado com sucesso! Token: ${res.publicToken}`);
-      getCustomer360Profile({ data: { leadId: selectedLead.id } })
-        .then((r) => setCustomer360Data(r))
-        .catch(() => null);
+      const updated360 = await getCustomer360Profile({ data: { leadId: selectedLead.id } });
+      setCustomer360Data(updated360);
+      return res;
     } catch (err: any) {
       toast.error(err?.message || "Erro ao emitir contrato.");
+      throw err;
     } finally {
       setIsIssuingContract(false);
     }
   };
 
   const handleCopyContractLink = async (publicToken: string) => {
-    const url = `${window.location.origin}/viajante/${publicToken}`;
+    const url = `${window.location.origin}/contrato/${publicToken}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link de assinatura digital copiado!");
@@ -860,47 +902,30 @@ export default function WorkspaceTurismoCockpitPage() {
     }
   };
 
-  // Onboarding Links & Disparo WhatsApp
+  // Onboarding Links & Disparo WhatsApp (Ficha de Passageiros / Anamnese / Acompanhantes)
   const handleCopyOnboardingFormLink = async () => {
-    if (!activeOnboardingForm || !selectedLead) {
-      toast.info("Nenhum formulário de onboarding configurado para este atendimento.");
-      return;
-    }
-    const cleanPhone = (selectedLead.phone || "").replace(/\D/g, "");
-    const params = new URLSearchParams();
-    params.set("leadId", selectedLead.id);
-    if (selectedLead.full_name) params.set("nome", selectedLead.full_name);
-    if (cleanPhone) params.set("tel", cleanPhone);
-    if (selectedLead.email) params.set("email", selectedLead.email);
-
-    const url = `${window.location.origin}/f/${activeOnboardingForm.slug}?${params.toString()}`;
+    if (!selectedLead) return;
+    const token = selectedLead.magic_token || selectedLead.id;
+    const url = `${window.location.origin}/m/lead/${token}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Link do formulário de onboarding copiado com sucesso!");
+      toast.success("Link da ficha de anamnese e acompanhantes copiado!");
     } catch {
       toast.error("Não foi possível copiar o link.");
     }
   };
 
   const handleSendOnboardingFormWhatsApp = () => {
-    if (!activeOnboardingForm || !selectedLead) {
-      toast.info("Nenhum formulário de onboarding configurado para este atendimento.");
-      return;
-    }
+    if (!selectedLead) return;
     const cleanPhone = (selectedLead.phone || "").replace(/\D/g, "");
     if (!cleanPhone) {
       toast.error("O lead não possui telefone cadastrado para envio via WhatsApp.");
       return;
     }
-    const params = new URLSearchParams();
-    params.set("leadId", selectedLead.id);
-    if (selectedLead.full_name) params.set("nome", selectedLead.full_name);
-    if (cleanPhone) params.set("tel", cleanPhone);
-    if (selectedLead.email) params.set("email", selectedLead.email);
-
-    const url = `${window.location.origin}/f/${activeOnboardingForm.slug}?${params.toString()}`;
+    const token = selectedLead.magic_token || selectedLead.id;
+    const url = `${window.location.origin}/m/lead/${token}`;
     const firstName = (selectedLead.full_name || "Olá").split(" ")[0];
-    const msg = `Olá, ${firstName}! Para que possamos montar sua proposta e roteiro com precisão, por favor preencha seus dados na nossa ficha rápida:\n\n${url}`;
+    const msg = `Olá, ${firstName}! Para agilizar sua reserva e roteiro${selectedLead.destination ? ` para *${selectedLead.destination}*` : ""}, preencha sua ficha de passageiro, anamnese e acompanhantes pelo link seguro:\n\n${url}`;
 
     const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
     window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, "_blank");
@@ -952,25 +977,27 @@ export default function WorkspaceTurismoCockpitPage() {
 
   // Agrupamento por Estágio
   const leadsByStage = useMemo(() => {
-    const map: Record<TourismLeadStage, any[]> = {
-      new: [],
-      qualified: [],
-      proposal: [],
-      negotiation: [],
-      won: [],
-    };
+    const map: Record<string, any[]> = {};
+    visibleStages.forEach((s: any) => {
+      map[s.id] = [];
+    });
+    if (!map["new"]) map["new"] = [];
+    if (!map["won"]) map["won"] = [];
 
     filteredLeads.forEach((l: any) => {
-      let stage: TourismLeadStage = "new";
-      if (l.status === "won" || l.status === "completed" || l.status === "converted") stage = "won";
-      else if (l.status === "negotiation") stage = "negotiation";
-      else if (l.status === "proposal" || l.status === "quoted") stage = "proposal";
-      else if (l.status === "qualified" || l.status === "contacted") stage = "qualified";
-      map[stage].push(l);
+      let stageKey = l.status || "new";
+      if (l.status === "completed" || l.status === "converted") stageKey = "won";
+      else if (l.status === "quoted") stageKey = "proposal";
+      else if (l.status === "contacted") stageKey = "qualified";
+
+      if (!map[stageKey]) {
+        map[stageKey] = [];
+      }
+      map[stageKey].push(l);
     });
 
     return map;
-  }, [filteredLeads]);
+  }, [filteredLeads, visibleStages]);
 
   // Data Base de Hoje
   const today = useMemo(() => {
@@ -1266,7 +1293,7 @@ export default function WorkspaceTurismoCockpitPage() {
                 <div className="flex items-center justify-between border-b border-border/40 pb-2">
                   <div className="flex items-center gap-2">
                     <Plane className="size-4 text-primary" />
-                    <h2 className="text-xs font-bold text-foreground">Voos no Dia (Hoje)</h2>
+                    <h2 className="text-xs font-bold text-foreground">Embarques de Hoje</h2>
                   </div>
                   <Badge variant="outline" className="font-mono text-xs">
                     {todayDepartures.length}
@@ -1339,7 +1366,7 @@ export default function WorkspaceTurismoCockpitPage() {
                 <div className="flex items-center justify-between border-b border-border/40 pb-2">
                   <div className="flex items-center gap-2">
                     <Clock className="size-4 text-indigo-600" />
-                    <h2 className="text-xs font-bold text-foreground">Próximos Embarques (7 Dias)</h2>
+                    <h2 className="text-xs font-bold text-foreground">Próximos Embarques</h2>
                   </div>
                   <Button
                     asChild
@@ -1398,7 +1425,7 @@ export default function WorkspaceTurismoCockpitPage() {
                 <div className="flex items-center justify-between border-b border-border/40 pb-2">
                   <div className="flex items-center gap-2">
                     <Luggage className="size-4 text-emerald-600" />
-                    <h2 className="text-xs font-bold text-foreground">Viajantes em Destino (Ativos)</h2>
+                    <h2 className="text-xs font-bold text-foreground">Viajantes no Destino</h2>
                   </div>
                   <Badge variant="outline" className="font-mono text-xs">
                     {activeInTransit.length}
@@ -1443,7 +1470,7 @@ export default function WorkspaceTurismoCockpitPage() {
                 <div className="flex items-center justify-between border-b border-border/40 pb-2">
                   <div className="flex items-center gap-2">
                     <Receipt className="size-4 text-primary" />
-                    <h2 className="text-xs font-bold text-foreground">Comissões & Faturas a Receber</h2>
+                    <h2 className="text-xs font-bold text-foreground">Comissões a Receber</h2>
                   </div>
                   <Button
                     asChild
@@ -1503,7 +1530,7 @@ export default function WorkspaceTurismoCockpitPage() {
         <div className="flex-1 flex flex-col min-h-0 gap-3">
           {/* Seletor de Fase Mobile Nativo (< 600px) */}
           <div className="tab-list flex sm:hidden items-center gap-2 overflow-x-auto no-scrollbar p-1 rounded-xl bg-muted/60 border border-border/50">
-            {TOURISM_STAGES.map((stage) => {
+            {visibleStages.map((stage: any) => {
               const count = (leadsByStage[stage.id] || []).length;
               const isSelected = mobileActiveStage === stage.id;
               return (
@@ -1532,34 +1559,32 @@ export default function WorkspaceTurismoCockpitPage() {
           {/* design-lint-ignore DL-27 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */}
           {/* design-lint-ignore DL-30 reason:"Trilho horizontal canonico com rolagem suave para colunas do funil de atendimento" expiry:"2027-12-31" */}
           <div className="flex gap-4 overflow-x-auto scroll-area-carousel pb-4 pt-1 items-stretch snap-x snap-mandatory scroll-smooth w-full flex-1 min-h-0 select-none waesy-kanban-strip">
-            {TOURISM_STAGES.map((stage, stageIndex) => {
+            {visibleStages.map((stage: any, stageIndex: number) => {
               const stageLeads = leadsByStage[stage.id] || [];
               const stageTotalCents = stageLeads.reduce(
                 (sum: number, l: any) => sum + (l.estimated_value_cents || 0),
                 0
               );
-              const prevStage = stageIndex > 0 ? TOURISM_STAGES[stageIndex - 1] : null;
-              const nextStage = stageIndex < TOURISM_STAGES.length - 1 ? TOURISM_STAGES[stageIndex + 1] : null;
+              const prevStage = stageIndex > 0 ? visibleStages[stageIndex - 1] : null;
+              const nextStage = stageIndex < visibleStages.length - 1 ? visibleStages[stageIndex + 1] : null;
               const isMobileHidden = mobileActiveStage !== stage.id;
 
               return (
                 <div
                   key={stage.id}
                   className={cn(
-                    "flex-none w-full sm:w-80 snap-start rounded-2xl bg-muted/20 hover:bg-muted/30 border border-transparent hover:border-border/40 transition-colors flex flex-col min-h-96 sm:h-full overflow-hidden",
+                    "flex-none w-full sm:w-80 snap-start rounded-2xl bg-muted/50 dark:bg-muted/30 transition-colors flex flex-col min-h-144 sm:h-full overflow-hidden",
                     isMobileHidden && "hidden sm:flex"
                   )}
                 >
-                  {/* Barra Superior Colorida de Fase */}
-                  <div className={cn("h-1 w-full shrink-0", stage.dotColor)} />
-
-                  {/* Cabeçalho da Coluna com Somatório Tabular e Ação Rápida */}
-                  <div className="p-3 bg-transparent flex items-center justify-between shrink-0 gap-2">
+                  {/* Cabeçalho da Coluna com Indicador Discreto, Somatório Tabular e Ação Rápida */}
+                  <div className="px-4 py-3 bg-transparent flex items-center justify-between shrink-0 gap-2">
                     <div className="flex items-center gap-2 min-w-0">
+                      <span className={cn("size-2 rounded-full shrink-0", stage.dotColor)} />
                       <span className="text-xs font-bold tracking-tight text-foreground truncate" title={stage.title}>
                         {stage.title}
                       </span>
-                      <span className="text-2xs font-mono tabular-nums font-semibold px-2 py-1 rounded-full bg-muted/60 text-muted-foreground shrink-0">
+                      <span className="text-2xs font-mono tabular-nums font-bold px-2 py-1 rounded-full bg-card text-foreground shrink-0">
                         {stageLeads.length}
                       </span>
                     </div>
@@ -1578,7 +1603,7 @@ export default function WorkspaceTurismoCockpitPage() {
                           setIsNewLeadOpen(true);
                         }}
                         /* design-lint-ignore DL-14 reason:"Gatilho compacto de adicao rapida no header de coluna desktop" expiry:"2027-12-31" */
-                        className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                         title={`Novo lead em ${stage.title}`}
                       >
                         <Plus className="size-4" />
@@ -1586,10 +1611,10 @@ export default function WorkspaceTurismoCockpitPage() {
                     </div>
                   </div>
 
-                  {/* Área de Rolagem Isolada dos Cards */}
-                  <div className="p-3 space-y-2 overflow-y-auto flex-1 min-h-0 [scrollbar-width:thin]">
+                  {/* Área de Rolagem Isolada dos Cards (Colunas Altas) */}
+                  <div className="px-3 pb-3 space-y-3 overflow-y-auto flex-1 min-h-0 [scrollbar-width:thin]">
                     {stageLeads.length === 0 ? (
-                      <div className="py-8 px-4 text-center text-xs text-muted-foreground border border-dashed border-border/30 rounded-xl space-y-1 bg-transparent my-auto select-none">
+                      <div className="h-full min-h-48 py-8 px-4 flex flex-col items-center justify-center text-center text-xs text-muted-foreground rounded-2xl bg-card space-y-1 select-none">
                         <p className="font-medium text-2xs">Nenhum contato nesta etapa</p>
                       </div>
                     ) : (
@@ -1598,7 +1623,7 @@ export default function WorkspaceTurismoCockpitPage() {
                           key={lead.id}
                           lead={lead}
                           currentStageId={stage.id}
-                          stages={TOURISM_STAGES.map((s) => ({ id: s.id, title: s.title }))}
+                          stages={visibleStages.map((s: any) => ({ id: s.id, title: s.title }))}
                           team={team}
                           onOpenDetails={openLeadDetails}
                           onGenerateProposal={(lead) => {
@@ -1764,16 +1789,9 @@ export default function WorkspaceTurismoCockpitPage() {
           >
             <TourismPipeCardDossier
               lead={selectedLead}
-              stages={TOURISM_STAGES}
+              stages={visibleStages}
               team={team}
-              proposals={proposals.filter(
-                (p: any) =>
-                  p.lead_id === selectedLead.id ||
-                  p.quote_id === selectedLead.id ||
-                  (selectedLead.full_name &&
-                    p.customer_name &&
-                    p.customer_name.toLowerCase() === selectedLead.full_name.toLowerCase())
-              )}
+              proposals={proposals}
               onClose={() => setSelectedLead(null)}
               onMoveStage={(leadId, newStage) => handleMoveStage(leadId, newStage)}
               onSaveLead={handleSaveLeadFromDossier}
@@ -1787,6 +1805,7 @@ export default function WorkspaceTurismoCockpitPage() {
                 refetchLeads();
               }}
               onToggleChecklist={(itemId) => handleToggleChecklist(itemId)}
+              onIssueContract={handleIssueContract}
               customer360Data={customer360Data}
               activeOnboardingForm={activeOnboardingForm}
             />
@@ -1799,18 +1818,18 @@ export default function WorkspaceTurismoCockpitPage() {
         <SheetContent side="right" className="w-full sm:max-w-2xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           <div className="space-y-6">
             <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
-              <SheetTitle className="text-lg font-bold text-foreground">Nova Oportunidade Comercial</SheetTitle>
+              <SheetTitle className="text-lg font-bold text-foreground">Nova Oportunidade</SheetTitle>
               <div className="text-xs text-muted-foreground">
                 Etapa: {TOURISM_STAGES.find((s) => s.id === newLeadTargetStage)?.title}
               </div>
             </SheetHeader>
 
             <form id="new-lead-form" onSubmit={handleCreateNewLead} className="space-y-5 text-xs">
-              {/* Bloco 1: Contato & Titular */}
+              {/* Bloco 1: Contato */}
               <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Users className="size-3.5 text-primary" />
-                  <span>Titular / Contato Principal</span>
+                  <span>Contato Principal</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -1867,7 +1886,7 @@ export default function WorkspaceTurismoCockpitPage() {
               <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <MapPin className="size-3.5 text-primary" />
-                  <span>Detalhes da Viagem & Acomodação</span>
+                  <span>Detalhes da Viagem</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -1935,15 +1954,15 @@ export default function WorkspaceTurismoCockpitPage() {
                 </div>
               </div>
 
-              {/* Bloco 3: Passageiros & Faixa Etária */}
+              {/* Bloco 3: Passageiros */}
               <div className="space-y-3 p-4 rounded-lg border border-border/60 bg-muted/20">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Plane className="size-3.5 text-primary" />
-                  <span>Passageiros & Faixa Etária</span>
+                  <span>Passageiros</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Adultos (ADT)</Label>
+                    <Label className="text-2xs text-muted-foreground font-semibold">Adultos</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1953,7 +1972,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Crianças (2-11)</Label>
+                    <Label className="text-2xs text-muted-foreground font-semibold">Crianças (2 a 11 anos)</Label>
                     <Input
                       type="number"
                       min={0}
@@ -1963,7 +1982,7 @@ export default function WorkspaceTurismoCockpitPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-2xs text-muted-foreground font-semibold">Bebês (0-2)</Label>
+                    <Label className="text-2xs text-muted-foreground font-semibold">Bebês (até 2 anos)</Label>
                     <Input
                       type="number"
                       min={0}
@@ -1974,7 +1993,7 @@ export default function WorkspaceTurismoCockpitPage() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-2xs text-muted-foreground font-semibold">Idades das Crianças (separadas por vírgula)</Label>
+                  <Label className="text-2xs text-muted-foreground font-semibold">Idades das Crianças</Label>
                   <Input
                     value={newLeadForm.paxAgesStr}
                     onChange={(e) => setNewLeadForm((prev) => ({ ...prev, paxAgesStr: e.target.value }))}
@@ -2080,7 +2099,24 @@ export default function WorkspaceTurismoCockpitPage() {
           onOpenChange={setIsCustomizerOpen}
           storeId={storeId}
           module="turismo"
-          onStagesUpdated={() => {
+          stages={stages.map((s: any) => ({
+            stage_key: s.id || s.stage_key,
+            title: s.title,
+            purpose: s.purpose || (s.id === "won" ? "won" : s.id === "lost" ? "lost" : "in_progress"),
+            color: s.dotColor || s.color || "var(--primary)",
+            sort_order: s.sort_order ?? 0,
+            is_visible: s.is_visible !== false,
+            sla_minutes: s.sla_minutes,
+          }))}
+          onStagesUpdated={(newStages) => {
+            setStages(newStages.map((s: any) => ({
+              id: s.stage_key,
+              title: s.title,
+              dotColor: s.color || "var(--primary)",
+              description: s.description || "",
+              is_visible: s.is_visible !== false,
+              sla_minutes: s.sla_minutes,
+            })));
             refetchLeads();
           }}
         />

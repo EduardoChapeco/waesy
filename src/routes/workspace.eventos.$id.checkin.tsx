@@ -374,7 +374,7 @@ function EventCheckinPage() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 grid gap-6 md:grid-cols-12 items-start">
+      <main className="flex-1 w-full p-4 md:p-6 grid gap-6 md:grid-cols-12 items-start">
         {/* Lado Esquerdo: Scanner / Validador Rápido */}
         <div className="md:col-span-7 space-y-5">
           {/* Visualizador de Câmera */}

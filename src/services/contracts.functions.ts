@@ -241,7 +241,6 @@ export const updateContractDraft = createServerFn({ method: "POST" })
       .from("contracts")
       .update(contractUpdate)
       .eq("id", input.contractId)
-      .eq("creator_id", identity.id)
       .select("id")
       .maybeSingle();
 
@@ -253,7 +252,16 @@ export const updateContractDraft = createServerFn({ method: "POST" })
     // 2. Atualiza a versão do contrato se for rascunho (não selado)
     const versionUpdate: Record<string, any> = {};
     if (input.title) versionUpdate.title = input.title;
-    if (input.contentMarkdown !== undefined) versionUpdate.content_markdown = input.contentMarkdown;
+    if (input.contentMarkdown !== undefined) {
+      versionUpdate.content_markdown = input.contentMarkdown;
+      const hashBuffer = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(input.contentMarkdown),
+      );
+      versionUpdate.hash_sha256 = Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
     if (input.clauses !== undefined) versionUpdate.clauses = input.clauses;
     if (input.variables !== undefined) versionUpdate.variables = input.variables;
     if (input.signatureFields !== undefined) versionUpdate.signature_fields = input.signatureFields;
@@ -321,7 +329,7 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
       throw new Error("É necessário um contexto de loja autorizado para selar o contrato.");
     }
 
-    // Service-role reads are explicitly constrained to the authenticated creator and tenant.
+    // Service-role reads are explicitly constrained to the authenticated tenant.
     const { data: contract, error: contractError } = await supabase
       .from("contracts")
       .select("id, creator_id, store_id, current_version, status")
@@ -347,10 +355,10 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
     if (contract.current_version !== version.version_number) {
       throw new Error("A versão solicitada não é a versão corrente do contrato.");
     }
-    if (!["draft", "reviewing", "sealed"].includes(contract.status)) {
+    if (!["draft", "reviewing", "sealed", "signing", "sent"].includes(contract.status)) {
       throw new Error("O contrato não está num estado que permita iniciar a assinatura.");
     }
-    if (version.is_sealed || version.sealed_at || version.hash_sha256) {
+    if (version.is_sealed || version.sealed_at) {
       throw new Error("Esta versão já foi selada e não pode receber novos envelopes.");
     }
 
@@ -839,6 +847,10 @@ export const listContracts = createServerFn({ method: "GET" }).handler(async () 
   const identity = await getIdentity();
   if (!identity?.id) throw new Error("Não autenticado");
 
+  const accessFilter = identity.store_id
+    ? `creator_id.eq.${identity.id},store_id.eq.${identity.store_id},metadata->>store_id.eq.${identity.store_id}`
+    : `creator_id.eq.${identity.id}`;
+
   const { data, error } = await supabase
     .from("contracts")
     .select(
@@ -848,7 +860,7 @@ export const listContracts = createServerFn({ method: "GET" }).handler(async () 
       deal:deal_id (id, status, proposed_price_cents)
     `,
     )
-    .eq("creator_id", identity.id)
+    .or(accessFilter)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -868,7 +880,11 @@ export const getContractById = createServerFn({ method: "GET" })
     const identity = await getIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
 
-    const { data: contract, error } = await supabase
+    const accessFilter = identity.store_id
+      ? `creator_id.eq.${identity.id},store_id.eq.${identity.store_id},metadata->>store_id.eq.${identity.store_id}`
+      : `creator_id.eq.${identity.id}`;
+
+    const { data: contract } = await supabase
       .from("contracts")
       .select(
         `
@@ -882,12 +898,110 @@ export const getContractById = createServerFn({ method: "GET" })
       `,
       )
       .eq("id", contractId)
-      .eq("creator_id", identity.id)
-      .single();
+      .or(accessFilter)
+      .maybeSingle();
 
-    if (error || !contract) throw new Error("Contrato não encontrado ou acesso negado.");
+    if (contract) return contract;
 
-    return contract;
+    // Fallback e auto-reconciliação: caso o contrato tenha sido gerado na tabela travel_contracts antes da unificação
+    const { data: legacyTravelContract } = await supabase
+      .from("travel_contracts")
+      .select("*")
+      .eq("id", contractId)
+      .maybeSingle();
+
+    if (
+      legacyTravelContract &&
+      (legacyTravelContract.created_by_profile_id === identity.id ||
+        (identity.store_id && legacyTravelContract.store_id === identity.store_id))
+    ) {
+      const formattedValue = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format((legacyTravelContract.total_value_cents || 0) / 100);
+      const clauses = [
+        {
+          title: "CLÁUSULA 1ª - DO OBJETO E ROTEIRO CONTRATADO",
+          content: `O presente instrumento tem por objeto a intermediação e prestação de serviços de turismo para o destino ${legacyTravelContract.destination || "Não informado"}.\n\nResumo dos serviços inclusos:\n${legacyTravelContract.package_summary || ""}`,
+        },
+        {
+          title: "CLÁUSULA 2ª - DO VALOR E CONDIÇÕES DE PAGAMENTO",
+          content: `Pelos serviços descritos na Cláusula 1ª, o CONTRATANTE (${legacyTravelContract.client_name || "Cliente"}, CPF/CNPJ: ${legacyTravelContract.client_document || "Não informado"}) pagará à CONTRATADA o valor total de ${formattedValue}, sob a seguinte modalidade: ${legacyTravelContract.payment_conditions || "À vista"}.`,
+        },
+        {
+          title: "CLÁUSULA 3ª - DAS REGRAS DE ALTERAÇÃO, CANCELAMENTO E NO-SHOW",
+          content: `Eventuais pedidos de cancelamento, remarcação ou reembolso obedecerão às normas da EMBRATUR (Deliberação Normativa nº 161/85), Código de Defesa do Consumidor e políticas tarifárias dos fornecedores aéreos e hoteleiros.`,
+        },
+      ];
+      const contentMarkdown = clauses.map((c) => `### ${c.title}\n\n${c.content}`).join("\n\n");
+      const hashBuffer = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(contentMarkdown),
+      );
+      const versionHashHex = Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+
+      await supabase.from("contracts").upsert({
+        id: legacyTravelContract.id,
+        creator_id: legacyTravelContract.created_by_profile_id || identity.id,
+        store_id: legacyTravelContract.store_id,
+        lead_id: legacyTravelContract.lead_id || null,
+        customer_id: legacyTravelContract.customer_id || null,
+        title: legacyTravelContract.contract_title || "Contrato de Viagem",
+        category: "tourism",
+        status: legacyTravelContract.status === "signed" ? "signed" : "signing",
+        current_version: 1,
+        verification_code: legacyTravelContract.public_token,
+        metadata: {
+          store_id: legacyTravelContract.store_id,
+          lead_id: legacyTravelContract.lead_id,
+          customer_id: legacyTravelContract.customer_id,
+          client_name: legacyTravelContract.client_name,
+          client_document: legacyTravelContract.client_document,
+          client_email: legacyTravelContract.client_email,
+          client_phone: legacyTravelContract.client_phone,
+          destination: legacyTravelContract.destination,
+          travel_start_date: legacyTravelContract.travel_start_date,
+          travel_end_date: legacyTravelContract.travel_end_date,
+          package_summary: legacyTravelContract.package_summary,
+          total_value_cents: legacyTravelContract.total_value_cents,
+          payment_conditions: legacyTravelContract.payment_conditions,
+          passengers: legacyTravelContract.passengers || [],
+        },
+      });
+
+      await supabase.from("contract_versions").insert({
+        contract_id: legacyTravelContract.id,
+        version_number: 1,
+        title: legacyTravelContract.contract_title || "Contrato de Viagem",
+        content_markdown: contentMarkdown,
+        clauses,
+        variables: {},
+        hash_sha256: versionHashHex,
+        is_sealed: legacyTravelContract.status === "signed",
+      });
+
+      const { data: provisioned } = await supabase
+        .from("contracts")
+        .select(
+          `
+          *,
+          creator:creator_id (id, full_name, avatar_url),
+          deal:deal_id (*),
+          versions:contract_versions (
+            *,
+            envelopes:signature_envelopes (*)
+          )
+        `,
+        )
+        .eq("id", contractId)
+        .maybeSingle();
+
+      if (provisioned) return provisioned;
+    }
+
+    throw new Error("Contrato não encontrado ou acesso negado.");
   });
 
 // ─── Busca de Envelope Individual por Token de Assinatura ────────────────────

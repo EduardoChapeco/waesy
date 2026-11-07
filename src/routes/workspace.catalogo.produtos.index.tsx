@@ -588,7 +588,7 @@ function AdminProductsPage() {
 
  {/* Tabela de Produtos */}
  {filteredProducts.length === 0 ? (
- <div className="py-12 text-center rounded-lg border-0 bg-card/60 space-y-4">
+ <div className="py-12 text-center rounded-lg border-0 bg-card space-y-4">
  <div className="size-12 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
  <Package className="size-6" />
  </div>

@@ -357,7 +357,7 @@ export default function TurismoRadarPage() {
 
       {/* ── Grid de Cards de Destino ── */}
       {filtered.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border/80 p-8 sm:p-12 text-center bg-card/40 space-y-4">
+        <div className="rounded-lg border border-dashed border-border/80 p-8 sm:p-12 text-center bg-card space-y-4">
           <Globe className="size-12 mx-auto text-muted-foreground/40" />
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-foreground">Nenhum destino monitorado neste filtro</h3>
@@ -728,7 +728,7 @@ export default function TurismoRadarPage() {
             </div>
           </div>
 
-          <SheetFooter className="p-4 border-t border-border bg-card/60 flex items-center justify-end gap-2 shrink-0">
+          <SheetFooter className="p-4 border-t border-border bg-card flex items-center justify-end gap-2 shrink-0">
             <Button variant="outline" onClick={() => setIsAddDestOpen(false)} className="h-11 sm:h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer">
               Cancelar
             </Button>
@@ -825,7 +825,7 @@ export default function TurismoRadarPage() {
             </div>
           </div>
 
-          <SheetFooter className="p-4 border-t border-border bg-card/60 flex items-center justify-end gap-2 shrink-0">
+          <SheetFooter className="p-4 border-t border-border bg-card flex items-center justify-end gap-2 shrink-0">
             <Button variant="outline" onClick={() => setIsAddAlertOpen(false)} className="h-11 sm:h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer">
               Cancelar
             </Button>

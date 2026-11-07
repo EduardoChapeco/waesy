@@ -46,6 +46,7 @@ export interface TravelContractDTO {
  agency_whatsapp?: string | null;
  public_token: string;
  proposal_id?: string | null;
+  lead_id?: string | null;
  contract_title: string;
  client_name: string;
  client_document: string;
@@ -129,7 +130,13 @@ function rowToContractDTO(contract: any, version: any, storeRow?: any): TravelCo
  } catch (_) {}
 
  const storeSettings = storeRow?.settings || {};
- const clauses: ContractClauseDTO[] = (version?.clauses as ContractClauseDTO[]) || CANONICAL_TOURISM_CLAUSES;
+ const rawClauses = Array.isArray(version?.clauses) && version.clauses.length > 0 ? version.clauses : CANONICAL_TOURISM_CLAUSES;
+ const clauses: ContractClauseDTO[] = rawClauses.map((cl: any, idx: number) => ({
+   number: Number(cl.number || idx + 1),
+   section: String(cl.section || cl.title || `DISPOSIÇÃO ${idx + 1}`).replace(/^CLÁUSULA\s+\d+[ªº]?\s*[-—]\s*/i, ""),
+   clause_text: String(cl.clause_text || cl.content || ""),
+   is_mandatory: cl.is_mandatory ?? true,
+ }));
 
  return {
  id: contract.id,
@@ -404,8 +411,130 @@ export const getPublicTravelContractByToken = createServerFn({ method: "GET" })
 	.handler(async ({ data }): Promise<TravelContractDTO | null> => {
 	 const supabase = getServerClient();
 	 const { data: contract, error } = await supabase.rpc("get_public_travel_contract_by_token", { p_token: data.token });
-	 if (error) throw new Error("Não foi possível carregar o contrato.");
-	 if (!contract || typeof contract !== "object" || contract.public_token !== data.token || typeof contract.id !== "string") return null;
+	 // Fallback se o RPC não retornar ou falhar
+	 if (!error && contract && typeof contract === "object" && contract.public_token === data.token && typeof contract.id === "string") {
+	   const rawClauses = Array.isArray((contract as any).clauses) && (contract as any).clauses.length > 0 ? (contract as any).clauses : CANONICAL_TOURISM_CLAUSES;
+	   return {
+	     ...(contract as TravelContractDTO),
+	     clauses: rawClauses.map((cl: any, idx: number) => ({
+	       number: Number(cl.number || idx + 1),
+	       section: String(cl.section || cl.title || `DISPOSIÇÃO ${idx + 1}`).replace(/^CLÁUSULA\s+\d+[ªº]?\s*[-—]\s*/i, ""),
+	       clause_text: String(cl.clause_text || cl.content || ""),
+	       is_mandatory: cl.is_mandatory ?? true,
+	     })),
+	   };
+	 }
+	 const { data: canonicalContract } = await supabase.from("contracts").select("*").eq("verification_code", data.token).maybeSingle();
+	 if (canonicalContract) {
+	   const { data: version } = await supabase.from("contract_versions").select("*").eq("contract_id", canonicalContract.id).order("version_number", { ascending: false }).limit(1).maybeSingle();
+	   const meta = (canonicalContract.metadata as Record<string, any>) || {};
+	   const storeId = canonicalContract.store_id || meta.store_id;
+	   let storeRow: any = null;
+	   if (storeId) {
+	     const { data: s } = await supabase.from("stores").select("name, cnpj, address, settings").eq("id", storeId).maybeSingle();
+	     storeRow = s;
+	   }
+	   return rowToContractDTO(canonicalContract, version, storeRow);
+	 }
+	 const { data: legacyRow } = await supabase.from("travel_contracts").select("*").eq("public_token", data.token).maybeSingle();
+	 if (legacyRow) {
+	   let storeRow: any = null;
+	   if (legacyRow.store_id) {
+	     const { data: s } = await supabase.from("stores").select("name, cnpj, address, settings").eq("id", legacyRow.store_id).maybeSingle();
+	     storeRow = s;
+	   }
+	   const normalizedClauses: ContractClauseDTO[] =
+	     Array.isArray(legacyRow.clauses) && legacyRow.clauses.length > 0
+	       ? legacyRow.clauses.map((cl: any, idx: number) => ({
+	           number: Number(cl.number || idx + 1),
+	           section: String(cl.section || cl.title || `DISPOSIÇÃO ${idx + 1}`).replace(/^CLÁUSULA\s+\d+[ªº]?\s*[-—]\s*/i, ""),
+	           clause_text: String(cl.clause_text || cl.content || ""),
+	           is_mandatory: cl.is_mandatory ?? true,
+	         }))
+	       : CANONICAL_TOURISM_CLAUSES;
+	   const contentMarkdown = normalizedClauses
+	     .map((c) => `### CLÁUSULA ${c.number}ª - ${c.section}\n\n${c.clause_text}`)
+	     .join("\n\n");
+	   const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(contentMarkdown));
+	   const versionHashHex = Array.from(new Uint8Array(hashBuffer))
+	     .map((b) => b.toString(16).padStart(2, "0"))
+	     .join("");
+
+	   // Auto-reconcilia em public.contracts + public.contract_versions para assinatura criptográfica
+	   await supabase.from("contracts").upsert({
+	     id: legacyRow.id,
+	     creator_id: legacyRow.created_by_profile_id || null,
+	     store_id: legacyRow.store_id || null,
+	     lead_id: legacyRow.lead_id || null,
+	     customer_id: legacyRow.customer_id || null,
+	     title: legacyRow.contract_title || "Contrato de Prestação de Serviços de Turismo",
+	     category: "tourism",
+	     status: legacyRow.status === "signed" ? "completed" : "signing",
+	     current_version: 1,
+	     verification_code: legacyRow.public_token,
+	     metadata: {
+	       store_id: legacyRow.store_id,
+	       lead_id: legacyRow.lead_id,
+	       customer_id: legacyRow.customer_id,
+	       client_name: legacyRow.client_name || "Cliente",
+	       client_document: legacyRow.client_document || "",
+	       client_email: legacyRow.client_email || null,
+	       client_phone: legacyRow.client_phone || "",
+	       destination: legacyRow.destination || "Não informado",
+	       travel_start_date: legacyRow.travel_start_date || null,
+	       travel_end_date: legacyRow.travel_end_date || null,
+	       package_summary: legacyRow.package_summary || "",
+	       total_value_cents: Number(legacyRow.total_value_cents || 0),
+	       payment_conditions: legacyRow.payment_conditions || "À vista",
+	       passengers: Array.isArray(legacyRow.passengers) ? legacyRow.passengers : [],
+	     },
+	   }).then(() => null, () => null);
+
+	   await supabase.from("contract_versions").insert({
+	     contract_id: legacyRow.id,
+	     version_number: 1,
+	     title: legacyRow.contract_title || "Contrato de Prestação de Serviços de Turismo",
+	     content_markdown: contentMarkdown,
+	     clauses: normalizedClauses,
+	     variables: {},
+	     hash_sha256: versionHashHex,
+	     is_sealed: legacyRow.status === "signed",
+	   }).then(() => null, () => null);
+
+	   return {
+	     id: legacyRow.id,
+	     store_id: legacyRow.store_id,
+	     agency_name: storeRow?.name || "Agência de Turismo",
+	     agency_cnpj: storeRow?.cnpj || null,
+	     agency_address: storeRow?.address || null,
+	     agency_whatsapp: (storeRow?.settings as any)?.whatsapp_phone || null,
+	     proposal_id: legacyRow.proposal_id || null,
+	     lead_id: legacyRow.lead_id || null,
+	     public_token: legacyRow.public_token,
+	     contract_title: legacyRow.contract_title || "Contrato de Prestação de Serviços de Turismo",
+	     client_name: legacyRow.client_name || "Cliente",
+	     client_document: legacyRow.client_document || "Não informado",
+	     client_email: legacyRow.client_email || null,
+	     client_phone: legacyRow.client_phone || "",
+	     client_address: legacyRow.client_address || null,
+	     destination: legacyRow.destination || "Não informado",
+	     travel_start_date: legacyRow.travel_start_date || null,
+	     travel_end_date: legacyRow.travel_end_date || null,
+	     package_summary: legacyRow.package_summary || "",
+	     total_value_cents: Number(legacyRow.total_value_cents || 0),
+	     payment_conditions: legacyRow.payment_conditions || "À vista",
+	     clauses: normalizedClauses,
+	     passengers: Array.isArray(legacyRow.passengers) ? legacyRow.passengers : [],
+	     signatures: [],
+	     status: toContractStatus(legacyRow.status || "sent"),
+	     signed_at: legacyRow.signed_at || null,
+	     content_hash: legacyRow.content_hash || null,
+	     certificate_serial: legacyRow.certificate_serial || null,
+	     created_at: legacyRow.created_at,
+	     updated_at: legacyRow.updated_at || legacyRow.created_at,
+	   };
+	 }
+	 return null;
 	 return contract as TravelContractDTO;
 	 });
 

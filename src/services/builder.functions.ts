@@ -514,6 +514,7 @@ export async function resolveStoreContext(
       if (isGlobalAdmin) return targetStoreId;
       if (identity.store_id === targetStoreId) return targetStoreId;
       if (identity.memberships?.some((m) => m.store_id === targetStoreId)) return targetStoreId;
+      if (identity.store_id) return identity.store_id;
     }
 
     // 2. Se documentId foi fornecido, resolve do documento no banco
@@ -538,6 +539,8 @@ export async function resolveStoreContext(
       return identity.store_id;
     }
 
+    // Administrador global também precisa declarar o tenant-alvo.
+    // Nunca inferir uma loja arbitrária para uma operação de escrita/leitura.
     throw new Error("Nenhum contexto de loja válido encontrado para a operação do builder.");
   }
 

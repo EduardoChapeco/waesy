@@ -54,7 +54,7 @@ function WorkspaceCaptacaoHubPage() {
   }, 0);
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── CABEÇALHO COM AÇÕES RÁPIDAS ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

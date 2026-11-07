@@ -9,18 +9,18 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary/5 text-primary border border-primary/20 hover:bg-primary/10",
+          "bg-muted text-foreground hover:bg-muted/80",
         secondary:
-          "bg-muted/60 text-muted-foreground border border-border/50 hover:bg-muted",
+          "bg-muted text-muted-foreground hover:bg-muted/80",
         destructive:
-          "bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/15",
-        outline: "bg-transparent text-foreground border border-border hover:bg-muted/30",
+          "bg-destructive/15 text-destructive hover:bg-destructive/20",
+        outline: "bg-muted/60 text-foreground hover:bg-muted",
         /** Informational status (e.g. "Approved", "Processing") */
-        info: "bg-info/10 text-info border border-info/20 hover:bg-info/15",
+        info: "bg-info/15 text-info hover:bg-info/20",
         /** Success status (e.g. "Refunded", "Delivered") */
-        success: "bg-success/10 text-success border border-success/20 hover:bg-success/15",
+        success: "bg-success/15 text-success hover:bg-success/20",
         /** Warning status (e.g. "Pending review") */
-        warning: "bg-warning/10 text-warning border border-warning/20 hover:bg-warning/15",
+        warning: "bg-warning/15 text-warning-strong hover:bg-warning/20",
       },
     },
     defaultVariants: {

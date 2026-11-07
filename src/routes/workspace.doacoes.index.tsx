@@ -34,7 +34,7 @@ function WorkspaceDoacoesHubPage() {
     return <ErrorState title="Não foi possível carregar as campanhas" description="As doações reais estão temporariamente indisponíveis." />;
   }
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── CABEÇALHO COM AÇÃO RÁPIDA ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

@@ -257,6 +257,7 @@ import { Route as ApiWebhooksShipmentRouteImport } from './routes/api.webhooks.s
 import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api.webhooks.whatsapp'
 import { Route as ClaimReivindicarEntityIdRouteImport } from './routes/claim.reivindicar.$entityId'
 import { Route as ClaimReputacaoEntityIdRouteImport } from './routes/claim.reputacao.$entityId'
+import { Route as MConsentLeadIdRouteImport } from './routes/m.consent.$leadId'
 import { Route as MExcursaoTokenRouteImport } from './routes/m.excursao.$token'
 import { Route as MLeadLeadIdRouteImport } from './routes/m.lead.$leadId'
 import { Route as PortalSubpainelTokenRouteImport } from './routes/portal.subpainel.$token'
@@ -1710,6 +1711,11 @@ const ClaimReputacaoEntityIdRoute = ClaimReputacaoEntityIdRouteImport.update({
   path: '/claim/reputacao/$entityId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MConsentLeadIdRoute = MConsentLeadIdRouteImport.update({
+  id: '/m/consent/$leadId',
+  path: '/m/consent/$leadId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MExcursaoTokenRoute = MExcursaoTokenRouteImport.update({
   id: '/m/excursao/$token',
   path: '/m/excursao/$token',
@@ -3067,6 +3073,7 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
+  '/m/consent/$leadId': typeof MConsentLeadIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
   '/m/lead/$leadId': typeof MLeadLeadIdRoute
   '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
@@ -3507,6 +3514,7 @@ export interface FileRoutesByTo {
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
+  '/m/consent/$leadId': typeof MConsentLeadIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
   '/m/lead/$leadId': typeof MLeadLeadIdRoute
   '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
@@ -3956,6 +3964,7 @@ export interface FileRoutesById {
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRouteWithChildren
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
+  '/m/consent/$leadId': typeof MConsentLeadIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
   '/m/lead/$leadId': typeof MLeadLeadIdRoute
   '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
@@ -4406,6 +4415,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/whatsapp'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
+    | '/m/consent/$leadId'
     | '/m/excursao/$token'
     | '/m/lead/$leadId'
     | '/portal/subpainel/$token'
@@ -4846,6 +4856,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/whatsapp'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
+    | '/m/consent/$leadId'
     | '/m/excursao/$token'
     | '/m/lead/$leadId'
     | '/portal/subpainel/$token'
@@ -5294,6 +5305,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/whatsapp'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
+    | '/m/consent/$leadId'
     | '/m/excursao/$token'
     | '/m/lead/$leadId'
     | '/portal/subpainel/$token'
@@ -5550,6 +5562,7 @@ export interface RootRouteChildren {
   ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRouteWithChildren
   ClaimReivindicarEntityIdRoute: typeof ClaimReivindicarEntityIdRoute
   ClaimReputacaoEntityIdRoute: typeof ClaimReputacaoEntityIdRoute
+  MConsentLeadIdRoute: typeof MConsentLeadIdRoute
   MExcursaoTokenRoute: typeof MExcursaoTokenRoute
   MLeadLeadIdRoute: typeof MLeadLeadIdRoute
   PortalSubpainelTokenRoute: typeof PortalSubpainelTokenRoute
@@ -7303,6 +7316,13 @@ declare module '@tanstack/react-router' {
       path: '/claim/reputacao/$entityId'
       fullPath: '/claim/reputacao/$entityId'
       preLoaderRoute: typeof ClaimReputacaoEntityIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/m/consent/$leadId': {
+      id: '/m/consent/$leadId'
+      path: '/m/consent/$leadId'
+      fullPath: '/m/consent/$leadId'
+      preLoaderRoute: typeof MConsentLeadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/m/excursao/$token': {
@@ -9732,6 +9752,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRouteWithChildren,
   ClaimReivindicarEntityIdRoute: ClaimReivindicarEntityIdRoute,
   ClaimReputacaoEntityIdRoute: ClaimReputacaoEntityIdRoute,
+  MConsentLeadIdRoute: MConsentLeadIdRoute,
   MExcursaoTokenRoute: MExcursaoTokenRoute,
   MLeadLeadIdRoute: MLeadLeadIdRoute,
   PortalSubpainelTokenRoute: PortalSubpainelTokenRoute,

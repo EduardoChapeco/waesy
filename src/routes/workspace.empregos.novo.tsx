@@ -152,7 +152,7 @@ function WorkspaceNewJobPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl pb-16">
+    <div className="space-y-6 w-full pb-16">
       {/* Header com Navegação Retrô */}
       <div className="flex items-center justify-between gap-4 pb-4 border-b border-border/40">
         <div className="flex items-center gap-3">

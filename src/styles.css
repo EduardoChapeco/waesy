@@ -368,10 +368,10 @@
   --safe-area-right: env(safe-area-inset-right, 0px);
 
   /* ── Semânticos Light ────────────────────────────────────────────────── */
-  --background: oklch(1 0 0); /* #FFFFFF Branco puro operacional */
+  --background: oklch(0.97 0 0); /* #F5F5F7 Canvas operacional sutil para contraste de cards sem borda */
   --foreground: oklch(0.12 0 0); /* Preto suave para leitura perfeita */
 
-  --card: oklch(1 0 0); /* Branco puro */
+  --card: oklch(1 0 0); /* Branco puro sólido */
   --card-foreground: oklch(0.12 0 0);
 
   --popover: oklch(1 0 0);
@@ -380,13 +380,13 @@
   --primary: var(--magic-accent-primary);
   --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.96 0 0); /* Cinza clarinho para ghosts/outlines */
+  --secondary: oklch(0.94 0 0); /* Cinza clarinho sólido */
   --secondary-foreground: oklch(0.2 0 0);
 
-  --muted: oklch(0.96 0 0); /* Fundo sutil */
+  --muted: oklch(0.94 0 0); /* Fundo sutil sólido */
   --muted-foreground: oklch(0.45 0 0); /* Texto secundário legível */
 
-  --accent: oklch(0.96 0 0);
+  --accent: oklch(0.94 0 0);
   --accent-foreground: oklch(0.12 0 0);
 
   --destructive: oklch(0.55 0.19 25); /* Vermelho erro focado (texto branco >= 4.5:1) */
@@ -402,17 +402,17 @@
   --info: oklch(0.52 0.13 240); /* Azul informativo (texto branco >= 4.5:1) */
   --info-foreground: oklch(1 0 0);
 
-  --border: oklch(0.93 0 0); /* Borda clarinha, clean */
-  --input: oklch(0.93 0 0);
+  --border: oklch(0.91 0 0); /* Borda clarinha, clean */
+  --input: oklch(0.91 0 0);
   --ring: oklch(0.65 0 0); /* Foco neutro elegante sem efeito neon (Apple/Linear HIG) */
 
   /* ── Waesy Design System 4.0 Semantic Tokens ───────────────────────── */
   --canvas: var(--background);
   --surface: var(--card);
   --surface-raised: var(--card);
-  --surface-subtle: oklch(0.98 0 0);
-  --surface-hover: oklch(0.96 0 0);
-  --surface-active: oklch(0.92 0 0);
+  --surface-subtle: oklch(0.95 0 0);
+  --surface-hover: oklch(0.93 0 0);
+  --surface-active: oklch(0.90 0 0);
 
   --text-primary: var(--foreground);
   --text-secondary: oklch(0.40 0 0);
@@ -421,13 +421,13 @@
   --text-inverse: var(--primary-foreground);
   --text-muted: var(--muted-foreground);
 
-  --border-subtle: oklch(0.95 0 0);
+  --border-subtle: oklch(0.93 0 0);
   --border-default: var(--border);
   --border-strong: oklch(0.75 0 0);
   --border-control: var(--input);
   --border-focus: oklch(0.65 0 0);
 
-  --accent-soft: rgba(0, 102, 255, 0.10);
+  --accent-soft: oklch(0.94 0 0);
 
   --radius-xs: 2px;
   --radius-sm: 4px;
@@ -456,17 +456,17 @@
 
   --button-primary-bg: var(--primary);
   --button-primary-text: var(--primary-foreground);
-  --button-secondary-bg: var(--background);
+  --button-secondary-bg: var(--card);
   --button-secondary-border: var(--border);
   --button-secondary-text: var(--foreground);
   --button-radius: var(--radius-lg);
 
-  --input-bg: var(--background);
+  --input-bg: var(--card);
   --input-border: var(--border);
   --input-radius: var(--radius-md);
 
   --card-bg: var(--card);
-  --card-border: var(--border);
+  --card-border: transparent;
   --card-radius: var(--radius-xl);
 }
 
@@ -475,10 +475,10 @@
  * ===========================================================================*/
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --background: oklch(0.10 0 0); /* #09090b True Dark Profundo */
+    --background: oklch(0.11 0 0); /* #0b0b0d True Dark Profundo */
     --foreground: oklch(0.97 0 0); /* #f4f4f5 Texto Primário (17:1) */
 
-    --card: oklch(0.16 0 0); /* #141416 Superfície Elevada Nível 1 */
+    --card: oklch(0.165 0 0); /* #161618 Superfície Sólida Nível 1 */
     --card-foreground: oklch(0.97 0 0);
 
     --popover: oklch(0.20 0 0); /* #1f1f23 Superfície Flutuante Nível 2 */
@@ -487,13 +487,13 @@
     --primary: var(--magic-accent-primary);
     --primary-foreground: #ffffff;
 
-    --secondary: oklch(0.18 0 0); /* #1a1a1d */
+    --secondary: oklch(0.20 0 0);
     --secondary-foreground: oklch(0.97 0 0);
 
-    --muted: oklch(0.18 0 0); /* #1a1a1d */
+    --muted: oklch(0.20 0 0);
     --muted-foreground: oklch(0.70 0 0); /* #a1a1aa (7.2:1) */
 
-    --accent: oklch(0.20 0 0);
+    --accent: oklch(0.22 0 0);
     --accent-foreground: oklch(0.97 0 0);
 
     --destructive: oklch(0.65 0.20 25);
@@ -509,19 +509,19 @@
     --info: oklch(0.70 0.16 230);
     --info-foreground: oklch(0.10 0 0);
 
-    --border: oklch(0.26 0 0); /* #27272a Borda nítida de contenção */
-    --input: oklch(0.26 0 0);
-    --ring: var(--magic-accent-primary);
+    --border: oklch(0.25 0 0); /* #252528 Borda neutra sutil */
+    --input: oklch(0.25 0 0);
+    --ring: oklch(0.42 0 0); /* Anel neutro sem efeito neon */
 
     /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
-    --canvas: oklch(0.10 0 0);
-    --surface: oklch(0.16 0 0);
+    --canvas: oklch(0.11 0 0);
+    --surface: oklch(0.165 0 0);
     --surface-raised: oklch(0.20 0 0);
-    --surface-subtle: oklch(0.18 0 0);
-    --surface-hover: oklch(0.22 0 0);
+    --surface-subtle: oklch(0.20 0 0);
+    --surface-hover: oklch(0.23 0 0);
     --surface-active: oklch(0.26 0 0);
-    --surface-card: oklch(0.16 0 0);
-    --surface-muted: oklch(0.18 0 0);
+    --surface-card: oklch(0.165 0 0);
+    --surface-muted: oklch(0.20 0 0);
 
     --text-primary: oklch(0.97 0 0);
     --text-secondary: oklch(0.70 0 0);
@@ -531,12 +531,12 @@
     --text-muted: oklch(0.70 0 0);
 
     --border-subtle: oklch(0.22 0 0);
-    --border-default: oklch(0.26 0 0);
-    --border-strong: oklch(0.38 0 0);
-    --border-control: oklch(0.26 0 0);
-    --border-focus: var(--magic-accent-primary);
+    --border-default: oklch(0.25 0 0);
+    --border-strong: oklch(0.36 0 0);
+    --border-control: oklch(0.25 0 0);
+    --border-focus: oklch(0.42 0 0);
 
-    --accent-soft: rgba(0, 102, 255, 0.18);
+    --accent-soft: oklch(0.22 0 0);
 
     --feedback-danger: var(--destructive);
     --feedback-warning: var(--warning);
@@ -547,10 +547,10 @@
 
 .dark,
 [data-theme="dark"] {
-  --background: oklch(0.10 0 0); /* #09090b True Dark Profundo */
+  --background: oklch(0.11 0 0); /* #0b0b0d True Dark Profundo */
   --foreground: oklch(0.97 0 0); /* #f4f4f5 Texto Primário (17:1) */
 
-  --card: oklch(0.16 0 0); /* #141416 Superfície Elevada Nível 1 */
+  --card: oklch(0.165 0 0); /* #161618 Superfície Sólida Nível 1 */
   --card-foreground: oklch(0.97 0 0);
 
   --popover: oklch(0.20 0 0); /* #1f1f23 Superfície Flutuante Nível 2 */
@@ -559,13 +559,13 @@
   --primary: var(--magic-accent-primary);
   --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.18 0 0); /* #1a1a1d */
+  --secondary: oklch(0.20 0 0);
   --secondary-foreground: oklch(0.97 0 0);
 
-  --muted: oklch(0.18 0 0); /* #1a1a1d */
+  --muted: oklch(0.20 0 0);
   --muted-foreground: oklch(0.70 0 0); /* #a1a1aa (7.2:1) */
 
-  --accent: oklch(0.20 0 0);
+  --accent: oklch(0.22 0 0);
   --accent-foreground: oklch(0.97 0 0);
 
   --destructive: oklch(0.65 0.20 25);
@@ -576,24 +576,24 @@
 
   --warning: oklch(0.78 0.16 75);
   --warning-foreground: oklch(0.10 0 0);
-    --warning-strong: oklch(0.82 0.14 82); /* texto de aviso sobre fundo escuro (>= 9:1) */
+  --warning-strong: oklch(0.82 0.14 82); /* texto de aviso sobre fundo escuro (>= 9:1) */
 
   --info: oklch(0.70 0.16 230);
   --info-foreground: oklch(0.10 0 0);
 
-  --border: oklch(0.26 0 0); /* #27272a */
-  --input: oklch(0.26 0 0);
+  --border: oklch(0.25 0 0); /* #252528 */
+  --input: oklch(0.25 0 0);
   --ring: oklch(0.42 0 0); /* Foco neutro elegante escuro sem efeito neon (Apple/Linear HIG) */
 
   /* ── Waesy DS 4.0 Semantic Tokens Dark ── */
-  --canvas: oklch(0.10 0 0);
-  --surface: oklch(0.16 0 0);
+  --canvas: oklch(0.11 0 0);
+  --surface: oklch(0.165 0 0);
   --surface-raised: oklch(0.20 0 0);
-  --surface-subtle: oklch(0.18 0 0);
-  --surface-hover: oklch(0.22 0 0);
+  --surface-subtle: oklch(0.20 0 0);
+  --surface-hover: oklch(0.23 0 0);
   --surface-active: oklch(0.26 0 0);
-  --surface-card: oklch(0.16 0 0);
-  --surface-muted: oklch(0.18 0 0);
+  --surface-card: oklch(0.165 0 0);
+  --surface-muted: oklch(0.20 0 0);
 
   --text-primary: oklch(0.97 0 0);
   --text-secondary: oklch(0.70 0 0);
@@ -603,12 +603,12 @@
   --text-muted: oklch(0.70 0 0);
 
   --border-subtle: oklch(0.22 0 0);
-  --border-default: oklch(0.26 0 0);
-  --border-strong: oklch(0.38 0 0);
-  --border-control: oklch(0.26 0 0);
+  --border-default: oklch(0.25 0 0);
+  --border-strong: oklch(0.36 0 0);
+  --border-control: oklch(0.25 0 0);
   --border-focus: oklch(0.42 0 0);
 
-  --accent-soft: rgba(0, 102, 255, 0.18);
+  --accent-soft: oklch(0.22 0 0);
 
   --feedback-danger: var(--destructive);
   --feedback-warning: var(--warning);
@@ -1682,3 +1682,112 @@ u.copilot-underline {
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
+
+/* ==========================================================================
+ * WORKSPACE SOVEREIGN SQUIRCLE & ANTI-ACCORDION ENGINE (DEC-448)
+ * Padroniza todas as páginas do Workspace com cards squircle sólidos sem borda,
+ * elimina preenchimentos translúcidos/neon e unifica a largura dos containers.
+ * ========================================================================== */
+
+/* 1. Anti-Sanfona: Unifica containers de página em qualquer nível de guard dentro do Workspace */
+#workspace-main-content :is(.max-w-7xl, .max-w-6xl, .max-w-5xl, .max-w-4xl, .workspace-container):not([role="dialog"]) {
+  max-width: 100%;
+}
+
+/* 2. Cards Squircle Sólidos Sem Borda (como no Painel Principal e em Modais/Sheets do Workspace) */
+:is(#workspace-main-content, [role="dialog"]) :is(div, section, article, aside, a):is(
+  .bg-card,
+  .bg-card\/30,
+  .bg-card\/40,
+  .bg-card\/50,
+  .bg-card\/60,
+  .bg-card\/70,
+  .bg-card\/80,
+  .bg-card\/90,
+  .bg-card\/95,
+  .bg-surface-paper,
+  .bg-surface-paper\/50,
+  .bg-surface-paper\/80
+) {
+  background-color: var(--card);
+  border-color: transparent;
+  backdrop-filter: none;
+}
+
+/* 3. Erradicação de Preenchimentos Translúcidos / Neon em Blocos e Cards */
+:is(#workspace-main-content, [role="dialog"]) :is(div, section, article, aside):is(
+  .bg-primary\/5,
+  .bg-primary\/10,
+  .bg-warning\/5,
+  .bg-warning\/10,
+  .bg-success\/5,
+  .bg-success\/10,
+  .bg-destructive\/5,
+  .bg-destructive\/10,
+  .bg-emerald-500\/5,
+  .bg-emerald-500\/10,
+  .bg-blue-500\/5,
+  .bg-blue-500\/10,
+  .bg-amber-500\/5,
+  .bg-amber-500\/10,
+  .bg-purple-500\/5,
+  .bg-purple-500\/10,
+  .bg-rose-500\/5,
+  .bg-rose-500\/10,
+  .bg-red-500\/5,
+  .bg-red-500\/10,
+  .bg-indigo-500\/5,
+  .bg-indigo-500\/10,
+  .bg-cyan-500\/5,
+  .bg-cyan-500\/10,
+  .bg-sky-500\/5,
+  .bg-sky-500\/10,
+  .bg-violet-500\/5,
+  .bg-violet-500\/10
+) {
+  background-color: var(--muted);
+  border-color: transparent;
+  backdrop-filter: none;
+}
+
+/* 4. Erradicação de Bordas Coloridas / Neon em Cards e Blocos do Workspace */
+:is(#workspace-main-content, [role="dialog"]) :is(div, section, article, aside, span):is(
+  .border-primary\/10,
+  .border-primary\/15,
+  .border-primary\/20,
+  .border-primary\/25,
+  .border-primary\/30,
+  .border-primary\/40,
+  .border-primary\/50,
+  .border-warning\/20,
+  .border-warning\/30,
+  .border-warning\/40,
+  .border-success\/20,
+  .border-success\/30,
+  .border-success\/40,
+  .border-destructive\/20,
+  .border-destructive\/30,
+  .border-destructive\/40,
+  .border-emerald-500\/20,
+  .border-emerald-500\/30,
+  .border-emerald-500\/40,
+  .border-blue-500\/20,
+  .border-blue-500\/30,
+  .border-amber-500\/20,
+  .border-amber-500\/30,
+  .border-purple-500\/20,
+  .border-purple-500\/30,
+  .border-rose-500\/20,
+  .border-rose-500\/30,
+  .border-red-500\/20,
+  .border-red-500\/30,
+  .border-red-500\/40,
+  .border-indigo-500\/20,
+  .border-indigo-500\/30,
+  .border-sky-500\/20,
+  .border-sky-500\/30
+) {
+  border-color: transparent;
+}
+
+

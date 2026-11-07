@@ -55,9 +55,9 @@ function NovoOrcamentoRouterPage() {
  const [activeMode, setActiveMode] = useState<"commercial" | "travelos">("commercial");
 
  return (
- <div className="space-y-6 w-full max-w-7xl mx-auto px-0 sm:px-0">
+ <div className="space-y-6 w-full px-0 sm:px-0">
  {isTourism && (
- <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-3 shadow-xs">
+ <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-card border border-border/70 gap-3 shadow-xs">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <Compass className="size-4" />
@@ -583,7 +583,7 @@ function NovoOrcamentoTravelosPage() {
  className={cn(
  "text-xs font-mono font-black px-1 rounded",
  destinationIata === dest.iata || proposalData.destinationCity === dest.name
- ? "bg-card/20 text-foreground"
+ ? "bg-card text-foreground"
  : "bg-muted text-foreground"
  )}
  >
@@ -1604,7 +1604,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  };
 
  return (
- <div className="space-y-6 max-w-6xl mx-auto pb-16 animate-in fade-in duration-200">
+ <div className="space-y-6 w-full pb-16 animate-in fade-in duration-200">
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Vendas & Propostas Comerciais"
  title="Novo Orçamento Comercial"

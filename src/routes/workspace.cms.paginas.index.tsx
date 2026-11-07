@@ -283,7 +283,7 @@ function CmsPagesPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-4 sm:px-6 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── HEADER SILENCIOSO ── */}
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="CMS"
@@ -406,7 +406,7 @@ function CmsPagesPage() {
 
       {/* ── EMPTY STATE SILENCIOSO (ZERO TEXTÕES) ── */}
       {filteredPages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border/80 rounded-lg bg-card/40 text-center p-6">
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border/80 rounded-lg bg-card text-center p-6">
           <FileText className="size-8 text-muted-foreground/30 mb-3" />
           <p className="text-xs font-semibold text-foreground mb-4">
             {search ? "Nenhum resultado." : "Nenhuma página criada."}
@@ -531,7 +531,7 @@ function CmsPagesPage() {
                   </div>
 
                   {/* Overlay Flutuante com Ação Direta */}
-                  <div className="absolute inset-0 bg-background/60 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <span className="text-xs font-semibold px-3 py-2 rounded-lg bg-foreground text-background flex items-center gap-2">
                       <Edit3 className="size-4" />
                       Editar

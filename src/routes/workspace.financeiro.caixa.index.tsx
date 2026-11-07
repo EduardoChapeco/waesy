@@ -21,6 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { addRegisterEntry, closeRegister, getActiveRegister, openRegister, listRegisterHistory, listActiveRegisters, type ActiveRegisterSummaryItem } from "@/services/cash.functions";
+import { listLedgerEntries } from "@/services/immutable-ledger.functions";
 import { parseCurrencyInputToCents } from "@/lib/cash";
 import { formatDateTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -31,19 +32,38 @@ export const Route = createFileRoute("/workspace/financeiro/caixa/")({
   head: () => ({ meta: [{ title: "Fluxo de Caixa | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [registerRes, historyRes, activeRegistersRes] = await Promise.all([
+      const [registerRes, historyRes, activeRegistersRes, ledgerRes] = await Promise.all([
         getActiveRegister().catch(() => null),
         listRegisterHistory().catch(() => []),
         listActiveRegisters().catch(() => []),
+        listLedgerEntries({ data: { limit: 40 } }).catch(() => ({ entries: [] })),
       ]);
+      const rawLedger = (ledgerRes as any)?.entries || [];
+      const mappedLedger = rawLedger.map((e: any) => {
+        const isDebit =
+          Number(e.amount_cents || 0) < 0 ||
+          ["token_spend", "wallet_withdraw", "pix_sent", "commission_payout", "escrow_hold"].includes(
+            e.transaction_type
+          );
+        return {
+          id: e.id,
+          direction: isDebit ? "debit" : "credit",
+          entry_type: e.transaction_type,
+          description: e.metadata?.description || e.metadata?.notes || e.metadata?.action || e.transaction_type,
+          created_at: e.created_at,
+          reference_type: e.reference_entity_type || "core",
+          amount_cents: Math.abs(Number(e.amount_cents || 0)),
+        };
+      });
       return {
         register: registerRes,
         history: historyRes || [],
         activeRegisters: activeRegistersRes || [],
+        ledger: mappedLedger,
       };
     } catch (err) {
       console.error("[loader:workspace.financeiro.caixa.index] Unhandled loader error:", err);
-      return { register: null, history: [], activeRegisters: [] };
+      return { register: null, history: [], activeRegisters: [], ledger: [] };
     }
   },
   errorComponent: ({ error }) => <CashRegisterError error={error instanceof Error ? error : new Error(String(error))} />,
@@ -528,7 +548,7 @@ function CashRegisterManagerPage() {
  {/* ── Conteúdo: Lançamentos do Turno Atual ── */}
  <TabsContent value="current" className="mt-0 space-y-4">
  {!isBoxOpen ? (
- <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+ <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card">
  <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
  <ReceiptText className="size-6" />
  </div>
@@ -578,7 +598,7 @@ function CashRegisterManagerPage() {
       </div>
 
       {filteredEntries.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground border border-dashed border-border/70 rounded-lg bg-card/40 p-6">
+        <div className="py-12 text-center text-sm text-muted-foreground border border-dashed border-border/70 rounded-lg bg-card p-6">
           Nenhuma movimentação registrada no canal selecionado neste turno.
         </div>
       ) : (
@@ -651,8 +671,8 @@ function CashRegisterManagerPage() {
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "w-full text-left p-4 flex items-center justify-between gap-3 transition-colors cursor-pointer",
                       isSelected
-                        ? "bg-primary/10 border-l-4 border-l-primary"
-                        : "hover:bg-muted/30"
+                        ? "bg-muted"
+                        : "hover:bg-muted/40"
                     )}
                   >
                     <div className="min-w-0 flex-1 space-y-1">
@@ -825,9 +845,9 @@ function CashRegisterManagerPage() {
       )}
       </div>
     ) : (
-      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card/40 px-4">
-        <div className="size-14 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
-          <MonitorCheck className="size-7" />
+      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card px-4">
+        <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+          <ReceiptText className="size-6" />
         </div>
         <div className="space-y-2">
           <h3 className="text-base sm:text-lg font-bold text-foreground">Turno Aberto e Pronto para Operação</h3>
@@ -871,7 +891,7 @@ function CashRegisterManagerPage() {
   {/* ── Conteúdo: Histórico de Turnos Anteriores ── */}
   <TabsContent value="history" className="mt-0 space-y-4">
     {history.length === 0 ? (
-      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card/40 px-4">
+      <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card px-4">
         <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
           <History className="size-6" />
         </div>
@@ -1042,7 +1062,7 @@ function CashRegisterManagerPage() {
   {/* ── Conteúdo: Livro-Razão Financeiro Imutável (V113 Financial Ledger ACID) ── */}
   <TabsContent value="ledger" className="mt-0 space-y-4">
     {!loaderData.ledger || loaderData.ledger.length === 0 ? (
-      <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card/40">
+      <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card">
         <ShieldCheck className="size-8 text-muted-foreground mx-auto" />
         <p className="text-sm font-bold text-foreground">Livro-Razão ACID sem lançamentos</p>
         <p className="text-xs text-muted-foreground max-w-sm mx-auto">

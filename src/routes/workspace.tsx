@@ -7,7 +7,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { getUserSession } from "@/services/auth.functions";
+import { getUserSession, syncSessionToCookies } from "@/services/auth.functions";
 import { logSystemError } from "@/services/telemetry.functions";
 import { WorkspaceShell } from "@/components/workspace/workspace-shell";
 import { WorkspaceAccessDenied } from "@/components/workspace/workspace-access-denied";
@@ -71,8 +71,23 @@ export const Route = createFileRoute("/workspace")({
         const client = getBrowserClient();
         const { data: { session: browserSession } } = await client.auth.getSession();
         if (browserSession?.user) {
-          sanitizeBrowserAuthCookies();
-          const retrySession = await getUserSession();
+          session = {
+            id: browserSession.user.id,
+            user: browserSession.user,
+            email: browserSession.user.email,
+            role: (browserSession.user.user_metadata?.role as any) || "owner",
+            store_id: browserSession.user.user_metadata?.store_id || null,
+            memberships: [],
+          };
+          if (browserSession.access_token && browserSession.refresh_token) {
+            void syncSessionToCookies({
+              data: {
+                access_token: browserSession.access_token,
+                refresh_token: browserSession.refresh_token,
+              },
+            }).catch(() => {});
+          }
+          const retrySession = await getUserSession().catch(() => null);
           if (retrySession?.user) {
             session = retrySession;
           }
@@ -122,8 +137,23 @@ export const Route = createFileRoute("/workspace")({
           const client = getBrowserClient();
           const { data: { session: browserSession } } = await client.auth.getSession();
           if (browserSession?.user) {
-            sanitizeBrowserAuthCookies();
-            const retrySession = await getUserSession();
+            session = {
+              id: browserSession.user.id,
+              user: browserSession.user,
+              email: browserSession.user.email,
+              role: (browserSession.user.user_metadata?.role as any) || "owner",
+              store_id: browserSession.user.user_metadata?.store_id || null,
+              memberships: [],
+            };
+            if (browserSession.access_token && browserSession.refresh_token) {
+              void syncSessionToCookies({
+                data: {
+                  access_token: browserSession.access_token,
+                  refresh_token: browserSession.refresh_token,
+                },
+              }).catch(() => {});
+            }
+            const retrySession = await getUserSession().catch(() => null);
             if (retrySession?.user) {
               session = retrySession;
             }
@@ -278,7 +308,7 @@ function WorkspaceLayout() {
     isPlatformAdmin ? "owner" : activeMembership?.role || session?.role || "collaborator"
   ).toLowerCase();
 
-  // Fullscreen Immersion Mode para o Construtor Visual (Wix/Framer), Estúdio e Studio de Propostas (Canva/Figma)
+  // Validação de papel para ferramentas avançadas (Construtor Visual, Estúdio e Studio de Propostas)
   if (isBuilder || isStudio || isProposalStudio) {
     const IMMERSION_ALLOWED_ROLES = [
       "owner",
@@ -301,7 +331,6 @@ function WorkspaceLayout() {
         </div>
       );
     }
-    return <Outlet />;
   }
 
   const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;

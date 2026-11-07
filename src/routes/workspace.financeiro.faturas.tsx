@@ -198,7 +198,7 @@ function WorkspaceFaturasPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 space-y-6 pb-20">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20">
       {/* ── 1. Cabeçalho Clean ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
         <div>

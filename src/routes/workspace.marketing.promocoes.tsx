@@ -201,7 +201,7 @@ function WorkspacePromotionsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── PageHeader Canônico ── */}
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Marketing"
@@ -298,7 +298,7 @@ function WorkspacePromotionsPage() {
           {/* Lista de Promoções */}
           <div className="space-y-3">
             {promos.length === 0 ? (
-              <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+              <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card">
                 <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
                   <Tag className="size-6" />
                 </div>

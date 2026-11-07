@@ -132,7 +132,6 @@ function WorkspaceRHPontoPage() {
           </Button>
         </div>
       </div>
-
       {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
       <WorkspaceCanonicalToolbar
         tabs={[

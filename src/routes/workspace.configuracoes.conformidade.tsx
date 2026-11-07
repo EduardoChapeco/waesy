@@ -106,7 +106,7 @@ export function WorkspaceConformidadePage() {
   const isSuspended = compliance?.status === "SUSPENDED";
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
         <div>

@@ -196,7 +196,7 @@ function AutomacoesWorkflowsPage() {
   const activeCount = workflows.filter((w) => w.status === "active").length;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── Header ── */}
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         title="Automações Visuais"
@@ -247,7 +247,7 @@ function AutomacoesWorkflowsPage() {
       </div>
 
       {/* ── Preview Visual do Motor de Automação ── */}
-      <div className="bg-card/70 backdrop-blur-xl border border-border/50 p-8 rounded-lg space-y-6">
+      <div className="bg-card border border-border/50 p-8 rounded-lg space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-bold text-base text-foreground">Motor de Automação Visual em Nós</h3>

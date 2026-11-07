@@ -173,7 +173,7 @@ export function SquadsWorkspacePage() {
   ], [squads.length, totalAgents, pendingApprovals, completedRuns]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── TOOLBAR CANÔNICA (SILENCIOSA & ALTA DENSIDADE) ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -213,7 +213,7 @@ export function SquadsWorkspacePage() {
 
       {/* ── ALERTA DE FEEDBACK ── */}
       {feedback && (
-        <div className="p-4 rounded-lg flex items-center justify-between border bg-card/60 text-foreground border-border/80">
+        <div className="p-4 rounded-lg flex items-center justify-between border bg-card text-foreground border-border/80">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
             <p className="text-sm font-medium">{feedback.message}</p>

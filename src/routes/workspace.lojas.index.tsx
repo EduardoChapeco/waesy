@@ -71,7 +71,7 @@ export default function WorkspaceLojasPage() {
  const totalProducts = stores.reduce((acc: number, s: any) => acc + (s.product_count || 0), 0);
 
  return (
- <div className="w-full max-w-7xl mx-auto space-y-6 animate-in fade-in duration-200">
+ <div className="w-full space-y-6 animate-in fade-in duration-200">
  {/* ── 1. Top Header com Ações Globais ── */}
  <PageHeader
  eyebrow="Negócios"
@@ -238,7 +238,7 @@ export default function WorkspaceLojasPage() {
  ● Ativa no Painel
  </Badge>
  ) : (
- <Badge variant="secondary" className="bg-foreground/50 text-foreground backdrop-blur-md border-0 text-xs">
+ <Badge variant="secondary" className="bg-foreground/50 text-foreground border-0 text-xs">
  {st.status === "maintenance" ? "Em Manutenção" : "Disponível"}
  </Badge>
  )}
@@ -269,7 +269,7 @@ export default function WorkspaceLojasPage() {
  variant="outline"
  size="sm"
  onClick={() => handleOpenEditor(st)}
- className="rounded-lg text-xs font-bold h-11 sm:h-8 px-3 gap-2 bg-card/80 backdrop-blur-md hover:border-primary/40 hover:text-primary transition-colors"
+ className="rounded-lg text-xs font-bold h-11 sm:h-8 px-3 gap-2 bg-card hover:border-primary/40 hover:text-primary transition-colors"
  >
  <Settings2 className="size-3.5" />
  <span>Configurar</span>

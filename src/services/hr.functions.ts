@@ -83,13 +83,59 @@ export const registerFinancialEvent = createServerFn({ method: "POST" })
  .insert({
  store_id: identity.store_id,
  employee_id: employeeId,
+ authorized_by: identity.id,
  amount_cents: finalAmount,
  type,
  description,
- metadata: { registered_by: identity.id },
  })
  .select("id")
  .single();
+
+ if (!error && record) {
+   // Se for vale/adiantamento (advance) ou pagamento de salário/comissão em dinheiro, debita do caixa aberto e registra despesa
+   if (type === "advance" && finalAmount < 0) {
+     try {
+       // 1. Débito no Caixa Ativo (se houver turno aberto)
+       const { data: openRegister } = await supabase
+         .from("cash_registers")
+         .select("id")
+         .eq("store_id", identity.store_id)
+         .eq("status", "open")
+         .order("opened_at", { ascending: false })
+         .limit(1)
+         .maybeSingle();
+
+       if (openRegister) {
+         await supabase.from("cash_register_entries").insert({
+           cash_register_id: openRegister.id,
+           order_id: null,
+           amount_cents: finalAmount,
+           entry_type: "cash",
+           payment_method: "cash",
+           notes: `Vale / Adiantamento: ${description}`,
+           created_by: identity.id,
+           channel_source: "hr_payroll",
+           marketplace_fee_cents: 0,
+           net_payout_cents: finalAmount,
+           external_reference_id: record.id,
+         });
+       }
+
+       // 2. Lançamento no DRE / Transações Financeiras da Loja
+       await supabase.from("financial_transactions").insert({
+         store_id: identity.store_id,
+         type: "expense_other",
+         amount_cents: finalAmount,
+         description: `Vale / Adiantamento de Colaborador: ${description}`,
+         category: "payroll",
+         reference_date: new Date().toISOString().slice(0, 10),
+         created_by: identity.id,
+       });
+     } catch (syncErr) {
+       console.warn("[hr.functions] Aviso na sincronização de vale com caixa/DRE:", syncErr);
+     }
+   }
+ }
 
  if (error) {
  throw new Error("Erro ao lançar evento financeiro: " + error.message);

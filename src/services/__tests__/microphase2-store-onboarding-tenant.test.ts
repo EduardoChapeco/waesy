@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { generateSlug, resolveUniqueStoreSlug } from "@/lib/slug-utils";
+import { getServerClient } from "@/lib/supabase";
+import { createStore } from "@/services/identity.functions";
 
 // Mock @tanstack/react-start
 vi.mock("@tanstack/react-start", () => ({
@@ -104,7 +106,6 @@ describe("MICROFASE 2 — Resolução de Onboarding e Validação de Tenant na C
   describe("2. Contrato BFF createStore — Blindagem Atômica e Anti-Zombie Store", () => {
     it("deve rejeitar chamada de criação de loja se a sessão não estiver autenticada", async () => {
       mockIdentityId = null;
-      const { createStore } = await import("@/services/identity.functions");
 
       await expect(
         createStore({
@@ -117,8 +118,6 @@ describe("MICROFASE 2 — Resolução de Onboarding e Validação de Tenant na C
     });
 
     it("deve rejeitar criação com nome menor que 2 caracteres via validação Zod", async () => {
-      const { createStore } = await import("@/services/identity.functions");
-
       await expect(
         createStore({
           data: {
@@ -200,11 +199,7 @@ describe("MICROFASE 2 — Resolução de Onboarding e Validação de Tenant na C
         },
       };
 
-      vi.doMock("@/lib/supabase", () => ({
-        getServerClient: () => mockClient,
-      }));
-
-      const { createStore } = await import("@/services/identity.functions");
+      vi.mocked(getServerClient).mockReturnValue(mockClient as any);
 
       const res = await createStore({
         data: {
@@ -322,11 +317,7 @@ describe("MICROFASE 2 — Resolução de Onboarding e Validação de Tenant na C
         },
       };
 
-      vi.doMock("@/lib/supabase", () => ({
-        getServerClient: () => mockClient,
-      }));
-
-      const { createStore } = await import("@/services/identity.functions");
+      vi.mocked(getServerClient).mockReturnValue(mockClient as any);
 
       await expect(
         createStore({

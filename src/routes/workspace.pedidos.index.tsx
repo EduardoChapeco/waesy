@@ -282,7 +282,7 @@ function AdminOrdersPage() {
  : "Vendas";
 
  return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
  {/* ── Toolbar Canônica do Workspace (AGENTS.md B.26 & NC-001) ── */}
  <WorkspaceCanonicalToolbar
   title={pageTitle}
@@ -401,23 +401,23 @@ function AdminOrdersPage() {
       {/* ── MODO 1: KANBAN DE EMISSÕES & VIAGENS (TURISMO) ── */}
  {viewMode === "emissions" && isTourism ? (
  <div className="space-y-4">
- <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+ <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
  {/* Coluna 1: Novas Reservas & Pendentes de Pagamento */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144 flex flex-col justify-between">
  <div className="space-y-3">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-warning animate-pulse motion-reduce:animate-none" />
  <h3 className="text-sm font-bold text-foreground">Novas Reservas</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {newOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {newOrders.length === 0 ? (
- <div className="py-12 text-center text-xs text-muted-foreground">
+ <div className="py-12 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhuma nova reserva pendente de pagamento
  </div>
  ) : (
@@ -429,7 +429,7 @@ function AdminOrdersPage() {
  return (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors shadow-2xs"
+ className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -507,21 +507,21 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 2: Em Emissão (Aéreo & Hospedagem) */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144 flex flex-col justify-between">
  <div className="space-y-3">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-primary" />
  <h3 className="text-sm font-bold text-foreground">Em Emissão</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {processingOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {processingOrders.length === 0 ? (
- <div className="py-12 text-center text-xs text-muted-foreground">
+ <div className="py-12 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhuma viagem em processo de emissão
  </div>
  ) : (
@@ -532,7 +532,7 @@ function AdminOrdersPage() {
  return (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors shadow-2xs"
+ className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -540,7 +540,7 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-primary/10 text-primary uppercase">
+ <span className="inline-block px-2 py-1 rounded-md text-xs font-bold bg-muted text-foreground uppercase">
  Emitindo Bilhetes
  </span>
  </div>
@@ -588,28 +588,28 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 3: Vouchers Emitidos & Prontos p/ Embarque */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144 flex flex-col justify-between">
  <div className="space-y-3">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-success" />
  <h3 className="text-sm font-bold text-foreground">Vouchers Emitidos</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {readyOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {readyOrders.length === 0 ? (
- <div className="py-12 text-center text-xs text-muted-foreground">
+ <div className="py-12 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhum voucher aguardando embarque
  </div>
  ) : (
  readyOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 shadow-2xs"
+ className="p-4 rounded-2xl bg-card space-y-3"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -617,7 +617,7 @@ function AdminOrdersPage() {
  <span className="font-mono font-black text-sm text-foreground">
  #{order.public_token || order.id.slice(0, 6)}
  </span>
- <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-success/10 text-success-strong uppercase">
+ <span className="inline-block px-2 py-1 rounded-md text-xs font-bold bg-muted text-success-strong uppercase">
  Pronto p/ Embarque
  </span>
  </div>
@@ -662,28 +662,28 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 4: Viagens Concluídas & Pós-Venda */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60 flex flex-col justify-between">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144 flex flex-col justify-between">
  <div className="space-y-3">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-blue-500" />
  <h3 className="text-sm font-bold text-foreground">Viagens Concluídas</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {completedOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {completedOrders.length === 0 ? (
- <div className="py-12 text-center text-xs text-muted-foreground">
+ <div className="py-12 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhuma viagem concluída recentemente
  </div>
  ) : (
  completedOrders.slice(0, 5).map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-2 opacity-90 hover:opacity-100 transition-opacity"
+ className="p-4 rounded-2xl bg-card space-y-2 opacity-90 hover:opacity-100 transition-opacity"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -719,29 +719,29 @@ function AdminOrdersPage() {
 
  {/* ── MODO 2: COCKPIT DE COZINHA (EXCLUSIVO PARA GASTRONOMIA) ── */}
  {viewMode === "kitchen" && isGastro ? (
- <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
  {/* Coluna 1: Novos Pedidos */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-destructive animate-pulse motion-reduce:animate-none" />
  <h3 className="text-sm font-bold text-foreground">Novos Pedidos</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {newOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {newOrders.length === 0 ? (
- <div className="py-8 text-center text-xs text-muted-foreground">
+ <div className="py-8 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhum pedido novo pendente
  </div>
  ) : (
  newOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors"
+ className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -753,7 +753,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-primary/10 text-primary uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-muted text-foreground uppercase">
  {order.shipping_method === "pickup" ? "Retirada Balcão" : "Entrega Parceira"}
  </span>
  </div>
@@ -821,27 +821,27 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 2: Em Preparo na Cozinha */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-warning" />
  <h3 className="text-sm font-bold text-foreground">Em Preparo</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {processingOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {processingOrders.length === 0 ? (
- <div className="py-8 text-center text-xs text-muted-foreground">
+ <div className="py-8 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhum pedido em produção na cozinha
  </div>
  ) : (
  processingOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3 hover:border-primary/50 transition-colors"
+ className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -853,7 +853,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-warning/10 text-warning-strong uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-muted text-warning-strong uppercase">
  Cozinha Produzindo
  </span>
  </div>
@@ -933,27 +933,27 @@ function AdminOrdersPage() {
  </div>
 
  {/* Coluna 3: Prontos / Em Rota */}
- <div className="space-y-3 p-4 rounded-lg border border-border/70 bg-card/60">
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144">
+ <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
  <span className="size-2.5 rounded-full bg-success" />
  <h3 className="text-sm font-bold text-foreground">Prontos / Em Rota</h3>
  </div>
- <Badge variant="secondary" className="font-bold text-xs">
+ <Badge variant="secondary" className="font-bold text-xs bg-card">
  {readyOrders.length}
  </Badge>
  </div>
 
  <div className="space-y-3">
  {readyOrders.length === 0 ? (
- <div className="py-8 text-center text-xs text-muted-foreground">
+ <div className="py-8 rounded-xl bg-card text-center text-xs text-muted-foreground">
  Nenhum pedido despachado
  </div>
  ) : (
  readyOrders.map((order) => (
  <div
  key={order.id}
- className="p-4 rounded-lg border border-border bg-card space-y-3"
+ className="p-4 rounded-2xl bg-card space-y-3"
  >
  <div className="flex items-start justify-between gap-2">
  <div>
@@ -965,7 +965,7 @@ function AdminOrdersPage() {
  {order.customer_snapshot?.name || "Cliente"}
  </span>
  </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-success/10 text-success-strong uppercase">
+ <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-muted text-success-strong uppercase">
  {order.status === "ready_for_pickup"
  ? "Aguardando Retirada"
  : "Entregador a Caminho"}

@@ -886,13 +886,13 @@ function WorkspaceHotelsPage() {
 
  {/* Top Badges */}
  <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
- <span className="px-3 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-xs font-bold font-mono tracking-wide">
+ <span className="px-3 py-1 rounded-full bg-foreground/60 text-foreground text-xs font-bold font-mono tracking-wide">
  {hotel.stars || 4} Estrelas
  </span>
 
  <div className="flex items-center gap-2">
  {photosCount > 1 && (
- <span className="px-2 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-xs font-semibold flex items-center gap-1">
+ <span className="px-2 py-1 rounded-full bg-foreground/60 text-foreground text-xs font-semibold flex items-center gap-1">
  <Camera className="size-3" />
  <span>{photosCount} fotos</span>
  </span>
@@ -1192,7 +1192,7 @@ function WorkspaceHotelsPage() {
  <div className="absolute inset-0 bg-slate-950/60" />
  <div className="absolute bottom-4 left-5 right-5 text-foreground">
  <div className="flex items-center gap-2 text-xs font-bold mb-1">
- <span className="px-2 py-1 rounded-full bg-card/20 backdrop-blur-md text-foreground font-mono text-xs">
+ <span className="px-2 py-1 rounded-full bg-card text-foreground font-mono text-xs">
  {previewHotel.stars || 4} Estrelas
  </span>
  {(previewHotel.internal_rating || 0) > 0 ? <span className="text-foreground/80 font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}

@@ -225,7 +225,7 @@ function GiftCardsDashboardPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 space-y-6 pb-24 animate-in fade-in duration-200">
+    <div className="w-full px-4 sm:px-6 space-y-6 pb-24 animate-in fade-in duration-200">
       {/* ── 1. Top Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <PageHeader title="Vales-Presente & Gifting $WZ" />

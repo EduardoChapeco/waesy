@@ -55,7 +55,7 @@ function KycAuditPage() {
  };
 
  return (
- <div className="space-y-6 max-w-6xl mx-auto">
+ <div className="space-y-6 w-full">
  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
  <div>
  <h1 className="text-2xl font-bold flex items-center gap-2">

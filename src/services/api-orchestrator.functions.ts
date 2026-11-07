@@ -1361,7 +1361,10 @@ export async function executeUnifiedAiCall(
             }
             // Se for 429 por modelo específico no tier (ex: Qwen 1000 OTPM), tenta o próximo modelo da cascata
             if (attemptRes.status === 429) {
-              continue;
+              if (/otpm/i.test(lastGroqErrText)) {
+                continue;
+              }
+              break;
             }
           }
 

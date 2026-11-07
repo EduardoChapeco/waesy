@@ -274,7 +274,7 @@ export default function WorkspaceTeamPage() {
  };
 
  return (
- <div className="space-y-6 max-w-6xl mx-auto w-full pb-20">
+ <div className="space-y-6 w-full pb-20">
  {/* ── PageHeader Canônico Clean ── */}
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="RH & Gestão"

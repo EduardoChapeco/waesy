@@ -71,11 +71,15 @@ export const getUserSession = createServerFn({ method: "GET" }).handler(async ()
       effectiveEmail?.split("@")[0] ||
       "Membro Waesy";
 
+    const identityData = user?.identities?.[0]?.identity_data || {};
     const effectiveAvatar =
       (identity as any).avatar_url ||
       (identity as any).avatarUrl ||
       profile?.avatar_url ||
       userMeta?.avatar_url ||
+      userMeta?.picture ||
+      identityData?.avatar_url ||
+      identityData?.picture ||
       null;
     const effectiveUsername =
       (identity as any).username ||
@@ -116,6 +120,27 @@ export const getUserSession = createServerFn({ method: "GET" }).handler(async ()
     return null;
   }
 });
+
+/**
+ * Sincroniza tokens de sessão atualizados do cliente com os cookies SSR do servidor.
+ */
+export const syncSessionToCookies = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      access_token: z.string(),
+      refresh_token: z.string(),
+    })
+  )
+  .handler(async ({ data: { access_token, refresh_token } }) => {
+    try {
+      const ssrClient = await getSSRClient();
+      await ssrClient.auth.setSession({ access_token, refresh_token });
+      return { success: true };
+    } catch (e: any) {
+      console.warn("[auth] Falha ao sincronizar cookies de sessão:", e?.message);
+      return { success: false };
+    }
+  });
 
 /**
  * Verifica se um identificador (email, @username, CPF, telefone) existe na plataforma.

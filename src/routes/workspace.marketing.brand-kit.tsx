@@ -198,7 +198,7 @@ function ColorSwatch({
   description?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg border border-border/40 bg-card/30 hover:bg-card/60 transition-colors">
+    <div className="flex items-center gap-3 p-3 rounded-lg border border-border/40 bg-card hover:bg-card/60 transition-colors">
       <div className="relative flex-shrink-0">
         <div
           className="w-10 h-10 rounded-lg border border-border/40 cursor-pointer"
@@ -451,8 +451,8 @@ export function BrandKitPage() {
       <style>{previewCSS}</style>
 
       {/* ── HEADER EXECUTIVO ── */}
-      <div className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-0 sm:px-0 py-4">
+      <div className="border-b border-border/40 bg-card sticky top-0 z-20">
+        <div className="w-full px-0 sm:px-0 py-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -589,7 +589,7 @@ export function BrandKitPage() {
       </div>
 
       {/* ── CONTEÚDO POR ABA ── */}
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 py-6 sm:py-8 space-y-6 animate-in fade-in duration-200">
+      <div className="w-full px-0 sm:px-4 md:px-0 py-6 sm:py-8 space-y-6 animate-in fade-in duration-200">
         {/* ABA: CORES */}
         {activeTab === "cores" && (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

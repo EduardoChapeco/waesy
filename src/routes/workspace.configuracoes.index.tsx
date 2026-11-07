@@ -487,7 +487,7 @@ export default function WorkspaceConfiguracoesPage() {
   const hasDeliveryModule = enabledModules.includes("delivery") && isPhysicalDeliveryNiche;
 
  return (
- <div className="space-y-6 animate-in fade-in duration-200 motion-reduce:animate-none max-w-6xl mx-auto w-full px-0 sm:px-4 md:px-0 pb-20">
+ <div className="space-y-6 animate-in fade-in duration-200 motion-reduce:animate-none w-full px-0 sm:px-4 md:px-0 pb-20">
  {/* ── 1. Header Minimalista & Direto ── */}
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow={`Loja • ${currentNiche.name}`}
@@ -1992,7 +1992,7 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  {customFields.length === 0 ? (
- <div className="py-8 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card/40">
+ <div className="py-8 text-center space-y-2 border border-dashed border-border/70 rounded-lg bg-card">
  <div className="size-10 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
  <ListChecks className="size-5" />
  </div>

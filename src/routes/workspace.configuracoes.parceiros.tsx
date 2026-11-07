@@ -123,7 +123,7 @@ function ConfigParceirosPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8 max-w-4xl">
+    <div className="flex flex-col gap-8 w-full">
       {/* ── 1. Meu Perfil de Parceiro & Afiliado ── */}
       <div className="space-y-4">
         <div>

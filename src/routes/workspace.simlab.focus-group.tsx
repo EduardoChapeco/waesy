@@ -257,7 +257,7 @@ function FocusGroupPage() {
   return (
     <div className="w-full min-h-full bg-background text-foreground flex flex-col font-sans selection:bg-primary/20">
       {/* Level 2: TopBar Flutuante com Glassmorphism Apple HIG */}
-      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border/40 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <header className="sticky top-0 z-30 bg-background/90 border-b border-border/40 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="size-9 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
             <Layers className="size-4.5" />
@@ -321,7 +321,7 @@ function FocusGroupPage() {
       {/* Grid Principal: Terminal de 2 Colunas */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Barra Horizontal Compacta Mobile */}
-        <div className="lg:hidden border-b border-border/40 bg-card/40 p-3 space-y-2 shrink-0">
+        <div className="lg:hidden border-b border-border/40 bg-card p-3 space-y-2 shrink-0">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium px-1">
             <span className="flex items-center gap-2">
               <Users className="size-3" />
@@ -354,7 +354,7 @@ function FocusGroupPage() {
         </div>
 
         {/* Painel Lateral Desktop: Bancada Amostral com Currículos e Finanças */}
-        <aside className="hidden lg:block w-88 border-r border-border/60 bg-card/30 p-4 space-y-4 overflow-y-auto no-scrollbar shrink-0">
+        <aside className="hidden lg:block w-88 border-r border-border/60 bg-card p-4 space-y-4 overflow-y-auto no-scrollbar shrink-0">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium pb-2 border-b border-border/40">
             <span className="flex items-center gap-2">
               <Users className="size-3.5" />
@@ -509,8 +509,8 @@ function FocusGroupPage() {
           </div>
 
           {/* Barra Inferior de Entrada (Level 2) */}
-          <footer className="p-4 border-t border-border/60 bg-background/90 backdrop-blur-md">
-            <form onSubmit={handleTriggerInquiry} className="flex items-center gap-3 max-w-4xl mx-auto">
+          <footer className="p-4 border-t border-border/60 bg-background/90 ">
+            <form onSubmit={handleTriggerInquiry} className="flex items-center gap-3 w-full">
               <Input
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}

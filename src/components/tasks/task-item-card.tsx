@@ -13,10 +13,10 @@ interface TaskItemCardProps {
 }
 
 const PRIORITY_CONFIG: Record<TaskPriority, { label: string; className: string }> = {
-  urgent: { label: "Urgente", className: "bg-rose-500/10 text-rose-600 border-rose-500/30" },
-  high: { label: "Alta", className: "bg-warning/10 text-warning-strong border-warning/30" },
-  medium: { label: "Média", className: "bg-sky-500/10 text-sky-600 border-sky-500/30" },
-  low: { label: "Baixa", className: "bg-muted text-muted-foreground border-border/80" },
+  urgent: { label: "Urgente", className: "bg-destructive/15 text-destructive" },
+  high: { label: "Alta", className: "bg-warning/15 text-warning-strong" },
+  medium: { label: "Média", className: "bg-info/15 text-info" },
+  low: { label: "Baixa", className: "bg-muted text-muted-foreground" },
 };
 
 export function TaskItemCard({
@@ -57,8 +57,8 @@ export function TaskItemCard({
       }}
       onClick={() => onClick(task)}
       className={cn(
-        "group relative flex items-center justify-between gap-3 p-4 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:bg-muted/10 transition-colors motion-reduce:transition-none cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-        isDone && "opacity-60 bg-muted/20",
+        "group relative flex items-center justify-between gap-3 p-4 rounded-2xl bg-card transition-colors motion-reduce:transition-none cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        isDone && "opacity-60",
         className
       )}
     >
@@ -72,14 +72,14 @@ export function TaskItemCard({
             onToggleStatus(task);
           }}
           title={isDone ? "Marcar como pendente" : "Marcar como concluída"}
-          className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <span
             className={cn(
               "size-6 rounded-md border flex items-center justify-center transition-colors motion-reduce:transition-none",
               isDone
                 ? "bg-primary border-primary text-primary-foreground"
-                : "border-border/80 bg-background hover:border-primary text-transparent hover:text-primary/40"
+                : "border-border/80 bg-background hover:border-foreground text-transparent hover:text-muted-foreground"
             )}
           >
             <Check className="size-4 stroke-2" />
@@ -100,8 +100,8 @@ export function TaskItemCard({
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-mono">
             {/* Prioridade */}
             <Badge
-              variant="outline"
-              className={cn("text-xs px-2 py-0 h-5 border", priorityInfo.className)}
+              variant="secondary"
+              className={cn("text-xs px-2 py-0 h-5", priorityInfo.className)}
             >
               {priorityInfo.label}
             </Badge>

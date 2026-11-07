@@ -88,12 +88,13 @@ function WorkspaceAdvocaciaPage() {
  >("prazos");
  const [isPending, startTransition] = useTransition();
 
- // Deadlines State
- const [isDeadlineSheetOpen, setIsDeadlineSheetOpen] = useState(false);
- const [completingDeadline, setCompletingDeadline] = useState<any | null>(null);
- const [deadlineFilter, setDeadlineFilter] = useState<
- "pending" | "urgent" | "audiencia" | "completed" | "all"
- >("pending");
+  // Deadlines State
+  const [isDeadlineSheetOpen, setIsDeadlineSheetOpen] = useState(false);
+  const [completingDeadline, setCompletingDeadline] = useState<any | null>(null);
+  const [deadlineFilter, setDeadlineFilter] = useState<
+  "pending" | "urgent" | "audiencia" | "completed" | "all"
+  >("pending");
+  const [deadlineViewMode, setDeadlineViewMode] = useState<"kanban" | "table">("kanban");
 
  // Search & Filters State
  const [searchQuery, setSearchQuery] = useState("");
@@ -370,7 +371,7 @@ function WorkspaceAdvocaciaPage() {
  />
 
  {/* ── TERMINAL DE CONSULTA CNJ & FLAGS DE COMPLIANCE (PADRÃO JUDIT) ── */}
- <div className="rounded-lg border border-border bg-card p-5 sm:p-6 space-y-4 shadow-xs">
+ <div className="rounded-2xl bg-card p-5 sm:p-6 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary font-mono">
  <Scale className="size-4" />
  <span>Consulta Processual Unificada</span>
@@ -399,7 +400,7 @@ function WorkspaceAdvocaciaPage() {
  </form>
 
  {/* Switches de Compliance (Mandados, Execução Criminal, Restrições) */}
- <div className="pt-2 flex flex-wrap items-center gap-4 sm:gap-6 border-t border-border/60">
+ <div className="pt-2 flex flex-wrap items-center gap-4 sm:gap-6 border-t border-border/40">
  <label className="flex items-center gap-2 cursor-pointer text-xs">
  <Switch
  checked={checkArrestWarrants}
@@ -433,7 +434,7 @@ function WorkspaceAdvocaciaPage() {
 
  {/* ── CARDS DE KPIS DO ACERVO & PRECLUSÃO ── */}
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
- <div className="p-4 rounded-lg bg-card border border-rose-500/30 space-y-1">
+ <div className="p-4 rounded-2xl bg-card space-y-1">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 font-mono">
  Fatais (&lt; 48h)
@@ -445,7 +446,7 @@ function WorkspaceAdvocaciaPage() {
  </p>
  </div>
 
- <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-2xl bg-card space-y-1">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Prazos Pendentes
  </span>
@@ -454,7 +455,7 @@ function WorkspaceAdvocaciaPage() {
  </p>
  </div>
 
- <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-2xl bg-card space-y-1">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Processos no Acervo
  </span>
@@ -463,7 +464,7 @@ function WorkspaceAdvocaciaPage() {
  </p>
  </div>
 
- <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
+ <div className="p-4 rounded-2xl bg-card space-y-1">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Monitoramento Ativo
  </span>
@@ -472,7 +473,7 @@ function WorkspaceAdvocaciaPage() {
  </p>
  </div>
 
- <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1 col-span-2 sm:col-span-1">
+ <div className="p-4 rounded-2xl bg-card space-y-1 col-span-2 sm:col-span-1">
  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
  Demandas Abertas
  </span>
@@ -488,7 +489,7 @@ function WorkspaceAdvocaciaPage() {
  onValueChange={(v) => setActiveMainTab(v as any)}
  className="space-y-6"
  >
- <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-11 bg-muted/40 p-1 rounded-lg">
+ <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-11 bg-muted p-1 rounded-xl">
  <TabsTrigger value="prazos" className="text-xs font-bold rounded-lg gap-2">
  <Calendar className="size-3.5" />
  <span>
@@ -557,19 +558,143 @@ function WorkspaceAdvocaciaPage() {
  </Button>
  </div>
 
+ <div className="flex items-center gap-2">
+ <div className="flex items-center bg-muted p-1 rounded-xl">
+ <button
+ type="button"
+ onClick={() => setDeadlineViewMode("kanban")}
+ className={cn(
+ "px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0",
+ deadlineViewMode === "kanban" ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Kanban
+ </button>
+ <button
+ type="button"
+ onClick={() => setDeadlineViewMode("table")}
+ className={cn(
+ "px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0",
+ deadlineViewMode === "table" ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Tabela
+ </button>
+ </div>
  <Button
  onClick={() => setIsDeadlineSheetOpen(true)}
- className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 w-full sm:w-auto shadow-xs shrink-0 min-h-11 sm:min-h-0"
+ className="h-9 px-4 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2 w-full sm:w-auto shrink-0 min-h-11 sm:min-h-0"
  >
  <Plus className="size-4" />
  <span>Novo Prazo</span>
  </Button>
  </div>
+ </div>
 
- {/* Lista / Tabela de Prazos */}
- {filteredDeadlines.length === 0 ? (
- <div className="p-12 text-center rounded-lg bg-card border border-border space-y-3">
- <div className="size-12 mx-auto rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+ {/* Quadro Kanban ou Lista / Tabela de Prazos */}
+ {deadlineViewMode === "kanban" ? (
+ <div className="flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-4 items-stretch min-h-144">
+ {[
+ {
+ id: "pending",
+ title: "Prazos em Aberto",
+ dotClass: "bg-warning",
+ items: (deadlines || []).filter((d: any) => d.status !== "completed" && d.deadline_type !== "audiencia" && d.priority !== "fatal" && d.priority !== "urgent"),
+ },
+ {
+ id: "urgent",
+ title: "Fatais & Urgentes",
+ dotClass: "bg-destructive",
+ items: (deadlines || []).filter((d: any) => d.status !== "completed" && (d.priority === "fatal" || d.priority === "urgent")),
+ },
+ {
+ id: "audiencia",
+ title: "Audiências & Sessões",
+ dotClass: "bg-primary",
+ items: (deadlines || []).filter((d: any) => d.status !== "completed" && d.deadline_type === "audiencia"),
+ },
+ {
+ id: "completed",
+ title: "Protocolados",
+ dotClass: "bg-emerald-500",
+ items: (deadlines || []).filter((d: any) => d.status === "completed"),
+ },
+ ].map((col) => (
+ <div
+ key={col.id}
+ className="flex-none w-80 min-h-144 h-full rounded-2xl bg-muted/50 dark:bg-muted/30 p-3 flex flex-col gap-3 overflow-hidden"
+ >
+ <div className="flex items-center justify-between px-2 py-1">
+ <div className="flex items-center gap-2">
+ <span className={cn("size-2 rounded-full shrink-0", col.dotClass)} />
+ <h4 className="text-xs font-bold text-foreground">{col.title}</h4>
+ </div>
+ <span className="text-2xs font-mono font-bold px-2 py-1 rounded-full bg-card text-foreground">
+ {col.items.length}
+ </span>
+ </div>
+ <div className="flex-1 space-y-3 overflow-y-auto no-scrollbar">
+ {col.items.length === 0 ? (
+ <div className="h-32 rounded-2xl bg-card flex items-center justify-center text-xs text-muted-foreground p-4 text-center">
+ Nenhum prazo nesta coluna
+ </div>
+ ) : (
+ col.items.map((dl: any) => {
+ const statusInfo = getPreclusionStatus(dl.due_date, dl.status);
+ return (
+ <div
+ key={dl.id}
+ className="rounded-2xl bg-card p-4 space-y-3 transition-colors"
+ >
+ <div className="flex items-start justify-between gap-2">
+ <div className="min-w-0 flex-1 space-y-1">
+ <span className="text-2xs font-mono text-muted-foreground uppercase block truncate">
+ {dl.process_number || "Processo Avulso"}
+ </span>
+ <h5 className="text-xs font-bold text-foreground leading-snug line-clamp-2">
+ {dl.title}
+ </h5>
+ </div>
+ <Badge variant="secondary" className={cn("text-2xs font-mono shrink-0 border-0", statusInfo.className)}>
+ {statusInfo.label}
+ </Badge>
+ </div>
+ <div className="rounded-xl bg-muted p-3 text-2xs space-y-1">
+ <div className="flex items-center justify-between">
+ <span className="text-muted-foreground">Cliente:</span>
+ <span className="font-semibold text-foreground truncate max-w-36">{dl.client_name || "—"}</span>
+ </div>
+ <div className="flex items-center justify-between font-mono">
+ <span className="text-muted-foreground">Fatal:</span>
+ <span className="font-bold text-foreground">{formatDate(dl.due_date)}</span>
+ </div>
+ </div>
+ <div className="flex items-center justify-between gap-2 pt-1">
+ <Badge variant="secondary" className="text-2xs font-mono capitalize bg-muted text-muted-foreground border-0">
+ {dl.deadline_type}
+ </Badge>
+ {dl.status !== "completed" && (
+ <Button
+ size="sm"
+ onClick={() => setCompletingDeadline(dl)}
+ className="h-9 min-h-11 sm:min-h-0 px-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-2"
+ >
+ <CheckCircle2 className="size-3.5" />
+ <span>Protocolar</span>
+ </Button>
+ )}
+ </div>
+ </div>
+ );
+ })
+ )}
+ </div>
+ </div>
+ ))}
+ </div>
+ ) : filteredDeadlines.length === 0 ? (
+ <div className="p-12 text-center rounded-2xl bg-card space-y-3">
+ <div className="size-12 mx-auto rounded-xl bg-muted flex items-center justify-center text-primary">
  <Calendar className="size-6" />
  </div>
  <h3 className="text-sm font-bold text-foreground">Nenhum prazo encontrado</h3>
@@ -587,7 +712,7 @@ function WorkspaceAdvocaciaPage() {
  </Button>
  </div>
  ) : (
- <div className="rounded-lg border border-border bg-card overflow-hidden shadow-xs">
+ <div className="rounded-2xl bg-card overflow-hidden">
  <Table>
  <TableHeader className="bg-muted/40">
  <TableRow>

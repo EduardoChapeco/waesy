@@ -88,7 +88,7 @@ function SkillsCatalogPage() {
   });
 
   return (
-    <div className="space-y-6 pb-12 max-w-6xl mx-auto p-4 sm:p-6">
+    <div className="space-y-6 pb-12 w-full p-4 sm:p-6">
       {/* Header com Estilo Apple HIG */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>

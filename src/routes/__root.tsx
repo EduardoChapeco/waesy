@@ -143,8 +143,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  content: seoDesc,
  },
  { name: "author", content: storeName },
- { name: "theme-color", media: "(prefers-color-scheme: light)", content: "#ffffff" },
-      { name: "theme-color", media: "(prefers-color-scheme: dark)", content: theme?.background_color || "#09090b" },
+  // design-lint-ignore DL-01 reason:"Meta tag theme-color HTML nativa do browser exige valor de cor literal" expiry:"2027-12-31"
+  { name: "theme-color", media: "(prefers-color-scheme: light)", content: "#ffffff" },
+  // design-lint-ignore DL-01 reason:"Meta tag theme-color HTML nativa do browser exige valor de cor literal" expiry:"2027-12-31"
+  { name: "theme-color", media: "(prefers-color-scheme: dark)", content: theme?.background_color || "#09090b" },
  { name: "mobile-web-app-capable", content: "yes" },
  { name: "apple-mobile-web-app-capable", content: "yes" },
  { name: "apple-mobile-web-app-status-bar-style", content: "default" },
@@ -408,6 +410,32 @@ function RootComponent() {
    .catch(() => {});
   const cleanup = initSecuritySentinel();
   return cleanup;
+ }, []);
+
+ // ── Sincronização Contínua de Sessão e Auto-Refresh Zero-Bounce (DEC-445) ──
+ useEffect(() => {
+  if (typeof window === "undefined") return;
+  let authSubscription: { unsubscribe: () => void } | null = null;
+  import("@/lib/supabase").then(({ getBrowserClient }) => {
+   const client = getBrowserClient();
+   const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
+    if ((event === "TOKEN_REFRESHED" || event === "SIGNED_IN") && session?.access_token && session?.refresh_token) {
+     import("@/services/auth.functions").then(({ syncSessionToCookies }) => {
+      void syncSessionToCookies({
+       data: {
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+       },
+      }).catch(() => {});
+     });
+    }
+   });
+   authSubscription = subscription;
+  });
+
+  return () => {
+   if (authSubscription) authSubscription.unsubscribe();
+  };
  }, []);
 
  return (

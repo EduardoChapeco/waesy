@@ -125,7 +125,7 @@ function ReceiptsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Financeiro"
         title="Auditoria de Comprovantes"

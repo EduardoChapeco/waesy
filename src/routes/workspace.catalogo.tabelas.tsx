@@ -348,7 +348,7 @@ function WorkspacePriceTablesPage() {
  }, [tableItems, searchItemQuery]);
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header */}
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Catálogo"
@@ -388,7 +388,7 @@ function WorkspacePriceTablesPage() {
     className={`p-4 rounded-lg border transition-colors cursor-pointer space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
  isSelected
  ? "bg-card border-primary ring-2 ring-primary/10 shadow-xs"
- : "bg-card/60 border-border/60 hover:bg-card"
+ : "bg-card border-border/60 hover:bg-card"
  }`}
  >
  <div className="flex items-center justify-between">

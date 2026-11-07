@@ -60,7 +60,7 @@ function EventSubpanelsPage() {
  };
 
  return (
- <div className="flex-1 space-y-6 p-6 max-w-7xl mx-auto">
+ <div className="flex-1 space-y-6 p-6 w-full">
  <div className="flex items-center justify-between">
  <PageHeader
  title="Pontos de Venda"

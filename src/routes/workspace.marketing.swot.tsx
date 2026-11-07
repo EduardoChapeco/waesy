@@ -315,8 +315,8 @@ export function SwotMatrixPage() {
   return (
     <div className="w-full min-h-full bg-background text-foreground pb-24">
       {/* ── BARRA SUPERIOR ── */}
-      <div className="sticky top-0 z-20 border-b border-border/40 bg-card/60 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div className="sticky top-0 z-20 border-b border-border/40 bg-card ">
+        <div className="w-full px-4 sm:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -377,7 +377,7 @@ export function SwotMatrixPage() {
       </div>
 
       {/* ── GRID 2X2 DE QUADRANTES ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="w-full px-4 sm:px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {renderQuadrant("strengths")}
           {renderQuadrant("weaknesses")}

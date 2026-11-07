@@ -174,7 +174,7 @@ function CarteiraClientesPage() {
   ], [isTourism, totalCount, activeCount, b2cCount, b2bCount, docsExpiringCount]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <WorkspaceCanonicalToolbar
         tabs={[
           { id: "all", label: `Todos (${t("clients")})`, icon: Users, count: totalCount },
@@ -302,7 +302,7 @@ function CarteiraClientesPage() {
 
       {/* ── 5. Carteira de Clientes (Dual View: Mobile Cards & Desktop Table) ── */}
       {filteredCustomers.length === 0 ? (
-        <div className="py-16 text-center rounded-lg border border-border/40 bg-card/60 space-y-4 px-4">
+        <div className="py-16 text-center rounded-lg border border-border/40 bg-card space-y-4 px-4">
           <div className="size-14 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Users className="size-6" />
           </div>

@@ -138,7 +138,7 @@ export default function WorkspaceMarketingStoriesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 md:px-8 space-y-8">
+    <div className="w-full px-4 py-8 md:px-8 space-y-8">
       {/* ── Barra Superior & Navegação ── */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/50 pb-6">
         <div className="space-y-1">

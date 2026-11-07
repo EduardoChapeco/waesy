@@ -319,9 +319,13 @@ export async function _getPolicies() {
 export const getPolicies = createServerFn({ method: "GET" }).handler(_getPolicies);
 
 export const savePoliciesSchema = z.object({
- privacy_policy: z.string(),
- return_policy: z.string(),
- terms: z.string(),
+  privacy_policy: z.string().optional().default(""),
+  return_policy: z.string().optional().default(""),
+  terms: z.string().optional().default(""),
+  quotation_policy: z.string().optional().default(""),
+  sensitive_data_policy: z.string().optional().default(""),
+  cancellation_policy: z.string().optional().default(""),
+  custom_policies: z.record(z.string()).optional().default({}),
 });
 
 export async function _savePolicies(data: z.infer<typeof savePoliciesSchema>) {

@@ -43,7 +43,7 @@ function SquadsPage() {
   });
 
   return (
-    <div className="space-y-6 pb-12 max-w-6xl mx-auto p-4 sm:p-6">
+    <div className="space-y-6 pb-12 w-full p-4 sm:p-6">
       {/* Header com Estilo Apple HIG */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
@@ -68,7 +68,7 @@ function SquadsPage() {
 
       {/* Seletor de Squads Canônicos */}
       {squads.length === 0 ? (
-        <div className="p-8 text-center text-xs text-muted-foreground bg-card/40 rounded-lg border border-border/40 empty-state">
+        <div className="p-8 text-center text-xs text-muted-foreground bg-card rounded-lg border border-border/40">
           Nenhum squad autônomo disponível no momento.
         </div>
       ) : (
@@ -91,8 +91,8 @@ function SquadsPage() {
                 }}
                 className={`p-4 rounded-lg border text-left transition-colors duration-200 ${
                   isSelected
-                    ? "bg-card border-primary  ring-1 ring-primary/20"
-                    : "bg-card/50 border-border/60 hover:border-border hover:bg-card"
+                    ? "bg-card border-primary ring-1 ring-primary/20"
+                    : "bg-card border-border/60 hover:border-border hover:bg-card"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
                 <div className="flex items-center justify-between">

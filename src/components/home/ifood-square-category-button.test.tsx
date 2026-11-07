@@ -52,7 +52,6 @@ describe("IFoodSquareCategoryButton — Fallback Vetorial & Apple HIG", () => {
       <IFoodSquareCategoryButton
         id="btn-3"
         title="Lojas de Conveniência"
-        badgeText="Novo"
       />
     );
 

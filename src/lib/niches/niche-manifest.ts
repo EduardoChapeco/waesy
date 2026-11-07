@@ -102,7 +102,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "generic",
     label: "Comércio & Serviços Gerais",
     description: "Operação canônica multi-segmento com catálogo unificado, vendas diretas e gestão de carteira.",
-    activeModules: ["catalog", "orders", "crm", "financial", "tasks", "support", "inventory", "marketing"],
+    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Produto / Serviço",
       itemPlural: "Produtos & Serviços",
@@ -156,7 +156,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "tourism",
     label: "Turismo & Viagens",
     description: "Operação completa de agências e operadoras: roteiros, cotador avançado, propostas ricas, embarques, frota e vouchers.",
-    activeModules: ["catalog", "crm", "proposals", "quotes", "boarding", "fleet", "contracts", "financial", "tasks", "support", "marketing"],
+    activeModules: ["catalog", "orders", "crm", "proposals", "quotes", "boarding", "fleet", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "simlab"],
     nomenclature: {
       itemSingular: "Pacote / Destino",
       itemPlural: "Pacotes & Destinos",
@@ -219,7 +219,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "gastronomy",
     label: "Gastronomia & Restaurantes",
     description: "Operação culinária de salão, balcão e delivery com KDS de cozinha, mesas, comanda e insumos.",
-    activeModules: ["catalog", "orders", "kds", "tables", "financial", "inventory", "support", "couriers"],
+    activeModules: ["catalog", "orders", "kds", "tables", "reservations", "crm", "financial", "tasks", "inventory", "support", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Prato / Lanche",
       itemPlural: "Pratos & Bebidas",
@@ -272,7 +272,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "retail",
     label: "Varejo & Lojas",
     description: "Controle de estoque grade/tamanho/cor, PDV de balcão, expedição e entregas urbanas.",
-    activeModules: ["catalog", "orders", "inventory", "financial", "crm", "marketing", "couriers"],
+    activeModules: ["catalog", "orders", "kds", "inventory", "financial", "crm", "proposals", "quotes", "contracts", "tasks", "support", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Produto",
       itemPlural: "Produtos",
@@ -326,7 +326,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "services",
     label: "Serviços & Consultoria",
     description: "Prestação de serviços, orçamentos, contratos de honorários, agendamento de horas e SLA de execução.",
-    activeModules: ["catalog", "crm", "proposals", "contracts", "financial", "tasks", "support"],
+    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Serviço / Pacote",
       itemPlural: "Serviços Oferecidos",
@@ -382,7 +382,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "real_estate",
     label: "Imóveis & Locação",
     description: "Gestão imobiliária, captações, visitas agendadas, vistorias e contratos de locação ou venda.",
-    activeModules: ["catalog", "crm", "contracts", "financial", "tasks", "support"],
+    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Imóvel",
       itemPlural: "Imóveis & Terrenos",
@@ -437,7 +437,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "healthcare",
     label: "Saúde & Estética",
     description: "Atendimento clínico, agendamento de consultas, prontuários simplificados e consentimento LGPD.",
-    activeModules: ["catalog", "crm", "financial", "tasks", "support"],
+    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Procedimento / Consulta",
       itemPlural: "Procedimentos Médicos",
@@ -489,7 +489,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "automotive",
     label: "Automotivo & Mecânica",
     description: "Check-in veicular por placa/chassi, ordens de serviço, mão de obra + peças e termos de garantia.",
-    activeModules: ["catalog", "orders", "inventory", "financial", "crm", "tasks", "support"],
+    activeModules: ["catalog", "orders", "kds", "inventory", "financial", "crm", "proposals", "quotes", "contracts", "tasks", "support", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Serviço / Peça",
       itemPlural: "Peças & Serviços",
@@ -543,7 +543,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "events",
     label: "Eventos & Cerimonial",
     description: "Planejamento de eventos, fornecedores, checklist com timeline regressiva e controle de convidados.",
-    activeModules: ["catalog", "crm", "proposals", "contracts", "financial", "tasks", "support"],
+    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Pacote / Espaço",
       itemPlural: "Serviços de Evento",
@@ -597,7 +597,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "creator",
     label: "Criadores & Mídia Local",
     description: "Publicidade nativa, campanhas patrocinadas, mídia kit, link bio e monetização por afiliação.",
-    activeModules: ["catalog", "crm", "contracts", "financial", "marketing", "affiliates", "support"],
+    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "inventory", "marketing", "affiliates", "support", "simlab"],
     nomenclature: {
       itemSingular: "Formato / Publi",
       itemPlural: "Formatos Publicitários",
@@ -662,25 +662,56 @@ export function getNicheManifest(nicheId?: string | null): NicheManifest {
   if (normalized === "gastronomia" || normalized.includes("restauran") || normalized.includes("pizz") || normalized.includes("bar") || normalized.includes("lanche")) {
     return NICHE_MANIFEST_REGISTRY.gastronomy;
   }
-  if (normalized === "varejo" || normalized.includes("loja") || normalized.includes("moda") || normalized.includes("calcado")) {
+  if (
+    normalized === "varejo" ||
+    normalized === "wholesale" ||
+    normalized === "supermarket" ||
+    normalized === "pharmacy" ||
+    normalized.includes("loja") ||
+    normalized.includes("moda") ||
+    normalized.includes("calcado") ||
+    normalized.includes("mercad") ||
+    normalized.includes("farma") ||
+    normalized.includes("atacad")
+  ) {
     return NICHE_MANIFEST_REGISTRY.retail;
   }
-  if (normalized === "servicos" || normalized.includes("consult") || normalized.includes("advoc") || normalized.includes("agenc")) {
+  if (
+    normalized === "servicos" ||
+    normalized === "legal" ||
+    normalized === "jobs" ||
+    normalized === "education" ||
+    normalized === "pet" ||
+    normalized.includes("consult") ||
+    normalized.includes("advoc") ||
+    normalized.includes("agenc") ||
+    normalized.includes("educa") ||
+    normalized.includes("curso")
+  ) {
     return NICHE_MANIFEST_REGISTRY.services;
   }
-  if (normalized === "imobiliaria" || normalized.includes("imove") || normalized.includes("locac")) {
+  if (normalized === "imobiliaria" || normalized === "rental" || normalized.includes("imove") || normalized.includes("locac")) {
     return NICHE_MANIFEST_REGISTRY.real_estate;
   }
   if (normalized === "saude" || normalized.includes("clinic") || normalized.includes("medic") || normalized.includes("dent")) {
     return NICHE_MANIFEST_REGISTRY.healthcare;
   }
-  if (normalized === "oficina" || normalized.includes("auto") || normalized.includes("mecanic") || normalized.includes("peça")) {
+  if (
+    normalized === "oficina" ||
+    normalized === "vehicles" ||
+    normalized === "tech_repair" ||
+    normalized.includes("auto") ||
+    normalized.includes("mecanic") ||
+    normalized.includes("peça") ||
+    normalized.includes("veicul") ||
+    normalized.includes("assist")
+  ) {
     return NICHE_MANIFEST_REGISTRY.automotive;
   }
   if (normalized === "evento" || normalized.includes("casament") || normalized.includes("festa") || normalized.includes("show")) {
     return NICHE_MANIFEST_REGISTRY.events;
   }
-  if (normalized === "criador" || normalized.includes("influenc") || normalized.includes("creator") || normalized.includes("midia")) {
+  if (normalized === "criador" || normalized === "news" || normalized.includes("influenc") || normalized.includes("creator") || normalized.includes("midia") || normalized.includes("notici")) {
     return NICHE_MANIFEST_REGISTRY.creator;
   }
 
