@@ -16,9 +16,15 @@
  */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { createBrowserClient } from "@supabase/ssr";
+import { createBrowserClient, serializeCookieHeader } from "@supabase/ssr";
 import { z } from "zod";
 import { getEnvVar } from "./env";
+import {
+  AUTH_COOKIE_CHUNK_NAMES,
+  getLegacyCookieDomainsToPurge,
+  parseRawCookieStringPreservingDuplicates,
+  resolveCanonicalAuthCookies,
+} from "./auth-cookie-sanitizer";
 
 // ---------------------------------------------------------------------------
 // Environment validation schemas
@@ -78,6 +84,76 @@ export class SupabaseUnconfiguredError extends Error {
 
 let _browserClient: SupabaseClient | null = null;
 
+/**
+ * Higieniza proativamente document.cookie no navegador:
+ * 1. Resolve o conjunto canônico vencedor (mais recente e íntegro) entre duplicatas.
+ * 2. Expira variantes com Domain=.waesy.com.br / .usewaesy.com e chunks órfãos (.0..4).
+ * 3. Regrava o conjunto vencedor exclusivamente como cookie host-only (path=/).
+ */
+export function sanitizeBrowserAuthCookies(): void {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  try {
+    const rawCookie = document.cookie || "";
+    if (!rawCookie) return;
+
+    const rawEntries = parseRawCookieStringPreservingDuplicates(rawCookie);
+    const hasAuthEntries = rawEntries.some(
+      (c) =>
+        c.name === "waesy-auth-token" ||
+        c.name.startsWith("waesy-auth-token.") ||
+        (c.name.startsWith("sb-") && c.name.includes("-auth-token")),
+    );
+    if (!hasAuthEntries) return;
+
+    const canonical = resolveCanonicalAuthCookies(rawEntries);
+    const winningAuthCookies = canonical.filter(
+      (c) => c.name === "waesy-auth-token" || /^waesy-auth-token\.\d+$/.test(c.name),
+    );
+    const winningNames = new Set(winningAuthCookies.map((c) => c.name));
+
+    const hostname = window.location.hostname.toLowerCase();
+    const isSecure = window.location.protocol === "https:";
+    const legacyDomains = getLegacyCookieDomainsToPurge(hostname);
+
+    // 1. Expira todas as variantes com atributo Domain explícito para eliminar duplicatas no browser
+    for (const domain of legacyDomains) {
+      for (const name of AUTH_COOKIE_CHUNK_NAMES) {
+        document.cookie = serializeCookieHeader(name, "", {
+          path: "/",
+          maxAge: 0,
+          domain,
+          sameSite: "lax",
+          secure: isSecure,
+        });
+      }
+    }
+
+    // 2. Expira no escopo host-only quaisquer chunks que NÃO pertencem à sessão vencedora
+    for (const name of AUTH_COOKIE_CHUNK_NAMES) {
+      if (!winningNames.has(name)) {
+        document.cookie = serializeCookieHeader(name, "", {
+          path: "/",
+          maxAge: 0,
+          sameSite: "lax",
+          secure: isSecure,
+        });
+      }
+    }
+
+    // 3. Regrava os cookies vencedores no escopo host-only limpo
+    for (const win of winningAuthCookies) {
+      document.cookie = serializeCookieHeader(win.name, win.value, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+        secure: isSecure,
+      });
+    }
+  } catch {
+    // Ignora falhas de acesso ao document.cookie em contextos restritos
+  }
+}
+
 export function getBrowserClient(): SupabaseClient {
   if (_browserClient) return _browserClient;
 
@@ -90,19 +166,8 @@ export function getBrowserClient(): SupabaseClient {
     throw new SupabaseUnconfiguredError(env.error.issues.map((i) => i.message).join("; "));
   }
 
-  // ── PWA Native Singularity: Auth Persistence ──────────────────────────────
-  // flowType: "pkce"       → Evita access_token na URL (o SW não cacheia tokens).
-  // persistSession: true   → Grava em localStorage (compartilhado browser/PWA iOS 16.4+).
-  // autoRefreshToken: true → Mantém sessão viva em background (standalone/installed).
-  // detectSessionInUrl: false → Sem loops de redirect no contexto standalone.
-  // storageKey fixo        → Browser e PWA usam exatamente o mesmo key no localStorage.
-  const isBrowser = typeof window !== "undefined";
-  const hostname = isBrowser ? window.location.hostname.toLowerCase() : "";
-  let clientDomain: string | undefined = undefined;
-  if (hostname.includes("waesy.com.br")) {
-    clientDomain = ".waesy.com.br";
-  } else if (hostname.includes("usewaesy.com")) {
-    clientDomain = ".usewaesy.com";
+  if (typeof window !== "undefined") {
+    sanitizeBrowserAuthCookies();
   }
 
   _browserClient = createBrowserClient(
@@ -118,13 +183,76 @@ export function getBrowserClient(): SupabaseClient {
       },
       cookieOptions: {
         name: "waesy-auth-token",
-        maxAge: 60 * 60 * 24 * 365, // 1 ano — sessão PWA nunca expira por tempo
+        maxAge: 60 * 60 * 24 * 365,
         sameSite: "lax",
         secure:
           typeof window !== "undefined" &&
           window.location.protocol === "https:",
         path: "/",
-        ...(clientDomain ? { domain: clientDomain } : {}),
+      },
+      cookies: {
+        getAll() {
+          if (typeof document === "undefined") return [];
+          const rawEntries = parseRawCookieStringPreservingDuplicates(document.cookie || "");
+          return resolveCanonicalAuthCookies(rawEntries);
+        },
+        setAll(cookiesToSet) {
+          if (typeof document === "undefined" || typeof window === "undefined") return;
+          const isSecure = window.location.protocol === "https:";
+          const legacyDomains = getLegacyCookieDomainsToPurge(window.location.hostname);
+          const namesBeingSetWithValue = new Set<string>();
+
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const isDeleting = !value || options?.maxAge === 0;
+            if (!isDeleting) {
+              namesBeingSetWithValue.add(name);
+            }
+
+            // Expira variantes legadas com Domain explícito
+            for (const domain of legacyDomains) {
+              document.cookie = serializeCookieHeader(name, "", {
+                path: "/",
+                maxAge: 0,
+                domain,
+                sameSite: "lax",
+                secure: isSecure,
+              });
+            }
+
+            const cleanOptions = { ...options };
+            delete cleanOptions.domain;
+
+            document.cookie = serializeCookieHeader(name, isDeleting ? "" : value, {
+              ...cleanOptions,
+              maxAge: isDeleting ? 0 : (options?.maxAge ?? 60 * 60 * 24 * 365),
+              sameSite: options?.sameSite === "none" ? "none" : "lax",
+              secure: isSecure,
+              path: "/",
+            });
+          });
+
+          if (namesBeingSetWithValue.size > 0) {
+            for (const candidateName of AUTH_COOKIE_CHUNK_NAMES) {
+              if (!namesBeingSetWithValue.has(candidateName)) {
+                for (const domain of legacyDomains) {
+                  document.cookie = serializeCookieHeader(candidateName, "", {
+                    path: "/",
+                    maxAge: 0,
+                    domain,
+                    sameSite: "lax",
+                    secure: isSecure,
+                  });
+                }
+                document.cookie = serializeCookieHeader(candidateName, "", {
+                  path: "/",
+                  maxAge: 0,
+                  sameSite: "lax",
+                  secure: isSecure,
+                });
+              }
+            }
+          }
+        },
       },
     }
   );

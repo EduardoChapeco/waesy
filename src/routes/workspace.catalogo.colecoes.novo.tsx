@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { getClientActiveTenant } from "@/lib/context-auth";
 import { createCollection } from "@/services/admin-catalog.functions";
 
 export const Route = createFileRoute("/workspace/catalogo/colecoes/novo")({
@@ -64,16 +65,18 @@ function NewCollectionPage() {
  badge_text: badgeText.trim() || undefined,
  };
 
- const res = await createCollection({
- data: {
- name: values.name.trim(),
- slug: values.slug.trim(),
- description: values.description?.trim() || null,
- cover_url: coverUrl || null,
- status: values.status,
- rules: rulesPayload as any,
- } as any,
- });
+    const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+    const res = await createCollection({
+      data: {
+        name: values.name.trim(),
+        slug: values.slug.trim(),
+        description: values.description?.trim() || null,
+        cover_url: coverUrl || null,
+        status: values.status,
+        rules: rulesPayload as any,
+        store_id: clientTenant || undefined,
+      } as any,
+    });
 
  if (res) {
  toast.success("Coleção criada com sucesso!");

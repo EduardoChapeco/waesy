@@ -48,7 +48,27 @@ import { useState, useMemo } from "react";
 export const Route = createFileRoute("/admin-master")({
   beforeLoad: async () => {
     try {
-      const session = await getUserSession();
+      if (typeof window !== "undefined") {
+        try {
+          const { sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+          sanitizeBrowserAuthCookies();
+        } catch {}
+      }
+
+      let session = await getUserSession().catch(() => null);
+      if (!session && typeof window !== "undefined") {
+        try {
+          const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+          sanitizeBrowserAuthCookies();
+          const client = getBrowserClient();
+          const { data: { session: browserSession } } = await client.auth.getSession();
+          if (browserSession?.user) {
+            sanitizeBrowserAuthCookies();
+            session = await getUserSession().catch(() => null);
+          }
+        } catch {}
+      }
+
       if (!session) {
         throw redirect({ to: "/entrar", search: { returnUrl: "/admin-master" } });
       }

@@ -1,4 +1,5 @@
 import { parseCookieHeader, serializeCookieHeader, type CookieOptions } from "@supabase/ssr";
+export { serializeCookieHeader };
 
 export function readCookieFromRequest(request: Request, name: string): string | null {
  const cookieHeader = request.headers.get("cookie");

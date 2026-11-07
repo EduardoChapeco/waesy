@@ -97,7 +97,7 @@ export function HotelAutocompleteInput({
             ) : query.trim().length < 2 ? (
               <p className="p-3 text-center text-xs text-muted-foreground">Digite o nome, cidade ou destino.</p>
             ) : options.length === 0 ? (
-              <p className="p-3 text-center text-xs text-muted-foreground">Nenhum hotel canônico encontrado.</p>
+              <p className="p-3 text-center text-xs text-muted-foreground">Nenhum hotel encontrado.</p>
             ) : (
               options.map((hotel) => (
                 <button

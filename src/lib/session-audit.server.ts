@@ -94,8 +94,17 @@ export async function recordAuthAuditEvent(params: RecordSessionAuditParams): Pr
   const riskFlags: string[] = [];
   let isNewDevice = false;
 
-  // 1. Verificar se é um novo dispositivo para o perfil
-  const fp = deviceFingerprint || `fp_${Buffer.from(ctx.userAgent + ctx.ip).toString("base64").slice(0, 32)}`;
+  // 1. Verificar se é um novo dispositivo para o perfil (compatível com Edge/Cloudflare Workers sem Buffer)
+  const rawSeed = `${ctx.userAgent}${ctx.ip}`;
+  let base64Seed = "";
+  try {
+    base64Seed = typeof btoa === "function"
+      ? btoa(encodeURIComponent(rawSeed))
+      : Buffer.from(rawSeed).toString("base64");
+  } catch {
+    base64Seed = rawSeed.replace(/[^a-zA-Z0-9]/g, "");
+  }
+  const fp = deviceFingerprint || `fp_${base64Seed.slice(0, 32)}`;
 
   if (profileId) {
     try {

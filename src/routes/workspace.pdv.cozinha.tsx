@@ -270,7 +270,7 @@ function KDSDashboard() {
  toolDescription="O painel KDS (Kitchen Display System) com tempos de cocção, alertas sonoros e divisão por estações de cozinha é desenhado especificamente para restaurantes e gastronomia."
  store={store}
  >
- <div className="flex flex-col h-[calc(100dvh-4rem)] max-w-full overflow-hidden bg-muted/15 text-foreground font-sans">
+ <div className="flex flex-col flex-1 h-full max-w-full overflow-hidden bg-muted/15 text-foreground font-sans">
  {/* ── Topbar da Cozinha ── */}
  <header className="flex flex-col gap-2 px-4 sm:px-6 pt-3 pb-2 bg-card border-b border-border/80 shrink-0">
  {/* Linha 1: Identidade + Ações */}

@@ -766,7 +766,7 @@ function TravelSalesFinancialCompositionPage() {
                       <p className="text-xs text-muted-foreground">
                         Utilize o botão "Nova Operação" acima para lançar uma venda ou ajuste os filtros selecionados.
                       </p>
-                      <Button size="sm" onClick={handleOpenNewSheet} className="h-11 min-h-11 px-4 text-xs font-bold gap-1.5 cursor-pointer">
+                      <Button size="sm" onClick={handleOpenNewSheet} className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer">
                         <Plus className="size-4" />
                         <span>Nova Operação</span>
                       </Button>

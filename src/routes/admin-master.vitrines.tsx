@@ -26,7 +26,7 @@ export const Route = createFileRoute("/admin-master/vitrines")({
       return { surfaces };
     } catch (err) {
       console.error("[loader:admin-master.vitrines] Unhandled loader error:", err);
-      return { surfaces: null };
+      return { surfaces: [] };
     }
   },
   component: AdminMasterVitrinesPage,

@@ -1,5 +1,7 @@
 import * as React from "react";
 import { Controller } from "react-hook-form";
+import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   DollarSign,
   Box,
@@ -13,7 +15,10 @@ import {
   Globe,
   Bot,
   Calendar,
+  AlertTriangle,
+  ExternalLink,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
@@ -22,6 +27,9 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { VariantMatrixGrid, type RawVariant } from "@/components/admin/catalog/variant-matrix-grid";
 import { ProductModifiersCard } from "@/components/admin/catalog/product-modifiers-card";
+import { ProductBarcodeLabelModal } from "../product-barcode-label-modal";
+import { Barcode } from "lucide-react";
+import { getStoreChannelIntegrationsStatus } from "@/services/admin-catalog.functions";
 
 export interface ProductPricingTabProps {
   control: any;
@@ -38,6 +46,7 @@ export interface ProductPricingTabProps {
   onOptionGroupsChange: (groups: any[]) => void;
   wholesaleEnabled?: boolean;
   isTravelPackageMode?: boolean;
+  store?: any;
 }
 
 export function ProductPricingTab({
@@ -55,14 +64,34 @@ export function ProductPricingTab({
   onOptionGroupsChange,
   wholesaleEnabled = false,
   isTravelPackageMode = false,
+  store,
 }: ProductPricingTabProps) {
+  const [isLabelModalOpen, setIsLabelModalOpen] = React.useState(false);
+
+  const { data: channelStatus, isLoading: isChannelsLoading, isError: isChannelsError } = useQuery({
+    queryKey: ["store-channels-status", store?.id],
+    queryFn: () => getStoreChannelIntegrationsStatus({ data: { store_id: store?.id } }),
+    staleTime: 60000,
+  });
   return (
     <div className="space-y-4">
       {/* Precificação e Margens */}
       <div className="bg-card rounded-lg p-6 space-y-4 border border-border">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-          <DollarSign className="size-4 text-primary" />
-          <span>Precificação e Margens</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+            <DollarSign className="size-4 text-primary" />
+            <span>Precificação e Margens</span>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsLabelModalOpen(true)}
+            className="h-11 rounded-lg text-xs font-bold gap-2 px-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Barcode className="size-4 text-primary" />
+            <span>Imprimir Etiquetas</span>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -182,45 +211,39 @@ export function ProductPricingTab({
         </div>
 
         {/* Modo de Pagamento: Padrão vs Customizado */}
-        <div className="space-y-3">
-          <Label className="text-xs font-medium text-foreground">Formas de Pagamento Aceitas</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label className="text-xs font-bold text-foreground">Regras de Pagamento</Label>
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setValue("payment_mode", "inherit")}
-              className={`p-3 rounded-lg border text-left cursor-pointer transition-colors ${
+              className={`h-11 px-4 rounded-lg border text-xs font-bold inline-flex items-center gap-2 cursor-pointer transition-colors ${
                 (formValues.payment_mode || "inherit") === "inherit"
-                  ? "border-primary bg-primary/10 text-foreground"
+                  ? "border-primary bg-primary/10 text-primary"
                   : "border-border hover:bg-muted/40 text-muted-foreground"
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
-              <div className="flex items-center gap-2 font-bold text-xs">
-                <Store className="size-4 text-primary" />
-                <span>Usar Padrão da Loja</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Herda as configurações de Pix, cartão e boleto globais configuradas no Workspace.
-              </p>
+              <Store className="size-4" />
+              <span>Padrão da Loja</span>
             </button>
-
             <button
               type="button"
               onClick={() => setValue("payment_mode", "custom")}
-              className={`p-3 rounded-lg border text-left cursor-pointer transition-colors ${
+              className={`h-11 px-4 rounded-lg border text-xs font-bold inline-flex items-center gap-2 cursor-pointer transition-colors ${
                 formValues.payment_mode === "custom"
-                  ? "border-primary bg-primary/10 text-foreground"
+                  ? "border-primary bg-primary/10 text-primary"
                   : "border-border hover:bg-muted/40 text-muted-foreground"
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
-              <div className="flex items-center gap-2 font-bold text-xs">
-                <CreditCard className="size-4 text-primary" />
-                <span>Personalizar para Este Item</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Restringir ou liberar métodos específicos apenas para este anúncio/oferta.
-              </p>
+              <CreditCard className="size-4" />
+              <span>Personalizar Pagamento</span>
             </button>
           </div>
+          <p className="text-xs text-muted-foreground">
+            {(formValues.payment_mode || "inherit") === "inherit"
+              ? "Herda as opções globais configuradas no financeiro da loja (Pix, Cartão e Dinheiro)."
+              : "Defina quais meios de pagamento e parcelamento são aceitos exclusivamente para este produto."}
+          </p>
         </div>
 
         {formValues.payment_mode === "custom" && (
@@ -284,14 +307,17 @@ export function ProductPricingTab({
           </div>
         )}
 
-        {/* Modalidades de Logística / Consumo */}
+        {/* Modalidades de Atendimento & Entrega */}
         <div className="space-y-2 pt-2 border-t border-border/40">
           <Label className="text-xs font-bold text-foreground">Modalidades de Atendimento & Entrega</Label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="flex items-center gap-2">
-                <Truck className="size-4 text-primary" />
-                <span className="text-xs font-medium">Entrega / Delivery</span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Truck className="size-4 text-primary" />
+                  <span className="text-xs font-bold text-foreground">Entrega / Delivery</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Envio via motoboy ou frete</p>
               </div>
               <Controller
                 control={control}
@@ -303,9 +329,12 @@ export function ProductPricingTab({
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="flex items-center gap-2">
-                <Store className="size-4 text-primary" />
-                <span className="text-xs font-medium">Retirada no Balcão</span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Store className="size-4 text-primary" />
+                  <span className="text-xs font-bold text-foreground">Retirada no Balcão</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Cliente busca na loja física</p>
               </div>
               <Controller
                 control={control}
@@ -317,9 +346,12 @@ export function ProductPricingTab({
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="flex items-center gap-2">
-                <Utensils className="size-4 text-primary" />
-                <span className="text-xs font-medium">Consumo no Local</span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Utensils className="size-4 text-primary" />
+                  <span className="text-xs font-bold text-foreground">Consumo no Local</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Venda presencial em mesa</p>
               </div>
               <Controller
                 control={control}
@@ -338,9 +370,9 @@ export function ProductPricingTab({
             <div className="flex items-center gap-3">
               <Ticket className="size-4 text-primary" />
               <div>
-                <p className="text-xs font-medium text-foreground">Permitir Cupons de Desconto</p>
+                <p className="text-xs font-bold text-foreground">Aceitar Cupons de Desconto</p>
                 <p className="text-xs text-muted-foreground">
-                  Desmarque para proteger itens com margem reduzida de cupons promocionais da loja.
+                  Quando ativo, cupons promocionais da loja podem ser aplicados neste produto.
                 </p>
               </div>
             </div>
@@ -375,16 +407,16 @@ export function ProductPricingTab({
         </div>
       </div>
 
-      {/* Canais de Venda, Visibilidade & SEO / WebMCP */}
+      {/* Canais de Divulgação e Onde Vender */}
       <div className="bg-card rounded-lg p-6 space-y-5 border border-border">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-          <Share2 className="size-4 text-primary" />
-          <span>Canais de Venda, Visibilidade & Descoberta IA</span>
+          <Globe className="size-4 text-primary" />
+          <span>Canais de Divulgação e Onde Vender</span>
         </div>
 
         {/* Onde Aparece (Canal de Visibilidade) */}
         <div className="space-y-2">
-          <Label className="text-xs font-bold text-foreground">Onde Este Anúncio Aparece</Label>
+          <Label className="text-xs font-bold text-foreground">Onde Este Produto Fica Visível</Label>
           <Select
             value={formValues.visibility_channel || "marketplace_and_store"}
             onValueChange={(val) => setValue("visibility_channel", val)}
@@ -394,16 +426,16 @@ export function ProductPricingTab({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="marketplace_and_store">
-                Marketplace Público & Vitrine da Loja (Visibilidade Máxima)
+                Vitrine da Loja e Busca Pública (Recomendado)
               </SelectItem>
               <SelectItem value="store_only">
-                Apenas Vitrine Própria da Loja (Não listar no Marketplace geral)
+                Apenas na Minha Loja (Ocultar da busca geral)
               </SelectItem>
               <SelectItem value="vip_only">
-                Apenas Clientes Recorrentes / VIP (Pós-venda e retenção)
+                Apenas Clientes VIP / Exclusivo
               </SelectItem>
               <SelectItem value="direct_link">
-                Privado / Apenas Link Direto (Orçamentos sob demanda)
+                Oculto (Apenas com link direto)
               </SelectItem>
             </SelectContent>
           </Select>
@@ -411,72 +443,164 @@ export function ProductPricingTab({
 
         {/* Integração de Canais Externos */}
         <div className="space-y-2 pt-2 border-t border-border/40">
-          <Label className="text-xs font-bold text-foreground">Sincronização em Canais de Venda</Label>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-bold text-foreground">Divulgação em Canais Externos</Label>
+            {isChannelsLoading && (
+              <span className="text-2xs text-muted-foreground animate-pulse motion-reduce:animate-none">Verificando conexões...</span>
+            )}
+            {isChannelsError && (
+              <span className="text-2xs text-muted-foreground">Status local ativo</span>
+            )}
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-foreground">Google Merchant Center</span>
-                <p className="text-xs text-muted-foreground">Exporta para o Google Shopping e Free Listings.</p>
+            <div className="flex flex-col justify-between p-3 rounded-lg border border-border/60 bg-muted/10 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <span className="text-xs font-bold text-foreground">Google Shopping</span>
+                  <p className="text-xs text-muted-foreground">Aparecer nas buscas e no Google Shopping gratuito.</p>
+                </div>
+                <Controller
+                  control={control}
+                  name="channel_google_merchant"
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value ?? false}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        if (checked && channelStatus?.google_merchant?.isConnected === false) {
+                          toast.warning("Atenção: A integração do Google Merchant Center não está ativa na sua loja. Conecte a conta para que o feed seja enviado.");
+                        }
+                      }}
+                    />
+                  )}
+                />
               </div>
-              <Controller
-                control={control}
-                name="channel_google_merchant"
-                render={({ field }) => (
-                  <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
-                )}
-              />
+              {formValues.channel_google_merchant && channelStatus?.google_merchant?.isConnected === false && (
+                <div className="flex items-center gap-2 p-2 rounded-md bg-warning/10 border border-warning/30 text-warning text-xs">
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  <span className="flex-1 text-2xs">
+                    Integração Google inativa.{" "}
+                    <Link to="/workspace/configuracoes" className="underline font-bold text-foreground hover:text-primary">
+                      Conectar conta
+                    </Link>
+                  </span>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-foreground">Sacolinha Instagram / Meta</span>
-                <p className="text-xs text-muted-foreground">Catálogo para marcação em posts e stories.</p>
+            <div className="flex flex-col justify-between p-3 rounded-lg border border-border/60 bg-muted/10 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <span className="text-xs font-bold text-foreground">Instagram & Facebook</span>
+                  <p className="text-xs text-muted-foreground">Marcar produtos em posts e stories do Instagram.</p>
+                </div>
+                <Controller
+                  control={control}
+                  name="channel_meta_instagram"
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value ?? false}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        if (checked && channelStatus?.meta_instagram?.isConnected === false) {
+                          toast.warning("Atenção: A Sacolinha do Instagram/Meta não está vinculada na sua loja.");
+                        }
+                      }}
+                    />
+                  )}
+                />
               </div>
-              <Controller
-                control={control}
-                name="channel_meta_instagram"
-                render={({ field }) => (
-                  <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
-                )}
-              />
+              {formValues.channel_meta_instagram && channelStatus?.meta_instagram?.isConnected === false && (
+                <div className="flex items-center gap-2 p-2 rounded-md bg-warning/10 border border-warning/30 text-warning text-xs">
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  <span className="flex-1 text-2xs">
+                    Catálogo Meta desconectado.{" "}
+                    <Link to="/workspace/configuracoes" className="underline font-bold text-foreground hover:text-primary">
+                      Vincular página
+                    </Link>
+                  </span>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-foreground">Mercado Livre</span>
-                <p className="text-xs text-muted-foreground">Sincronização de anúncios e estoque.</p>
+            <div className="flex flex-col justify-between p-3 rounded-lg border border-border/60 bg-muted/10 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <span className="text-xs font-bold text-foreground">Mercado Livre</span>
+                  <p className="text-xs text-muted-foreground">Sincronizar anúncio e estoque com o Mercado Livre.</p>
+                </div>
+                <Controller
+                  control={control}
+                  name="channel_mercadolivre"
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value ?? false}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        if (checked && channelStatus?.mercadolivre?.isConnected === false) {
+                          toast.warning("Atenção: A conta do Mercado Livre não está autorizada nas configurações da loja.");
+                        }
+                      }}
+                    />
+                  )}
+                />
               </div>
-              <Controller
-                control={control}
-                name="channel_mercadolivre"
-                render={({ field }) => (
-                  <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
-                )}
-              />
+              {formValues.channel_mercadolivre && channelStatus?.mercadolivre?.isConnected === false && (
+                <div className="flex items-center gap-2 p-2 rounded-md bg-warning/10 border border-warning/30 text-warning text-xs">
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  <span className="flex-1 text-2xs">
+                    Mercado Livre desconectado.{" "}
+                    <Link to="/workspace/configuracoes" className="underline font-bold text-foreground hover:text-primary">
+                      Autorizar conta
+                    </Link>
+                  </span>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-muted/10">
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-foreground">Delivery Externo Integrado</span>
-                <p className="text-xs text-muted-foreground">Cardápio digital integrado para gastronomia.</p>
+            <div className="flex flex-col justify-between p-3 rounded-lg border border-border/60 bg-muted/10 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <span className="text-xs font-bold text-foreground">Aplicativos de Entrega</span>
+                  <p className="text-xs text-muted-foreground">Integrar cardápio com plataformas de entrega parceiras.</p>
+                </div>
+                <Controller
+                  control={control}
+                  name="channel_ifood"
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value ?? false}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        if (checked && channelStatus?.ifood?.isConnected === false) {
+                          toast.warning("Atenção: A integração iFood / Delivery ainda não foi habilitada nas configurações.");
+                        }
+                      }}
+                    />
+                  )}
+                />
               </div>
-              <Controller
-                control={control}
-                name="channel_ifood"
-                render={({ field }) => (
-                  <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
-                )}
-              />
+              {formValues.channel_ifood && channelStatus?.ifood?.isConnected === false && (
+                <div className="flex items-center gap-2 p-2 rounded-md bg-warning/10 border border-warning/30 text-warning text-xs">
+                  <AlertTriangle className="size-3.5 shrink-0" />
+                  <span className="flex-1 text-2xs">
+                    Conector de delivery inativo.{" "}
+                    <Link to="/workspace/configuracoes" className="underline font-bold text-foreground hover:text-primary">
+                      Configurar integração
+                    </Link>
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* SEO & Descoberta por IA (WebMCP) */}
+        {/* Busca no Google e Assistentes Inteligentes */}
         <div className="space-y-3 pt-2 border-t border-border/40">
-          <Label className="text-xs font-bold text-foreground">SEO & Descoberta por IA (WebMCP)</Label>
+          <Label className="text-xs font-bold text-foreground">Busca no Google e Assistentes Inteligentes</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Título SEO Personalizado</Label>
+              <Label className="text-xs font-medium text-muted-foreground">Título para Mecanismos de Busca (Google)</Label>
               <Input
                 {...register("seo_title")}
                 placeholder="Ex: Título otimizado para o Google (máx 60 caracteres)"
@@ -485,10 +609,10 @@ export function ProductPricingTab({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Meta Descrição</Label>
+              <Label className="text-xs font-medium text-muted-foreground">Descrição para Mecanismos de Busca</Label>
               <Input
                 {...register("seo_description")}
-                placeholder="Ex: Resumo persuasivo para resultados de busca (máx 160 caracteres)"
+                placeholder="Ex: Resumo claro que atrai cliques (máx 160 caracteres)"
                 className="h-11 rounded-lg text-xs bg-background"
               />
             </div>
@@ -498,9 +622,9 @@ export function ProductPricingTab({
             <div className="flex items-center gap-3">
               <Bot className="size-4 text-primary" />
               <div>
-                <p className="text-xs font-medium text-foreground">Indexar no Protocolo WebMCP (Agentes de IA)</p>
+                <p className="text-xs font-bold text-foreground">Recomendação em Assistentes de Compra Inteligentes</p>
                 <p className="text-xs text-muted-foreground">
-                  Permite que assistentes e compradores autônomos descubram, comparem e recomendem este item.
+                  Permite que assistentes virtuais e buscadores indiquem este produto a clientes em busca de itens semelhantes.
                 </p>
               </div>
             </div>
@@ -583,9 +707,24 @@ export function ProductPricingTab({
             selectedGroupIds={selectedOptionGroupIds}
             onSelectedGroupsChange={onSelectedGroupIdsChange}
             onGroupsListChange={onOptionGroupsChange}
+            store={store || formValues}
           />
         </>
       )}
+
+      {/* Modal de Impressão de Etiquetas com Código de Barras */}
+      <ProductBarcodeLabelModal
+        open={isLabelModalOpen}
+        onOpenChange={setIsLabelModalOpen}
+        product={{
+          title: formValues.title || "Produto",
+          brand: formValues.brand,
+          price_cents: formValues.price_cents || 0,
+          sku: formValues.sku || "",
+          stock: formValues.stock || 0,
+          variants: variantsMatrix || [],
+        }}
+      />
     </div>
   );
 }

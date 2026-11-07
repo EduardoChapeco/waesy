@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Barcode, Package, Truck, CheckCircle2, AlertCircle, Layers, Search, ScanLine, Printer, Plus, Clock, ShoppingBag, Store, Check } from "lucide-react";
+import { Barcode, Package, Truck, CheckCircle2, AlertCircle, Layers, Search, ScanLine, Printer, Plus, Clock, ShoppingBag, Store, Check, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { listMarketplaceExternalOrders, type ExternalOrderDTO } from "@/services
 import { formatMoney } from "@/lib/money";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
+import { BarcodeScannerModal } from "@/components/scanner/barcode-scanner-modal";
 
 export const Route = createFileRoute("/workspace/pedidos/expedicao")({
   head: () => ({ meta: [{ title: "WMS Expedição e Picking | Waesy" }] }),
@@ -29,6 +30,7 @@ function WmsExpedicaoPage() {
   const [isCreateBatchModalOpen, setIsCreateBatchModalOpen] = useState(false);
   const [selectedOrderIdsForBatch, setSelectedOrderIdsForBatch] = useState<string[]>([]);
   const [selectedShippingLabelOrderId, setSelectedShippingLabelOrderId] = useState<string | null>(null);
+  const [isCameraScannerOpen, setIsCameraScannerOpen] = useState(false);
 
   // 1. Consultas Reais ao Banco de Dados
   const { data: store } = useQuery({
@@ -70,9 +72,16 @@ function WmsExpedicaoPage() {
       }
       return scanBarcodePickItem({ data: { sessionId: activeSessionId, barcode } });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       playCashRegisterSound();
-      toast.success(`Item "${data.matchedItemTitle}" conferido (${data.qtyPicked}/${data.qtyExpected})`);
+      const extraHints = [
+        data.aisleLocation ? `Bin: ${data.aisleLocation}` : null,
+        data.packagingType ? `Emb: ${data.packagingType}` : null,
+        data.fragile ? "FRÁGIL" : null,
+      ].filter(Boolean).join(" • ");
+      toast.success(
+        `Item "${data.matchedItemTitle}" conferido (${data.qtyPicked}/${data.qtyExpected})${extraHints ? ` — ${extraHints}` : ""}`,
+      );
       setBarcodeInput("");
       queryClient.invalidateQueries({ queryKey: ["wms-batches"] });
     },
@@ -231,6 +240,16 @@ function WmsExpedicaoPage() {
         />
         <div className="flex items-center gap-2">
           <Button
+            asChild
+            variant="outline"
+            className="h-11 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+          >
+            <Link to="/workspace/pedidos">
+              <ShoppingBag className="size-4" />
+              <span>Ver Lista de Vendas</span>
+            </Link>
+          </Button>
+          <Button
             variant="outline"
             className="h-11 rounded-lg text-xs font-semibold cursor-pointer"
             onClick={handleConnectEscPos}
@@ -272,6 +291,16 @@ function WmsExpedicaoPage() {
               disabled={scanMutation.isPending}
             />
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsCameraScannerOpen(true)}
+            className="h-11 px-4 rounded-lg font-semibold border-border gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            title="Abrir câmera para escanear código de barras ou QR Code"
+          >
+            <Camera className="size-4 text-primary" />
+            <span className="hidden sm:inline">Câmera / Ótico</span>
+          </Button>
           <Button 
             type="submit" 
             disabled={scanMutation.isPending || !barcodeInput.trim()}
@@ -360,22 +389,56 @@ function WmsExpedicaoPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {batchOrderIds.map((oId) => {
                 const matchedOrder = allStoreOrders.find((o: any) => o.id === oId);
+                const matchedSession = selectedBatch.sessions?.find((s: any) => s.order_id === oId);
+                const sessionItems: any[] = matchedSession?.items || [];
+                const firstLogistics = sessionItems[0]?.order_item?.products?.attributes?.logistics || {};
+                const packagingLabelMap: Record<string, string> = {
+                  box: "Caixa",
+                  envelope: "Sacola/Envelope",
+                  thermal_bag: "Bag Térmica",
+                  roll: "Tubo/Rolo",
+                  pallet: "Caixa Master",
+                  digital: "Digital",
+                };
+                const packBadge = packagingLabelMap[firstLogistics.packaging_type || "box"] || "Caixa";
                 return (
-                  <div key={oId} className="flex items-center justify-between p-3 rounded-lg bg-background border border-border text-xs">
-                    <div className="truncate pr-2">
-                      <span className="font-mono font-bold text-foreground">#{matchedOrder?.public_token || oId.substring(0, 8)}</span>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {matchedOrder?.customer_snapshot?.name || "Cliente Final"}
-                      </p>
+                  <div key={oId} className="flex flex-col justify-between gap-2 p-3 rounded-lg bg-background border border-border text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="truncate pr-2">
+                        <span className="font-mono font-bold text-foreground">#{matchedOrder?.public_token || oId.substring(0, 8)}</span>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {matchedOrder?.customer_snapshot?.name || "Cliente Final"}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-10 sm:h-8 px-3 text-xs rounded-lg gap-2 cursor-pointer shrink-0 font-medium min-h-11 sm:min-h-0"
+                        onClick={() => setSelectedShippingLabelOrderId(oId)}
+                      >
+                        <Printer className="size-3.5 text-primary" /> Etiqueta
+                      </Button>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-xs rounded-lg sm:rounded-lg gap-2 cursor-pointer shrink-0 font-medium min-h-11 sm:min-h-0"
-                      onClick={() => setSelectedShippingLabelOrderId(oId)}
-                    >
-                      <Printer className="size-3.5 text-primary" /> Etiqueta
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50">
+                      <Badge variant="secondary" className="text-3xs font-semibold">
+                        {packBadge}
+                      </Badge>
+                      {firstLogistics.aisle_location && (
+                        <Badge variant="outline" className="text-3xs font-mono">
+                          Bin: {firstLogistics.aisle_location}
+                        </Badge>
+                      )}
+                      {firstLogistics.fragile && (
+                        <Badge variant="outline" className="text-3xs font-bold text-warning border-warning/40 bg-warning/10">
+                          Frágil
+                        </Badge>
+                      )}
+                      {firstLogistics.thermal_control && firstLogistics.thermal_control !== "ambient" && (
+                        <Badge variant="outline" className="text-3xs font-bold text-primary border-primary/40 bg-primary/10">
+                          Térmico
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -394,16 +457,24 @@ function WmsExpedicaoPage() {
             <p className="text-xs text-muted-foreground">Pedidos do Mercado Livre, iFood, Shopee e loja própria.</p>
           </div>
           <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0">
-            {["all", "mercadolivre", "ifood", "shopee"].map((ch) => (
+            {[
+              { id: "all", label: "Todos" },
+              { id: "mercadolivre", label: "Mercado Livre" },
+              { id: "ifood", label: "iFood" },
+              { id: "shopee", label: "Shopee" },
+              { id: "correios", label: "Correios" },
+              { id: "melhorenvio", label: "Melhor Envio" },
+              { id: "motolink", label: "MotoLink" },
+            ].map((ch) => (
               <button
-                key={ch}
+                key={ch.id}
                 type="button"
-                onClick={() => setChannelFilter(ch)}
+                onClick={() => setChannelFilter(ch.id)}
                 className={`h-10 sm:h-8 px-4 rounded-lg sm:rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                  channelFilter === ch ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
+                  channelFilter === ch.id ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
               >
-                {ch === "all" ? "Todos" : ch === "mercadolivre" ? "Mercado Livre" : ch === "ifood" ? "iFood" : "Shopee"}
+                {ch.label}
               </button>
             ))}
           </div>
@@ -548,6 +619,20 @@ function WmsExpedicaoPage() {
           }}
         />
       )}
+
+      <BarcodeScannerModal
+        open={isCameraScannerOpen}
+        onOpenChange={setIsCameraScannerOpen}
+        onScan={(res) => {
+          setBarcodeInput(res.raw);
+          if (activeSessionId) {
+            scanMutation.mutate(res.raw);
+          } else {
+            toast.info(`Código capturado: ${res.raw}. Selecione uma sessão ativa no lote para conferência.`);
+          }
+        }}
+        title="Leitor Ótico WMS — Câmera & QR Code"
+      />
     </div>
   );
 }

@@ -30,7 +30,7 @@ export const Route = createFileRoute("/admin-master/termos")({
  return { documents, logs: logsRes.logs, totalLogs: logsRes.total, stats };
    } catch (err) {
      console.error("[loader:admin-master.termos] Unhandled loader error:", err);
-     return { documents: null, logs: null, totalLogs: null, stats: null };
+     return { documents: [], logs: [], totalLogs: 0, stats: null };
    }
  },
  component: AdminMasterTermosPage,

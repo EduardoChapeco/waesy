@@ -100,30 +100,30 @@ function AdminOrdersPage() {
   const isServices = semantics.nicheId === "services";
   const isRetail = semantics.nicheId === "retail" || semantics.nicheId === "supermarket" || semantics.nicheId === "wholesale";
 
-  // Determina os modos de visualização permitidos para o nicho
+  // Determina os modos de visualização permitidos para o nicho (Tabela de Vendas é primária)
   const availableViewModes = useMemo(() => {
     if (isTourism) {
       return [
-        { id: "emissions" as ViewMode, label: "Kanban de Emissões", icon: Compass },
         { id: "table" as ViewMode, label: "Tabela de Vendas", icon: List },
+        { id: "emissions" as ViewMode, label: "Kanban de Emissões", icon: Compass },
       ];
     }
     if (isGastro) {
       return [
-        { id: "kitchen" as ViewMode, label: "Cozinha (KDS)", icon: ChefHat },
         { id: "table" as ViewMode, label: "Tabela de Pedidos", icon: List },
+        { id: "kitchen" as ViewMode, label: "Cozinha (KDS)", icon: ChefHat },
       ];
     }
     if (isRetail) {
       return [
-        { id: "picking" as ViewMode, label: "Separação e Expedição", icon: ShoppingBag },
         { id: "table" as ViewMode, label: "Tabela de Vendas", icon: List },
+        { id: "picking" as ViewMode, label: "Separação Rápida", icon: ShoppingBag },
       ];
     }
     if (isServices) {
       return [
-        { id: "service_flow" as ViewMode, label: "Fila de Atendimento", icon: Layers },
         { id: "table" as ViewMode, label: "Tabela de Atendimentos", icon: List },
+        { id: "service_flow" as ViewMode, label: "Fila de Atendimento", icon: Layers },
       ];
     }
     return [
@@ -131,13 +131,8 @@ function AdminOrdersPage() {
     ];
   }, [isTourism, isGastro, isRetail, isServices]);
 
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (isTourism) return "emissions";
-    if (isGastro) return "kitchen";
-    if (isRetail) return "picking";
-    if (isServices) return "service_flow";
-    return "table";
-  });
+  // Lista de Vendas/Pedidos sempre inicia como visualização padrão
+  const [viewMode, setViewMode] = useState<ViewMode>(() => "table");
 
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [isProcessing, setIsProcessing] = useState(false);
@@ -335,17 +330,30 @@ function AdminOrdersPage() {
      </Link>
     </Button>
    ) : (
-    <Button
-     asChild
-     variant="outline"
-     size="sm"
-     className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
-    >
-     <Link to="/workspace/pdv">
-      <Store className="size-3.5 text-primary" />
-      <span>Frente de Caixa (PDV)</span>
-     </Link>
-    </Button>
+    <div className="flex items-center gap-2">
+     <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+     >
+      <Link to="/workspace/pedidos/expedicao">
+       <PackageCheck className="size-3.5 text-primary" />
+       <span>Central WMS</span>
+      </Link>
+     </Button>
+     <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+     >
+      <Link to="/workspace/pdv">
+       <Store className="size-3.5 text-primary" />
+       <span>Frente de Caixa (PDV)</span>
+      </Link>
+     </Button>
+    </div>
    )
   }
  >
@@ -1022,9 +1030,36 @@ function AdminOrdersPage() {
  </div>
  ) : null}
 
- {/* ── MODO 3: SEPARAÇÃO & PICKING WMS (EXCLUSIVO PARA VAREJO / MERCADO) ── */}
+ {/* ── MODO 3: SEPARAÇÃO RÁPIDA (CONEXÃO DIRETA COM CENTRAL WMS) ── */}
  {viewMode === "picking" && isRetail ? (
  <div className="space-y-6">
+  {/* Banner de Bifurcação Direta para Central Avançada de Expedição WMS */}
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-primary/5 border border-primary/20 shadow-2xs">
+   <div className="flex items-center gap-3">
+    <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold shrink-0">
+     <PackageCheck className="size-5" />
+    </div>
+    <div>
+     <h3 className="text-sm font-bold text-foreground">
+      Central Avançada de Expedição WMS Disponível
+     </h3>
+     <p className="text-xs text-muted-foreground">
+      Separação por ondas, conferência por código de barras ótico, romaneios e impressão térmica ZPL/ESC-POS.
+     </p>
+    </div>
+   </div>
+   <Button
+    asChild
+    size="sm"
+    className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground shrink-0 cursor-pointer"
+   >
+    <Link to="/workspace/pedidos/expedicao">
+     <span>Abrir Módulo WMS Completo</span>
+     <ArrowRight className="size-3.5" />
+    </Link>
+   </Button>
+  </div>
+
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border">
  <div className="flex items-center gap-3">
  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">

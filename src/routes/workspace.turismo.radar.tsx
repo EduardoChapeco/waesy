@@ -212,7 +212,7 @@ export default function TurismoRadarPage() {
           },
         });
       }
-      toast.success('Base canônica de destinos semeada com sucesso!');
+      toast.success('Base de destinos semeada com sucesso!');
       refetchDests();
     } catch (err: any) {
       toast.error('Erro ao semear destinos: ' + err?.message);

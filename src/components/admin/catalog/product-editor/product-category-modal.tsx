@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label";
 export interface ProductCategoryModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  categoryLabel: string;
+  categoryLabel?: string;
   categoryName: string;
   onCategoryNameChange: (name: string) => void;
   onSubmit: () => Promise<void>;
   isCreating: boolean;
+  placeholder?: string;
+  description?: string;
+  nicheId?: string;
 }
 
 export function ProductCategoryModal({
@@ -22,16 +25,42 @@ export function ProductCategoryModal({
   onCategoryNameChange,
   onSubmit,
   isCreating,
+  placeholder,
+  description,
+  nicheId,
 }: ProductCategoryModalProps) {
+  const resolvedLabel = categoryLabel || "Categoria";
+  const resolvedPlaceholder =
+    placeholder ||
+    (nicheId === "tourism"
+      ? "Ex: Resorts All Inclusive, Ecoturismo, Cruzeiros, Roteiros Internacionais"
+      : nicheId === "gastronomy"
+      ? "Ex: Entradas, Pratos Principais, Pizzas, Hambúrgueres, Bebidas, Sobremesas"
+      : nicheId === "supermarket"
+      ? "Ex: Hortifrúti Fresco, Padaria, Carnes & Aves, Bebidas, Limpeza"
+      : nicheId === "pet"
+      ? "Ex: Rações Secas & Úmidas, Petiscos, Farmácia Pet, Brinquedos, Higiene"
+      : nicheId === "services"
+      ? "Ex: Cortes & Penteados, Barba, Tratamentos Faciais, Massagens"
+      : nicheId === "vehicles"
+      ? "Ex: Sedans, SUVs, Hatches, Picapes & Camionetes, Motos"
+      : nicheId === "real_estate"
+      ? "Ex: Apartamentos, Coberturas, Casas em Condomínio, Terrenos, Salas"
+      : "Ex: Camisas & Camisetas, Calças & Bermudas, Vestidos, Calçados, Acessórios");
+
+  const resolvedDescription =
+    description ||
+    `Cadastre rapidamente uma nova categoria diretamente no catálogo.`;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md rounded-lg">
         <DialogHeader>
           <DialogTitle className="text-sm font-bold">
-            Nova {categoryLabel}
+            Nova {resolvedLabel}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Cadastre rapidamente uma nova categoria ou tipo de destino diretamente no catálogo.
+            {resolvedDescription}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
@@ -40,7 +69,7 @@ export function ProductCategoryModal({
             <Input
               value={categoryName}
               onChange={(e) => onCategoryNameChange(e.target.value)}
-              placeholder="Ex: Resorts All Inclusive, Ecoturismo, Nordeste, Internacional"
+              placeholder={resolvedPlaceholder}
               className="h-11 text-xs rounded-lg bg-background"
               disabled={isCreating}
               onKeyDown={(e) => {

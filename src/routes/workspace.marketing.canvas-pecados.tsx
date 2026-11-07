@@ -19,6 +19,16 @@ export const Route = createFileRoute("/workspace/marketing/canvas-pecados")({
   component: SevenSinsCanvasPage,
 });
 
+const SIN_COLOR_CLASSES: Record<string, string> = {
+  orgulho: "bg-warning",
+  ganancia: "bg-emerald-600",
+  luxuria: "bg-rose-500",
+  inveja: "bg-teal-500",
+  gula: "bg-warning",
+  ira: "bg-destructive",
+  preguica: "bg-sky-500",
+};
+
 export function SevenSinsCanvasPage() {
   const { store } = (Route.useLoaderData() as any) || {};
   const storeId = store?.id || "";
@@ -246,8 +256,7 @@ export function SevenSinsCanvasPage() {
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: def.color }}
+                      className={`w-2.5 h-2.5 rounded-full ${SIN_COLOR_CLASSES[sinKey] || "bg-primary"}`}
                     />
                     <span className="text-xs font-bold capitalize text-foreground">
                       {sinKey}

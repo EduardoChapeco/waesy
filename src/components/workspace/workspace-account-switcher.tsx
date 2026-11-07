@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getNicheSemantics } from "@/lib/niche-semantics";
 
 interface WorkspaceAccountSwitcherProps {
   memberships: any[];
@@ -81,7 +82,7 @@ export function WorkspaceAccountSwitcher({
               </h2>
               <p className="text-2xs text-muted-foreground truncate leading-tight mt-1">
                 {activeStore?.city ? `${activeStore.city} • ` : ""}
-                {activeStore?.segment || "Empresa"}
+                {activeStore ? getNicheSemantics(activeStore).name : "Empresa"}
               </p>
             </div>
           </div>
@@ -122,7 +123,7 @@ export function WorkspaceAccountSwitcher({
               </div>
               <p className="text-2xs text-muted-foreground truncate mt-1">
                 {activeStore?.city ? `${activeStore.city} • ` : ""}
-                {activeStore?.segment || "Em Operação"}
+                {activeStore ? getNicheSemantics(activeStore).name : "Em Operação"}
               </p>
             </div>
           </div>

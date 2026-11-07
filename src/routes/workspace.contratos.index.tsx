@@ -57,7 +57,7 @@ function ContractsDashboard() {
  const router = useRouter();
   const { contracts: initialContracts } = ((Route.useLoaderData?.() as any) || {});
 
-  const { data: contracts = [], isError, refetch } = useQuery({
+  const { data: contracts = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["contracts-list"],
     queryFn: () => listContracts(),
     initialData: initialContracts || [],

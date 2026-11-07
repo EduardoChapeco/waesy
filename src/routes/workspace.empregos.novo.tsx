@@ -495,7 +495,7 @@ function WorkspaceNewJobPage() {
               {!isLinkedInConnected && (
                 <Link
                   to="/workspace/configuracoes/integracoes"
-                  className="text-xs font-semibold text-[#0A66C2] hover:underline flex items-center gap-1"
+                  className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
                 >
                   <span>Conectar Página nas Configurações</span>
                   <ExternalLink className="size-3" />

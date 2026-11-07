@@ -11,13 +11,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CurrencyField } from "@/components/ui/currency-field";
-import { updateProduct, createCategory, batchUpsertVariantMatrix } from "@/services/admin-catalog.functions";
+import { updateProduct, createCategory, createStoreBrand, batchUpsertVariantMatrix } from "@/services/admin-catalog.functions";
+import { extractErrorMessage } from "@/lib/utils";
+import { getClientActiveTenant } from "@/lib/context-auth";
 import type { RawVariant } from "@/types/catalog";
+import {
+  ProductPackagingSelector,
+  type ProductLogisticsMetadata,
+} from "./product-packaging-selector";
+import { ProductBrandModal } from "./product-brand-modal";
 
 interface ProductEditGeneralFormProps {
   product: any;
   categories: any[];
   productTypes: any[];
+  brands?: string[];
   nicheCtx: any;
   variants?: RawVariant[];
   onSavingChange?: (saving: boolean) => void;
@@ -34,6 +42,7 @@ export function ProductEditGeneralForm({
   product,
   categories,
   productTypes,
+  brands = [],
   nicheCtx,
   variants,
   onSavingChange,
@@ -50,9 +59,24 @@ export function ProductEditGeneralForm({
   const initialCategoryId = product?.product_categories?.[0]?.category_id || "";
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategoryId);
 
+  const [brandsList, setBrandsList] = useState<string[]>(brands);
+  const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [isCreatingBrand, setIsCreatingBrand] = useState(false);
+
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [logistics, setLogistics] = useState<ProductLogisticsMetadata>(
+    (product?.attributes as any)?.logistics || {
+      packaging_type: product?.is_physical === false ? "digital" : "box",
+      fragile: false,
+      stackable: true,
+      thermal_control: "ambient",
+      aisle_location: "",
+      picking_notes: "",
+    }
+  );
 
   const {
     register,
@@ -184,7 +208,12 @@ export function ProductEditGeneralForm({
           show_stock_publicly: values.show_stock_publicly ?? false,
           category_ids: selectedCategory && selectedCategory !== "none" ? [selectedCategory] : [],
           type_id: values.type_id !== "none" ? values.type_id : null,
-          attributes: values.attributes,
+          attributes: {
+            ...(values.attributes || {}),
+            logistics,
+            weight_kg: values.weight_kg ? parseFloat(values.weight_kg) : null,
+            dimensions: `${values.length_cm || 0} x ${values.width_cm || 0} x ${values.height_cm || 0} cm`,
+          },
         },
       });
 
@@ -220,8 +249,8 @@ export function ProductEditGeneralForm({
       } else {
         toast.error(`Erro ao atualizar ${nicheCtx.entityName.toLowerCase()}`);
       }
-    } catch (e: any) {
-      toast.error(e?.message || "Erro inesperado ao salvar alterações");
+    } catch (e: unknown) {
+      toast.error(extractErrorMessage(e, "Erro inesperado ao salvar alterações"));
     } finally {
       setIsSubmitting(false);
       onSavingChange?.(false);
@@ -238,11 +267,13 @@ export function ProductEditGeneralForm({
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)+/g, "");
+      const effectiveStoreId = product?.store_id || (typeof window !== "undefined" ? getClientActiveTenant() : undefined);
       const res = await createCategory({
         data: {
           name: newCategoryName,
           slug,
           status: "active",
+          store_id: effectiveStoreId || undefined,
         },
       });
       if (res) {
@@ -254,10 +285,45 @@ export function ProductEditGeneralForm({
       } else {
         toast.error("Erro ao criar categoria");
       }
-    } catch {
-      toast.error("Erro inesperado");
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Erro ao criar categoria"));
     } finally {
       setIsCreatingCategory(false);
+    }
+  };
+
+  const handleQuickCreateBrand = async () => {
+    if (!newBrandName.trim()) {
+      toast.error("Informe o nome da marca.");
+      return;
+    }
+    setIsCreatingBrand(true);
+    try {
+      const clean = newBrandName.trim();
+      const effectiveStoreId = product?.store_id || (typeof window !== "undefined" ? getClientActiveTenant() : undefined);
+      const res = await createStoreBrand({
+        data: {
+          name: clean,
+          store_id: effectiveStoreId || undefined,
+        },
+      });
+      const createdName = res?.name || clean;
+      setBrandsList((prev) =>
+        prev.includes(createdName)
+          ? prev
+          : [...prev, createdName].sort((a, b) =>
+              a.localeCompare(b, "pt-BR", { sensitivity: "base" }),
+            ),
+      );
+      setValue("brand", createdName);
+      onBrandChange(createdName);
+      setIsBrandModalOpen(false);
+      setNewBrandName("");
+      toast.success(`${nicheCtx.brandLabel || "Marca"} cadastrada com sucesso!`);
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Erro ao criar marca."));
+    } finally {
+      setIsCreatingBrand(false);
     }
   };
 
@@ -286,8 +352,53 @@ export function ProductEditGeneralForm({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{nicheCtx.brandLabel}</Label>
-              <Input {...register("brand")} placeholder={nicheCtx.brandPlaceholder} />
+              <div className="flex justify-between items-center">
+                <Label>{nicheCtx.brandLabel}</Label>
+                <button
+                  type="button"
+                  onClick={() => setIsBrandModalOpen(true)}
+                  className="text-xs text-primary hover:underline font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  + Nova Marca
+                </button>
+              </div>
+              <Select
+                value={watch("brand") || ""}
+                onValueChange={(val) => {
+                  if (val === "__custom__") {
+                    setIsBrandModalOpen(true);
+                  } else {
+                    setValue("brand", val);
+                    onBrandChange(val);
+                  }
+                }}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectValue placeholder={nicheCtx.brandPlaceholder || "Selecione a marca..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  {brandsList && brandsList.length > 0 ? (
+                    brandsList.map((brand: string) => (
+                      <SelectItem key={brand} value={brand}>
+                        {brand}
+                      </SelectItem>
+                    ))
+                  ) : null}
+                  {watch("brand") && (!brandsList || !brandsList.includes(watch("brand"))) && (
+                    <SelectItem value={watch("brand")}>
+                      {watch("brand")}
+                    </SelectItem>
+                  )}
+                  {(!brandsList || brandsList.length === 0) && !watch("brand") && (
+                    <div className="py-2 px-3 text-xs text-muted-foreground">
+                      Nenhuma marca cadastrada
+                    </div>
+                  )}
+                  <SelectItem value="__custom__" className="text-primary font-medium">
+                    + Cadastrar nova marca...
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
@@ -383,71 +494,31 @@ export function ProductEditGeneralForm({
       </div>
 
       <div className="pt-6 border-t">
-        <div className="mb-4">
-          <h3 className="text-lg font-bold text-foreground">Logística e Dimensões</h3>
-          <p className="text-sm text-muted-foreground">
-            Medidas físicas necessárias para o cálculo automatizado de frete via Correios ou transportadoras.
-          </p>
-        </div>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_physical"
-              checked={watch("is_physical")}
-              onCheckedChange={(checked) => setValue("is_physical", checked === true)}
-            />
-            <label
-              htmlFor="is_physical"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Este é um produto físico que requer entrega
-            </label>
-          </div>
-
-          {watch("is_physical") && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-              <div className="space-y-2">
-                <Label>Peso (kg)</Label>
-                <Input {...register("weight_kg")} type="number" step="0.01" placeholder="0.5" />
-              </div>
-              <div className="space-y-2">
-                <Label>Largura (cm)</Label>
-                <Input {...register("width_cm")} type="number" placeholder="15" />
-              </div>
-              <div className="space-y-2">
-                <Label>Altura (cm)</Label>
-                <Input {...register("height_cm")} type="number" placeholder="10" />
-              </div>
-              <div className="space-y-2">
-                <Label>Comprimento (cm)</Label>
-                <Input {...register("length_cm")} type="number" placeholder="20" />
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>
-                {nicheCtx.isTourismBusiness
-                  ? "Duração da Viagem (dias)"
-                  : "Prazo de Preparação / Produção (dias)"}
-              </Label>
-              <Input {...register("preparation_time_days")} type="number" placeholder="0" />
-            </div>
-            {nicheCtx.isFoodBusiness && (
-              <div className="space-y-2">
-                <Label>Preparo Imediato / Cozinha (minutos)</Label>
-                <Input {...register("preparation_time_minutes")} type="number" placeholder="25" />
-              </div>
-            )}
-            {nicheCtx.isServiceBusiness && (
-              <div className="space-y-2">
-                <Label>Duração do Atendimento (minutos)</Label>
-                <Input {...register("preparation_time_minutes")} type="number" placeholder="45" />
-              </div>
-            )}
-          </div>
-        </div>
+        <ProductPackagingSelector
+          weightKg={watch("weight_kg")}
+          widthCm={watch("width_cm")}
+          heightCm={watch("height_cm")}
+          lengthCm={watch("length_cm")}
+          preparationTimeDays={watch("preparation_time_days")}
+          preparationTimeMinutes={watch("preparation_time_minutes")}
+          isPhysical={watch("is_physical")}
+          logistics={logistics}
+          nicheCtx={nicheCtx}
+          onChangeDimensions={(patch) => {
+            if (patch.weight_kg !== undefined) setValue("weight_kg", patch.weight_kg);
+            if (patch.width_cm !== undefined) setValue("width_cm", patch.width_cm);
+            if (patch.height_cm !== undefined) setValue("height_cm", patch.height_cm);
+            if (patch.length_cm !== undefined) setValue("length_cm", patch.length_cm);
+            if (patch.preparation_time_days !== undefined) {
+              setValue("preparation_time_days", patch.preparation_time_days);
+            }
+            if (patch.preparation_time_minutes !== undefined) {
+              setValue("preparation_time_minutes", patch.preparation_time_minutes);
+            }
+            if (patch.is_physical !== undefined) setValue("is_physical", patch.is_physical);
+          }}
+          onChangeLogistics={setLogistics}
+        />
       </div>
 
       <div className="pt-6 border-t">
@@ -497,6 +568,18 @@ export function ProductEditGeneralForm({
           Salvar Alterações
         </Button>
       </div>
+
+      <ProductBrandModal
+        open={isBrandModalOpen}
+        onOpenChange={setIsBrandModalOpen}
+        brandLabel={nicheCtx.brandLabel}
+        brandName={newBrandName}
+        onBrandNameChange={setNewBrandName}
+        onSubmit={handleQuickCreateBrand}
+        isCreating={isCreatingBrand}
+        placeholder={nicheCtx.brandPlaceholder}
+        description={nicheCtx.brandDesc}
+      />
     </form>
   );
 }

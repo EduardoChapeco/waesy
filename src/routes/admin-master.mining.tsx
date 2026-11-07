@@ -525,7 +525,7 @@ function AdminMiningHubPage() {
         },
       });
       setSourcesList((prev) => [created, ...prev]);
-      toast.success("Fonte canônica cadastrada com sucesso!");
+      toast.success("Fonte cadastrada com sucesso!");
       setNewSourceName("");
       setNewSourceUrl("");
       setIsCreatingSource(false);

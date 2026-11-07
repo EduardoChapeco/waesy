@@ -28,7 +28,7 @@ export const Route = createFileRoute("/workspace/captacao/")({
 function WorkspaceCaptacaoHubPage() {
   const loaderData = Route.useLoaderData();
 
-  const { data: businesses = loaderData.businesses, isError: businessesError } = useQuery({
+  const { data: businesses = loaderData.businesses, isLoading: isBusinessesLoading, isError: businessesError } = useQuery({
     queryKey: ["workspace", "business-classifieds"],
     queryFn: () => listStoreBusinessClassifieds(),
     initialData: loaderData.businesses,

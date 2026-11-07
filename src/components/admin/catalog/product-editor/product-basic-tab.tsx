@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Tag, Truck } from "lucide-react";
+import { Tag } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
 import { SeoGeoOptimizationPanel } from "@/components/seo";
 import type { TravelPackageData } from "@/types/travel-package";
+import {
+  ProductPackagingSelector,
+  type ProductLogisticsMetadata,
+} from "./product-packaging-selector";
 
 export interface ProductBasicTabProps {
   isTravelPackageMode: boolean;
@@ -19,7 +23,12 @@ export interface ProductBasicTabProps {
   setValue: any;
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   categoriesList: any[];
+  productTypes?: any[];
+  logistics?: ProductLogisticsMetadata;
+  onLogisticsChange?: (next: ProductLogisticsMetadata) => void;
   onOpenQuickCategory: () => void;
+  brandsList?: string[];
+  onOpenQuickBrand?: () => void;
 }
 
 export function ProductBasicTab({
@@ -33,8 +42,18 @@ export function ProductBasicTab({
   setValue,
   onTitleChange,
   categoriesList,
+  productTypes = [],
+  logistics = {},
+  onLogisticsChange,
   onOpenQuickCategory,
+  brandsList = [],
+  onOpenQuickBrand,
 }: ProductBasicTabProps) {
+  const showPhysicalPackaging =
+    !isTravelPackageMode &&
+    !nicheCtx?.isServiceBusiness &&
+    !nicheCtx?.isRealEstateBusiness &&
+    !nicheCtx?.isVehicleBusiness;
   return (
     <div className="space-y-4">
       {/* Formulário Especializado de Pacotes de Viagem */}
@@ -94,16 +113,60 @@ export function ProductBasicTab({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-foreground">{nicheCtx.brandLabel}</Label>
-              <Input
-                {...register("brand")}
-                placeholder={nicheCtx.brandPlaceholder}
-                className="h-11 rounded-lg text-xs bg-background"
-              />
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium text-foreground">{nicheCtx.brandLabel}</Label>
+                {onOpenQuickBrand && (
+                  <button
+                    type="button"
+                    onClick={onOpenQuickBrand}
+                    className="text-xs text-primary hover:underline font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-sm"
+                  >
+                    + Criar Rápido
+                  </button>
+                )}
+              </div>
+              <Select
+                value={formValues.brand || ""}
+                onValueChange={(val) => {
+                  if (val === "__custom__") {
+                    onOpenQuickBrand?.();
+                  } else {
+                    setValue("brand", val);
+                  }
+                }}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectValue placeholder={nicheCtx.brandPlaceholder || "Selecione a marca..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  {brandsList && brandsList.length > 0 ? (
+                    brandsList.map((brand: string) => (
+                      <SelectItem key={brand} value={brand}>
+                        {brand}
+                      </SelectItem>
+                    ))
+                  ) : null}
+                  {formValues.brand && (!brandsList || !brandsList.includes(formValues.brand)) && (
+                    <SelectItem value={formValues.brand}>
+                      {formValues.brand}
+                    </SelectItem>
+                  )}
+                  {(!brandsList || brandsList.length === 0) && !formValues.brand && (
+                    <div className="py-2 px-3 text-xs text-muted-foreground">
+                      Nenhuma marca cadastrada
+                    </div>
+                  )}
+                  {onOpenQuickBrand && (
+                    <SelectItem value="__custom__" className="text-primary font-medium">
+                      + Cadastrar nova marca...
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label className="text-xs font-medium text-foreground">Slug URL</Label>
               <Input
@@ -133,6 +196,26 @@ export function ProductBasicTab({
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Tipo de {nicheCtx.entityName}</Label>
+              <Select
+                value={formValues.type_id || "none"}
+                onValueChange={(val) => setValue("type_id", val === "none" ? "" : val)}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectValue placeholder="Padrão do Nicho" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Padrão do Segmento</SelectItem>
+                  {productTypes.map((pt: any) => (
+                    <SelectItem key={pt.id} value={pt.id}>
+                      {pt.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -156,67 +239,29 @@ export function ProductBasicTab({
         </div>
       )}
 
-      {/* Logística & Frete (Apenas para produtos físicos) */}
-      {!isTravelPackageMode && (
-        <div className="bg-card rounded-lg p-6 space-y-4 border border-border">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-            <Truck className="size-4 text-primary" />
-            <span>Logística e Frete</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-foreground">Peso (kg)</Label>
-              <Input
-                {...register("weight_kg")}
-                type="number"
-                step="0.01"
-                placeholder="0.5"
-                className="h-11 rounded-lg text-xs bg-background font-mono"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-foreground">Prazo de Envio (dias)</Label>
-              <Input
-                {...register("preparation_time_days")}
-                type="number"
-                placeholder="1"
-                className="h-11 rounded-lg text-xs bg-background font-mono"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-foreground">Largura (cm)</Label>
-              <Input
-                {...register("width_cm")}
-                type="number"
-                placeholder="15"
-                className="h-11 rounded-lg text-xs bg-background font-mono"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-foreground">Altura (cm)</Label>
-              <Input
-                {...register("height_cm")}
-                type="number"
-                placeholder="10"
-                className="h-11 rounded-lg text-xs bg-background font-mono"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-foreground">Comprimento (cm)</Label>
-              <Input
-                {...register("length_cm")}
-                type="number"
-                placeholder="20"
-                className="h-11 rounded-lg text-xs bg-background font-mono"
-              />
-            </div>
-          </div>
-        </div>
+      {/* Embalagem Visual, Cubagem & Separação WMS (Para itens com logística física) */}
+      {showPhysicalPackaging && (
+        <ProductPackagingSelector
+          weightKg={formValues.weight_kg}
+          widthCm={formValues.width_cm}
+          heightCm={formValues.height_cm}
+          lengthCm={formValues.length_cm}
+          preparationTimeDays={formValues.preparation_time_days}
+          isPhysical={formValues.is_physical !== false}
+          logistics={logistics}
+          nicheCtx={nicheCtx}
+          onChangeDimensions={(patch) => {
+            if (patch.weight_kg !== undefined) setValue("weight_kg", patch.weight_kg);
+            if (patch.width_cm !== undefined) setValue("width_cm", patch.width_cm);
+            if (patch.height_cm !== undefined) setValue("height_cm", patch.height_cm);
+            if (patch.length_cm !== undefined) setValue("length_cm", patch.length_cm);
+            if (patch.preparation_time_days !== undefined) {
+              setValue("preparation_time_days", patch.preparation_time_days);
+            }
+            if (patch.is_physical !== undefined) setValue("is_physical", patch.is_physical);
+          }}
+          onChangeLogistics={(next) => onLogisticsChange?.(next)}
+        />
       )}
 
       {/* Otimização Universal de SEO, GEO e Agentes de IA */}

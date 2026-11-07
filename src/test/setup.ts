@@ -49,11 +49,15 @@ const mockIdentity = {
 };
 
 // These hoists will register the mock modules
-vi.mock("@/lib/server-access", () => ({
- getServerIdentity: vi.fn(),
- assertStoreAccess: vi.fn(),
- getSSRClient: vi.fn(),
-}));
+vi.mock("@/lib/server-access", async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    getServerIdentity: vi.fn(),
+    assertStoreAccess: vi.fn(),
+    getSSRClient: vi.fn(),
+  };
+});
 
 vi.mock("@/lib/supabase", () => ({
  getServerClient: vi.fn(),

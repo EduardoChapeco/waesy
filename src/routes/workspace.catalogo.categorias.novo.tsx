@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Surface } from "@/components/ui/surface";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { getClientActiveTenant } from "@/lib/context-auth";
 import { createCategory, listCategories } from "@/services/admin-catalog.functions";
 
 export const Route = createFileRoute("/workspace/catalogo/categorias/novo")({
@@ -47,18 +48,20 @@ function NewCategoryPage() {
 
  const [coverUrl, setCoverUrl] = useState<string | null>(null);
 
- const onSubmit = async (values: any) => {
- setIsSubmitting(true);
- try {
- const res = await createCategory({
- data: {
- name: values.name.trim(),
- slug: values.slug.trim(),
- status: values.status,
- parent_id: values.parent_id === "none" ? null : values.parent_id,
- cover_url: coverUrl || undefined,
- },
- });
+  const onSubmit = async (values: any) => {
+    setIsSubmitting(true);
+    try {
+      const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+      const res = await createCategory({
+        data: {
+          name: values.name.trim(),
+          slug: values.slug.trim(),
+          status: values.status,
+          parent_id: values.parent_id === "none" ? null : values.parent_id,
+          cover_url: coverUrl || undefined,
+          store_id: clientTenant || undefined,
+        },
+      });
 
  if (res) {
  toast.success("Categoria criada com sucesso!");

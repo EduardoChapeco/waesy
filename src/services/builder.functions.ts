@@ -497,7 +497,7 @@ async function hydrateBindings(
 // ---------------------------------------------------------------------------
 
 export async function resolveStoreContext(
-  _identity?: {
+  identity?: {
     id: string | null;
     role?: string;
     store_id?: string | null;
@@ -506,6 +506,41 @@ export async function resolveStoreContext(
   targetStoreId?: string | null,
   documentId?: string | null,
 ): Promise<string> {
+  if (identity) {
+    const isGlobalAdmin = identity.role === "platform_admin" || identity.role === "master";
+
+    // 1. Se targetStoreId foi passado explicitamente
+    if (targetStoreId) {
+      if (isGlobalAdmin) return targetStoreId;
+      if (identity.store_id === targetStoreId) return targetStoreId;
+      if (identity.memberships?.some((m) => m.store_id === targetStoreId)) return targetStoreId;
+    }
+
+    // 2. Se documentId foi fornecido, resolve do documento no banco
+    if (documentId) {
+      const db = getServerClient();
+      const { data: doc } = await db
+        .from("experience_documents")
+        .select("store_id")
+        .eq("id", documentId)
+        .maybeSingle();
+
+      if (doc?.store_id) {
+        if (isGlobalAdmin) return doc.store_id;
+        if (identity.store_id === doc.store_id) return doc.store_id;
+        if (identity.memberships?.some((m) => m.store_id === doc.store_id)) return doc.store_id;
+        throw new Error("Acesso negado ao documento desta loja.");
+      }
+    }
+
+    // 3. Fallback para store_id ativo na identidade
+    if (identity.store_id) {
+      return identity.store_id;
+    }
+
+    throw new Error("Nenhum contexto de loja válido encontrado para a operação do builder.");
+  }
+
   const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
   const authCtx = await authorizeBuilderStoreContext({
     requestedStoreId: targetStoreId || undefined,
@@ -513,7 +548,6 @@ export async function resolveStoreContext(
     allowPlatformRootForGlobalAdmin: true,
   });
   return authCtx.storeId;
-
 }
 
 export const listExperienceDocuments = createServerFn({ method: "GET" })
@@ -1431,13 +1465,14 @@ export const checkExperienceDocumentExists = createServerFn({ method: "GET" })
       await requireAdmin(); // SECURITY FIX
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
+      const storeId = identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!storeId) throw new Error("Nenhuma loja ativa selecionada.");
 
       const db = getServerClient();
       const { data: doc } = await db
         .from("experience_documents")
         .select("id")
-        .eq("store_id", identity.store_id)
+        .eq("store_id", storeId)
         .eq("slug", slug)
         .eq("document_type", document_type)
         .eq("is_active", true)
@@ -1457,8 +1492,8 @@ export const getOrCreateHomeDocument = createServerFn({ method: "POST" })
       // 0. Get Identity
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-      const storeId = identity.store_id;
+      const storeId = identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!storeId) throw new Error("Nenhuma loja ativa selecionada.");
 
       const db = getServerClient();
 
@@ -1535,8 +1570,8 @@ export const applyHomeTemplate = createServerFn({ method: "POST" })
       await requireAdmin(); // SECURITY FIX
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-      const storeId = identity.store_id;
+      const storeId = identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!storeId) throw new Error("Nenhuma loja ativa selecionada.");
 
       const db = getServerClient();
 
@@ -2213,8 +2248,8 @@ export const getOrCreateInstitutionalDocument = createServerFn({ method: "POST" 
       // 0. Get Identity
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-      const storeId = identity.store_id;
+      const storeId = identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!storeId) throw new Error("Nenhuma loja ativa selecionada.");
 
       if (input?.overwrite) {
         await db

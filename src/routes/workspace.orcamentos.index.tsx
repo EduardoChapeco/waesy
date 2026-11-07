@@ -115,7 +115,7 @@ function QuotesListPage() {
   );
 
   return (
-    <div className="flex flex-col gap-4 min-h-[calc(100dvh-8.5rem)]">
+    <div className="flex flex-col gap-4 flex-1 min-h-screen">
       {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -200,7 +200,7 @@ function QuotesListPage() {
       )}
 
       {!isLoading && !isError && quotes.length > 0 && viewMode === "kanban" && (
-        <div className="flex gap-4 items-stretch pb-2 overflow-x-auto scroll-area-carousel no-scrollbar h-[calc(100dvh-10.5rem)] sm:h-[calc(100dvh-9.5rem)] select-none">
+        <div className="flex gap-4 items-stretch pb-2 overflow-x-auto scroll-area-carousel no-scrollbar flex-1 min-h-128 select-none">
           {KANBAN_COLUMNS.map((col) => {
             const colQuotes = quotes.filter((q: QuoteSummaryDTO) => col.statuses.includes(q.status));
             const colTotalCents = colQuotes.reduce((acc: number, q: QuoteSummaryDTO) => acc + q.total_cents, 0);

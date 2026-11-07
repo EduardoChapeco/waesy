@@ -652,7 +652,7 @@ function CriarNegocioPage() {
  <div className="space-y-6">
  {/* Logotipo Oficial */}
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Logotipo Oficial da Loja (1:1 Squircle)</Label>
+ <Label className="text-xs font-bold text-foreground">Logotipo da Loja</Label>
  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-lg bg-muted/20 border border-border/60">
  <div className="size-24 sm:size-28 shrink-0">
  <ImageUpload
@@ -669,7 +669,7 @@ function CriarNegocioPage() {
  />
  </div>
  <div className="space-y-1 text-left flex-1">
- <p className="text-xs font-bold text-foreground">Ícone / Avatar Quadrado (1:1)</p>
+ <p className="text-xs font-bold text-foreground">Logotipo da Empresa</p>
  <p className="text-2xs text-muted-foreground leading-relaxed">
  Recomendado: 512x512px. Exibido no topo do catálogo, na busca local, no feed e nos comprovantes de pedido.
  </p>

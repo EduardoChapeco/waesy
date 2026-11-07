@@ -974,7 +974,7 @@ export function CommercialBudgetPadSheet({
 
           <div className="space-y-4 py-2">
             <div className="space-y-1">
-              <Label className="text-xs font-semibold">Minuta Jurídica Canônica</Label>
+              <Label className="text-xs font-semibold">Minuta do Contrato</Label>
               <Select
                 value={selectedTemplateId}
                 onValueChange={setSelectedTemplateId}

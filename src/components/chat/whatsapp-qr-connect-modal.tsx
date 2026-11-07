@@ -10,6 +10,7 @@ import {
   Radio,
   Globe,
   Building2,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -44,7 +45,7 @@ export interface WhatsAppQrConnectModalProps {
 export function WhatsAppQrConnectModal({
   open,
   onOpenChange,
-  instances,
+  instances = [],
   onInstancesUpdated,
   canManageConnection = true,
   isPlatformMaster = false,
@@ -86,7 +87,7 @@ export function WhatsAppQrConnectModal({
   const [metaAccessToken, setMetaAccessToken] = useState("");
   const [metaVerifyToken, setMetaVerifyToken] = useState("");
 
-  const activeInstance = instances.find((item) => item.id === selectedInstanceId) || instances[0] || null;
+  const activeInstance = (instances || []).find((item) => item.id === selectedInstanceId) || instances?.[0] || null;
 
   useEffect(() => {
     if (activeInstance) {
@@ -198,8 +199,8 @@ export function WhatsAppQrConnectModal({
 
   const handleStartNewNumber = () => {
     setSelectedInstanceId(null);
-    setDisplayName(`WhatsApp Setor ${instances.length + 1}`);
-    setInstanceKey(`setor_${instances.length + 1}`);
+    setDisplayName(`WhatsApp Setor ${(instances?.length || 0) + 1}`);
+    setInstanceKey(`setor_${(instances?.length || 0) + 1}`);
     setDepartment("Vendas & Comercial");
     setQrBase64(null);
     setPairingCode(null);
@@ -265,7 +266,7 @@ export function WhatsAppQrConnectModal({
               className={cn(
                 "text-xs px-3 py-1 font-semibold",
                 connectionStatus === "connected"
-                  ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+                  ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                   : "bg-warning/15 text-warning-strong border-warning/30",
               )}
             >
@@ -476,7 +477,19 @@ export function WhatsAppQrConnectModal({
 
             {/* Coluna Direita: Visor do QR Code em Tempo Real */}
             <div className="md:col-span-6 flex flex-col items-center justify-center p-6 rounded-lg border-2 border-dashed border-border bg-muted/10 space-y-3">
-              {connectionStatus === "connected" ? (
+              {isGenerating ? (
+                <div className="flex flex-col items-center text-center space-y-3 py-10">
+                  <div className="size-16 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                    <RefreshCw className="size-8 animate-spin motion-reduce:animate-none" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-foreground">Conectando à VPS Oracle...</h4>
+                    <p className="text-xs text-muted-foreground max-w-xs">
+                      Iniciando sessão Baileys em 147.15.61.45:8080 e requisitando handshake seguro em tempo real.
+                    </p>
+                  </div>
+                </div>
+              ) : connectionStatus === "connected" ? (
                 <div className="flex flex-col items-center text-center space-y-3 py-6">
                   <div className="size-16 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
                     <CheckCircle2 className="size-10" />
@@ -503,14 +516,29 @@ export function WhatsAppQrConnectModal({
                     />
                   </div>
                   {pairingCode && (
-                    <div className="text-center">
-                      <span className="text-2xs text-muted-foreground block">Código de Pareamento:</span>
-                      <span className="font-mono text-sm font-bold tracking-widest text-foreground">
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/80 w-full max-w-xs">
+                      <div className="text-left min-w-0">
+                        <span className="text-3xs uppercase tracking-wider text-muted-foreground block font-bold">Código de Pareamento</span>
+                      <span className="font-mono text-sm font-bold tracking-widest text-foreground block">
                         {pairingCode}
                       </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-11 min-h-11 px-3 text-xs gap-1 shrink-0"
+                        onClick={() => {
+                          navigator.clipboard.writeText(pairingCode);
+                          toast.success("Código copiado!");
+                        }}
+                      >
+                        <Copy className="size-3.5" />
+                        Copiar
+                      </Button>
                     </div>
                   )}
-                  <p className="text-xs text-emerald-600 font-medium text-center">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium text-center">
                     Aguardando leitura pelo celular (atualização automática)...
                   </p>
                 </>

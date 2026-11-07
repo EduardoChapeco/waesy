@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar as CalendarIcon, Clock, CheckCircle2, FileText, Play, Ticket, ChevronLeft, ChevronRight, DollarSign, Users, MessageCircle, Smartphone, Plus, AlertTriangle } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, CheckCircle2, FileText, Play, Ticket, ChevronLeft, ChevronRight, DollarSign, Users, MessageCircle, Smartphone, Plus, AlertTriangle, List, Kanban } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DigitalCompanionCard } from "@/components/documents/digital-companion-card";
 import { format, addDays, subDays, isSameDay } from "date-fns";
@@ -113,7 +114,7 @@ function ClinicalRecordDrawer({
 function AdminAppointmentsPage() {
  const queryClient = useQueryClient();
  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
- const [viewMode, setViewMode] = useState<"daily" | "heatmap">("daily");
+ const [viewMode, setViewMode] = useState<"daily" | "table" | "kanban" | "heatmap">("daily");
  const [selectedAppt, setSelectedAppt] = useState<{ id: string; name: string } | null>(null);
  const [companionCardOpen, setCompanionCardOpen] = useState(false);
  const [companionData, setCompanionData] = useState<any>(null);
@@ -321,8 +322,10 @@ function AdminAppointmentsPage() {
  <WorkspaceCanonicalToolbar
   title="Agenda"
   viewModes={[
-   { id: "daily", label: "Diário", icon: CalendarIcon },
-   { id: "heatmap", label: "Heatmap", icon: Clock },
+   { id: "daily", label: "Grade Diária", icon: CalendarIcon },
+   { id: "table", label: "Tabela Geral", icon: List },
+   { id: "kanban", label: "Fila de Atendimento", icon: Kanban },
+   { id: "heatmap", label: "Ocupação", icon: Clock },
   ]}
   activeViewMode={viewMode}
   onViewModeChange={(m) => setViewMode(m as any)}
@@ -353,6 +356,198 @@ function AdminAppointmentsPage() {
               setViewMode("daily");
             }}
           />
+        </div>
+      ) : viewMode === "table" ? (
+        /* ── MODO TABELA GERAL (AUDITORIA DE HORÁRIOS EM LOTE) ── */
+        <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3">Data / Hora</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3">Cliente</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3">Serviço</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3">Profissional / Sala</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3">Valor</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3 text-center">Status</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3 text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {appointments.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-32 text-center text-xs text-muted-foreground">
+                    Nenhum agendamento registrado no sistema.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                appointments.map((appt: any) => {
+                  const resourceName = appt.booking_resources?.name || "Geral";
+                  return (
+                    <TableRow key={appt.id} className="hover:bg-muted/20 transition-colors">
+                      <TableCell className="font-mono text-xs text-foreground font-semibold py-3">
+                        {appt.scheduled_at ? format(new Date(appt.scheduled_at), "dd/MM/yyyy HH:mm") : "—"}
+                      </TableCell>
+                      <TableCell className="font-bold text-xs text-foreground py-3">
+                        {appt.guest_name || "Cliente"}
+                        {appt.guest_phone && (
+                          <span className="block font-mono font-normal text-muted-foreground text-xs">{appt.guest_phone}</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-xs text-foreground py-3">
+                        <span className="font-semibold">{appt.booking_services?.title || "Atendimento"}</span>
+                        <span className="block text-muted-foreground text-xs">{appt.duration_minutes || 60} min</span>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground py-3">
+                        {resourceName}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs font-bold text-foreground py-3">
+                        {appt.booking_services?.price_cents ? formatMoney(appt.booking_services.price_cents) : "Sob consulta"}
+                      </TableCell>
+                      <TableCell className="text-center py-3">
+                        {getStatusBadge(appt.status)}
+                      </TableCell>
+                      <TableCell className="text-right py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                            onClick={() => setSelectedAppt({ id: appt.id, name: appt.guest_name || "Cliente" })}
+                          >
+                            <FileText className="size-3.5 mr-1 text-primary" /> Prontuário
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                            onClick={() => handleOpenCompanion(appt, resourceName)}
+                          >
+                            Voucher
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      ) : viewMode === "kanban" ? (
+        /* ── MODO KANBAN (FILA DE ATENDIMENTO) ── */
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {[
+            {
+              id: "scheduled",
+              title: "Agendados",
+              description: "Aguardando chegada",
+              items: appointments.filter((a: any) => a.status === "pending" || a.status === "confirmed"),
+              badgeClass: "bg-warning/10 text-warning-strong border-warning/20",
+            },
+            {
+              id: "reception",
+              title: "Na Recepção",
+              description: "Check-in realizado",
+              items: appointments.filter((a: any) => a.status === "checked_in"),
+              badgeClass: "bg-info/10 text-info border-info/20",
+            },
+            {
+              id: "in_service",
+              title: "Em Atendimento",
+              description: "Com especialista",
+              items: appointments.filter((a: any) => a.status === "in_service"),
+              badgeClass: "bg-primary/10 text-primary border-primary/20",
+            },
+            {
+              id: "completed",
+              title: "Concluídos",
+              description: "Atendimento finalizado",
+              items: appointments.filter((a: any) => a.status === "completed"),
+              badgeClass: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+            },
+          ].map((col) => (
+            <div
+              key={col.id}
+              className="p-4 rounded-2xl border border-border/70 bg-card/60 flex flex-col space-y-3 min-h-96"
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">{col.title}</h4>
+                  <p className="text-xs text-muted-foreground">{col.description}</p>
+                </div>
+                <Badge variant="outline" className={`text-xs font-bold font-mono px-2 py-1 rounded-full ${col.badgeClass}`}>
+                  {col.items.length}
+                </Badge>
+              </div>
+              <div className="space-y-2 flex-1 overflow-y-auto no-scrollbar">
+                {col.items.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-muted-foreground">
+                    Nenhum agendamento nesta fila
+                  </div>
+                ) : (
+                  col.items.map((appt: any) => {
+                    const resourceName = appt.booking_resources?.name || "Geral";
+                    return (
+                      <div
+                        key={appt.id}
+                        className="p-4 rounded-xl border border-border/60 bg-card shadow-2xs hover:border-primary/40 transition-colors space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="font-bold text-xs text-foreground truncate">
+                            {appt.guest_name || "Cliente"}
+                          </span>
+                          <span className="text-xs font-mono font-bold text-muted-foreground shrink-0">
+                            {appt.scheduled_at ? format(new Date(appt.scheduled_at), "HH:mm") : ""}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {appt.booking_services?.title || "Serviço"} • {resourceName}
+                        </p>
+                        <div className="flex items-center gap-2 pt-1 border-t border-border/30">
+                          {appt.status === "pending" || appt.status === "confirmed" ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-11 min-h-11 text-xs font-semibold flex-1 rounded-md cursor-pointer focus-visible:ring-2"
+                              onClick={() => statusMutation.mutate({ id: appt.id, status: "checked_in" })}
+                            >
+                              Check-in Recepção
+                            </Button>
+                          ) : appt.status === "checked_in" ? (
+                            <Button
+                              size="sm"
+                              className="h-11 min-h-11 text-xs font-semibold flex-1 rounded-md bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2"
+                              onClick={() => statusMutation.mutate({ id: appt.id, status: "in_service" })}
+                            >
+                              Iniciar Atendimento
+                            </Button>
+                          ) : appt.status === "in_service" ? (
+                            <Button
+                              size="sm"
+                              className="h-11 min-h-11 text-xs font-semibold flex-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-primary-foreground cursor-pointer focus-visible:ring-2"
+                              onClick={() => statusMutation.mutate({ id: appt.id, status: "completed", passId: appt.pass_id })}
+                            >
+                              Concluir Atendimento
+                            </Button>
+                          ) : null}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="size-11 min-h-11 min-w-11 rounded-md cursor-pointer focus-visible:ring-2"
+                            onClick={() => setSelectedAppt({ id: appt.id, name: appt.guest_name || "Cliente" })}
+                            title="Prontuário"
+                            aria-label={`Prontuário de ${appt.guest_name || "Cliente"}`}
+                          >
+                            <FileText className="size-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <>

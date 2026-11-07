@@ -227,7 +227,7 @@ export const listPickingBatches = createServerFn({ method: "GET" })
 
  let query = db
  .from("wms_picking_batches")
- .select("*, sessions:wms_picking_sessions(id, order_id, status)")
+ .select("*, sessions:wms_picking_sessions(id, order_id, status, items:wms_picking_items(id, qty_expected, qty_picked, barcode, order_item:order_items(id, title, product_id, products(name, sku, ean, weight_kg, width_cm, height_cm, length_cm, attributes))))")
  .eq("store_id", identity.store_id)
  .order("created_at", { ascending: false });
 
@@ -252,21 +252,22 @@ export const scanBarcodePickItem = createServerFn({ method: "POST" })
  await assertStoreAccess(identity, ["owner", "admin", "manager", "logistics", "stock"]);
  const db = getServerClient();
 
- // 1. Buscar itens pendentes da sessão
+ // 1. Buscar itens pendentes da sessão com metadados de embalagem e WMS do produto
  const { data: items, error } = await db
  .from("wms_picking_items")
- .select("*, order_item:order_items(id, product_id, title, metadata)")
+ .select("*, order_item:order_items(id, product_id, title, metadata, products(name, sku, ean, weight_kg, width_cm, height_cm, length_cm, attributes))")
  .eq("session_id", data.sessionId);
 
  if (error || !items || items.length === 0) {
  throw new Error("Nenhum item encontrado para esta sessão de separação.");
  }
 
- // 2. Localizar item correspondente ao código de barras
+ // 2. Localizar item correspondente ao código de barras, EAN ou SKU
  const cleanBarcode = data.barcode.trim();
  const matchedItem = items.find((item: any) => {
- const ean = item.barcode || item.order_item?.metadata?.barcode || item.order_item?.metadata?.ean;
- return ean === cleanBarcode || item.order_item_id === cleanBarcode;
+ const prod = item.order_item?.products || {};
+ const ean = item.barcode || prod.ean || prod.sku || item.order_item?.metadata?.barcode || item.order_item?.metadata?.ean;
+ return ean === cleanBarcode || prod.sku === cleanBarcode || item.order_item_id === cleanBarcode;
  });
 
  if (!matchedItem) {
@@ -285,13 +286,20 @@ export const scanBarcodePickItem = createServerFn({ method: "POST" })
  .eq("id", matchedItem.id);
 
  const isFullyPicked = newPicked >= matchedItem.qty_expected;
+ const prod = matchedItem.order_item?.products || {};
+ const logistics = (prod.attributes as any)?.logistics || {};
 
  return {
  status: "success",
- matchedItemTitle: matchedItem.order_item?.title,
+ matchedItemTitle: matchedItem.order_item?.title || prod.name,
  qtyPicked: newPicked,
  qtyExpected: matchedItem.qty_expected,
  isItemComplete: isFullyPicked,
+ packagingType: logistics.packaging_type || "box",
+ aisleLocation: logistics.aisle_location || null,
+ fragile: Boolean(logistics.fragile),
+ thermalControl: logistics.thermal_control || "ambient",
+ pickingNotes: logistics.picking_notes || null,
  };
  });
 

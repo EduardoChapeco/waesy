@@ -188,7 +188,7 @@ function PdvComandasPage() {
  toolDescription="Gestão de mesas, comandas abertas e fechamento de conta."
  store={store}
  >
-      <div className="flex flex-col min-h-[calc(100dvh-4rem)] bg-background text-foreground pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
+      <div className="flex flex-col flex-1 min-h-screen bg-background text-foreground pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
         {/* ── Top Bar ── */}
         <div className="border-b border-border/80 bg-card/60 backdrop-blur-md px-3 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 rounded-lg">
           <div className="flex items-center gap-3">

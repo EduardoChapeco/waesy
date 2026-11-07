@@ -25,7 +25,7 @@ export const Route = createFileRoute("/workspace/captacao/ndas")({
 function WorkspaceCaptacaoNdasPage() {
   const loaderData = Route.useLoaderData();
 
-  const { data: ndas = loaderData.ndas, isError } = useQuery({
+  const { data: ndas = loaderData.ndas, isLoading, isError } = useQuery({
     queryKey: ["workspace", "nda-signatures-all"],
     queryFn: () => listStoreAllNdaSignatures(),
     initialData: loaderData.ndas,

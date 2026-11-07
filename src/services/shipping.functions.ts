@@ -23,14 +23,23 @@ export async function _calculateShipping({
  const supabase = getServerClient();
  let resolvedStoreId = explicitStoreId;
 
- // Se o storeId não foi fornecido explicitamente, resolver via productId ou cartId
- if (!resolvedStoreId && productId) {
+ // Se o productId foi fornecido, buscar dimensões, logística e store_id do produto
+ let singleProductLogistics: {
+   store_id?: string | null;
+   weight_kg?: number | null;
+   width_cm?: number | null;
+   height_cm?: number | null;
+   length_cm?: number | null;
+   attributes?: Record<string, any> | null;
+ } | null = null;
+ if (productId) {
  const { data: prodData } = await supabase
  .from("products")
- .select("store_id, weight_kg, width_cm, height_cm, length_cm")
+ .select("store_id, weight_kg, width_cm, height_cm, length_cm, attributes")
  .eq("id", productId)
  .maybeSingle();
- if (prodData?.store_id) {
+ singleProductLogistics = prodData;
+ if (!resolvedStoreId && prodData?.store_id) {
  resolvedStoreId = prodData.store_id;
  }
  }
@@ -88,12 +97,15 @@ export async function _calculateShipping({
  let maxL = 0;
  let itemsCount = 0;
  let hasMissingDimensions = false;
+ let dominantPackagingType: string = "box";
+ let hasFragileItem = false;
+ let requiresThermalBag = false;
 
  if (cartId) {
  const { data: cartItems } = await supabase
  .from("cart_items")
  .select(
- "quantity, product_id, variant_id, products(weight_kg, width_cm, height_cm, length_cm), product_variants(weight_kg, width_cm, height_cm, length_cm)",
+ "quantity, product_id, variant_id, products(weight_kg, width_cm, height_cm, length_cm, attributes), product_variants(weight_kg, width_cm, height_cm, length_cm)",
  )
  .eq("cart_id", cartId);
 
@@ -103,10 +115,16 @@ export async function _calculateShipping({
  width_cm: number | null;
  height_cm: number | null;
  length_cm: number | null;
+ attributes?: Record<string, any> | null;
  } | null;
  for (const item of cartItems) {
  const prod = item.products as unknown as LogisticsRow;
  const vari = item.product_variants as unknown as LogisticsRow;
+ const logisticsMeta = (prod?.attributes as any)?.logistics || {};
+ if (logisticsMeta.packaging_type) dominantPackagingType = logisticsMeta.packaging_type;
+ if (logisticsMeta.fragile) hasFragileItem = true;
+ if (logisticsMeta.thermal_control && logisticsMeta.thermal_control !== "ambient") requiresThermalBag = true;
+
  const wKg = vari?.weight_kg ?? prod?.weight_kg;
  const width = vari?.width_cm ?? prod?.width_cm;
  const height = vari?.height_cm ?? prod?.height_cm;
@@ -123,11 +141,48 @@ export async function _calculateShipping({
  itemsCount += item.quantity;
  }
  }
+ } else if (singleProductLogistics) {
+ const logisticsMeta = (singleProductLogistics.attributes as any)?.logistics || {};
+ if (logisticsMeta.packaging_type) dominantPackagingType = logisticsMeta.packaging_type;
+ if (logisticsMeta.fragile) hasFragileItem = true;
+ if (logisticsMeta.thermal_control && logisticsMeta.thermal_control !== "ambient") requiresThermalBag = true;
+
+ if (dominantPackagingType === "digital") {
+ return [
+ {
+ provider: "Digital",
+ service_name: "Entrega Digital Imediata / Voucher",
+ price_cents: 0,
+ estimated_days: 0,
+ },
+ ];
+ }
+
+ const wKg = singleProductLogistics.weight_kg;
+ const width = singleProductLogistics.width_cm;
+ const height = singleProductLogistics.height_cm;
+ const length = singleProductLogistics.length_cm;
+
+ if (wKg == null || width == null || height == null || length == null) {
+ hasMissingDimensions = true;
+ } else {
+ totalWeightKg = Number(wKg);
+ maxW = Number(width);
+ maxH = Number(height);
+ maxL = Number(length);
+ }
+ itemsCount = 1;
  }
 
  if (itemsCount === 0) {
  hasMissingDimensions = true;
  }
+
+ const volumetricWeightKg = !hasMissingDimensions && maxL > 0 && maxW > 0 && maxH > 0
+   ? Number(((maxL * maxW * maxH) / 6000).toFixed(3))
+   : 0;
+ const chargeableWeightKg = Number(Math.max(totalWeightKg, volumetricWeightKg, 0.1).toFixed(3));
+ const exceedsMotoBag = totalWeightKg > 12 || maxL > 45 || maxW > 45 || maxH > 45 || dominantPackagingType === "pallet";
 
  // 1. Fetch Manual Shipping Rates (Fallback/Local rules from Zones)
  const { data: zones } = await supabase
@@ -171,9 +226,10 @@ export async function _calculateShipping({
  }
 
  // 2. Integração: MelhorEnvio
- // Somente executa se o carrinho for válido, as dimensões existirem e houver chave na integração.
+ // Somente executa se o carrinho ou produto for válido, as dimensões existirem e houver chave na integração.
  // Ignora se for nicho de Delivery (onde a entrega é puramente motoboy local via zonas manuais)
- if (cartId && !hasMissingDimensions && itemsCount > 0 && storeType !== "delivery" && storeOriginZip.length === 8) {
+ const quoteRefId = cartId || productId;
+ if (quoteRefId && !hasMissingDimensions && itemsCount > 0 && storeType !== "delivery" && storeOriginZip.length === 8) {
  const { data: creds } = await supabase
  .from("integration_credentials")
  .select("token_payload, is_active")
@@ -188,11 +244,11 @@ export async function _calculateShipping({
  to: { postal_code: cleanZipcode },
  products: [
  {
- id: cartId,
- width: maxW,
- height: maxH,
- length: maxL,
- weight: totalWeightKg,
+ id: quoteRefId,
+ width: Math.max(11, maxW),
+ height: Math.max(2, maxH),
+ length: Math.max(16, maxL),
+ weight: chargeableWeightKg,
  insurance_value: 0,
  quantity: 1,
  },
@@ -259,13 +315,16 @@ export async function _calculateShipping({
       const isPeakHour = (currentHour >= 11 && currentHour <= 14) || (currentHour >= 18 && currentHour <= 21);
       const peakMultiplier = Number(partnerRule?.peak_multiplier) || 1.20;
       const surgeMultiplier = isPeakHour ? peakMultiplier : 1.0;
-      const finalPriceCents = Math.round(baseFee * surgeMultiplier);
+      const vehicleMultiplier = exceedsMotoBag ? 1.60 : 1.0;
+      const finalPriceCents = Math.round(baseFee * surgeMultiplier * vehicleMultiplier);
 
       const alreadyHasMoto = finalQuotes.some((q) => (q.service_name || "").toLowerCase().includes("motolink"));
       if (!alreadyHasMoto) {
         // Cálculo real de tempo: Tempo de Preparo/Separação da Loja + Deslocamento local
         const prepMinutes = Number(settings.prep_time_minutes || settings.preparation_time_minutes || 0);
-        const serviceDisplayName = payload.service_name || "MotoLink Express (Entrega Local)";
+        const serviceDisplayName = exceedsMotoBag
+          ? "MotoLink Cargo / Utilitário Local"
+          : payload.service_name || "MotoLink Express (Entrega Local)";
         const allowScheduling = Boolean(
           settings.allow_scheduled_delivery ||
           storeType === "market" ||
@@ -273,9 +332,15 @@ export async function _calculateShipping({
           storeType === "pharmacy"
         );
 
-        let timelineDesc = "Entrega local sob demanda · Despacho após confirmação";
+        let timelineDesc = exceedsMotoBag
+          ? "Coleta em carro/utilitário (volume acima da Bag 45L)"
+          : requiresThermalBag
+            ? "Entrega local com Bag Térmica climatizada"
+            : hasFragileItem
+              ? "Entrega local com manuseio cuidadoso (Frágil)"
+              : "Entrega local sob demanda · Despacho após confirmação";
         if (prepMinutes > 0) {
-          timelineDesc = `Separação (~${prepMinutes} min) + deslocamento do entregador`;
+          timelineDesc = `Separação (~${prepMinutes} min) + ${exceedsMotoBag ? "utilitário local" : "deslocamento do entregador"}`;
         }
 
         finalQuotes.push({
@@ -341,7 +406,18 @@ export const calculateShipping = createServerFn({ method: "POST" })
 export async function _listShippingZones() {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
- if (!identity.store_id) return [];
+ if (!identity.store_id && identity.memberships?.[0]?.store_id) {
+   identity.store_id = identity.memberships[0].store_id;
+ }
+ if (!identity.store_id) {
+   if (identity.role === "platform_admin" || identity.role === "master") {
+     const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
+     if (firstStore) identity.store_id = firstStore.id;
+     else return [];
+   } else {
+     return [];
+   }
+ }
  assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
  const { data: zones } = await supabase
@@ -364,6 +440,9 @@ export async function _upsertShippingZone(data: {
 }) {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ if (!identity.store_id && identity.memberships?.[0]?.store_id) {
+   identity.store_id = identity.memberships[0].store_id;
+ }
  assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
  const payload = { ...data, store_id: identity.store_id };
@@ -396,6 +475,9 @@ export const upsertShippingZone = createServerFn({ method: "POST" })
 export async function _deleteShippingZone(id: string) {
   const supabase = getServerClient();
   const identity = await getServerIdentity();
+  if (!identity.store_id && identity.memberships?.[0]?.store_id) {
+    identity.store_id = identity.memberships[0].store_id;
+  }
   assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
   const { error } = await supabase
@@ -425,6 +507,9 @@ export async function _upsertShippingRate(data: {
 }) {
   const supabase = getServerClient();
   const identity = await getServerIdentity();
+  if (!identity.store_id && identity.memberships?.[0]?.store_id) {
+    identity.store_id = identity.memberships[0].store_id;
+  }
   assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
   const payload = { ...data, store_id: identity.store_id };
@@ -460,6 +545,9 @@ export const upsertShippingRate = createServerFn({ method: "POST" })
 export async function _deleteShippingRate(id: string) {
   const supabase = getServerClient();
   const identity = await getServerIdentity();
+  if (!identity.store_id && identity.memberships?.[0]?.store_id) {
+    identity.store_id = identity.memberships[0].store_id;
+  }
   assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
   const { error } = await supabase
@@ -479,6 +567,9 @@ export const deleteShippingRate = createServerFn({ method: "POST" })
 export async function _listDrivers() {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
+ if (!identity.store_id && identity.memberships?.[0]?.store_id) {
+   identity.store_id = identity.memberships[0].store_id;
+ }
  if (!identity.store_id) return [];
  assertStoreAccess(identity, ["owner", "admin", "manager", "logistics"]);
 
@@ -585,9 +676,19 @@ export interface ShippingLabelPayload {
     quantity: number;
     value_cents: number;
     weight_kg?: number;
+    packaging_type?: string;
+    aisle_location?: string;
   }>;
   total_weight_kg: number;
+  volumetric_weight_kg?: number;
+  chargeable_weight_kg?: number;
   package_format: "box" | "envelope" | "roll";
+  packaging_label?: string;
+  dimensions_summary?: string;
+  fragile?: boolean;
+  thermal_control?: string;
+  aisle_location?: string;
+  picking_notes?: string;
   barcode_data: string;
 }
 
@@ -651,21 +752,74 @@ export const getOrderShippingLabelData = createServerFn({ method: "GET" })
       zip_code: (rawShippingAddr.zipcode || rawShippingAddr.cep || rawShippingAddr.zip_code || "00000-000").replace(/\D/g, ""),
     };
 
-    // 5. Itens do Pacote e Peso
+    // 5. Itens do Pacote, Peso Cubado e Metadados de Embalagem / WMS
     let totalWeight = 0;
+    let maxW = 0;
+    let maxH = 0;
+    let maxL = 0;
+    let detectedFormat: "box" | "envelope" | "roll" = "box";
+    let packagingLabel = "Caixa de Papelão";
+    let isFragile = false;
+    let thermalControl = "ambient";
+    const aisleLocations: string[] = [];
+    const pickingNotesList: string[] = [];
+
+    const packagingLabelsMap: Record<string, string> = {
+      box: "Caixa de Papelão",
+      envelope: "Sacola / Envelope Segurança",
+      thermal_bag: "Sacola Delivery / Térmica",
+      roll: "Cilindro / Tubo",
+      pallet: "Caixa Master / Fardo",
+      digital: "Digital / Voucher",
+    };
+
     const items = (order.order_items || []).map((item: any) => {
       const prod = item.products || {};
       const vari = item.product_variants || {};
+      const logistics = (prod.attributes as any)?.logistics || {};
       const wKg = vari.weight_kg ?? prod.weight_kg ?? 0.3;
+      const wCm = Number(vari.width_cm ?? prod.width_cm ?? 0);
+      const hCm = Number(vari.height_cm ?? prod.height_cm ?? 0);
+      const lCm = Number(vari.length_cm ?? prod.length_cm ?? 0);
+
       totalWeight += Number(wKg) * (item.quantity || 1);
+      if (wCm > maxW) maxW = wCm;
+      if (hCm > maxH) maxH = hCm;
+      if (lCm > maxL) maxL = lCm;
+
+      if (logistics.packaging_type) {
+        packagingLabel = packagingLabelsMap[logistics.packaging_type] || packagingLabel;
+        if (logistics.packaging_type === "envelope") detectedFormat = "envelope";
+        else if (logistics.packaging_type === "roll") detectedFormat = "roll";
+        else detectedFormat = "box";
+      }
+      if (logistics.fragile) isFragile = true;
+      if (logistics.thermal_control && logistics.thermal_control !== "ambient") {
+        thermalControl = logistics.thermal_control;
+      }
+      if (logistics.aisle_location && !aisleLocations.includes(logistics.aisle_location)) {
+        aisleLocations.push(logistics.aisle_location);
+      }
+      if (logistics.picking_notes && !pickingNotesList.includes(logistics.picking_notes)) {
+        pickingNotesList.push(logistics.picking_notes);
+      }
 
       return {
         description: item.title || item.name || prod.name || "Item Comercial",
         quantity: item.quantity || 1,
         value_cents: item.price_cents || item.unit_price_cents || 0,
         weight_kg: Number(wKg),
+        packaging_type: logistics.packaging_type || "box",
+        aisle_location: logistics.aisle_location || undefined,
       };
     });
+
+    const volumetricWeight = maxL > 0 && maxW > 0 && maxH > 0
+      ? Number(((maxL * maxW * maxH) / 6000).toFixed(3))
+      : 0;
+    const realWeight = Number(Math.max(0.1, totalWeight).toFixed(3));
+    const chargeableWeight = Number(Math.max(realWeight, volumetricWeight).toFixed(3));
+    const dimensionsSummary = maxL > 0 && maxW > 0 && maxH > 0 ? `${maxL}x${maxW}x${maxH} cm` : undefined;
 
     const trackingCode = order.tracking_code || order.metadata?.tracking_code || `WAE${order.order_number?.replace(/\D/g, "").padStart(9, "0")}BR`;
 
@@ -682,8 +836,16 @@ export const getOrderShippingLabelData = createServerFn({ method: "GET" })
       sender,
       recipient,
       items,
-      total_weight_kg: Number(Math.max(0.1, totalWeight).toFixed(3)),
-      package_format: "box",
+      total_weight_kg: realWeight,
+      volumetric_weight_kg: volumetricWeight,
+      chargeable_weight_kg: chargeableWeight,
+      package_format: detectedFormat,
+      packaging_label: packagingLabel,
+      dimensions_summary: dimensionsSummary,
+      fragile: isFragile,
+      thermal_control: thermalControl,
+      aisle_location: aisleLocations.join(", ") || undefined,
+      picking_notes: pickingNotesList.join(" | ") || undefined,
       barcode_data: trackingCode,
     };
   });
@@ -731,11 +893,13 @@ export const generateZplShippingLabel = createServerFn({ method: "POST" })
       `^FO50,680^A0N,22,22^FD${payload.sender.street}, ${payload.sender.number}^FS`,
       `^FO50,705^A0N,22,22^FD${payload.sender.neighborhood} - ${payload.sender.city}/${payload.sender.state}^FS`,
       `^FO50,730^A0N,24,24^FDCEP: ${payload.sender.zip_code}^FS`,
-      // Informações do Pacote
-      "^FO50,780^GB700,120,2^FS",
+      // Informações do Pacote e WMS
+      "^FO50,780^GB700,150,2^FS",
       `^FO70,800^A0N,24,24^FDPedido: #${payload.order.order_number}^FS`,
-      `^FO350,800^A0N,24,24^FDPeso: ${payload.total_weight_kg} kg^FS`,
-      `^FO70,840^A0N,20,20^FDItens: ${payload.items.length} produto(s) no volume^FS`,
+      `^FO350,800^A0N,24,24^FDPeso: ${payload.chargeable_weight_kg || payload.total_weight_kg} kg ${payload.dimensions_summary ? `(${payload.dimensions_summary})` : ""}^FS`,
+      `^FO70,835^A0N,20,20^FDEmbalagem: ${(payload.packaging_label || "Caixa").slice(0, 28)} | Itens: ${payload.items.length}^FS`,
+      `^FO70,865^A0N,20,20^FDWMS Bin: ${payload.aisle_location || "Geral"} ${payload.fragile ? "| [CUIDADO FRAGIL]" : ""} ${payload.thermal_control && payload.thermal_control !== "ambient" ? `| [${payload.thermal_control.toUpperCase()}]` : ""}^FS`,
+      ...(payload.picking_notes ? [`^FO70,895^A0N,18,18^FDObs: ${payload.picking_notes.slice(0, 52)}^FS`] : []),
       // Rodapé Chancelas
       "^FO200,950^A0N,22,22^FDWAESY LOGISTICA & FULFILLMENT NACIONAL^FS",
       "^XZ",

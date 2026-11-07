@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/state/states";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/datetime";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
+import { getClientActiveTenant } from "@/lib/context-auth";
 
 import { listProductTypes, createProductType, updateProductType, deleteProductType } from "@/services/admin-catalog.functions";
 
@@ -81,35 +82,38 @@ function ProductTypesPage() {
  name: "fields",
  });
 
- const onSubmit = async (values: FormValues) => {
- setIsSubmitting(true);
- try {
- if (editingType) {
- const res = await updateProductType({
- data: {
- id: editingType.id,
- name: values.name,
- slug: values.slug,
- field_schema: values.fields,
- },
- });
- if (res) {
- toast.success("Tipo de produto atualizado!");
- setOpen(false);
- setEditingType(null);
- form.reset();
- router.invalidate();
- } else {
- toast.error(res.message || "Erro ao atualizar tipo");
- }
- } else {
- const res = await createProductType({
- data: {
- name: values.name,
- slug: values.slug,
- field_schema: values.fields,
- },
- });
+  const onSubmit = async (values: FormValues) => {
+    setIsSubmitting(true);
+    try {
+      const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+      if (editingType) {
+        const res = await updateProductType({
+          data: {
+            id: editingType.id,
+            name: values.name,
+            slug: values.slug,
+            field_schema: values.fields,
+            store_id: clientTenant || undefined,
+          },
+        });
+        if (res) {
+          toast.success("Tipo de produto atualizado!");
+          setOpen(false);
+          setEditingType(null);
+          form.reset();
+          router.invalidate();
+        } else {
+          toast.error(res.message || "Erro ao atualizar tipo");
+        }
+      } else {
+        const res = await createProductType({
+          data: {
+            name: values.name,
+            slug: values.slug,
+            field_schema: values.fields,
+            store_id: clientTenant || undefined,
+          },
+        });
 
  if (res) {
  toast.success("Tipo de produto criado com sucesso!");

@@ -157,6 +157,7 @@ function StorePrivacySettingsPage() {
                 desc: "Apenas clientes com conta cadastrada e aprovada.",
                 icon: ShieldCheck,
               },
+            // empty-state: opçoes de acesso estaticas
             ].map((opt) => (
               <button
                 key={opt.id}

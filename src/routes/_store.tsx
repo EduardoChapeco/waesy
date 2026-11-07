@@ -129,12 +129,13 @@ function StoreLayout() {
 
   // Zero-Trust Civil Root na Vitrine Pública (DEC-206):
   // Garante que o usuário que navega no marketplace/vitrine pública opere sempre em sua Identidade Civil,
-  // higienizando cookies residuais de loja herdados de visitas prévias ao /workspace.
+  // sem purgar o tenant corporativo caso esteja com o /workspace aberto em outra aba.
   useEffect(() => {
     if (typeof window !== "undefined") {
       const activeCtx = getClientActiveContext();
       if (activeCtx === "store") {
-        setClientContextCookies({ context: "civil" });
+        window.document.cookie =
+          "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
       }
     }
   }, []);

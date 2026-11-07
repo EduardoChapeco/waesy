@@ -44,7 +44,7 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/")({
  };
    } catch (err) {
      console.error("[loader:workspace.catalogo.produtos.index] Unhandled loader error:", err);
-     return { products: null, store: null };
+     return { products: [], store: null };
    }
  },
  component: AdminProductsPage,

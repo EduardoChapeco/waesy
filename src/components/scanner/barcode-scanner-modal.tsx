@@ -113,8 +113,13 @@ export function BarcodeScannerModal({
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const stopCamera = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -122,6 +127,39 @@ export function BarcodeScannerModal({
     setCameraActive(false);
     setTorchOn(false);
   }, []);
+
+  const handleEmitResult = useCallback(
+    (raw: string) => {
+      if (raw.trim() === "") return;
+      const { type, format } = classifyScannedCode(raw);
+
+      if (acceptTypes && acceptTypes.length > 0 && acceptTypes.includes(type) === false) {
+        toast.error(`Tipo de código '${type}' não aceito para esta operação.`);
+        return;
+      }
+
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        try {
+          navigator.vibrate(80);
+        } catch {}
+      }
+
+      const result: ScanResult = {
+        raw: raw.trim(),
+        type,
+        format,
+        timestamp: new Date().toISOString(),
+      };
+
+      setLastScanned(result);
+      onScan(result);
+      toast.success(`Código identificado: ${result.type.toUpperCase()}`);
+
+      stopCamera();
+      onOpenChange(false);
+    },
+    [acceptTypes, onScan, stopCamera, onOpenChange]
+  );
 
   const startCamera = useCallback(async () => {
     const nav = typeof navigator !== "undefined" ? navigator : null;
@@ -151,13 +189,48 @@ export function BarcodeScannerModal({
 
       setCameraActive(true);
       setHasCameraSupport(true);
+
+      // Inicia detecção contínua por inteligência óptica via BarcodeDetector nativo
+      if (typeof window !== "undefined" && "BarcodeDetector" in window) {
+        try {
+          const barcodeDetector = new (window as any).BarcodeDetector({
+            formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "qr_code"],
+          });
+
+          const detectFrame = async () => {
+            if (!videoRef.current || videoRef.current.readyState < 2) {
+              animationFrameRef.current = requestAnimationFrame(detectFrame);
+              return;
+            }
+
+            try {
+              const barcodes = await barcodeDetector.detect(videoRef.current);
+              if (barcodes && barcodes.length > 0) {
+                const rawValue = barcodes[0].rawValue;
+                if (rawValue && rawValue.trim()) {
+                  handleEmitResult(rawValue.trim());
+                  return;
+                }
+              }
+            } catch {
+              // Frame ignorado em caso de foco transitório
+            }
+
+            animationFrameRef.current = requestAnimationFrame(detectFrame);
+          };
+
+          animationFrameRef.current = requestAnimationFrame(detectFrame);
+        } catch {
+          // BarcodeDetector não suportado neste navegador, continua com fallback visual e digitação
+        }
+      }
     } catch {
       setHasCameraSupport(false);
       setCameraActive(false);
     } finally {
       setCameraLoading(false);
     }
-  }, []);
+  }, [handleEmitResult]);
 
   const toggleTorch = useCallback(async () => {
     if (streamRef.current === null) return;
@@ -174,33 +247,6 @@ export function BarcodeScannerModal({
       }
     }
   }, [torchOn]);
-
-  const handleEmitResult = useCallback(
-    (raw: string) => {
-      if (raw.trim() === "") return;
-      const { type, format } = classifyScannedCode(raw);
-
-      if (acceptTypes && acceptTypes.length > 0 && acceptTypes.includes(type) === false) {
-        toast.error(`Tipo de código '${type}' não aceito para esta operação.`);
-        return;
-      }
-
-      const result: ScanResult = {
-        raw: raw.trim(),
-        type,
-        format,
-        timestamp: new Date().toISOString(),
-      };
-
-      setLastScanned(result);
-      onScan(result);
-      toast.success(`Código identificado: ${result.type.toUpperCase()}`);
-
-      stopCamera();
-      onOpenChange(false);
-    },
-    [acceptTypes, onScan, stopCamera, onOpenChange]
-  );
 
   useEffect(() => {
     if (open) {

@@ -19,20 +19,41 @@ import { setClientContextCookies, getClientActiveTenant } from "@/lib/context-au
 
 function isPlatformAdminUser(session: any): boolean {
   if (!session) return false;
+  const email = (session.email || session.user?.email || "").toLowerCase();
+  const MASTER_EMAILS = [
+    "contato@usewaesy.com",
+    "admin@usewaesy.com",
+    "meuwaesy@gmail.com",
+    "meuwider@gmail.com",
+    "excelenciatour.smo@gmail.com",
+    "admin@jah.com",
+  ];
   return Boolean(
     session.role === "admin" ||
     session.role === "superadmin" ||
     session.role === "platform_admin" ||
     session.role === "master" ||
+    session.role === "admin_master" ||
     session.user?.role === "platform_admin" ||
     session.user?.app_metadata?.role === "admin" ||
+    session.user?.app_metadata?.role === "platform_admin" ||
     session.user?.app_metadata?.is_master ||
-    session.user?.email?.endsWith("@usewaesy.com"),
+    session.user?.user_metadata?.is_admin_master ||
+    session.user?.user_metadata?.is_superadmin ||
+    email.endsWith("@usewaesy.com") ||
+    MASTER_EMAILS.includes(email),
   );
 }
 
 export const Route = createFileRoute("/workspace")({
   beforeLoad: async () => {
+    if (typeof window !== "undefined") {
+      try {
+        const { sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+        sanitizeBrowserAuthCookies();
+      } catch {}
+    }
+
     let session: any = null;
     try {
       session = await getUserSession();
@@ -41,14 +62,16 @@ export const Route = createFileRoute("/workspace")({
       session = null;
     }
 
-    // Fallback defensivo no cliente (DEC-443): previne loop de bounce se a requisição SSR
+    // Fallback defensivo no cliente (DEC-443/SPEC-20261106): previne loop de bounce se a requisição SSR
     // falhou transitoriamente enquanto a sessão local no navegador ainda está ativa.
     if (!session?.user && typeof window !== "undefined") {
       try {
-        const { getBrowserClient } = await import("@/lib/supabase");
+        const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+        sanitizeBrowserAuthCookies();
         const client = getBrowserClient();
         const { data: { session: browserSession } } = await client.auth.getSession();
         if (browserSession?.user) {
+          sanitizeBrowserAuthCookies();
           const retrySession = await getUserSession();
           if (retrySession?.user) {
             session = retrySession;
@@ -94,10 +117,12 @@ export const Route = createFileRoute("/workspace")({
 
       if (!session?.user && typeof window !== "undefined") {
         try {
-          const { getBrowserClient } = await import("@/lib/supabase");
+          const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+          sanitizeBrowserAuthCookies();
           const client = getBrowserClient();
           const { data: { session: browserSession } } = await client.auth.getSession();
           if (browserSession?.user) {
+            sanitizeBrowserAuthCookies();
             const retrySession = await getUserSession();
             if (retrySession?.user) {
               session = retrySession;

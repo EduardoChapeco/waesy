@@ -135,7 +135,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           <div key={tr.id} className="p-2 rounded-lg bg-card border border-border/80 text-xs space-y-1">
             <div className="flex items-center justify-between">
               <span className="font-bold text-foreground truncate max-w-40">
-                {tr.title || tr.destination_city || `Viagem #${tr.trip_number || tr.id.slice(0, 6)}`}
+                {tr.title || tr.destination_city || `Viagem #${tr.trip_number || (typeof tr.id === "string" ? tr.id.slice(0, 6) : "")}`}
               </span>
               <Badge variant="outline" className="text-xs px-2 py-0 h-4 uppercase">
                 {tr.status}
@@ -212,7 +212,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
  <div key={o.id} className="p-2 rounded-lg bg-card border border-border/80 flex items-center justify-between">
  <div>
  <span className="font-bold text-foreground text-xs block">
- #{o.id.slice(0, 8)}
+  #{typeof o.id === "string" ? o.id.slice(0, 8) : ""}
  </span>
  <span className="text-xs text-muted-foreground">
  {formatDate(o.created_at)}

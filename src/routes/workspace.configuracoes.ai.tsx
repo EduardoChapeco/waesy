@@ -359,7 +359,7 @@ function AIConfigurationPage() {
  })}
  </div>
  ) : (
- <div className="bg-card rounded-lg p-8 border border-border/60 text-center space-y-2">
+ <div className="bg-card rounded-lg p-8 border border-border/60 text-center space-y-2 empty-state">
  <Key className="size-8 mx-auto text-muted-foreground/50" />
  <p className="text-xs font-semibold text-foreground">Nenhuma API Key conectada</p>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">

@@ -354,7 +354,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                 onChange={(e) => onUpdateConfig("rounded", e.target.value)}
                 className={SELECT_CLASS}
               >
-                <option value="lg">Squircle (Padrão)</option>
+                <option value="lg">Arredondado (Padrão)</option>
                 <option value="md">Suave</option>
                 <option value="none">Sangria Total (0px)</option>
               </select>
@@ -591,7 +591,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
               onChange={(e) => onUpdateConfig("defaultShape", e.target.value)}
               className={SELECT_CLASS}
             >
-              <option value="squircle">Squircle Apple</option>
+              <option value="squircle">Arredondado</option>
               <option value="circle">Circular (Stories)</option>
               <option value="pill">Pílula Horizontal</option>
             </select>
@@ -2148,7 +2148,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                       onChange={(e) => updateBtn({ shape: e.target.value })}
                       className={SELECT_CLASS}
                     >
-                      <option value="squircle">Squircle</option>
+                      <option value="squircle">Arredondado</option>
                       <option value="circle">Circular</option>
                       <option value="pill">Pílula</option>
                     </select>
@@ -2446,7 +2446,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                                   className={SELECT_CLASS}
                                 >
                                   <option value="wide">Card Amplo (2 colunas)</option>
-                                  <option value="squircle">Squircle (4 colunas)</option>
+                                  <option value="squircle">Quadrado (4 colunas)</option>
                                   <option value="full_width">Full Width</option>
                                 </select>
                               </div>

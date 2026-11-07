@@ -451,7 +451,7 @@ function WorkspaceHotelsPage() {
      address: hotel.address || prev.address,
      stars: hotel.stars || prev.stars,
    }));
-   toast.success(`Hotel canônico "${hotel.name}" selecionado.`);
+   toast.success(`Hotel "${hotel.name}" selecionado.`);
  };
 
  const toggleAmenityBadge = (amenity: string) => {
@@ -878,9 +878,8 @@ function WorkspaceHotelsPage() {
  className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  ) : (
- <div className="size-full flex flex-col items-center justify-center text-muted-foreground/40 gap-2">
+ <div className="size-full flex items-center justify-center text-muted-foreground/40">
  <Camera className="size-8 stroke-1" />
- <span className="text-xs">Sem foto de capa</span>
  </div>
  )}
  <div className="absolute inset-0 bg-slate-950/60 pointer-events-none" />
@@ -1186,9 +1185,8 @@ function WorkspaceHotelsPage() {
                       className="size-full object-cover"
                     />
                   ) : (
-                    <div className="size-full flex flex-col items-center justify-center bg-muted/60 text-muted-foreground gap-2">
-                      <Building2 className="size-8 text-muted-foreground/60" />
-                      <span className="text-xs font-medium">Sem foto de capa cadastrada</span>
+                    <div className="size-full flex items-center justify-center bg-muted/60 text-muted-foreground/40">
+                      <Building2 className="size-8" />
                     </div>
                   )}
  <div className="absolute inset-0 bg-slate-950/60" />

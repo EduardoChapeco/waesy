@@ -1820,7 +1820,7 @@ function AdminMasterHomeEditorPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="squircle">Squircle Apple/iFood (Padrão)</SelectItem>
+                    <SelectItem value="squircle">Grade de Ícones (Padrão)</SelectItem>
                     <SelectItem value="rounded-lg">Retangular Suave (rounded-lg)</SelectItem>
                     <SelectItem value="rounded-full">Pílula / Circular (rounded-full)</SelectItem>
                   </SelectContent>

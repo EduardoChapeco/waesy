@@ -71,7 +71,7 @@ export function OverlaysFamily({ mode }: ComponentStateProps) {
               <AdaptiveModal /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
                 open={modalOpen}
                 onOpenChange={setModalOpen}
-                title="Configuração Canônica"
+                title="Configurações"
                 description="Painel adaptativo de ajuste de parâmetros."
                 footerAction={
                   <Button size="sm" onClick={() => setModalOpen(false)} className="h-11 px-4 text-xs">

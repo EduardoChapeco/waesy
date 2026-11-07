@@ -222,6 +222,8 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     const TEAM_MANAGEMENT_ROUTES = [
       "/workspace/configuracoes/equipe",
       "/workspace/rh/ponto",
+      "/workspace/rh/folha",
+      "/workspace/rh/rescisao",
       "/workspace/empregos/candidatos",
       "/workspace/financeiro/funcionarios",
     ];

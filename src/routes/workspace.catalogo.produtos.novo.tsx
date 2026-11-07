@@ -6,11 +6,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CanonicalPage, CanonicalSplit } from "@/components/ui/canonical/page-layout";
-import { listCategories, listProductTypes, listOptionGroups } from "@/services/admin-catalog.functions";
+import { listCategories, listProductTypes, listOptionGroups, listStoreBrands, getStoreChannelIntegrationsStatus } from "@/services/admin-catalog.functions";
 import { ProductBomCard } from "@/components/admin/catalog/product-bom-card";
 import { ProductFoodSpecsCard } from "@/components/admin/catalog/product-food-specs-card";
 import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
 import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getClientActiveTenant } from "@/lib/context-auth";
 import { getStoreSettings } from "@/services/store.functions";
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
@@ -23,6 +24,7 @@ import {
   ProductMediaTab,
   ProductPreviewPane,
   ProductCategoryModal,
+  ProductBrandModal,
   ProductImportSheet,
   ProductDimensionModal,
   ProductSpecsTab,
@@ -34,33 +36,40 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/novo")({
   head: () => ({ meta: [{ title: "Criar Novo Produto | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [catsRes, typesRes, groupsRes, storeRes] = await Promise.all([
+      const [catsRes, typesRes, groupsRes, storeRes, brandsRes] = await Promise.all([
         listCategories().catch(() => []),
         listProductTypes().catch(() => []),
         listOptionGroups().catch(() => []),
         getStoreSettings().catch(() => null),
+        listStoreBrands().catch(() => []),
       ]);
       return {
         categories: catsRes || [],
         productTypes: typesRes || [],
         optionGroupsList: groupsRes || [],
         store: storeRes,
+        brands: brandsRes || [],
       };
     } catch (e) {
       console.warn("[workspace.catalogo.produtos.novo] Falha no loader:", e);
-      return { categories: [], productTypes: [], optionGroupsList: [], store: null };
+      return { categories: [], productTypes: [], optionGroupsList: [], store: null, brands: [] };
     }
   },
   component: UnifiedNewProductPage,
 });
 
 export function UnifiedNewProductPage() {
-  const { categories, optionGroupsList, store } = ((Route.useLoaderData?.() as any) || {});
+  const { categories, productTypes = [], optionGroupsList, store: loaderStore, brands = [] } = ((Route.useLoaderData?.() as any) || {});
+  const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+  const store = loaderStore || (clientTenant ? { id: clientTenant, name: "Minha Empresa" } : null);
   const semantics = getNicheSemantics(store);
   const nicheCtx = getNicheCatalogContext(store);
 
-  const editor = useProductEditor(categories, optionGroupsList, store, nicheCtx, semantics);
+  const editor = useProductEditor(categories, optionGroupsList, store, nicheCtx, semantics, brands);
   const [isWideMode, setIsWideMode] = useState(false);
+  const selectedProductType = (productTypes || []).find(
+    (pt: any) => pt.id === editor.formValues.type_id
+  ) || null;
 
   return (
     <CanonicalPage maxWidth={isWideMode ? "full" : "2xl"}>
@@ -81,6 +90,22 @@ export function UnifiedNewProductPage() {
         onCategoryNameChange={editor.setQuickCategoryName}
         onSubmit={editor.handleQuickCreateCategory}
         isCreating={editor.isCreatingCategory}
+        nicheId={semantics?.nicheId}
+        placeholder={nicheCtx.categoryPlaceholder}
+        description={nicheCtx.categoryDesc}
+      />
+
+      <ProductBrandModal
+        open={editor.isQuickBrandOpen}
+        onOpenChange={editor.setIsQuickBrandOpen}
+        brandLabel={nicheCtx.brandLabel}
+        brandName={editor.quickBrandName}
+        onBrandNameChange={editor.setQuickBrandName}
+        onSubmit={editor.handleQuickCreateBrand}
+        isCreating={editor.isCreatingBrand}
+        nicheId={semantics?.nicheId}
+        placeholder={nicheCtx.brandPlaceholder}
+        description={nicheCtx.brandDesc}
       />
 
       <MasterCatalogSearchDialog
@@ -321,7 +346,11 @@ export function UnifiedNewProductPage() {
                   </TabsContent>
 
                   <TabsContent value="midias" className="space-y-4 m-0">
-                    <ProductMediaTab images={editor.images} onImagesChange={editor.setImages} />
+                    <ProductMediaTab
+                      images={editor.images}
+                      onImagesChange={editor.setImages}
+                      variants={editor.variantsMatrix}
+                    />
                   </TabsContent>
 
                   <TabsContent value="comercial" className="space-y-4 m-0">
@@ -339,6 +368,7 @@ export function UnifiedNewProductPage() {
                       onSelectedGroupIdsChange={editor.setSelectedOptionGroupIds}
                       onOptionGroupsChange={editor.setOptionGroups}
                       isTravelPackageMode={true}
+                      store={store}
                     />
                   </TabsContent>
 
@@ -372,7 +402,12 @@ export function UnifiedNewProductPage() {
                       setValue={editor.form.setValue}
                       onTitleChange={editor.handleTitleChange}
                       categoriesList={editor.categoriesList}
+                      productTypes={productTypes}
+                      logistics={editor.logisticsData}
+                      onLogisticsChange={editor.setLogisticsData}
                       onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
+                      brandsList={editor.brandsList}
+                      onOpenQuickBrand={() => editor.setIsQuickBrandOpen(true)}
                     />
                   </TabsContent>
 
@@ -381,6 +416,17 @@ export function UnifiedNewProductPage() {
                       attributes={editor.nicheAttributes}
                       onChange={editor.setNicheAttributes}
                       nicheContext={nicheCtx}
+                      nicheId={semantics.nicheId}
+                      selectedProductType={selectedProductType}
+                      synchronizedLogistics={{
+                        weightKg: editor.formValues.weight_kg,
+                        lengthCm: editor.formValues.length_cm,
+                        widthCm: editor.formValues.width_cm,
+                        heightCm: editor.formValues.height_cm,
+                        isPhysical: editor.formValues.is_physical !== false,
+                        logistics: editor.logisticsData,
+                        onJumpToPackaging: () => editor.setActiveTab("basico"),
+                      }}
                     />
                   </TabsContent>
 
@@ -399,6 +445,7 @@ export function UnifiedNewProductPage() {
                       onSelectedGroupIdsChange={editor.setSelectedOptionGroupIds}
                       onOptionGroupsChange={editor.setOptionGroups}
                       wholesaleEnabled={editor.isWholesaleEnabled}
+                      store={store}
                     />
                   </TabsContent>
 
@@ -411,7 +458,11 @@ export function UnifiedNewProductPage() {
                   </TabsContent>
 
                   <TabsContent value="midias" className="space-y-4 m-0">
-                    <ProductMediaTab images={editor.images} onImagesChange={editor.setImages} />
+                    <ProductMediaTab
+                      images={editor.images}
+                      onImagesChange={editor.setImages}
+                      variants={editor.variantsMatrix}
+                    />
                   </TabsContent>
 
                   {nicheCtx.isFoodBusiness && (
@@ -456,6 +507,7 @@ export function UnifiedNewProductPage() {
                   isGroceryMode={editor.isGroceryMode}
                   travelData={editor.travelData}
                   formValues={editor.formValues}
+                  variants={editor.variantsMatrix}
                   images={editor.images}
                   activePreviewImage={editor.activePreviewImage}
                   setActivePreviewImage={editor.setActivePreviewImage}

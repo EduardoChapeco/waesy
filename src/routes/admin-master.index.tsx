@@ -28,7 +28,7 @@ export const Route = createFileRoute("/admin-master/")({
       };
     } catch (err) {
       console.error("[loader:admin-master.index] Unhandled loader error:", err);
-      return { metrics: null, stores: null, invoices: null, taxonomies: [] };
+      return { metrics: null, stores: [], invoices: [], taxonomies: [] };
     }
   },
   component: AdminMasterDashboard,

@@ -24,7 +24,7 @@ export const Route = createFileRoute("/workspace/doacoes/")({
 function WorkspaceDoacoesHubPage() {
   const loaderData = Route.useLoaderData();
 
-  const { data: donations = loaderData.donations, isError } = useQuery({
+  const { data: donations = loaderData.donations, isLoading, isError } = useQuery({
     queryKey: ["workspace", "store-donations"],
     queryFn: () => listStoreDonations(),
     initialData: loaderData.donations,

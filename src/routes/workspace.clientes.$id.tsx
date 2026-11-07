@@ -1356,7 +1356,7 @@ function CustomerDetailPage() {
                 <Input
                   value={creditDescription}
                   onChange={(e) => setCreditDescription(e.target.value)}
-                  placeholder="Ex: Devolução Pedido #1234 / Bônus Aniversário"
+                  placeholder="Ex: Devolução Pedido N° 1234 / Bônus Aniversário"
                   className="text-xs"
                 />
               </div>

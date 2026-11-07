@@ -8,60 +8,79 @@ export type { Weekday, TimeInterval, DaySchedule, WorkingHours };
 
 // --- DADOS DA LOJA ---
 
-export async function _getStoreSettings() {
- const identity = await getServerIdentity();
- const targetStoreId =
- identity?.store_id ||
- identity?.memberships?.[0]?.store_id ||
- null;
+export async function _getStoreSettings(input?: { store_id?: string | null }) {
+  const identity = await getServerIdentity();
+  let targetStoreId =
+    input?.store_id ||
+    identity?.store_id ||
+    identity?.memberships?.[0]?.store_id ||
+    null;
 
- if (!targetStoreId) {
- return null;
- }
+  if (
+    !targetStoreId &&
+    (identity?.isPlatformAdmin ||
+      identity?.role === "platform_admin" ||
+      identity?.role === "master")
+  ) {
+    const db = getServerClient();
+    const { data: latestStore } = await db
+      .from("stores")
+      .select("id")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    targetStoreId = latestStore?.id || null;
+  }
 
- const db = getServerClient();
- const { data: store, error } = await db
- .from("stores")
- .select(
- "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, pix_key, payment_instructions, settings, ai_knowledge_base",
- )
- .eq("id", targetStoreId)
- .maybeSingle();
+  if (!targetStoreId) {
+    return null;
+  }
 
- if (error) throw new Error(`Falha ao carregar configurações da loja: ${error.message}`);
- if (!store) return null;
+  const db = getServerClient();
+  const { data: store, error } = await db
+    .from("stores")
+    .select(
+      "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, pix_key, payment_instructions, settings, ai_knowledge_base",
+    )
+    .eq("id", targetStoreId)
+    .maybeSingle();
 
- const settings = (store.settings as Record<string, any>) || {};
- return {
- ...store,
- latitude: settings.latitude ?? null,
- longitude: settings.longitude ?? null,
- pix_key: store.pix_key || null,
- payment_instructions: store.payment_instructions || null,
- payment_processing_mode: settings.payment_processing_mode || "platform_gateway",
- logo_url: settings.logoUrl || settings.logo_url || null,
- segment: settings.segment || settings.type || settings.niche || null,
- type: settings.type || settings.segment || null,
- niche: settings.niche || settings.segment || null,
- order_types: settings.order_types || { delivery: true, takeout: true, dine_in: true },
- tourism_layout_mode: settings.tourism_layout_mode || "air_cover",
-  checkout_layout_mode: settings.checkout_layout_mode || "auto",
-  digital_delivery_type: settings.digital_delivery_type || "secure_link",
-  digital_external_url: settings.digital_external_url || null,
-  digital_instructions: settings.digital_instructions || null,
-  weighable_pricing_mode: settings.weighable_pricing_mode || "bands",
-  service_payment_policy: settings.service_payment_policy || "online_full",
-  service_deposit_percentage: settings.service_deposit_percentage ?? 30,
- wholesale_enabled: !!(
-  settings.wholesale_enabled ||
-  settings.wholesale_mode ||
-  settings.b2b_enabled ||
-  (Array.isArray(settings.enabled_modules) && settings.enabled_modules.includes("wholesale"))
- ),
- };
+  if (error) throw new Error(`Falha ao carregar configurações da loja: ${error.message}`);
+  if (!store) return null;
+
+  const settings = (store.settings as Record<string, any>) || {};
+  return {
+    ...store,
+    latitude: settings.latitude ?? null,
+    longitude: settings.longitude ?? null,
+    pix_key: store.pix_key || null,
+    payment_instructions: store.payment_instructions || null,
+    payment_processing_mode: settings.payment_processing_mode || "platform_gateway",
+    logo_url: settings.logoUrl || settings.logo_url || null,
+    segment: settings.segment || settings.type || settings.niche || null,
+    type: settings.type || settings.segment || null,
+    niche: settings.niche || settings.segment || null,
+    order_types: settings.order_types || { delivery: true, takeout: true, dine_in: true },
+    tourism_layout_mode: settings.tourism_layout_mode || "air_cover",
+    checkout_layout_mode: settings.checkout_layout_mode || "auto",
+    digital_delivery_type: settings.digital_delivery_type || "secure_link",
+    digital_external_url: settings.digital_external_url || null,
+    digital_instructions: settings.digital_instructions || null,
+    weighable_pricing_mode: settings.weighable_pricing_mode || "bands",
+    service_payment_policy: settings.service_payment_policy || "online_full",
+    service_deposit_percentage: settings.service_deposit_percentage ?? 30,
+    wholesale_enabled: !!(
+      settings.wholesale_enabled ||
+      settings.wholesale_mode ||
+      settings.b2b_enabled ||
+      (Array.isArray(settings.enabled_modules) && settings.enabled_modules.includes("wholesale"))
+    ),
+  };
 }
 
-export const getStoreSettings = createServerFn({ method: "GET" }).handler(_getStoreSettings);
+export const getStoreSettings = createServerFn({ method: "GET" })
+  .validator((input?: { store_id?: string | null }) => input)
+  .handler(async (ctx) => _getStoreSettings(ctx?.data));
 
 export const saveStoreSettingsSchema = z.object({
  name: z.string().min(2).max(100),

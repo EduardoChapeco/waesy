@@ -281,7 +281,7 @@ function ModerationQueuePage() {
  })}
  </div>
  ) : (
- <div className="border-0 bg-card/60 rounded-lg p-12 text-center space-y-3">
+ <div className="border-0 bg-card/60 rounded-lg p-12 text-center space-y-3 empty-state">
  <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
  <ShieldCheck className="size-6" />
  </div>

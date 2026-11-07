@@ -864,7 +864,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="space-y-2">
-                <label className="text-2xs font-medium text-muted-foreground">Logotipo Oficial (1:1 Squircle)</label>
+                <label className="text-2xs font-medium text-muted-foreground">Logotipo da Empresa</label>
                 <div className="size-24 sm:size-28">
                   <ImageUpload
                     value={logoUrl}
@@ -873,15 +873,9 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                     aspectPreset="square"
                     variant="avatar"
                     className="size-full"
-                    helperText="Upload da logo quadrada (1:1)"
+                    helperText="Formato quadrado"
                   />
                 </div>
-              </div>
-              <div className="space-y-1 flex-1">
-                <p className="text-xs font-semibold text-foreground">Identidade Padrão Threads</p>
-                <p className="text-xs text-muted-foreground">
-                  A identidade visual do perfil público opera sem capa superior decorativa, destacando a sua marca através do logotipo squircle e catálogo.
-                </p>
               </div>
             </div>
           </div>

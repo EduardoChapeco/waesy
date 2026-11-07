@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter, isRedirect } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import { addRegisterEntry, closeRegister, getActiveRegister, openRegister, listRegisterHistory } from "@/services/cash.functions";
+import { addRegisterEntry, closeRegister, getActiveRegister, openRegister, listRegisterHistory, listActiveRegisters, type ActiveRegisterSummaryItem } from "@/services/cash.functions";
 import { parseCurrencyInputToCents } from "@/lib/cash";
 import { formatDateTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -30,27 +30,30 @@ import { useWindowSizeClass } from "@/hooks/use-mobile";
 export const Route = createFileRoute("/workspace/financeiro/caixa/")({
   head: () => ({ meta: [{ title: "Fluxo de Caixa | Workspace Waesy" }] }),
   loader: async () => {
-   try {
- const [registerRes, historyRes] = await Promise.all([
- getActiveRegister().catch(() => null),
- listRegisterHistory().catch(() => []),
- ]);
- return {
- register: registerRes,
- history: historyRes || [],
- };
-   } catch (err) {
-     console.error("[loader:workspace.financeiro.caixa.index] Unhandled loader error:", err);
-     return { register: null, history: null };
-   }
- },
- errorComponent: ({ error }) => <CashRegisterError error={error instanceof Error ? error : new Error(String(error))} />,
- component: CashRegisterManagerPage,
+    try {
+      const [registerRes, historyRes, activeRegistersRes] = await Promise.all([
+        getActiveRegister().catch(() => null),
+        listRegisterHistory().catch(() => []),
+        listActiveRegisters().catch(() => []),
+      ]);
+      return {
+        register: registerRes,
+        history: historyRes || [],
+        activeRegisters: activeRegistersRes || [],
+      };
+    } catch (err) {
+      console.error("[loader:workspace.financeiro.caixa.index] Unhandled loader error:", err);
+      return { register: null, history: [], activeRegisters: [] };
+    }
+  },
+  errorComponent: ({ error }) => <CashRegisterError error={error instanceof Error ? error : new Error(String(error))} />,
+  component: CashRegisterManagerPage,
 });
 
 const OpenRegisterSchema = z.object({
- initialBalance: z.string().min(1, "Informe o troco inicial de abertura"),
- notes: z.string().optional(),
+  terminalName: z.string().optional(),
+  initialBalance: z.string().min(1, "Informe o troco inicial de abertura"),
+  notes: z.string().optional(),
 });
 
 const CloseRegisterSchema = z.object({
@@ -105,81 +108,106 @@ function CashRegisterManagerPage() {
   const { isCompact: isMobile } = useWindowSizeClass();
   const [isTourOpen, setIsTourOpen] = useState(false);
   const loaderData = ((Route.useLoaderData?.() as any) || {});
-  const { register, history } = loaderData;
- const router = useRouter();
+  const { register: initialRegister, history, activeRegisters = [] } = loaderData;
+  const router = useRouter();
 
- // Channel filter state
- const [selectedChannel, setSelectedChannel] = useState<string>("all");
+  const [activeRegisterData, setActiveRegisterData] = useState<any>(initialRegister);
+  const [selectedRegisterId, setSelectedRegisterId] = useState<string | null>(initialRegister?.id || null);
+  const register = activeRegisterData || initialRegister;
+
+  // Atualiza se o loader recarregar dados
+  useEffect(() => {
+    setActiveRegisterData(initialRegister);
+    if (initialRegister?.id) {
+      setSelectedRegisterId(initialRegister.id);
+    }
+  }, [initialRegister]);
+
+  const handleSelectTerminal = async (targetId: string) => {
+    setSelectedRegisterId(targetId);
+    try {
+      const details = await getActiveRegister({ data: { registerId: targetId } });
+      if (details) {
+        setActiveRegisterData(details);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao alternar terminal de caixa.");
+    }
+  };
+
+  // Channel filter state
+  const [selectedChannel, setSelectedChannel] = useState<string>("all");
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
 
- const filteredEntries = useMemo(() => {
- const entries = (register?.recentEntries || []) as any[];
- if (selectedChannel === "all") return entries;
- return entries.filter((e) => (e.channel || "pos_counter") === selectedChannel);
- }, [register?.recentEntries, selectedChannel]);
+  const filteredEntries = useMemo(() => {
+    const entries = (register?.recentEntries || []) as any[];
+    if (selectedChannel === "all") return entries;
+    return entries.filter((e) => (e.channel || "pos_counter") === selectedChannel);
+  }, [register?.recentEntries, selectedChannel]);
 
- function getChannelBadge(channel?: string) {
- switch (channel) {
- case "mercadolivre":
- return <Badge variant="outline" className="text-xs font-medium bg-warning/10 text-warning-strong  border-warning/30">Mercado Livre</Badge>;
- case "ifood":
- return <Badge variant="outline" className="text-xs font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">iFood</Badge>;
- case "amazon":
- return <Badge variant="outline" className="text-xs font-medium bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30">Amazon</Badge>;
- case "whatsapp":
- return <Badge variant="outline" className="text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">WhatsApp</Badge>;
- case "ecommerce":
- return <Badge variant="outline" className="text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30">Loja Virtual</Badge>;
- default:
- return <Badge variant="outline" className="text-xs font-medium text-muted-foreground border-border/60">Balcão / PDV</Badge>;
- }
- }
+  function getChannelBadge(channel?: string) {
+    switch (channel) {
+      case "mercadolivre":
+        return <Badge variant="outline" className="text-xs font-medium bg-warning/10 text-warning-strong  border-warning/30">Mercado Livre</Badge>;
+      case "ifood":
+        return <Badge variant="outline" className="text-xs font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">iFood</Badge>;
+      case "amazon":
+        return <Badge variant="outline" className="text-xs font-medium bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30">Amazon</Badge>;
+      case "whatsapp":
+        return <Badge variant="outline" className="text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">WhatsApp</Badge>;
+      case "ecommerce":
+        return <Badge variant="outline" className="text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30">Loja Virtual</Badge>;
+      default:
+        return <Badge variant="outline" className="text-xs font-medium text-muted-foreground border-border/60">Balcão / PDV</Badge>;
+    }
+  }
 
- // Dialog / Sheet states
- const [isOpenModalOpen, setIsOpenModalOpen] = useState(false);
- const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
- const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
- const [movementType, setMovementType] = useState<"sangria" | "suprimento">("sangria");
+  // Dialog / Sheet states
+  const [isOpenModalOpen, setIsOpenModalOpen] = useState(false);
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
+  const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
+  const [movementType, setMovementType] = useState<"sangria" | "suprimento">("sangria");
 
- const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
- // Forms
- const openForm = useForm<z.infer<typeof OpenRegisterSchema>>({
- resolver: zodResolver(OpenRegisterSchema),
- defaultValues: { initialBalance: "0,00", notes: "" },
- });
+  // Forms
+  const openForm = useForm<z.infer<typeof OpenRegisterSchema>>({
+    resolver: zodResolver(OpenRegisterSchema),
+    defaultValues: { terminalName: "", initialBalance: "0,00", notes: "" },
+  });
 
- const closeForm = useForm<z.infer<typeof CloseRegisterSchema>>({
- resolver: zodResolver(CloseRegisterSchema),
- defaultValues: { countedBalance: "", notes: "" },
- });
+  const closeForm = useForm<z.infer<typeof CloseRegisterSchema>>({
+    resolver: zodResolver(CloseRegisterSchema),
+    defaultValues: { countedBalance: "", notes: "" },
+  });
 
- const movementForm = useForm<z.infer<typeof SangriaSuprimentoSchema>>({
- resolver: zodResolver(SangriaSuprimentoSchema),
- defaultValues: { amount: "", type: "sangria", description: "" },
- });
+  const movementForm = useForm<z.infer<typeof SangriaSuprimentoSchema>>({
+    resolver: zodResolver(SangriaSuprimentoSchema),
+    defaultValues: { amount: "", type: "sangria", description: "" },
+  });
 
- // Abertura de Turno
- const handleOpenRegister = async (values: z.infer<typeof OpenRegisterSchema>) => {
- setIsSubmitting(true);
- try {
- const cents = parseCurrencyInputToCents(values.initialBalance);
- await openRegister({
- data: {
- initialBalanceCents: cents,
- notes: values.notes || undefined,
- },
- });
- toast.success("Turno de caixa aberto com sucesso!");
- setIsOpenModalOpen(false);
- openForm.reset();
- router.invalidate();
- } catch (e: any) {
- toast.error(e.message || "Erro ao abrir caixa.");
- } finally {
- setIsSubmitting(false);
- }
- };
+  // Abertura de Turno
+  const handleOpenRegister = async (values: z.infer<typeof OpenRegisterSchema>) => {
+    setIsSubmitting(true);
+    try {
+      const cents = parseCurrencyInputToCents(values.initialBalance);
+      await openRegister({
+        data: {
+          initialBalanceCents: cents,
+          notes: values.notes || undefined,
+          terminalName: values.terminalName || undefined,
+        },
+      });
+      toast.success("Turno de caixa aberto com sucesso!");
+      setIsOpenModalOpen(false);
+      openForm.reset();
+      router.invalidate();
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao abrir caixa.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
  // Fechamento de Turno
  const handleCloseRegister = async (values: z.infer<typeof CloseRegisterSchema>) => {
@@ -320,6 +348,52 @@ function CashRegisterManagerPage() {
    </div>
   }
  />
+
+  {/* ── Seletor Soberano de Terminais Ativos (Multi-Caixas / PDV) ── */}
+  {activeRegisters && activeRegisters.length > 1 && (
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-lg p-3">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-area-carousel pb-1 text-xs">
+        <span className="text-muted-foreground font-semibold text-xs shrink-0 flex items-center gap-2 mr-1">
+          <MonitorCheck className="size-4 text-primary" />
+          <span>Terminais Abertos ({activeRegisters.length}):</span>
+        </span>
+        {activeRegisters.map((term: any) => {
+          const isSelected = (selectedRegisterId || register?.id) === term.id;
+          return (
+            <button
+              key={term.id}
+              type="button"
+              onClick={() => handleSelectTerminal(term.id)}
+              className={cn(
+                "px-3 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 shrink-0 cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                isSelected
+                  ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                  : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
+              )}
+            >
+              <span>{term.terminal_name}</span>
+              <span className="font-mono text-xs opacity-90">({formatMoney(term.cash_balance_cents)})</span>
+              {term.is_mine && (
+                <Badge variant="outline" className="text-xs py-0 px-1 border-primary-foreground/30 text-inherit">
+                  Meu
+                </Badge>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => setIsOpenModalOpen(true)}
+        className="h-11 min-h-11 sm:h-9 text-xs font-bold rounded-lg shrink-0 gap-2 cursor-pointer"
+      >
+        <Plus className="size-3.5 text-primary" />
+        <span>Abrir Novo Terminal</span>
+      </Button>
+    </div>
+  )}
 
  {/* ── Card Soberano de Status do Turno Atual ── */}
  <div className="p-6 rounded-lg bg-card border border-border/70 shadow-2xs space-y-4">
@@ -752,22 +826,44 @@ function CashRegisterManagerPage() {
       </div>
     ) : (
       <div className="py-16 text-center space-y-4 border border-border/50 rounded-lg bg-card/40 px-4">
-        <div className="size-14 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
-          <ReceiptText className="size-6" />
+        <div className="size-14 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+          <MonitorCheck className="size-7" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-base sm:text-lg font-bold text-foreground">Nenhum turno aberto no momento</h3>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-            Abra um turno de caixa para começar a registrar movimentações de PDV e vendas.
+          <h3 className="text-base sm:text-lg font-bold text-foreground">Turno Aberto e Pronto para Operação</h3>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Caixa iniciado com troco inicial de {formatMoney(register?.initial_balance_cents || 0)}. Nenhuma venda ou movimentação foi registrada ainda neste turno.
           </p>
         </div>
-        <Button
-          onClick={() => setIsOpenModalOpen(true)}
-          className="rounded-lg text-sm font-bold h-11 px-6 bg-primary text-primary-foreground cursor-pointer shadow-xs"
-        >
-          <Play className="size-4 mr-2" />
-          Abrir Turno de Caixa
-        </Button>
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <Button
+            asChild
+            className="rounded-lg text-xs font-bold h-11 px-5 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+          >
+            <Link to="/workspace/pdv">
+              <Layers className="size-4 mr-2" />
+              Abrir Frente de Caixa (PDV)
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => openMovementDialog("suprimento")}
+            className="rounded-lg text-xs font-bold h-11 px-4 cursor-pointer"
+          >
+            <ArrowDownLeft className="size-4 mr-2 text-emerald-500" />
+            Registrar Suprimento
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => openMovementDialog("sangria")}
+            className="rounded-lg text-xs font-bold h-11 px-4 cursor-pointer"
+          >
+            <ArrowUpRight className="size-4 mr-2 text-rose-500" />
+            Registrar Sangria
+          </Button>
+        </div>
       </div>
     )}
   </TabsContent>
@@ -1019,6 +1115,26 @@ function CashRegisterManagerPage() {
  <Form {...openForm}>
  <form onSubmit={openForm.handleSubmit(handleOpenRegister)} className="flex-1 flex flex-col justify-between">
  <div className="p-6 space-y-4 overflow-y-auto no-scrollbar">
+ <FormField
+ control={openForm.control}
+ name="terminalName"
+ render={({ field }) => (
+ <FormItem>
+ <FormLabel className="text-xs font-bold text-foreground">
+ Identificação do Terminal / Caixa (Opcional)
+ </FormLabel>
+ <FormControl>
+ <Input
+ placeholder="Ex: Balcão 01, Garçom Salão, Caixa Diretoria..."
+ {...field}
+ className="h-11 min-h-11 text-sm rounded-lg"
+ />
+ </FormControl>
+ <FormMessage className="text-xs" />
+ </FormItem>
+ )}
+ />
+
  <FormField
  control={openForm.control}
  name="initialBalance"

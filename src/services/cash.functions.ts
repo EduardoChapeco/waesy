@@ -84,72 +84,181 @@ async function getEntriesForRegister(registerId: string): Promise<CashRegisterEn
 // Decoupled Handlers (for unit testing)
 // ---------------------------------------------------------------------------
 
-export async function _getActiveRegister(): Promise<ActiveCashRegister | null> {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "finance", "seller"]);
+async function buildActiveRegisterDetails(registerRow: CashRegisterRow): Promise<ActiveCashRegister> {
+  const [profiles, entries] = await Promise.all([
+    getProfilesById([registerRow.opened_by]),
+    getEntriesForRegister(registerRow.id),
+  ]);
+  const summary = summarizeCashEntries(registerRow.initial_balance_cents, entries);
 
- const { data: register, error } = await supabase
- .from("cash_registers")
- .select("*")
- .eq("store_id", identity.store_id)
- .eq("status", "open")
- .maybeSingle();
+  // Expiration check (24h)
+  const openedAt = new Date(registerRow.opened_at);
+  const diffHours = (Date.now() - openedAt.getTime()) / (1000 * 60 * 60);
+  const isExpired = diffHours >= 24;
 
- if (error) throw new Error("Erro ao buscar caixa ativo: " + error.message);
- if (!register) return null;
+  return {
+    ...registerRow,
+    ...summary,
+    opened_by_profile: profileFor(profiles, registerRow.opened_by),
+    recentEntries: entries,
+    isExpired,
+  } satisfies ActiveCashRegister;
+}
 
- const registerRow = register as CashRegisterRow;
- const [profiles, entries] = await Promise.all([
- getProfilesById([registerRow.opened_by]),
- getEntriesForRegister(registerRow.id),
- ]);
- const summary = summarizeCashEntries(registerRow.initial_balance_cents, entries);
+export interface ActiveRegisterSummaryItem {
+  id: string;
+  store_id: string;
+  opened_by: string;
+  opened_by_name: string;
+  opened_at: string;
+  initial_balance_cents: number;
+  current_balance_cents: number;
+  cash_balance_cents: number;
+  terminal_name: string;
+  notes: string | null;
+  entries_count: number;
+  is_mine: boolean;
+}
 
- // Expiration check (24h)
- const openedAt = new Date(registerRow.opened_at);
- const diffHours = (Date.now() - openedAt.getTime()) / (1000 * 60 * 60);
- const isExpired = diffHours >= 24;
+export async function _listActiveRegisters(): Promise<ActiveRegisterSummaryItem[]> {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "finance", "seller"]);
 
- return {
- ...registerRow,
- ...summary,
- opened_by_profile: profileFor(profiles, registerRow.opened_by),
- recentEntries: entries,
- isExpired,
- } satisfies ActiveCashRegister;
+  const { data: registers, error } = await supabase
+    .from("cash_registers")
+    .select("*")
+    .eq("store_id", identity.store_id)
+    .eq("status", "open")
+    .order("opened_at", { ascending: false });
+
+  if (error) throw new Error("Erro ao listar caixas ativos: " + error.message);
+  if (!registers || registers.length === 0) return [];
+
+  const openedByIds = registers.map((r: any) => r.opened_by).filter(Boolean);
+  const profilesMap = await getProfilesById(openedByIds);
+
+  const results: ActiveRegisterSummaryItem[] = [];
+
+  for (const reg of registers) {
+    const entries = await getEntriesForRegister(reg.id);
+    const summary = summarizeCashEntries(reg.initial_balance_cents, entries);
+    const profile = profilesMap.get(reg.opened_by);
+
+    let terminalName = "Balcão Geral";
+    if (reg.notes && reg.notes.includes("[Terminal:")) {
+      const match = reg.notes.match(/\[Terminal:\s*([^\]]+)\]/);
+      if (match && match[1]) {
+        terminalName = match[1].trim();
+      }
+    } else if (profile?.full_name) {
+      terminalName = `Caixa ${profile.full_name.split(" ")[0]}`;
+    }
+
+    results.push({
+      id: reg.id,
+      store_id: reg.store_id,
+      opened_by: reg.opened_by,
+      opened_by_name: profile?.full_name || "Operador",
+      opened_at: reg.opened_at,
+      initial_balance_cents: reg.initial_balance_cents,
+      current_balance_cents: summary.currentBalanceCents,
+      cash_balance_cents: summary.cashBalanceCents,
+      terminal_name: terminalName,
+      notes: reg.notes,
+      entries_count: entries.length,
+      is_mine: reg.opened_by === identity.id,
+    });
+  }
+
+  return results;
+}
+
+export async function _getActiveRegister(targetRegisterId?: string): Promise<ActiveCashRegister | null> {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "finance", "seller"]);
+
+  if (targetRegisterId) {
+    const { data: register, error } = await supabase
+      .from("cash_registers")
+      .select("*")
+      .eq("id", targetRegisterId)
+      .eq("store_id", identity.store_id)
+      .eq("status", "open")
+      .limit(1);
+
+    if (error) throw new Error("Erro ao buscar caixa ativo: " + error.message);
+    if (!register || register.length === 0) return null;
+    return await buildActiveRegisterDetails(register[0] as CashRegisterRow);
+  }
+
+  // Se não foi passado targetRegisterId, tenta primeiro o caixa aberto do próprio usuário autenticado
+  const { data: myRegister } = await supabase
+    .from("cash_registers")
+    .select("*")
+    .eq("store_id", identity.store_id)
+    .eq("status", "open")
+    .eq("opened_by", identity.id)
+    .order("opened_at", { ascending: false })
+    .limit(1);
+
+  if (myRegister && myRegister.length > 0) {
+    return await buildActiveRegisterDetails(myRegister[0] as CashRegisterRow);
+  }
+
+  // Se o próprio usuário não tem caixa aberto, traz o caixa mais recente da loja
+  const { data: storeRegisters, error } = await supabase
+    .from("cash_registers")
+    .select("*")
+    .eq("store_id", identity.store_id)
+    .eq("status", "open")
+    .order("opened_at", { ascending: false })
+    .limit(1);
+
+  if (error) throw new Error("Erro ao buscar caixa ativo: " + error.message);
+  if (!storeRegisters || storeRegisters.length === 0) return null;
+
+  return await buildActiveRegisterDetails(storeRegisters[0] as CashRegisterRow);
 }
 
 export async function _openRegister(
- initialBalanceCents: number,
- notes?: string,
-): Promise<{ status: "success" }> {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+  initialBalanceCents: number,
+  notes?: string,
+  terminalName?: string,
+): Promise<{ status: "success"; registerId: string }> {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "finance", "seller"]);
 
- const { data: existing } = await supabase
- .from("cash_registers")
- .select("id")
- .eq("store_id", identity.store_id)
- .eq("status", "open")
- .maybeSingle();
+  // Validação: o mesmo operador não pode ter dois caixas abertos simultaneamente
+  const { data: existingUserOpen } = await supabase
+    .from("cash_registers")
+    .select("id")
+    .eq("store_id", identity.store_id)
+    .eq("status", "open")
+    .eq("opened_by", identity.id)
+    .limit(1);
 
- if (existing) {
- throw new Error("Já existe um caixa aberto nesta loja.");
- }
+  if (existingUserOpen && existingUserOpen.length > 0) {
+    throw new Error("Você já possui um caixa aberto em seu nome nesta loja. Feche o turno atual antes de abrir outro.");
+  }
 
- const { error } = await supabase.from("cash_registers").insert({
- store_id: identity.store_id,
- opened_by: identity.id,
- initial_balance_cents: initialBalanceCents,
- notes: notes || null,
- status: "open",
- });
+  const composedNotes = terminalName
+    ? `[Terminal: ${terminalName.trim()}] ${notes ? notes.trim() : ""}`.trim()
+    : (notes || null);
 
- if (error) throw new Error("Erro ao abrir caixa: " + error.message);
+  const { data: inserted, error } = await supabase.from("cash_registers").insert({
+    store_id: identity.store_id,
+    opened_by: identity.id,
+    initial_balance_cents: initialBalanceCents,
+    notes: composedNotes,
+    status: "open",
+  }).select("id").single();
 
- return { status: "success" };
+  if (error || !inserted) throw new Error("Erro ao abrir caixa: " + (error?.message || "falha na inserção"));
+
+  return { status: "success", registerId: inserted.id };
 }
 
 export async function _closeRegister(
@@ -356,20 +465,32 @@ export async function _listRegisterHistory(): Promise<CashRegisterHistoryItem[]>
 // Server Functions wrappers
 // ---------------------------------------------------------------------------
 
-export const getActiveRegister = createServerFn({ method: "GET" }).handler(async () => {
- return await _getActiveRegister();
+export const getActiveRegister = createServerFn({ method: "GET" })
+  .validator((input: unknown) => {
+    if (typeof input === "object" && input !== null && "registerId" in input) {
+      return z.object({ registerId: z.string().uuid().optional() }).parse(input);
+    }
+    return { registerId: undefined };
+  })
+  .handler(async ({ data }) => {
+    return await _getActiveRegister(data?.registerId);
+  });
+
+export const listActiveRegisters = createServerFn({ method: "GET" }).handler(async () => {
+  return await _listActiveRegisters();
 });
 
 export const openRegister = createServerFn({ method: "POST" })
- .validator(
- z.object({
- initialBalanceCents: z.number().int().min(0),
- notes: z.string().optional(),
- }),
- )
- .handler(async ({ data: { initialBalanceCents, notes } }) => {
- return await _openRegister(initialBalanceCents, notes);
- });
+  .validator(
+    z.object({
+      initialBalanceCents: z.number().int().min(0),
+      notes: z.string().optional(),
+      terminalName: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: { initialBalanceCents, notes, terminalName } }) => {
+    return await _openRegister(initialBalanceCents, notes, terminalName);
+  });
 
 export const closeRegister = createServerFn({ method: "POST" })
  .validator(

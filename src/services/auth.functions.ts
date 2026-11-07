@@ -8,7 +8,7 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest, setResponseHeader } from "@tanstack/start-server-core";
+import { getRequest, getResponseHeaders, setResponseHeader } from "@tanstack/start-server-core";
 import { z } from "zod";
 
 import { getSSRClient, getServerIdentity } from "@/lib/server-access";
@@ -19,7 +19,7 @@ import { safeHandler } from "@/lib/server-fn-wrapper";
 import { LoginSchema, RegisterSchema, ResetPasswordSchema } from "@/lib/contracts/auth.schema";
 import { Provider } from "@supabase/supabase-js";
 import { getEnvVar } from "@/lib/env";
-import { readCookieFromRequest } from "@/lib/http-cookies";
+import { readCookieFromRequest, serializeCookieHeader } from "@/lib/http-cookies";
 import { normalizeInternalReturnPath } from "@/lib/return-path";
 import { checkRateLimit, recordFailedAttempt, resetAttempts, formatRetryAfter } from "@/lib/rate-limiter";
 import { recordAuthAuditEvent } from "@/lib/session-audit.server";
@@ -174,10 +174,16 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  .validator(LoginSchema)
  .handler(async ({ data: { email, identifier, password, redirectTo, deviceFingerprint, clientLocation } }) => {
  let request: Request | null = null;
+ let resHeaders: Headers | undefined;
  try {
  request = getRequest();
  } catch {
  request = null;
+ }
+ try {
+ resHeaders = getResponseHeaders() as unknown as Headers;
+ } catch {
+ resHeaders = undefined;
  }
  const ip = request ? getClientIp(request) : "unknown";
  let matchedProfileId: string | null = null;
@@ -238,8 +244,8 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  // Extract guest session manually before async context drops
  const guestSessionToken = request ? readCookieFromRequest(request, "waesy_guest_session") : null;
 
- // Use global getResponseHeaders implicitly to ensure Set-Cookie is persisted on the RPC response
- const supabase = await getSSRClient();
+ // Use captured resHeaders to ensure Set-Cookie is persisted even if unctx drops after await
+ const supabase = await getSSRClient(resHeaders);
  const { data, error } = await supabase.auth.signInWithPassword({
  email: targetEmail,
  password,
@@ -271,9 +277,9 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  // Successful login: clear the failed attempts counter
  resetAttempts(ip, "auth_login");
 
- // Grava auditoria forense de sucesso de login de forma assíncrona (não bloqueia resposta HTTP)
+ // Grava auditoria forense de sucesso de login com timeout curto para sobreviver ao encerramento do Cloudflare Worker
  if (data.user) {
- void recordAuthAuditEvent({
+ const auditPromise = recordAuthAuditEvent({
      profileId: data.user.id,
      eventType: "login_success",
      request,
@@ -282,7 +288,7 @@ export const signInWithPassword = createServerFn({ method: "POST" })
      metadata: { email: targetEmail, identifier: rawIdentifier },
     }).catch((err) => console.warn("[auth] Auditoria de login falhou em background:", err));
 
- void (async () => {
+ const cartMergePromise = (async () => {
  try {
  const { mergeGuestCartLogic } = await import("./cart-helpers");
  await mergeGuestCartLogic(
@@ -294,40 +300,45 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  console.error("Falha ao mesclar carrinho durante login (ignorado):", err);
  }
  })();
+
+ await Promise.race([
+   Promise.allSettled([auditPromise, cartMergePromise]),
+   new Promise((resolve) => setTimeout(resolve, 400)),
+ ]);
  }
 
     // Zero-Trust Civil Initialization: Login sempre inicia com Identidade Civil Pessoal limpa
+    const isProd = process.env.NODE_ENV === "production";
+    const contextCookies = [
+      { name: "waesy_active_context", value: "civil", maxAge: 60 * 60 * 24 * 365 },
+      { name: "waesy_active_tenant", value: "", maxAge: 0 },
+      { name: "waesy_store_id", value: "", maxAge: 0 },
+      { name: "waesy_active_creator", value: "", maxAge: 0 },
+    ];
     try {
       const { setCookie } = await import("@tanstack/start-server-core");
-      const isProd = process.env.NODE_ENV === "production";
-      setCookie("waesy_active_context", "civil", {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 365,
-        httpOnly: false,
-        secure: isProd,
-        sameSite: "lax",
-      });
-      setCookie("waesy_active_tenant", "", {
-        path: "/",
-        maxAge: 0,
-        httpOnly: false,
-        secure: isProd,
-        sameSite: "lax",
-      });
-      setCookie("waesy_store_id", "", {
-        path: "/",
-        maxAge: 0,
-        httpOnly: false,
-        secure: isProd,
-        sameSite: "lax",
-      });
-      setCookie("waesy_active_creator", "", {
-        path: "/",
-        maxAge: 0,
-        httpOnly: false,
-        secure: isProd,
-        sameSite: "lax",
-      });
+      for (const c of contextCookies) {
+        try {
+          setCookie(c.name, c.value, {
+            path: "/",
+            maxAge: c.maxAge,
+            httpOnly: false,
+            secure: isProd,
+            sameSite: "lax",
+          });
+        } catch {
+          resHeaders?.append(
+            "Set-Cookie",
+            serializeCookieHeader(c.name, c.value, {
+              path: "/",
+              maxAge: c.maxAge,
+              httpOnly: false,
+              secure: isProd,
+              sameSite: "lax",
+            }),
+          );
+        }
+      }
       const { clearIdentityCache } = await import("@/lib/server-access");
       clearIdentityCache();
     } catch (cookieErr) {
@@ -573,37 +584,43 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {
   try {
    let request: Request | null = null;
+   let resHeaders: Headers | undefined;
    try { request = getRequest(); } catch (err) { console.warn("[auth:signOut] getRequest error:", err); }
+   try { resHeaders = getResponseHeaders() as unknown as Headers; } catch { resHeaders = undefined; }
    let userId: string | null = null;
    try {
     const identity = await getServerIdentity();
     userId = identity.id || null;
    } catch (err) { console.warn("[auth:signOut] getServerIdentity error:", err); }
 
-   const supabase = await getSSRClient();
+   const supabase = await getSSRClient(resHeaders);
  const { error } = await supabase.auth.signOut();
 
  if (error) {
  throw new Error(error.message);
  }
 
-  // Clear guest session manually using H3-compatible util
-  setResponseHeader(
-  "Set-Cookie",
-  `waesy_guest_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${
+  const guestClearCookie = `waesy_guest_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${
   getEnvVar("VITE_SITE_URL")?.includes("localhost") ? "" : "; Secure"
-  }`,
-  );
+  }`;
+  try {
+    setResponseHeader("Set-Cookie", guestClearCookie);
+  } catch {
+    resHeaders?.append("Set-Cookie", guestClearCookie);
+  }
 
   // Purga atômica de todos os cookies de contexto e tenant corporativo
   try {
     const { setCookie } = await import("@tanstack/start-server-core");
     const isProd = process.env.NODE_ENV === "production";
     const purgeOpts = { path: "/", maxAge: 0, httpOnly: false, secure: isProd, sameSite: "lax" as const };
-    setCookie("waesy_active_context", "", purgeOpts);
-    setCookie("waesy_active_tenant", "", purgeOpts);
-    setCookie("waesy_store_id", "", purgeOpts);
-    setCookie("waesy_active_creator", "", purgeOpts);
+    for (const cName of ["waesy_active_context", "waesy_active_tenant", "waesy_store_id", "waesy_active_creator"]) {
+      try {
+        setCookie(cName, "", purgeOpts);
+      } catch {
+        resHeaders?.append("Set-Cookie", serializeCookieHeader(cName, "", purgeOpts));
+      }
+    }
     const { clearIdentityCache } = await import("@/lib/server-access");
     clearIdentityCache();
   } catch (err) {
@@ -611,11 +628,14 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
   }
 
  if (userId) {
-   void recordAuthAuditEvent({
-     profileId: userId,
-     eventType: "logout",
-     request,
-   }).catch(() => {});
+   await Promise.race([
+     recordAuthAuditEvent({
+       profileId: userId,
+       eventType: "logout",
+       request,
+     }).catch(() => {}),
+     new Promise((resolve) => setTimeout(resolve, 400)),
+   ]);
  }
 
  return { status: "success" as const };

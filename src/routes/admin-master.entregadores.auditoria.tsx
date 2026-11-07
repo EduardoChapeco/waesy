@@ -26,7 +26,7 @@ export const Route = createFileRoute("/admin-master/entregadores/auditoria")({
     return { applications };
     } catch (err) {
       console.error("[loader:admin-master.entregadores.auditoria] Unhandled loader error:", err);
-      return { applications: null };
+      return { applications: [] };
     }
   },
   component: AdminCourierAuditPage,

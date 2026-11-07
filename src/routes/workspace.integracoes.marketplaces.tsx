@@ -1231,7 +1231,7 @@ function MarketplaceHubPage() {
 
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label className="text-xs font-medium">URL Canônica de Recepção (POST)</Label>
+              <Label className="text-xs font-medium">URL de Webhook (POST)</Label>
               <div className="flex items-center gap-2">
                 <Input
                   readOnly

@@ -579,7 +579,7 @@ export default function WorkspaceDestinationsPage() {
     <NicheOperationalGuard
       targetNiche="tourism"
       toolTitle="Destinos Turísticos"
-      toolDescription="Catálogo estruturado com base canônica de cidades, estados, aeroportos IATA, seções ricas, galerias de mídia e avaliações de viajantes."
+      toolDescription="Catálogo estruturado com cidades, estados, aeroportos IATA, seções ricas, galerias de mídia e avaliações de viajantes."
       store={store}
     >
       <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
@@ -634,7 +634,7 @@ export default function WorkspaceDestinationsPage() {
  className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 sm:h-9 mt-2"
  >
  <Plus className="size-4" />
- <span>Cadastrar Primeiro Destino com Base Canônica</span>
+ <span>Cadastrar Primeiro Destino</span>
  </Button>
  </div>
  ) : (
@@ -806,7 +806,7 @@ export default function WorkspaceDestinationsPage() {
  )}
  </SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground">
- Base canônica de localização, aeroportos IATA, seções dinâmicas e avaliações.
+ Informações de localização, aeroportos IATA, seções dinâmicas e avaliações.
  </SheetDescription>
  </div>
  </div>

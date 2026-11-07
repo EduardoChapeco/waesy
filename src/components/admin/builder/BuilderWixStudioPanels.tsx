@@ -428,7 +428,7 @@ export function WixVisualSitemapModal({
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-bold">Slug da URL Canônica</Label>
+                    <Label className="text-xs font-bold">Slug da URL Oficial</Label>
                     <Input
                       value={selectedPage.slug}
                       readOnly
@@ -1596,7 +1596,7 @@ export function WixCmsCollectionManagerModal({
                                 }
                                 className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-2xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
-                                <option value="squircle">Squircle</option>
+                                <option value="squircle">Arredondado</option>
                                 <option value="circle">Circular</option>
                                 <option value="pill">Pílula</option>
                                 <option value="wide">Card Amplo</option>

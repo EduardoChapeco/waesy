@@ -33,6 +33,8 @@ const targetAnonKey = secrets.VITE_SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KE
 const targetServiceRoleKey = secrets.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const targetVaultMasterKey = secrets.VAULT_MASTER_KEY || process.env.VAULT_MASTER_KEY || targetServiceRoleKey;
 const targetSiteUrl = secrets.VITE_SITE_URL || process.env.VITE_SITE_URL || "https://usewaesy.pages.dev";
+const targetEvolutionUrl = secrets.EVOLUTION_API_URL || process.env.EVOLUTION_API_URL || "http://147.15.61.45:8080";
+const targetEvolutionKey = secrets.EVOLUTION_API_KEY || process.env.EVOLUTION_API_KEY || "WaesyApiKey_Master_2026_WhatsApp";
 
 const fallbackEnv = {
   VITE_SUPABASE_URL: targetSupabaseUrl,
@@ -42,6 +44,9 @@ const fallbackEnv = {
   SUPABASE_SERVICE_ROLE_KEY: targetServiceRoleKey,
   VAULT_MASTER_KEY: targetVaultMasterKey,
   VITE_SITE_URL: targetSiteUrl,
+  EVOLUTION_API_URL: targetEvolutionUrl,
+  EVOLUTION_API_KEY: targetEvolutionKey,
+  VITE_APP_URL: targetSiteUrl,
 };
 
 const injection = `async fetch(cfReq, env, context) {

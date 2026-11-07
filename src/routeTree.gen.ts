@@ -374,6 +374,7 @@ import { Route as WorkspacePedidosGestorRouteImport } from './routes/workspace.p
 import { Route as WorkspacePedidosTrocasRouteImport } from './routes/workspace.pedidos.trocas'
 import { Route as WorkspaceRelatoriosGastronomiaRouteImport } from './routes/workspace.relatorios.gastronomia'
 import { Route as WorkspaceRelatoriosMetasRouteImport } from './routes/workspace.relatorios.metas'
+import { Route as WorkspaceRhFolhaRouteImport } from './routes/workspace.rh.folha'
 import { Route as WorkspaceRhPontoRouteImport } from './routes/workspace.rh.ponto'
 import { Route as WorkspaceSimlabFocusGroupRouteImport } from './routes/workspace.simlab.focus-group'
 import { Route as WorkspaceSquadsIndexRouteImport } from './routes/workspace.squads.index'
@@ -2359,6 +2360,11 @@ const WorkspaceRelatoriosMetasRoute =
     path: '/metas',
     getParentRoute: () => WorkspaceRelatoriosRoute,
   } as any)
+const WorkspaceRhFolhaRoute = WorkspaceRhFolhaRouteImport.update({
+  id: '/rh/folha',
+  path: '/rh/folha',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceRhPontoRoute = WorkspaceRhPontoRouteImport.update({
   id: '/rh/ponto',
   path: '/rh/ponto',
@@ -3154,6 +3160,7 @@ export interface FileRoutesByFullPath {
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
   '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
+  '/workspace/rh/folha': typeof WorkspaceRhFolhaRoute
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
   '/workspace/turismo/aereos': typeof WorkspaceTurismoAereosRoute
@@ -3592,6 +3599,7 @@ export interface FileRoutesByTo {
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
   '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
+  '/workspace/rh/folha': typeof WorkspaceRhFolhaRoute
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
   '/workspace/turismo/aereos': typeof WorkspaceTurismoAereosRoute
@@ -4041,6 +4049,7 @@ export interface FileRoutesById {
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
   '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
+  '/workspace/rh/folha': typeof WorkspaceRhFolhaRoute
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
   '/workspace/turismo/aereos': typeof WorkspaceTurismoAereosRoute
@@ -4490,6 +4499,7 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
     | '/workspace/relatorios/metas'
+    | '/workspace/rh/folha'
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
     | '/workspace/turismo/aereos'
@@ -4928,6 +4938,7 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
     | '/workspace/relatorios/metas'
+    | '/workspace/rh/folha'
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
     | '/workspace/turismo/aereos'
@@ -5376,6 +5387,7 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
     | '/workspace/relatorios/metas'
+    | '/workspace/rh/folha'
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
     | '/workspace/turismo/aereos'
@@ -8112,6 +8124,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceRelatoriosMetasRouteImport
       parentRoute: typeof WorkspaceRelatoriosRoute
     }
+    '/workspace/rh/folha': {
+      id: '/workspace/rh/folha'
+      path: '/rh/folha'
+      fullPath: '/workspace/rh/folha'
+      preLoaderRoute: typeof WorkspaceRhFolhaRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/rh/ponto': {
       id: '/workspace/rh/ponto'
       path: '/rh/ponto'
@@ -9388,6 +9407,7 @@ interface WorkspaceRouteChildren {
   WorkspacePedidosFrotaRoute: typeof WorkspacePedidosFrotaRoute
   WorkspacePedidosGestorRoute: typeof WorkspacePedidosGestorRoute
   WorkspacePedidosTrocasRoute: typeof WorkspacePedidosTrocasRoute
+  WorkspaceRhFolhaRoute: typeof WorkspaceRhFolhaRoute
   WorkspaceRhPontoRoute: typeof WorkspaceRhPontoRoute
   WorkspaceSimlabFocusGroupRoute: typeof WorkspaceSimlabFocusGroupRoute
   WorkspaceTurismoAereosRoute: typeof WorkspaceTurismoAereosRoute
@@ -9574,6 +9594,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspacePedidosFrotaRoute: WorkspacePedidosFrotaRoute,
   WorkspacePedidosGestorRoute: WorkspacePedidosGestorRoute,
   WorkspacePedidosTrocasRoute: WorkspacePedidosTrocasRoute,
+  WorkspaceRhFolhaRoute: WorkspaceRhFolhaRoute,
   WorkspaceRhPontoRoute: WorkspaceRhPontoRoute,
   WorkspaceSimlabFocusGroupRoute: WorkspaceSimlabFocusGroupRoute,
   WorkspaceTurismoAereosRoute: WorkspaceTurismoAereosRoute,

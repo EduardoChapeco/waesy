@@ -1,4 +1,4 @@
-import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, RefreshCw, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database, Calculator } from "lucide-react";
+import { Package, PackageCheck, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, RefreshCw, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database, Calculator, Wallet } from "lucide-react";
 
 export type NavItem = {
   path: string;
@@ -134,7 +134,8 @@ const GROUP_RETAIL_SALES: NavGroup = {
   icon: ShoppingBag,
   section: "niche",
   items: [
-    { path: "/workspace/pedidos", label: "Pedidos", icon: ShoppingBag },
+    { path: "/workspace/pedidos", label: "Lista de Vendas", icon: ShoppingBag },
+    { path: "/workspace/pedidos/expedicao", label: "Separação & WMS", icon: PackageCheck },
     { path: "/workspace/pedidos/gestor", label: "Gestor", icon: ClipboardList },
     { path: "/workspace/pdv", label: "PDV", icon: Store },
     { path: "/workspace/pedidos/trocas", label: "Devoluções", icon: ArrowRightLeft },
@@ -461,7 +462,8 @@ const GROUP_COMMERCIAL_SALES: NavGroup = {
     { path: "/workspace/atendimento", label: "Conversas", icon: MessageSquare },
     { path: "/workspace/orcamentos", label: "Orçamentos", icon: FileText },
     { path: "/workspace/pdv", label: "PDV", icon: Store },
-    { path: "/workspace/pedidos", label: "Vendas", icon: ShoppingBag },
+    { path: "/workspace/pedidos", label: "Lista de Vendas", icon: ShoppingBag },
+    { path: "/workspace/pedidos/expedicao", label: "Separação & WMS", icon: PackageCheck },
   ],
 };
 
@@ -541,7 +543,7 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
     { path: "/workspace/financeiro/relatorios-canal", label: "DRE", icon: FileSpreadsheet },
     { path: "/workspace/financeiro/afiliados", label: "Afiliados", icon: Coins },
     { path: "/workspace/tokens", label: "Tokens", icon: Coins },
-    { path: "/workspace/financeiro/funcionarios", label: "Folha", icon: Users },
+    { path: "/workspace/rh/folha", label: "Folha de Pagamento (RH)", icon: Wallet },
   ],
 };
 
@@ -561,12 +563,13 @@ const GROUP_FISCAL_ACCOUNTING: NavGroup = {
 
 const GROUP_TEAM_RH: NavGroup = {
   id: "team-rh",
-  label: "Equipe",
+  label: "RH & DP",
   icon: Users,
   section: "corporate",
   items: [
-    { path: "/workspace/configuracoes/equipe", label: "Colaboradores", icon: Users },
-    { path: "/workspace/rh/ponto", label: "Ponto", icon: Clock },
+    { path: "/workspace/configuracoes/equipe", label: "Colaboradores & Dossiês", icon: Users },
+    { path: "/workspace/rh/folha", label: "Folha de Pagamento", icon: Wallet },
+    { path: "/workspace/rh/ponto", label: "Ponto & Banco de Horas", icon: Clock },
     { path: "/workspace/financeiro/comissoes", label: "Comissões", icon: Target },
     { path: "/workspace/configuracoes/sessoes", label: "Sessões", icon: ShieldCheck },
   ],
@@ -1223,7 +1226,8 @@ export function resolveWorkspaceNavigation(
         label: "Recrutamento",
         icon: Briefcase,
         items: [
-          { path: "/workspace/configuracoes/equipe", label: "Colaboradores", icon: Users },
+          { path: "/workspace/configuracoes/equipe", label: "Colaboradores & Dossiês", icon: Users },
+    { path: "/workspace/rh/folha", label: "Folha de Pagamento", icon: Wallet },
           { path: "/workspace/empregos/candidatos", label: "Candidaturas", icon: Briefcase },
           { path: "/workspace/clientes", label: "Banco de Talentos", icon: Users },
         ],
@@ -1283,7 +1287,9 @@ export function getSidebarConfig(
       // Traduz o título do grupo se for catálogo, vendas ou operações
       let groupLabel = group.label;
       if (group.id.includes("catalog")) groupLabel = t("catalog");
-      if (group.id.includes("sales") || group.id.includes("orders")) groupLabel = t("orders");
+      if (group.id.includes("sales") || group.id.includes("orders")) {
+        groupLabel = group.label || "Vendas";
+      }
 
       const items = group.items
         .filter((item) => {
@@ -1302,7 +1308,11 @@ export function getSidebarConfig(
           if (item.path === "/workspace/catalogo/categorias") label = t("categories");
           if (item.path === "/workspace/catalogo/atributos") label = t("modifiers");
           if (item.path === "/workspace/pedidos/gestor") label = t("kds");
-          if (item.path === "/workspace/pedidos") label = t("orders");
+          if (item.path === "/workspace/pedidos") {
+            label = group.id.includes("retail") || group.id.includes("commercial")
+              ? "Lista de Vendas"
+              : t("orders");
+          }
           if (item.path === "/workspace/clientes") label = t("clients");
           if (item.path === "/workspace/estoque") label = t("stock");
           return { ...item, label };

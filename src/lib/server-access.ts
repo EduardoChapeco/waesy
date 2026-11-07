@@ -25,9 +25,9 @@ export {
 } from "@/lib/identity-core";
 
 /** Cliente Supabase SSR (anon key + cookies do usuário). Servidor apenas. */
-export async function getSSRClient(): Promise<SupabaseClient> {
+export async function getSSRClient(preCapturedHeaders?: Headers | null): Promise<SupabaseClient> {
  const mod = await import("@/lib/supabase-ssr.server");
- return mod.getSSRClient();
+ return mod.getSSRClient(preCapturedHeaders);
 }
 
 /** Identidade completa do usuário autenticado. Servidor apenas. */

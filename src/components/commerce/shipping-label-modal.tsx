@@ -298,11 +298,38 @@ export function ShippingLabelModal({
                     </div>
                   </div>
 
-                  {/* Rodapé: Peso e Pedido */}
-                  <div className="pt-2 flex items-center justify-between text-2xs text-gray-600 font-mono">
-                    <span>Pedido #{labelData.order.order_number}</span>
-                    <span>Peso: {labelData.total_weight_kg} kg</span>
-                    <span>Volumes: 1/1</span>
+                  {/* Rodapé: Peso, Embalagem, WMS e Pedido */}
+                  <div className="pt-2 space-y-1 text-2xs text-gray-600 font-mono">
+                    <div className="flex items-center justify-between">
+                      <span>Pedido #{labelData.order.order_number}</span>
+                      <span>Peso: {labelData.chargeable_weight_kg || labelData.total_weight_kg} kg</span>
+                      <span>Volumes: 1/1</span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-gray-300 pt-1">
+                      <span>Emb: {labelData.packaging_label || "Caixa"} {labelData.dimensions_summary ? `(${labelData.dimensions_summary})` : ""}</span>
+                      {labelData.aisle_location && (
+                        <span className="font-bold text-foreground">Bin: {labelData.aisle_location}</span>
+                      )}
+                    </div>
+                    {(labelData.fragile || (labelData.thermal_control && labelData.thermal_control !== "ambient") || labelData.picking_notes) && (
+                      <div className="flex flex-wrap items-center gap-1 pt-1">
+                        {labelData.fragile && (
+                          <span className="px-2 py-1 border border-black font-black text-3xs uppercase text-foreground">
+                            CUIDADO FRÁGIL
+                          </span>
+                        )}
+                        {labelData.thermal_control && labelData.thermal_control !== "ambient" && (
+                          <span className="px-2 py-1 border border-black font-black text-3xs uppercase text-foreground">
+                            CONTROLE TÉRMICO ({labelData.thermal_control})
+                          </span>
+                        )}
+                        {labelData.picking_notes && (
+                          <span className="text-3xs text-gray-800 truncate">
+                            Obs: {labelData.picking_notes}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

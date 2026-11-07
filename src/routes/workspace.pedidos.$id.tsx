@@ -1158,7 +1158,7 @@ function AdminOrderDetailPage() {
  ))}
  </div>
  ) : (
- <p className="text-sm text-muted-foreground">Nenhum pacote enviado ainda.</p>
+ <p className="text-sm text-muted-foreground">Nenhum pacote enviado ainda (nenhum envio registrado).</p>
  )}
 
  {/* Comprovantes de Entrega com Foto & GPS */}

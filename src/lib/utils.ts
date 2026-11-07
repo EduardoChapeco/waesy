@@ -67,3 +67,61 @@ export function decodeHtmlEntities(text?: string | null): string {
       return HTML_ENTITY_MAP[entity] ?? HTML_ENTITY_MAP[entity.toLowerCase()] ?? match;
     });
 }
+
+/**
+ * Sanitiza e extrai de forma determinística mensagens de erro legíveis,
+ * impedindo vazamento de "[object Object]" na UI e desempacotando erros Zod/RPC.
+ */
+export function extractErrorMessage(err: unknown, fallback = "Ocorreu um erro inesperado."): string {
+  if (!err) return fallback;
+  if (typeof err === "string") {
+    const trimmed = err.trim();
+    return trimmed && trimmed !== "[object Object]" ? trimmed : fallback;
+  }
+  if (err instanceof Error) {
+    const msg = err.message;
+    if (typeof msg === "string" && msg.trim() && msg !== "[object Object]") {
+      try {
+        const parsed = JSON.parse(msg);
+        if (typeof parsed === "string" && parsed.trim() && parsed !== "[object Object]") return parsed.trim();
+        if (parsed && typeof parsed === "object") {
+          if (typeof parsed.message === "string" && parsed.message.trim() && parsed.message !== "[object Object]") {
+            return parsed.message.trim();
+          }
+          if (typeof parsed.error === "string" && parsed.error.trim()) return parsed.error.trim();
+          if (Array.isArray(parsed) && parsed[0]?.message && typeof parsed[0].message === "string") {
+            return parsed[0].message.trim();
+          }
+        }
+      } catch {}
+      return msg.trim();
+    }
+  }
+  if (typeof err === "object") {
+    const record = err as Record<string, any>;
+    if (typeof record.message === "string" && record.message.trim() && record.message !== "[object Object]") {
+      try {
+        const parsed = JSON.parse(record.message);
+        if (typeof parsed === "string") return parsed;
+        if (parsed?.message && typeof parsed.message === "string") return parsed.message;
+      } catch {}
+      return record.message.trim();
+    }
+    if (typeof record.error === "string" && record.error.trim() && record.error !== "[object Object]") {
+      return record.error.trim();
+    }
+    if (typeof record.statusText === "string" && record.statusText.trim()) {
+      return record.statusText.trim();
+    }
+    if (Array.isArray(record.issues) && record.issues[0]?.message && typeof record.issues[0].message === "string") {
+      return record.issues[0].message.trim();
+    }
+    if (Array.isArray(record.errors) && record.errors[0]?.message && typeof record.errors[0].message === "string") {
+      return record.errors[0].message.trim();
+    }
+    if (record.data && typeof record.data === "object") {
+      return extractErrorMessage(record.data, fallback);
+    }
+  }
+  return fallback;
+}

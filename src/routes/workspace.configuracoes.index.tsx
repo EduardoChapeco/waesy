@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus } from 'lucide-react';
+import { Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus, Users } from 'lucide-react';
 import { getStoreSettings, saveStoreSettings, getWorkingHours, saveWorkingHours, getPolicies, savePolicies } from "@/services/store.functions";
 import { listManualPaymentMethods, saveManualPaymentMethod, deleteManualPaymentMethod } from "@/services/payment.functions";
 import { uploadStoreMedia } from "@/services/storage.functions";
@@ -73,6 +73,7 @@ export function getDefaultModulesForNiche(nicheId: string): string[] {
     "pages",
     "events",
     "jobs",
+    "rh_dp",
   ];
 
   const lower = (nicheId || "").toLowerCase();
@@ -574,24 +575,19 @@ export default function WorkspaceConfiguracoesPage() {
  </p>
  </div>
 
- {/* Topo Canônico: Logotipo / Avatar 1:1 Squircle (Padrão Threads / Instagram — Sem Capa Decorativa) */}
+ {/* Identidade Visual: Logotipo e Ícone */}
  <div className="space-y-4 pb-4 border-b border-border/40">
- <div className="flex items-center justify-between">
  <div className="space-y-1">
- <Label className="text-sm font-bold text-foreground">Identidade do Perfil (1:1 Squircle)</Label>
+ <Label className="text-sm font-bold text-foreground">Identidade do Perfil</Label>
  <p className="text-xs text-muted-foreground">
- Padrão Threads e Instagram: sua empresa é apresentada pelo logotipo oficial em squircle e biografia limpa.
+ Logotipo oficial que representa sua empresa na vitrine e nas sacolas de compras.
  </p>
- </div>
- <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
- Padrão Threads
- </Badge>
  </div>
 
  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
- {/* Logotipo 1:1 Squircle */}
+ {/* Logotipo */}
  <div className="w-full sm:w-auto shrink-0 space-y-2">
- <span className="text-xs font-medium text-muted-foreground block">Logotipo Oficial (1:1)</span>
+ <span className="text-xs font-medium text-muted-foreground block">Logotipo</span>
  <div className="size-24 sm:size-28">
  <ImageUpload
  value={logoUrl}
@@ -601,17 +597,8 @@ export default function WorkspaceConfiguracoesPage() {
  aspectPreset="square"
  variant="avatar"
  className="size-full"
- helperText="Upload do logotipo quadrado (1:1)"
+ helperText="Formato quadrado"
  />
- </div>
- </div>
-
- <div className="space-y-2 flex-1">
- <div className="rounded-lg bg-muted/30 border border-border/50 p-3 space-y-1">
- <p className="text-xs font-semibold text-foreground">Exibição Canônica Sem Capa</p>
- <p className="text-xs text-muted-foreground">
- A capa de cabeçalho foi descontinuada na plataforma em prol do design minimalista sem distorção. As fotos dos seus produtos, serviços e vitrines aparecem nos cards de catálogo e nos feeds.
- </p>
  </div>
  </div>
  </div>
@@ -619,7 +606,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* Favicon */}
  <div className="space-y-2 pt-2">
- <Label className="text-xs font-bold text-foreground">Favicon (Ícone de Aba)</Label>
+ <Label className="text-xs font-bold text-foreground">Ícone de Navegação (Favicon)</Label>
  <div className="flex items-center gap-4">
  <ImageUpload
  value={faviconUrl}
@@ -631,9 +618,9 @@ export default function WorkspaceConfiguracoesPage() {
  className="w-16 h-16 shrink-0"
  />
  <div className="flex-1 space-y-1">
- <p className="text-xs font-semibold text-foreground">Ícone da Aba (1:1)</p>
+ <p className="text-xs font-semibold text-foreground">Favicon</p>
  <p className="text-xs text-muted-foreground">
- Identifica sua loja na aba do navegador e no app móvel.
+ Identifica sua loja na aba do navegador e no aplicativo móvel.
  </p>
  </div>
  </div>
@@ -1100,6 +1087,12 @@ export default function WorkspaceConfiguracoesPage() {
  title: "Cursos e Workshops",
  desc: "Gestão de turmas, materiais didáticos e matrículas.",
  icon: GraduationCap,
+ },
+ {
+ id: "rh_dp",
+ title: "RH & Departamento Pessoal",
+ desc: "Folha de pagamento CLT/PJ, ponto eletrônico, holerites em PDF e equipe.",
+ icon: Users,
  },
  ].map((mod) => {
  const isEnabled = enabledModules.includes(mod.id);

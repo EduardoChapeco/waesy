@@ -73,7 +73,7 @@ export const Route = createFileRoute("/_store/entrar")({
           }
         }
         const hasStore = Boolean(session?.memberships && session.memberships.length > 0);
-        throw redirect({ to: hasStore ? "/workspace" : isMaster ? "/admin-master" : "/workspace" });
+        throw redirect({ to: hasStore ? "/workspace" : isMaster ? "/admin-master" : "/" });
       }
     } catch (e: any) {
       if (isRedirect(e)) {
@@ -206,11 +206,13 @@ function StepByStepAuthPage() {
  if (res.status === "success") {
  if ((res as any).session?.access_token && (res as any).session?.refresh_token) {
  try {
- const { getBrowserClient } = await import("@/lib/supabase");
+ const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+ sanitizeBrowserAuthCookies();
  await getBrowserClient().auth.setSession({
  access_token: (res as any).session.access_token,
  refresh_token: (res as any).session.refresh_token,
  });
+ sanitizeBrowserAuthCookies();
  } catch (clientErr) {
  console.warn("[auth] Falha ao sincronizar sessão no cliente:", clientErr);
  }
@@ -281,11 +283,13 @@ function StepByStepAuthPage() {
  if (res.status === "success") {
  if ((res as any).session?.access_token && (res as any).session?.refresh_token) {
  try {
- const { getBrowserClient } = await import("@/lib/supabase");
+ const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+ sanitizeBrowserAuthCookies();
  await getBrowserClient().auth.setSession({
  access_token: (res as any).session.access_token,
  refresh_token: (res as any).session.refresh_token,
  });
+ sanitizeBrowserAuthCookies();
  } catch (clientErr) {
  console.warn("[auth] Falha ao sincronizar sessão no cliente:", clientErr);
  }

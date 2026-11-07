@@ -474,7 +474,7 @@ function WorkspaceAtendimentoPage() {
   // Estados de Conversas
   const [threads, setThreads] = useState<any[]>(initialThreads || []);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(
-    (searchParams as any).threadId || (initialThreads && initialThreads.length > 0 ? initialThreads[0].id : null),
+    (searchParams as any).threadId || (initialThreads && initialThreads.length > 0 ? initialThreads[0]?.id : null) || null,
   );
 
   useEffect(() => {
@@ -554,7 +554,7 @@ function WorkspaceAtendimentoPage() {
         if (res?.threads) {
           setThreads(res.threads);
           if (activeThreadId && !res.threads.some((t: any) => t.id === activeThreadId)) {
-            setActiveThreadId(res.threads.length > 0 ? res.threads[0].id : null);
+            setActiveThreadId(res.threads.length > 0 ? (res.threads[0]?.id || null) : null);
           }
         }
       })
@@ -644,7 +644,7 @@ function WorkspaceAtendimentoPage() {
           if (newThread.thread_type === "ai_assistant" || newThread.thread_type === "copilot") {
             return;
           }
-          if (newThread.store_id === store.id) {
+          if (newThread?.store_id === store?.id) {
             listChatThreads({ data: { status: (statusFilter === "waiting" ? "open" : statusFilter) as any } }).then((res) => {
               if (res?.threads) setThreads(res.threads);
             });
@@ -657,7 +657,7 @@ function WorkspaceAtendimentoPage() {
         { event: "INSERT", schema: "public", table: "intranet_messages" },
         (payload: any) => {
           const newMsg = payload.new as any;
-          if (newMsg && newMsg.store_id === store.id) {
+          if (newMsg && newMsg.store_id === store?.id) {
             setIntranetChannels((prev) =>
               prev.map((c) => {
                 if (c.id === newMsg.channel_id) {
@@ -688,7 +688,7 @@ function WorkspaceAtendimentoPage() {
         { event: "*", schema: "public", table: "intranet_milestones" },
         (payload: any) => {
           const updated = payload.new as any;
-          if (updated && updated.store_id === store.id) {
+          if (updated && updated.store_id === store?.id) {
             setIntranetChannels((prev) =>
               prev.map((c) => {
                 if (c.id === updated.channel_id) {
@@ -1918,6 +1918,7 @@ function WorkspaceAtendimentoPage() {
                   Perfil 360º do Cliente
                 </SheetTitle>
               </SheetHeader>
+              {activeThread && (
               <div className="p-4">
                 {/* Controles estilo TrackChat / WhatsOmni: AI Assistant Control, Team Router & Assignee */}
               <div className="space-y-3 mb-4 pb-4 border-b border-border/60">
@@ -1996,6 +1997,7 @@ function WorkspaceAtendimentoPage() {
                   storeId={store?.id || ""}
                 />
               </div>
+              )}
             </SheetContent>
           </Sheet>
         </div>
