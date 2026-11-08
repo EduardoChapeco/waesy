@@ -20,6 +20,8 @@ import { CurrencyField } from "@/components/ui/currency-field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { formatMoney } from "@/lib/money";
+import { cn } from "@/lib/utils";
 import { VariantMatrixGrid, type RawVariant } from "@/components/admin/catalog/variant-matrix-grid";
 import { ProductModifiersCard } from "@/components/admin/catalog/product-modifiers-card";
 
@@ -56,6 +58,35 @@ export function ProductPricingTab({
   wholesaleEnabled = false,
   isTravelPackageMode = false,
 }: ProductPricingTabProps) {
+  // Cálculo reativo dos limites da matriz 2D para governança estrita de preço e estoque (DEC-433)
+  const matrixStats = React.useMemo(() => {
+    if (!variantsMatrix || variantsMatrix.length === 0) return null;
+    const basePrice = Number(formValues.price_cents || 0);
+    let minP = Infinity;
+    let maxP = -Infinity;
+    let totalStock = 0;
+
+    for (const v of variantsMatrix) {
+      const effectivePrice =
+        v.price_override_cents != null && Number(v.price_override_cents) > 0
+          ? Number(v.price_override_cents)
+          : basePrice;
+      if (effectivePrice > 0 && effectivePrice < minP) minP = effectivePrice;
+      if (effectivePrice > maxP) maxP = effectivePrice;
+      totalStock += Number(v.stock || 0);
+    }
+
+    const resolvedMin = minP === Infinity ? basePrice : minP;
+    const resolvedMax = maxP === -Infinity ? basePrice : maxP;
+
+    return {
+      minPrice: resolvedMin,
+      maxPrice: resolvedMax,
+      totalStock,
+      hasRange: resolvedMin !== resolvedMax && resolvedMin > 0 && resolvedMax > 0,
+    };
+  }, [variantsMatrix, formValues.price_cents]);
+
   return (
     <div className="space-y-4">
       {/* Precificação e Margens */}
@@ -79,6 +110,28 @@ export function ProductPricingTab({
                 />
               )}
             />
+            {matrixStats && variantsMatrix.length > 0 && (
+              <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-muted/40 border border-border/60 text-xs">
+                <div className="text-muted-foreground leading-tight">
+                  <span>Menor preço na grade: </span>
+                  <strong className="text-foreground font-mono">{formatMoney(matrixStats.minPrice)}</strong>
+                  {matrixStats.hasRange && (
+                    <span className="text-muted-foreground"> (Varia até {formatMoney(matrixStats.maxPrice)})</span>
+                  )}
+                </div>
+                {formValues.price_cents !== matrixStats.minPrice && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setValue("price_cents", matrixStats.minPrice)}
+                    className="h-11 min-h-11 sm:h-8 px-2 text-xs font-bold text-primary hover:text-primary hover:bg-primary/10 cursor-pointer"
+                  >
+                    Sincronizar
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -133,12 +186,24 @@ export function ProductPricingTab({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-foreground">Estoque Inicial</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium text-foreground">Estoque Inicial</Label>
+              {variantsMatrix && variantsMatrix.length > 0 && (
+                <span className="text-xs text-muted-foreground font-medium">
+                  Calculado pela grade ({matrixStats?.totalStock ?? 0} un)
+                </span>
+              )}
+            </div>
             <Input
               type="number"
               {...register("stock", { valueAsNumber: true })}
-              placeholder="10"
-              className="h-11 rounded-lg text-xs bg-background font-mono"
+              disabled={Boolean(variantsMatrix && variantsMatrix.length > 0)}
+              value={variantsMatrix && variantsMatrix.length > 0 ? (matrixStats?.totalStock ?? 0) : undefined}
+              placeholder={variantsMatrix && variantsMatrix.length > 0 ? "Calculado pela grade" : "10"}
+              className={cn(
+                "h-11 rounded-lg text-xs bg-background font-mono",
+                variantsMatrix && variantsMatrix.length > 0 && "opacity-80 bg-muted/30 cursor-not-allowed"
+              )}
             />
           </div>
 

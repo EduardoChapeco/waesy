@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { type NeighborhoodPreset } from "@/lib/constants/cities";
+import { getNeighborhoodsForCity, CHAPECO_NEIGHBORHOODS, type NeighborhoodPreset } from "@/lib/constants/cities";
 
 export interface NeighborhoodItem {
  id?: string;
@@ -36,6 +36,30 @@ export function NeighborhoodsManager({
  const [newNeighborhoodFee, setNewNeighborhoodFee] = useState<number>(500);
 
  // Edição inline de nome
+  const handleImportOfficialNeighborhoods = () => {
+    const presets = getNeighborhoodsForCity(cityName);
+    const existingNames = new Set(value.map((n) => n.name.toLowerCase().trim()));
+    const newItems: NeighborhoodItem[] = [];
+    presets.forEach((p) => {
+      if (!existingNames.has(p.name.toLowerCase().trim())) {
+        newItems.push({
+          name: p.name,
+          defaultFeeCents: p.defaultFeeCents,
+          defaultTimeMinutes: p.defaultTimeMinutes,
+          active: p.active,
+        });
+      }
+    });
+
+    if (newItems.length === 0) {
+      toast.info(`Todos os ${presets.length} bairros oficiais de ${cityName} já estão na lista.`);
+      return;
+    }
+
+    onChange([...value, ...newItems]);
+    toast.success(`${newItems.length} bairros oficiais de ${cityName} foram importados com sucesso!`);
+  };
+
  const [editingIndex, setEditingIndex] = useState<number | null>(null);
  const [editingNameValue, setEditingNameValue] = useState("");
 
@@ -173,7 +197,18 @@ export function NeighborhoodsManager({
  </p>
  </div>
 
- <div className="flex items-center gap-2 shrink-0">
+ <div className="flex items-center gap-2 shrink-0 flex-wrap">
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={handleImportOfficialNeighborhoods}
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2"
+ title={`Carregar automaticamente os bairros oficiais de ${cityName}`}
+ >
+ <Layers className="size-3.5 text-primary" />
+ <span>Importar Bairros Oficiais</span>
+ </Button>
  <Button
  type="button"
  variant="outline"

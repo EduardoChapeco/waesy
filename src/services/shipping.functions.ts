@@ -13,12 +13,16 @@ export async function _calculateShipping({
  storeId: explicitStoreId,
  zipcode,
  weightGrams = 500,
+ neighborhood,
+ city,
 }: {
  cartId?: string;
  productId?: string;
  storeId?: string;
  zipcode: string;
  weightGrams?: number;
+ neighborhood?: string;
+ city?: string;
 }) {
  const supabase = getServerClient();
  let resolvedStoreId = explicitStoreId;
@@ -63,6 +67,11 @@ export async function _calculateShipping({
  .single();
  const settings = (storeInfo?.settings as Record<string, any>) || {};
  const storeType = settings.type || settings.segment || "ecommerce";
+
+ // Se a loja desativou expressamente entregas, aceitando apenas retirada
+ if (settings.allow_delivery === false || settings.delivery_enabled === false) {
+ return [];
+ }
  // CEP de origem dinâmico da loja (anti-GAP C2 - fix do hardcoded 01000000)
  const rawStoreZip = (storeInfo as any)?.zip_code || settings.zip_code || settings.zipcode || "";
  const storeOriginZip = String(rawStoreZip).replace(/\D/g, "");
@@ -127,6 +136,95 @@ export async function _calculateShipping({
 
  if (itemsCount === 0) {
  hasMissingDimensions = true;
+ }
+
+ // 1.0 Resolução de Taxas Personalizadas por Bairro e Entrega Própria da Empresa
+ try {
+ const { data: compSettings } = await (supabase as any)
+ .from("company_delivery_settings")
+ .select("neighborhoods_rates, fixed_delivery_fee_cents, free_delivery_above_cents, has_own_couriers")
+ .eq("store_id", resolvedStoreId)
+ .maybeSingle();
+
+ const compRates = Array.isArray(compSettings?.neighborhoods_rates) ? compSettings.neighborhoods_rates : [];
+ const storeDeliveryZones = Array.isArray(settings.deliveryZones) ? settings.deliveryZones : [];
+
+ let matchedNeighborhoodRate: { name: string; fee_cents: number; time?: string } | null = null;
+
+ if (neighborhood && typeof neighborhood === "string" && neighborhood.trim()) {
+ const normInput = neighborhood.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+ const foundInComp = compRates.find((r: any) => {
+ if (r.active === false) return false;
+ const normR = String(r.neighborhood || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+ return normR === normInput;
+ });
+
+ if (foundInComp) {
+ matchedNeighborhoodRate = {
+ name: foundInComp.neighborhood,
+ fee_cents: Number(foundInComp.fee_cents) || 0,
+ time: "30 a 50 min",
+ };
+ } else {
+ const foundInZones = storeDeliveryZones.find((z: any) => {
+ if (z.active === false) return false;
+ const normZ = String(z.name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+ return normZ === normInput;
+ });
+
+ if (foundInZones) {
+ matchedNeighborhoodRate = {
+ name: foundInZones.name,
+ fee_cents: Number(foundInZones.defaultFeeCents) || 0,
+ time: `${foundInZones.defaultTimeMinutes || 35} min`,
+ };
+ }
+ }
+ }
+
+ if (matchedNeighborhoodRate) {
+ finalQuotes.unshift({
+ id: `neighborhood-${matchedNeighborhoodRate.name.toLowerCase().replace(/\s+/g, "-")}`,
+ name: `Entrega no Bairro (${matchedNeighborhoodRate.name})`,
+ provider: "Entrega Própria",
+ service_name: `Entrega no Bairro (${matchedNeighborhoodRate.name})`,
+ price_cents: matchedNeighborhoodRate.fee_cents,
+ estimated_days: 0,
+ estimated_time: matchedNeighborhoodRate.time || "30 a 50 min",
+ });
+ } else if (compSettings?.fixed_delivery_fee_cents && Number(compSettings.fixed_delivery_fee_cents) > 0) {
+ finalQuotes.unshift({
+ id: "fixed-store-delivery",
+ name: "Entrega Local Própria",
+ provider: "Entrega Própria",
+ service_name: "Entrega Local Própria",
+ price_cents: Number(compSettings.fixed_delivery_fee_cents),
+ estimated_days: 0,
+ estimated_time: "40 a 60 min",
+ });
+ }
+
+ // Regra de Frete Grátis acima de valor X
+ const freeDeliveryThreshold = compSettings?.free_delivery_above_cents || settings.free_delivery_above_cents;
+ if (freeDeliveryThreshold && Number(freeDeliveryThreshold) > 0 && cartId) {
+ const { data: cartData } = await supabase
+ .from("carts")
+ .select("subtotal_cents")
+ .eq("id", cartId)
+ .maybeSingle();
+
+ if (cartData && Number(cartData.subtotal_cents) >= Number(freeDeliveryThreshold)) {
+ finalQuotes.forEach((q) => {
+ if (q.provider === "Entrega Própria" || (q.id && (q.id.startsWith("neighborhood-") || q.id === "fixed-store-delivery"))) {
+ q.price_cents = 0;
+ q.notice = `Frete Grátis aplicado (compras acima de R$ ${(Number(freeDeliveryThreshold) / 100).toFixed(2).replace(".", ",")})`;
+ }
+ });
+ }
+ }
+ } catch (compErr) {
+ console.warn("[shipping] Falha defensiva ao calcular taxas de entrega por bairro:", compErr);
  }
 
  // 1. Fetch Manual Shipping Rates (Fallback/Local rules from Zones)
@@ -331,6 +429,8 @@ export const calculateShipping = createServerFn({ method: "POST" })
         storeId: z.string().optional(),
         zipcode: z.string().min(1),
         weightGrams: z.number().optional(),
+        neighborhood: z.string().optional(),
+        city: z.string().optional(),
       }),
     ),
   )

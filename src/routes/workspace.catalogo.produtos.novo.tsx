@@ -456,6 +456,7 @@ export function UnifiedNewProductPage() {
                   isGroceryMode={editor.isGroceryMode}
                   travelData={editor.travelData}
                   formValues={editor.formValues}
+                  variants={editor.variantsMatrix}
                   images={editor.images}
                   activePreviewImage={editor.activePreviewImage}
                   setActivePreviewImage={editor.setActivePreviewImage}

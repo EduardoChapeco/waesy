@@ -153,6 +153,7 @@ function EditProductPage() {
                 brand: edit.liveBrand,
                 selling_unit: product?.selling_unit || "un",
               }}
+              variants={edit.variants}
               images={edit.mediaUrls}
               activePreviewImage={edit.activePreviewImage}
               setActivePreviewImage={edit.setActivePreviewImage}

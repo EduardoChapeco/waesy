@@ -287,6 +287,13 @@ export function CheckoutPage() {
       Boolean(cart?.items && cart.items.some((i: any) => i.rental_days || i.item_type === "rental")));
 
   const isPhysicalDelivery = !isTourismNiche && !isDigitalNiche && !isServiceNiche;
+  const allowDelivery =
+    storeProfile?.settings?.allow_delivery !== false &&
+    storeProfile?.settings?.delivery_enabled !== false;
+  const allowPickup =
+    storeProfile?.settings?.allow_pickup !== false &&
+    storeProfile?.settings?.pickup_enabled !== false &&
+    storeProfile?.settings?.allow_takeaway !== false;
 
   // ── V200: Metamorphic States (Tourism / Digital / Services) ──
   const [travelDepartureDate, setTravelDepartureDate] = useState("");
@@ -546,6 +553,8 @@ export function CheckoutPage() {
         zipcode: cep,
         cartId: cart?.id || undefined,
         storeId: (cart as any)?.storeId || storeProfile?.id || undefined,
+        neighborhood: zipData?.bairro || formData.shippingAddress?.neighborhood || undefined,
+        city: zipData?.localidade || formData.shippingAddress?.city || undefined,
       },
     });
     if (shipRes && Array.isArray(shipRes) && shipRes.length > 0) {
@@ -634,6 +643,12 @@ export function CheckoutPage() {
  toast.error("Erro ao atualizar frete.");
  }
  };
+
+  useEffect(() => {
+    if (!allowDelivery && allowPickup && formData.shippingMethod !== "pickup") {
+      handleSelectPickup();
+    }
+  }, [allowDelivery, allowPickup]);
 
  const handleSelectPickup = async () => {
  setSelectedRateId("pickup");
@@ -1844,6 +1859,8 @@ export function CheckoutPage() {
  <Surface className="p-5 sm:p-6 rounded-lg space-y-5">
           <DeliverySelector
             method={formData.shippingMethod === "pickup" ? "pickup" : "delivery"}
+            allowDelivery={allowDelivery}
+            allowPickup={allowPickup}
             onMethodChange={(method) => {
               if (method === "pickup") {
                 handleSelectPickup();

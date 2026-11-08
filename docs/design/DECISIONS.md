@@ -8820,3 +8820,31 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.6, B.7, B.9, B.11 e B.25.
 - **Consequências:** 100% dos quality gates aprovados localmente e no pipeline de CI, banco de produção e Cloudflare em sincronia determinística absoluta.
 
+
+
+---
+
+### DEC-456: Sincronização Reativa de Preço da Matriz 2D, Resolução de Bairros de Entrega e Alternância Polimórfica Marco M2
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-456
+- **Contexto:** Execução ponta a ponta dos relatos do documento promtos.pdf cobrindo divergência de preço de entrada em produtos com variações 2D, resolução de entrega por bairros vs retirada exclusiva, logo da empresa no perfil público da vitrine, gestão bilateral de entregadores (Frota Própria vs Waesy Go / MotoLink) e alternância polimórfica (Marco M2 — UniversalViewManager) nas páginas de Clientes e Tarefas do Workspace.
+- **Decisão Adotada:**
+  1. **Matriz de Variações 2D & Catálogo:**
+     - `use-product-editor.ts`: Adicionado cálculo reativo `matrixStats` (menor preço, maior preço, total de estoque e flag de variação). No salvamento (`onSubmit` e `onSaveDraft`), `price_cents` é sincronizado automaticamente com o menor preço ativo da grade (`effectiveEntryPriceCents`), e o estoque pai é travado como a soma exata dos estoques das variações.
+     - `product-pricing-tab.tsx`: Adicionado banner de sincronização com botão de 1 clique e exibição clara de piso "A partir de R$ X,XX (Varia até R$ Y,YY)".
+     - `product-preview-pane.tsx`: Integradas estatísticas reativas da grade, prefixo "A partir de" quando há múltiplos preços, badge com contagem de variantes e estoque somado real.
+     - `_store.produto.$slug.tsx`: Seleção inicial da variante ordenada deterministicamente pelo menor preço (`sortByLowestPrice`).
+  2. **Logo da Loja na Vitrine Pública:**
+     - `canonical-store-profile-view.tsx`: Resolução de `logoUrl` compatibilizada com o DTO camelCase retornado pelo BFF (`getPublicStoreProfile`), prevenindo fallback errôneo para iniciais e adicionando tratamento defensivo de erro `onError`.
+  3. **Configurações de Entrega & Resolução de Bairros:**
+     - `delivery-selector.tsx`: Adicionadas propriedades `allowDelivery` e `allowPickup`, impedindo a seleção de entrega quando a loja operar exclusivamente com retirada no balcão e chaveando o estado inicial de forma reativa.
+     - `shipping.functions.ts`: Respeito estrito a `settings.allow_delivery === false`, resolução de taxas personalizadas por bairro via `company_delivery_settings.neighborhoods_rates` e `stores.settings.deliveryZones`, taxa fixa de entrega e isenção por valor mínimo de pedido (`free_delivery_above_cents`).
+     - `_store.checkout.tsx`: Propagação do bairro e cidade do cliente para `calculateShipping`.
+     - `neighborhoods-manager.tsx`: Adicionado botão "Importar Bairros Oficiais" integrando `getNeighborhoodsForCity(cityName)`.
+  4. **Gestão de Entregadores no Workspace:**
+     - `workspace.configuracoes.index.tsx`: Criado card dedicado de gestão de despacho com links para gestão de entregadores, cadastro e painel KDS, explicitando o modelo dual (Frota Própria vs Waesy Go / MotoLink com taxa fixa de R$ 0,99).
+  5. **Marco M2 — Alternância Polimórfica (UniversalViewManager):**
+     - `workspace.clientes.index.tsx`: Integrado `useWorkspaceViewMode({ module: "clientes" })`, `WorkspaceCanonicalToolbar` com `viewModes` e `UniversalViewManager` suportando Tabela densa corporativa, Cartões responsivos e Funil CRM com 4 estágios.
+     - `workspace.tarefas.tsx`: Separação das abas de escopo (`my-day`, `all`, `urgent`, `done`) dos modos de visualização (`kanban`, `table`, `calendar`), permitindo controle independente de escopo e layout.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.23, B.26 e B.33; DL-01 a DL-32.
+- **Consequências:** Zero dados sintéticos, sincronização bidirecional entre catálogo, checkout e precificação, e conformidade estrita com o piso WCAG 2.2 AA (44px) e design tokens canônicos.

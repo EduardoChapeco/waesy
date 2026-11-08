@@ -270,6 +270,24 @@ export async function _createProduct(input: {
  const effectiveStoreId = identity.store_id;
  if (!effectiveStoreId) throw new Error("Nenhuma loja ativa selecionada.");
 
+  // Calcula menor preço de entrada entre variantes se houver matriz (DEC-433)
+  let effectiveBasePriceCents = input.price_cents;
+  if (input.variants && input.variants.length > 0) {
+    let minVariantPrice = Infinity;
+    for (const v of input.variants) {
+      const varPrice =
+        v.price_override_cents != null && Number(v.price_override_cents) > 0
+          ? Number(v.price_override_cents)
+          : input.price_cents;
+      if (varPrice > 0 && varPrice < minVariantPrice) {
+        minVariantPrice = varPrice;
+      }
+    }
+    if (minVariantPrice !== Infinity && minVariantPrice > 0) {
+      effectiveBasePriceCents = Math.min(input.price_cents, minVariantPrice);
+    }
+  }
+
  // 1. Tenta RPC atômico primeiro se existir
  try {
  const { data, error } = await db.rpc("create_product_transaction_v1", {
@@ -313,7 +331,7 @@ export async function _createProduct(input: {
  short_description: input.short_description || null,
  status: input.status || "draft",
  brand: input.brand || null,
- price_cents: input.price_cents,
+ price_cents: effectiveBasePriceCents,
  compare_at_cents: input.compare_at_cents || null,
  cost_cents: input.cost_cents || null,
  attributes: input.attributes || {},
@@ -1247,6 +1265,25 @@ export async function _batchUpsertVariantMatrix(input: {
  (error instanceof Error ? error.message : String(error)) ||
  "Erro atômico ao atualizar matriz.",
  );
+ }
+
+ // Sincroniza o menor preço efetivo da matriz no preço pai do produto (DEC-433)
+ if (input.matrix && input.matrix.length > 0) {
+  let minVariantPrice = Infinity;
+  for (const v of input.matrix) {
+   if (v.price_override_cents != null && Number(v.price_override_cents) > 0) {
+    if (Number(v.price_override_cents) < minVariantPrice) {
+     minVariantPrice = Number(v.price_override_cents);
+    }
+   }
+  }
+  if (minVariantPrice !== Infinity && minVariantPrice > 0) {
+   await db
+    .from("products")
+    .update({ price_cents: minVariantPrice })
+    .eq("id", input.product_id)
+    .eq("store_id", store_id);
+  }
  }
 
  return data;

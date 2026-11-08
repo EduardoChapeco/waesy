@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { TravelPackageDetailView } from "@/components/commerce/travel/travel-package-detail-view";
 import { getBestInterestFreeInstallment } from "@/lib/payment/installment-calculator";
 import type { TravelPackageData } from "@/types/travel-package";
+import type { RawVariant } from "@/components/admin/catalog/variant-matrix-grid";
 
 export type ProductPreviewPaneViewport = "compact" | "medium" | "expanded";
 
@@ -43,6 +44,7 @@ export interface ProductPreviewPaneProps {
     status?: string;
     stock?: number;
   };
+  variants?: RawVariant[];
   images: string[];
   activePreviewImage: number;
   setActivePreviewImage: (idx: number) => void;
@@ -54,6 +56,7 @@ export function ProductPreviewPane({
   isGroceryMode,
   travelData,
   formValues,
+  variants,
   images,
   activePreviewImage,
   setActivePreviewImage,
@@ -61,9 +64,42 @@ export function ProductPreviewPane({
 }: ProductPreviewPaneProps) {
   const [viewport, setViewport] = React.useState<ProductPreviewPaneViewport>("compact");
 
+  // Cálculo de estatísticas e limites da matriz de variações (DEC-433)
+  const variantStats = React.useMemo(() => {
+    if (!variants || variants.length === 0) return null;
+    const basePrice = Number(formValues.price_cents || 0);
+    let minP = Infinity;
+    let maxP = -Infinity;
+    let totalStock = 0;
+
+    for (const v of variants) {
+      const effectivePrice =
+        v.price_override_cents != null && Number(v.price_override_cents) > 0
+          ? Number(v.price_override_cents)
+          : basePrice;
+      if (effectivePrice > 0 && effectivePrice < minP) minP = effectivePrice;
+      if (effectivePrice > maxP) maxP = effectivePrice;
+      totalStock += Number(v.stock || 0);
+    }
+
+    const resolvedMin = minP === Infinity ? basePrice : minP;
+    const resolvedMax = maxP === -Infinity ? basePrice : maxP;
+
+    return {
+      minPrice: resolvedMin,
+      maxPrice: resolvedMax,
+      totalStock,
+      count: variants.length,
+      hasRange: resolvedMin !== resolvedMax && resolvedMin > 0 && resolvedMax > 0,
+    };
+  }, [variants, formValues.price_cents]);
+
+  const effectivePriceCents = variantStats ? variantStats.minPrice : (formValues.price_cents || 0);
+  const effectiveStock = variantStats ? variantStats.totalStock : (formValues.stock ?? 0);
+
   const bestInstallment = React.useMemo(() => {
-    return getBestInterestFreeInstallment(formValues.price_cents || 0);
-  }, [formValues.price_cents]);
+    return getBestInterestFreeInstallment(effectivePriceCents);
+  }, [effectivePriceCents]);
 
   const viewportContainerClasses: Record<ProductPreviewPaneViewport, string> = {
     compact: "max-w-sm mx-auto border-x border-border shadow-xs",
@@ -207,18 +243,31 @@ export function ProductPreviewPane({
 
               {/* Bloco de Preços */}
               <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-                {formValues.compare_at_cents && formValues.price_cents && formValues.compare_at_cents > formValues.price_cents && (
+                {formValues.compare_at_cents && effectivePriceCents && formValues.compare_at_cents > effectivePriceCents && (
                   <span className="text-xs text-muted-foreground line-through block font-mono">
                     {formatMoney(formValues.compare_at_cents)}
                   </span>
                 )}
                 <div className="text-2xl font-black text-foreground font-mono">
-                  {formatMoney(formValues.price_cents || 0)}
+                  {variantStats?.hasRange && (
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block font-sans">
+                      A partir de
+                    </span>
+                  )}
+                  {formatMoney(effectivePriceCents)}
                   <span className="text-xs text-muted-foreground font-normal ml-1">
                     /{formValues.selling_unit || "un"}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                {variantStats && variantStats.count > 0 && (
+                  <div className="pt-1">
+                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/20 bg-primary/5">
+                      {variantStats.count} {variantStats.count === 1 ? "variação disponível" : "variações disponíveis"}
+                      {variantStats.hasRange && ` (até ${formatMoney(variantStats.maxPrice)})`}
+                    </Badge>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground pt-1">
                   {bestInstallment
                     ? bestInstallment.displayFormatted
                     : "À vista via PIX ou Cartão"}
@@ -227,11 +276,11 @@ export function ProductPreviewPane({
 
               {/* Selo de Estoque */}
               <div className="flex items-center gap-2 text-xs">
-                {(formValues.stock ?? 0) > 0 ? (
+                {effectiveStock > 0 ? (
                   <>
                     <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
                     <span className="text-muted-foreground font-medium">
-                      Disponível em estoque ({formValues.stock} unidades)
+                      Disponível em estoque ({effectiveStock} unidades{variantStats ? ` em ${variantStats.count} variações` : ""})
                     </span>
                   </>
                 ) : (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -154,6 +154,46 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
 
   const formValues = form.watch();
 
+  // Cálculo reativo de menor preço, maior preço e estoque físico total da matriz 2D (DEC-433)
+  const matrixStats = useMemo(() => {
+    if (!variantsMatrix || variantsMatrix.length === 0) {
+      return { minPrice: null, maxPrice: null, totalStock: null, hasRange: false };
+    }
+    const basePrice = Number(formValues.price_cents || 0);
+    let minP = Infinity;
+    let maxP = -Infinity;
+    let totalStock = 0;
+
+    for (const v of variantsMatrix) {
+      const effectivePrice =
+        v.price_override_cents != null && Number(v.price_override_cents) > 0
+          ? Number(v.price_override_cents)
+          : basePrice;
+      if (effectivePrice > 0 && effectivePrice < minP) minP = effectivePrice;
+      if (effectivePrice > maxP) maxP = effectivePrice;
+      totalStock += Number(v.stock || 0);
+    }
+
+    const resolvedMin = minP === Infinity ? basePrice : minP;
+    const resolvedMax = maxP === -Infinity ? basePrice : maxP;
+
+    return {
+      minPrice: resolvedMin,
+      maxPrice: resolvedMax,
+      totalStock,
+      hasRange: resolvedMin !== resolvedMax && resolvedMin > 0 && resolvedMax > 0,
+    };
+  }, [variantsMatrix, formValues.price_cents]);
+
+  // Sincroniza estoque pai automaticamente com a soma da matriz de variantes (Governança física estrita)
+  useEffect(() => {
+    if (variantsMatrix.length > 0 && matrixStats.totalStock !== null) {
+      if (form.getValues("stock") !== matrixStats.totalStock) {
+        form.setValue("stock", matrixStats.totalStock);
+      }
+    }
+  }, [variantsMatrix.length, matrixStats.totalStock, form]);
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     form.setValue("title", val);
@@ -266,6 +306,11 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
         webmcp_ai_discoverable: data.webmcp_ai_discoverable ?? true,
       };
 
+      const effectiveEntryPriceCents =
+        variantsMatrix.length > 0 && matrixStats.minPrice !== null && matrixStats.minPrice > 0
+          ? Math.min(Number(data.price_cents || 0), matrixStats.minPrice) || matrixStats.minPrice
+          : Number(data.price_cents || 0);
+
       await createProduct({
         data: {
           title: data.title.trim(),
@@ -277,7 +322,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
           status: data.status || "published",
           brand: data.brand || null,
           ean: foodSpecs.barcodeEan?.trim() || data.ean || null,
-          price_cents: data.price_cents,
+          price_cents: effectiveEntryPriceCents,
           compare_at_cents: data.compare_at_cents > 0 ? data.compare_at_cents : null,
           cost_cents: data.cost_cents > 0 ? data.cost_cents : null,
           type_id: data.type_id || null,
@@ -354,6 +399,11 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
         webmcp_ai_discoverable: data.webmcp_ai_discoverable ?? true,
       };
 
+      const effectiveDraftEntryPriceCents =
+        variantsMatrix.length > 0 && matrixStats.minPrice !== null && matrixStats.minPrice > 0
+          ? Math.min(Number(data.price_cents || 0), matrixStats.minPrice) || matrixStats.minPrice
+          : Number(data.price_cents || 0);
+
       await createProduct({
         data: {
           title: data.title.trim(),
@@ -365,7 +415,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
           status: "draft",
           brand: data.brand || null,
           ean: foodSpecs.barcodeEan?.trim() || (data as any).ean || null,
-          price_cents: Number(data.price_cents || 0),
+          price_cents: effectiveDraftEntryPriceCents,
           compare_at_cents: data.compare_at_cents && data.compare_at_cents > 0 ? data.compare_at_cents : null,
           cost_cents: data.cost_cents && data.cost_cents > 0 ? data.cost_cents : null,
           type_id: data.type_id || null,
@@ -468,6 +518,7 @@ export function useProductEditor(initialCategories: any[], initialOptionGroups: 
     handleImportProduct,
     variantsMatrix,
     setVariantsMatrix,
+    matrixStats,
     isMasterCatalogOpen,
     setIsMasterCatalogOpen,
     fiscalData,

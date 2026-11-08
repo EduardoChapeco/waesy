@@ -26,6 +26,8 @@ export interface DeliverySelectorProps {
   doorDeliverySelected?: boolean;
   onToggleDoorDelivery?: (selected: boolean) => void;
   doorDeliveryFeeCents?: number;
+  allowDelivery?: boolean;
+  allowPickup?: boolean;
   onOpenPolicySheet?: () => void;
   className?: string;
 }
@@ -48,9 +50,18 @@ export function DeliverySelector({
   doorDeliverySelected = false,
   onToggleDoorDelivery,
   doorDeliveryFeeCents = 400,
+  allowDelivery = true,
+  allowPickup = true,
   onOpenPolicySheet,
   className,
 }: DeliverySelectorProps) {
+  React.useEffect(() => {
+    if (!allowDelivery && allowPickup && method !== "pickup") {
+      onMethodChange("pickup");
+    } else if (!allowPickup && allowDelivery && method !== "delivery") {
+      onMethodChange("delivery");
+    }
+  }, [allowDelivery, allowPickup, method, onMethodChange]);
   return (
     <div className={cn("space-y-4", className)}>
       {/* ── 1. Abas Primárias de Modalidade Comercial ── */}
@@ -60,34 +71,53 @@ export function DeliverySelector({
           type="button"
           role="radio"
           aria-checked={method === "delivery"}
-          onClick={() => onMethodChange("delivery")}
+          aria-disabled={!allowDelivery}
+          disabled={!allowDelivery}
+          onClick={() => allowDelivery && onMethodChange("delivery")}
           className={cn(
-            "p-4 rounded-lg border text-left flex items-center gap-3 transition-colors motion-reduce:transition-none cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            method === "delivery"
-              ? "bg-foreground text-background border-foreground font-bold shadow-xs"
-              : "bg-card border-border/80 text-foreground hover:bg-muted/40"
+            "p-4 rounded-lg border text-left flex items-center gap-3 transition-colors motion-reduce:transition-none min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            !allowDelivery
+              ? "opacity-60 bg-muted/30 border-border/60 cursor-not-allowed"
+              : method === "delivery"
+              ? "bg-foreground text-background border-foreground font-bold shadow-xs cursor-pointer"
+              : "bg-card border-border/80 text-foreground hover:bg-muted/40 cursor-pointer"
           )}
         >
           <div
             className={cn(
               "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-              method === "delivery" ? "bg-background/20 text-background" : "bg-muted text-muted-foreground"
+              !allowDelivery
+                ? "bg-muted text-muted-foreground"
+                : method === "delivery"
+                ? "bg-background/20 text-background"
+                : "bg-muted text-muted-foreground"
             )}
           >
             <Truck className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold truncate">Entrega no Endereço</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold truncate">Entrega no Endereço</p>
+              {!allowDelivery && (
+                <Badge variant="outline" className="text-xs py-0 text-muted-foreground">
+                  Indisponível
+                </Badge>
+              )}
+            </div>
             <p
               className={cn(
                 "text-xs truncate",
-                method === "delivery" ? "text-background/80" : "text-muted-foreground"
+                !allowDelivery
+                  ? "text-muted-foreground"
+                  : method === "delivery"
+                  ? "text-background/80"
+                  : "text-muted-foreground"
               )}
             >
-              Receba com agilidade onde estiver
+              {!allowDelivery ? "Esta loja atende apenas com retirada" : "Receba com agilidade onde estiver"}
             </p>
           </div>
-          {method === "delivery" && (
+          {allowDelivery && method === "delivery" && (
             <CheckCircle2 className="size-5 text-background shrink-0" />
           )}
         </button>
@@ -97,18 +127,26 @@ export function DeliverySelector({
           type="button"
           role="radio"
           aria-checked={method === "pickup"}
-          onClick={() => onMethodChange("pickup")}
+          aria-disabled={!allowPickup}
+          disabled={!allowPickup}
+          onClick={() => allowPickup && onMethodChange("pickup")}
           className={cn(
-            "p-4 rounded-lg border text-left flex items-center gap-3 transition-colors motion-reduce:transition-none cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            method === "pickup"
-              ? "bg-foreground text-background border-foreground font-bold shadow-xs"
-              : "bg-card border-border/80 text-foreground hover:bg-muted/40"
+            "p-4 rounded-lg border text-left flex items-center gap-3 transition-colors motion-reduce:transition-none min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            !allowPickup
+              ? "opacity-60 bg-muted/30 border-border/60 cursor-not-allowed"
+              : method === "pickup"
+              ? "bg-foreground text-background border-foreground font-bold shadow-xs cursor-pointer"
+              : "bg-card border-border/80 text-foreground hover:bg-muted/40 cursor-pointer"
           )}
         >
           <div
             className={cn(
               "size-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-              method === "pickup" ? "bg-background/20 text-background" : "bg-muted text-muted-foreground"
+              !allowPickup
+                ? "bg-muted text-muted-foreground"
+                : method === "pickup"
+                ? "bg-background/20 text-background"
+                : "bg-muted text-muted-foreground"
             )}
           >
             <Store className="size-5" />
@@ -116,28 +154,38 @@ export function DeliverySelector({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <p className="text-sm font-bold truncate">Retirada no Balcão</p>
-              <Badge
-                variant="secondary"
-                className={cn(
-                  "text-xs font-semibold px-2 py-0",
-                  method === "pickup"
-                    ? "bg-background/20 text-background border-transparent"
-                    : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                )}
-              >
-                Grátis
-              </Badge>
+              {!allowPickup ? (
+                <Badge variant="outline" className="text-xs py-0 text-muted-foreground">
+                  Indisponível
+                </Badge>
+              ) : (
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "text-xs font-semibold px-2 py-0",
+                    method === "pickup"
+                      ? "bg-background/20 text-background border-transparent"
+                      : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  )}
+                >
+                  Grátis
+                </Badge>
+              )}
             </div>
             <p
               className={cn(
                 "text-xs truncate",
-                method === "pickup" ? "text-background/80" : "text-muted-foreground"
+                !allowPickup
+                  ? "text-muted-foreground"
+                  : method === "pickup"
+                  ? "text-background/80"
+                  : "text-muted-foreground"
               )}
             >
-              Retire diretamente na loja parceira
+              {!allowPickup ? "Esta loja atende apenas com entrega" : "Retire diretamente na loja parceira"}
             </p>
           </div>
-          {method === "pickup" && (
+          {allowPickup && method === "pickup" && (
             <CheckCircle2 className="size-5 text-background shrink-0" />
           )}
         </button>
