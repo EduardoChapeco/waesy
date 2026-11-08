@@ -986,6 +986,9 @@ export const addCustomerClinicalRecord = createServerFn({ method: "POST" })
  professionalName: z.string().optional(),
  notes: z.string().min(3),
  allergies: z.string().optional().nullable(),
+ medicalHistory: z.string().optional().nullable(),
+ emergencyContact: z.string().optional().nullable(),
+ preferredProfessional: z.string().optional().nullable(),
  attachments: z.array(z.string().url()).optional(),
  }),
  )
@@ -994,6 +997,16 @@ export const addCustomerClinicalRecord = createServerFn({ method: "POST" })
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
 
+ const contentPayload = {
+ service_title: input.serviceTitle,
+ professional_name: input.professionalName || (identity as any).name || "Especialista",
+ notes: input.notes,
+ allergies: input.allergies || null,
+ medical_history: input.medicalHistory || null,
+ emergency_contact: input.emergencyContact || null,
+ preferred_professional: input.preferredProfessional || null,
+ };
+
  const { data, error } = await supabase
  .from("crm_clinical_records")
  .insert({
@@ -1001,16 +1014,20 @@ export const addCustomerClinicalRecord = createServerFn({ method: "POST" })
  store_id: identity.store_id,
  author_id: identity.id,
  record_type: "anamnesis",
- content: {
- service_title: input.serviceTitle,
- professional_name: input.professionalName || (identity as any).name || "Especialista",
- notes: input.notes,
- allergies: input.allergies || null,
- },
+ content: JSON.stringify(contentPayload),
  attachments: input.attachments || [],
  })
  .select()
  .single();
+
+ if (input.emergencyContact?.trim()) {
+ await supabase
+ .from("customers_crm")
+ .update({ emergency_contact_phone: input.emergencyContact.trim() })
+ .eq("id", input.customerId)
+ .eq("store_id", identity.store_id)
+ .catch(() => null);
+ }
 
  if (error) {
  console.warn("[clinical_records] Registro salvo com fallback:", error.message);
