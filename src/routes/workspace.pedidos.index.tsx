@@ -117,7 +117,6 @@ function AdminOrdersPage() {
     if (isRetail) {
       return [
         { id: "table" as ViewMode, label: "Tabela de Vendas", icon: List },
-        { id: "picking" as ViewMode, label: "Separação Rápida", icon: ShoppingBag },
       ];
     }
     if (isServices) {

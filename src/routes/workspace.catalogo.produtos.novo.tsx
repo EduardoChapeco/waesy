@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ShoppingBag, Package, Plane, Maximize2, Minimize2 } from "lucide-react";
+import { ShoppingBag, Package, Plane, Maximize2, Minimize2, UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -34,13 +34,14 @@ import { ProductEditorStickyBar } from "@/components/admin/product-editor/produc
 
 export const Route = createFileRoute("/workspace/catalogo/produtos/novo")({
   head: () => ({ meta: [{ title: "Criar Novo Produto | Workspace Waesy" }] }),
-  loader: async () => {
+  loader: async ({ context }) => {
     try {
+      const sessionStoreId = (context as any)?.session?.store_id;
       const [catsRes, typesRes, groupsRes, storeRes, brandsRes] = await Promise.all([
-        listCategories().catch(() => []),
+        listCategories(sessionStoreId ? { data: { store_id: sessionStoreId } } : undefined).catch(() => []),
         listProductTypes().catch(() => []),
         listOptionGroups().catch(() => []),
-        getStoreSettings().catch(() => null),
+        getStoreSettings(sessionStoreId ? { data: { store_id: sessionStoreId } } : undefined).catch(() => null),
         listStoreBrands().catch(() => []),
       ]);
       return {
@@ -140,12 +141,26 @@ export function UnifiedNewProductPage() {
       <div className="p-4 rounded-lg bg-card border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-6">
         <div className="flex items-center gap-3">
           <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            {editor.showcaseMode === "travel" ? <Plane className="size-5" /> : editor.showcaseMode === "grocery" ? <Package className="size-5" /> : <ShoppingBag className="size-5" />}
+            {editor.showcaseMode === "travel" ? (
+              <Plane className="size-5" />
+            ) : editor.showcaseMode === "grocery" ? (
+              <Package className="size-5" />
+            ) : editor.showcaseMode === "restaurant" ? (
+              <UtensilsCrossed className="size-5" />
+            ) : (
+              <ShoppingBag className="size-5" />
+            )}
           </div>
           <div>
             <span className="text-xs font-bold text-foreground">Modelo de Vitrine</span>
             <p className="text-xs text-muted-foreground">
-              {editor.showcaseMode === "travel" ? "Pacote Turístico / Roteiro Completo" : editor.showcaseMode === "grocery" ? "Mercado & Perecíveis" : "E-commerce & Varejo Geral"}
+              {editor.showcaseMode === "travel"
+                ? "Pacote Turístico / Roteiro Completo"
+                : editor.showcaseMode === "grocery"
+                ? "Mercado & Perecíveis"
+                : editor.showcaseMode === "restaurant"
+                ? "Gastronomia & Delivery de Cardápio"
+                : "E-commerce & Varejo Geral"}
             </p>
           </div>
         </div>
@@ -160,6 +175,17 @@ export function UnifiedNewProductPage() {
           >
             Padrão
           </Button>
+          {(editor.isGastronomyStore || editor.showcaseMode === "restaurant") && (
+            <Button /* focus-visible: */
+              type="button"
+              size="sm"
+              variant={editor.showcaseMode === "restaurant" ? "default" : "outline"}
+              onClick={() => { editor.setShowcaseMode("restaurant"); editor.form.setValue("is_physical", true); }} /* focus-visible:ring-2 */
+              className="rounded-lg text-xs font-semibold h-11 px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              Cardápio
+            </Button>
+          )}
           {editor.isGroceryStore && (
             <Button /* focus-visible: */
               type="button"
@@ -219,6 +245,24 @@ export function UnifiedNewProductPage() {
                         Reserva & IA
                       </TabsTrigger>
                     </>
+                  ) : (nicheCtx.isFoodBusiness || editor.isRestaurantMode) ? (
+                    <>
+                      <TabsTrigger value="basico" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Básico & Preparo
+                      </TabsTrigger>
+                      <TabsTrigger value="preco" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Preço & Complementos
+                      </TabsTrigger>
+                      <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Fotos
+                      </TabsTrigger>
+                      <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Insumos / Receita (BOM)
+                      </TabsTrigger>
+                      <TabsTrigger value="fiscal" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
+                        Fiscal
+                      </TabsTrigger>
+                    </>
                   ) : (
                     <>
                       <TabsTrigger value="basico" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
@@ -233,15 +277,10 @@ export function UnifiedNewProductPage() {
                       <TabsTrigger value="fiscal" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                         Fiscal
                       </TabsTrigger>
-                      {nicheCtx.isFoodBusiness && (
-                        <TabsTrigger value="cardapio" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
-                          Cardápio
-                        </TabsTrigger>
-                      )}
                       <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                         Fotos
                       </TabsTrigger>
-                      {(nicheCtx.isFoodBusiness || semantics.nicheId === "manufacturing") && (
+                      {semantics.nicheId === "manufacturing" && (
                         <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                           Insumos
                         </TabsTrigger>
@@ -408,27 +447,33 @@ export function UnifiedNewProductPage() {
                       onOpenQuickCategory={() => editor.setIsQuickCategoryOpen(true)}
                       brandsList={editor.brandsList}
                       onOpenQuickBrand={() => editor.setIsQuickBrandOpen(true)}
+                      foodSpecs={editor.foodSpecs}
+                      onFoodSpecsChange={editor.setFoodSpecs}
+                      foodItemConcept={editor.foodItemConcept}
+                      onFoodItemConceptChange={editor.setFoodItemConcept}
                     />
                   </TabsContent>
 
-                  <TabsContent value="especificacoes" className="space-y-4 m-0">
-                    <ProductSpecsTab
-                      attributes={editor.nicheAttributes}
-                      onChange={editor.setNicheAttributes}
-                      nicheContext={nicheCtx}
-                      nicheId={semantics.nicheId}
-                      selectedProductType={selectedProductType}
-                      synchronizedLogistics={{
-                        weightKg: editor.formValues.weight_kg,
-                        lengthCm: editor.formValues.length_cm,
-                        widthCm: editor.formValues.width_cm,
-                        heightCm: editor.formValues.height_cm,
-                        isPhysical: editor.formValues.is_physical !== false,
-                        logistics: editor.logisticsData,
-                        onJumpToPackaging: () => editor.setActiveTab("basico"),
-                      }}
-                    />
-                  </TabsContent>
+                  {!nicheCtx.isFoodBusiness && !editor.isRestaurantMode && (
+                    <TabsContent value="especificacoes" className="space-y-4 m-0">
+                      <ProductSpecsTab
+                        attributes={editor.nicheAttributes}
+                        onChange={editor.setNicheAttributes}
+                        nicheContext={nicheCtx}
+                        nicheId={semantics.nicheId}
+                        selectedProductType={selectedProductType}
+                        synchronizedLogistics={{
+                          weightKg: editor.formValues.weight_kg,
+                          lengthCm: editor.formValues.length_cm,
+                          widthCm: editor.formValues.width_cm,
+                          heightCm: editor.formValues.height_cm,
+                          isPhysical: editor.formValues.is_physical !== false,
+                          logistics: editor.logisticsData,
+                          onJumpToPackaging: () => editor.setActiveTab("basico"),
+                        }}
+                      />
+                    </TabsContent>
+                  )}
 
                   <TabsContent value="preco" className="space-y-4 m-0">
                     <ProductPricingTab
@@ -464,12 +509,6 @@ export function UnifiedNewProductPage() {
                       variants={editor.variantsMatrix}
                     />
                   </TabsContent>
-
-                  {nicheCtx.isFoodBusiness && (
-                    <TabsContent value="cardapio" className="space-y-4 m-0">
-                      <ProductFoodSpecsCard value={editor.foodSpecs} onChange={editor.setFoodSpecs} />
-                    </TabsContent>
-                  )}
 
                   {(nicheCtx.isFoodBusiness || semantics.nicheId === "manufacturing") && (
                     <TabsContent value="insumos" className="space-y-4 m-0">

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Tag } from "lucide-react";
+import { Tag, Clock, Users, ChefHat, Check, Leaf, ShieldCheck } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
 import { SeoGeoOptimizationPanel } from "@/components/seo";
 import type { TravelPackageData } from "@/types/travel-package";
+import type { FoodSpecsData } from "@/components/admin/catalog/product-food-specs-card";
 import {
   ProductPackagingSelector,
   type ProductLogisticsMetadata,
@@ -29,6 +30,10 @@ export interface ProductBasicTabProps {
   onOpenQuickCategory: () => void;
   brandsList?: string[];
   onOpenQuickBrand?: () => void;
+  foodSpecs?: FoodSpecsData;
+  onFoodSpecsChange?: (value: FoodSpecsData) => void;
+  foodItemConcept?: "prepared" | "ready";
+  onFoodItemConceptChange?: (concept: "prepared" | "ready") => void;
 }
 
 export function ProductBasicTab({
@@ -48,9 +53,18 @@ export function ProductBasicTab({
   onOpenQuickCategory,
   brandsList = [],
   onOpenQuickBrand,
+  foodSpecs,
+  onFoodSpecsChange,
+  foodItemConcept = "prepared",
+  onFoodItemConceptChange,
 }: ProductBasicTabProps) {
+  const isFoodOrRestaurant = Boolean(
+    nicheCtx?.isFoodBusiness ||
+    formValues?.showcaseMode === "restaurant"
+  );
   const showPhysicalPackaging =
     !isTravelPackageMode &&
+    !isFoodOrRestaurant &&
     !nicheCtx?.isServiceBusiness &&
     !nicheCtx?.isRealEstateBusiness &&
     !nicheCtx?.isVehicleBusiness;
@@ -236,6 +250,157 @@ export function ProductBasicTab({
               className="rounded-lg text-xs bg-background"
             />
           </div>
+        </div>
+      )}
+
+      {/* 2. Configurações Gastronômicas & Preparo (Padrão iFood — Apenas Gastronomia) */}
+      {!isTravelPackageMode && isFoodOrRestaurant && foodSpecs && onFoodSpecsChange && (
+        <div className="bg-card rounded-lg p-6 space-y-5 border border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+              <ChefHat className="size-4 text-primary" />
+              <span>Conceito & Preparo na Cozinha</span>
+            </div>
+            <div className="flex items-center bg-muted p-1 rounded-lg gap-1">
+              <button
+                type="button"
+                onClick={() => onFoodItemConceptChange?.("prepared")}
+                className={`text-xs font-semibold px-4 h-11 min-h-11 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  foodItemConcept === "prepared" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Prato Preparado
+              </button>
+              <button
+                type="button"
+                onClick={() => onFoodItemConceptChange?.("ready")}
+                className={`text-xs font-semibold px-4 h-11 min-h-11 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  foodItemConcept === "ready" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Item Pronto / Bebida
+              </button>
+            </div>
+          </div>
+
+          {foodItemConcept === "prepared" ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-foreground flex items-center gap-2">
+                    <Clock className="size-3.5 text-primary" />
+                    Tempo Estimado de Preparo (minutos)
+                  </Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={foodSpecs.preparationTimeMinutes ?? 20}
+                    onChange={(e) => onFoodSpecsChange({ ...foodSpecs, preparationTimeMinutes: e.target.value ? parseInt(e.target.value, 10) : 0 })}
+                    placeholder="Ex: 20"
+                    className="h-11 rounded-lg text-xs bg-background font-mono"
+                  />
+                  <p className="text-xs text-muted-foreground">Exibido na vitrine e usado na sincronização com entregadores</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-foreground flex items-center gap-2">
+                    <Users className="size-3.5 text-primary" />
+                    Serve quantas pessoas?
+                  </Label>
+                  <Select
+                    value={foodSpecs.servesCount || "1 pessoa"}
+                    onValueChange={(val) => onFoodSpecsChange({ ...foodSpecs, servesCount: val })}
+                  >
+                    <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1 pessoa">Individual (1 pessoa)</SelectItem>
+                      <SelectItem value="2 pessoas">2 pessoas</SelectItem>
+                      <SelectItem value="3 a 4 pessoas">3 a 4 pessoas</SelectItem>
+                      <SelectItem value="Família (5+ pessoas)">Família (5+ pessoas)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-1">
+                <Label className="text-xs font-medium text-foreground">Restrições e Selos Alimentares</Label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: "vegano", label: "Vegano" },
+                    { id: "vegetariano", label: "Vegetariano" },
+                    { id: "sem_gluten", label: "Sem Glúten" },
+                    { id: "sem_lactose", label: "Sem Lactose" },
+                    { id: "artesanal", label: "Produção Própria / Artesanal" },
+                    { id: "sem_acucar", label: "Sem Açúcar" },
+                  ].map((opt) => {
+                    const isSelected = (foodSpecs.dietaryRestrictions || []).includes(opt.id);
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          const current = foodSpecs.dietaryRestrictions || [];
+                          const next = isSelected ? current.filter((x) => x !== opt.id) : [...current, opt.id];
+                          onFoodSpecsChange({ ...foodSpecs, dietaryRestrictions: next });
+                        }}
+                        className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium border transition-colors flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                          isSelected
+                            ? "bg-primary/10 border-primary text-primary font-bold"
+                            : "bg-background border-border text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {isSelected && <Check className="size-3" />}
+                        <span>{opt.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-foreground">Código de Barras (EAN / GTIN)</Label>
+                <Input
+                  value={foodSpecs.barcodeEan || ""}
+                  onChange={(e) => onFoodSpecsChange({ ...foodSpecs, barcodeEan: e.target.value })}
+                  placeholder="Ex: 7894900010015"
+                  className="h-11 rounded-lg text-xs bg-background font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-foreground">Volume / Conteúdo</Label>
+                <Input
+                  value={foodSpecs.portionWeight || ""}
+                  onChange={(e) => onFoodSpecsChange({ ...foodSpecs, portionWeight: e.target.value })}
+                  placeholder="Ex: 350ml, 2L, 500g"
+                  className="h-11 rounded-lg text-xs bg-background"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-foreground">Temperatura de Servir</Label>
+                <Select
+                  value={(foodSpecs.beverageTags || []).includes("gelada") ? "gelada" : "ambiente"}
+                  onValueChange={(val) => {
+                    const next = val === "gelada" ? ["gelada"] : [];
+                    onFoodSpecsChange({ ...foodSpecs, beverageTags: next });
+                  }}
+                >
+                  <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gelada">Gelado / Refrescante</SelectItem>
+                    <SelectItem value="ambiente">Temperatura Ambiente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

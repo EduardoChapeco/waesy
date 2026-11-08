@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { EmptyState } from "@/components/state/states";
-import { listWorkflows, createWorkflow, toggleWorkflowStatus, deleteWorkflow, triggerWorkflowExecution } from "@/services/automation.functions";
+import { listWorkflows, createWorkflow, toggleWorkflowStatus, deleteWorkflow, triggerWorkflowExecution, seedCanonicalAutomationWorkflows } from "@/services/automation.functions";
 
 export const Route = createFileRoute("/workspace/automacoes")({
   head: () => ({ meta: [{ title: "Workflows e Automações | Waesy" }] }),
@@ -28,26 +28,68 @@ export const Route = createFileRoute("/workspace/automacoes")({
   component: AutomacoesWorkflowsPage,
 });
 
-const TRIGGER_META: Record<string, { label: string; icon: any; color: string }> = {
+const TRIGGER_META: Record<string, { label: string; icon: any; color: string; defaultTemplate?: string }> = {
+  customer_birthday: {
+    label: "Aniversário do Cliente",
+    icon: Calendar,
+    color: "text-primary bg-primary/10 border-primary/30",
+    defaultTemplate: "Olá {nome}, parabéns pelo seu dia! Preparamos uma condição especial para sua próxima viagem rumo a {destino}. Acesse: {link_dossie}",
+  },
+  travel_approaching_d7: {
+    label: "Viagem se Aproximando (D-7 / D-2 / D-1)",
+    icon: Clock,
+    color: "text-warning-strong bg-warning/10 border-warning/30",
+    defaultTemplate: "Olá {nome}, faltam poucos dias para seu embarque rumo a {destino} em {data_viagem} às {hora}. Confira seu dossiê: {link_dossie}",
+  },
+  travel_reminder_24h: {
+    label: "Lembrete de Embarque (D-1 / 24h)",
+    icon: Clock,
+    color: "text-warning-strong bg-warning/10 border-warning/30",
+    defaultTemplate: "Olá {nome}, sua viagem para {destino} parte amanhã ({data_viagem}) às {hora}. Confira seus vouchers: {link_dossie}",
+  },
+  post_checkin_welcome: {
+    label: "Boas-Vindas Pós-Embarque / Check-in",
+    icon: CheckCircle2,
+    color: "text-success bg-success/10 border-success/30",
+    defaultTemplate: "Olá {nome}, desejamos uma excelente chegada em {destino}! Seu roteiro completo está em: {link_dossie}",
+  },
+  post_return_nps: {
+    label: "Pesquisa de Satisfação Pós-Retorno (D+1)",
+    icon: MessageSquare,
+    color: "text-primary bg-primary/10 border-primary/30",
+    defaultTemplate: "Olá {nome}, bem-vindo de volta de {destino}! De 0 a 10, como foi sua experiência conosco? Avalie em: {link_dossie}",
+  },
+  quote_followup_24h: {
+    label: "Follow-up de Orçamento Aberto (24h/48h)",
+    icon: TrendingUp,
+    color: "text-warning-strong bg-warning/10 border-warning/30",
+    defaultTemplate: "Olá {nome}, conseguimos manter a tarifa da sua cotação para {destino} em {data_viagem}. Confira os detalhes: {link_dossie}",
+  },
+  payment_due_reminder: {
+    label: "Cobrança Preventiva / Amigável (Pix)",
+    icon: Tag,
+    color: "text-primary bg-primary/10 border-primary/30",
+    defaultTemplate: "Olá {nome}, lembramos que a parcela referente a {destino} ({data_viagem}) vence hoje. Acesse seu dossiê: {link_dossie}",
+  },
   order_paid: {
     label: "Pedido Pago",
     icon: CheckCircle2,
-    color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
+    color: "text-success bg-success/10 border-success/30",
   },
   order_created: {
     label: "Pedido Criado",
     icon: ShoppingCart,
-    color: "text-blue-500 bg-blue-500/10 border-blue-500/30",
+    color: "text-primary bg-primary/10 border-primary/30",
   },
   order_cancelled: {
     label: "Pedido Cancelado",
     icon: Trash2,
-    color: "text-rose-500 bg-rose-500/10 border-rose-500/30",
+    color: "text-destructive bg-destructive/10 border-destructive/30",
   },
   customer_created: {
     label: "Novo Cliente",
     icon: UserPlus,
-    color: "text-violet-500 bg-violet-500/10 border-violet-500/30",
+    color: "text-primary bg-primary/10 border-primary/30",
   },
   lead_created: {
     label: "Lead Criado",
@@ -57,22 +99,22 @@ const TRIGGER_META: Record<string, { label: string; icon: any; color: string }> 
   lead_won: {
     label: "Lead Ganho",
     icon: CheckCircle2,
-    color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
+    color: "text-success bg-success/10 border-success/30",
   },
   lead_lost: {
     label: "Lead Perdido",
     icon: Trash2,
-    color: "text-rose-500 bg-rose-500/10 border-rose-500/30",
+    color: "text-destructive bg-destructive/10 border-destructive/30",
   },
   booking_confirmed: {
     label: "Reserva Confirmada",
     icon: Calendar,
-    color: "text-sky-500 bg-sky-500/10 border-sky-500/30",
+    color: "text-primary bg-primary/10 border-primary/30",
   },
   booking_cancelled: {
     label: "Reserva Cancelada",
     icon: Calendar,
-    color: "text-rose-500 bg-rose-500/10 border-rose-500/30",
+    color: "text-destructive bg-destructive/10 border-destructive/30",
   },
   cart_abandoned: {
     label: "Carrinho Abandonado",
@@ -82,7 +124,7 @@ const TRIGGER_META: Record<string, { label: string; icon: any; color: string }> 
   product_low_stock: {
     label: "Estoque Baixo",
     icon: Package,
-    color: "text-orange-500 bg-orange-500/10 border-orange-500/30",
+    color: "text-warning-strong bg-warning/10 border-warning/30",
   },
   manual: {
     label: "Manual / API",
@@ -90,6 +132,8 @@ const TRIGGER_META: Record<string, { label: string; icon: any; color: string }> 
     color: "text-muted-foreground bg-muted border-border",
   },
 };
+
+const DYNAMIC_VARIABLES = ["{nome}", "{destino}", "{data_viagem}", "{hora}", "{link_dossie}"];
 
 // Preview visual de nós canônicos do workflow
 const WORKFLOW_PREVIEW_NODES = [
@@ -106,14 +150,7 @@ function AutomacoesWorkflowsPage() {
   const [workflows, setWorkflows] = useState<any[]>(initialWorkflows || []);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [executingId, setExecutingId] = useState<string | null>(null);
-  const handleExecute = async (wf: any) => {
-    setExecutingId(wf.id);
-    try {
-      toast.success(`Automação "${wf.title || wf.name}" disparada para teste!`);
-    } finally {
-      setExecutingId(null);
-    }
-  };
+  const [isSeeding, setIsSeeding] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
@@ -122,7 +159,7 @@ function AutomacoesWorkflowsPage() {
     try {
       const res = await triggerWorkflowExecution({ data: { id: wf.id } });
       toast.success(
-        `Workflow "${wf.title}" executado com sucesso! (${res.result.actions_dispatched} nós acionados)`
+        `Workflow "${wf.title}" executado (${res.result.actions_dispatched} ação WhatsApp disparada).`
       );
       setWorkflows((prev) =>
         prev.map((w) =>
@@ -138,10 +175,44 @@ function AutomacoesWorkflowsPage() {
     }
   };
 
+  const handleSeedCanonical = async () => {
+    setIsSeeding(true);
+    try {
+      const res = await seedCanonicalAutomationWorkflows();
+      setWorkflows(res.workflows || []);
+      toast.success(
+        res.inserted > 0
+          ? `${res.inserted} gatilhos canônicos instalados com sucesso.`
+          : "Todos os 6 gatilhos canônicos já estão configurados."
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao instalar gatilhos canônicos.");
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [triggerType, setTriggerType] = useState<string>("order_paid");
+  const [triggerType, setTriggerType] = useState<string>("customer_birthday");
+  const [sendTime, setSendTime] = useState<string>("09:00");
+  const [delayMinutes, setDelayMinutes] = useState<number>(0);
+  const [messageTemplate, setMessageTemplate] = useState<string>(
+    TRIGGER_META.customer_birthday.defaultTemplate || ""
+  );
+
+  const handleTriggerChange = (val: string) => {
+    setTriggerType(val);
+    const meta = TRIGGER_META[val];
+    if (meta?.defaultTemplate) {
+      setMessageTemplate(meta.defaultTemplate);
+    }
+  };
+
+  const handleInsertVariable = (variable: string) => {
+    setMessageTemplate((prev) => `${prev}${prev.endsWith(" ") || !prev ? "" : " "}${variable}`);
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,14 +220,23 @@ function AutomacoesWorkflowsPage() {
     setIsSaving(true);
     try {
       const created = await createWorkflow({
-        data: { title: title.trim(), description: description.trim() || null, triggerType: triggerType as any },
+        data: {
+          title: title.trim(),
+          description: description.trim() || null,
+          triggerType: triggerType as any,
+          sendTime: sendTime || "09:00",
+          delayMinutes: Number(delayMinutes) || 0,
+          messageTemplate: messageTemplate.trim() || null,
+        },
       });
-      toast.success("Workflow criado com sucesso!");
+      toast.success("Workflow criado com sucesso.");
       setWorkflows((prev) => [created, ...prev]);
       setIsCreateOpen(false);
       setTitle("");
       setDescription("");
-      setTriggerType("order_paid");
+      setTriggerType("customer_birthday");
+      setSendTime("09:00");
+      setDelayMinutes(0);
     } catch (err: any) {
       toast.error(err?.message || "Erro ao criar workflow.");
     } finally {
@@ -172,7 +252,7 @@ function AutomacoesWorkflowsPage() {
       setWorkflows((prev) =>
         prev.map((w) => w.id === wf.id ? { ...w, status: !isActive ? "active" : "inactive" } : w)
       );
-      toast.success(isActive ? "Workflow desativado." : "Workflow ativado!");
+      toast.success(isActive ? "Workflow desativado." : "Workflow ativado.");
     } catch {
       toast.error("Erro ao alterar status.");
     } finally {
@@ -203,6 +283,16 @@ function AutomacoesWorkflowsPage() {
         description="Réguas de relacionamento, disparos e integrações automáticas."
         actions={
           <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSeeding}
+              onClick={handleSeedCanonical}
+              className="rounded-lg min-h-11 font-bold gap-2"
+            >
+              <Zap className="h-4 w-4" />
+              {isSeeding ? "Instalando..." : "Gatilhos Canônicos"}
+            </Button>
             <Button asChild variant="outline" className="rounded-lg min-h-11 font-bold gap-2">
               <Link to="/workspace/whatsapp/automacoes">
                 <MessageSquare className="h-4 w-4" />
@@ -230,7 +320,7 @@ function AutomacoesWorkflowsPage() {
         </div>
         <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ativos</span>
-          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{activeCount}</div>
+          <div className="text-2xl font-black text-success">{activeCount}</div>
         </div>
         <div className="bg-card rounded-lg border border-border/60 p-4 space-y-1">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rascunhos</span>
@@ -255,8 +345,8 @@ function AutomacoesWorkflowsPage() {
               Arraste triggers, condições e ações para criar fluxos inteligentes.
             </p>
           </div>
-          <Badge variant="outline" className="text-xs font-bold uppercase px-3 py-1 gap-1 border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
-            <Zap className="size-3 text-emerald-500" />
+          <Badge variant="outline" className="text-xs font-bold uppercase px-3 py-1 gap-1 border-success/30 text-success bg-success/10">
+            <Zap className="size-3 text-success" />
             Motor de Disparo Ativo
           </Badge>
         </div>
@@ -266,9 +356,9 @@ function AutomacoesWorkflowsPage() {
             const Icon = node.icon;
             const colors = [
               "text-warning-strong bg-warning/10 border-warning/30",
-              "text-blue-500 bg-blue-500/10 border-blue-500/30",
-              "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
-              "text-violet-500 bg-violet-500/10 border-violet-500/30",
+              "text-primary bg-primary/10 border-primary/30",
+              "text-success bg-success/10 border-success/30",
+              "text-primary bg-primary/10 border-primary/30",
             ];
             return (
               <div key={node.id} className="flex flex-col sm:flex-row items-center gap-4">
@@ -308,6 +398,11 @@ function AutomacoesWorkflowsPage() {
               const Icon = meta.icon;
               const isActive = wf.status === "active";
               const isLoading = loadingId === wf.id;
+              const actionNode = Array.isArray(wf.nodes)
+                ? wf.nodes.find((n: any) => n.type === "action") || wf.nodes[0]
+                : null;
+              const wfSendTime = actionNode?.config?.sendTime;
+              const wfDelayMinutes = actionNode?.config?.delayMinutes;
 
               return (
                 <div
@@ -328,10 +423,20 @@ function AutomacoesWorkflowsPage() {
                         </Badge>
                         <Badge
                           variant={isActive ? "default" : "secondary"}
-                          className={`text-xs font-bold px-2 py-0 ${isActive ? "bg-emerald-600 text-foreground" : ""}`}
+                          className={`text-xs font-bold px-2 py-0 ${isActive ? "bg-success text-foreground" : ""}`}
                         >
                           {isActive ? "Ativo" : wf.status === "draft" ? "Rascunho" : "Inativo"}
                         </Badge>
+                        {wfSendTime && (
+                          <Badge variant="outline" className="text-xs font-mono px-2 py-0">
+                            Disparo: {wfSendTime}
+                          </Badge>
+                        )}
+                        {typeof wfDelayMinutes === "number" && wfDelayMinutes > 0 && (
+                          <Badge variant="outline" className="text-xs font-mono px-2 py-0">
+                            Delay: +{wfDelayMinutes}min
+                          </Badge>
+                        )}
                         {wf.execution_count > 0 && (
                           <span className="text-xs text-muted-foreground font-mono">
                             {wf.execution_count} execuções
@@ -369,7 +474,7 @@ function AutomacoesWorkflowsPage() {
                       size="icon"
                       disabled={isLoading || executingId === wf.id}
                       onClick={() => handleToggle(wf)}
-                      className={`size-11 sm:size-9 rounded-lg cursor-pointer ${isActive ? "text-emerald-600" : "text-muted-foreground"} min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
+                      className={`size-11 sm:size-9 rounded-lg cursor-pointer ${isActive ? "text-success" : "text-muted-foreground"} min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
                       title={isActive ? "Desativar" : "Ativar"}
                     >
                       {isActive ? <ToggleRight className="size-5" /> : <ToggleLeft className="size-5" />}
@@ -379,14 +484,14 @@ function AutomacoesWorkflowsPage() {
                       onToggleStatus={() => handleToggle(wf)}
                       statusLabel={isActive ? "Pausar Workflow" : "Ativar Workflow"}
                       onDelete={() => handleDelete(wf.id)}
-                      deleteConfirmTitle={`Excluir automação "${wf.name}"?`}
+                      deleteConfirmTitle={`Excluir automação "${wf.title || wf.name}"?`}
                       deleteConfirmDescription="Esta ação removerá permanentemente o gatilho, as condições e as ações automatizadas deste fluxo."
                       customActions={[
                         {
                           id: "execute-now",
                           label: "Disparar Teste Manual",
                           icon: Play,
-                          onClick: () => handleExecute(wf),
+                          onClick: () => handleRunTest(wf),
                           disabled: isLoading || executingId === wf.id,
                         },
                       ]}
@@ -406,7 +511,7 @@ function AutomacoesWorkflowsPage() {
             <SheetHeader className="pb-4">
               <SheetTitle>Novo Workflow</SheetTitle>
               <SheetDescription>
-                Configure o gatilho e nomeie seu workflow. Os nós de ação serão configurados no editor visual.
+                Configure o gatilho, horário de envio, delay e template com variáveis dinâmicas.
               </SheetDescription>
             </SheetHeader>
             <form id="create-workflow-form" onSubmit={handleCreate} className="space-y-4 py-2">
@@ -415,39 +520,87 @@ function AutomacoesWorkflowsPage() {
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Pós-Venda VIP — Pedido Acima de R$ 200"
-                  className="text-xs"
+                  placeholder="Ex: Check-list Pré-Embarque D-7"
+                  className="text-xs min-h-11"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Gatilho Disparador</Label>
-                <Select value={triggerType} onValueChange={setTriggerType}>
-                  <SelectTrigger className="text-xs">
-                    <SelectValue placeholder="Selecione o gatilho..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(TRIGGER_META).map(([key, meta]) => {
-                      const Icon = meta.icon;
-                      return (
-                        <SelectItem key={key} value={key} className="text-xs">
-                          <div className="flex items-center gap-2">
-                            <Icon className="size-3.5" />
-                            {meta.label}
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2 sm:col-span-1">
+                  <Label className="text-xs">Gatilho Disparador</Label>
+                  <Select value={triggerType} onValueChange={handleTriggerChange}>
+                    <SelectTrigger className="text-xs min-h-11">
+                      <SelectValue placeholder="Selecione o gatilho..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(TRIGGER_META).map(([key, meta]) => {
+                        const Icon = meta.icon;
+                        return (
+                          <SelectItem key={key} value={key} className="text-xs">
+                            <div className="flex items-center gap-2">
+                              <Icon className="size-4" />
+                              {meta.label}
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Horário de Envio</Label>
+                  <Input
+                    type="time"
+                    value={sendTime}
+                    onChange={(e) => setSendTime(e.target.value)}
+                    className="text-xs min-h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Delay após Evento (minutos)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={5}
+                    value={delayMinutes}
+                    onChange={(e) => setDelayMinutes(Number(e.target.value))}
+                    className="text-xs min-h-11"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Descrição (opcional)</Label>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <Label className="text-xs">Template da Mensagem WhatsApp</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {DYNAMIC_VARIABLES.map((v) => (
+                      <Button
+                        key={v}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleInsertVariable(v)}
+                        className="min-h-11 px-3 text-xs font-mono"
+                      >
+                        {v}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <Textarea
+                  value={messageTemplate}
+                  onChange={(e) => setMessageTemplate(e.target.value)}
+                  placeholder="Olá {nome}, sua viagem para {destino} em {data_viagem} às {hora} está confirmada. Acesse: {link_dossie}"
+                  rows={3}
+                  className="text-xs font-mono"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Descrição Interna (opcional)</Label>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Descreva o objetivo deste workflow para sua equipe..."
-                  rows={3}
+                  rows={2}
                   className="text-xs"
                 />
               </div>
@@ -458,15 +611,16 @@ function AutomacoesWorkflowsPage() {
               type="button"
               variant="outline"
               onClick={() => setIsCreateOpen(false)}
-              className="text-xs"
+              className="text-xs min-h-11"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               form="create-workflow-form"
+              variant="outline"
               disabled={isSaving}
-              className="text-xs font-bold"
+              className="text-xs font-bold min-h-11 border-primary/40 text-primary hover:bg-primary/10"
             >
               {isSaving ? "Criando..." : "Criar Workflow"}
             </Button>

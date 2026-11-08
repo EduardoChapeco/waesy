@@ -47,13 +47,6 @@ function isPlatformAdminUser(session: any): boolean {
 
 export const Route = createFileRoute("/workspace")({
   beforeLoad: async () => {
-    if (typeof window !== "undefined") {
-      try {
-        const { sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
-        sanitizeBrowserAuthCookies();
-      } catch {}
-    }
-
     let session: any = null;
     try {
       session = await getUserSession();
@@ -66,10 +59,15 @@ export const Route = createFileRoute("/workspace")({
     // falhou transitoriamente enquanto a sessão local no navegador ainda está ativa.
     if (!session?.user && typeof window !== "undefined") {
       try {
-        const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
-        sanitizeBrowserAuthCookies();
+        const { getBrowserClient } = await import("@/lib/supabase");
         const client = getBrowserClient();
-        const { data: { session: browserSession } } = await client.auth.getSession();
+        let { data: { session: browserSession } } = await client.auth.getSession();
+        if (!browserSession?.user) {
+          const refreshRes = await client.auth.refreshSession().catch(() => null);
+          if (refreshRes?.data?.session) {
+            browserSession = refreshRes.data.session;
+          }
+        }
         if (browserSession?.user) {
           session = {
             id: browserSession.user.id,
@@ -80,7 +78,7 @@ export const Route = createFileRoute("/workspace")({
             memberships: [],
           };
           if (browserSession.access_token && browserSession.refresh_token) {
-            void syncSessionToCookies({
+            await syncSessionToCookies({
               data: {
                 access_token: browserSession.access_token,
                 refresh_token: browserSession.refresh_token,
@@ -132,10 +130,15 @@ export const Route = createFileRoute("/workspace")({
 
       if (!session?.user && typeof window !== "undefined") {
         try {
-          const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
-          sanitizeBrowserAuthCookies();
+          const { getBrowserClient } = await import("@/lib/supabase");
           const client = getBrowserClient();
-          const { data: { session: browserSession } } = await client.auth.getSession();
+          let { data: { session: browserSession } } = await client.auth.getSession();
+          if (!browserSession?.user) {
+            const refreshRes = await client.auth.refreshSession().catch(() => null);
+            if (refreshRes?.data?.session) {
+              browserSession = refreshRes.data.session;
+            }
+          }
           if (browserSession?.user) {
             session = {
               id: browserSession.user.id,
@@ -146,7 +149,7 @@ export const Route = createFileRoute("/workspace")({
               memberships: [],
             };
             if (browserSession.access_token && browserSession.refresh_token) {
-              void syncSessionToCookies({
+              await syncSessionToCookies({
                 data: {
                   access_token: browserSession.access_token,
                   refresh_token: browserSession.refresh_token,
@@ -271,10 +274,12 @@ function WorkspaceLayout() {
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
   const isBuilder = pathname.startsWith("/workspace/builder/");
-  const isStudio = pathname.startsWith("/workspace/estudio");
+  const isStudio = pathname.startsWith("/workspace/estudio") || pathname.startsWith("/workspace/marketing/studio");
   const isProposalStudio =
     pathname.startsWith("/workspace/turismo/propostas/") &&
     pathname !== "/workspace/turismo/propostas";
+  const isContractEditor = pathname.includes("/contratos/") && pathname.endsWith("/editor");
+  const isImmersiveEditor = isBuilder || isStudio || isProposalStudio || isContractEditor;
 
   const isPlatformAdmin = isPlatformAdminUser(session);
 
@@ -308,8 +313,8 @@ function WorkspaceLayout() {
     isPlatformAdmin ? "owner" : activeMembership?.role || session?.role || "collaborator"
   ).toLowerCase();
 
-  // Validação de papel para ferramentas avançadas (Construtor Visual, Estúdio e Studio de Propostas)
-  if (isBuilder || isStudio || isProposalStudio) {
+  // Fullscreen Immersion Mode para o Construtor Visual (Wix/Framer), Estúdio e Studio de Propostas (Canva/Figma)
+  if (isImmersiveEditor) {
     const IMMERSION_ALLOWED_ROLES = [
       "owner",
       "admin",
@@ -331,6 +336,7 @@ function WorkspaceLayout() {
         </div>
       );
     }
+    return <Outlet />;
   }
 
   const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;

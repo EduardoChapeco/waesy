@@ -49,32 +49,50 @@ export async function resolveStoreIdWithFallback(
 ): Promise<string> {
   if (requestedStoreId && requestedStoreId.trim()) return requestedStoreId.trim();
   if (identity?.store_id) return identity.store_id;
+  if (identity?.user_metadata?.store_id) return identity.user_metadata.store_id;
   if (identity?.memberships && identity.memberships.length > 0 && identity.memberships[0]?.store_id) {
     return identity.memberships[0].store_id;
   }
   const db = dbClient || getServerClient();
-  if (identity?.id) {
-    const { data: userStore } = await db
-      .from("stores")
-      .select("id")
-      .or(`context_profile_id.eq.${identity.id},owner_id.eq.${identity.id}`)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (userStore?.id) return userStore.id;
-  }
   if (
     identity?.role === "platform_admin" ||
     identity?.role === "master" ||
     Boolean(identity?.isPlatformAdmin)
   ) {
-    const { data: latestStore } = await db
-      .from("stores")
-      .select("id")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (latestStore?.id) return latestStore.id;
+    try {
+      const { data: latestStore } = await db
+        .from("stores")
+        .select("id")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestStore?.id) return latestStore.id;
+    } catch {}
+  }
+
+  if (identity?.id) {
+    try {
+      const { data: memberRecord } = await db
+        .from("workspace_members")
+        .select("store_id")
+        .eq("profile_id", identity.id)
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (memberRecord?.store_id) return memberRecord.store_id;
+    } catch {}
+
+    try {
+      const query = db.from("stores").select("id");
+      const filtered = typeof query.or === "function"
+        ? query.or(`context_profile_id.eq.${identity.id},owner_id.eq.${identity.id}`)
+        : query;
+      const { data: userStore } = await filtered
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (userStore?.id) return userStore.id;
+    } catch {}
   }
   throw new Error("Nenhuma loja ativa selecionada.");
 }
@@ -286,6 +304,7 @@ export async function _createProduct(input: {
  height_cm?: number | null;
  length_cm?: number | null;
  preparation_time_days?: number | null;
+ preparation_time_minutes?: number | null;
  show_stock_publicly?: boolean;
  media_urls?: string[];
  category_ids?: string[];
@@ -373,6 +392,7 @@ export async function _createProduct(input: {
  height_cm: input.height_cm || null,
  length_cm: input.length_cm || null,
  preparation_time_days: input.preparation_time_days || null,
+ preparation_time_minutes: input.preparation_time_minutes || null,
  show_stock_publicly: input.show_stock_publicly ?? false,
  })
  .select()
@@ -533,6 +553,7 @@ export const createProduct = createServerFn({ method: "POST" })
  height_cm: z.number().min(0).optional().nullable(),
  length_cm: z.number().min(0).optional().nullable(),
  preparation_time_days: z.number().int().min(0).optional().nullable(),
+ preparation_time_minutes: z.number().int().min(0).optional().nullable(),
  show_stock_publicly: z.boolean().default(false).optional(),
  media_urls: z.array(z.string().url()).optional(),
  category_ids: z.array(z.string().uuid()).optional(),
@@ -591,19 +612,21 @@ export async function _listCategories(store_id?: string) {
  return data;
 }
 
-export const listCategories = createServerFn({ method: "GET" }).handler(async () => {
- try {
- await requireAdmin(); // SECURITY FIX
- const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity().catch(() => ({ store_id: null }));
- const data = await _listCategories(store_id || undefined);
- return data;
- } catch (e) {
- if (e instanceof SupabaseUnconfiguredError) throw e;
- console.error("[admin-catalog] listCategories error:", e);
- throw new Error("Erro ao listar categorias.");
- }
-});
+export const listCategories = createServerFn({ method: "GET" })
+  .validator((d: { store_id?: string | null } | undefined) => d)
+  .handler(async ({ data: input }) => {
+    try {
+      await requireAdmin(); // SECURITY FIX
+      const { getServerIdentity } = await import("@/lib/server-access");
+      const { store_id } = await getServerIdentity().catch(() => ({ store_id: null }));
+      const data = await _listCategories(input?.store_id || store_id || undefined);
+      return data;
+    } catch (e) {
+      if (e instanceof SupabaseUnconfiguredError) throw e;
+      console.error("[admin-catalog] listCategories error:", e);
+      throw new Error("Erro ao listar categorias.");
+    }
+  });
 
 export async function _createCategory(input: {
  store_id?: string | null;

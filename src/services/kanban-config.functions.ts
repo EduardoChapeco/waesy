@@ -58,6 +58,14 @@ export const KANBAN_DEFAULTS: Record<string, KanbanStageDTO[]> = {
     { stage_key: "review", title: "Em Revisão", purpose: "review", color: "var(--warning)", sort_order: 2, is_visible: true },
     { stage_key: "done", title: "Concluído", purpose: "won", color: "var(--success)", sort_order: 3, is_visible: true },
   ],
+  turismo: [
+    { stage_key: "new", title: "Novos Contatos", purpose: "inbox", color: "var(--primary)", sort_order: 0, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
+    { stage_key: "contact", title: "Sondagem e Briefing", purpose: "in_progress", color: "var(--warning)", sort_order: 1, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
+    { stage_key: "qualified", title: "Cotação em Andamento", purpose: "in_progress", color: "var(--accent-foreground)", sort_order: 2, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
+    { stage_key: "proposal", title: "Proposta Enviada", purpose: "review", color: "var(--primary)", sort_order: 3, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
+    { stage_key: "negotiation", title: "Em Negociação", purpose: "review", color: "var(--warning-strong)", sort_order: 4, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
+    { stage_key: "won", title: "Viagem Confirmada", purpose: "won", color: "var(--success)", sort_order: 5, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
+  ],
   commercial_crm: [
     { stage_key: "new", title: "Novos Leads", purpose: "inbox", color: "var(--primary)", sort_order: 0, is_visible: true },
     { stage_key: "contact", title: "Primeiro Contato", purpose: "in_progress", color: "var(--warning)", sort_order: 1, is_visible: true },
@@ -274,6 +282,10 @@ export function resolveKanbanDefaults(
   department?: string,
   niche?: string
 ): KanbanStageDTO[] {
+  if (module === "tourism" || module === "turismo" || niche === "turismo" || niche === "tourism") {
+    return KANBAN_DEFAULTS.turismo;
+  }
+
   if (module && KANBAN_DEFAULTS[module]) {
     return KANBAN_DEFAULTS[module];
   }
@@ -338,6 +350,11 @@ export const listKanbanStages = createServerFn({ method: "GET" })
       }
 
       if (!rows || rows.length === 0) {
+        return defaults;
+      }
+
+      if ((module === "turismo" || module === "tourism" || niche === "turismo" || String(niche) === "tourism") && rows.some((r: any) => r.stage_key === "todo")) {
+        console.warn(`[kanban-config] Estágios legados com 'todo' detectados para turismo. Usando defaults canônicos.`);
         return defaults;
       }
 

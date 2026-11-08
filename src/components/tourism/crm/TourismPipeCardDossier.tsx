@@ -1416,6 +1416,52 @@ export function TourismPipeCardDossier({
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newItems: any[] = [];
+    Array.from(files).forEach((file) => {
+      const sizeStr = file.size > 1024 * 1024
+        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.round(file.size / 1024)} KB`;
+
+      newItems.push({
+        id: `att-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        name: file.name,
+        size: sizeStr,
+        type: file.type,
+        url: URL.createObjectURL(file),
+        createdAt: new Date().toISOString(),
+      });
+    });
+
+    const updated = [...newItems, ...cardAttachments];
+    setCardAttachments(updated);
+    toast.success(`${newItems.length} arquivo(s) adicionado(s) ao card!`);
+
+    const mergedCustomFields = {
+      ...(lead.custom_fields || {}),
+      checklist_groups: checklistGroups,
+      comments: internalComments,
+    };
+    onSaveLead({
+      ...lead,
+      attachments: updated,
+      custom_fields: mergedCustomFields,
+    });
+  };
+
+  const handleDeleteAttachment = (attId: string) => {
+    const updated = cardAttachments.filter((a: any) => a.id !== attId);
+    setCardAttachments(updated);
+    toast.success("Arquivo removido do card.");
+    onSaveLead({
+      ...lead,
+      attachments: updated,
+    });
+  };
+
   const handleToggleChecklistItem = async (groupId: string, itemId: string) => {
     setChecklistGroups((prev) =>
       prev.map((g) => {
@@ -1711,6 +1757,16 @@ export function TourismPipeCardDossier({
         <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pt-2 border-t border-border/40">
           {[
             { id: "form", label: "Geral", icon: FileText },
+            {
+              id: "checklists",
+              label: `Checklists (${checklistGroups.reduce((acc, g) => acc + g.items.length, 0)})`,
+              icon: CheckSquare,
+            },
+            {
+              id: "attachments",
+              label: `Anexos (${Array.isArray(cardAttachments) ? cardAttachments.length : 0})`,
+              icon: Paperclip,
+            },
             { id: "travelers", label: `Acompanhantes (${travelerDossiers.length})`, icon: Users },
             { id: "opportunities", label: `Oportunidades (${(infotravelOpp ? 1 : 0) + similarProposals.length + infotravelCaptures.length + radarMatches.length})`, icon: Zap },
             { id: "proposals", label: `Cotações (${effectiveProposals.length})`, icon: CreditCard },
@@ -1719,18 +1775,12 @@ export function TourismPipeCardDossier({
             { id: "anamnese", label: "Anamnese", icon: HeartPulse },
             {
               id: "customer360",
-              label: customer360Data?.customer ? "Cliente 360° (Ativo)" : "Cliente 360°",
+              label: customer360Data?.customer ? "Ficha do Cliente (Ativo)" : "Ficha do Cliente",
               icon: UserCheck,
             },
             { id: "lgpd", label: `Termos & LGPD (${consentRecords.length})`, icon: ShieldCheck },
             { id: "meeting", label: "Agenda & Reunião", icon: Calendar },
-            {
-              id: "checklists",
-              label: `Checklists (${checklistGroups.reduce((acc, g) => acc + g.items.length, 0)})`,
-              icon: CheckSquare,
-            },
             { id: "presentation", label: "Apresentação IA", icon: Sparkles },
-            { id: "attachments", label: "Anexos", icon: Paperclip },
             { id: "comments", label: `Histórico (${internalComments.length})`, icon: Clock },
             { id: "all", label: "Ver Todos", icon: BookOpen },
           ].map((item) => {
@@ -3816,23 +3866,54 @@ export function TourismPipeCardDossier({
             {/* 12. ANEXOS, VOUCHERS & DOCUMENTOS */}
             {(activeSection === "all" || activeSection === "attachments") && (
               <div id="section-attachments" className="p-5 rounded-xl border border-border/60 bg-muted/10 space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                <input
+                  type="file"
+                  id="card-pipefy-file-upload"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/40">
                   <div className="flex items-center gap-2">
                     <Paperclip className="size-4 text-primary" />
                     <h3 className="font-bold text-xs uppercase tracking-wide text-foreground">
-                      Anexos & Documentos do Lead
+                      Anexos & Documentos do Card
                     </h3>
                   </div>
-                  <span className="text-2xs text-muted-foreground">PDFs, Vouchers, Passaportes</span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById("card-pipefy-file-upload")?.click()}
+                      className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+                    >
+                      <Upload className="size-3.5" />
+                      <span>Anexar Arquivo</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsPdfModalOpen(true)}
+                      className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Criar Documento A4</span>
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="border border-dashed border-border/60 rounded-xl p-6 text-center space-y-2 bg-card hover:bg-muted/20 transition-colors cursor-pointer">
+                <div
+                  onClick={() => document.getElementById("card-pipefy-file-upload")?.click()}
+                  className="border border-dashed border-border/60 rounded-xl p-6 text-center space-y-2 bg-card hover:bg-muted/20 transition-colors cursor-pointer"
+                >
                   <Upload className="size-6 text-muted-foreground mx-auto" />
                   <p className="text-xs font-medium text-foreground">
-                    Clique ou arraste arquivos para anexar a este card
+                    Clique aqui ou arraste arquivos para anexar a este card
                   </p>
                   <p className="text-2xs text-muted-foreground">
-                    Suporta PDFs de passagens, reservas de hotéis, apólices de seguro e comprovantes
+                    Suporta PDFs de passagens, contratos, vouchers, reservas de hotéis e imagens
                   </p>
                 </div>
 
@@ -3874,6 +3955,16 @@ export function TourismPipeCardDossier({
                               <ExternalLink className="size-3" />
                             </a>
                           ) : null}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteAttachment(att.id)}
+                            className="h-11 min-h-11 px-2 text-muted-foreground hover:text-destructive cursor-pointer rounded-lg"
+                            title="Remover anexo"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -4064,11 +4155,11 @@ export function TourismPipeCardDossier({
               </div>
             </div>
 
-            {/* CLIENTE 360° VINCULADO */}
+            {/* CARTEIRA DE CLIENTES VINCULADA */}
             <div className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
               <div className="flex items-center justify-between pb-1 border-b border-border/40">
                 <span className="font-bold text-xs uppercase tracking-wide text-foreground">
-                  Cliente Carteira 360°
+                  Carteira de Clientes
                 </span>
                 <Badge variant="outline" className="text-3xs font-mono border-border/60">
                   {customer360Data?.customer ? "Vinculado" : "Pendente"}
@@ -4099,10 +4190,51 @@ export function TourismPipeCardDossier({
                     onClick={() => onPromoteToCustomer(lead.id)}
                     className="h-11 min-h-11 px-3 text-xs font-semibold rounded-lg border-border/60 hover:bg-muted cursor-pointer"
                   >
-                    Promover a Cliente 360°
+                    Promover a Cliente
                   </Button>
                 </div>
               )}
+            </div>
+
+            {/* CHECKLISTS & ANEXOS RÁPIDOS (PIPEFY STYLE) */}
+            <div className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
+              <div className="flex items-center justify-between pb-1 border-b border-border/40">
+                <div className="flex items-center gap-2">
+                  <CheckSquare className="size-3.5 text-primary" />
+                  <span className="font-bold text-xs uppercase tracking-wide text-foreground">
+                    Checklists & Arquivos
+                  </span>
+                </div>
+                <span className="text-2xs font-mono text-muted-foreground">
+                  {checklistGroups.reduce((acc, g) => acc + g.items.filter((i) => i.done).length, 0)}/
+                  {checklistGroups.reduce((acc, g) => acc + g.items.length, 0)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setActiveSection("checklists");
+                    setIsCreatingChecklist(true);
+                  }}
+                  className="flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Novo Checklist</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveSection("attachments")}
+                  className="flex-1 h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Paperclip className="size-3.5" />
+                  <span>Anexar Arquivo</span>
+                </Button>
+              </div>
             </div>
 
             {/* APRESENTAÇÃO COMERCIAL IA (SLIDE 16:9) */}

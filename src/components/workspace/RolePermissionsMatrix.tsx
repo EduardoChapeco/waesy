@@ -10,6 +10,7 @@ import { getRolePermissionsMatrix, saveRolePermissionsMatrix } from "@/services/
 export const AVAILABLE_ROLES = [
   { key: "manager", name: "Gerente / Administrador" },
   { key: "seller", name: "Vendedor / Comercial" },
+  { key: "cashier", name: "Operador de Caixa / Frente de Caixa" },
   { key: "operator", name: "Profissional / Atendente" },
   { key: "support", name: "Suporte / SAC" },
   { key: "stockkeeper", name: "Estoquista" },
@@ -71,6 +72,7 @@ export const MODULE_PERMISSIONS_CATALOG: PermissionModuleItem[] = [
       { key: "edit", label: "Editar" },
       { key: "delete", label: "Excluir" },
       { key: "void_item", label: "Cancelar item sem senha de gerente", isSpecial: true },
+      { key: "clear_ticket", label: "Limpar ou cancelar ticket sem senha de gerente", isSpecial: true },
       { key: "apply_discount", label: "Conceder desconto livre no PDV", isSpecial: true },
       { key: "refund_sale", label: "Estornar comprovante / venda", isSpecial: true },
       { key: "sangria_suprimento", label: "Lançar sangria e suprimento", isSpecial: true },
@@ -109,9 +111,12 @@ export const MODULE_PERMISSIONS_CATALOG: PermissionModuleItem[] = [
     description: "Acesso ao fluxo de caixa, conciliação e governança de turnos de operadores.",
     actions: [
       { key: "access", label: "Acessar" },
+      { key: "open_close_shift", label: "Abrir e fechar turnos de caixa", isSpecial: false },
+      { key: "sangria_suprimento", label: "Lançar sangria e suprimento na gaveta", isSpecial: true },
       { key: "retroactive", label: "Lançamentos retroativos", isSpecial: true },
       { key: "multiple_drawers", label: "Múltiplos caixas", isSpecial: true },
       { key: "view_all_drawers", label: "Visualizar caixas de todos os operadores", isSpecial: true },
+      { key: "blind_closing_audit", label: "Auditar conferência cega e quebra de caixa", isSpecial: true },
       { key: "edit_after_close", label: "Editar com caixa fechado", isSpecial: true },
     ],
   },

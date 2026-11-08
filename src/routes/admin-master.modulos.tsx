@@ -1,7 +1,29 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Layers, Power, Edit2, CheckCircle2, XCircle, ShieldCheck, Loader2, RefreshCw, Tag, Sliders, Eye, EyeOff } from "lucide-react";
+import {
+  Layers,
+  Power,
+  Edit2,
+  CheckCircle2,
+  XCircle,
+  ShieldCheck,
+  Loader2,
+  RefreshCw,
+  Tag,
+  Sliders,
+  Eye,
+  EyeOff,
+  Download,
+  Building2,
+  Check,
+  X,
+  UserX,
+  Clock,
+  ShieldAlert,
+  Search as SearchIcon,
+  Store as StoreIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -10,26 +32,54 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { adminListPlatformModules, adminTogglePlatformModule, adminUpdatePlatformModule, type PlatformModuleDTO } from "@/services/modules.functions";
+import {
+  adminListExtensionRequestsFn,
+  adminReviewExtensionRequestFn,
+  adminToggleStoreExtensionAuthFn,
+  type ExtensionRequestItemDTO,
+  type ExtensionPackageType,
+} from "@/services/extensions-distributor.functions";
+import { getPlatformStoresList } from "@/services/master.functions";
+import { ExtensionWebStoreModal } from "@/components/extensions/ExtensionWebStoreModal";
 
 export const Route = createFileRoute("/admin-master/modulos")({
   head: () => ({ meta: [{ title: "Governança Dinâmica de Módulos | Admin Master" }] }),
   loader: async () => {
     try {
-      const modules = await adminListPlatformModules();
-      return { modules };
+      const [modules, requests, stores] = await Promise.all([
+        adminListPlatformModules(),
+        adminListExtensionRequestsFn().catch(() => []),
+        getPlatformStoresList().catch(() => []),
+      ]);
+      return {
+        modules: modules || [],
+        requests: (requests || []) as ExtensionRequestItemDTO[],
+        stores: stores || [],
+      };
     } catch (err: any) {
       console.error("[admin-master.modulos] Loader error:", err);
-      return { modules: [] };
+      return { modules: [], requests: [], stores: [] };
     }
   },
   component: AdminMasterModulosPage,
 });
 
 function AdminMasterModulosPage() {
-  const { modules: initialModules } = ((Route.useLoaderData?.() as any) || {});
+  const loaderData = (Route.useLoaderData?.() as any) || {};
+  const initialModules = loaderData.modules || [];
+  const initialRequests = loaderData.requests || [];
+  const initialStores = loaderData.stores || [];
   const router = useRouter();
 
   const [modules, setModules] = useState<PlatformModuleDTO[]>(initialModules);
+  const [extensionRequests, setExtensionRequests] = useState<ExtensionRequestItemDTO[]>(initialRequests);
+  const [platformStores, setPlatformStores] = useState<any[]>(initialStores);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+  const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
+  const [togglingStoreExtension, setTogglingStoreExtension] = useState<string | null>(null);
+  const [storeSearch, setStoreSearch] = useState("");
+  const [storeModalType, setStoreModalType] = useState<ExtensionPackageType | null>(null);
+
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
 
   // Edit dialog state
@@ -41,8 +91,196 @@ function AdminMasterModulosPage() {
   const [editOrderIndex, setEditOrderIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [categoryTab, setCategoryTab] = useState<"all" | "store_operation" | "public_discovery" | "ai_intelligence">("all");
+  const [categoryTab, setCategoryTab] = useState<"all" | "store_operation" | "public_discovery" | "ai_intelligence" | "browser_extensions">("all");
   const [search, setSearch] = useState("");
+  const [downloadingType, setDownloadingType] = useState<string | null>(null);
+
+  const refreshExtensionData = async () => {
+    setIsLoadingRequests(true);
+    try {
+      const [reqs, stores] = await Promise.all([
+        adminListExtensionRequestsFn(),
+        getPlatformStoresList(),
+      ]);
+      setExtensionRequests(reqs || []);
+      setPlatformStores(stores || []);
+      toast.success("Fila de solicitações e lojas atualizadas.");
+    } catch (err: any) {
+      toast.error("Falha ao atualizar dados: " + (err?.message || "Erro desconhecido"));
+    } finally {
+      setIsLoadingRequests(false);
+    }
+  };
+
+  const handleReviewRequest = async (
+    req: ExtensionRequestItemDTO,
+    status: "approved" | "rejected"
+  ) => {
+    setProcessingRequestId(req.id);
+    try {
+      await adminReviewExtensionRequestFn({
+        data: {
+          requestId: req.id,
+          storeId: req.store_id,
+          extensionType: req.extension_type,
+          status,
+          reviewNotes: status === "approved" ? "Acesso liberado pelo Admin Master" : "Solicitação rejeitada pelo Admin Master",
+        },
+      });
+      toast.success(
+        status === "approved"
+          ? `Acesso à extensão liberado com sucesso para ${req.store_name}!`
+          : `Solicitação da loja ${req.store_name} rejeitada.`
+      );
+      setExtensionRequests((prev) =>
+        prev.map((r) => (r.id === req.id ? { ...r, status, reviewed_at: new Date().toISOString() } : r))
+      );
+      setPlatformStores((prev) =>
+        prev.map((s) => {
+          if (s.id !== req.store_id) return s;
+          const current: string[] = s.settings?.authorized_extensions || [];
+          const updated =
+            status === "approved"
+              ? Array.from(new Set([...current, req.extension_type]))
+              : current.filter((t) => t !== req.extension_type);
+          return {
+            ...s,
+            settings: {
+              ...(s.settings || {}),
+              authorized_extensions: updated,
+            },
+          };
+        })
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao processar solicitação.");
+    } finally {
+      setProcessingRequestId(null);
+    }
+  };
+
+  const handleToggleStoreExtension = async (
+    storeId: string,
+    extensionType: ExtensionPackageType,
+    currentlyAuthorized: boolean
+  ) => {
+    const nextAuthorized = !currentlyAuthorized;
+    const key = `${storeId}_${extensionType}`;
+    setTogglingStoreExtension(key);
+    try {
+      await adminToggleStoreExtensionAuthFn({
+        data: {
+          storeId,
+          extensionType,
+          authorized: nextAuthorized,
+        },
+      });
+      toast.success(
+        nextAuthorized
+          ? "Extensão liberada com sucesso para a loja."
+          : "Acesso à extensão revogado para a loja."
+      );
+      setPlatformStores((prev) =>
+        prev.map((s) => {
+          if (s.id !== storeId) return s;
+          const current: string[] = s.settings?.authorized_extensions || [];
+          const updated = nextAuthorized
+            ? Array.from(new Set([...current, extensionType]))
+            : current.filter((t) => t !== extensionType);
+          return {
+            ...s,
+            settings: {
+              ...(s.settings || {}),
+              authorized_extensions: updated,
+            },
+          };
+        })
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao atualizar autorização.");
+    } finally {
+      setTogglingStoreExtension(null);
+    }
+  };
+
+  const isStoreExtensionAuthorized = (store: any, type: ExtensionPackageType) => {
+    if (store.slug === "excelencia-tour-smo" || store.name?.toLowerCase().includes("excelência tour")) {
+      return true;
+    }
+    const authorized: string[] = store.settings?.authorized_extensions || [];
+    return authorized.includes(type);
+  };
+
+  const isStoreExempt = (store: any) => {
+    return store.slug === "excelencia-tour-smo" || store.name?.toLowerCase().includes("excelência tour");
+  };
+
+  const formatRequestDate = (isoString?: string | null) => {
+    if (!isoString) return "";
+    try {
+      const d = new Date(isoString);
+      return d.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return isoString;
+    }
+  };
+
+  const getExtensionLabel = (type: ExtensionPackageType) => {
+    switch (type) {
+      case "infotravel_extension":
+        return "Waesy Sync • Infotravel & GDS";
+      case "whatsapp_extension":
+        return "Waesy Ingest • WhatsApp Web";
+      case "infotravel_miner":
+        return "Waesy Miner • Extrator Autônomo";
+      default:
+        return type;
+    }
+  };
+
+  const handleDownloadExtension = async (type: "infotravel_extension" | "whatsapp_extension" | "infotravel_miner") => {
+    setDownloadingType(type);
+    try {
+      const res = await fetch(`/api/v1/extensions/download?type=${type}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err?.error || "Acesso restrito para download desta extensão.");
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get("content-disposition") || "";
+      let filename =
+        type === "infotravel_extension"
+          ? "waesy-sync-infotravel-v2.1.zip"
+          : type === "whatsapp_extension"
+          ? "waesy-ingest-whatsapp-v2.1.zip"
+          : "waesy-miner-infotravel-scripts.zip";
+      const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+      if (filenameMatch?.[1]) filename = filenameMatch[1];
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Download de "${filename}" concluído com sucesso!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao realizar download.");
+    } finally {
+      setDownloadingType(null);
+    }
+  };
 
   const activeCount = modules.filter((m) => m.enabled).length;
   const disabledCount = modules.length - activeCount;
@@ -50,6 +288,13 @@ function AdminMasterModulosPage() {
   const storeOpCount = modules.filter((m) => m.category === "store_operation").length;
   const publicCount = modules.filter((m) => m.category === "public_discovery").length;
   const aiCount = modules.filter((m) => m.category === "ai_intelligence").length;
+
+  const pendingRequestsCount = extensionRequests.filter((r) => r.status === "pending").length;
+  const filteredPlatformStores = platformStores.filter((s: any) => {
+    if (!storeSearch.trim()) return true;
+    const q = storeSearch.toLowerCase();
+    return (s.name || "").toLowerCase().includes(q) || (s.slug || "").toLowerCase().includes(q);
+  });
 
   const filteredModules = modules.filter((m) => {
     if (categoryTab !== "all" && m.category !== categoryTab) return false;
@@ -162,7 +407,7 @@ function AdminMasterModulosPage() {
 
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs font-mono px-3 py-1">
-            <span className="inline-block size-2 rounded-full bg-emerald-500 mr-2" />
+            <span className="inline-block size-2 rounded-full bg-success mr-2" />
             {activeCount} Ativos
           </Badge>
           {disabledCount > 0 && (
@@ -221,6 +466,17 @@ function AdminMasterModulosPage() {
           >
             Inteligência & IA ({aiCount})
           </button>
+          <button
+            type="button"
+            onClick={() => setCategoryTab("browser_extensions")}
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+              categoryTab === "browser_extensions"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground bg-muted/40"
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+          >
+            Extensões & Conectores ({3}{pendingRequestsCount > 0 ? ` • ${pendingRequestsCount} pendente${pendingRequestsCount > 1 ? "s" : ""}` : ""})
+          </button>
         </div>
 
         <div className="w-full sm:w-64">
@@ -233,7 +489,488 @@ function AdminMasterModulosPage() {
         </div>
       </div>
 
+      {/* ─── Visão de Extensões de Navegador ─────────────────────────── */}
+      {categoryTab === "browser_extensions" && (
+        <div className="space-y-8">
+          {/* Grid dos 3 Pacotes */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Extensão 1: Infotravel */}
+            <div className="rounded-lg border border-border/80 bg-card p-5 flex flex-col justify-between space-y-4 shadow-xs">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline" className="text-2xs font-semibold">
+                    Manifest V3
+                  </Badge>
+                  <Badge variant="secondary" className="text-3xs font-normal">
+                    v2.1.0
+                  </Badge>
+                </div>
+                <h2 className="text-base font-bold text-foreground">
+                  Waesy Sync • Infotravel & GDS
+                </h2>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Sincronizador bilateral para Orinter, FRT, Schultz e Incomum Viagens. Captura reservas, passageiros, faturas e cotações em tempo real.
+                </p>
+                <div className="pt-1 text-2xs font-mono text-muted-foreground">
+                  <span>Destino: Chrome / Edge / Brave</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={downloadingType === "infotravel_extension"}
+                  onClick={() => handleDownloadExtension("infotravel_extension")}
+                  className="w-full h-11 min-h-11 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring gap-2"
+                >
+                  {downloadingType === "infotravel_extension" ? (
+                    <RefreshCw className="size-4 animate-spin motion-reduce:animate-none" />
+                  ) : (
+                    <Download className="size-4" />
+                  )}
+                  {downloadingType === "infotravel_extension" ? "Empacotando..." : "Baixar Extensão (.zip)"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setStoreModalType("infotravel_extension")}
+                  className="w-full h-10 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring gap-2 border border-border/60 hover:bg-muted"
+                >
+                  <Eye className="size-4" />
+                  <span>Visualizar na Store</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Extensão 2: WhatsApp Web */}
+            <div className="rounded-lg border border-border/80 bg-card p-5 flex flex-col justify-between space-y-4 shadow-xs">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline" className="text-2xs font-semibold">
+                    Manifest V3
+                  </Badge>
+                  <Badge variant="secondary" className="text-3xs font-normal">
+                    v2.1.0
+                  </Badge>
+                </div>
+                <h2 className="text-base font-bold text-foreground">
+                  Waesy Ingest • WhatsApp Web
+                </h2>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Extração e higienização de contatos de grupos e conversas com envio idempotente direto ao Waesy CRM da Excelência Tour.
+                </p>
+                <div className="pt-1 text-2xs font-mono text-muted-foreground">
+                  <span>Destino: WhatsApp Web (web.whatsapp.com)</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={downloadingType === "whatsapp_extension"}
+                  onClick={() => handleDownloadExtension("whatsapp_extension")}
+                  className="w-full h-11 min-h-11 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring gap-2"
+                >
+                  {downloadingType === "whatsapp_extension" ? (
+                    <RefreshCw className="size-4 animate-spin motion-reduce:animate-none" />
+                  ) : (
+                    <Download className="size-4" />
+                  )}
+                  {downloadingType === "whatsapp_extension" ? "Empacotando..." : "Baixar Extensão (.zip)"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setStoreModalType("whatsapp_extension")}
+                  className="w-full h-10 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring gap-2 border border-border/60 hover:bg-muted"
+                >
+                  <Eye className="size-4" />
+                  <span>Visualizar na Store</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Extensão 3: Minerador e Scripts */}
+            <div className="rounded-lg border border-border/80 bg-card p-5 flex flex-col justify-between space-y-4 shadow-xs">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline" className="text-2xs font-semibold">
+                    Node / Playwright
+                  </Badge>
+                  <Badge variant="secondary" className="text-3xs font-normal">
+                    Scripts CLI
+                  </Badge>
+                </div>
+                <h2 className="text-base font-bold text-foreground">
+                  Waesy Miner • Extrator Autônomo
+                </h2>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Varredura em lote com sessões persistidas do Chrome e gerador de arquivos CSV formatados com BOM UTF-8 e ponto-e-vírgula para Excel.
+                </p>
+                <div className="pt-1 text-2xs font-mono text-muted-foreground">
+                  <span>Destino: Windows / Terminal</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={downloadingType === "infotravel_miner"}
+                  onClick={() => handleDownloadExtension("infotravel_miner")}
+                  className="w-full h-11 min-h-11 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring gap-2"
+                >
+                  {downloadingType === "infotravel_miner" ? (
+                    <RefreshCw className="size-4 animate-spin motion-reduce:animate-none" />
+                  ) : (
+                    <Download className="size-4" />
+                  )}
+                  {downloadingType === "infotravel_miner" ? "Empacotando..." : "Baixar Scripts & Extrator (.zip)"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setStoreModalType("infotravel_miner")}
+                  className="w-full h-10 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring gap-2 border border-border/60 hover:bg-muted"
+                >
+                  <Eye className="size-4" />
+                  <span>Visualizar na Store</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* ─── Fila de Solicitações de Acesso ─── */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/80 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="size-5 text-foreground" />
+                  <h3 className="text-base font-bold text-foreground">
+                    Fila de Solicitações de Acesso
+                  </h3>
+                  {pendingRequestsCount > 0 && (
+                    <Badge variant="outline" className="border-warning/50 text-warning bg-warning/10 text-2xs font-semibold">
+                      {pendingRequestsCount} pendente{pendingRequestsCount > 1 ? "s" : ""}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Lojas que solicitaram liberação através da vitrine Web Store.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isLoadingRequests}
+                onClick={refreshExtensionData}
+                className="h-9 px-3 text-xs font-semibold gap-2 self-start sm:self-auto focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <RefreshCw className={`size-3.5 ${isLoadingRequests ? "animate-spin motion-reduce:animate-none" : ""}`} />
+                <span>Atualizar Fila</span>
+              </Button>
+            </div>
+
+            {extensionRequests.length === 0 ? (
+              <div className="rounded-lg border border-border/80 bg-card p-8 text-center space-y-2">
+                <ShieldCheck className="size-8 mx-auto text-muted-foreground" />
+                <p className="text-sm font-semibold text-foreground">Nenhuma solicitação no histórico</p>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                  Quando uma empresa tentar acessar ou baixar extensões sem autorização, ela poderá enviar um pedido formal que aparecerá nesta lista para liberação em 1 clique.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {extensionRequests.map((req) => {
+                  const isProcessing = processingRequestId === req.id;
+                  const isPending = req.status === "pending";
+                  const isApproved = req.status === "approved";
+
+                  return (
+                    <div
+                      key={req.id}
+                      className="rounded-lg border border-border/80 bg-card p-4 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-bold text-foreground">
+                            {req.store_name}
+                          </span>
+                          {req.store_city && (
+                            <Badge variant="secondary" className="text-2xs font-normal">
+                              {req.store_city}
+                            </Badge>
+                          )}
+                          <Badge
+                            variant="outline"
+                            className={`text-2xs font-semibold ${
+                              isApproved
+                                ? "border-success/50 text-success bg-success/10"
+                                : isPending
+                                ? "border-warning/50 text-warning bg-warning/10"
+                                : "border-destructive/50 text-destructive bg-destructive/10"
+                            }`}
+                          >
+                            {isApproved
+                              ? "Liberado & Ativo"
+                              : isPending
+                              ? "Aguardando Avaliação"
+                              : "Rejeitado"}
+                          </Badge>
+                          <Badge variant="outline" className="text-2xs font-mono">
+                            {getExtensionLabel(req.extension_type)}
+                          </Badge>
+                        </div>
+
+                        <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-3">
+                          <span>
+                            Solicitante: <strong className="text-foreground font-semibold">{req.requester_name}</strong>
+                            {req.requester_email ? ` (${req.requester_email})` : ""}
+                          </span>
+                          <span>•</span>
+                          <span>{formatRequestDate(req.created_at)}</span>
+                        </div>
+
+                        {req.justification && (
+                          <div className="rounded-md bg-muted/40 p-3 text-xs text-foreground/90 italic border border-border/40">
+                            &ldquo;{req.justification}&rdquo;
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                        {isPending ? (
+                          <>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={isProcessing}
+                              onClick={() => handleReviewRequest(req, "approved")}
+                              className="h-9 px-3 text-xs font-bold border-success/40 text-success hover:bg-success/10 focus-visible:ring-2 focus-visible:ring-ring gap-2"
+                            >
+                              {isProcessing ? (
+                                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+                              ) : (
+                                <Check className="size-3.5" />
+                              )}
+                              <span>Liberar Acesso</span>
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              disabled={isProcessing}
+                              onClick={() => handleReviewRequest(req, "rejected")}
+                              className="h-9 px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring gap-2"
+                            >
+                              <X className="size-3.5" />
+                              <span>Rejeitar</span>
+                            </Button>
+                          </>
+                        ) : isApproved ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={isProcessing}
+                            onClick={() => handleReviewRequest(req, "rejected")}
+                            className="h-9 px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring gap-2"
+                          >
+                            <UserX className="size-3.5" />
+                            <span>Revogar Acesso</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={isProcessing}
+                            onClick={() => handleReviewRequest(req, "approved")}
+                            className="h-9 px-3 text-xs font-bold border-success/40 text-success hover:bg-success/10 focus-visible:ring-2 focus-visible:ring-ring gap-2"
+                          >
+                            <Check className="size-3.5" />
+                            <span>Reconsiderar & Liberar</span>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* ─── Gestão Direta de Autorizações por Loja ─── */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/80 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Building2 className="size-5 text-foreground" />
+                  <h3 className="text-base font-bold text-foreground">
+                    Autorização Direta por Loja
+                  </h3>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Conceda ou revogue acesso instantâneo a cada extensão para qualquer empresa cadastrada.
+                </p>
+              </div>
+              <div className="w-full sm:w-64">
+                <Input
+                  placeholder="Filtrar por nome ou slug..."
+                  value={storeSearch}
+                  onChange={(e) => setStoreSearch(e.target.value)}
+                  className="h-9 text-xs rounded-lg bg-card"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/80 bg-card overflow-hidden">
+              <div className="overflow-x-auto table-scroll-area">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-muted/40 text-muted-foreground uppercase text-3xs font-semibold tracking-wider border-b border-border/60">
+                    <tr>
+                      <th className="p-3">Loja / Empresa</th>
+                      <th className="p-3 text-center">Waesy Sync (Infotravel)</th>
+                      <th className="p-3 text-center">Waesy Ingest (WhatsApp)</th>
+                      <th className="p-3 text-center">Waesy Miner (Scripts)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40">
+                    {filteredPlatformStores.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-6 text-center text-xs text-muted-foreground">
+                          Nenhuma loja encontrada com o termo pesquisado.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredPlatformStores.slice(0, 15).map((store) => {
+                        const isExempt = isStoreExempt(store);
+                        const authInfotravel = isStoreExtensionAuthorized(store, "infotravel_extension");
+                        const authWhatsapp = isStoreExtensionAuthorized(store, "whatsapp_extension");
+                        const authMiner = isStoreExtensionAuthorized(store, "infotravel_miner");
+
+                        return (
+                          <tr key={store.id} className="hover:bg-muted/20 transition-colors">
+                            <td className="p-3">
+                              <div className="font-semibold text-foreground">{store.name}</div>
+                              <div className="text-2xs text-muted-foreground font-mono">
+                                {store.slug}
+                                {isExempt && " • Piloto Nativo Autorizado"}
+                              </div>
+                            </td>
+
+                            {/* Coluna 1: Infotravel */}
+                            <td className="p-3 text-center">
+                              {isExempt ? (
+                                <Badge variant="secondary" className="text-3xs font-semibold">
+                                  Liberado Nativo
+                                </Badge>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant={authInfotravel ? "outline" : "ghost"}
+                                  size="sm"
+                                  disabled={togglingStoreExtension === `${store.id}_infotravel_extension`}
+                                  onClick={() => handleToggleStoreExtension(store.id, "infotravel_extension", authInfotravel)}
+                                  className={`h-8 px-2 text-2xs font-semibold focus-visible:ring-2 focus-visible:ring-ring ${
+                                    authInfotravel
+                                      ? "border-success/50 text-success bg-success/10"
+                                      : "text-muted-foreground hover:text-foreground"
+                                  }`}
+                                >
+                                  {togglingStoreExtension === `${store.id}_infotravel_extension` ? (
+                                    <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
+                                  ) : authInfotravel ? (
+                                    <Check className="size-3 mr-1" />
+                                  ) : (
+                                    <X className="size-3 mr-1" />
+                                  )}
+                                  <span>{authInfotravel ? "Liberado" : "Bloqueado"}</span>
+                                </Button>
+                              )}
+                            </td>
+
+                            {/* Coluna 2: WhatsApp Web */}
+                            <td className="p-3 text-center">
+                              {isExempt ? (
+                                <Badge variant="secondary" className="text-3xs font-semibold">
+                                  Liberado Nativo
+                                </Badge>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant={authWhatsapp ? "outline" : "ghost"}
+                                  size="sm"
+                                  disabled={togglingStoreExtension === `${store.id}_whatsapp_extension`}
+                                  onClick={() => handleToggleStoreExtension(store.id, "whatsapp_extension", authWhatsapp)}
+                                  className={`h-8 px-2 text-2xs font-semibold focus-visible:ring-2 focus-visible:ring-ring ${
+                                    authWhatsapp
+                                      ? "border-success/50 text-success bg-success/10"
+                                      : "text-muted-foreground hover:text-foreground"
+                                  }`}
+                                >
+                                  {togglingStoreExtension === `${store.id}_whatsapp_extension` ? (
+                                    <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
+                                  ) : authWhatsapp ? (
+                                    <Check className="size-3 mr-1" />
+                                  ) : (
+                                    <X className="size-3 mr-1" />
+                                  )}
+                                  <span>{authWhatsapp ? "Liberado" : "Bloqueado"}</span>
+                                </Button>
+                              )}
+                            </td>
+
+                            {/* Coluna 3: Minerador */}
+                            <td className="p-3 text-center">
+                              {isExempt ? (
+                                <Badge variant="secondary" className="text-3xs font-semibold">
+                                  Liberado Nativo
+                                </Badge>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant={authMiner ? "outline" : "ghost"}
+                                  size="sm"
+                                  disabled={togglingStoreExtension === `${store.id}_infotravel_miner`}
+                                  onClick={() => handleToggleStoreExtension(store.id, "infotravel_miner", authMiner)}
+                                  className={`h-8 px-2 text-2xs font-semibold focus-visible:ring-2 focus-visible:ring-ring ${
+                                    authMiner
+                                      ? "border-success/50 text-success bg-success/10"
+                                      : "text-muted-foreground hover:text-foreground"
+                                  }`}
+                                >
+                                  {togglingStoreExtension === `${store.id}_infotravel_miner` ? (
+                                    <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
+                                  ) : authMiner ? (
+                                    <Check className="size-3 mr-1" />
+                                  ) : (
+                                    <X className="size-3 mr-1" />
+                                  )}
+                                  <span>{authMiner ? "Liberado" : "Bloqueado"}</span>
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {filteredPlatformStores.length > 15 && (
+                <div className="p-2 text-center bg-muted/20 text-3xs text-muted-foreground border-t border-border/40">
+                  Mostrando 15 de {filteredPlatformStores.length} lojas. Use a busca acima para filtrar.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Grid de Módulos ────────────────────────────────────────── */}
+      {categoryTab !== "browser_extensions" && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredModules.map((module) => {
           const isToggling = togglingKey === module.module_key;
@@ -312,6 +1049,7 @@ function AdminMasterModulosPage() {
           );
         })}
       </div>
+      )}
 
       {/* ─── Modal de Edição de Módulo ────────────────────────────────────────── */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -399,6 +1137,17 @@ function AdminMasterModulosPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ─── Modal Web Store Showcase Preview ───────────────────────── */}
+      {storeModalType && (
+        <ExtensionWebStoreModal
+          isOpen={!!storeModalType}
+          onClose={() => setStoreModalType(null)}
+          extensionType={storeModalType}
+          storeName="Admin Master"
+          onDownloadDirect={handleDownloadExtension}
+        />
+      )}
     </div>
   );
 }

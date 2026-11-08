@@ -29,7 +29,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function handleQuoteCaptured(q) {
   try {
-    const data = await chrome.storage.local.get(['waesyStoreId']);
+    const data = await chrome.storage.local.get(['waesyStoreId', 'waesyServerUrl', 'cotacoesRecentes']);
+    const serverUrl = (data.waesyServerUrl || 'https://waesy.com.br').replace(/\/+$/, '');
+
+    // Armazena na lista recente da extensão
+    const list = data.cotacoesRecentes || [];
+    list.unshift(q);
+    if (list.length > 50) list.pop();
+    await chrome.storage.local.set({ cotacoesRecentes: list });
+
     const payload = {
       storeId: data.waesyStoreId || undefined,
       operatorSlug: q.operatorSlug || 'infotravel_default',
@@ -48,7 +56,7 @@ async function handleQuoteCaptured(q) {
       rawPayloadJson: q
     };
 
-    fetch('https://waesy.com.br/api/v1/ingest/infotravel-quotes', {
+    fetch(`${serverUrl}/api/v1/ingest/infotravel-quotes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

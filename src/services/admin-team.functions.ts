@@ -81,7 +81,7 @@ export const listTeamMembers = createServerFn({ method: "GET" }).handler(async (
 
 export async function _updateTeamMemberRole(input: {
  id: string;
- role: "owner" | "admin" | "manager" | "seller" | "finance" | "content" | "customer";
+ role: "owner" | "admin" | "manager" | "seller" | "cashier" | "finance" | "content" | "customer";
 }) {
  const db = getServerClient();
  const identity = await getServerIdentity();
@@ -130,7 +130,7 @@ export const updateTeamMemberRole = createServerFn({ method: "POST" })
  .validator(
  z.object({
  id: z.string().uuid(),
- role: z.enum(["owner", "admin", "manager", "seller", "finance", "content", "customer"]),
+ role: z.enum(["owner", "admin", "manager", "seller", "cashier", "finance", "content", "customer"]),
  }),
  )
  .handler(async ({ data: input }) => {
@@ -146,7 +146,7 @@ export const updateTeamMemberRole = createServerFn({ method: "POST" })
 export async function _inviteTeamMember(input: {
  email: string;
  fullName: string;
- role: "admin" | "manager" | "seller" | "finance" | "content" | "stock" | "support";
+ role: "admin" | "manager" | "seller" | "cashier" | "finance" | "content" | "stock" | "support";
 }) {
  const db = getServerClient();
  const identity = await getServerIdentity();
@@ -224,7 +224,7 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
  z.object({
  email: z.string().email(),
  fullName: z.string().min(1),
- role: z.enum(["admin", "manager", "seller", "finance", "content", "stock", "support"]),
+ role: z.enum(["admin", "manager", "seller", "cashier", "finance", "content", "stock", "support"]),
  }),
  )
  .handler(async ({ data: input }) => {

@@ -19,13 +19,14 @@ export const listStaffThreadsSchema = z.object({
 });
 
 export const sendStaffMessageSchema = z.object({
- threadId: z.string().uuid(),
- message: z.string().min(1),
- message_type: z
- .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "pix_payment", "structured_blocks"])
- .default("text"),
- attachments: z.array(z.string().url()).default([]),
- payload: z.record(z.any()).default({}),
+  threadId: z.string().uuid(),
+  message: z.string().min(1),
+  message_type: z
+    .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "pix_payment", "structured_blocks"])
+    .default("text"),
+  attachments: z.array(z.string().url()).default([]),
+  payload: z.record(z.any()).default({}),
+  is_internal: z.boolean().default(false),
 });
 
 export const sendCustomerMessageSchema = z.object({
@@ -280,7 +281,10 @@ export const getChatMessages = createServerFn({ method: "GET" })
  if (error) throw error;
  return {
  thread,
- messages: messages || [],
+ messages: (messages || []).map((m: any) => ({
+   ...m,
+   is_internal: Boolean(m.payload?.is_internal),
+ })),
  };
  } catch (e: any) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
@@ -309,6 +313,12 @@ export const sendChatMessage = createServerFn({ method: "POST" })
 
  if (!thread) throw new Error("Conversa não encontrada ou acesso negado.");
 
+ const isInternal = Boolean(input.is_internal);
+ const finalPayload = {
+   ...(input.payload || {}),
+   is_internal: isInternal,
+ };
+
  const { data: msg, error } = await db
  .from("chat_messages")
  .insert({
@@ -316,7 +326,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
  message: input.message,
  message_type: input.message_type,
  attachments: input.attachments,
- payload: input.payload,
+ payload: finalPayload,
  is_staff_reply: true,
  sender_id: identity.id,
  sender_profile_id: identity.id,
@@ -326,39 +336,41 @@ export const sendChatMessage = createServerFn({ method: "POST" })
 
  if (error) throw error;
 
- await db
- .from("chat_threads")
- .update({
- last_message_text: input.message,
- last_message_at: new Date().toISOString(),
- updated_at: new Date().toISOString(),
- })
- .eq("id", input.threadId);
+ if (!isInternal) {
+   await db
+   .from("chat_threads")
+   .update({
+   last_message_text: input.message,
+   last_message_at: new Date().toISOString(),
+   updated_at: new Date().toISOString(),
+   })
+   .eq("id", input.threadId);
 
-  // Cross-Module Outbound Dispatch: Disparo bidirecional para canais externos (WhatsApp / Mercado Livre)
-  if (thread.context_type === "whatsapp" && thread.entity_id) {
-    try {
-      const { sendWhatsAppNotification } = await import("./integrations.functions");
-      await sendWhatsAppNotification({
-        storeId: thread.store_id,
-        recipientPhone: thread.entity_id,
-        messageText: input.message,
-      });
-    } catch (waErr) {
-      console.warn("[chat.functions] Falha ao despachar resposta via WhatsApp:", waErr);
-    }
-  } else if (thread.context_type === "mercadolivre" && thread.entity_id) {
-    try {
-      const { answerMercadoLivreQuestion } = await import("./marketplace-hub.functions");
-      await answerMercadoLivreQuestion({
-        storeId: thread.store_id,
-        questionId: thread.entity_id,
-        answerText: input.message,
-      });
-    } catch (mlErr) {
-      console.warn("[chat.functions] Falha ao despachar resposta via Mercado Livre:", mlErr);
-    }
-  }
+   // Cross-Module Outbound Dispatch: Disparo bidirecional para canais externos apenas se NÃO for nota interna
+   if (thread.context_type === "whatsapp" && thread.entity_id) {
+     try {
+       const { sendWhatsAppNotification } = await import("./integrations.functions");
+       await sendWhatsAppNotification({
+         storeId: thread.store_id,
+         recipientPhone: thread.entity_id,
+         messageText: input.message,
+       });
+     } catch (waErr) {
+       console.warn("[chat.functions] Falha ao despachar resposta via WhatsApp:", waErr);
+     }
+   } else if (thread.context_type === "mercadolivre" && thread.entity_id) {
+     try {
+       const { answerMercadoLivreQuestion } = await import("./marketplace-hub.functions");
+       await answerMercadoLivreQuestion({
+         storeId: thread.store_id,
+         questionId: thread.entity_id,
+         answerText: input.message,
+       });
+     } catch (mlErr) {
+       console.warn("[chat.functions] Falha ao despachar resposta via Mercado Livre:", mlErr);
+     }
+   }
+ }
 
  return msg;
  } catch (e: any) {
@@ -410,12 +422,17 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
 
  const db = getServerClient();
 
- const [profileRes, ordersRes, ticketsRes, tripsRes, creditsRes] = await Promise.all([
- db.from("profiles").select("id, full_name, phone, avatar_url, created_at").eq("id", data.customerId).single(),
+ const profileRes = await db.from("profiles").select("id, full_name, phone, avatar_url, created_at").eq("id", data.customerId).single();
+ const customerPhone = profileRes.data?.phone;
+
+ const [ordersRes, ticketsRes, tripsRes, creditsRes, leadRes, quotesRes, contractsRes] = await Promise.all([
  db.from("orders").select("id, total_amount_cents, status, created_at, payment_method").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("created_at", { ascending: false }).limit(10),
  db.from("store_support_tickets").select("*").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("created_at", { ascending: false }),
  db.from("tourism_trips").select("id, trip_number, title, destination_city, travel_start_date, travel_end_date, total_cents, status").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("travel_start_date", { ascending: false }).limit(5),
  db.from("air_ticket_credits").select("id, airline, original_pnr, remaining_amount_cents, expires_at, status").eq("agency_id", data.storeId).eq("status", "active").limit(5),
+ db.from("leads_crm").select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, created_at").eq("store_id", data.storeId).or(`customer_id.eq.${data.customerId},phone.eq.${customerPhone || "none"}`).order("created_at", { ascending: false }).limit(3).maybeSingle(),
+ db.from("travel_quotes").select("id, quote_number, title, destination, total_cents, status, created_at").eq("agency_id", data.storeId).eq("customer_id", data.customerId).order("created_at", { ascending: false }).limit(5),
+ db.from("contracts").select("id, contract_number, title, status, total_amount_cents, public_token, created_at").eq("store_id", data.storeId).eq("customer_id", data.customerId).order("created_at", { ascending: false }).limit(5),
  ]);
 
  const orders = ordersRes.data || [];
@@ -434,8 +451,96 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  trips: (tripsRes?.data as any[]) || [],
  credits: (creditsRes?.data as any[]) || [],
  tickets: ticketsRes.data || [],
-
+ linkedLead: leadRes?.data || null,
+ quotes: (quotesRes?.data as any[]) || [],
+ contracts: (contractsRes?.data as any[]) || [],
  };
+ });
+
+/**
+ * Converte ou vincula uma conversa (WhatsApp, Instagram ou Web) em um Lead no funil comercial do CRM
+ */
+export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
+ .validator(
+ z.object({
+ threadId: z.string().uuid(),
+ leadTitle: z.string().min(2).max(120),
+ assignedTo: z.string().uuid().optional(),
+ estimatedBudget: z.number().optional(),
+ destinationOfInterest: z.string().optional(),
+ notes: z.string().optional(),
+ }),
+ )
+ .handler(async ({ data }) => {
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity);
+ const storeId = identity.store_id;
+ if (!storeId) throw new Error("Contexto de loja obrigatório.");
+
+ const db = getServerClient();
+ const { data: thread } = await db
+ .from("chat_threads")
+ .select("id, store_id, customer_id, guest_name, guest_email, entity_id, context_type")
+ .eq("id", data.threadId)
+ .eq("store_id", storeId)
+ .single();
+
+ if (!thread) throw new Error("Conversa não encontrada.");
+
+ let phone = thread.entity_id || "";
+ let email = thread.guest_email || "";
+ let fullName = thread.guest_name || "Lead via Atendimento";
+
+ if (thread.customer_id) {
+ const { data: profile } = await db
+ .from("profiles")
+ .select("full_name, phone, email")
+ .eq("id", thread.customer_id)
+ .maybeSingle();
+
+ if (profile) {
+ fullName = profile.full_name || fullName;
+ phone = profile.phone || phone;
+ email = profile.email || email;
+ }
+ }
+
+ const { data: lead, error: leadErr } = await db
+ .from("leads_crm")
+ .insert({
+ store_id: storeId,
+ title: data.leadTitle,
+ full_name: fullName,
+ phone,
+ email,
+ customer_id: thread.customer_id || null,
+ assigned_to: data.assignedTo || identity.id,
+ source: thread.context_type === "whatsapp" ? "WhatsApp Atendimento" : "Chat Central",
+ destination_of_interest: data.destinationOfInterest || null,
+ estimated_budget: data.estimatedBudget || null,
+ status: "new",
+ notes: data.notes || `Criado via Central de Atendimento da Thread ${thread.id}`,
+ created_at: new Date().toISOString(),
+ updated_at: new Date().toISOString(),
+ })
+ .select("id, title, status, full_name, phone, email")
+ .single();
+
+ if (leadErr) {
+ throw new Error(`Falha ao criar card no CRM: ${leadErr.message}`);
+ }
+
+ await db.from("chat_messages").insert({
+ thread_id: data.threadId,
+ message: `Card comercial gerado no CRM: "${data.leadTitle}" atribuído à equipe.`,
+ message_type: "system_event",
+ payload: { is_internal: true, lead_id: lead.id },
+ is_staff_reply: true,
+ sender_id: identity.id,
+ sender_profile_id: identity.id,
+ });
+
+ return { success: true, lead };
  });
 
 // ============================================================

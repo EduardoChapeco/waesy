@@ -131,7 +131,6 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
 
-  const [isMasterAllVerticals, setIsMasterAllVerticals] = useState(false);
   const [isAllToolsOpen, setIsAllToolsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -167,7 +166,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     : (activeStore?.role || session?.role || "collaborator").toLowerCase();
 
   const activeModules = getSidebarConfig(activeStore, {
-    isMasterMode: isPlatformAdmin && isMasterAllVerticals,
+    isMasterMode: false,
     userRole: effectiveUserRole,
   });
   const currentSemantics = getNicheSemantics(activeStore);
@@ -476,37 +475,8 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     setShowPersonalSwitchModal(true);
   };
 
- const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => (
- <div className="flex flex-col space-y-1 select-none">
- {/* ── Módulo VIP: Painel Global Master para Platform Admin ── */}
- {isPlatformAdmin && (
- <div className="mb-2 pb-2 border-b border-border/40 space-y-2">
- <Link
- to="/admin-master"
- className="flex items-center justify-between px-3 py-2 rounded-lg bg-transparent hover:bg-muted text-foreground transition-colors font-semibold text-xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
- >
- <div className="flex items-center gap-2">
- <ShieldAlert className="size-4 text-primary shrink-0" />
- <span className="truncate">Painel Global Master</span>
- </div>
- <ArrowUpRight className="size-3.5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
- </Link>
-
- <button
- type="button"
- onClick={() => setIsMasterAllVerticals((prev) => !prev)}
- className={cn(
- "w-full flex items-center justify-between px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
- isMasterAllVerticals
- ? "bg-muted text-foreground"
- : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/60"
- )}
- >
- <span>{isMasterAllVerticals ? "Modo Master: Todas as Verticais" : "Filtrar por Nicho da Loja"}</span>
- <span className={cn("size-2 rounded-full", isMasterAllVerticals ? "bg-warning" : "bg-muted-foreground")} />
- </button>
- </div>
- )}
+  const NavLinks = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <div className="flex flex-col space-y-1 select-none">
 
  {/* Lista de Grupos de Navegação com Flyout Flutuante / Accordion */}
  {activeModules.length === 0 ? (
@@ -689,45 +659,6 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
             {/* Submódulos do Módulo Master Selecionado */}
             <ScrollArea className="flex-1 px-3 py-3 overflow-x-hidden">
               <div className="space-y-4">
-                {/* Atalho Admin Master para Platform Admin */}
-                {isPlatformAdmin && (
-                  <div className="pb-2 border-b border-border/40 space-y-1">
-                    <Link
-                      to="/admin-master"
-                      className="flex items-center justify-between px-3 py-2 min-h-11 rounded-xl hover:bg-muted text-foreground transition-colors font-semibold text-xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <div className="flex items-center gap-2">
-                        <ShieldAlert className="size-4 text-muted-foreground shrink-0" />
-                        <span className="truncate">Painel Global Master</span>
-                      </div>
-                      <ArrowUpRight className="size-3.5 text-muted-foreground group-hover:text-foreground transition-transform shrink-0" />
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => setIsMasterAllVerticals((prev) => !prev)}
-                      className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 min-h-11 rounded-xl text-2xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        isMasterAllVerticals
-                          ? "bg-muted text-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                      )}
-                    >
-                      <span>
-                        {isMasterAllVerticals
-                          ? "Modo Master: Todas as Verticais"
-                          : "Filtrar por Nicho da Loja"}
-                      </span>
-                      <span
-                        className={cn(
-                          "size-2 rounded-full",
-                          isMasterAllVerticals ? "bg-foreground" : "bg-muted-foreground/50"
-                        )}
-                      />
-                    </button>
-                  </div>
-                )}
-
                 {activeMasterPillar && (
                   <div className="space-y-3">
                     <div className="px-2">
@@ -982,20 +913,6 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                 </Button>
               );
             })()}
-
-            {/* Botão Admin Master */}
-            {isPlatformAdmin && (
-              <Button
-                asChild
-                size="sm"
-                className="h-11 min-h-11 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground hover:opacity-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <Link to="/admin-master">
-                  <ShieldAlert className="size-3.5" />
-                  <span className="hidden waesy-expanded-flex">Admin Master</span>
-                </Link>
-              </Button>
-            )}
 
             {/* Ação Operacional Primária Contextual por Nicho */}
             {(() => {

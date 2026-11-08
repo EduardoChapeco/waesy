@@ -24,6 +24,9 @@ import {
   ArtifactBiolinkCluster,
   ArtifactTravelDossier,
   ArtifactBuilderEditor,
+  ArtifactDashboard,
+  ArtifactInteractiveMap,
+  ArtifactCreativePost,
 } from "./artifacts";
 
 export interface CopilotArtifactPanelProps {
@@ -48,6 +51,9 @@ const ARTIFACT_FRIENDLY_LABELS: Record<string, string> = {
   interactive_table: "Tabela Interativa",
   proposal: "Proposta Comercial",
   builder_bridge: "Estrutura do Documento",
+  dashboard: "Painel de Indicadores",
+  map_view: "Mapa Interativo",
+  creative_post: "Criativo & Publicação",
 };
 
 export function CopilotArtifactPanel({
@@ -98,12 +104,22 @@ export function CopilotArtifactPanel({
     Boolean(data.headers && (data.rows || data.dataRows));
   const isBiolink =
     artifact.type === ("biolink_cluster" as any) ||
-    (Array.isArray(data.places) && data.places.length > 0);
+    (artifact.type !== ("map_view" as any) && !data.city && Array.isArray(data.places) && data.places.length > 0);
   const isTravel =
     artifact.type === "travel_itinerary" ||
     artifact.type === "itinerary" ||
     artifact.type === ("travel_dossier" as any) ||
     Boolean(data.destination);
+  const isDashboard =
+    artifact.type === ("dashboard" as any) ||
+    Boolean(data.kpis && Array.isArray(data.kpis));
+  const isMap =
+    artifact.type === ("map_view" as any) ||
+    Boolean(data.mapPlaces || (data.places && !isBiolink));
+  const isCreativePost =
+    artifact.type === ("creative_post" as any) ||
+    artifact.type === "social_post" ||
+    Boolean(data.headline && (data.ctaText || data.hashtags));
 
   return (
     <div className={cn("flex flex-col h-full bg-card space-y-3", className)}>
@@ -178,6 +194,36 @@ export function CopilotArtifactPanel({
             pixKey={data.pixKey}
             pixCode={data.pixCode}
             days={data.days || []}
+          />
+        ) : isDashboard ? (
+          <ArtifactDashboard
+            title={artifact.title}
+            subtitle={artifact.previewSummary}
+            kpis={data.kpis || []}
+            breakdowns={data.breakdowns || []}
+            recentActivities={data.recentActivities || []}
+            alerts={data.alerts || []}
+          />
+        ) : isMap ? (
+          <ArtifactInteractiveMap
+            title={artifact.title}
+            city={data.city || "Chapecó"}
+            state={data.state || "SC"}
+            places={data.mapPlaces || data.places || []}
+          />
+        ) : isCreativePost ? (
+          <ArtifactCreativePost
+            title={artifact.title}
+            badge={data.badge}
+            headline={data.headline}
+            subheadline={data.subheadline}
+            bullets={data.bullets}
+            ctaText={data.ctaText}
+            storeName={data.storeName}
+            caption={data.caption}
+            hashtags={data.hashtags}
+            offerPrice={data.offerPrice}
+            offerBadge={data.offerBadge}
           />
         ) : (
           <ArtifactBuilderEditor

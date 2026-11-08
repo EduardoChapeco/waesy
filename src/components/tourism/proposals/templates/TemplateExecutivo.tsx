@@ -4,7 +4,7 @@
  */
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
-import { Plane, Hotel, Car, Compass, Check, X, PhoneCall } from "lucide-react";
+import { Plane, Hotel, Car, Compass, Check, X, PhoneCall, MapPin, Utensils } from "lucide-react";
 import { buildBaseViewModel } from "@/lib/adapters";
 
 interface TemplateProps {
@@ -180,6 +180,48 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                       </div>
                     )}
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {vm.hasItinerary && (
+          <div className="break-inside-avoid">
+            <h2 className="text-xl font-bold text-slate-900 mb-6 pt-6 border-t border-slate-100">
+              Roteiro Detalhado
+            </h2>
+            <div className="space-y-4">
+              {p.itinerary!.map((d, i) => (
+                <div
+                  key={i}
+                  className="border border-slate-200 rounded-lg p-5 bg-slate-50/50 break-inside-avoid space-y-2"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="px-2 py-1 rounded bg-slate-200 text-slate-800 text-xs font-bold font-mono">
+                      {d.day || `Dia ${i + 1}`}
+                    </span>
+                    <h3 className="font-bold text-slate-900 text-base">{d.title}</h3>
+                  </div>
+                  {((d as any).city || (d as any).location || ((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {((d as any).city || (d as any).location) && (
+                        <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-background border border-slate-200 px-2 py-1 rounded font-medium">
+                          <MapPin className="size-3 text-slate-400" />
+                          {(d as any).city || (d as any).location}
+                        </span>
+                      )}
+                      {(((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                        <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-background border border-slate-200 px-2 py-1 rounded font-medium">
+                          <Utensils className="size-3 text-slate-400" />
+                          {Array.isArray((d as any).meals) ? (d as any).meals.join(", ") : Array.isArray((d as any).included_meals) ? (d as any).included_meals.join(", ") : (d as any).meals || (d as any).included_meals}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">
+                    {d.description}
+                  </p>
                 </div>
               ))}
             </div>

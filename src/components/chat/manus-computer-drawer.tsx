@@ -51,7 +51,7 @@ const DEFAULT_STEPS: ManusComputerStep[] = [
     index: 1,
     title: 'Inspecionando estado do cluster Waesy Cloud e instâncias WhatsApp',
     tool: 'bash',
-    target: 'ubuntu@147.15.61.45:~/waesy-services',
+    target: 'waesy-agent-runtime@local',
     timestamp: '14:20:08',
     terminalOutput: `$ docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"
 NAMES                STATUS                   PORTS

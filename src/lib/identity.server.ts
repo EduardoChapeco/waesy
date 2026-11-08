@@ -72,7 +72,7 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
   const now = Date.now();
   if (memoKey !== "unscoped") {
     const cached = IDENTITY_MEMO_CACHE.get(memoKey);
-    if (cached && cached.expiresAt > now) {
+    if (cached && cached.expiresAt > now && cached.identity?.id) {
       if (evt?.context) evt.context.__server_identity__ = cached.identity;
       return cached.identity;
     }
@@ -411,7 +411,7 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     if (evt?.context) {
       evt.context.__server_identity__ = resolvedIdentity;
     }
-    if (memoKey !== "unscoped") {
+    if (memoKey !== "unscoped" && resolvedIdentity?.id) {
       IDENTITY_MEMO_CACHE.set(memoKey, {
         identity: resolvedIdentity,
         expiresAt: Date.now() + 10_000,

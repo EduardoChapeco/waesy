@@ -5,7 +5,7 @@
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Plane, Hotel, Compass, Check, X, PhoneCall } from "lucide-react";
+import { Plane, Hotel, Compass, Check, X, PhoneCall, Car, MapPin, Utensils } from "lucide-react";
 
 interface TemplateProps {
   proposal: Proposal;
@@ -263,7 +263,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       >
                         {i + 1}
                       </div>
-                      <div className="flex items-center gap-3 mb-3">
+                      <div className="flex items-center gap-3 mb-2">
                         <span
                           className="px-3 py-1 rounded-full ds-label-caps text-foreground"
                           style={{ backgroundColor: brand }}
@@ -272,12 +272,100 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                         </span>
                         <h4 className="text-lg font-bold text-slate-900">{d.title}</h4>
                       </div>
+                      {((d as any).city || (d as any).location || ((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          {((d as any).city || (d as any).location) && (
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full font-medium">
+                              <MapPin className="size-3 text-slate-400" />
+                              {(d as any).city || (d as any).location}
+                            </span>
+                          )}
+                          {(((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full font-medium">
+                              <Utensils className="size-3 text-slate-400" />
+                              {Array.isArray((d as any).meals) ? (d as any).meals.join(", ") : Array.isArray((d as any).included_meals) ? (d as any).included_meals.join(", ") : (d as any).meals || (d as any).included_meals}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-slate-600 leading-relaxed text-sm text-justify whitespace-pre-wrap">
                         {d.description}
                       </p>
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {vm.hasTransfers && (
+            <div className="break-inside-avoid">
+              <h2
+                className="text-2xl mb-8 pb-4 border-b border-slate-200"
+                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
+              >
+                Traslados & Receptivo
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {p.transfers!.map((t, i) => (
+                  <div
+                    key={i}
+                    className="p-5 rounded-lg border border-slate-200 bg-slate-50 space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                        <Car className="size-4 text-primary shrink-0" />
+                        <span>{t.description || "Transfer In/Out"}</span>
+                      </div>
+                      <span className="px-2 py-1 rounded text-3xs font-bold uppercase tracking-wider bg-slate-200 text-slate-700">
+                        {t.type === "shared" ? "Regular" : "Privativo"}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                      {t.vehicle && <span>Veículo: <strong>{t.vehicle}</strong></span>}
+                      {t.date && <span>Data: {formatDate(t.date)}</span>}
+                    </div>
+                    {t.notes && (
+                      <p className="text-xs text-slate-500 leading-relaxed italic">
+                        {t.notes}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {vm.hasTours && (
+            <div className="break-inside-avoid">
+              <h2
+                className="text-2xl mb-8 pb-4 border-b border-slate-200"
+                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
+              >
+                Passeios & Experiências
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {p.tours!.map((tour, i) => (
+                  <div
+                    key={i}
+                    className="p-5 rounded-lg border border-slate-200 bg-slate-50 space-y-2"
+                  >
+                    <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                      <Compass className="size-4 text-primary shrink-0" />
+                      <span>{tour.description || (tour as any).title || "Passeio Turístico"}</span>
+                    </div>
+                    {tour.date && (
+                      <div className="text-xs text-slate-500">
+                        Programação / Duração: {tour.date}
+                      </div>
+                    )}
+                    {tour.notes && (
+                      <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
+                        {tour.notes}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}

@@ -440,13 +440,13 @@ function CarteiraClientesPage() {
                         triggerVariant="outline"
                         triggerClassName="size-11 min-w-11 min-h-11 p-0 rounded-lg border-border hover:bg-muted shrink-0"
                         onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
-                        viewLabel="Ficha Completa 360°"
+                        viewLabel="Ver Ficha Completa"
                         onArchive={() => handleArchive(c.id, c.fullName)}
                         archiveTitle={`Arquivar cliente "${c.fullName}"?`}
                         archiveDescription="O cliente será arquivado e não aparecerá nas listagens ativas."
                         customActions={[
                           {
-                            label: "Gaveta 360° (Anamnese/Histórico)",
+                            label: "Ficha Rápida",
                             icon: ShieldCheck,
                             onClick: () => setSelectedDrawerCustomer(c),
                           },
@@ -658,7 +658,7 @@ function CarteiraClientesPage() {
                     >
                       <Link to="/workspace/clientes/$id" params={{ id: c.id }}>
                         <FileText className="size-4 text-muted-foreground" />
-                        <span>Ficha 360°</span>
+                        <span>Ficha do Cliente</span>
                       </Link>
                     </Button>
 
@@ -678,13 +678,13 @@ function CarteiraClientesPage() {
  triggerVariant="outline"
  triggerClassName="h-11 px-4 rounded-lg border-border/60 hover:bg-muted shrink-0"
  onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
- viewLabel="Ficha Completa 360°"
+ viewLabel="Ver Ficha Completa"
  onArchive={() => handleArchive(c.id, c.fullName)}
  archiveTitle={`Arquivar cliente "${c.fullName}"?`}
  archiveDescription="O cliente será arquivado e não aparecerá nas listagens ativas, podendo ser restaurado futuramente."
  customActions={[
  {
- label: "Gaveta 360° (Anamnese/Histórico)",
+ label: "Ficha Rápida",
  icon: ShieldCheck,
  onClick: () => setSelectedDrawerCustomer(c),
  },
@@ -889,7 +889,7 @@ function CarteiraClientesPage() {
  params={{ id: c.id }}
  className="px-3 py-2 rounded-lg text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
  >
- Ficha 360°
+ Ficha do Cliente
  </Link>
  <CrudActionsMenu
  onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
@@ -899,7 +899,7 @@ function CarteiraClientesPage() {
  archiveDescription="O cliente será arquivado e poderá ser restaurado futuramente."
  customActions={[
  {
- label: "Gaveta 360° (Anamnese/Histórico)",
+ label: "Ficha Rápida",
  icon: ShieldCheck,
  onClick: () => setSelectedDrawerCustomer(c),
  },

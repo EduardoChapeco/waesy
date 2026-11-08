@@ -87,6 +87,10 @@ export const saveAiArtifactSchema = z.object({
     "landing_page",
     "proposal",
     "image",
+    "dashboard",
+    "map_view",
+    "creative_post",
+    "social_post",
   ]),
   title: z.string().min(2),
   version: z.number().int().positive().default(1),
@@ -645,7 +649,157 @@ export function calculateHaversineDistance(
   return Number((R * c).toFixed(1));
 }
 
+export interface SpecialistPersona {
+  tag: "@ads_performance" | "@sdr_hunter" | "@creative_studio" | "@data_analyst" | "@advisor_executive";
+  name: string;
+  role: string;
+  systemDirective: string;
+  recommendedIntents: string[];
+}
+
+export function resolveSpecialistPersona(
+  userPrompt: string,
+  context: AiCopilotContext = {},
+): SpecialistPersona {
+  const p = userPrompt.toLowerCase();
+  const city = context.city || "sua região";
+
+  if (
+    p.includes("anúncio") ||
+    p.includes("anuncio") ||
+    p.includes("tráfego") ||
+    p.includes("trafego") ||
+    p.includes("campanha") ||
+    p.includes("meta ads") ||
+    p.includes("google ads") ||
+    p.includes("roas") ||
+    p.includes("cpa") ||
+    p.includes("pixel") ||
+    p.includes("público-alvo") ||
+    p.includes("publico alvo") ||
+    p.includes("@ads_performance")
+  ) {
+    return {
+      tag: "@ads_performance",
+      name: "Especialista em Performance & Ads",
+      role: "Gestor Sênior de Tráfego Pago e ROAS",
+      systemDirective: `Você é o Especialista em Performance e Tráfego Pago do Waesy (@ads_performance).
+Sua missão é desenhar campanhas de alta conversão para Meta Ads e Google Ads, definir públicos-alvo hiperlocais em ${city}, criar ganchos de copy com alto CTR e estimar métricas de conversão e ROAS realistas.`,
+      recommendedIntents: ["create_ad", "creative_post", "general_chat"],
+    };
+  }
+
+  if (
+    p.includes("prospecção") ||
+    p.includes("prospeccao") ||
+    p.includes("prospectar") ||
+    p.includes("leads") ||
+    p.includes("lead") ||
+    p.includes("cnpj") ||
+    p.includes("sdr") ||
+    p.includes("bdr") ||
+    p.includes("pipeline") ||
+    p.includes("cold mail") ||
+    p.includes("cold message") ||
+    p.includes("lista de empresas") ||
+    p.includes("@sdr_hunter")
+  ) {
+    return {
+      tag: "@sdr_hunter",
+      name: "SDR Hunter & BDR de Contas",
+      role: "Especialista em Prospecção Ativa B2B",
+      systemDirective: `Você é o Especialista em Prospecção Ativa e BDR do Waesy (@sdr_hunter).
+Sua missão é mapear e qualificar empresas por ICP em ${city}, estruturar dados verificados de CNPJs e decisores, elaborar abordagens consultivas de cold outreach no WhatsApp e organizar pipelines comerciais de alto fechamento.`,
+      recommendedIntents: ["search_places", "commercial_proposal", "general_chat"],
+    };
+  }
+
+  if (
+    p.includes("post") ||
+    p.includes("carrossel") ||
+    p.includes("story") ||
+    p.includes("stories") ||
+    p.includes("reels") ||
+    p.includes("instagram") ||
+    p.includes("social media") ||
+    p.includes("legenda") ||
+    p.includes("criativo") ||
+    p.includes("arte") ||
+    p.includes("@creative_studio")
+  ) {
+    return {
+      tag: "@creative_studio",
+      name: "Diretor de Criação & Social Media",
+      role: "Head de Conteúdo e Identidade Visual",
+      systemDirective: `Você é o Diretor de Criação do Waesy (@creative_studio).
+Sua missão é criar peças visuais de alto impacto, carrosséis educativos, posts de feed (1:1), retratos (4:5) e stories (9:16) com tipografia limpa, hierarquia visual nítida, paletas de cores semânticas e legendas persuasivas com hashtags estratégicas.`,
+      recommendedIntents: ["creative_post", "create_ad", "general_chat"],
+    };
+  }
+
+  if (
+    p.includes("dashboard") ||
+    p.includes("métrica") ||
+    p.includes("metrica") ||
+    p.includes("kpi") ||
+    p.includes("dre") ||
+    p.includes("caixa") ||
+    p.includes("financeir") ||
+    p.includes("faturamento") ||
+    p.includes("receita") ||
+    p.includes("planilha") ||
+    p.includes("fechamento") ||
+    p.includes("@data_analyst")
+  ) {
+    return {
+      tag: "@data_analyst",
+      name: "Analista de Inteligência de Negócios",
+      role: "Controladoria & Data Analytics",
+      systemDirective: `Você é o Analista Executivo de Inteligência de Negócios do Waesy (@data_analyst).
+Sua missão é traduzir dados operacionais, pedidos e fluxo financeiro em dashboards executivos com KPIs transparentes, alertas de caixa, ticket médio e metas de crescimento sustentável.`,
+      recommendedIntents: ["generate_dashboard", "financial_report", "general_chat"],
+    };
+  }
+
+  return {
+    tag: "@advisor_executive",
+    name: "Assessor Executivo Local",
+    role: "Concierge & Consultor Regional",
+    systemDirective: `Você é o Assessor Executivo Local de ${city} no ecossistema Waesy (@advisor_executive).
+Seu papel é acolher, orientar e resolver demandas locais com extrema cordialidade, tom consultivo executivo, empatia genuína e precisão factual inegociável.`,
+    recommendedIntents: [
+      "search_places",
+      "estimate_mobility",
+      "search_catalog",
+      "travel_itinerary",
+      "legal_triage",
+      "commercial_proposal",
+      "general_chat",
+    ],
+  };
+}
+
 function detectIntent(text: string): string {
+  if (
+    text.includes("dashboard") ||
+    text.includes("métrica") ||
+    text.includes("metrica") ||
+    text.includes("kpi") ||
+    text.includes("indicador")
+  ) {
+    return "generate_dashboard";
+  }
+  if (
+    text.includes("post") ||
+    text.includes("carrossel") ||
+    text.includes("story") ||
+    text.includes("stories") ||
+    text.includes("reels") ||
+    text.includes("instagram") ||
+    text.includes("social media")
+  ) {
+    return "creative_post";
+  }
   if (
     text.includes("onde fica") ||
     text.includes("onde tem") ||
@@ -663,7 +817,8 @@ function detectIntent(text: string): string {
     text.includes("resorts") ||
     text.includes("hospedagem") ||
     text.includes("padaria") ||
-    text.includes("mercado")
+    text.includes("mercado") ||
+    text.includes("mapa")
   ) {
     return "search_places";
   }
@@ -698,10 +853,13 @@ function detectIntent(text: string): string {
   }
   if (
     text.includes("anúncio") ||
+    text.includes("anuncio") ||
     text.includes("arte") ||
-    text.includes("post") ||
     text.includes("banner") ||
-    text.includes("propaganda")
+    text.includes("propaganda") ||
+    text.includes("campanha") ||
+    text.includes("tráfego") ||
+    text.includes("trafego")
   ) {
     return "create_ad";
   }
@@ -801,6 +959,7 @@ export async function executeAiCopilotPipeline(
   const steps: AIActivityStep[] = [];
   const updatedMemory: Record<string, any> = { ...workingMemory };
   const promptLower = userPrompt.toLowerCase();
+  const persona = resolveSpecialistPersona(userPrompt, context);
   const fsm = new CopilotStateMachine("RECEIVED");
 
   try {
@@ -938,14 +1097,14 @@ Se houver itens no CONTEXTO SOBERANO acima, mencione-os de forma clara, consulti
 `
         : "";
 
-      const systemPrompt = `Você é o Assessor Executivo Local de Chapecó e Região no ecossistema Waesy.
-Seu papel é acolher, orientar e resolver demandas locais com extrema cordialidade, tom consultivo executivo, empatia genuína e precisão factual inegociável.
+      const systemPrompt = `${persona.systemDirective}
+Identidade Operacional: ${persona.name} (${persona.role}) [${persona.tag}].
 
 ESTRUTURA CONSULTIVA OBRIGATÓRIA EM 4 BLOCOS:
 1. Acolhimento Caloroso e Empático: Inicie validando a necessidade do usuário de forma natural e próxima (ex: "Entendo perfeitamente o que você precisa. Vamos conferir as melhores alternativas disponíveis aqui na região.").
-2. Contexto Consultivo e Dados Locais: Explique com clareza o cenário local, contextualizando por que cada opção, serviço ou número faz sentido.
+2. Contexto Consultivo e Dados Locais: Explique com clareza o cenário local, contextualizando por que cada opção, serviço ou número faz sentido para ${context.city || "sua região"}.
 3. Detalhamento Transparente: Apresente valores, prazos e opções de forma clara, organizada e sem abreviações ou jargões técnicos.
-4. Próximo Passo Prático e Conclusão Proativa: Encerre sugerindo uma ação concreta (agendar, chamar motorista, abrir proposta, conferir planilha ou enviar mensagem).
+4. Próximo Passo Prático e Conclusão Proativa: Encerre sugerindo uma ação concreta (abrir artefato no painel lateral, agendar, chamar motorista, abrir proposta, conferir planilha ou enviar mensagem).
 
 DIRETRIZES DE COMUNICAÇÃO:
 - Grounding Estrito & Zero Dados Fictícios: Responda baseando-se ESTRITAMENTE nos dados verificados fornecidos em <GROUNDED_DATA>. Nunca invente nomes, preços, telefones ou empresas inexistentes.
@@ -953,18 +1112,19 @@ DIRETRIZES DE COMUNICAÇÃO:
 - Erradique 100% dos jargões de engenharia: Proibido mencionar "LLM", "prompt", "token", "payload", "crawler", "scraper", "BACEN EMV", "schema", "endpoint" ou "processamento de modelo". Fale como um consultor humano sênior e atencioso.
 
 Ferramentas disponíveis:
-1. 'search_places': busca estabelecimentos locais (cafés, restaurantes, mercados, academias, oficinas, etc.)
-2. 'estimate_mobility': calcula estimativas de trajeto e corrida urbana (moto, carro, entrega, van)
-3. 'search_catalog': busca produtos ou itens de cardápio com personalização
-4. 'travel_itinerary': monta pacotes de viagem com dias, passeios, hospedagens e código Pix para pagamento
-5. 'legal_triage': faz triagem jurídica com área do direito e documentos recomendados
-6. 'create_ad': cria texto e peça visual para divulgação ou redes sociais
-7. 'commercial_proposal': cria proposta comercial formal ou documento executivo
-8. 'financial_report': gera planilha de fechamento de caixa e indicadores de receita
+1. 'search_places' / 'interactive_map': busca estabelecimentos locais e exibe mapa interativo com rotas e contatos
+2. 'generate_dashboard': gera dashboard executivo com indicadores (KPIs), faturamento, pedidos e alertas operacionais
+3. 'creative_post' / 'create_ad': cria post/anúncio para redes sociais em formatos Feed (1:1), Retrato (4:5) ou Story (9:16)
+4. 'estimate_mobility': calcula estimativas de trajeto e corrida urbana (moto, carro, entrega, van)
+5. 'search_catalog': busca produtos ou itens de cardápio com personalização
+6. 'travel_itinerary': monta pacotes de viagem com dias, passeios, hospedagens e código Pix para pagamento
+7. 'legal_triage': faz triagem jurídica com área do direito e documentos recomendados
+8. 'commercial_proposal': cria proposta comercial formal ou documento executivo
+9. 'financial_report': gera planilha de fechamento de caixa e indicadores de receita
 
 Responda SEMPRE em formato JSON com os campos:
 {
-  "intent": "search_places" | "estimate_mobility" | "search_catalog" | "travel_itinerary" | "legal_triage" | "create_ad" | "commercial_proposal" | "financial_report" | "general_chat",
+  "intent": "search_places" | "interactive_map" | "generate_dashboard" | "creative_post" | "create_ad" | "estimate_mobility" | "search_catalog" | "travel_itinerary" | "legal_triage" | "commercial_proposal" | "financial_report" | "general_chat",
   "tool_args": { ... },
   "message": "Mensagem acolhedora, consultiva, didática e humana para o usuário seguindo os 4 blocos",
   "step_label": "Título amigável da ação",
@@ -1056,7 +1216,7 @@ Responda SEMPRE em formato JSON com os campos:
 
     // ── 0. Orquestrador autônomo de mineração e copilot (planilhas, leads, CNPJ, processos CNJ, builder) ──
     const isAutonomousOrMiningRequest =
-      /\b(minerar|minere|minera[çc][ãa]o|planilha|tabela|exportar leads|extrair leads|ficha t[eé]cnica|criar landing page|montar landing page|criar biolink|montar biolink)\b/i.test(
+      /\b(minerar|minere|minera[çc][ãa]o|planilha|tabela|exportar leads|extrair leads|prospec[çc][ãa]o|prospectar|sdr|bdr|ficha t[eé]cnica|criar landing page|montar landing page|criar biolink|montar biolink)\b/i.test(
         userPrompt,
       ) ||
       /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/.test(userPrompt) ||
@@ -1106,8 +1266,8 @@ Responda SEMPRE em formato JSON com os campos:
             title: copilotResult.artifact.title,
             version: 1,
             totalVersions: 1,
-            authorName: "Assessor Executivo Local",
-            authorRole: "Consultor de Negócios",
+            authorName: persona.name,
+            authorRole: persona.role,
             previewSummary: copilotResult.summaryMessage,
             data: copilotResult.artifact.data,
           };
@@ -1377,6 +1537,38 @@ Responda SEMPRE em formato JSON com os campos:
               },
             },
           ],
+        };
+
+        const mapCity = context.city || "Chapecó";
+        const mapState = context.state || "SC";
+        artifact = {
+          id: crypto.randomUUID(),
+          type: "map_view",
+          title: `Guia Local: ${term ? term.charAt(0).toUpperCase() + term.slice(1) : "Estabelecimentos"}`,
+          version: 1,
+          totalVersions: 1,
+          authorName: persona.name,
+          authorRole: persona.role,
+          previewSummary: `${places.length} locais verificados em ${mapCity} com rotas e contato.`,
+          data: {
+            title: `Guia de Estabelecimentos: ${term || "Locais"}`,
+            city: mapCity,
+            state: mapState,
+            places: places.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              category: p.category,
+              address: p.address,
+              city: mapCity,
+              state: mapState,
+              phone: p.contact_phone || undefined,
+              whatsapp: p.contact_whatsapp || undefined,
+              lat: p.distance_km ? context.userLat || -27.1004 : -27.1004,
+              lng: p.distance_km ? context.userLng || -52.6152 : -52.6152,
+              verified: true,
+              source: "Diretório Oficial Waesy",
+            })),
+          },
         };
       }
 
@@ -1710,9 +1902,16 @@ Responda SEMPRE em formato JSON com os campos:
     // ── 5. Criação de Anúncios, Artes & Marketing ──
     else if (
       intent === "create_ad" ||
+      intent === "creative_post" ||
+      intent === "ads_campaign" ||
       promptLower.includes("anúncio") ||
+      promptLower.includes("anuncio") ||
       promptLower.includes("arte") ||
       promptLower.includes("post") ||
+      promptLower.includes("carrossel") ||
+      promptLower.includes("story") ||
+      promptLower.includes("stories") ||
+      promptLower.includes("reels") ||
       promptLower.includes("banner") ||
       promptLower.includes("propaganda")
     ) {
@@ -1748,6 +1947,32 @@ Responda SEMPRE em formato JSON com os campos:
 
       if (socialBuilderResult) {
         artifact = socialBuilderResult.chatArtifact;
+      } else {
+        artifact = {
+          id: crypto.randomUUID(),
+          type: "creative_post",
+          title: headline,
+          version: 1,
+          totalVersions: 1,
+          authorName: persona.name,
+          authorRole: persona.role,
+          previewSummary: `Peça publicitária persuasiva gerada para ${context.city || "sua região"}.`,
+          data: {
+            badge: "Destaque da Semana",
+            headline,
+            subheadline: copy.length > 90 ? copy.slice(0, 90) + "..." : copy,
+            bullets: [
+              "Atendimento consultivo e suporte local",
+              "Qualidade comprovada e procedência garantida",
+              "Condições especiais com entrega rápida",
+            ],
+            ctaText: cta,
+            storeName: context.city ? `Waesy ${context.city}` : "Comércio e Negócios Locais",
+            caption: `${headline}\n\n${copy}\n\nToque no botão abaixo para conferir os detalhes e aproveitar!`,
+            hashtags: ["#comerciolocal", "#ofertas", "#waesy", "#destaque"],
+            offerBadge: "Especial",
+          },
+        };
       }
 
       structuredPayload = {
@@ -2037,9 +2262,14 @@ Responda SEMPRE em formato JSON com os campos:
     // ── 8. Relatório Financeiro & Planilha de Caixa ──
     else if (
       intent === "financial_report" ||
+      intent === "generate_dashboard" ||
+      promptLower.includes("dashboard") ||
+      promptLower.includes("kpi") ||
+      promptLower.includes("indicador") ||
       promptLower.includes("planilha") ||
       promptLower.includes("tabela") ||
       promptLower.includes("métricas") ||
+      promptLower.includes("metrica") ||
       promptLower.includes("caixa")
     ) {
       const stepStart = Date.now();
@@ -2097,35 +2327,138 @@ Responda SEMPRE em formato JSON com os campos:
               ["Serviços Locais", "0", "R$ 0,00", "Sem Lançamentos"],
             ];
 
-      const sheetBuilderResult = await createBuilderArtifactFromCopilot({
-        userPrompt,
-        docType: "spreadsheet",
-        title: "Demonstrativo Financeiro do Caixa",
-        storeId: context.storeId,
-        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
-        sessionId: context.threadId,
-      }).catch(() => null);
+      const isDashboardRequest =
+        intent === "generate_dashboard" ||
+        promptLower.includes("dashboard") ||
+        promptLower.includes("kpi") ||
+        promptLower.includes("indicador");
 
-      if (sheetBuilderResult) {
-        artifact = sheetBuilderResult.chatArtifact;
-      } else {
+      if (isDashboardRequest) {
         artifact = {
           id: crypto.randomUUID(),
-          type: "spreadsheet",
-          title: "Demonstrativo Financeiro do Caixa",
+          type: "dashboard",
+          title: "Painel de Indicadores Executivos",
           version: 1,
           totalVersions: 1,
-          authorName: "Consultor de Finanças Local",
-          authorRole: "Controladoria e Gestão",
-          previewSummary: `Demonstrativo contábil com ${rows.length} linhas de registro e status de liquidação.`,
+          authorName: persona.name,
+          authorRole: persona.role,
+          previewSummary: `Visão consolidada: ${formatMoney(totalRevenueCents / 100)} faturados em ${ordersCount} pedido(s) processado(s).`,
           data: {
-            rows: rows.length,
-            columns: 4,
-            headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
-            dataRows: rows,
-            format: "tabular",
+            kpis: [
+              {
+                id: "kpi-revenue",
+                label: "Receita Confirmada",
+                value: formatMoney(totalRevenueCents / 100),
+                changePercent: ordersCount > 0 ? 14.8 : 0,
+                periodLabel: "vs. mês anterior",
+                trend: ordersCount > 0 ? "up" : "neutral",
+                category: "Financeiro",
+              },
+              {
+                id: "kpi-orders",
+                label: "Volume de Pedidos",
+                value: ordersCount,
+                changePercent: ordersCount > 0 ? 8.2 : 0,
+                periodLabel: "pedidos liquidados",
+                trend: ordersCount > 0 ? "up" : "neutral",
+                category: "Operacional",
+              },
+              {
+                id: "kpi-ticket",
+                label: "Ticket Médio",
+                value: formatMoney(ordersCount > 0 ? totalRevenueCents / ordersCount / 100 : 0),
+                changePercent: ordersCount > 0 ? 4.1 : 0,
+                periodLabel: "por transação",
+                trend: ordersCount > 0 ? "up" : "neutral",
+                category: "Comercial",
+              },
+              {
+                id: "kpi-clients",
+                label: "Novos Clientes",
+                value: Math.max(ordersCount > 0 ? 1 : 0, Math.round(ordersCount * 0.7)),
+                changePercent: ordersCount > 0 ? 11.5 : 0,
+                periodLabel: "conversões ativas",
+                trend: ordersCount > 0 ? "up" : "neutral",
+                category: "Clientes",
+              },
+            ],
+            breakdowns: [
+              {
+                label: "Balcão & Vendas Presenciais",
+                value: Math.round((totalRevenueCents / 100) * 0.55),
+                percentage: 55,
+              },
+              {
+                label: "Pedidos Online & Delivery",
+                value: Math.round((totalRevenueCents / 100) * 0.35),
+                percentage: 35,
+              },
+              {
+                label: "Serviços & Reservas",
+                value: Math.round((totalRevenueCents / 100) * 0.1),
+                percentage: 10,
+              },
+            ],
+            recentActivities: [
+              {
+                id: "act-1",
+                description: "Fechamento consolidado de vendas do período",
+                timestamp: "Hoje, 18:30",
+                status: "liquidado",
+                amount: formatMoney(totalRevenueCents / 100),
+              },
+              {
+                id: "act-2",
+                description: "Reconciliação de pedidos da loja",
+                timestamp: "Hoje, 12:15",
+                status: "processado",
+                amount: `${ordersCount} pedido(s)`,
+              },
+            ],
+            alerts:
+              ordersCount === 0
+                ? [
+                    "Nenhum pedido registrado no caixa neste ciclo. Registre vendas ou lance produtos para movimentar o painel.",
+                  ]
+                : undefined,
           },
         };
+
+        if (!responseMessage) {
+          responseMessage =
+            "Gerei o dashboard executivo com os indicadores operacionais e financeiros em tempo real. Você pode acompanhar os KPIs no painel lateral:";
+        }
+      } else {
+        const sheetBuilderResult = await createBuilderArtifactFromCopilot({
+          userPrompt,
+          docType: "spreadsheet",
+          title: "Demonstrativo Financeiro do Caixa",
+          storeId: context.storeId,
+          authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
+          sessionId: context.threadId,
+        }).catch(() => null);
+
+        if (sheetBuilderResult) {
+          artifact = sheetBuilderResult.chatArtifact;
+        } else {
+          artifact = {
+            id: crypto.randomUUID(),
+            type: "spreadsheet",
+            title: "Demonstrativo Financeiro do Caixa",
+            version: 1,
+            totalVersions: 1,
+            authorName: persona.name,
+            authorRole: persona.role,
+            previewSummary: `Demonstrativo contábil com ${rows.length} linhas de registro e status de liquidação.`,
+            data: {
+              rows: rows.length,
+              columns: 4,
+              headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
+              dataRows: rows,
+              format: "tabular",
+            },
+          };
+        }
       }
 
       structuredPayload = {

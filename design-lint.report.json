@@ -1,41 +1,40 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-07T18:54:57.761Z",
-  "inspectedFiles": 2656,
-  "totalViolations": 761,
+  "timestamp": "2026-11-08T00:15:30.881Z",
+  "inspectedFiles": 2666,
+  "totalViolations": 747,
   "summary": {
-    "totalViolations": 761,
+    "totalViolations": 747,
     "bySeverity": {
       "P0": 0,
-      "P1": 733,
-      "P2": 24,
+      "P1": 720,
+      "P2": 23,
       "P3": 4
     },
     "byRule": {
-      "DL-02": 132,
+      "DL-02": 131,
       "DL-18": 59,
       "DL-05": 42,
       "DL-01": 382,
       "DL-13": 9,
       "DL-12": 21,
       "DL-11": 11,
-      "DL-03": 47,
-      "DL-33": 14,
+      "DL-03": 42,
+      "DL-33": 8,
       "DL-14": 13,
-      "DL-25": 1,
-      "DL-28": 3,
       "DL-29": 1,
       "DL-30": 2,
       "DL-07": 17,
       "DL-23": 5,
-      "DL-27": 2
+      "DL-27": 2,
+      "DL-28": 2
     },
     "byModule": {
       "components/app": {
-        "total": 235,
+        "total": 221,
         "P0": 0,
-        "P1": 234,
-        "P2": 1,
+        "P1": 221,
+        "P2": 0,
         "P3": 0
       },
       "components/chat": {
@@ -130,8 +129,8 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 221,
-    "filesCount": 2656
+    "filesWithViolations": 220,
+    "filesCount": 2666
   },
   "config": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -997,160 +996,6 @@
       "severity": "P1",
       "match": "h-7",
       "message": "Alvo de toque com altura/dimensão inferior a 44px (\"h-7\"). Exige min-h-11 (44px)."
-    },
-    {
-      "id": "DL-02",
-      "rule": "DL-02",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 90,
-      "column": 43,
-      "severity": "P1",
-      "match": "max-h-[90vh]",
-      "message": "Classe arbitrária com colchetes \"max-h-[90vh]\". Use tokens canônicos."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 117,
-      "column": 54,
-      "severity": "P1",
-      "match": "py-0.5",
-      "message": "Espaçamento \"py-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 197,
-      "column": 117,
-      "severity": "P1",
-      "match": "gap-1.5",
-      "message": "Espaçamento \"gap-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 203,
-      "column": 70,
-      "severity": "P1",
-      "match": "px-1.5",
-      "message": "Espaçamento \"px-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 203,
-      "column": 77,
-      "severity": "P1",
-      "match": "py-0.5",
-      "message": "Espaçamento \"py-0.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-25",
-      "rule": "DL-25",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 254,
-      "column": 19,
-      "severity": "P2",
-      "match": "variant=\"default\"",
-      "message": "Mais de uma ação primária (variant=\"default\") na mesma superfície/componente."
-    },
-    {
-      "id": "DL-03",
-      "rule": "DL-03",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 260,
-      "column": 44,
-      "severity": "P1",
-      "match": "mr-1.5",
-      "message": "Espaçamento \"mr-1.5\" viola a grade estrita de múltiplos de 4px."
-    },
-    {
-      "id": "DL-33",
-      "rule": "DL-33",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 142,
-      "column": 53,
-      "severity": "P1",
-      "match": "border-amber-500",
-      "message": "Paleta Tailwind crua \"border-amber-500\". Use os tokens semânticos warning e warning-strong."
-    },
-    {
-      "id": "DL-33",
-      "rule": "DL-33",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 142,
-      "column": 73,
-      "severity": "P1",
-      "match": "bg-amber-500",
-      "message": "Paleta Tailwind crua \"bg-amber-500\". Use os tokens semânticos warning e warning-strong."
-    },
-    {
-      "id": "DL-33",
-      "rule": "DL-33",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 144,
-      "column": 59,
-      "severity": "P1",
-      "match": "text-amber-600",
-      "message": "Paleta Tailwind crua \"text-amber-600\". Use os tokens semânticos warning e warning-strong."
-    },
-    {
-      "id": "DL-33",
-      "rule": "DL-33",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 144,
-      "column": 79,
-      "severity": "P1",
-      "match": "text-amber-400",
-      "message": "Paleta Tailwind crua \"text-amber-400\". Use os tokens semânticos warning e warning-strong."
-    },
-    {
-      "id": "DL-33",
-      "rule": "DL-33",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 148,
-      "column": 63,
-      "severity": "P1",
-      "match": "border-amber-500",
-      "message": "Paleta Tailwind crua \"border-amber-500\". Use os tokens semânticos warning e warning-strong."
-    },
-    {
-      "id": "DL-33",
-      "rule": "DL-33",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 148,
-      "column": 83,
-      "severity": "P1",
-      "match": "text-amber-600",
-      "message": "Paleta Tailwind crua \"text-amber-600\". Use os tokens semânticos warning e warning-strong."
-    },
-    {
-      "id": "DL-28",
-      "rule": "DL-28",
-      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/commercial/whatsapp-group-ingest-modal.tsx",
-      "module": "components/app",
-      "line": 1,
-      "column": 1,
-      "severity": "P1",
-      "match": "animate-* sem motion-reduce",
-      "message": "Animação ativa sem tratamento para preferências de movimento reduzido (motion-reduce:transition-none)."
     },
     {
       "id": "DL-13",
@@ -2031,6 +1876,160 @@
       "severity": "P1",
       "match": "#0F172A",
       "message": "Cor hexadecimal literal \"#0F172A\" fora da camada de token."
+    },
+    {
+      "id": "DL-05",
+      "rule": "DL-05",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/pwa/QuickCheckoutButton.tsx",
+      "module": "components/app",
+      "line": 27,
+      "column": 9,
+      "severity": "P1",
+      "match": "style={{ backgroundColor: themeColor }}",
+      "message": "Atributo style inline contendo propriedades visuais proibidas."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/recipes/recipe-story-modal.tsx",
+      "module": "components/app",
+      "line": 47,
+      "column": 27,
+      "severity": "P1",
+      "match": "#09090b",
+      "message": "Cor hexadecimal literal \"#09090b\" fora da camada de token."
+    },
+    {
+      "id": "DL-18",
+      "rule": "DL-18",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/recipes/recipe-story-modal.tsx",
+      "module": "components/app",
+      "line": 117,
+      "column": 48,
+      "severity": "P1",
+      "match": "bg-black",
+      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/shell/places-highlight-badge.tsx",
+      "module": "components/app",
+      "line": 20,
+      "column": 100,
+      "severity": "P1",
+      "match": "text-[0.82em]",
+      "message": "Classe arbitrária com colchetes \"text-[0.82em]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/shell/utility-cluster.tsx",
+      "module": "components/app",
+      "line": 850,
+      "column": 68,
+      "severity": "P1",
+      "match": "top-[20%]",
+      "message": "Classe arbitrária com colchetes \"top-[20%]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-11",
+      "rule": "DL-11",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/shell/utility-cluster.tsx",
+      "module": "components/app",
+      "line": 1,
+      "column": 1,
+      "severity": "P1",
+      "match": "useQuery sem loading/skeleton",
+      "message": "Superfície de consulta assíncrona sem verificação de isLoading ou componente Skeleton."
+    },
+    {
+      "id": "DL-18",
+      "rule": "DL-18",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/social-templates/GastronomyTemplate.tsx",
+      "module": "components/app",
+      "line": 42,
+      "column": 42,
+      "severity": "P1",
+      "match": "bg-black",
+      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/social-templates/imoveis/RealEstateEditorialGrid.tsx",
+      "module": "components/app",
+      "line": 48,
+      "column": 65,
+      "severity": "P1",
+      "match": "#f1f5f9",
+      "message": "Cor hexadecimal literal \"#f1f5f9\" fora da camada de token."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/social-templates/imoveis/RealEstateEditorialGrid.tsx",
+      "module": "components/app",
+      "line": 48,
+      "column": 61,
+      "severity": "P1",
+      "match": "bg-[#f1f5f9]",
+      "message": "Classe arbitrária com colchetes \"bg-[#f1f5f9]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/social-templates/imoveis/RealEstateLuxuryDarkGlass.tsx",
+      "module": "components/app",
+      "line": 44,
+      "column": 85,
+      "severity": "P1",
+      "match": "tracking-[0.25em]",
+      "message": "Classe arbitrária com colchetes \"tracking-[0.25em]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/social-templates/imoveis/RealEstateLuxuryDarkGlass.tsx",
+      "module": "components/app",
+      "line": 53,
+      "column": 79,
+      "severity": "P1",
+      "match": "shadow-[0_20px_60px_rgba(0,0,0,0.9)]",
+      "message": "Classe arbitrária com colchetes \"shadow-[0_20px_60px_rgba(0,0,0,0.9)]\". Use tokens canônicos."
+    },
+    {
+      "id": "DL-18",
+      "rule": "DL-18",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/social-templates/imoveis/RealEstateLuxuryDarkGlass.tsx",
+      "module": "components/app",
+      "line": 61,
+      "column": 42,
+      "severity": "P1",
+      "match": "bg-black",
+      "message": "Cor literal hardcoded \"bg-black\". Use tokens semânticos text-foreground/bg-background."
+    },
+    {
+      "id": "DL-01",
+      "rule": "DL-01",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/social-templates/imoveis/RealEstateMinimalHero.tsx",
+      "module": "components/app",
+      "line": 42,
+      "column": 65,
+      "severity": "P1",
+      "match": "#070b12",
+      "message": "Cor hexadecimal literal \"#070b12\" fora da camada de token."
+    },
+    {
+      "id": "DL-02",
+      "rule": "DL-02",
+      "file": "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/social-templates/imoveis/RealEstateMinimalHero.tsx",
+      "module": "components/app",
+      "line": 42,
+      "column": 61,
+      "severity": "P1",
+      "match": "bg-[#070b12]",
+      "message": "Classe arbitrária com colchetes \"bg-[#070b12]\". Use tokens canônicos."
     }
   ]
 }

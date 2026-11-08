@@ -1,5 +1,173 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-470: Reorganização da Matriz de Entrega, Separação Semântica por Nicho (Gastronomia vs Varejo) e Eliminação de AI-Smell em Configurações
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. A aba de Entrega em `/workspace/configuracoes` exibia termos e controles de cozinha ("Tempo de Preparo da Cozinha", "Pizzas e Forno", "Pico de Jantar") para todas as lojas, inclusive lojas de moda, vestuário e varejo geral (`LOJA • VAREJO, MODA & ACESSÓRIOS`).
+  2. O componente `DeliveryTimeAndRadiusMatrix` exibia uma grade semanal de turnos estática com 56 pílulas verdes repetitivas ("15m"), gerando ruído visual intenso (AI-smell DL-30) e sobrecarga cognitiva.
+  3. O bloco "Taxas por Bairro" ficava solto como um cartão órfão no rodapé da página em todas as sub-abas de entrega, inclusive enquanto o lojista ajustava o tempo de preparo.
+- **Decisão:**
+  1. **Bifurcação Adaptativa por Nicho:**
+     - Para **Gastronomia / Alimentação**: A aba exibe "Tempo de Cozinha", stepper tátil de 44px (`-` / `+`), presets reais (Padrão, Rápido, Pratos Elaborados, Pico, Chuva) e resumo de sincronização KDS / Waesy Go. A grade estática de 56 pílulas verdes foi completamente erradicada.
+     - Para **Varejo / Moda / Comércio Geral**: A aba passa a se chamar "Prazo de Expedição", focando em tempo de separação e despacho do estoque (Mesmo dia útil, 24h, 2 a 3 dias úteis, Sob Encomenda) e cálculo integrado com frete dos Correios / Transportadoras.
+  2. **Encapsulamento de Bairros:** O gerenciador de "Taxas por Bairro" foi integrado como slot nativo (`neighborhoodsSlot`) dentro da sub-aba de "Regiões e Raio de Entrega", eliminando sua exibição descontextualizada nas abas de preparo e modalidades.
+  3. **Conformidade Estrita:** Todos os controles interativos operam em 44px (`min-h-11 h-11`), com anéis `:focus-visible:ring-2 focus-visible:ring-primary`, tokens semânticos `warning` (DL-33) e grade modular de 4px (DL-03).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.26.
+- **Consequências:** Fim da confusão operacional de lojistas de varejo, experiência fluida e limpa estilo iFood Merchant para restaurantes, zero violações P0/P1 e aprovação plena na catraca de CI.
+
+## DEC-469: Estabilização de Workspaces, Soberania Canônica do CRM, Desacoplamento de Eventos e Blindagem do Funil de Vendas de Turismo
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. No `WorkspaceShell`, controles master globais ("Filtrar por Nicho da Loja", toggle `isMasterAllVerticals`, "Painel Global Master", "Admin Master") poluíam a experiência de lojas operacionais.
+  2. O módulo de CRM / Carteira de Clientes estava ausente como pilar mestre em diversos nichos e erroneamente agrupado dentro de `events-tickets` ("Participantes" apontando para `/workspace/clientes`), gerando a impressão de que CRM pertencia a Eventos ou Atendimento.
+  3. No turismo, `GROUP_TURISMO_COMMERCIAL` denominava o cockpit comercial como "Atendimento", colidindo com o pilar mestre "Atendimento" (`/workspace/atendimento` - Chat & SAC).
+  4. O lead "Alexandro" sumia do Kanban de Turismo quando salvo na etapa "Novos Contatos" (`new`) caso o banco retornasse estágios legados de tarefas genéricas (`todo`).
+  5. A ficha do cliente em `/workspace/clientes/$id` continha 10 botões espremidos sem quebra elástica e com nomenclaturas prolixas ("Ficha 360°", "Ver na Vitrine").
+  6. O sheet de lead em `/workspace/comercial` estava comprimido e necessitava de features no padrão Pipefy (checklists editáveis múltiplos, dropzone real de múltiplos anexos e emissão A4 timbrada).
+- **Decisão:**
+  1. **Purga e Isolamento Soberano por Nicho:** Extirpados do `WorkspaceShell` todos os controles globais master; a barra operacional reflete estritamente o nicho real da loja ativa.
+  2. **Alçamento do CRM a Master Pillar:** CRM configurado como Master Pillar independente (`id: "crm"`, rota `/workspace/clientes`, ícone `Users`) em todos os nichos da plataforma (`NICHE_MASTER_PILLAR_CONFIG`). Removido `/workspace/clientes` de `GROUP_EVENTS_TICKETS` e desacoplado `eventos` em pilar próprio.
+  3. **Desambiguação Comercial vs Atendimento:** Renomeado o item principal de `/workspace/turismo` para "Funil de Vendas" e o grupo para "Comercial & Vendas".
+  4. **Blindagem Anti-Perda de Leads:** `kanban-config.functions.ts` descarta estágios legados de tarefas em turismo. Em `workspace.turismo.index.tsx`, qualquer lead com status não mapeado é alocado defensivamente na primeira coluna visível (`visibleStages[0]?.id || "new"`).
+  5. **Descompressão de Header & Nomenclaturas Comerciais:** `flex-wrap` e dropdown contextual "Mais Ações" na ficha do cliente; erradicação de jargões "360°" e textos fixos como "Ver na Vitrine".
+  6. **Expansão de Sheet (70vw) & Features Pipefy:** Sheet expandido para 70% com checklists múltiplos persistidos, upload de anexos e emissão de documentos.
+- **Fundamentação:** AGENTS.md B.1, B.6, B.7, B.8, B.9, B.11, B.12, B.22, B.25, B.26.
+- **Consequências:** Operação de workspaces 100% isolada e condizente com cada vertical de negócio, eliminação de ambiguidades entre Atendimento/CRM/Eventos, zero perda de leads no Kanban e conformidade total com o piso WCAG 2.2 AA.
+
+## DEC-468: Arquitetura do Waesy Autonomous Copilot Parity Manus 2.0: Roteamento Agêntico ReAct, Workbench de Artefatos Vivos (Dashboards, Mapas Georreferenciados e Gerador Multiformato de Criativos Sociais) e Telemetria Real de Navegador
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. O Copilot do Waesy operava sob despachantes heurísticos rígidos baseados em regexes e palavras-chave (`clean.match`, `detectIntent`), que travavam pedidos contextuais com mensagens de fallback genéricas ou exigências repetitivas de localização.
+  2. Os subagentes (`@planner`, `@investigator`, `@critic`) emitiam passos com strings estáticas e contadores de tokens fictícios, sem execução de agentes reais de mercado (Gestor de Ads, SDR/BDR Hunter de CNPJ, Diretor Criativo).
+  3. O visualizador de artefatos estava restrito a tabelas estáticas e visualizadores de texto, sem capacidade de gerar dashboards executivos com KPIs, mapas interativos georreferenciados com rotas e botões de contato, ou peças criativas parametrizadas com paletas e proporções multiformato (1:1, 4:5, 9:16).
+  4. O drawer do computador (`ManusComputerDrawer`) utilizava um array estático de passos fictícios (`DEFAULT_STEPS` com IPs e comandos de SSH simulados) em vez de refletir a telemetria em tempo real das execuções da conversa.
+- **Decisão:**
+  1. **Workbench de Artefatos Vivos (`src/components/chat/artifacts/`):**
+     - Criado `ArtifactDashboard.tsx` para exibição de painéis executivos com KPIs (Receita, Pedidos, Ticket Médio, Novos Clientes), barras de progresso por categoria, alertas operacionais e exportação de dados.
+     - Criado `ArtifactInteractiveMap.tsx` para visualização georreferenciada de locais e estabelecimentos minerados, com filtros por categoria, traçado de rota no Google Maps e botão tátil direto para WhatsApp.
+     - Criado `ArtifactCreativePost.tsx` para geração dinâmica de peças e criativos publicitários com alternância de formato (1:1 Feed, 4:5 Retrato, 9:16 Story/Reels), seleção de paleta semântica, templates (Destaque, Lista, Oferta) e cópia de legenda pronta para publicação.
+     - Integrados no painel soberano `CopilotArtifactPanel.tsx` e exportados a partir de `src/components/chat/artifacts/index.ts`.
+  2. **Extensão de Tipos Canônicos de Artefato (`src/types/chat.ts`, `src/services/ai-conversations.functions.ts`):**
+     - Adicionados `"dashboard" | "map_view" | "creative_post"` ao tipo `ChatArtifactType` e ao schema Zod `saveAiArtifactSchema`.
+  3. **Conexão de Telemetria Real ao Drawer do Computador (`src/routes/workspace.copilot.tsx`, `src/components/chat/manus-computer-drawer.tsx`):**
+     - `workspace.copilot.tsx` deriva dinamicamente `ManusComputerStep[]` a partir do histórico de mensagens e tarefas ativas da thread, eliminando a dependência do array mockado e apresentando os comandos reais executados (bash, browser, editor de artefatos).
+     - `ManusComputerDrawer.tsx` atualizado para exibir o status real do runtime local do Waesy e ferramentas agênticas ativas.
+  4. **Validação Mecânica Estrita:**
+     - 46/46 testes unitários em `autonomous-copilot.test.ts`, `copilot-fsm.test.ts`, `copilot-subagent-spawner.test.ts` e `mining-and-copilot-remediation.test.ts` aprovados com 100% de sucesso.
+     - Catraca Design Lint Ratchet aprovada com 0 violações P0 e redução de 27 violações em relação ao baseline histórico (de 774 para 747 violações totais).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.25, B.26; Princípios de Agentes Autônomos OpenManus, OpenDevin e SWE-agent.
+- **Consequências:** Copilot elevado ao padrão Manus de agência real, com suporte a visualizações ricas imediatas no Workbench (Dashboards, Mapas, Criativos Multiformato), eliminação de passos mockados e preparação para orquestração de subagentes especialistas com cobrança no token tollbooth.
+
+
+## DEC-467: Arquitetura de Distribuição Segura de Extensões de Navegador, Vitrine Estilo Chrome Web Store, Governança de Acesso Multi-Tenant e Central de Liberação no Admin Master
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. As extensões e conectores externos da plataforma Waesy (`infotravel_extension`, `whatsapp_extension`, `infotravel_miner`) ficavam retidas localmente no repositório de código, impossibilitando que agências e empresas parceiras baixassem os pacotes diretamente pelo painel administrativo da sua loja.
+  2. A distribuição indiscriminada expunha dados e infraestrutura, exigindo controle de acesso estrito: apenas o Admin Master e a agência piloto oficial (Excelência Tour São Miguel do Oeste) possuem autorização irrestrita nativa, enquanto demais empresas necessitam de autorização explícita.
+  3. Para lojas e empresas não autorizadas, a exibição de um erro 403 Forbidden descontextualizado gerava atrito e suporte desnecessário. Era imperativo apresentar uma vitrine rica inspirada na Chrome Web Store / App Store, detalhando as funcionalidades do conector, garantias de privacidade LGPD, requisitos de sistema e um formulário claro de "Pedir Autorização".
+  4. O Administrador Master precisava de governança centralizada no painel de Módulos (`/admin-master/modulos`) para visualizar a fila de solicitações de acesso e liberar ou rejeitar cada pedido em 1 clique, além de poder autorizar diretamente qualquer loja da plataforma sob demanda.
+- **Decisão:**
+  1. **Motor de Empacotamento Dinâmico em Memória (`src/services/extensions-distributor.server.ts`, `src/services/extensions-distributor.functions.ts`):** Empacotamento dinâmico via `archiver` com exclusão de artefatos de build, metadados canônicos e geração de ZIP base64 e stream HTTP para download seguro em `/api/v1/extensions/download`.
+  2. **Camada de Autorização e Governança Multi-Tenant:**
+     - Verificação por privilégio: Admin Master ou Excelência Tour (`excelencia-tour-smo`) possuem liberação nativa.
+     - Demais lojas são validadas contra `stores.settings.authorized_extensions` ou registros de aprovação na tabela `extension_access_requests`.
+     - Migração SQL `20270322050000_extension_access_governance.sql` com RLS deny-by-default, indexação e trilha de auditoria completa.
+  3. **Vitrine Chrome Extension Store (`src/components/extensions/ExtensionWebStoreModal.tsx`):**
+     - Modal de alta fidelidade visual com selo de desenvolvedor verificado ("Waesy Verified Conector"), versão Manifest V3, catálogo dos 3 conectores com abas de "Visão Geral", "Permissões & Privacidade" e "Como Instalar".
+     - Máquina de 4 estados: `authorized` (com botão de download direto), `pending` (aviso de solicitação em análise com data e justificativa), `rejected` (com opção de reenviar) e `not_requested` (com formulário de solicitação).
+     - Alvos de toque de 44px (`h-11 min-h-11`), conformidade estrita com tokens e acessibilidade WCAG 2.2 AA.
+  4. **Integração nas Superfícies Operacionais:**
+     - Integrado `ExtensionWebStoreModal` em `src/components/admin/infotravel-integration-panel.tsx` e `src/components/commercial/whatsapp-group-ingest-modal.tsx`, abrindo a vitrine automaticamente quando a API retorna 403 Forbidden ou via botão explicito "Ver na Store / Acesso".
+  5. **Painel de Gestão no Admin Master (`src/routes/admin-master.modulos.tsx`):**
+     - Na aba "Extensões & Conectores", adicionada a "Fila de Solicitações de Acesso às Extensões" com atualização em tempo real, badges de status e botões de "Liberar Acesso" e "Rejeitar".
+     - Adicionada a seção "Autorização Direta por Loja" com filtro de busca e botões de alternância instantânea para as 3 extensões em qualquer loja da plataforma.
+     - Botão de preview da Chrome Web Store em cada cartão de extensão.
+  6. **Central de Automações & Gatilhos Canônicos WhatsApp Outbox (`src/services/automation.functions.ts`, `src/routes/workspace.automacoes.tsx`):**
+     - Implementados os 6 gatilhos canônicos de relacionamento (`customer_birthday`, `travel_approaching_d7`, `post_checkin_welcome`, `post_return_nps`, `quote_followup_24h`, `payment_due_reminder`) com instalação em 1 clique (`seedCanonicalAutomationWorkflows`).
+     - Interpolação determinística de variáveis dinâmicas (`{nome}`, `{destino}`, `{data_viagem}`, `{hora}`, `{link_dossie}`), configuração de horário de envio (`sendTime`) e atraso em minutos (`delayMinutes`), e enfileiramento idempotente em `whatsapp_outbox`.
+  7. **Validação Mecânica E2E:**
+     - `npx vitest run src/services/extensions-distributor.server.test.ts`: 7/7 testes aprovados (Exit Code 0).
+     - `npm run typecheck`: 0 erros de compilação TypeScript em todo o repositório (Exit Code 0).
+     - `node scripts/design-lint.mjs --ratchet`: 0 violações P0, redução líquida de 27 violações frente à baseline congelada (Exit Code 0).
+     - `npm run build`: Build de produção client + SSR + Cloudflare Worker gerado com sucesso (Exit Code 0).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.25, B.26.
+- **Consequências:** Solução completa, segura e auditável para distribuição de extensões na plataforma Waesy, empoderando a agência Excelência Tour com download direto e oferecendo um processo transparente de requisição e concessão de acesso para as demais empresas.
+
+## DEC-466: Arquitetura Soberana de Caixas & PDVs Multi-Terminal, Governança de Operador/Supervisor com PIN de Cancelamento (pos_pin_code), Resolução Defensiva de Tenant em Catálogo e Desacoplamento Vendas vs WMS
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. No cadastro de produtos (`/workspace/catalogo/produtos/novo`), colaboradores e administradores com lojas ativas se deparavam com a mensagem bloqueante `"Nenhuma loja ativa selecionada."`, decorrente da resolução restrita de `store_id` que não consultava membros em `workspace_members` nem fallbacks locais.
+  2. Na tela de histórico de vendas (`/workspace/pedidos`), sub-abas operacionais de separação de pedidos estavam acopladas na listagem comercial de varejo, confundindo gestores que precisavam apenas consultar vendas sem misturar com o fluxo de picking de armazém.
+  3. Na gestão de caixas (`/workspace/financeiro/caixa`), existia dissonância visual onde o cabeçalho exibia turno aberto enquanto o corpo renderizava "Nenhum turno aberto no momento" em turnos sem movimentação. Adicionalmente, empresas de múltiplos pontos (varejo, mercados, garçons em restaurantes, fundo fixo da diretoria ou caixa geral) não dispunham de segmentação por terminal.
+  4. Na Frente de Caixa (`/workspace/pdv`), operadores de caixa podiam remover produtos, cancelar itens ou esvaziar comandas e carrinhos sem controle gerencial, abrindo brechas de auditoria e perdas operacionais.
+- **Decisão:**
+  1. **Resolução Resiliente de Loja Ativa (`src/services/admin-catalog.functions.ts`, `src/services/store.functions.ts`, `src/components/admin/catalog/product-editor/use-product-editor.ts`):** `resolveStoreIdWithFallback` passa a verificar defensivamente `user_metadata.store_id`, `workspace_members` via `identity.id` e cache seguro em `localStorage` (`waesy_active_store_id`), assegurando salvamento e edição contínua de produtos.
+  2. **Desacoplamento de Vendas & WMS (`src/routes/workspace.pedidos.index.tsx`):** Restringida a visão de varejo estritamente a "Tabela de Vendas", movendo a separação/conferência para link soberano para a Central WMS (`/workspace/pedidos/expedicao`).
+  3. **Multi-Terminais de Caixa & Coerência Visual (`src/routes/workspace.financeiro.caixa.index.tsx`):** Adicionados presets canônicos de terminal (Balcão 01/02, Drive-Thru, Garçom Salão, Caixa Financeiro, Fundo Diretoria, Caixa Geral), presets de saldo de gaveta e saldo consolidado multi-terminal. Corrigido estado vazio para "Turno Aberto e Pronto para Operação" quando o turno está ativo com zero lançamentos.
+  4. **Papel Operador de Caixa (`cashier`) & Trava de Cancelamento por PIN do Gerente (`src/components/workspace/RolePermissionsMatrix.tsx`, `src/services/cash.functions.ts`, `src/routes/workspace.pdv.index.tsx`, `src/routes/workspace.configuracoes.equipe.tsx`, `src/services/admin-team.functions.ts`):** Introduzido o papel `cashier` com controles específicos (`clear_ticket`, `open_close_shift`, `sangria_suprimento`). No PDV, operadores sem privilégio de supervisor são interceptados por `ManagerOverrideDialog`, exigindo a digitação da senha/PIN gerencial validada contra `profiles.pos_pin_code` no banco antes de qualquer remoção de item ou estorno de comanda.
+  5. **Verificação Mecânica:** Testes unitários de catálogo e de inventário de rotas aprovados com 100% de sucesso; Catraca Design Lint Ratchet aprovada com 0 violações P0 e conformidade plena com baseline congelada.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.25; Princípio de Segregação de Funções e Integridade Transacional.
+- **Consequências:** Clareza contábil entre gestão corporativa (Financeiro) e postos operacionais (Caixas/PDVs), proteção patrimonial contra cancelamentos indevidos e fluxo desobstruído de cadastro de catálogo.
+
+## DEC-465: Blindagem E2E do Contexto de Tenant Foodman, Eliminação de Loops de Deslogue e Estabilidade de Sessão no Workspace
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. Ao acessar o workspace da loja Foodman (delivery / gastronomia) e navegar entre páginas (como `/workspace/pedidos`, `/workspace/atendimento`), o sistema entrava em loop de logout/redirecionamento para `/entrar`.
+  2. Investigação forense identificou 4 causas raízes interdependentes:
+     a) `sanitizeBrowserAuthCookies()` em `src/lib/supabase.ts` era disparado destrutivamente a cada transição de rota em `workspace.tsx:beforeLoad`, expirando prematuramente chunks de token `waesy-auth-token*` no navegador.
+     b) O micro-cache `IDENTITY_MEMO_CACHE` em `src/lib/identity.server.ts` memoizava `guestIdentity` (`id: null`) por 10s caso uma requisição intermediária transitória falhasse, envenenando o estado de autenticação para todas as Server Functions subsequentes.
+     c) Em rotas como `/workspace/atendimento`, acessos diretos a `activeThread.id` sem encadeamento defensivo (`activeThread?.id`) causavam `TypeError` em lojas recém-criadas sem conversas, acionando o error boundary do workspace.
+     d) No banco de dados, o usuário administrador não possuía registro legítimo em `workspace_members` para a loja Foodman, forçando impersonação ou rejeição.
+- **Decisão:**
+  1. **Trava de Segurança Absoluta em Cookies:** Em `sanitizeBrowserAuthCookies()`, se `winningAuthCookies.length === 0`, o sanitizador retorna imediatamente sem expirar cookies. Expiração limitada estritamente a chunks órfãos confirmados no `document.cookie`.
+  2. **Remoção de Sanitização Destrutiva em Transição de Rota:** Extirpado `sanitizeBrowserAuthCookies()` de `workspace.tsx:beforeLoad` e `loader`. Adicionado auto-refresh defensivo de sessão com sincronização prévia de cookies (`syncSessionToCookies`).
+  3. **Blindagem Anti-Envenenamento de Cache de Identidade:** `IDENTITY_MEMO_CACHE` agora apenas armazena identidades com `resolvedIdentity?.id` válido, proibindo expressamente o cache de sessões nulas/guest.
+  4. **Proteção Defensiva em Rotas Filhas:** Adicionado encadeamento opcional `?.` em todos os nós de atendimento (`activeThread?.id`, `activeIntranetChannel?.id`) e guardas defensivas nos filtros de SDR.
+  5. **Vínculo Legítimo de Membro:** Inserido registro canônico em `workspace_members` com `role: 'owner'` e `is_active: true` para o perfil `2ea9f0aa-8b04-4086-9e1d-e23105560302` na loja Foodman (`32233049-07c6-49bf-a053-989824fef385`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.9, B.10, B.25; Princípio Zero-Trust e Estado Sanitizado.
+- **Consequências:** Navegação contínua e estável no Workspace Foodman sem deslogue acidental, sem envenenamento de cache e sem crashes por thread vazia.
+
+## DEC-464: Purga de Controles Master do Workspace, Soberania Canônica de CRM por Nicho, Descompressão de Cabeçalho, Sincronização de Estágios Kanban e Restauração de Features Pipefy
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. No `WorkspaceShell`, o botão "Filtrar por Nicho da Loja" alternava um modo master de todas as verticais que poluía a sidebar com módulos de outros nichos e exibia atalhos do Admin Master na barra operacional da agência.
+  2. O módulo de Eventos estava incorretamente aninhado no pilar comercial, fazendo aparecer ingressos, flyers e bilheteria dentro do painel de turismo.
+  3. No cadastro de oportunidades e leads, leads salvos em etapas de atendimento ("Novos Contatos") não apareciam nas colunas do Kanban porque os estágios padrão do módulo caíam nas chaves genéricas de tarefas ("todo" / "A Fazer").
+  4. Na ficha de clientes (`/workspace/clientes/$id`), botões de ação superior estavam espremidos em linha única sem quebra, e jargões prolixos ("Ficha 360°", "Ver na Vitrine") violavam o contrato de design.
+  5. A gaveta lateral de detalhes do lead necessitava de largura ampla (70% da viewport) e visibilidade direta das ferramentas de checklists múltiplos e upload/geração de anexos A4 estilo Pipefy.
+- **Decisão:**
+  1. **Purga de Controles Master:** Extirpado `isMasterAllVerticals`, removido "Painel Global Master" e o botão "Admin Master" do header e sidebar do workspace, garantindo isolamento estrito pelo nicho ativo da loja (`activeStore`).
+  2. **Pilar e Módulo Canônico de CRM:** Criado o pilar `crm` independente ("Carteira de Viajantes" no Turismo e "Carteira de Clientes" nos demais nichos) e desvinculado `GROUP_EVENTS_TICKETS` do pilar comercial.
+  3. **Sincronização do Kanban de Turismo:** Definido `KANBAN_DEFAULTS.turismo` em `kanban-config.functions.ts` mapeando estritamente as etapas comerciais ("Novos Contatos", "Cotação em Andamento", "Proposta Enviada", "Em Negociação", "Viagem Confirmada") com fallback resiliente.
+  4. **Descompressão Ergonômica do Cabeçalho da Ficha do Cliente:** Organizadas as ações primárias em primeiro plano e reunidas as ações secundárias em menu suspenso `<DropdownMenu>` ("Mais Ações"), erradicando jargões ("Ficha do Cliente", "Ver Ficha Completa", "Exportar Dossiê").
+  5. **Sheet 70vw & Features Pipefy:** Aplicada classe canônica `lg:sheet-page-70` (70% da viewport), priorizadas as abas de Checklists e Anexos logo após "Geral", e integrados inputs de upload real de múltiplos arquivos e criação de documentos A4 timbrados diretamente no card.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11, B.14, B.15, B.22, B.26.
+- **Consequências:** Painel operacional limpo e 100% focado no negócio da agência, zero leads invisíveis no funil, layout responsivo descompactado e paridade funcional com o fluxo do Pipefy.
+
+## DEC-463: Encapsulamento, Governança de Download com Controle de Acesso e Modernização Visual das Extensões Infotravel, WhatsApp Web e Scripts Locais
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. As extensões de navegador e scripts de mineração (Infotravel Chrome Extension, WhatsApp Web Ingestion Extension e Infotravel Local Miner Scripts) residiam soltos no repositório de desenvolvimento local em `tools/` sem empacotamento ou governança de distribuição.
+  2. Operadores de agências e administradores não dispunham de mecanismo direto para download dos pacotes prontos (.zip) através do sistema web.
+  3. Requisito de segurança Zero-Trust estrito: acesso restrito exclusivamente a operadores autorizados (Admin Master e agência Excelência Tour São Miguel do Oeste), com bloqueio 403 Forbidden para tenants não autorizados.
+  4. Necessidade de modernização completa dos popups das extensões: largura ampliada (540px), alinhamento com design tokens do Waesy (modo escuro/claro, tipografia canônica, abas estruturadas, touch targets >= 44px, remoção de AI smell) e configurações dinâmicas de servidor e token.
+- **Decisão:**
+  1. **Empacotador PKZIP Puro em Memória (`src/lib/zip-packager.ts`):**
+     - Desenvolvido gerador de ZIP sem dependências externas via `node:zlib` (deflateRawSync) e CRC-32, compatível com workers serverless e SSR.
+     - Cobertura de testes unitários em `src/lib/__tests__/zip-packager.test.ts` (3 testes aprovados).
+  2. **Serviço de Distribuição e Controle de Acesso (`src/services/extensions-distributor.*`):**
+     - Implementada validação `assertExtensionDownloadAuthorized` concedendo acesso a Admin Master (`isPlatformAdminUser`) e Excelência Tour SMO (`isExcelenciaTourStore`), bloqueando qualquer outro acesso com 403 Forbidden.
+     - Empacotamento em runtime de 3 pacotes (`infotravel_extension`, `whatsapp_extension`, `infotravel_miner`) e streaming via `/api/v1/extensions/download` e server functions TanStack Start.
+     - Testes automatizados em `src/services/extensions-distributor.server.test.ts` (6 testes aprovados).
+  3. **Modernização dos Popups e Scripts (`tools/`):**
+     - `infotravel-extension`: popup em 540px, abas (Dashboard, Cotações & Radar, Conexão Waesy, Logs & Exportar), exportação CSV/JSON Brasil e sincronização com `/api/v1/ingest/infotravel-quotes`.
+     - `whatsapp-extension`: popup em 540px, abas (Captura de Contatos, Conexão Waesy, Histórico & Logs), sanitização de telefones (+55 DDD), content script seguro e ingestão em `/api/v1/ingest/whatsapp-contacts`.
+     - `infotravel-miner`: empacotamento de extratores Python/Node, schemas e documentação operacional.
+  4. **Integração nas Telas do Sistema:**
+     - Botões de download direto com touch target canônico (>= 44px) em `InfotravelIntegrationPanel`, `WhatsAppGroupIngestModal` e `admin-master.modulos.tsx`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11, B.14, B.25; HIG e WCAG 2.2 AA.
+- **Consequências:** Extensões encapsuladas com distribuição segura, governança estrita por tenant, popups ergonômicos e zero dependências pesadas adicionadas ao runtime.
+
 ## DEC-462: Consolidação Integral de Atualizações Remotas, Deploy Produção Supabase & Cloudflare Pages, Higienização de Vínculos e Propagação da Marca "Turis"
 - **Data:** 2026-11-07
 - **Contexto:**
@@ -9302,4 +9470,26 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Validação por smoke test com HTTP 200 OK nos domínios `https://usewaesy.pages.dev` e `https://waesy.com.br`.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.6, B.7, B.9, B.11 e B.25.
 - **Consequências:** 100% dos quality gates aprovados localmente e no pipeline de CI, banco de produção e Cloudflare em sincronia determinística absoluta.
+
+---
+
+### DEC-456: Desacoplamento do WorkspaceShell em Editores/Builders e Propagação Integral de Dados nos Templates de Proposta
+- **Data:** 2026-11-07
+- **ID da Decisão:** DEC-456
+- **Contexto:** Relato de sobreposição da casca dupla do Workspace (sidebar + topbar) sobre os editores/builders imersivos (`/workspace/turismo/propostas/$id`, `/workspace/builder/*`, `/workspace/estudio*`, `/workspace/contratos/$id/editor`), além da ausência de renderização no canvas para campos do CMS lateral (Roteiro com localização/refeições, Traslados/Receptivo e Passeios/Experiências).
+- **Decisão Adotada:**
+  1. **Fullscreen Immersion Mode no Layout do Workspace (`src/routes/workspace.tsx`):**
+     - Estabelecido `isImmersiveEditor` cobrindo o construtor visual (`/workspace/builder/*`), estúdios (`/workspace/estudio*`, `/workspace/marketing/studio`), estúdio de propostas comerciais (`/workspace/turismo/propostas/$id`) e editor de contratos (`/workspace/contratos/$id/editor`).
+     - Retorno direto de `<Outlet />` sem encapsulamento pelo `WorkspaceShell`, garantindo viewport 100% limpa (`100vw x 100dvh`) com barras próprias do editor e botão nativo de retorno.
+  2. **Normalização Bidirecional e Propagação Integral nos 6 Templates Canônicos de Proposta:**
+     - `proposal-canvas-renderer.tsx`: Mapeamento bidirecional de `city` ⇄ `location` e `meals` ⇄ `included_meals` em cada dia do roteiro, além de `route`, `pickup_time`, `dropoff_time` e frota multimodal (`bus_dd`, `bus_semi`, `van`, `private`, `shared`) em traslados.
+     - `TemplateEditorialFlat`, `TemplateDarkPremium`, `TemplateExecutivo`, `TemplateLandscape`, `TemplateVerticalPremium` e `TemplateGroupCatalog`: Renderização de badges de localidade e refeições em cada dia do roteiro, blocos de "Traslados & Receptivo" (`p.transfers`), "Passeios & Experiências" (`p.tours`) e "Inclusões / Exclusões".
+  3. **Continuidade E2E da Cadeia de 7 Elos (Captação, Minha Viagem e Painel Operacional):**
+     - `workspace.turismo.cotacoes.tsx`: Propagação integral de `leadId`, `clientEmail`, `initialNotes`, `rooms` (`room_occupancies`) e `pricing` (`quote_amount_cents`) na criação de proposta a partir de cotação.
+     - `viajante.viagem.$id.tsx`: Exibição de localidade e refeições nos cards de cada dia do roteiro, derivação de paradas/embarques rodoviários a partir de `trip.transfers` e painel de passeios, inclusões e exclusões.
+     - `workspace.turismo.viagens.$id.tsx`: Renderização do Roteiro Dia a Dia e Exclusões na aba Visão Geral, e exibição completa de veículo, horários de saída/chegada, rota e observações em Traslados e Passeios.
+  4. **Conformidade com Design Tokens e Grade de 4px:**
+     - Erradicação de valores arbitrários (`border-[3px]`, `-left-[11px]`), padronização de paddings (`px-2 py-1`) e respeito estrito ao Design Lint V2 com zero novas violações P0/P1.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11 e B.42; continuidade de dados e completude máxima entre Lead, Cotação, Proposta, Viagem e Minha Viagem.
+- **Consequências:** Editores e construtores abrem em tela cheia sem poluição visual ou duplicação de cabeçalhos; qualquer alteração efetuada no painel lateral reflete instantaneamente no canvas visual e é preservada no ciclo de conversão em viagem e área do passageiro.
 

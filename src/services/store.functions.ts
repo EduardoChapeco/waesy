@@ -16,6 +16,22 @@ export async function _getStoreSettings(input?: { store_id?: string | null }) {
     identity?.memberships?.[0]?.store_id ||
     null;
 
+  if (!targetStoreId && identity?.id) {
+    try {
+      const db = getServerClient();
+      const { data: memberRecord } = await db
+        .from("workspace_members")
+        .select("store_id")
+        .eq("profile_id", identity.id)
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (memberRecord?.store_id) {
+        targetStoreId = memberRecord.store_id;
+      }
+    } catch {}
+  }
+
   if (
     !targetStoreId &&
     (identity?.isPlatformAdmin ||
@@ -91,6 +107,13 @@ export const saveStoreSettingsSchema = z.object({
  city: z.string().max(100).optional(),
  state: z.string().max(2).optional(),
  zip_code: z.string().max(9).optional(),
+ zipCode: z.string().max(9).optional(),
+ corporate_name: z.string().optional(),
+ trade_name: z.string().optional(),
+ cnae: z.any().optional(),
+ registration_status: z.string().optional(),
+ legal_nature: z.string().optional(),
+ neighborhood: z.string().optional(),
  latitude: z.number().optional().nullable(),
  longitude: z.number().optional().nullable(),
  description: z.string().max(500).optional(),
@@ -156,11 +179,23 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
   weighable_pricing_mode,
   service_payment_policy,
   service_deposit_percentage,
- latitude,
- longitude,
- ...columns
+  latitude,
+  longitude,
+  zipCode,
+  corporate_name,
+  trade_name,
+  cnae,
+  registration_status,
+  legal_nature,
+  neighborhood,
+  ...columns
  } = data;
  const db = getServerClient();
+
+ // Normaliza colunas estruturais
+ if (zipCode && !columns.zip_code) {
+   columns.zip_code = zipCode;
+ }
 
  // Get current settings to merge
  const { data: currentStore } = await db
@@ -172,6 +207,12 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  ...(currentStore?.settings || {}),
  ...(latitude !== undefined ? { latitude } : {}),
  ...(longitude !== undefined ? { longitude } : {}),
+ ...(corporate_name !== undefined ? { corporate_name } : {}),
+ ...(trade_name !== undefined ? { trade_name } : {}),
+ ...(cnae !== undefined ? { cnae } : {}),
+ ...(registration_status !== undefined ? { registration_status } : {}),
+ ...(legal_nature !== undefined ? { legal_nature } : {}),
+ ...(neighborhood !== undefined ? { neighborhood } : {}),
  ...(segment ? { segment, type: segment, niche: segment } : {}),
  ...(type && !segment ? { type, segment: type, niche: type } : {}),
  ...(niche && !segment && !type ? { niche, segment: niche, type: niche } : {}),

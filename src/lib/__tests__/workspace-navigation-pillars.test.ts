@@ -30,6 +30,7 @@ const ALL_NICHES = [
 const REQUIRED_MASTER_PILLAR_IDS = [
   "overview",
   "atendimento",
+  "crm",
   "comercial",
   "catalogo",
   "logistica",
@@ -41,7 +42,7 @@ const REQUIRED_MASTER_PILLAR_IDS = [
 ];
 
 describe("Workspace Master Sidebar Pillars & Multi-Niche Completeness", () => {
-  it("provides all 10 Master Pillars across every business niche without duplicates", () => {
+  it("provides all 11 Master Pillars across every business niche without duplicates", () => {
     for (const niche of ALL_NICHES) {
       const groups = resolveWorkspaceNavigation({ niche, category: niche });
       expect(groups.length).toBeGreaterThan(0);

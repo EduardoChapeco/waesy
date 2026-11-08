@@ -5,7 +5,7 @@
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Plane, Hotel, Compass, Check, X, MapPin, Calendar, FileText, PhoneCall } from "lucide-react";
+import { Plane, Hotel, Compass, Check, X, MapPin, Calendar, FileText, PhoneCall, Car, Utensils } from "lucide-react";
 import { DocumentPage } from "./blocks/UI";
 
 interface TemplateProps {
@@ -159,6 +159,22 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                         </span>
                         <h4 className="font-bold text-lg text-foreground truncate">{d.title}</h4>
                       </div>
+                      {((d as any).city || (d as any).location || ((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          {((d as any).city || (d as any).location) && (
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-300 bg-slate-800/80 px-2 py-1 rounded-full font-medium">
+                              <MapPin className="size-3 text-slate-400" />
+                              {(d as any).city || (d as any).location}
+                            </span>
+                          )}
+                          {(((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-300 bg-slate-800/80 px-2 py-1 rounded-full font-medium">
+                              <Utensils className="size-3 text-slate-400" />
+                              {Array.isArray((d as any).meals) ? (d as any).meals.join(", ") : Array.isArray((d as any).included_meals) ? (d as any).included_meals.join(", ") : (d as any).meals || (d as any).included_meals}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-slate-400 text-sm leading-relaxed overflow-y-auto max-h-55 pr-2 whitespace-pre-wrap">
                         {d.description}
                       </p>
@@ -321,6 +337,92 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             </div>
           </DocumentPage>
         ))}
+
+      {/* ─── SLIDE: TRASLADOS & SERVIÇOS ─── */}
+      {vm.hasTransfers && (
+        <DocumentPage format={format} className="bg-slate-900 border-none p-12 justify-between">
+          <div>
+            <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+              <div className="flex items-center gap-3">
+                <Car
+                  className="w-6 h-6 text-brand"
+                  /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
+                  style={{ color: activeAccent }}
+                />
+                <h2 className="text-2xl font-black tracking-tight text-foreground">
+                  Traslados & Receptivo
+                </h2>
+              </div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                Logística Terrestre
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {p.transfers!.map((t, idx) => (
+                <div
+                  key={idx}
+                  className="bg-slate-800/40 border border-slate-800 rounded-lg p-6 flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-foreground font-bold text-base">{t.description || "Transfer"}</span>
+                    <span className="px-2 py-1 rounded text-3xs font-bold uppercase tracking-wider bg-slate-700 text-slate-200">
+                      {t.type === "shared" ? "Regular" : "Privativo"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    {t.vehicle && <span>Veículo: <strong className="text-slate-200">{t.vehicle}</strong> </span>}
+                    {t.date && <span>· Data: {formatDate(t.date)}</span>}
+                  </div>
+                  {t.notes && <p className="text-xs text-slate-400 italic">{t.notes}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
+            <span>Traslados</span>
+            <span>Cotação #{p.number}</span>
+          </div>
+        </DocumentPage>
+      )}
+
+      {/* ─── SLIDE: PASSEIOS & EXPERIÊNCIAS ─── */}
+      {vm.hasTours && (
+        <DocumentPage format={format} className="bg-slate-900 border-none p-12 justify-between">
+          <div>
+            <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+              <div className="flex items-center gap-3">
+                <Compass
+                  className="w-6 h-6 text-brand"
+                  /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
+                  style={{ color: activeAccent }}
+                />
+                <h2 className="text-2xl font-black tracking-tight text-foreground">
+                  Passeios & Experiências
+                </h2>
+              </div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                Atividades Especiais
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {p.tours!.map((tour, idx) => (
+                <div
+                  key={idx}
+                  className="bg-slate-800/40 border border-slate-800 rounded-lg p-6 flex flex-col gap-2"
+                >
+                  <span className="text-foreground font-bold text-base">{tour.description || (tour as any).title || "Passeio"}</span>
+                  {tour.date && <div className="text-xs text-slate-400">Duração / Data: {tour.date}</div>}
+                  {tour.notes && <p className="text-xs text-slate-400 whitespace-pre-wrap">{tour.notes}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
+            <span>Passeios</span>
+            <span>Cotação #{p.number}</span>
+          </div>
+        </DocumentPage>
+      )}
 
       {/* ─── SLIDE: INCLUSÕES / EXCLUSÕES ─── */}
       {(vm.hasIncludes || vm.hasExcludes) && (

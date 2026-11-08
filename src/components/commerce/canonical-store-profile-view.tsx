@@ -162,11 +162,21 @@ export function CanonicalStoreProfileView({
     settings.banner_url ||
     null;
   const logoUrl =
-    store?.avatar_url ||
+    store?.logoUrl ||
     store?.logo_url ||
+    store?.avatar_url ||
+    store?.avatarUrl ||
+    store?.image_url ||
     settings.logoUrl ||
     settings.logo_url ||
+    settings.avatar_url ||
+    settings.avatarUrl ||
+    settings.image_url ||
+    settings.imageUrl ||
+    (Array.isArray(settings.photos) && typeof settings.photos[0] === "string" ? settings.photos[0] : null) ||
     null;
+
+  const [logoFailed, setLogoFailed] = useState(false);
 
   // Modal de Orçamento
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
@@ -687,10 +697,11 @@ function cleanAddressSegment(text: string): string {
           {/* Avatar da Marca em Squircle 1:1 */}
           <div className="relative group shrink-0">
             <div className="size-20 sm:size-24 rounded-2xl bg-card border border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
-              {logoUrl ? (
+              {logoUrl && !logoFailed ? (
                 <img
                   src={logoUrl}
                   alt={store.name || store.business_name}
+                  onError={() => setLogoFailed(true)}
                   className="size-full object-cover select-none"
                 />
               ) : (

@@ -5,7 +5,7 @@
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Plane, Hotel, Car, Compass, Check, X, PhoneCall } from "lucide-react";
+import { Plane, Hotel, Car, Compass, Check, X, PhoneCall, MapPin, Utensils } from "lucide-react";
 
 interface TemplateProps {
   proposal: Proposal;
@@ -244,6 +244,155 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* ROTEIRO DIA A DIA */}
+        {vm.hasItinerary && (
+          <div className="mb-14 break-inside-avoid">
+            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-200">
+              <Compass className="w-5 h-5 text-warning-strong" />
+              <h2
+                className="text-2xl font-bold text-slate-900 tracking-tight"
+                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
+              >
+                Roteiro Dia a Dia
+              </h2>
+            </div>
+            <div className="pl-4">
+              <div className="border-l-2 py-2 border-slate-200">
+                {p.itinerary!.map((d, i) => (
+                  <div key={i} className="relative pl-8 pb-8 last:pb-0 break-inside-avoid">
+                    <div
+                      className="absolute w-5 h-5 rounded-full -left-2.5 border-2 border-background top-1 flex items-center justify-center text-3xs font-bold text-foreground"
+                      /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
+                      style={{ backgroundColor: brand }}
+                    >
+                      {i + 1}
+                    </div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="px-3 py-1 rounded-full ds-label-caps text-slate-800 bg-slate-100 font-bold">
+                        {d.day || `Dia ${i + 1}`}
+                      </span>
+                      <h4 className="text-lg font-bold text-slate-900">{d.title}</h4>
+                    </div>
+                    {((d as any).city || (d as any).location || ((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        {((d as any).city || (d as any).location) && (
+                          <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
+                            <MapPin className="size-3 text-slate-400" />
+                            {(d as any).city || (d as any).location}
+                          </span>
+                        )}
+                        {(((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                          <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
+                            <Utensils className="size-3 text-slate-400" />
+                            {Array.isArray((d as any).meals) ? (d as any).meals.join(", ") : Array.isArray((d as any).included_meals) ? (d as any).included_meals.join(", ") : (d as any).meals || (d as any).included_meals}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-slate-600 leading-relaxed text-sm text-justify whitespace-pre-wrap">
+                      {d.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TRASLADOS */}
+        {vm.hasTransfers && (
+          <div className="mb-14 break-inside-avoid">
+            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-200">
+              <Car className="w-5 h-5 text-warning-strong" />
+              <h2
+                className="text-2xl font-bold text-slate-900 tracking-tight"
+                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
+              >
+                Traslados & Receptivo
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {p.transfers!.map((t, i) => (
+                <div key={i} className="p-5 rounded-lg border border-slate-200 bg-slate-50 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-slate-900 text-sm">{t.description || "Transfer In/Out"}</span>
+                    <span className="px-2 py-1 rounded text-3xs font-bold uppercase tracking-wider bg-slate-200 text-slate-700">
+                      {t.type === "shared" ? "Regular" : "Privativo"}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                    {t.vehicle && <span>Veículo: <strong>{t.vehicle}</strong></span>}
+                    {t.date && <span>Data: {formatDate(t.date)}</span>}
+                  </div>
+                  {t.notes && <p className="text-xs text-slate-500 italic">{t.notes}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PASSEIOS */}
+        {vm.hasTours && (
+          <div className="mb-14 break-inside-avoid">
+            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-200">
+              <Compass className="w-5 h-5 text-warning-strong" />
+              <h2
+                className="text-2xl font-bold text-slate-900 tracking-tight"
+                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
+              >
+                Passeios & Experiências
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {p.tours!.map((tour, i) => (
+                <div key={i} className="p-5 rounded-lg border border-slate-200 bg-slate-50 space-y-2">
+                  <span className="font-bold text-slate-900 text-sm block">{tour.description || (tour as any).title || "Passeio"}</span>
+                  {tour.date && <div className="text-xs text-slate-500">Programação: {tour.date}</div>}
+                  {tour.notes && <p className="text-xs text-slate-600 whitespace-pre-wrap">{tour.notes}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* INCLUSÕES & EXCLUSÕES */}
+        {(vm.hasIncludes || vm.hasExcludes) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-14 break-inside-avoid">
+            {vm.hasIncludes && (
+              <div className="p-6 rounded-lg border border-slate-200 bg-slate-50">
+                <h3 className="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
+                  <Check className="size-4 text-emerald-600" />
+                  O que está incluso
+                </h3>
+                <ul className="space-y-2 text-xs text-slate-700">
+                  {p.includes!.map((inc, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-emerald-600 shrink-0 mt-1">•</span>
+                      <span>{inc}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {vm.hasExcludes && (
+              <div className="p-6 rounded-lg border border-slate-200 bg-slate-50">
+                <h3 className="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
+                  <X className="size-4 text-rose-500" />
+                  Não incluso
+                </h3>
+                <ul className="space-y-2 text-xs text-slate-700">
+                  {p.excludes!.map((exc, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-rose-500 shrink-0 mt-1">•</span>
+                      <span>{exc}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 

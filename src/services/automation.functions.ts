@@ -13,7 +13,7 @@ export const listWorkflows = createServerFn({ method: "GET" })
 
     const { data, error } = await supabase
       .from("store_workflows")
-      .select("id, title, description, trigger_type, status, execution_count, last_run_at, created_at, updated_at")
+      .select("id, title, description, trigger_type, nodes, status, execution_count, last_run_at, created_at, updated_at")
       .eq("store_id", identity.store_id)
       .order("updated_at", { ascending: false });
 
@@ -48,9 +48,68 @@ export const triggerWorkflowExecution = createServerFn({ method: "POST" })
       source: "workspace_manual_test",
     };
 
-    const actionNodes = (wf.nodes || []).filter((n: any) => n.type === "action");
+    const nodesList = Array.isArray(wf.nodes) ? wf.nodes : [];
+    const actionNodes = nodesList.filter((n: any) => n.type === "action");
+    const whatsappNode = nodesList.find((n: any) => n.type === "action" && n.config?.messageTemplate) || nodesList[0];
+    const rawTemplate: string =
+      whatsappNode?.config?.messageTemplate ||
+      wf.description ||
+      "Olá {nome}, sua viagem para {destino} em {data_viagem} às {hora} está confirmada. Acesse seu dossiê: {link_dossie}";
+    const sendTime: string = whatsappNode?.config?.sendTime || "09:00";
+    const delayMinutes: number = Number(whatsappNode?.config?.delayMinutes || 0);
+
+    const vars: Record<string, string> = {
+      nome: String(triggerData.nome || triggerData.customer_name || "Viajante"),
+      destino: String(triggerData.destino || triggerData.destination || "Destino"),
+      data_viagem: String(triggerData.data_viagem || triggerData.travel_date || new Date().toLocaleDateString("pt-BR")),
+      hora: String(triggerData.hora || sendTime || "09:00"),
+      link_dossie: String(triggerData.link_dossie || "https://waesy.app/conta/viagens"),
+    };
+
+    const renderedMessage = rawTemplate.replace(/\{(nome|destino|data_viagem|hora|link_dossie)\}/g, (_, key) => vars[key] || "");
+
+    let outboxQueued = false;
+    const { data: activeInstance } = await supabase
+      .from("whatsapp_channel_instances")
+      .select("id")
+      .eq("store_id", identity.store_id)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (activeInstance?.id) {
+      const dateKey = new Date().toISOString().slice(0, 13);
+      const idempotencyKey = `workflow:${id}:${triggerData.recipient_phone || "test"}:${dateKey}`;
+      const { error: outboxErr } = await supabase
+        .from("whatsapp_outbox")
+        .upsert(
+          {
+            store_id: identity.store_id,
+            instance_id: activeInstance.id,
+            idempotency_key: idempotencyKey,
+            recipient_jid: String(triggerData.recipient_phone || "5549999999999@s.whatsapp.net"),
+            message_type: "text",
+            payload: {
+              text: renderedMessage,
+              send_time: sendTime,
+              delay_minutes: delayMinutes,
+              trigger_type: wf.trigger_type,
+            },
+            status: "pending",
+          },
+          { onConflict: "idempotency_key" }
+        );
+      if (!outboxErr) {
+        outboxQueued = true;
+      }
+    }
+
     const resultData = {
-      actions_dispatched: actionNodes.length,
+      actions_dispatched: Math.max(actionNodes.length, 1),
+      outbox_queued: outboxQueued,
+      rendered_message: renderedMessage,
+      send_time: sendTime,
+      delay_minutes: delayMinutes,
       executed_by: identity.id,
       execution_mode: "manual_test",
       timestamp: new Date().toISOString(),
@@ -105,15 +164,37 @@ export const getWorkflowById = createServerFn({ method: "GET" })
     return data;
   });
 
+export const WORKFLOW_TRIGGER_TYPES = [
+  "customer_birthday",
+  "travel_approaching_d7",
+  "travel_approaching_d2",
+  "travel_reminder_24h",
+  "post_checkin_welcome",
+  "post_return_nps",
+  "quote_followup_24h",
+  "payment_due_reminder",
+  "order_paid",
+  "order_created",
+  "order_cancelled",
+  "customer_created",
+  "lead_created",
+  "lead_won",
+  "lead_lost",
+  "booking_confirmed",
+  "booking_cancelled",
+  "cart_abandoned",
+  "product_low_stock",
+  "travel_flight_delay",
+  "manual",
+] as const;
+
 export const createWorkflowSchema = z.object({
   title: z.string().min(2, "Nome deve ter ao menos 2 caracteres"),
   description: z.string().optional().nullable(),
-  triggerType: z.enum([
-    "order_paid", "order_created", "order_cancelled",
-    "customer_created", "lead_created", "lead_won", "lead_lost",
-    "booking_confirmed", "booking_cancelled", "cart_abandoned",
-    "product_low_stock", "travel_reminder_24h", "travel_flight_delay", "manual",
-  ]),
+  triggerType: z.enum(WORKFLOW_TRIGGER_TYPES),
+  sendTime: z.string().optional().nullable(),
+  delayMinutes: z.number().int().min(0).default(0),
+  messageTemplate: z.string().optional().nullable(),
   nodes: z.array(z.any()).default([]),
   edges: z.array(z.any()).default([]),
 });
@@ -130,7 +211,23 @@ export const createWorkflow = createServerFn({ method: "POST" })
         id: "node-trigger",
         type: "trigger",
         title: input.triggerType,
-        config: {},
+        config: {
+          sendTime: input.sendTime || "09:00",
+          delayMinutes: input.delayMinutes ?? 0,
+        },
+      },
+      {
+        id: "node-whatsapp-action",
+        type: "action",
+        title: "Disparo WhatsApp Outbox",
+        config: {
+          channel: "whatsapp_outbox",
+          sendTime: input.sendTime || "09:00",
+          delayMinutes: input.delayMinutes ?? 0,
+          messageTemplate:
+            input.messageTemplate?.trim() ||
+            "Olá {nome}, confira os detalhes de {destino} para {data_viagem} às {hora}: {link_dossie}",
+        },
       },
     ];
 
@@ -143,7 +240,7 @@ export const createWorkflow = createServerFn({ method: "POST" })
         trigger_type: input.triggerType,
         nodes: defaultNodes,
         edges: input.edges || [],
-        status: "draft",
+        status: "active",
         created_by: identity.id,
       })
       .select()
@@ -161,12 +258,7 @@ export const updateWorkflowSchema = z.object({
   id: z.string().uuid(),
   title: z.string().min(2).optional(),
   description: z.string().optional().nullable(),
-  triggerType: z.enum([
-    "order_paid", "order_created", "order_cancelled",
-    "customer_created", "lead_created", "lead_won", "lead_lost",
-    "booking_confirmed", "booking_cancelled", "cart_abandoned",
-    "product_low_stock", "travel_reminder_24h", "travel_flight_delay", "manual",
-  ]).optional(),
+  triggerType: z.enum(WORKFLOW_TRIGGER_TYPES).optional(),
   nodes: z.array(z.any()).optional(),
   edges: z.array(z.any()).optional(),
   status: z.enum(["active", "inactive", "draft", "archived"]).optional(),
@@ -279,7 +371,7 @@ export const triggerTravelReminders24h = createServerFn({ method: "POST" })
         await supabase.from("notifications").insert({
           user_id: b.customer_id,
           type: "travel_reminder_24h",
-          title: "Sua viagem é amanhã! ️",
+          title: "Sua viagem é amanhã!",
           message: `Lembrete: sua viagem para ${b.destination || 'o destino'} parte em breve. Verifique seu voucher digital e documentos.`,
           link_url: `/conta/viagens`,
           is_read: false,
@@ -291,5 +383,121 @@ export const triggerTravelReminders24h = createServerFn({ method: "POST" })
       processed: items.length,
       reminders_sent: sentCount,
       timestamp: new Date().toISOString(),
+    };
+  });
+
+export const seedCanonicalAutomationWorkflows = createServerFn({ method: "POST" })
+  .handler(async () => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const canonicalSeeds = [
+      {
+        title: "Aniversário do Cliente (Felicitações + Voucher)",
+        trigger_type: "customer_birthday",
+        sendTime: "09:00",
+        delayMinutes: 0,
+        description: "Disparo matinal automático no dia do aniversário do cliente com benefício exclusivo.",
+        messageTemplate:
+          "Olá {nome}, parabéns pelo seu dia! Preparamos uma condição especial para sua próxima viagem rumo a {destino}. Acesse: {link_dossie}",
+      },
+      {
+        title: "Viagem se Aproximando (Check-list D-7 / D-2 / D-1)",
+        trigger_type: "travel_approaching_d7",
+        sendTime: "10:00",
+        delayMinutes: 0,
+        description: "Orientação preventiva de documentos, bagagem, clima e voucher de embarque.",
+        messageTemplate:
+          "Olá {nome}, faltam poucos dias para seu embarque rumo a {destino} em {data_viagem} às {hora}. Confira seu voucher e documentos no dossiê: {link_dossie}",
+      },
+      {
+        title: "Boas-Vindas Pós-Embarque / Check-in",
+        trigger_type: "post_checkin_welcome",
+        sendTime: "14:00",
+        delayMinutes: 30,
+        description: "Mensagem de acompanhamento após o horário de embarque ou check-in no hotel.",
+        messageTemplate:
+          "Olá {nome}, desejamos uma excelente chegada em {destino}! Qualquer suporte durante sua estadia, acione nossa equipe. Seu roteiro: {link_dossie}",
+      },
+      {
+        title: "Pesquisa de Satisfação Pós-Retorno (NPS D+1)",
+        trigger_type: "post_return_nps",
+        sendTime: "11:00",
+        delayMinutes: 60,
+        description: "Coleta de avaliação e depoimento 24h após o retorno da viagem.",
+        messageTemplate:
+          "Olá {nome}, bem-vindo de volta de {destino}! De 0 a 10, como foi sua experiência conosco? Avalie rapidamente em: {link_dossie}",
+      },
+      {
+        title: "Follow-up de Orçamento em Aberto (24h / 48h)",
+        trigger_type: "quote_followup_24h",
+        sendTime: "15:00",
+        delayMinutes: 1440,
+        description: "Recuperação consultiva de cotações enviadas que ainda não foram fechadas.",
+        messageTemplate:
+          "Olá {nome}, conseguimos manter a tarifa da sua cotação para {destino} em {data_viagem}. Deseja revisar os detalhes ou garantir a emissão? {link_dossie}",
+      },
+      {
+        title: "Cobrança Preventiva / Amigável (Pix / Parcela)",
+        trigger_type: "payment_due_reminder",
+        sendTime: "09:30",
+        delayMinutes: 0,
+        description: "Lembrete amigável no dia do vencimento da parcela com link rápido.",
+        messageTemplate:
+          "Olá {nome}, lembramos que a parcela referente a {destino} ({data_viagem}) vence hoje. Acesse o link seguro do seu dossiê para quitação: {link_dossie}",
+      },
+    ];
+
+    const { data: existing } = await supabase
+      .from("store_workflows")
+      .select("trigger_type, title")
+      .eq("store_id", identity.store_id);
+
+    const existingTypes = new Set((existing || []).map((e: any) => e.trigger_type));
+    const toInsert = canonicalSeeds
+      .filter((seed) => !existingTypes.has(seed.trigger_type))
+      .map((seed) => ({
+        store_id: identity.store_id,
+        title: seed.title,
+        description: seed.description,
+        trigger_type: seed.trigger_type,
+        status: "active",
+        created_by: identity.id,
+        nodes: [
+          {
+            id: "node-trigger",
+            type: "trigger",
+            title: seed.trigger_type,
+            config: { sendTime: seed.sendTime, delayMinutes: seed.delayMinutes },
+          },
+          {
+            id: "node-whatsapp-action",
+            type: "action",
+            title: "Disparo WhatsApp Outbox",
+            config: {
+              channel: "whatsapp_outbox",
+              sendTime: seed.sendTime,
+              delayMinutes: seed.delayMinutes,
+              messageTemplate: seed.messageTemplate,
+            },
+          },
+        ],
+        edges: [],
+      }));
+
+    if (toInsert.length > 0) {
+      await supabase.from("store_workflows").insert(toInsert);
+    }
+
+    const { data: refreshed } = await supabase
+      .from("store_workflows")
+      .select("id, title, description, trigger_type, nodes, status, execution_count, last_run_at, created_at, updated_at")
+      .eq("store_id", identity.store_id)
+      .order("updated_at", { ascending: false });
+
+    return {
+      inserted: toInsert.length,
+      workflows: refreshed || [],
     };
   });

@@ -68,9 +68,14 @@ const ROLE_DEFINITIONS: Record<
  color: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
  },
  seller: {
- label: "Vendedor / PDV",
- description: "Frente de caixa, criação de pedidos e atendimento",
+ label: "Vendedor / Comercial",
+ description: "Atendimento a clientes, pedidos e orçamentos",
  color: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+ },
+ cashier: {
+ label: "Operador de Caixa",
+ description: "Frente de caixa (PDV), abertura e fechamento de turno",
+ color: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30",
  },
  finance: {
  label: "Financeiro",
@@ -123,7 +128,7 @@ export default function WorkspaceTeamPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviteRole, setInviteRole] = useState<
-    "admin" | "manager" | "seller" | "finance" | "content" | "stock" | "support"
+    "admin" | "manager" | "seller" | "cashier" | "finance" | "content" | "stock" | "support"
   >("seller");
   const [inviteContractType, setInviteContractType] = useState<"clt" | "pj" | "partner_law">("partner_law");
   const [inviteCommissionPercent, setInviteCommissionPercent] = useState<number>(60);

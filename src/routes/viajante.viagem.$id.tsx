@@ -227,10 +227,16 @@ export default function TripPortalPage() {
   const itineraryDays = useMemo(() => {
     if (trip.itinerary && Array.isArray(trip.itinerary) && trip.itinerary.length > 0) {
       return trip.itinerary.map((dayItem: any, idx: number) => ({
-        dayIndex: idx + 1,
-        dateFormatted: dayItem.date || `Dia ${idx + 1}`,
+        dayIndex: dayItem.day || idx + 1,
+        dateFormatted: dayItem.date || `Dia ${dayItem.day || idx + 1}`,
         title: dayItem.title || `Roteiro do Dia ${idx + 1}`,
         summary: dayItem.description || dayItem.summary || "",
+        location: dayItem.location || dayItem.city || "",
+        meals: Array.isArray(dayItem.meals)
+          ? dayItem.meals
+          : Array.isArray(dayItem.included_meals)
+            ? dayItem.included_meals
+            : [],
         tags: dayItem.tags || [],
         timeline: (dayItem.activities || []).map((act: any) => ({
           time: act.time || "09:00",
@@ -262,6 +268,24 @@ export default function TripPortalPage() {
         durationText: p.durationText || "Embarque de passageiros",
         type: "boarding",
       }));
+    }
+    if (Array.isArray(trip?.transfers) && trip.transfers.length > 0) {
+      return trip.transfers
+        .filter((tr: any) => tr.pickup || tr.pickup_location || tr.route || tr.description)
+        .map((tr: any) => ({
+          location:
+            tr.route ||
+            [tr.pickup || tr.pickup_location, tr.dropoff || tr.dropoff_location]
+              .filter(Boolean)
+              .join(" → ") ||
+            tr.description ||
+            "Transporte Rodoviário",
+          time: tr.pickup_time || tr.time || tr.date || tr.service_date || "Horário programado",
+          durationText: [tr.vehicle || tr.type, tr.dropoff_time ? `Chegada: ${tr.dropoff_time}` : "", tr.notes]
+            .filter(Boolean)
+            .join(" • ") || "Transfer / Transporte confirmado",
+          type: "boarding",
+        }));
     }
     return [];
   }, [trip]);
@@ -911,10 +935,17 @@ export default function TripPortalPage() {
                   key={day.dayIndex}
                   className="p-5 rounded-lg border border-border bg-card space-y-3"
                 >
-                  <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2">
-                    <span className="font-bold text-sm text-foreground">
-                      Dia {day.dayIndex} · {day.title}
-                    </span>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 pb-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-sm text-foreground">
+                        Dia {day.dayIndex} · {day.title}
+                      </span>
+                      {day.location && (
+                        <Badge variant="secondary" className="text-xs">
+                          {day.location}
+                        </Badge>
+                      )}
+                    </div>
                     <Badge variant="outline" className="text-xs font-mono">
                       {day.dateFormatted}
                     </Badge>
@@ -923,6 +954,15 @@ export default function TripPortalPage() {
                     <p className="text-xs text-muted-foreground leading-relaxed break-words">
                       {day.summary}
                     </p>
+                  )}
+                  {Array.isArray(day.meals) && day.meals.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {day.meals.map((meal: string, mIdx: number) => (
+                        <Badge key={mIdx} variant="outline" className="text-xs">
+                          {meal}
+                        </Badge>
+                      ))}
+                    </div>
                   )}
                   {day.timeline && day.timeline.length > 0 && (
                     <div className="space-y-2 pt-2">
@@ -991,6 +1031,63 @@ export default function TripPortalPage() {
                   )}
                 </div>
               ))}
+
+              {(Array.isArray(trip.tours) && trip.tours.length > 0) ||
+              (Array.isArray(trip.includes) && trip.includes.length > 0) ||
+              (Array.isArray(trip.excludes) && trip.excludes.length > 0) ? (
+                <div className="p-5 rounded-lg border border-border bg-card space-y-4">
+                  {Array.isArray(trip.tours) && trip.tours.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                        Passeios & Experiências
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {trip.tours.map((tour: any, tIdx: number) => (
+                          <div key={tIdx} className="p-3 rounded-lg bg-muted/40 text-xs space-y-1">
+                            <span className="font-bold text-foreground block">
+                              {tour.title || tour.name}
+                            </span>
+                            {(tour.date || tour.tour_date || tour.duration) && (
+                              <span className="text-muted-foreground font-mono block">
+                                {[tour.date || tour.tour_date, tour.duration].filter(Boolean).join(" • ")}
+                              </span>
+                            )}
+                            {(tour.description || tour.notes) && (
+                              <p className="text-muted-foreground">{tour.description || tour.notes}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {Array.isArray(trip.includes) && trip.includes.length > 0 && (
+                      <div className="space-y-1 text-xs">
+                        <span className="font-bold text-foreground uppercase tracking-wider block">
+                          Incluso no Pacote
+                        </span>
+                        <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                          {trip.includes.map((inc: string, iIdx: number) => (
+                            <li key={iIdx}>{inc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {Array.isArray(trip.excludes) && trip.excludes.length > 0 && (
+                      <div className="space-y-1 text-xs">
+                        <span className="font-bold text-foreground uppercase tracking-wider block">
+                          Não Incluso
+                        </span>
+                        <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                          {trip.excludes.map((exc: string, eIdx: number) => (
+                            <li key={eIdx}>{exc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>
           )}
 

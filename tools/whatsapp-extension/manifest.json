@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Waesy Ingest • Extensão WhatsApp Web (Grupos & Contatos)",
+  "version": "2.1.0",
+  "description": "Captura inteligente, sanitização e envio idempotente de contatos de grupos do WhatsApp Web para o Waesy CRM (Excelência Tour).",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://web.whatsapp.com/*",
+    "*://waesy.com.br/*",
+    "*://*.pages.dev/*",
+    "*://localhost:*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Waesy Ingest • WhatsApp Web"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

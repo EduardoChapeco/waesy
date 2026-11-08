@@ -109,28 +109,51 @@ export function sanitizeBrowserAuthCookies(): void {
     const winningAuthCookies = canonical.filter(
       (c) => c.name === "waesy-auth-token" || /^waesy-auth-token\.\d+$/.test(c.name),
     );
+
+    // TRAVA DE SEGURANÇA ABSOLUTA: Se nenhum cookie vencedor pôde ser determinado com certeza,
+    // NUNCA expire cookies! Retorne imediatamente para não aniquilar a sessão ativa do usuário.
+    if (winningAuthCookies.length === 0) return;
+
     const winningNames = new Set(winningAuthCookies.map((c) => c.name));
+    const currentAuthCookieMap = new Map<string, string>();
+    for (const entry of rawEntries) {
+      if (
+        entry.name === "waesy-auth-token" ||
+        entry.name.startsWith("waesy-auth-token.") ||
+        (entry.name.startsWith("sb-") && entry.name.includes("-auth-token"))
+      ) {
+        currentAuthCookieMap.set(entry.name, entry.value);
+      }
+    }
 
     const hostname = window.location.hostname.toLowerCase();
     const isSecure = window.location.protocol === "https:";
     const legacyDomains = getLegacyCookieDomainsToPurge(hostname);
 
-    // 1. Expira todas as variantes com atributo Domain explícito para eliminar duplicatas no browser
-    for (const domain of legacyDomains) {
-      for (const name of AUTH_COOKIE_CHUNK_NAMES) {
-        document.cookie = serializeCookieHeader(name, "", {
-          path: "/",
-          maxAge: 0,
-          domain,
-          sameSite: "lax",
-          secure: isSecure,
-        });
+    // 1. Expira variantes com atributo Domain explícito se houver duplicatas legadas detectadas
+    const hasDuplicates = rawEntries.some(
+      (e) =>
+        AUTH_COOKIE_CHUNK_NAMES.includes(e.name as any) &&
+        rawEntries.filter((x) => x.name === e.name).length > 1,
+    );
+    if (hasDuplicates) {
+      for (const domain of legacyDomains) {
+        for (const name of AUTH_COOKIE_CHUNK_NAMES) {
+          document.cookie = serializeCookieHeader(name, "", {
+            path: "/",
+            maxAge: 0,
+            domain,
+            sameSite: "lax",
+            secure: isSecure,
+          });
+        }
       }
     }
 
-    // 2. Expira no escopo host-only quaisquer chunks que NÃO pertencem à sessão vencedora
+    // 2. Expira no escopo host-only APENAS chunks órfãos que comprovadamente existem no browser
+    // e NÃO pertencem à sessão vencedora (sem churn desnecessário).
     for (const name of AUTH_COOKIE_CHUNK_NAMES) {
-      if (!winningNames.has(name)) {
+      if (!winningNames.has(name) && currentAuthCookieMap.has(name)) {
         document.cookie = serializeCookieHeader(name, "", {
           path: "/",
           maxAge: 0,
@@ -140,14 +163,16 @@ export function sanitizeBrowserAuthCookies(): void {
       }
     }
 
-    // 3. Regrava os cookies vencedores no escopo host-only limpo
+    // 3. Regrava os cookies vencedores no escopo host-only APENAS se o valor diferir ou se houve limpeza
     for (const win of winningAuthCookies) {
-      document.cookie = serializeCookieHeader(win.name, win.value, {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 365,
-        sameSite: "lax",
-        secure: isSecure,
-      });
+      if (hasDuplicates || currentAuthCookieMap.get(win.name) !== win.value) {
+        document.cookie = serializeCookieHeader(win.name, win.value, {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          sameSite: "lax",
+          secure: isSecure,
+        });
+      }
     }
   } catch {
     // Ignora falhas de acesso ao document.cookie em contextos restritos

@@ -734,6 +734,7 @@ function WorkspaceAtendimentoPage() {
           message_type: messageType,
           payload,
           attachments: [],
+          is_internal: isWhisperMode,
         },
       });
 
@@ -847,6 +848,7 @@ function WorkspaceAtendimentoPage() {
   // Filtros SDR
   const filteredSdrSessions = useMemo(() => {
     return sdrSessions.filter((session) => {
+      if (!session) return false;
       const matchIntent = sdrIntentFilter === "all" || session.intent_classification === sdrIntentFilter;
       const matchSearch =
         !sdrSearchTerm.trim() ||
@@ -1248,11 +1250,11 @@ function WorkspaceAtendimentoPage() {
                     {/* Tags Semânticas Coloridas (Whaticket / CRM Parity) */}
                     <div className="pt-1">
                       <ThreadTagsPicker
-                        threadId={activeThread.id}
+                        threadId={activeThread?.id || ""}
                         tags={activeThread.tags || []}
                         onTagsChange={(newTags) => {
                           setThreads((prev) =>
-                            prev.map((t) => (t.id === activeThread.id ? { ...t, tags: newTags } : t))
+                            prev.map((t) => (t.id === activeThread?.id ? { ...t, tags: newTags } : t))
                           );
                         }}
                       />
@@ -1342,7 +1344,7 @@ function WorkspaceAtendimentoPage() {
                     size="sm"
                     disabled={isArchiving}
                     onClick={() =>
-                      handleArchiveThread(activeThread.id, activeThread.status !== "archived")
+                      activeThread?.id && handleArchiveThread(activeThread.id, activeThread.status !== "archived")
                     }
                     className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     title={activeThread.status === "archived" ? "Desarquivar conversa" : "Arquivar conversa"}
@@ -1842,11 +1844,11 @@ function WorkspaceAtendimentoPage() {
                       </span>
                     </div>
                     <Switch
-                      checked={aiAutoReplyPerThread[activeThread.id] ?? true}
+                      checked={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
                       onCheckedChange={(checked) => {
                         setAiAutoReplyPerThread((prev) => ({
                           ...prev,
-                          [activeThread.id]: checked,
+                          ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
                         }));
                         toast.success(
                           checked
@@ -1866,7 +1868,7 @@ function WorkspaceAtendimentoPage() {
                     Setor / Fila (Assigned Team Router)
                   </Label>
                   <select
-                    value={activeThread.department || "geral"}
+                    value={activeThread?.department || "geral"}
                     onChange={(e) => handleDepartmentChange(e.target.value)}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                   >
@@ -1883,12 +1885,12 @@ function WorkspaceAtendimentoPage() {
                     Atendente Responsável (Assigned To)
                   </Label>
                   <select
-                    value={assignedAgentPerThread[activeThread.id] || ""}
+                    value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
                     onChange={(e) => {
                       const val = e.target.value;
                       setAssignedAgentPerThread((prev) => ({
                         ...prev,
-                        [activeThread.id]: val,
+                        ...(activeThread?.id ? { [activeThread.id]: val } : {}),
                       }));
                       toast.success("Atendente atribuído à conversa!");
                     }}
@@ -1904,8 +1906,11 @@ function WorkspaceAtendimentoPage() {
                 </div>
               </div>
               <Customer360Sidebar
-                customerId={activeThread.customer?.id}
+                customerId={activeThread?.customer?.id}
                 storeId={store?.id || ""}
+                threadId={activeThread?.id}
+                guestName={activeThread?.customer?.full_name}
+                guestPhone={activeThread?.customer?.phone}
               />
             </div>
           )}
@@ -1918,7 +1923,7 @@ function WorkspaceAtendimentoPage() {
                   Perfil 360º do Cliente
                 </SheetTitle>
               </SheetHeader>
-              {activeThread && (
+              {activeThread?.id && (
               <div className="p-4">
                 {/* Controles estilo TrackChat / WhatsOmni: AI Assistant Control, Team Router & Assignee */}
               <div className="space-y-3 mb-4 pb-4 border-b border-border/60">
@@ -1931,11 +1936,11 @@ function WorkspaceAtendimentoPage() {
                       </span>
                     </div>
                     <Switch
-                      checked={aiAutoReplyPerThread[activeThread.id] ?? true}
+                      checked={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
                       onCheckedChange={(checked) => {
                         setAiAutoReplyPerThread((prev) => ({
                           ...prev,
-                          [activeThread.id]: checked,
+                          ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
                         }));
                         toast.success(
                           checked
@@ -1955,7 +1960,7 @@ function WorkspaceAtendimentoPage() {
                     Setor / Fila (Assigned Team Router)
                   </Label>
                   <select
-                    value={activeThread.department || "geral"}
+                    value={activeThread?.department || "geral"}
                     onChange={(e) => handleDepartmentChange(e.target.value)}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                   >
@@ -1972,12 +1977,12 @@ function WorkspaceAtendimentoPage() {
                     Atendente Responsável (Assigned To)
                   </Label>
                   <select
-                    value={assignedAgentPerThread[activeThread.id] || ""}
+                    value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
                     onChange={(e) => {
                       const val = e.target.value;
                       setAssignedAgentPerThread((prev) => ({
                         ...prev,
-                        [activeThread.id]: val,
+                        ...(activeThread?.id ? { [activeThread.id]: val } : {}),
                       }));
                       toast.success("Atendente atribuído à conversa!");
                     }}
@@ -1995,6 +2000,9 @@ function WorkspaceAtendimentoPage() {
               <Customer360Sidebar
                   customerId={activeThread?.customer?.id}
                   storeId={store?.id || ""}
+                  threadId={activeThread?.id}
+                  guestName={activeThread?.customer?.full_name}
+                  guestPhone={activeThread?.customer?.phone}
                 />
               </div>
               )}
@@ -2404,7 +2412,7 @@ function WorkspaceAtendimentoPage() {
                     }
                     setIntranetChannels((prev) =>
                       prev.map((ch) =>
-                        ch.id === activeIntranetChannel.id
+                        ch.id === activeIntranetChannel?.id
                           ? {
                               ...ch,
                               updatedAt: "Agora",
@@ -2514,6 +2522,7 @@ function WorkspaceAtendimentoPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredSdrSessions.map((session) => {
+                  if (!session?.id) return null;
                   const isReady = session.intent_classification === "ready_to_buy";
                   const isWarm = session.intent_classification === "warm";
 
@@ -3125,7 +3134,7 @@ function WorkspaceAtendimentoPage() {
       )}
 
       {/* MODAIS DE OPERAÇÕES AVANÇADAS WHATICKET / OMNICHANNEL */}
-      {activeThread && (
+      {activeThread?.id && (
         <TransferChatThreadModal
           isOpen={transferModalOpen}
           onClose={() => setTransferModalOpen(false)}
@@ -3144,7 +3153,7 @@ function WorkspaceAtendimentoPage() {
         isOpen={quickAnswersModalOpen}
         onClose={() => setQuickAnswersModalOpen(false)}
       />
-      {activeThread && (
+      {activeThread?.id && (
         <ScheduleWhatsAppMessageModal
           isOpen={scheduleModalOpen}
           onClose={() => setScheduleModalOpen(false)}
@@ -3199,7 +3208,7 @@ function WorkspaceAtendimentoPage() {
         onClearModalOverride={() => setIntranetModalOverride(null)}
         storeName={store?.name || "Intranet"}
         onDispatchMessage={(data: StructuredDispatchPayload) => {
-          if (!activeIntranetChannel) return;
+          if (!activeIntranetChannel?.id) return;
           if (activeIntranetChannel.id && !activeIntranetChannel.id.startsWith("ch-")) {
             sendIntranetMessage({
               data: {
@@ -3213,7 +3222,7 @@ function WorkspaceAtendimentoPage() {
           }
           setIntranetChannels((prev) =>
             prev.map((ch) =>
-              ch.id === activeIntranetChannel.id
+              ch.id === activeIntranetChannel?.id
                 ? {
                     ...ch,
                     updatedAt: "Agora",

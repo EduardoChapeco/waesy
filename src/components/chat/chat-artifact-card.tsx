@@ -125,6 +125,21 @@ const ARTIFACT_TYPE_CONFIG: Record<
     icon: Layout,
     defaultExport: "json",
   },
+  dashboard: {
+    label: "Painel Executivo",
+    icon: BarChart3,
+    defaultExport: "json",
+  },
+  map_view: {
+    label: "Mapa Interativo",
+    icon: Compass,
+    defaultExport: "json",
+  },
+  creative_post: {
+    label: "Criativo para Redes",
+    icon: Image,
+    defaultExport: "png",
+  },
 };
 
 // ── Barra de pontuação inline (sem cores literais — usa classes semânticas de token) ──

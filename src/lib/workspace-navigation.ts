@@ -75,10 +75,31 @@ const GROUP_MASTER_INBOX: NavGroup = {
   section: "master",
   items: [
     { path: "/workspace/atendimento", label: "Conversas", icon: MessageSquare },
-    { path: "/workspace/clientes", label: "Clientes", icon: Users },
-    { path: "/workspace/avaliacoes", label: "Avaliações", icon: Star },
     { path: "/workspace/notificacoes", label: "Notificações", icon: Bell },
     { path: "/workspace/suporte", label: "Suporte", icon: LifeBuoy },
+  ],
+};
+
+const GROUP_CRM_CLIENTS: NavGroup = {
+  id: "crm-clients",
+  label: "Carteira & Relacionamento",
+  icon: Users,
+  section: "master",
+  items: [
+    { path: "/workspace/clientes", label: "Carteira de Clientes", icon: Users },
+    { path: "/workspace/avaliacoes", label: "Avaliações & NPS", icon: Star },
+  ],
+};
+
+const GROUP_TURISMO_CRM: NavGroup = {
+  id: "tourism-crm",
+  label: "Carteira de Viajantes",
+  icon: Users,
+  section: "niche",
+  items: [
+    { path: "/workspace/clientes", label: "Viajantes & CRM", icon: Users },
+    { path: "/workspace/turismo/vistos", label: "Assessoria de Vistos", icon: Globe },
+    { path: "/workspace/turismo/documentos-ocr", label: "Documentos & OCR", icon: FileText },
   ],
 };
 
@@ -238,11 +259,11 @@ const GROUP_REAL_ESTATE: NavGroup = {
 // 8. Turismo Canônico (4 Pilares Operacionais sem Emojis)
 const GROUP_TURISMO_COMMERCIAL: NavGroup = {
   id: "tourism-commercial",
-  label: "Vendas & Atendimento",
+  label: "Comercial & Vendas",
   icon: Kanban,
   section: "niche",
   items: [
-    { path: "/workspace/turismo", label: "Atendimento", icon: Kanban },
+    { path: "/workspace/turismo", label: "Funil de Vendas", icon: Kanban },
     { path: "/workspace/turismo/oportunidades", label: "Oportunidades", icon: Target },
     { path: "/workspace/turismo/propostas", label: "Propostas", icon: FileText },
     { path: "/workspace/turismo/cotacoes", label: "Cotações", icon: Plane },
@@ -274,9 +295,6 @@ const GROUP_TURISMO_BOARDING: NavGroup = {
   section: "niche",
   items: [
     { path: "/workspace/turismo/embarques", label: "Embarques", icon: Calendar },
-    { path: "/workspace/clientes", label: "Passageiros", icon: Users },
-    { path: "/workspace/turismo/vistos", label: "Vistos", icon: Globe },
-    { path: "/workspace/turismo/documentos-ocr", label: "Documentos", icon: FileText },
   ],
 };
 
@@ -346,7 +364,6 @@ const GROUP_EVENTS_TICKETS: NavGroup = {
   items: [
     { path: "/workspace/eventos", label: "Ingressos", icon: Ticket },
     { path: "/workspace/marketing/banners", label: "Flyers", icon: ImageIcon },
-    { path: "/workspace/clientes", label: "Participantes", icon: Users },
     { path: "/workspace/financeiro/pagamentos", label: "Bilheteria", icon: DollarSign },
   ],
 };
@@ -552,6 +569,7 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
     { path: "/workspace/financeiro/relatorios-canal", label: "DRE", icon: FileSpreadsheet },
     { path: "/workspace/financeiro/afiliados", label: "Afiliados", icon: Coins },
     { path: "/workspace/afiliados/conciliacao", label: "Conciliação Afiliados", icon: Receipt },
+    { path: "/workspace/financeiro/funcionarios", label: "Pagamentos de Funcionários", icon: Users },
     { path: "/workspace/tokens", label: "Tokens", icon: Coins },
     { path: "/workspace/rh/folha", label: "Folha de Pagamento (RH)", icon: Wallet },
   ],
@@ -661,6 +679,8 @@ export function resolveWorkspaceNavigation(
     return [
       GROUP_OVERVIEW,
       GROUP_MASTER_TASKS,
+      GROUP_CRM_CLIENTS,
+      GROUP_TURISMO_CRM,
       GROUP_MASTER_INBOX,
       GROUP_WHATSAPP_AUTOMATIONS,
       GROUP_AGENTIC_INTELLIGENCE,
@@ -708,12 +728,13 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
-        GROUP_MASTER_INBOX,
         GROUP_TURISMO_COMMERCIAL,
+        GROUP_TURISMO_CRM,
         GROUP_TURISMO_OPERATIONS,
         GROUP_TURISMO_BOARDING,
         GROUP_TURISMO_CATALOG,
         GROUP_TURISMO_MARKETING,
+        GROUP_MASTER_INBOX,
         GROUP_WHATSAPP_AUTOMATIONS,
         GROUP_SUPPORT_DESK,
         GROUP_FINANCE_CLEAN,
@@ -728,6 +749,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_GASTRO_CATALOG,
         GROUP_GASTRO_ORDERS,
@@ -747,6 +769,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_SERVICES_AGENDA,
         GROUP_SERVICES_CATALOG,
@@ -766,6 +789,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_LEGAL,
         GROUP_COMMERCIAL_SALES,
@@ -784,6 +808,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_JOBS,
         GROUP_COMMERCIAL_SALES,
@@ -802,6 +827,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_PHARMACY,
         GROUP_COMMERCIAL_SALES,
@@ -820,6 +846,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_WHOLESALE,
         GROUP_COMMERCIAL_SALES,
@@ -838,6 +865,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_RENTAL_EVENTS,
         GROUP_COMMERCIAL_SALES,
@@ -856,6 +884,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_TECH_REPAIR,
         GROUP_COMMERCIAL_SALES,
@@ -874,6 +903,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_PET,
         GROUP_COMMERCIAL_SALES,
@@ -892,6 +922,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_SUPERMARKET,
         GROUP_COMMERCIAL_SALES,
@@ -910,6 +941,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_EVENTS_TICKETS,
         GROUP_COMMERCIAL_SALES,
@@ -928,6 +960,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_VEHICLES,
         GROUP_COMMERCIAL_SALES,
@@ -946,6 +979,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_REAL_ESTATE,
         GROUP_COMMERCIAL_SALES,
@@ -964,6 +998,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_EDUCATION,
         GROUP_COMMERCIAL_SALES,
@@ -982,6 +1017,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_NEWS,
         GROUP_COMMERCIAL_SALES,
@@ -1001,6 +1037,7 @@ export function resolveWorkspaceNavigation(
       rawGroups = [
         GROUP_OVERVIEW,
         GROUP_MASTER_TASKS,
+        GROUP_CRM_CLIENTS,
         GROUP_MASTER_INBOX,
         GROUP_RETAIL_CATALOG,
         GROUP_RETAIL_SALES,
@@ -1031,6 +1068,9 @@ export function resolveWorkspaceNavigation(
       if (
         group.id === "overview" ||
         group.id === "master-tasks" ||
+        group.id === "crm-clients" ||
+        group.id === "tourism-crm" ||
+        group.id === "events-tickets" ||
         group.id === "master-inbox" ||
         group.id === "intelligence-squads" ||
         group.id === "support-desk" ||
@@ -1444,9 +1484,17 @@ const MASTER_PILLAR_DEFINITIONS: MasterPillarDefinition[] = [
     id: "atendimento",
     label: "Atendimento & SAC",
     shortLabel: "Atendimento",
-    description: "Conversas, WhatsApp, clientes e relacionamento",
+    description: "Conversas, WhatsApp e suporte",
     icon: MessageSquare,
     groupIds: ["master-inbox", "whatsapp-automations"],
+  },
+  {
+    id: "crm",
+    label: "CRM & Clientes",
+    shortLabel: "Clientes",
+    description: "Carteira de clientes, histórico e relacionamento",
+    icon: Users,
+    groupIds: ["crm-clients", "tourism-crm"],
   },
   {
     id: "comercial",
@@ -1463,11 +1511,18 @@ const MASTER_PILLAR_DEFINITIONS: MasterPillarDefinition[] = [
       "services-agenda",
       "legal",
       "real-estate",
-      "events-tickets",
       "vehicles",
       "wholesale",
       "donations-captacao",
     ],
+  },
+  {
+    id: "eventos",
+    label: "Eventos & Ingressos",
+    shortLabel: "Eventos",
+    description: "Gestão de eventos, ingressos e bilheteria",
+    icon: Ticket,
+    groupIds: ["events-tickets"],
   },
   {
     id: "catalogo",
@@ -1556,10 +1611,11 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 > = {
   // Varejo, E-commerce, Supermercado, Farmácia & Atacado (Padrão Mercado Livre / Shopify / VTEX / Bling)
   retail: {
-    order: ["overview", "comercial", "catalogo", "logistica", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "catalogo", "logistica", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Rotina", shortLabel: "Painel", description: "Visão executiva, tarefas, agenda e indicadores" },
       comercial: { label: "Vendas & PDV", shortLabel: "Vendas", description: "Pedidos, frente de caixa, orçamentos, funil B2B e trocas/devoluções", icon: ShoppingBag },
+      crm: { label: "Carteira de Clientes", shortLabel: "Clientes", description: "Base de clientes, histórico de compras, LTV e fidelidade", icon: Users },
       catalogo: { label: "Catálogo & Estoque", shortLabel: "Catálogo", description: "Produtos, grades, lotes/validade, curva ABC, vitrine e campanhas", icon: Package },
       logistica: { label: "Logística & Expedição", shortLabel: "Logística", description: "Separação, romaneio, fretes, pontos PUDO e frota", icon: Truck },
       atendimento: { label: "Atendimento & SAC", shortLabel: "Atendimento", description: "Conversas, WhatsApp, clientes e relacionamento", icon: MessageSquare },
@@ -1571,10 +1627,11 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Gastronomia & Delivery (Padrão iFood Partner / 99Food / Toast)
   gastronomy: {
-    order: ["overview", "comercial", "catalogo", "logistica", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "catalogo", "logistica", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Turno", shortLabel: "Turno", description: "Visão do turno, metas do dia e rotina da operação" },
       comercial: { label: "Pedidos & KDS", shortLabel: "Pedidos", description: "Gestor de pedidos, monitor KDS, mesas, comandas e PDV", icon: UtensilsCrossed },
+      crm: { label: "Clientes & Fidelidade", shortLabel: "Clientes", description: "Base de clientes, fidelidade, preferências e aniversários", icon: Users },
       catalogo: { label: "Cardápio & Insumos", shortLabel: "Cardápio", description: "Produtos, complementos, ficha técnica, receitas e estoque", icon: ChefHat },
       logistica: { label: "Despacho & Entregas", shortLabel: "Despacho", description: "Expedição, romaneio, frota e gestão de entregadores", icon: Truck },
       atendimento: { label: "Atendimento & Avaliações", shortLabel: "Atendimento", description: "Chat com clientes, WhatsApp, CRM e avaliações", icon: MessageSquare },
@@ -1586,12 +1643,13 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Beleza, Estética, Bem-Estar & Clínicas (Padrão Belasis / Avec / Trinks / Doctoralia)
   services: {
-    order: ["overview", "comercial", "catalogo", "atendimento", "rh", "logistica", "financeiro", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "catalogo", "atendimento", "rh", "logistica", "financeiro", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Recepção", shortLabel: "Painel", description: "Indicadores diários, ocupação da agenda e tarefas" },
       comercial: { label: "Agenda & Recepção", shortLabel: "Agenda", description: "Mapa de horários, fila de espera, salas e comandas/PDV", icon: Calendar },
+      crm: { label: "Carteira de Clientes", shortLabel: "Clientes", description: "Histórico de procedimentos, prontuários e retornos", icon: Users },
       catalogo: { label: "Pacotes & Serviços", shortLabel: "Serviços", description: "Procedimentos, pacotes de sessões, anamnese e vitrine", icon: HeartPulse },
-      atendimento: { label: "Clientes & Fidelidade", shortLabel: "Clientes", description: "CRM, lembretes de retorno, WhatsApp e avaliações", icon: MessageSquare },
+      atendimento: { label: "Clientes & Fidelidade", shortLabel: "Atendimento", description: "Lembretes de retorno, WhatsApp e avaliações", icon: MessageSquare },
       rh: { label: "Profissionais & Comissões", shortLabel: "Equipe", description: "Especialistas, escalas de atendimento, rateio e RH", icon: Users },
       logistica: { label: "Estoque & Insumos", shortLabel: "Insumos", description: "Consumo técnico por atendimento, revenda e compras", icon: Boxes },
       financeiro: { label: "Financeiro & Fiscal", shortLabel: "Financeiro", description: "Caixa, repasse de comissões, recebíveis e NFS-e", icon: Banknote },
@@ -1601,13 +1659,14 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Turismo, Agências & Operadoras (Padrão Cadastur / Sabre / Schultz / Monde)
   tourism: {
-    order: ["overview", "comercial", "logistica", "catalogo", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "logistica", "catalogo", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Operação", shortLabel: "Painel", description: "Radar executivo, próximas saídas e tarefas da agência" },
       comercial: { label: "Comercial & Cotação", shortLabel: "Cotação", description: "Funil CRM, oportunidades, propostas Studio, cotações e aéreo", icon: Compass },
+      crm: { label: "Carteira de Viajantes", shortLabel: "Viajantes", description: "Base de passageiros, titulares, histórico de viagens e preferências", icon: Users },
       logistica: { label: "Operações & Embarques", shortLabel: "Embarques", description: "Viagens/saídas, rooming list, check-in QR, vouchers e frota", icon: Bus },
       catalogo: { label: "Catálogo & Tarifários", shortLabel: "Roteiros", description: "Roteiros, pacotes, hotéis, receptivos, fornecedores e contratos", icon: Plane },
-      atendimento: { label: "Atendimento & Pós-Venda", shortLabel: "Atendimento", description: "Inbox viajantes, WhatsApp, passageiros e avaliações", icon: MessageSquare },
+      atendimento: { label: "Atendimento & SAC", shortLabel: "Atendimento", description: "Inbox viajantes, WhatsApp e suporte rápido", icon: MessageSquare },
       suporte: { label: "SAC & Reacomodação", shortLabel: "SAC", description: "Incidentes em viagens, reacomodação, assessoria de vistos e LGPD", icon: LifeBuoy },
       financeiro: { label: "Financeiro & Câmbio", shortLabel: "Financeiro", description: "Fluxo de caixa, comissões, bilhetagem, borderô e fiscal", icon: Banknote },
       rh: { label: "Equipe & Guias", shortLabel: "Guias & RH", description: "Agentes de viagem, guias credenciados, motoristas e comissões", icon: Users },
@@ -1617,12 +1676,13 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Jurídico & Advocacia (Padrão Astrea / Jusbrasil / Projuris)
   legal: {
-    order: ["overview", "comercial", "logistica", "atendimento", "catalogo", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "logistica", "atendimento", "catalogo", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Pauta", shortLabel: "Painel", description: "Visão da banca, prazos críticos e tarefas jurídicas" },
       comercial: { label: "Processos & Casos", shortLabel: "Processos", description: "Processos JUS, casos consultivos, licitações e contratos", icon: Scale },
+      crm: { label: "Clientes & Partes", shortLabel: "Clientes", description: "Base de clientes, partes contrárias, advogados e contatos", icon: Users },
       logistica: { label: "Agenda & Prazos", shortLabel: "Prazos", description: "Audiências, diligências, prazos processuais e intimações", icon: Calendar },
-      atendimento: { label: "Clientes & Assistidos", shortLabel: "Clientes", description: "Atendimento jurídico, propostas de honorários, NDAs e LGPD", icon: MessageSquare },
+      atendimento: { label: "Clientes & Assistidos", shortLabel: "Atendimento", description: "Atendimento jurídico, propostas de honorários, NDAs e LGPD", icon: MessageSquare },
       catalogo: { label: "Acervo & Minutas", shortLabel: "Acervo", description: "Áreas de atuação, peças, pareceres e portal institucional", icon: FileText },
       financeiro: { label: "Honorários & Financeiro", shortLabel: "Honorários", description: "Honorários contratuais/sucumbenciais, custas e fiscal", icon: Banknote },
       rh: { label: "Equipe & Correspondentes", shortLabel: "Advogados", description: "Sócios, advogados associados, correspondentes e rateio", icon: Briefcase },
@@ -1633,11 +1693,12 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Imobiliário (Padrão QuintoAndar / Kenlo / Loft)
   real_estate: {
-    order: ["overview", "catalogo", "comercial", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "catalogo", "comercial", "crm", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Carteira", shortLabel: "Painel", description: "VGV, locações ativas, visitas do dia e tarefas" },
       catalogo: { label: "Carteira de Imóveis", shortLabel: "Imóveis", description: "Imóveis para venda/locação, controle de chaves e vitrine", icon: Building2 },
       comercial: { label: "Comercial & Propostas", shortLabel: "Comercial", description: "Funil de visitas, propostas, captação e contratos digitais", icon: Kanban },
+      crm: { label: "Carteira de Clientes", shortLabel: "Clientes", description: "Compradores, proprietários, locatários e fiadores", icon: Users },
       logistica: { label: "Vistorias & Manutenções", shortLabel: "Vistorias", description: "Laudos de vistoria, reparos, ordens de serviço e agenda", icon: Wrench },
       atendimento: { label: "Atendimento & Proprietários", shortLabel: "Atendimento", description: "Inquilinos, proprietários, interessados e WhatsApp", icon: MessageSquare },
       financeiro: { label: "Financeiro & Repasses", shortLabel: "Repasses", description: "Aluguéis, repasses a proprietários, comissões e DIMOB", icon: Banknote },
@@ -1648,22 +1709,24 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Locação de Bens, Espaços & Temporada
   rental: {
-    order: ["overview", "catalogo", "comercial", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "catalogo", "comercial", "crm", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Ocupação", shortLabel: "Painel", description: "Taxa de ocupação, retiradas/devoluções de hoje e rotina" },
       catalogo: { label: "Acervo & Disponibilidade", shortLabel: "Acervo", description: "Itens para locação, espaços, calendário e tabelas", icon: Building2 },
       comercial: { label: "Reservas & Contratos", shortLabel: "Reservas", description: "Orçamentos, reservas, caução e contratos de locação", icon: Calendar },
+      crm: { label: "Carteira de Locatários", shortLabel: "Clientes", description: "Base de clientes, contratos e histórico de locações", icon: Users },
       logistica: { label: "Check-in, Retirada & Vistoria", shortLabel: "Vistorias", description: "Entrega/devolução de equipamentos, laudos e manutenção", icon: Wrench },
-      atendimento: { label: "Locatários & Atendimento", shortLabel: "Clientes", description: "Suporte ao locatário, WhatsApp e avaliações", icon: MessageSquare },
+      atendimento: { label: "Locatários & Atendimento", shortLabel: "Atendimento", description: "Suporte ao locatário, WhatsApp e avaliações", icon: MessageSquare },
       financeiro: { label: "Financeiro & Cauções", shortLabel: "Financeiro", description: "Faturamento de diárias, garantias, caixa e recibos", icon: Banknote },
     },
   },
 
   // Supermercado & Hortifruti
   supermarket: {
-    order: ["overview", "comercial", "catalogo", "logistica", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "catalogo", "logistica", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
     overrides: {
       comercial: { label: "Frente de Caixa & Pedidos", shortLabel: "PDV & Vendas", description: "Caixas rápidos, pedidos online, pesagem e separação", icon: ShoppingCart },
+      crm: { label: "Clube & Clientes", shortLabel: "Clientes", description: "Base de clientes do clube de descontos e fidelidade", icon: Users },
       catalogo: { label: "Gôndolas, Lotes & Encartes", shortLabel: "Gôndolas", description: "Produtos, perecíveis, controle de validade e tabloides", icon: Package },
       logistica: { label: "Expedição & Entregas", shortLabel: "Entregas", description: "Picking de supermercado, romaneio e entregadores", icon: Truck },
       financeiro: { label: "Financeiro & Fiscal", shortLabel: "Financeiro", description: "Fechamento de caixas, NFC-e/NF-e, DRE e fornecedores", icon: Banknote },
@@ -1672,9 +1735,10 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Farmácia & Drogaria
   pharmacy: {
-    order: ["overview", "comercial", "catalogo", "logistica", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "catalogo", "logistica", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
     overrides: {
       comercial: { label: "Balcão, Receitas & PDV", shortLabel: "Balcão", description: "Frente de caixa farmacêutico, retenção de receitas e pedidos", icon: HeartPulse },
+      crm: { label: "Pacientes & Clientes", shortLabel: "Clientes", description: "Base de pacientes, fidelidade e receituários contínuos", icon: Users },
       catalogo: { label: "Medicamentos & Lotes", shortLabel: "Farmácia", description: "Princípios ativos, psicotrópicos, lotes/validade e perfumaria", icon: Package },
       logistica: { label: "Tele-Entrega & Estoque", shortLabel: "Entrega", description: "Despacho rápido de medicamentos, motoboys e reposição", icon: Truck },
       suporte: { label: "Anvisa, SNGPC & Qualidade", shortLabel: "Conformidade", description: "Rastreabilidade sanitária, farmacovigilância e pós-venda", icon: ShieldCheck },
@@ -1683,9 +1747,10 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Atacado & Distribuidora B2B
   wholesale: {
-    order: ["overview", "comercial", "catalogo", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "catalogo", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       comercial: { label: "Comercial B2B & Cotações", shortLabel: "Vendas B2B", description: "Pedidos em lote, carteira B2B, orçamentos e licitações", icon: Briefcase },
+      crm: { label: "Carteira B2B & Clientes", shortLabel: "Clientes B2B", description: "Compradores corporativos, limites de crédito e contatos", icon: Users },
       catalogo: { label: "Tabelas, Grades & Atacado", shortLabel: "Atacado", description: "Tabelas escalonadas por volume, caixas master e estoque", icon: Boxes },
       logistica: { label: "Romaneio, Cargas & Frota", shortLabel: "Cargas", description: "Separação WMS, cubagem, manifesto de carga e transportadoras", icon: Truck },
       financeiro: { label: "Faturamento, Boletos & NF-e", shortLabel: "Faturamento", description: "Análise de crédito B2B, faturas, NF-e em lote e DRE", icon: Banknote },
@@ -1695,10 +1760,11 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Automotivo, Veículos & Mobilidade
   vehicles: {
-    order: ["overview", "comercial", "catalogo", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "catalogo", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Pátio", shortLabel: "Painel", description: "Giro de pátio, OS em andamento e indicadores" },
       comercial: { label: "Vendas, Propostas & OS", shortLabel: "Comercial", description: "Negociações, avaliação de troca, financiamento e contratos", icon: Car },
+      crm: { label: "Carteira de Clientes", shortLabel: "Clientes", description: "Proprietários, compradores e interessados em veículos", icon: Users },
       catalogo: { label: "Estoque de Veículos & Peças", shortLabel: "Pátio", description: "Veículos em estoque, autopeças, vistorias e classificados", icon: Package },
       logistica: { label: "Frota, Despacho & Revisões", shortLabel: "Frota", description: "Movimentação de frota, condutores, preparação e entrega", icon: Truck },
       financeiro: { label: "Financeiro & Repasses", shortLabel: "Financeiro", description: "Fluxo de caixa, consignados, repasses, NF-e e DRE", icon: Banknote },
@@ -1708,24 +1774,26 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Assistência Técnica & Oficina
   tech_repair: {
-    order: ["overview", "logistica", "comercial", "catalogo", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "logistica", "comercial", "crm", "catalogo", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Bancada", shortLabel: "Bancada", description: "Fila de bancada, SLA de reparos e metas técnicas" },
       logistica: { label: "Ordens de Serviço & Bancada", shortLabel: "OS & Reparo", description: "Abertura de OS, checklists de entrada, laudos e status", icon: Wrench },
       comercial: { label: "Orçamentos & Balcão PDV", shortLabel: "Orçamentos", description: "Aprovação de orçamentos, venda de acessórios e frente de caixa", icon: FileSpreadsheet },
+      crm: { label: "Carteira de Clientes", shortLabel: "Clientes", description: "Proprietários de aparelhos, empresas conveniadas e contatos", icon: Users },
       catalogo: { label: "Peças, Componentes & Serviços", shortLabel: "Peças", description: "Tabela de mão de obra, estoque de peças e garantias", icon: Boxes },
-      atendimento: { label: "Clientes & Avisos WhatsApp", shortLabel: "Clientes", description: "Avisos de aparelho pronto, atendimento e pós-reparo", icon: MessageSquare },
+      atendimento: { label: "Clientes & Avisos WhatsApp", shortLabel: "Atendimento", description: "Avisos de aparelho pronto, atendimento e pós-reparo", icon: MessageSquare },
       suporte: { label: "Garantias & RMA", shortLabel: "Garantias", description: "Retornos em garantia, controle de qualidade e termos", icon: ShieldCheck },
     },
   },
 
   // Pet Shop & Clínica Veterinária
   pet: {
-    order: ["overview", "comercial", "catalogo", "atendimento", "rh", "logistica", "financeiro", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "comercial", "crm", "catalogo", "atendimento", "rh", "logistica", "financeiro", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       comercial: { label: "Agenda Banho/Tosa & Clínica", shortLabel: "Agenda Pet", description: "Mapa de banho e tosa, consultas veterinárias e PDV", icon: Dog },
+      crm: { label: "Tutores & Famílias", shortLabel: "Tutores", description: "Base de tutores, múltiplos pets e preferências de cuidado", icon: Users },
       catalogo: { label: "Pet Shop, Vacinas & Pacotes", shortLabel: "Pet Shop", description: "Rações, medicamentos, clubes de banho e prontuários", icon: Package },
-      atendimento: { label: "Tutores & Alertas de Vacina", shortLabel: "Tutores", description: "Ficha dos pets, carteira de vacinação e WhatsApp", icon: MessageSquare },
+      atendimento: { label: "Tutores & Alertas de Vacina", shortLabel: "Atendimento", description: "Ficha dos pets, carteira de vacinação e WhatsApp", icon: MessageSquare },
       rh: { label: "Veterinários & Groomers", shortLabel: "Equipe Pet", description: "Banhistas, tosadores, veterinários e comissões", icon: Users },
       logistica: { label: "Táxi Dog & Estoque", shortLabel: "Táxi Dog", description: "Busca e entrega de pets, rotas e reposição de estoque", icon: Truck },
     },
@@ -1733,10 +1801,12 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Eventos, Ingressos & Produções
   events: {
-    order: ["overview", "comercial", "catalogo", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "eventos", "comercial", "crm", "catalogo", "logistica", "atendimento", "financeiro", "rh", "suporte", "inteligencia", "configuracoes"],
     overrides: {
+      eventos: { label: "Eventos & Ingressos", shortLabel: "Eventos", description: "Gestão de eventos, ingressos e bilheteria", icon: Ticket },
       comercial: { label: "Bilheteria, Lotes & PDV", shortLabel: "Bilheteria", description: "Venda de ingressos, virada de lotes, listas VIP e mesas", icon: Ticket },
-      catalogo: { label: "Eventos, Atrações & Vitrine", shortLabel: "Eventos", description: "Programação, páginas de evento, patrocinadores e cupons", icon: Calendar },
+      crm: { label: "Participantes & Clientes", shortLabel: "Clientes", description: "Base de compradores de ingressos e público VIP", icon: Users },
+      catalogo: { label: "Eventos, Atrações & Vitrine", shortLabel: "Atrações", description: "Programação, páginas de evento, patrocinadores e cupons", icon: Calendar },
       logistica: { label: "Portaria, Check-in & Produção", shortLabel: "Portaria", description: "Validação de QR Code, credenciamento, fornecedores e staff", icon: UserCheck },
       financeiro: { label: "Borderô & Financeiro", shortLabel: "Borderô", description: "Fechamento de borderô, repasses de bilheteria, bar e DRE", icon: Banknote },
       rh: { label: "Promoters, Staff & Equipe", shortLabel: "Promoters", description: "Comissões de promoters/afiliados, produtores e escala", icon: Users },
@@ -1745,11 +1815,12 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Educação, Cursos & Treinamentos
   education: {
-    order: ["overview", "catalogo", "comercial", "atendimento", "rh", "logistica", "financeiro", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "catalogo", "comercial", "crm", "atendimento", "rh", "logistica", "financeiro", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       catalogo: { label: "Cursos, Turmas & Conteúdo", shortLabel: "Cursos", description: "Grade curricular, turmas, aulas, materiais e certificados", icon: GraduationCap },
       comercial: { label: "Matrículas & Captação", shortLabel: "Matrículas", description: "Funil de matrículas, bolsas, propostas e contratos", icon: Kanban },
-      atendimento: { label: "Secretaria & Alunos", shortLabel: "Alunos", description: "Atendimento ao aluno, comunicados, WhatsApp e avaliações", icon: MessageSquare },
+      crm: { label: "Alunos & Responsáveis", shortLabel: "Alunos", description: "Base de alunos matriculados, responsáveis e histórico acadêmico", icon: Users },
+      atendimento: { label: "Secretaria & Alunos", shortLabel: "Atendimento", description: "Atendimento ao aluno, comunicados, WhatsApp e avaliações", icon: MessageSquare },
       rh: { label: "Professores & Coordenação", shortLabel: "Docentes", description: "Corpo docente, hora-aula, ponto e repasses", icon: Users },
       financeiro: { label: "Mensalidades & Financeiro", shortLabel: "Mensalidades", description: "Carnês, recorrência, inadimplência, caixa e NFS-e", icon: Banknote },
     },
@@ -1757,22 +1828,24 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
 
   // Portal de Notícias, Mídia & Creators
   news: {
-    order: ["overview", "catalogo", "comercial", "atendimento", "inteligencia", "financeiro", "rh", "logistica", "suporte", "configuracoes"],
+    order: ["overview", "catalogo", "comercial", "crm", "atendimento", "inteligencia", "financeiro", "rh", "logistica", "suporte", "configuracoes"],
     overrides: {
       catalogo: { label: "Redação, Pautas & Portal", shortLabel: "Redação", description: "Matérias, editorias, colunistas, stories e capa do portal", icon: Newspaper },
       comercial: { label: "Publicidade & Patrocínios", shortLabel: "Mídia Kit", description: "Venda de espaços publicitários, publiposts, propostas e contratos", icon: Megaphone },
-      atendimento: { label: "Leitores & Comunidade", shortLabel: "Audiência", description: "Comentários, denúncias, newsletters e WhatsApp", icon: MessageSquare },
+      crm: { label: "Assinantes & Clientes", shortLabel: "Assinantes", description: "Base de assinantes do portal, anunciantes e parceiros", icon: Users },
+      atendimento: { label: "Leitores & Comunidade", shortLabel: "Atendimento", description: "Comentários, denúncias, newsletters e WhatsApp", icon: MessageSquare },
       rh: { label: "Jornalistas & Colunistas", shortLabel: "Redatores", description: "Equipe editorial, freelancers, pautas e pagamentos", icon: Users },
     },
   },
 
   // Recrutamento, RH & Agências de Emprego
   jobs: {
-    order: ["overview", "rh", "comercial", "atendimento", "catalogo", "financeiro", "logistica", "suporte", "inteligencia", "configuracoes"],
+    order: ["overview", "rh", "comercial", "crm", "atendimento", "catalogo", "financeiro", "logistica", "suporte", "inteligencia", "configuracoes"],
     overrides: {
       rh: { label: "Vagas & Triagem ATS", shortLabel: "Vagas ATS", description: "Pipeline de candidatos, vagas abertas, currículo e entrevistas", icon: Briefcase },
       comercial: { label: "Empresas Clientes & R&S", shortLabel: "Empresas", description: "Prospecção B2B, propostas de hunting e contratos de R&S", icon: Kanban },
-      atendimento: { label: "Candidatos & Talentos", shortLabel: "Talentos", description: "Comunicação com candidatos, banco de talentos e WhatsApp", icon: MessageSquare },
+      crm: { label: "Empresas & Candidatos", shortLabel: "Contatos", description: "Empresas contratantes e banco de talentos cadastrados", icon: Users },
+      atendimento: { label: "Candidatos & Talentos", shortLabel: "Atendimento", description: "Comunicação com candidatos, banco de talentos e WhatsApp", icon: MessageSquare },
       catalogo: { label: "Portal de Carreiras & Testes", shortLabel: "Portal", description: "Página de carreiras, pacotes de R&S e divulgação", icon: Globe },
       financeiro: { label: "Honorários R&S & Financeiro", shortLabel: "Financeiro", description: "Faturamento de vagas fechadas, folha BPO e NFS-e", icon: Banknote },
     },

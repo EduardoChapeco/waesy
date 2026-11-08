@@ -144,27 +144,51 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     };
   });
 
-  const normalizedItinerary = (proposal.itinerary || []).map((d: any, idx: number) => ({
-    ...d,
-    day: d.day || `Dia ${d.day_number || idx + 1}`,
-    day_number: d.day_number || idx + 1,
-    city: d.city || d.location || "",
-    meals: Array.isArray(d.meals) ? d.meals : d.included_meals || [],
-    images:
-      Array.isArray(d.images) && d.images.length > 0
-        ? d.images
-        : d.image_url
-          ? [d.image_url]
-          : [],
-  }));
+  const normalizedItinerary = (proposal.itinerary || []).map((d: any, idx: number) => {
+    const rawMeals = Array.isArray(d.meals)
+      ? d.meals
+      : Array.isArray(d.included_meals)
+        ? d.included_meals
+        : typeof d.meals === "string"
+          ? [d.meals]
+          : typeof d.included_meals === "string"
+            ? [d.included_meals]
+            : [];
+    return {
+      ...d,
+      day: d.day || `Dia ${d.day_number || idx + 1}`,
+      day_number: d.day_number || idx + 1,
+      city: d.city || d.location || "",
+      location: d.location || d.city || "",
+      meals: rawMeals,
+      included_meals: rawMeals,
+      images:
+        Array.isArray(d.images) && d.images.length > 0
+          ? d.images
+          : d.image_url
+            ? [d.image_url]
+            : [],
+    };
+  });
 
   const normalizedTransfers = (proposal.transfers || []).map((t: any) => ({
     ...t,
-    description: t.description || t.type || "Transfer Aeroporto / Hotel",
+    description: t.description || t.route || t.type || "Transfer Aeroporto / Hotel",
     type: t.type === "shared" || t.type === "Regular" ? "shared" : "private",
-    vehicle: t.vehicle || t.vehicle_type || "Executivo",
+    vehicle:
+      t.vehicle ||
+      t.vehicle_type ||
+      (typeof t.type === "string" && (t.type.includes("Ônibus") || t.type.includes("Van"))
+        ? t.type
+        : "Executivo"),
     date: t.date || "",
-    notes: t.notes || "",
+    notes: [
+      t.notes,
+      t.pickup_time ? `Embarque: ${t.pickup_time}` : null,
+      t.dropoff_time ? `Desembarque: ${t.dropoff_time}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
     price: Number(t.price ?? (t.price_cents ? t.price_cents / 100 : 0)),
   }));
 

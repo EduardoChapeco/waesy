@@ -29,10 +29,10 @@ describe("Platform Route Inventory (446 Routes)", () => {
     (f) => !f.includes(".test.") && !f.includes(".spec.")
   );
 
-  it("audits total platform route inventory to match exactly 451 route source files", () => {
-    // Inventory Master canonical route source file count (includes api.v1.ingest endpoints)
-    expect(allRouteSourceFiles.length).toBe(451);
-    expect(routePages.length).toBe(449);
+  it("audits total platform route inventory to match exactly 452 route source files", () => {
+    // Inventory Master canonical route source file count (includes api.v1.ingest and api.v1.extensions endpoints)
+    expect(allRouteSourceFiles.length).toBe(452);
+    expect(routePages.length).toBe(450);
   });
 
   it("verifies workspace operational management routes (190 operational routes + receipt route)", () => {

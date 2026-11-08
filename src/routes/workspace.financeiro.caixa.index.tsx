@@ -370,12 +370,12 @@ function CashRegisterManagerPage() {
  />
 
   {/* ── Seletor Soberano de Terminais Ativos (Multi-Caixas / PDV) ── */}
-  {activeRegisters && activeRegisters.length > 1 && (
+  {activeRegisters && activeRegisters.length > 0 && (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-lg p-3">
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-area-carousel pb-1 text-xs">
         <span className="text-muted-foreground font-semibold text-xs shrink-0 flex items-center gap-2 mr-1">
           <MonitorCheck className="size-4 text-primary" />
-          <span>Terminais Abertos ({activeRegisters.length}):</span>
+          <span>Terminais ({activeRegisters.length}):</span>
         </span>
         {activeRegisters.map((term: any) => {
           const isSelected = (selectedRegisterId || register?.id) === term.id;
@@ -402,16 +402,21 @@ function CashRegisterManagerPage() {
           );
         })}
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => setIsOpenModalOpen(true)}
-        className="h-11 min-h-11 sm:h-9 text-xs font-bold rounded-lg shrink-0 gap-2 cursor-pointer"
-      >
-        <Plus className="size-3.5 text-primary" />
-        <span>Abrir Novo Terminal</span>
-      </Button>
+      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+        <span className="text-xs text-muted-foreground hidden lg:inline font-medium">
+          Total em Gavetas: <strong className="text-foreground font-mono">{formatMoney(activeRegisters.reduce((acc: number, r: any) => acc + (r.cash_balance_cents || 0), 0))}</strong>
+        </span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setIsOpenModalOpen(true)}
+          className="h-11 min-h-11 sm:h-9 text-xs font-bold rounded-lg shrink-0 gap-2 cursor-pointer"
+        >
+          <Plus className="size-3.5 text-primary" />
+          <span>Abrir Terminal</span>
+        </Button>
+      </div>
     </div>
   )}
 
@@ -431,7 +436,9 @@ function CashRegisterManagerPage() {
     <div>
      <div className="flex items-center gap-2">
       <h2 className="text-base font-bold text-foreground">
-       {isBoxOpen ? "Turno Atual em Operação" : "Caixa Fechado"}
+       {isBoxOpen
+        ? `${register?.terminalName || (register?.notes?.includes("[Terminal:") ? register.notes.match(/\[Terminal:\s*([^\]]+)\]/)?.[1] : "Caixa Balcão")}`
+        : "Caixa Fechado"}
       </h2>
       <Badge
        variant={isBoxOpen ? "default" : "secondary"}
@@ -1150,6 +1157,26 @@ function CashRegisterManagerPage() {
  className="h-11 min-h-11 text-sm rounded-lg"
  />
  </FormControl>
+ <div className="flex flex-wrap items-center gap-2 pt-1">
+ {[
+   "Balcão 01",
+   "Balcão 02",
+   "Drive-Thru",
+   "Garçom Salão",
+   "Caixa Financeiro",
+   "Fundo Diretoria",
+   "Caixa Geral",
+ ].map((preset) => (
+   <button
+     key={preset}
+     type="button"
+     onClick={() => openForm.setValue("terminalName", preset)}
+     className="px-2 py-1 text-xs rounded-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+   >
+     {preset}
+   </button>
+ ))}
+ </div>
  <FormMessage className="text-xs" />
  </FormItem>
  )}
@@ -1171,6 +1198,18 @@ function CashRegisterManagerPage() {
  autoFocus
  />
  </FormControl>
+ <div className="flex flex-wrap items-center gap-2 pt-1">
+ {["0,00", "50,00", "100,00", "200,00", "500,00"].map((preset) => (
+   <button
+     key={preset}
+     type="button"
+     onClick={() => openForm.setValue("initialBalance", preset)}
+     className="px-2 py-1 text-xs rounded-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/50 transition-colors cursor-pointer font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+   >
+     R$ {preset}
+   </button>
+ ))}
+ </div>
  <FormMessage className="text-xs" />
  </FormItem>
  )}

@@ -124,7 +124,7 @@ export const Route = createFileRoute("/workspace/turismo/")({
         listTravelSaleFinancialSheets({ data: {} }).catch(() => []),
         listCustomers({ data: {} }).catch(() => []),
         listTeamMembers().catch(() => []),
-        store?.id ? listKanbanStages({ data: { storeId: store.id, module: "turismo" } }).catch(() => []) : [],
+        store?.id ? listKanbanStages({ data: { storeId: store.id, module: "turismo", niche: "turismo", department: "comercial" } }).catch(() => []) : [],
       ]);
       return {
         leads: leadsRes || [],
@@ -276,7 +276,7 @@ export default function WorkspaceTurismoCockpitPage() {
   const storeId = store?.id || "";
 
   const [stages, setStages] = useState<any[]>(() => {
-    if (kanbanStages && kanbanStages.length > 0) {
+    if (kanbanStages && kanbanStages.length > 0 && !kanbanStages.some((s: any) => s.stage_key === "todo")) {
       return kanbanStages.map((s: any) => ({
         id: s.stage_key,
         title: s.title,
@@ -986,9 +986,19 @@ export default function WorkspaceTurismoCockpitPage() {
 
     filteredLeads.forEach((l: any) => {
       let stageKey = l.status || "new";
-      if (l.status === "completed" || l.status === "converted") stageKey = "won";
+      if (stageKey === "todo") stageKey = "new";
+      else if (stageKey === "in_progress") stageKey = "qualified";
+      else if (stageKey === "review") stageKey = "negotiation";
+      else if (stageKey === "done" || l.status === "completed" || l.status === "converted") stageKey = "won";
       else if (l.status === "quoted") stageKey = "proposal";
       else if (l.status === "contacted") stageKey = "qualified";
+
+      if (!visibleStages.some((s: any) => s.id === stageKey)) {
+        const fallbackStage = visibleStages[0]?.id || "new";
+        if (!map[fallbackStage]) map[fallbackStage] = [];
+        map[fallbackStage].push(l);
+        return;
+      }
 
       if (!map[stageKey]) {
         map[stageKey] = [];

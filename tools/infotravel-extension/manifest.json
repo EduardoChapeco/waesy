@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Waesy Sync • Extensão de Operadoras de Turismo (Infotravel)",
-  "version": "1.0.0",
-  "description": "Sincronizador inteligente e bilateral de reservas, passageiros e comissões para agências de viagens parceiras Waesy.",
+  "name": "Waesy Sync • Extensão de Operadoras (Infotravel)",
+  "version": "2.1.0",
+  "description": "Sincronizador inteligente e bilateral de cotações, reservas, passageiros e comissões para a agência Excelência Tour e ecossistema Waesy.",
   "permissions": [
     "storage",
     "downloads",
@@ -15,11 +15,13 @@
     "*://*.frt.com.br/*",
     "*://*.schultz.com.br/*",
     "*://*.infotravel.com.br/*",
-    "*://localhost:3333/*"
+    "*://waesy.com.br/*",
+    "*://*.pages.dev/*",
+    "*://localhost:*/*"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Waesy Sync • Extensão de Operadoras"
+    "default_title": "Waesy Sync • Operadoras e Infotravel"
   },
   "background": {
     "service_worker": "background.js"

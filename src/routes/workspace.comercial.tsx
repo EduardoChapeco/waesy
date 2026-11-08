@@ -1329,8 +1329,8 @@ function WorkspaceComercialPage() {
         <Sheet open={Boolean(selectedLead)} onOpenChange={() => setSelectedLead(null)}>
           <SheetContent
             side="right"
-            size="dossier"
-            className="p-0 flex flex-col h-full bg-background border-l border-border/60 overflow-hidden w-full sm:max-w-4xl lg:max-w-5xl"
+            size="70"
+            className="p-0 flex flex-col h-full bg-background border-l border-border/60 overflow-hidden w-full max-sm:inset-0 sm:max-w-4xl md:max-w-5xl lg:sheet-page-70"
           >
             <TourismPipeCardDossier
               lead={selectedLead}

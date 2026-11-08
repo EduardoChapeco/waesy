@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils, Receipt, Megaphone, Lock, Plus, Trash2, Printer, Check } from "lucide-react";
+import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils, Receipt, Megaphone, Lock, Plus, Trash2, Printer, Check, MoreHorizontal } from "lucide-react";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,14 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/state/states";
 import { getCustomer360, updateCustomer, updateCustomerCrm, addCustomerClinicalRecord, grantCustomerStoreCredit, saveTravelerPreferences } from "@/services/crm.functions";
 import { DocumentsPanel } from "@/components/crm/DocumentsPanel";
@@ -22,7 +30,7 @@ import { recordLeadOrCustomerConsent, revokeConsentAction } from "@/services/leg
 import { CANONICAL_LEGAL_POLICIES, type LegalPolicyType, type ConsentRecordItem } from "@/types/legal-consent";
 
 export const Route = createFileRoute("/workspace/clientes/$id")({
-  head: () => ({ meta: [{ title: "Ficha 360° do Cliente | Workspace" }] }),
+  head: () => ({ meta: [{ title: "Ficha do Cliente | Workspace" }] }),
   loader: async ({ params }) => {
     try {
       return await getCustomer360({ data: { customerId: params.id } });
@@ -348,7 +356,7 @@ function CustomerDetailPage() {
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         title={data.profile.name}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Button
               asChild
               variant="outline"
@@ -379,53 +387,6 @@ function CustomerDetailPage() {
               Central do Passageiro
             </Button>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsTravelerModalOpen(true)}
-              className="gap-2 font-bold text-xs min-h-11 cursor-pointer"
-            >
-              <Luggage className="size-3.5 text-primary" />
-              Preferências de Viagem
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportDossierPdf}
-              disabled={isExportingDossier}
-              className="gap-2 font-bold text-xs min-h-11 cursor-pointer"
-            >
-              <FileText className="size-3.5 text-primary" />
-              {isExportingDossier ? "Gerando..." : "Exportar Dossiê 360°"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCreditModalOpen(true)}
-              className="gap-2 font-bold text-xs min-h-11"
-            >
-              <Gift className="size-3.5" />
-              Conceder Crédito
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                toast.success("Link da Ficha 360° copiado!");
-              }}
-              className="gap-2 font-bold text-xs min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Copy className="size-3.5" />
-              Copiar Link
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleToggleBlockCustomer}
-              className={`gap-2 font-bold text-xs min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring ${isCustomerBlocked ? "text-emerald-600 border-emerald-500/30" : "text-destructive border-destructive/30"}`}
-            >
-              <AlertTriangle className="size-3.5" />
-              {isCustomerBlocked ? "Desbloquear" : "Bloquear Cliente"}
-            </Button>
-            <Button
               type="button"
               variant="outline"
               size="sm"
@@ -433,16 +394,74 @@ function CustomerDetailPage() {
               className="gap-2 font-bold text-xs min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Receipt className="size-3.5 text-primary" />
-              Novo Orçamento / Fatura
+              Novo Orçamento
             </Button>
-            <Button
-              size="sm"
-              onClick={() => setIsClinicalModalOpen(true)}
-              className="gap-2 font-bold text-xs min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <HeartPulse className="size-3.5" />
-              Novo Atendimento
-            </Button>
+
+            {/* Menu Suspenso de Ações Secundárias */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 font-bold text-xs min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <MoreHorizontal className="size-4" />
+                  <span>Mais Ações</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 p-1">
+                <DropdownMenuItem
+                  onClick={() => setIsTravelerModalOpen(true)}
+                  className="gap-2 text-xs font-semibold py-2 cursor-pointer"
+                >
+                  <Luggage className="size-4 text-primary" />
+                  Preferências de Viagem
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleExportDossierPdf}
+                  disabled={isExportingDossier}
+                  className="gap-2 text-xs font-semibold py-2 cursor-pointer"
+                >
+                  <FileText className="size-4 text-primary" />
+                  {isExportingDossier ? "Gerando..." : "Exportar Dossiê"}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsCreditModalOpen(true)}
+                  className="gap-2 text-xs font-semibold py-2 cursor-pointer"
+                >
+                  <Gift className="size-4" />
+                  Conceder Crédito
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success("Link da Ficha do Cliente copiado!");
+                  }}
+                  className="gap-2 text-xs font-semibold py-2 cursor-pointer"
+                >
+                  <Copy className="size-4" />
+                  Copiar Link
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsClinicalModalOpen(true)}
+                  className="gap-2 text-xs font-semibold py-2 cursor-pointer"
+                >
+                  <HeartPulse className="size-4" />
+                  Atendimento Clínico
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleToggleBlockCustomer}
+                  className={cn(
+                    "gap-2 text-xs font-semibold py-2 cursor-pointer",
+                    isCustomerBlocked ? "text-emerald-600 focus:text-emerald-600" : "text-destructive focus:text-destructive"
+                  )}
+                >
+                  <AlertTriangle className="size-4" />
+                  {isCustomerBlocked ? "Desbloquear Cliente" : "Bloquear Cliente"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         }
       />

@@ -65,6 +65,7 @@ export function CrudActionsMenu({
   onEdit,
   editUrl,
   onView,
+  viewLabel,
   viewUrl,
   onDuplicate,
   onToggleStatus,
@@ -150,13 +151,13 @@ export function CrudActionsMenu({
             <DropdownMenuItem asChild className="rounded-lg cursor-pointer text-xs font-medium">
               <Link to={viewUrl as never} target="_blank" rel="noopener noreferrer">
                 <Eye className="size-3.5 mr-2 text-muted-foreground" />
-                Ver na Vitrine
+                {viewLabel || "Ver Detalhes"}
               </Link>
             </DropdownMenuItem>
           ) : onView ? (
             <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={onView} className="rounded-lg cursor-pointer text-xs font-medium">
               <Eye className="size-3.5 mr-2 text-muted-foreground" />
-              Ver na Vitrine
+              {viewLabel || "Ver Detalhes"}
             </DropdownMenuItem>
           ) : null}
 

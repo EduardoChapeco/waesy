@@ -112,8 +112,28 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                       )}
                     </div>
                     <div className="flex-1 pb-6">
-                      <h4 className="text-lg font-bold text-slate-900 mb-2">{d.title}</h4>
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <h4 className="text-lg font-bold text-slate-900">{d.title}</h4>
+                        {Boolean(d.city || (d as any).location) && (
+                          <span className="px-2 py-1 rounded bg-slate-100 text-xs font-bold text-slate-600">
+                            {d.city || (d as any).location}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-slate-600 text-sm leading-relaxed">{d.description}</p>
+                      {Array.isArray(d.meals || (d as any).included_meals) &&
+                        (d.meals || (d as any).included_meals).length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {(d.meals || (d as any).included_meals).map((meal: string, mIdx: number) => (
+                              <span
+                                key={mIdx}
+                                className="px-2 py-1 rounded bg-slate-100 text-xs font-semibold text-slate-700"
+                              >
+                                {meal}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                     </div>
                   </div>
                 ))}
@@ -199,7 +219,30 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                   {inc}
                 </li>
               ))}
+              {p.tours?.map((tour: any, tIdx: number) => (
+                <li key={`tour-${tIdx}`} className="flex items-start gap-2 text-sm font-semibold text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-1" />
+                  <span>
+                    {tour.name || tour.title}
+                    {tour.date || tour.duration ? ` (${[tour.date, tour.duration].filter(Boolean).join(" • ")})` : ""}
+                  </span>
+                </li>
+              ))}
             </ul>
+            {vm.hasExcludes && (
+              <div className="mt-6 pt-4 border-t border-slate-200">
+                <h4 className="font-bold text-slate-700 uppercase tracking-wider mb-2 text-xs">
+                  Não Inclui
+                </h4>
+                <ul className="space-y-1">
+                  {p.excludes?.map((exc, eIdx) => (
+                    <li key={eIdx} className="text-xs text-slate-500">
+                      • {exc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>

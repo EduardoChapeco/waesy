@@ -43,6 +43,8 @@ export function useProductEditor(
       if (qStore && qStore.trim()) return qStore.trim();
       const cTenant = getClientActiveTenant();
       if (cTenant && cTenant.trim()) return cTenant.trim();
+      const storedId = window.localStorage.getItem("waesy_active_store_id") || window.localStorage.getItem("active_store_id");
+      if (storedId && storedId.trim()) return storedId.trim();
     }
     return undefined;
   };
@@ -89,15 +91,26 @@ export function useProductEditor(
     semantics?.nicheId === "convenience" ||
     semantics?.nicheId === "grocery";
 
-  const [showcaseMode, setShowcaseModeState] = useState<"standard" | "travel" | "grocery">(
-    isTourismStore ? "travel" : isGroceryStore ? "grocery" : "standard"
+  const isGastronomyStore =
+    semantics?.nicheId === "gastronomy" ||
+    Boolean(nicheCtx?.isFoodBusiness) ||
+    store?.segment === "gastronomy" ||
+    store?.segment === "restaurant" ||
+    store?.segment === "food";
+
+  const [showcaseMode, setShowcaseModeState] = useState<"standard" | "travel" | "grocery" | "restaurant">(
+    isTourismStore ? "travel" : isGroceryStore ? "grocery" : isGastronomyStore ? "restaurant" : "standard"
   );
   const isTravelPackageMode = showcaseMode === "travel";
   const isGroceryMode = showcaseMode === "grocery";
+  const isRestaurantMode = showcaseMode === "restaurant";
+
+  // Conceito do item em gastronomia: preparado na cozinha vs pronto/industrializado
+  const [foodItemConcept, setFoodItemConcept] = useState<"prepared" | "ready">("prepared");
 
   const [activeTab, setActiveTab] = useState(isTourismStore ? "roteiro" : "basico");
 
-  const setShowcaseMode = (mode: "standard" | "travel" | "grocery") => {
+  const setShowcaseMode = (mode: "standard" | "travel" | "grocery" | "restaurant") => {
     setShowcaseModeState(mode);
     if (mode === "travel") {
       setActiveTab("roteiro");
@@ -400,6 +413,7 @@ export function useProductEditor(
           height_cm: isTravelPackageMode ? null : data.height_cm ? Number(data.height_cm) : null,
           length_cm: isTravelPackageMode ? null : data.length_cm ? Number(data.length_cm) : null,
           preparation_time_days: data.preparation_time_days ? Number(data.preparation_time_days) : null,
+          preparation_time_minutes: foodSpecs.preparationTimeMinutes ? Number(foodSpecs.preparationTimeMinutes) : null,
           show_stock_publicly: data.show_stock_publicly ?? false,
           media_urls: effectiveMediaUrls,
           category_ids: data.category_id ? [data.category_id] : [],
@@ -507,6 +521,7 @@ export function useProductEditor(
           height_cm: isTravelPackageMode ? null : data.height_cm ? Number(data.height_cm) : null,
           length_cm: isTravelPackageMode ? null : data.length_cm ? Number(data.length_cm) : null,
           preparation_time_days: data.preparation_time_days ? Number(data.preparation_time_days) : null,
+          preparation_time_minutes: foodSpecs.preparationTimeMinutes ? Number(foodSpecs.preparationTimeMinutes) : null,
           show_stock_publicly: data.show_stock_publicly ?? false,
           media_urls: effectiveMediaUrls,
           category_ids: data.category_id ? [data.category_id] : [],
@@ -599,8 +614,12 @@ export function useProductEditor(
     setShowcaseMode,
     isTravelPackageMode,
     isGroceryMode,
+    isRestaurantMode,
     isTourismStore,
     isGroceryStore,
+    isGastronomyStore,
+    foodItemConcept,
+    setFoodItemConcept,
     travelData,
     setTravelData,
     isImportModalOpen,

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Clock, Plus, Minus, Trash2, MapPin, Layers, Bike, Store, ChevronRight, ShieldCheck, Zap, Truck, Building2, AlertCircle } from 'lucide-react';
+import { Clock, Plus, Minus, Trash2, MapPin, Layers, Bike, Store, ChevronRight, ShieldCheck, Zap, Truck, Building2, AlertCircle, UtensilsCrossed, Package, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,10 +10,10 @@ import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export interface DeliveryRadiusTier {
- id: string;
- radiusKm: number;
- transitTimeMin: number;
- feeCents: number;
+  id: string;
+  radiusKm: number;
+  transitTimeMin: number;
+  feeCents: number;
 }
 
 export interface DeliveryLogisticsConfig {
@@ -28,169 +28,222 @@ export interface DeliveryLogisticsConfig {
   pickupEnabled?: boolean;
   carrierEnabled?: boolean;
   condoClimbFeeCents?: number | null;
+  dispatchDays?: number;
+  dispatchPresetLabel?: string;
 }
 
 const DEFAULT_TIERS: DeliveryRadiusTier[] = [
- { id: "tier-1", radiusKm: 0.5, transitTimeMin: 10, feeCents: 499 },
- { id: "tier-2", radiusKm: 1.0, transitTimeMin: 12, feeCents: 499 },
- { id: "tier-3", radiusKm: 1.5, transitTimeMin: 14, feeCents: 599 },
- { id: "tier-4", radiusKm: 2.0, transitTimeMin: 15, feeCents: 699 },
- { id: "tier-5", radiusKm: 3.0, transitTimeMin: 18, feeCents: 799 },
- { id: "tier-6", radiusKm: 4.5, transitTimeMin: 22, feeCents: 1099 },
- { id: "tier-7", radiusKm: 6.0, transitTimeMin: 28, feeCents: 1399 },
+  { id: "tier-1", radiusKm: 0.5, transitTimeMin: 10, feeCents: 499 },
+  { id: "tier-2", radiusKm: 1.0, transitTimeMin: 12, feeCents: 499 },
+  { id: "tier-3", radiusKm: 1.5, transitTimeMin: 14, feeCents: 599 },
+  { id: "tier-4", radiusKm: 2.0, transitTimeMin: 15, feeCents: 699 },
+  { id: "tier-5", radiusKm: 3.0, transitTimeMin: 18, feeCents: 799 },
+  { id: "tier-6", radiusKm: 4.5, transitTimeMin: 22, feeCents: 1099 },
+  { id: "tier-7", radiusKm: 6.0, transitTimeMin: 28, feeCents: 1399 },
 ];
 
-const PRESETS = [
- { label: "Padrão (15 min)", time: 15 },
- { label: "Rápido / Lanches (10 min)", time: 10 },
- { label: "Pizzas e Forno (25 min)", time: 25 },
- { label: "Pico de Jantar (35 min)", time: 35 },
- { label: "Alta Demanda / Chuva (45 min)", time: 45 },
+const GASTRO_PRESETS = [
+  { label: "Padrão (15 min)", time: 15 },
+  { label: "Rápido / Lanches (10 min)", time: 10 },
+  { label: "Pratos Elaborados (25 min)", time: 25 },
+  { label: "Pico de Horário (35 min)", time: 35 },
+  { label: "Alta Demanda / Chuva (45 min)", time: 45 },
+];
+
+const RETAIL_DISPATCH_PRESETS = [
+  { label: "Envio Imediato (Mesmo dia útil)", days: 0, text: "Pedidos aprovados até às 14h são despachados no mesmo dia." },
+  { label: "1 dia útil (Postagem em até 24h)", days: 1, text: "Separação e postagem nos Correios ou transportadora em até 1 dia útil." },
+  { label: "2 a 3 dias úteis", days: 2, text: "Tempo hábil para separação no estoque e emissão de nota fiscal." },
+  { label: "Sob Encomenda (Produção artesanal)", days: 5, text: "Produto artesanal ou personalizado com prazo de confecção." },
 ];
 
 interface DeliveryTimeAndRadiusMatrixProps {
- value: DeliveryLogisticsConfig;
- onChange: (value: DeliveryLogisticsConfig) => void;
- storeName?: string;
- storeCategory?: string;
- storeLogoUrl?: string;
- storeBannerUrl?: string;
+  value: DeliveryLogisticsConfig;
+  onChange: (value: DeliveryLogisticsConfig) => void;
+  storeName?: string;
+  storeCategory?: string;
+  storeLogoUrl?: string;
+  storeBannerUrl?: string;
+  isGastronomy?: boolean;
+  neighborhoodsSlot?: React.ReactNode;
 }
 
 export function DeliveryTimeAndRadiusMatrix({
- value,
- onChange,
- storeName = "Minha Cozinha & Loja",
- storeCategory = "Gastronomia & Delivery",
- storeLogoUrl,
- storeBannerUrl,
+  value,
+  onChange,
+  storeName = "Minha Cozinha & Loja",
+  storeCategory = "Gastronomia & Delivery",
+  storeLogoUrl,
+  storeBannerUrl,
+  isGastronomy,
+  neighborhoodsSlot,
 }: DeliveryTimeAndRadiusMatrixProps) {
- const [activeTab, setActiveTab] = useState<"operacao" | "preparo" | "modalidades">("operacao");
- const [newRadius, setNewRadius] = useState("");
- const [newTransitTime, setNewTransitTime] = useState("");
- const [newFee, setNewFee] = useState("");
+  const isGastro = isGastronomy ?? (
+    storeCategory?.toLowerCase().includes("gastro") ||
+    storeCategory?.toLowerCase().includes("restaur") ||
+    storeCategory?.toLowerCase().includes("food") ||
+    storeCategory?.toLowerCase().includes("lanche") ||
+    storeCategory?.toLowerCase().includes("pizz") ||
+    storeCategory?.toLowerCase().includes("bar") ||
+    storeCategory?.toLowerCase().includes("cozinha")
+  );
 
- const currentPrepTime = value.basePrepTimeMin || 15;
- const tiers = value.radiusTiers && value.radiusTiers.length > 0 ? value.radiusTiers : DEFAULT_TIERS;
+  const [activeTab, setActiveTab] = useState<"operacao" | "preparo" | "modalidades">("operacao");
+  const [newRadius, setNewRadius] = useState("");
+  const [newTransitTime, setNewTransitTime] = useState("");
+  const [newFee, setNewFee] = useState("");
 
- const handlePrepTimeChange = (delta: number) => {
- const nextTime = Math.max(5, Math.min(120, currentPrepTime + delta));
- onChange({
- ...value,
- basePrepTimeMin: nextTime,
- activePresetLabel: undefined,
- });
- };
+  const currentPrepTime = value.basePrepTimeMin || 15;
+  const dispatchDays = value.dispatchDays ?? 1;
+  const tiers = value.radiusTiers && value.radiusTiers.length > 0 ? value.radiusTiers : DEFAULT_TIERS;
 
- const handleApplyPreset = (preset: { label: string; time: number }) => {
- onChange({
- ...value,
- basePrepTimeMin: preset.time,
- activePresetLabel: preset.label,
- });
- };
+  const handlePrepTimeChange = (delta: number) => {
+    const nextTime = Math.max(5, Math.min(120, currentPrepTime + delta));
+    onChange({
+      ...value,
+      basePrepTimeMin: nextTime,
+      activePresetLabel: undefined,
+    });
+  };
 
- const handleToggleManual = (enabled: boolean) => {
- onChange({
- ...value,
- manualPrepTimeEnabled: enabled,
- });
- };
+  const handleApplyPreset = (preset: { label: string; time: number }) => {
+    onChange({
+      ...value,
+      basePrepTimeMin: preset.time,
+      activePresetLabel: preset.label,
+    });
+  };
 
- const handleAddTier = () => {
- const rKm = parseFloat(newRadius);
- const tMin = parseInt(newTransitTime, 10);
- const fReais = parseFloat(newFee.replace(",", "."));
+  const handleDispatchDaysChange = (delta: number) => {
+    const nextDays = Math.max(0, Math.min(30, dispatchDays + delta));
+    const preset = RETAIL_DISPATCH_PRESETS.find((p) => p.days === nextDays);
+    onChange({
+      ...value,
+      dispatchDays: nextDays,
+      dispatchPresetLabel: preset ? preset.label : `${nextDays} dias úteis`,
+    });
+  };
 
- if (isNaN(rKm) || rKm <= 0) return;
- if (isNaN(tMin) || tMin <= 0) return;
- const fCents = isNaN(fReais) ? 0 : Math.round(fReais * 100);
+  const handleApplyDispatchPreset = (preset: { label: string; days: number }) => {
+    onChange({
+      ...value,
+      dispatchDays: preset.days,
+      dispatchPresetLabel: preset.label,
+    });
+  };
 
- const newTier: DeliveryRadiusTier = {
- id: `tier-${Date.now()}`,
- radiusKm: rKm,
- transitTimeMin: tMin,
- feeCents: fCents,
- };
+  const handleToggleManual = (enabled: boolean) => {
+    onChange({
+      ...value,
+      manualPrepTimeEnabled: enabled,
+    });
+  };
 
- const nextTiers = [...tiers, newTier].sort((a, b) => a.radiusKm - b.radiusKm);
- onChange({
- ...value,
- radiusTiers: nextTiers,
- });
+  const handleAddTier = () => {
+    const rKm = parseFloat(newRadius);
+    const tMin = parseInt(newTransitTime, 10);
+    const fReais = parseFloat(newFee.replace(",", "."));
 
- setNewRadius("");
- setNewTransitTime("");
- setNewFee("");
- };
+    if (isNaN(rKm) || rKm <= 0) return;
+    if (isNaN(tMin) || tMin <= 0) return;
+    const fCents = isNaN(fReais) ? 0 : Math.round(fReais * 100);
 
- const handleRemoveTier = (id: string) => {
- const nextTiers = tiers.filter((t) => t.id !== id);
- onChange({
- ...value,
- radiusTiers: nextTiers,
- });
- };
+    const newTier: DeliveryRadiusTier = {
+      id: `tier-${Date.now()}`,
+      radiusKm: rKm,
+      transitTimeMin: tMin,
+      feeCents: fCents,
+    };
 
- // Faixa de tempo mínima e máxima da loja
- const minTotalTime = tiers.length > 0 ? currentPrepTime + tiers[0].transitTimeMin : currentPrepTime + 10;
- const maxTotalTime = tiers.length > 0 ? currentPrepTime + tiers[tiers.length - 1].transitTimeMin : currentPrepTime + 30;
+    const nextTiers = [...tiers, newTier].sort((a, b) => a.radiusKm - b.radiusKm);
+    onChange({
+      ...value,
+      radiusTiers: nextTiers,
+    });
 
- return (
- <div className="space-y-6">
- {/* ── Sub-Aba Superior Estilo iFood Merchant ── */}
- <div className="flex items-center justify-between border-b border-border/60 pb-3">
- <div className="flex items-center gap-6">
- <button
- type="button"
- onClick={() => setActiveTab("operacao")}
- className={cn(
- "text-xs font-bold transition-colors duration-200 relative pb-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
- activeTab === "operacao"
- ? "text-primary border-b-2 border-primary"
- : "text-muted-foreground hover:text-foreground"
- )}
- >
- Operação atual e Raio
- </button>
+    setNewRadius("");
+    setNewTransitTime("");
+    setNewFee("");
+  };
 
- <button
- type="button"
- onClick={() => setActiveTab("preparo")}
- className={cn(
- "text-xs font-bold transition-colors duration-200 relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
- activeTab === "preparo"
- ? "text-primary border-b-2 border-primary"
- : "text-muted-foreground hover:text-foreground"
- )}
- >
- <span>Meu tempo de preparo</span>
- <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-none px-2 py-0">
- {currentPrepTime} min
- </Badge>
- </button>
+  const handleRemoveTier = (id: string) => {
+    const nextTiers = tiers.filter((t) => t.id !== id);
+    onChange({
+      ...value,
+      radiusTiers: nextTiers,
+    });
+  };
 
- <button
- type="button"
- onClick={() => setActiveTab("modalidades")}
- className={cn(
- "text-xs font-bold transition-colors duration-200 relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
- activeTab === "modalidades"
- ? "text-primary border-b-2 border-primary"
- : "text-muted-foreground hover:text-foreground"
- )}
- >
- <span>Modalidades e Taxas</span>
- <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-none px-2 py-0">
- 4 canais
- </Badge>
- </button>
- </div>
+  // Faixa de tempo mínima e máxima da loja
+  const minTotalTime = tiers.length > 0 ? currentPrepTime + tiers[0].transitTimeMin : currentPrepTime + 10;
+  const maxTotalTime = tiers.length > 0 ? currentPrepTime + tiers[tiers.length - 1].transitTimeMin : currentPrepTime + 30;
 
- <div className="text-xs text-muted-foreground font-medium hidden sm:block">
- Canal de venda: <strong className="text-foreground">App e Web Waesy</strong>
- </div>
- </div>
+  return (
+    <div className="space-y-6">
+      {/* ── Sub-Aba Superior Estilo iFood Merchant ── */}
+      <div className="flex flex-wrap items-center justify-between border-b border-border/60 pb-3 gap-2">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+          <button
+            type="button"
+            onClick={() => setActiveTab("operacao")}
+            className={cn(
+              "text-xs font-bold transition-colors duration-200 relative pb-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm min-h-11 flex items-center",
+              activeTab === "operacao"
+                ? "text-primary border-b-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {isGastro ? "Operação atual e Raio" : "Regiões e Raio de Entrega"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("preparo")}
+            className={cn(
+              "text-xs font-bold transition-colors duration-200 relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm min-h-11",
+              activeTab === "preparo"
+                ? "text-primary border-b-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {isGastro ? (
+              <>
+                <span>Tempo de Cozinha</span>
+                <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-none px-2 py-0">
+                  {currentPrepTime} min
+                </Badge>
+              </>
+            ) : (
+              <>
+                <span>Prazo de Expedição</span>
+                <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-none px-2 py-0">
+                  {dispatchDays === 0 ? "Mesmo dia" : `${dispatchDays}d`}
+                </Badge>
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("modalidades")}
+            className={cn(
+              "text-xs font-bold transition-colors duration-200 relative pb-3 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm min-h-11",
+              activeTab === "modalidades"
+                ? "text-primary border-b-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <span>{isGastro ? "Modalidades e Taxas" : "Modalidades de Frete & Envio"}</span>
+            <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-none px-2 py-0">
+              4 canais
+            </Badge>
+          </button>
+        </div>
+
+        <div className="text-xs text-muted-foreground font-medium hidden sm:block">
+          Canal de venda: <strong className="text-foreground">App e Web Waesy</strong>
+        </div>
+      </div>
 
  {/* ── CONTEÚDO: ABA OPERAÇÃO ATUAL ── */}
  {activeTab === "operacao" && (
@@ -241,7 +294,9 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  {/* Métricas de Tempo e Entrega */}
- <div className="flex items-center gap-3 pt-2 text-xs border-t border-border/50">
+ <div className="flex flex-wrap items-center gap-3 pt-2 text-xs border-t border-border/50">
+ {isGastro ? (
+ <>
  <div className="flex items-center gap-1 text-foreground font-semibold">
  <Clock className="size-3.5 text-primary" />
  <span>{minTotalTime}-{maxTotalTime} min</span>
@@ -255,6 +310,20 @@ export function DeliveryTimeAndRadiusMatrix({
  <div className="text-muted-foreground text-xs">
  Preparo: <strong>{currentPrepTime} min</strong>
  </div>
+ </>
+ ) : (
+ <>
+ <div className="flex items-center gap-1 text-foreground font-semibold">
+ <Package className="size-3.5 text-primary" />
+ <span>Expedição: {dispatchDays === 0 ? "Mesmo dia útil" : `${dispatchDays} dia(s) úteis`}</span>
+ </div>
+ <span className="text-muted-foreground">•</span>
+ <div className="flex items-center gap-1 text-foreground font-semibold">
+ <Truck className="size-3.5 text-muted-foreground" />
+ <span>Frete local a partir de {formatMoney(tiers[0]?.feeCents || 0)}</span>
+ </div>
+ </>
+ )}
  </div>
  </div>
  </div>
@@ -262,11 +331,13 @@ export function DeliveryTimeAndRadiusMatrix({
  {/* Aviso da Equação de Entrega */}
  <div className="p-4 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1">
  <div className="flex items-center gap-2 font-bold text-foreground">
- <Zap className="size-3.5 text-warning-strong" />
- <span>Cálculo Inteligente de Entrega</span>
+ <Zap className="size-3.5 text-primary" />
+ <span>{isGastro ? "Cálculo Inteligente de Entrega" : "Prazo Total de Frete"}</span>
  </div>
  <p className="text-xs text-muted-foreground leading-relaxed">
- O tempo total exibido para o cliente é a soma automática do <strong>Tempo de Preparo da sua Cozinha ({currentPrepTime} min)</strong> + <strong>Tempo de Deslocamento do Motoboy por Raio</strong>.
+ {isGastro
+ ? `O tempo total exibido para o cliente é a soma automática do Tempo de Preparo da sua Cozinha (${currentPrepTime} min) + Tempo de Deslocamento do Motoboy por Raio.`
+ : `O prazo final para o comprador soma o Prazo de Expedição do Estoque (${dispatchDays === 0 ? "mesmo dia útil" : `${dispatchDays} dia(s) úteis`}) ao tempo estimado de transporte.`}
  </p>
  </div>
  </div>
@@ -362,16 +433,26 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
  </div>
  </div>
+ {neighborhoodsSlot && (
+ <div className="col-span-12 mt-4 pt-4 border-t border-border/60">
+ {neighborhoodsSlot}
+ </div>
+ )}
  </div>
  )}
 
- {/* ── CONTEÚDO: ABA MEU TEMPO DE PREPARO ── */}
+ {/* ── CONTEÚDO: ABA TEMPO DE PREPARO / EXPEDIÇÃO ── */}
  {activeTab === "preparo" && (
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
- {/* Lado Esquerdo: Controle Manual e Presets */}
+ {isGastro ? (
+ <>
+ {/* Gastronomia: Controle de Cozinha e Presets */}
  <div className="lg:col-span-6 space-y-5">
  <div className="space-y-1">
- <h3 className="text-sm font-bold text-foreground">Tempo de Preparo da Cozinha</h3>
+ <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+ <UtensilsCrossed className="size-4 text-primary" />
+ <span>Tempo de Preparo da Cozinha</span>
+ </h3>
  <p className="text-xs text-muted-foreground">
  Informe o tempo médio que sua equipe leva para confeccionar e embalar um pedido.
  </p>
@@ -391,12 +472,13 @@ export function DeliveryTimeAndRadiusMatrix({
  variant="outline"
  size="icon"
  onClick={() => handlePrepTimeChange(-5)}
- className="size-9 rounded-lg border-border min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="size-11 min-h-11 min-w-11 rounded-lg border-border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ title="Diminuir 5 minutos"
  >
  <Minus className="size-4" />
  </Button>
 
- <div className="flex items-baseline gap-1 px-3 py-1 bg-muted rounded-lg min-w-16 justify-center">
+ <div className="flex items-baseline gap-1 px-4 py-2 bg-muted rounded-lg min-w-20 justify-center">
  <span className="font-mono text-xl font-black text-foreground">{currentPrepTime}</span>
  <span className="text-xs text-muted-foreground font-semibold">min</span>
  </div>
@@ -406,7 +488,8 @@ export function DeliveryTimeAndRadiusMatrix({
  variant="outline"
  size="icon"
  onClick={() => handlePrepTimeChange(5)}
- className="size-9 rounded-lg border-border min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="size-11 min-h-11 min-w-11 rounded-lg border-border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ title="Aumentar 5 minutos"
  >
  <Plus className="size-4" />
  </Button>
@@ -430,7 +513,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <div className="space-y-3">
  <Label className="text-xs font-bold text-foreground">Pré-configurações Rápidas de Operação</Label>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
- {PRESETS.map((p) => {
+ {GASTRO_PRESETS.map((p) => {
  const isSelected = currentPrepTime === p.time;
  return (
  <button
@@ -438,7 +521,7 @@ export function DeliveryTimeAndRadiusMatrix({
  type="button"
  onClick={() => handleApplyPreset(p)}
  className={cn(
- "flex items-center justify-between p-3 rounded-lg border text-xs text-left transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ "flex items-center justify-between p-4 rounded-lg border text-xs text-left transition-colors duration-200 cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
  isSelected
  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
  : "border-border/60 bg-card text-muted-foreground hover:border-foreground/40 hover:text-foreground"
@@ -453,63 +536,207 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
  </div>
 
- {/* Lado Direito: Grade Visual Semanal de Tempo de Preparo (Heatmap) */}
+ {/* Lado Direito: Impacto Real na Vitrine & Previsão */}
  <div className="lg:col-span-6 space-y-4">
  <div className="space-y-1">
- <h3 className="text-sm font-bold text-foreground">Grade Semanal de Turnos (GMT-03)</h3>
+ <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+ <Clock className="size-4 text-primary" />
+ <span>Impacto na Vitrine & Estimativa</span>
+ </h3>
  <p className="text-xs text-muted-foreground">
- Mapeamento visual da operação nos 7 dias da semana
+ Como a velocidade da cozinha é refletida para os clientes no catálogo e aplicativo
  </p>
  </div>
 
- {/* Heatmap Visual da Semana */}
- <div className="rounded-lg border border-border/60 bg-card p-4 space-y-3">
- <div className="grid grid-cols-2 md:grid-cols-4 md:grid-cols-8 gap-2 text-center text-xs font-bold text-muted-foreground border-b border-border/40 pb-2">
- <span>Hora</span>
- <span>Seg</span>
- <span>Ter</span>
- <span>Qua</span>
- <span>Qui</span>
- <span>Sex</span>
- <span>Sáb</span>
- <span className="text-primary font-black">Dom</span>
+ <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
+ <div className="flex items-center justify-between border-b border-border/50 pb-3">
+ <span className="text-xs text-muted-foreground">Previsão total informada ao cliente</span>
+ <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-none font-bold">
+ {minTotalTime} a {maxTotalTime} min
+ </Badge>
  </div>
 
- <div className="space-y-2 text-xs max-h-64 overflow-y-auto scrollbar-none pr-1">
- {[
- { hour: "11:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Almoço" },
- { hour: "12:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Pico Almoço" },
- { hour: "13:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Almoço" },
- { hour: "18:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Jantar" },
- { hour: "19:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Pico Jantar" },
- { hour: "20:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Pico Jantar" },
- { hour: "21:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Jantar" },
- { hour: "22:00", activeDays: [1, 2, 3, 4, 5, 6, 7], label: "Encerramento" },
- ].map((row) => (
- <div key={row.hour} className="grid grid-cols-2 md:grid-cols-4 md:grid-cols-8 gap-2 items-center text-center">
- <span className="font-mono text-xs text-muted-foreground">{row.hour}</span>
- {[1, 2, 3, 4, 5, 6, 7].map((day) => (
- <div
- key={day}
- className="h-6 rounded-md bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-xs font-bold text-emerald-600 dark:text-emerald-400"
- title={`${row.hour} - ${row.label}: ${currentPrepTime} min`}
+ <div className="grid grid-cols-2 gap-3 text-xs">
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
+ <span className="text-muted-foreground">Cozinha (Preparo)</span>
+ <p className="font-mono font-bold text-foreground text-sm">{currentPrepTime} min</p>
+ </div>
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
+ <span className="text-muted-foreground">Rota Média (Motoboy)</span>
+ <p className="font-mono font-bold text-foreground text-sm">10 a 25 min</p>
+ </div>
+ </div>
+
+ <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 text-xs space-y-1">
+ <div className="flex items-center gap-2 font-bold text-primary">
+ <UtensilsCrossed className="size-3.5" />
+ <span>Sincronizado com Monitor de Pedidos (KDS)</span>
+ </div>
+ <p className="text-muted-foreground leading-relaxed">
+ Seus cozinheiros e equipe de embalagem trabalham com base neste tempo médio calibrado.
+ </p>
+ </div>
+
+ <div className="p-4 rounded-lg bg-warning/10 border border-warning/30 text-xs space-y-1">
+ <div className="flex items-center gap-2 font-bold text-warning-strong">
+ <Zap className="size-3.5" />
+ <span>Proteção em Dias de Chuva & Alta Demanda</span>
+ </div>
+ <p className="text-muted-foreground leading-relaxed">
+ Em horários de pico ou chuva, selecione o preset de 35 ou 45 min para evitar queixas de atraso no aplicativo.
+ </p>
+ </div>
+ </div>
+ </div>
+ </>
+ ) : (
+ <>
+ {/* Varejo & Outros Nichos: Prazo de Expedição de Pedidos */}
+ <div className="lg:col-span-6 space-y-5">
+ <div className="space-y-1">
+ <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+ <Package className="size-4 text-primary" />
+ <span>Prazo de Separação & Despacho</span>
+ </h3>
+ <p className="text-xs text-muted-foreground">
+ Defina o tempo médio que sua equipe leva para separar do estoque, embalar e postar o pedido.
+ </p>
+ </div>
+
+ {/* Bloco de Ajuste de Dias */}
+ <div className="p-5 rounded-lg border border-border/70 bg-card space-y-4">
+ <div className="flex items-center justify-between">
+ <div className="space-y-1">
+ <Label className="text-xs font-bold text-foreground">Prazo de Postagem / Expedição</Label>
+ <p className="text-xs text-muted-foreground">Dias úteis para envio após aprovação</p>
+ </div>
+
+ <div className="flex items-center gap-3">
+ <Button
+ type="button"
+ variant="outline"
+ size="icon"
+ onClick={() => handleDispatchDaysChange(-1)}
+ className="size-11 min-h-11 min-w-11 rounded-lg border-border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ title="Diminuir prazo"
  >
- {currentPrepTime}m
- </div>
- ))}
- </div>
- ))}
+ <Minus className="size-4" />
+ </Button>
+
+ <div className="flex items-baseline gap-1 px-4 py-2 bg-muted rounded-lg min-w-24 justify-center">
+ <span className="font-mono text-xl font-black text-foreground">
+ {dispatchDays === 0 ? "0" : dispatchDays}
+ </span>
+ <span className="text-xs text-muted-foreground font-semibold">
+ {dispatchDays === 0 ? "dias (hoje)" : dispatchDays === 1 ? "dia útil" : "dias úteis"}
+ </span>
  </div>
 
- <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
- <div className="flex items-center gap-2">
- <div className="size-3 rounded-sm bg-emerald-500/30 border border-emerald-500/60" />
- <span>Turno ativo com preparo calibrado</span>
+ <Button
+ type="button"
+ variant="outline"
+ size="icon"
+ onClick={() => handleDispatchDaysChange(1)}
+ className="size-11 min-h-11 min-w-11 rounded-lg border-border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ title="Aumentar prazo"
+ >
+ <Plus className="size-4" />
+ </Button>
  </div>
- <span className="font-bold text-foreground">Status: Operação Normal</span>
+ </div>
+
+ <div className="pt-3 border-t border-border/50 text-xs text-muted-foreground">
+ {dispatchDays === 0 ? (
+ <span className="text-emerald-600 font-semibold flex items-center gap-2">
+ <CheckCircle2 className="size-3.5" />
+ Envio Imediato: Pedidos aprovados até 14h são postados no mesmo dia útil.
+ </span>
+ ) : (
+ <span>
+ Seus pedidos serão despachados em até <strong>{dispatchDays} {dispatchDays === 1 ? "dia útil" : "dias úteis"}</strong> nos Correios, Transportadora ou Motoboy.
+ </span>
+ )}
+ </div>
+ </div>
+
+ {/* Opções Predefinidas de Expedição */}
+ <div className="space-y-3">
+ <Label className="text-xs font-bold text-foreground">Padrões Comuns de Expedição no Varejo</Label>
+ <div className="space-y-2">
+ {RETAIL_DISPATCH_PRESETS.map((p) => {
+ const isSelected = dispatchDays === p.days;
+ return (
+ <button
+ key={p.label}
+ type="button"
+ onClick={() => handleApplyDispatchPreset(p)}
+ className={cn(
+ "w-full flex items-center justify-between p-4 rounded-lg border text-xs text-left transition-colors duration-200 cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+ isSelected
+ ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
+ : "border-border/60 bg-card text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+ )}
+ >
+ <div className="space-y-1">
+ <span className="font-semibold text-foreground">{p.label}</span>
+ <p className="text-xs text-muted-foreground">{p.text}</p>
+ </div>
+ {isSelected && <CheckCircle2 className="size-4 text-primary shrink-0 ml-2" />}
+ </button>
+ );
+ })}
  </div>
  </div>
  </div>
+
+ {/* Lado Direito: Comunicação de Prazo na Vitrine de Varejo */}
+ <div className="lg:col-span-6 space-y-4">
+ <div className="space-y-1">
+ <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+ <Truck className="size-4 text-primary" />
+ <span>Cálculo de Entrega no Catálogo & Checkout</span>
+ </h3>
+ <p className="text-xs text-muted-foreground">
+ Como o cliente calcula e visualiza o prazo na página do produto
+ </p>
+ </div>
+
+ <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
+ <div className="flex items-center justify-between border-b border-border/50 pb-3">
+ <span className="text-xs text-muted-foreground">Promessa exibida ao comprador</span>
+ <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-none font-bold">
+ {dispatchDays === 0 ? "Despacho no mesmo dia" : `Envio em até ${dispatchDays} dias úteis`}
+ </Badge>
+ </div>
+
+ <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-xs space-y-2">
+ <div className="flex items-center justify-between text-foreground">
+ <span>Prazo de Expedição (Loja):</span>
+ <strong className="font-mono">{dispatchDays === 0 ? "0 dias (hoje)" : `${dispatchDays} dia(s) úteis`}</strong>
+ </div>
+ <div className="flex items-center justify-between text-foreground">
+ <span>Prazo de Envio (Correios / Transportadora):</span>
+ <strong className="font-mono">+ Prazo por CEP</strong>
+ </div>
+ <div className="pt-2 border-t border-border/40 flex items-center justify-between font-bold text-foreground">
+ <span>Prazo Total Informado no Checkout:</span>
+ <span className="text-primary font-mono">{dispatchDays}d + Prazo do Frete</span>
+ </div>
+ </div>
+
+ <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs space-y-1">
+ <div className="flex items-center gap-2 font-bold text-emerald-600 dark:text-emerald-400">
+ <ShieldCheck className="size-3.5" />
+ <span>Agilidade que Aumenta Conversão</span>
+ </div>
+ <p className="text-muted-foreground leading-relaxed">
+ Lojas que despacham em até 24 horas convertem até 38% mais pedidos no marketplace e recebem notas máximas dos compradores.
+ </p>
+ </div>
+ </div>
+ </div>
+ </>
+ )}
  </div>
  )}
 
@@ -518,23 +745,31 @@ export function DeliveryTimeAndRadiusMatrix({
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-200">
  <div className="lg:col-span-7 space-y-5">
  <div>
- <h3 className="text-sm font-bold text-foreground">Modalidades de Atendimento da Loja</h3>
+ <h3 className="text-sm font-bold text-foreground">
+ {isGastro ? "Modalidades de Atendimento da Loja" : "Canais de Envio & Entrega"}
+ </h3>
  <p className="text-xs text-muted-foreground">
- Ative simultaneamente as formas de entrega e retirada disponíveis no ecossistema Waesy.
+ {isGastro
+ ? "Ative simultaneamente as formas de entrega e retirada disponíveis no ecossistema Waesy."
+ : "Selecione as opções de frete locais, transportadoras e retirada presencial para seus clientes."}
  </p>
  </div>
 
  <div className="space-y-3">
- {/* MotoLink */}
+ {/* MotoLink / Entrega Expressa */}
  <div className="p-4 rounded-xl border border-border bg-card flex items-start justify-between gap-4">
  <div className="flex items-start gap-3">
  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
  <Bike className="size-5" />
  </div>
  <div>
- <span className="text-xs font-bold text-foreground">MotoLink (Frota da Cidade sob Demanda)</span>
+ <span className="text-xs font-bold text-foreground">
+ {isGastro ? "MotoLink (Frota da Cidade sob Demanda)" : "Entrega Expressa Local (Motoboy sob Demanda)"}
+ </span>
  <p className="text-xs text-muted-foreground mt-1">
- Entregadores autônomos da plataforma alocados automaticamente por algoritmo dinâmico de proximidade e telemetria GPS.
+ {isGastro
+ ? "Entregadores autônomos da plataforma alocados automaticamente por algoritmo dinâmico de proximidade e telemetria GPS."
+ : "Entregadores parceiros Waesy Go chamados sob demanda para despachos urgentes no mesmo dia na sua cidade."}
  </p>
  </div>
  </div>
@@ -548,12 +783,14 @@ export function DeliveryTimeAndRadiusMatrix({
  <div className="p-4 rounded-xl border border-border bg-card flex items-start justify-between gap-4">
  <div className="flex items-start gap-3">
  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
- <Bike className="size-5" />
+ <Store className="size-5" />
  </div>
  <div>
- <span className="text-xs font-bold text-foreground">Entregadores Próprios da Loja</span>
+ <span className="text-xs font-bold text-foreground">
+ {isGastro ? "Entregadores Próprios da Loja" : "Frota Própria da Empresa"}
+ </span>
  <p className="text-xs text-muted-foreground mt-1">
- Entregas com equipe própria da sua loja, aplicando as faixas de raio em km e taxas por bairro configuradas.
+ Entregas realizadas por sua própria equipe, aplicando o raio em km e as taxas por bairro cadastradas.
  </p>
  </div>
  </div>
@@ -570,9 +807,11 @@ export function DeliveryTimeAndRadiusMatrix({
  <Store className="size-5" />
  </div>
  <div>
- <span className="text-xs font-bold text-foreground">Retirada no Balcão (Takeout)</span>
+ <span className="text-xs font-bold text-foreground">
+ {isGastro ? "Retirada no Balcão (Takeout)" : "Retirada na Loja Física (Clique & Retire)"}
+ </span>
  <p className="text-xs text-muted-foreground mt-1">
- Permite ao cliente pedir pelo aplicativo e retirar presencialmente no seu balcão com frete isento.
+ Permite ao cliente comprar online e retirar presencialmente no seu endereço comercial com taxa zero de frete.
  </p>
  </div>
  </div>
@@ -589,9 +828,11 @@ export function DeliveryTimeAndRadiusMatrix({
  <Truck className="size-5" />
  </div>
  <div>
- <span className="text-xs font-bold text-foreground">Transportadora e Frete Terceirizado</span>
+ <span className="text-xs font-bold text-foreground">
+ {isGastro ? "Transportadora e Frete Terceirizado" : "Transportadora & Envio Rodoviário (Cargas e Volumes)"}
+ </span>
  <p className="text-xs text-muted-foreground mt-1">
- Envio rodoviário ou cotação manual FOB para cargas de grande volume ou pedidos intermunicipais.
+ Envio rodoviário, Correios ou cotação FOB para pacotes de médio e grande porte e envios intermunicipais.
  </p>
  </div>
  </div>
@@ -605,14 +846,50 @@ export function DeliveryTimeAndRadiusMatrix({
 
  <div className="lg:col-span-5 space-y-5">
  <div>
- <h3 className="text-sm font-bold text-foreground">Taxas e Regras Operacionais</h3>
+ <h3 className="text-sm font-bold text-foreground">Regras Comerciais de Frete</h3>
  <p className="text-xs text-muted-foreground">
- Parâmetros de entrega e segurança do entregador.
+ Valores mínimos e políticas de segurança na entrega.
  </p>
  </div>
 
- <div className="space-y-4 p-4 rounded-xl border border-border bg-card">
+ <div className="space-y-4 p-5 rounded-xl border border-border bg-card">
+ {/* Frete Grátis e Pedido Mínimo */}
  <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+ <Truck className="size-4 text-primary" />
+ <span>Frete Grátis a Partir de (R$)</span>
+ </Label>
+ <CurrencyField
+ value={value.freeDeliveryThresholdCents || null}
+ onChange={(cents) => onChange({ ...value, freeDeliveryThresholdCents: cents ?? null })}
+ placeholder="Ex: R$ 199,00 (Opcional)"
+ allowZero={true}
+ className="h-11 rounded-lg"
+ />
+ <p className="text-xs text-muted-foreground">
+ Pedidos com valor de produtos acima deste montante recebem frete isento subsidiado pela loja.
+ </p>
+ </div>
+
+ <div className="space-y-2 pt-2 border-t border-border/50">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+ <ShieldCheck className="size-4 text-primary" />
+ <span>Valor Mínimo do Pedido (R$)</span>
+ </Label>
+ <CurrencyField
+ value={value.minOrderCents || null}
+ onChange={(cents) => onChange({ ...value, minOrderCents: cents ?? 0 })}
+ placeholder="R$ 0,00"
+ allowZero={true}
+ className="h-11 rounded-lg"
+ />
+ <p className="text-xs text-muted-foreground">
+ Carrinho mínimo exigido para o cliente concluir a compra na vitrine.
+ </p>
+ </div>
+
+ {isGastro && (
+ <div className="space-y-2 pt-2 border-t border-border/50">
  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Building2 className="size-4 text-primary" />
  <span>Taxa de Subida em Apartamento / Condomínio</span>
@@ -625,27 +902,18 @@ export function DeliveryTimeAndRadiusMatrix({
  className="h-11 rounded-lg"
  />
  <p className="text-xs text-muted-foreground">
- Valor repassado ao entregador caso o cliente solicite entrega na porta de edifício ou condomínio fechado.
+ Repassado ao motoboy quando o cliente solicita entrega na porta de edifício ou condomínio fechado.
  </p>
  </div>
+ )}
 
  <div className="pt-3 border-t border-border/60 space-y-2">
  <span className="text-xs font-bold text-foreground flex items-center gap-2">
  <ShieldCheck className="size-4 text-emerald-600" />
- Regra de Devolução (Entrega Mal-Sucedida)
+ Regra de Retorno & Segurança
  </span>
  <p className="text-xs text-muted-foreground">
- Caso o cliente não atenda ou o endereço esteja inacessível, o entregador retorna o pacote à loja e recebe 50% de taxa de retorno (meia corrida).
- </p>
- </div>
-
- <div className="pt-3 border-t border-border/60 space-y-2">
- <span className="text-xs font-bold text-foreground flex items-center gap-2">
- <AlertCircle className="size-4 text-warning-strong" />
- Regra de Desalocação
- </span>
- <p className="text-xs text-muted-foreground">
- Desalocação livre antes da coleta no estabelecimento. Após a coleta da mercadoria, a desistência exige validação da loja ou suporte.
+ Em caso de destinatário ausente ou endereço incorreto, o entregador retorna a mercadoria à sua sede com taxa defensiva garantida.
  </p>
  </div>
  </div>

@@ -904,6 +904,9 @@ export interface PublicStoreProfileDTO {
  city: string | null;
  state: string | null;
  logoUrl: string | null;
+ logo_url?: string | null;
+ avatar_url?: string | null;
+ avatarUrl?: string | null;
  bannerUrl: string | null;
  banner_url?: string | null;
  coverUrl: string | null;
@@ -995,6 +998,38 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  (typeof settings.coverUrl === "string" ? settings.coverUrl : null) ||
  resolvedBannerUrl;
 
+ const rawSettingsPhotos = Array.isArray(settings.photos) && typeof settings.photos[0] === "string" ? settings.photos[0] : null;
+ let resolvedLogoUrl =
+  (store.logo_url as string | null) ||
+  (typeof settings.logoUrl === "string" ? settings.logoUrl : null) ||
+  (typeof settings.logo_url === "string" ? settings.logo_url : null) ||
+  (typeof settings.avatar_url === "string" ? settings.avatar_url : null) ||
+  (typeof settings.avatarUrl === "string" ? settings.avatarUrl : null) ||
+  (typeof settings.image_url === "string" ? settings.image_url : null) ||
+  (typeof settings.imageUrl === "string" ? settings.imageUrl : null) ||
+  rawSettingsPhotos ||
+  null;
+
+ if (!resolvedLogoUrl) {
+  try {
+   const { data: linkedListing } = await db
+    .from("directory_listings")
+    .select("avatar_url, banner_url, photos")
+    .or(`store_id.eq.${store.id},id.eq.${store.id},ghost_store_id.eq.${store.id}`)
+    .limit(1)
+    .maybeSingle();
+
+   if (linkedListing) {
+    resolvedLogoUrl =
+     linkedListing.avatar_url ||
+     (Array.isArray(linkedListing.photos) && typeof linkedListing.photos[0] === "string" ? linkedListing.photos[0] : null) ||
+     null;
+   }
+  } catch {
+   // Silencioso
+  }
+ }
+
  const profile: PublicStoreProfileDTO = {
  id: store.id as string,
  name: store.name as string,
@@ -1005,7 +1040,10 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  address: (store.address as string | null) ?? null,
  city: (store.city as string | null) ?? null,
  state: (store.state as string | null) ?? null,
- logoUrl: (store.logo_url as string | null) || (typeof settings.logoUrl === "string" ? settings.logoUrl : null) || (typeof settings.logo_url === "string" ? settings.logo_url : null),
+ logoUrl: resolvedLogoUrl,
+ logo_url: resolvedLogoUrl,
+ avatar_url: resolvedLogoUrl,
+ avatarUrl: resolvedLogoUrl,
  bannerUrl: resolvedBannerUrl,
  banner_url: resolvedBannerUrl,
  coverUrl: resolvedCoverUrl,

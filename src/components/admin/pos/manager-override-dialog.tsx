@@ -10,7 +10,7 @@ import { toast } from "sonner";
 interface ManagerOverrideDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (managerName?: string) => void;
   actionType?: "discount" | "void" | "refund" | "price_override";
   title?: string;
   description?: string;
@@ -45,7 +45,7 @@ export function ManagerOverrideDialog({
 
       if (res?.authorized) {
         toast.success("Ação autorizada");
-        onSuccess();
+        onSuccess(res.managerName);
         setPin("");
         onClose();
       } else {

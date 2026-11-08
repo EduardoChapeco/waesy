@@ -198,14 +198,32 @@ export default function AgencyQuotesPage() {
  createTravelProposal({
  data: {
  quoteId: q.id,
+ leadId: q.lead_id || undefined,
  title: `Proposta: ${q.destination_city} (${q.adults_count} adultos)`,
  clientName: q.contact_name,
  clientWhatsapp: q.contact_whatsapp,
+ clientEmail: q.contact_email || undefined,
  destinationCity: q.destination_city,
  travelStartDate: q.departure_date || undefined,
  travelEndDate: q.return_date || undefined,
  adultsCount: q.adults_count,
  childrenCount: q.children_count,
+ initialNotes: [q.special_notes, q.agency_notes].filter(Boolean).join("\n") || undefined,
+ rooms: Array.isArray(q.room_occupancies) && q.room_occupancies.length > 0
+   ? q.room_occupancies.map((r: any, idx: number) => ({
+       id: r.id || `room-${idx + 1}`,
+       type: r.room_type || r.type || "Duplo",
+       adults: Number(r.adults ?? 2),
+       children: Number(r.children ?? 0),
+       child_ages: Array.isArray(r.children_ages) ? r.children_ages : [],
+     }))
+   : undefined,
+ pricing: q.quote_amount_cents && q.quote_amount_cents > 0
+   ? {
+       base_price_per_person: Math.round(q.quote_amount_cents / 100 / Math.max(1, q.adults_count || 1)),
+       total_price: Math.round(q.quote_amount_cents / 100),
+     }
+   : undefined,
  },
  }),
  onSuccess: (res) => {

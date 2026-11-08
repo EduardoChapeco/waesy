@@ -181,7 +181,7 @@ export function ProductSpecsTab({
   const isRental = resolvedNicheId === "rental";
   const isWholesale = resolvedNicheId === "wholesale";
   const isEventOrEdu = resolvedNicheId === "events" || resolvedNicheId === "education";
-  const isPhysical = !isTourism && !isVehicle && !isRealEstate && !isService && !isEventOrEdu;
+  const isPhysical = !isTourism && !isVehicle && !isRealEstate && !isService && !isEventOrEdu && !isFoodOrMarket;
 
   const logisticsMeta = synchronizedLogistics?.logistics || attributes.logistics || {};
   const metrics = React.useMemo(() => {

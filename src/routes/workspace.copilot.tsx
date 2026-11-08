@@ -22,7 +22,7 @@ import { uploadComposerAttachments } from "@/lib/copilot-attachments";
 import type { AIChatAction } from "@/components/chat/structured-message-view";
 import { getUserSession } from "@/services/auth.functions";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
-import { ManusComputerDrawer } from "@/components/chat/manus-computer-drawer";
+import { ManusComputerDrawer, type ManusComputerStep } from "@/components/chat/manus-computer-drawer";
 import { ManusTaskTelemetrySheet } from "@/components/chat/manus-task-telemetry-sheet";
 import { CopilotBackgroundTasksDrawer } from "@/components/chat/copilot-background-tasks-drawer";
 import { Button } from "@/components/ui/button";
@@ -94,6 +94,54 @@ export const Route = createFileRoute("/workspace/copilot")({
   },
   component: WorkspaceCopilotPage,
 });
+
+function deriveManusComputerSteps(messages: ChatMessageItem[]): ManusComputerStep[] | undefined {
+  const derived: ManusComputerStep[] = [];
+  let idx = 1;
+
+  for (const msg of messages) {
+    if (msg.activitySteps && msg.activitySteps.length > 0) {
+      for (const step of msg.activitySteps) {
+        const isBrowser =
+          step.type === "search" ||
+          (step.type === "tool" &&
+            (step.label.toLowerCase().includes("web") ||
+              step.label.toLowerCase().includes("pesquisa") ||
+              step.label.toLowerCase().includes("leitura")));
+        const isEditor =
+          step.type === "planner" ||
+          Boolean(msg.artifact && idx === msg.activitySteps.length);
+
+        derived.push({
+          id: step.id || `step-${idx}`,
+          index: idx++,
+          title: step.label,
+          tool: isBrowser ? "browser" : isEditor ? "editor" : "bash",
+          target: step.role || "waesy-copilot-engine",
+          timestamp: step.startedAt
+            ? new Date(step.startedAt).toLocaleTimeString("pt-BR")
+            : "Agora",
+          terminalOutput:
+            step.detail ||
+            `Passo de processamento [${step.type}] executado com sucesso (${step.tokensUsed || 0} tokens).`,
+          browserUrl: isBrowser
+            ? step.detail?.match(/https?:\/\/[^\s]+/)?.[0] || "https://waesy.app"
+            : undefined,
+          browserSummary: isBrowser ? step.detail : undefined,
+          fileDiff: msg.artifact
+            ? {
+                filename: `${msg.artifact.type}_${msg.artifact.title.replace(/\s+/g, "_").toLowerCase()}.json`,
+                original: "// Estado anterior do artefato\n{}",
+                modified: JSON.stringify(msg.artifact.data || {}, null, 2),
+              }
+            : undefined,
+        });
+      }
+    }
+  }
+
+  return derived.length > 0 ? derived : undefined;
+}
 
 function WorkspaceCopilotPage() {
   const { session, activeStoreId, initialThreads, initialLoadError } = Route.useLoaderData();
@@ -184,6 +232,8 @@ function WorkspaceCopilotPage() {
         });
     }
   }, [activeThreadId]);
+
+  const computerSteps = React.useMemo(() => deriveManusComputerSteps(messages), [messages]);
 
   const handleSendMessage = async (
     text: string,
@@ -517,7 +567,11 @@ function WorkspaceCopilotPage() {
         currentUserProfileId={effectiveUserId || undefined}
         className="h-full min-h-0 border-none rounded-none"
       />
-      <ManusComputerDrawer open={computerDrawerOpen} onOpenChange={setComputerDrawerOpen} />
+      <ManusComputerDrawer
+        open={computerDrawerOpen}
+        onOpenChange={setComputerDrawerOpen}
+        steps={computerSteps}
+      />
       <ManusTaskTelemetrySheet open={telemetrySheetOpen} onOpenChange={setTelemetrySheetOpen} />
       <CopilotBackgroundTasksDrawer
         open={backgroundTasksOpen}

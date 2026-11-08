@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Lock,
   ExternalLink,
+  Download,
 } from "lucide-react";
 import {
   Dialog,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ExtensionWebStoreModal } from "@/components/extensions/ExtensionWebStoreModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,6 +42,46 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
   const [issuedToken, setIssuedToken] = useState<string | null>(null);
   const [copiedToken, setCopiedToken] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [isDownloadingExtension, setIsDownloadingExtension] = useState(false);
+  const [isWebStoreOpen, setIsWebStoreOpen] = useState(false);
+
+  const handleDownloadExtension = async () => {
+    setIsDownloadingExtension(true);
+    try {
+      const res = await fetch("/api/v1/extensions/download?type=whatsapp_extension", {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 403 || err?.can_request) {
+          setIsWebStoreOpen(true);
+          toast.info("Acesso sob demanda. Veja as informações da extensão e solicite a liberação.");
+        } else {
+          toast.error(err?.error || "Acesso restrito para download desta extensão.");
+        }
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get("content-disposition") || "";
+      let filename = "waesy-ingest-whatsapp-v2.1.zip";
+      const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+      if (filenameMatch?.[1]) filename = filenameMatch[1];
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Download de "${filename}" concluído com sucesso!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao baixar extensão do WhatsApp.");
+    } finally {
+      setIsDownloadingExtension(false);
+    }
+  };
 
   const { data: status, isLoading } = useQuery({
     queryKey: ["whatsapp-ingest-status"],
@@ -87,7 +129,7 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-screen overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
@@ -114,7 +156,7 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
             <p className="text-xs text-muted-foreground leading-relaxed">
               A ingestão de grupos do WhatsApp é uma funcionalidade restrita concedida exclusivamente ao workspace da{" "}
               <strong>Excelência Tour São Miguel do Oeste</strong>. Seu workspace atual não possui a grant{" "}
-              <code className="text-xs bg-muted px-1 py-0.5 rounded">whatsapp_group_ingest</code>. Nenhuma sincronização externa pode ser autenticada.
+              <code className="text-xs bg-muted px-1 py-1 rounded">whatsapp_group_ingest</code>. Nenhuma sincronização externa pode ser autenticada.
             </p>
           </div>
         ) : (
@@ -139,13 +181,13 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
 
             {/* Novo Token Emitido */}
             {issuedToken && (
-              <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
+              <div className="p-4 rounded-xl border border-warning/30 bg-warning/10 space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-semibold text-sm">
+                  <div className="flex items-center gap-2 text-warning-strong font-semibold text-sm">
                     <AlertTriangle className="size-4" />
                     Token Gerado — Copie Agora
                   </div>
-                  <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600">
+                  <Badge variant="outline" className="text-xs border-warning/30 text-warning-strong">
                     Válido por 90 dias
                   </Badge>
                 </div>
@@ -192,26 +234,65 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
               </div>
             </div>
 
-            {/* Instruções de Instalação e Uso */}
-            <div className="rounded-xl border border-border p-4 space-y-3 bg-muted/10">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Lock className="size-3.5" />
-                Passo a Passo de Configuração da Extensão
-              </h4>
-              <ol className="text-xs text-muted-foreground space-y-2 list-decimal list-inside leading-relaxed">
-                <li>
-                  No Google Chrome, acesse <code className="bg-muted px-1.5 py-0.5 rounded">chrome://extensions</code>, habilite o <strong>Modo do desenvolvedor</strong> e clique em <strong>Carregar sem compactação</strong> selecionando a pasta da extensão.
-                </li>
-                <li>
-                  Clique em <strong>Configurar Waesy</strong> na extensão (ou abra as opções) e cole a <strong>URL do Servidor</strong> e o <strong>Token de Ingestão</strong>.
-                </li>
-                <li>
-                  Abra o <strong>WhatsApp Web</strong>, clique no ícone da extensão, selecione os grupos desejados e clique em <strong>Enviar ao Waesy (oportunidades)</strong>.
-                </li>
-                <li>
-                  A extensão apresentará uma prévia em tempo real com validação de contatos novos, já existentes, contatos que já são clientes e números inválidos antes de confirmar.
-                </li>
-              </ol>
+            {/* Download e Instruções de Instalação */}
+            <div className="rounded-xl border border-border p-4 space-y-4 bg-muted/10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
+                    <Download className="size-3.5 text-primary" />
+                    Download da Extensão Oficial (Chrome)
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Pacote compactado com manifest V3 e painel amplo para WhatsApp Web.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isDownloadingExtension}
+                    onClick={handleDownloadExtension}
+                    className="h-11 min-h-11 px-4 gap-2 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {isDownloadingExtension ? (
+                      <RefreshCw className="size-4 animate-spin motion-reduce:animate-none" />
+                    ) : (
+                      <Download className="size-4" />
+                    )}
+                    {isDownloadingExtension ? "Empacotando..." : "Baixar Extensão (.zip)"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsWebStoreOpen(true)}
+                    className="h-11 min-h-11 px-4 gap-2 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <ExternalLink className="size-4" />
+                    Ver na Store / Acesso
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <h5 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-2">
+                  <Lock className="size-3.5" />
+                  Passo a Passo de Instalação e Uso
+                </h5>
+                <ol className="text-xs text-muted-foreground space-y-2 list-decimal list-inside leading-relaxed">
+                  <li>
+                    Clique no botão acima para baixar o arquivo <strong>waesy-ingest-whatsapp-v2.1.zip</strong> e extraia o conteúdo em uma pasta de sua preferência.
+                  </li>
+                  <li>
+                    No Google Chrome, acesse <code className="bg-muted px-2 py-1 rounded">chrome://extensions</code>, habilite o <strong>Modo do desenvolvedor</strong> e clique em <strong>Carregar sem compactação</strong> selecionando a pasta descompactada.
+                  </li>
+                  <li>
+                    Abra a extensão, clique na aba <strong>Conexão Waesy</strong> e cole a <strong>URL do Servidor</strong> e o <strong>Token de Ingestão</strong> gerado acima.
+                  </li>
+                  <li>
+                    No <strong>WhatsApp Web</strong>, abra o grupo desejado, clique no ícone da extensão e pressione <strong>Escanear Participantes</strong> para enviar ao CRM.
+                  </li>
+                </ol>
+              </div>
             </div>
 
             {/* Gerenciamento de Tokens */}
@@ -251,13 +332,13 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
 
                 <Button
                   type="button"
-                  variant="default"
+                  variant="outline"
                   size="sm"
                   disabled={issueMutation.isPending}
                   onClick={() => issueMutation.mutate()}
-                  className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-11 min-h-11 px-4 text-xs font-semibold border-primary/50 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <Key className="size-3.5 mr-1.5" />
+                  <Key className="size-3.5 mr-2" />
                   {issueMutation.isPending ? "Gerando..." : "Gerar Novo Token"}
                 </Button>
               </div>
@@ -276,6 +357,13 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <ExtensionWebStoreModal
+        isOpen={isWebStoreOpen}
+        onClose={() => setIsWebStoreOpen(false)}
+        extensionType="whatsapp_extension"
+        onDownloadDirect={handleDownloadExtension}
+      />
     </Dialog>
   );
 }

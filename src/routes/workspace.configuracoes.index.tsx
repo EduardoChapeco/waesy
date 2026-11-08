@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus, Users } from 'lucide-react';
+import { Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus, Users, Search, Sparkles } from 'lucide-react';
 import { getStoreSettings, saveStoreSettings, getWorkingHours, saveWorkingHours, getPolicies, savePolicies } from "@/services/store.functions";
+import { lookupCnpj, lookupCep } from "@/services/public-apis.functions";
 import { listManualPaymentMethods, saveManualPaymentMethod, deleteManualPaymentMethod } from "@/services/payment.functions";
 import { uploadStoreMedia } from "@/services/storage.functions";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -151,6 +152,109 @@ export default function WorkspaceConfiguracoesPage() {
   const [zipCode, setZipCode] = useState(store?.zip_code || "");
   const [latitude, setLatitude] = useState<number | null>(store?.latitude ?? store?.settings?.latitude ?? null);
   const [longitude, setLongitude] = useState<number | null>(store?.longitude ?? store?.settings?.longitude ?? null);
+
+  // Estados Oficiais da Empresa (Receita Federal / CNPJ / Geodados)
+  const [corporateName, setCorporateName] = useState(store?.settings?.corporate_name || store?.corporate_name || "");
+  const [tradeName, setTradeName] = useState(store?.settings?.trade_name || store?.trade_name || store?.name || "");
+  const [cnae, setCnae] = useState<any>(store?.settings?.cnae || null);
+  const [registrationStatus, setRegistrationStatus] = useState<string>(store?.settings?.registration_status || "");
+  const [legalNature, setLegalNature] = useState<string>(store?.settings?.legal_nature || "");
+  const [neighborhood, setNeighborhood] = useState<string>(store?.settings?.neighborhood || "");
+  const [isSearchingCnpj, setIsSearchingCnpj] = useState(false);
+  const [isSearchingCep, setIsSearchingCep] = useState(false);
+
+  const formatCnpjMask = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 14);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+    if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
+    if (digits.length <= 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
+    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12, 14)}`;
+  };
+
+  const formatCepMask = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)}-${digits.slice(5, 8)}`;
+  };
+
+  const handleLookupCnpj = async (cnpjToSearch?: string) => {
+    const targetCnpj = (cnpjToSearch || cnpj).replace(/\D/g, "");
+    if (targetCnpj.length !== 14) {
+      toast.error("Informe um CNPJ válido com 14 dígitos.");
+      return;
+    }
+    setIsSearchingCnpj(true);
+    try {
+      const data = await lookupCnpj({ data: { cnpj: targetCnpj } });
+      if (data) {
+        setCnpj(formatCnpjMask(data.cnpj));
+        if (data.corporateName) setCorporateName(data.corporateName);
+        if (data.tradeName) {
+          setTradeName(data.tradeName);
+          if (!name.trim() || name === "Minha Empresa" || name === "Loja") {
+            setName(data.tradeName);
+          }
+        }
+        if (data.phone && !phone.trim()) setPhone(data.phone);
+        if (data.email && !email.trim()) setEmail(data.email);
+        if (data.registrationStatus) setRegistrationStatus(data.registrationStatus);
+        if (data.mainCnae) setCnae(data.mainCnae);
+        if (data.legalNature) setLegalNature(data.legalNature);
+        if (data.address) {
+          const addr = data.address;
+          if (addr.street) {
+            const formattedAddress = [
+              addr.street,
+              addr.number && addr.number !== "S/N" ? addr.number : "",
+              addr.complement ? `Compl. ${addr.complement}` : "",
+              addr.neighborhood ? `Bairro ${addr.neighborhood}` : ""
+            ].filter(Boolean).join(", ");
+            setAddress(formattedAddress);
+          }
+          if (addr.neighborhood) setNeighborhood(addr.neighborhood);
+          if (addr.city) setCity(addr.city);
+          if (addr.state) setState(addr.state);
+          if (addr.cep) setZipCode(formatCepMask(addr.cep));
+          if (addr.latitude) setLatitude(addr.latitude);
+          if (addr.longitude) setLongitude(addr.longitude);
+        }
+        toast.success(`Dados oficiais carregados com sucesso da Receita Federal: ${data.corporateName}`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao consultar dados do CNPJ na base pública.");
+    } finally {
+      setIsSearchingCnpj(false);
+    }
+  };
+
+  const handleLookupCep = async (cepToSearch?: string) => {
+    const targetCep = (cepToSearch || zipCode).replace(/\D/g, "");
+    if (targetCep.length !== 8) {
+      toast.error("Informe um CEP válido com 8 dígitos.");
+      return;
+    }
+    setIsSearchingCep(true);
+    try {
+      const res = await lookupCep({ data: { cep: targetCep } });
+      if (res) {
+        setZipCode(formatCepMask(targetCep));
+        if (res.city) setCity(res.city);
+        if (res.state) setState(res.state);
+        if (res.street) {
+          setAddress([res.street, res.neighborhood ? `Bairro ${res.neighborhood}` : ""].filter(Boolean).join(", "));
+        }
+        if (res.neighborhood) setNeighborhood(res.neighborhood);
+        if (res.latitude) setLatitude(res.latitude);
+        if (res.longitude) setLongitude(res.longitude);
+        toast.success(`CEP localizado: ${res.city} - ${res.state}`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao consultar CEP.");
+    } finally {
+      setIsSearchingCep(false);
+    }
+  };
 
   // Formas de Pagamento & Gateway
   const [pixKey, setPixKey] = useState(store?.pix_key || "");
@@ -391,9 +495,16 @@ export default function WorkspaceConfiguracoesPage() {
           phone: phone.trim() || undefined,
           email: email.trim() || undefined,
           cnpj: cnpj.trim() || undefined,
+          corporate_name: corporateName.trim() || undefined,
+          trade_name: tradeName.trim() || undefined,
+          cnae: cnae || undefined,
+          registration_status: registrationStatus || undefined,
+          legal_nature: legalNature || undefined,
+          neighborhood: neighborhood.trim() || undefined,
           address: address.trim() || undefined,
           city: city.trim() || undefined,
           state: state.trim().toUpperCase() || undefined,
+          zip_code: zipCode.trim() || undefined,
           zipCode: zipCode.trim() || undefined,
           latitude: latitude !== null && !isNaN(Number(latitude)) ? Number(latitude) : undefined,
           longitude: longitude !== null && !isNaN(Number(longitude)) ? Number(longitude) : undefined,
@@ -1177,17 +1288,152 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">CNPJ / CPF</Label>
+ <Label className="text-xs font-bold text-foreground flex items-center justify-between">
+ <span>CNPJ Oficial da Empresa</span>
+ {registrationStatus && (
+ <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/30 gap-1 py-0 px-2 font-bold">
+ <CheckCircle2 className="size-3" />
+ <span>{registrationStatus}</span>
+ </Badge>
+ )}
+ </Label>
+ <div className="flex gap-2">
  <Input
  value={cnpj}
- onChange={(e) => setCnpj(e.target.value)}
+ onChange={(e) => {
+ const formatted = formatCnpjMask(e.target.value);
+ setCnpj(formatted);
+ if (formatted.replace(/\D/g, "").length === 14) {
+ handleLookupCnpj(formatted);
+ }
+ }}
  placeholder="00.000.000/0001-00"
+ className="rounded-lg text-xs h-11 min-h-11 font-mono flex-1"
+ />
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => handleLookupCnpj()}
+ disabled={isSearchingCnpj}
+ className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold shrink-0 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ title="Puxar dados oficiais da Receita Federal / BrasilAPI"
+ >
+ {isSearchingCnpj ? (
+ <Loader2 className="size-4 animate-spin text-primary" />
+ ) : (
+ <Search className="size-4 text-primary" />
+ )}
+ <span>Buscar</span>
+ </Button>
+ </div>
+ </div>
+ </div>
+
+ {(corporateName || cnae || registrationStatus) && (
+ <div className="rounded-lg border border-border/80 bg-muted/20 p-4 space-y-3">
+ <div className="flex flex-wrap items-center justify-between gap-2">
+ <div className="flex items-center gap-2">
+ <Building2 className="size-4 text-primary" />
+ <span className="text-xs font-bold text-foreground">Ficha Cadastral Oficial (Receita Federal)</span>
+ </div>
+ <div className="flex flex-wrap items-center gap-2">
+ {registrationStatus && (
+ <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/30 font-bold">
+ Situação: {registrationStatus}
+ </Badge>
+ )}
+ {cnae?.code && (
+ <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30 font-bold">
+ CNAE: {cnae.code}
+ </Badge>
+ )}
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+ {corporateName && (
+ <div>
+ <span className="text-muted-foreground font-medium">Razão Social: </span>
+ <span className="font-semibold text-foreground">{corporateName}</span>
+ </div>
+ )}
+ {tradeName && (
+ <div>
+ <span className="text-muted-foreground font-medium">Nome Fantasia: </span>
+ <span className="font-semibold text-foreground">{tradeName}</span>
+ </div>
+ )}
+ {cnae?.description && (
+ <div className="sm:col-span-2">
+ <span className="text-muted-foreground font-medium">Atividade Principal: </span>
+ <span className="text-foreground">{cnae.description}</span>
+ </div>
+ )}
+ {legalNature && (
+ <div className="sm:col-span-2">
+ <span className="text-muted-foreground font-medium">Natureza Jurídica: </span>
+ <span className="text-foreground">{legalNature}</span>
+ </div>
+ )}
+ </div>
+ </div>
+ )}
+
+ <div className="space-y-4">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+ <div className="space-y-2">
+ <Label className="text-xs font-bold text-foreground flex items-center justify-between">
+ <span>CEP</span>
+ <span className="text-xs text-muted-foreground font-normal">Autocompleta rua e cidade</span>
+ </Label>
+ <div className="flex gap-2">
+ <Input
+ value={zipCode}
+ onChange={(e) => {
+ const formatted = formatCepMask(e.target.value);
+ setZipCode(formatted);
+ if (formatted.replace(/\D/g, "").length === 8) {
+ handleLookupCep(formatted);
+ }
+ }}
+ placeholder="00000-000"
+ className="rounded-lg text-xs h-11 min-h-11 font-mono flex-1"
+ />
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => handleLookupCep()}
+ disabled={isSearchingCep}
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+ >
+ {isSearchingCep ? <Loader2 className="size-4 animate-spin text-primary" /> : <Search className="size-4 text-primary" />}
+ </Button>
+ </div>
+ </div>
+
+ <div className="space-y-2 sm:col-span-2">
+ <Label className="text-xs font-bold text-foreground">Bairro Oficial</Label>
+ <Input
+ value={neighborhood}
+ onChange={(e) => setNeighborhood(e.target.value)}
+ placeholder="Ex: Centro, Efapi, São Cristóvão"
  className="rounded-lg text-xs h-11 min-h-11"
  />
  </div>
  </div>
 
- <div className="space-y-4">
+ <div className="space-y-2">
+ <Label className="text-xs font-bold text-foreground">Logradouro, Número e Complemento</Label>
+ <Input
+ value={address}
+ onChange={(e) => setAddress(e.target.value)}
+ placeholder="Ex: Av. Getúlio Vargas, 100 - Sala 201"
+ className="rounded-lg text-xs h-11 min-h-11"
+ />
+ </div>
+
  <CitySelect
  stateValue={state}
  cityValue={city}
@@ -1195,38 +1441,35 @@ export default function WorkspaceConfiguracoesPage() {
  onCityChange={setCity}
  />
 
- <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Endereço Físico / Balcão</Label>
+ <div className="space-y-2 pt-1">
+ <div className="flex items-center justify-between">
+ <Label className="text-xs font-bold text-foreground">Coordenadas Georreferenciadas (GPS / Despacho)</Label>
+ <span className="text-xs text-muted-foreground">Usadas no cálculo de rotas de entrega e despacho</span>
+ </div>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-1">
+ <Label className="text-xs text-muted-foreground">Latitude</Label>
  <Input
- value={address}
- onChange={(e) => setAddress(e.target.value)}
- placeholder="Rua, número, complemento e bairro"
- className="rounded-lg text-xs h-11 min-h-11"
-                />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Latitude (GPS / Despacho)</Label>
-                    <Input
-                      type="number"
-                      step="any"
-                      value={latitude ?? ""}
-                      onChange={(e) => setLatitude(e.target.value ? parseFloat(e.target.value) : null)}
-                      placeholder="-26.723"
-                      className="rounded-lg text-xs h-11 min-h-11"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Longitude (GPS / Despacho)</Label>
-                    <Input
-                      type="number"
-                      step="any"
-                      value={longitude ?? ""}
-                      onChange={(e) => setLongitude(e.target.value ? parseFloat(e.target.value) : null)}
-                      placeholder="-53.518"
-                      className="rounded-lg text-xs h-11 min-h-11"
-                    />
-                  </div>
-                </div>
+ type="number"
+ step="any"
+ value={latitude ?? ""}
+ onChange={(e) => setLatitude(e.target.value ? parseFloat(e.target.value) : null)}
+ placeholder="-26.723"
+ className="rounded-lg text-xs h-11 min-h-11 font-mono"
+ />
+ </div>
+ <div className="space-y-1">
+ <Label className="text-xs text-muted-foreground">Longitude</Label>
+ <Input
+ type="number"
+ step="any"
+ value={longitude ?? ""}
+ onChange={(e) => setLongitude(e.target.value ? parseFloat(e.target.value) : null)}
+ placeholder="-53.518"
+ className="rounded-lg text-xs h-11 min-h-11 font-mono"
+ />
+ </div>
+ </div>
  </div>
  </div>
  </Card>
@@ -1238,24 +1481,26 @@ export default function WorkspaceConfiguracoesPage() {
  <DeliveryTimeAndRadiusMatrix
  value={deliveryConfig}
  onChange={setDeliveryConfig}
- storeName={name || "Minha Cozinha & Loja"}
- storeCategory={segment}
+ storeName={name || "Minha Loja"}
+ storeCategory={currentNiche?.name || semantics?.name || "Loja"}
  storeLogoUrl={logoUrl}
  storeBannerUrl={bannerUrl}
- />
- </Card>
-
- <Card className="p-6 rounded-lg border-border bg-card space-y-5">
- <div className="pb-2">
+ isGastronomy={semantics?.nicheId === "gastronomy" || segment === "gastronomy" || segment === "gastronomia"}
+ neighborhoodsSlot={
+ <div className="space-y-4 pt-4 border-t border-border/60">
+ <div className="pb-1">
  <h3 className="text-sm font-bold text-foreground">Taxas por Bairro</h3>
  <p className="text-xs text-muted-foreground">
- Complemente o raio de entrega definindo regras e exceções por bairros específicos da cidade.
+ Complemente o raio de entrega definindo regras e exceções por bairros específicos de {city || "sua cidade"}.
  </p>
  </div>
  <NeighborhoodsManager
  cityName={city || "Sua Cidade"}
  value={neighborhoods}
  onChange={setNeighborhoods}
+ />
+ </div>
+ }
  />
  </Card>
  </TabsContent>
