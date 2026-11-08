@@ -280,7 +280,7 @@ export function UnifiedNewProductPage() {
                       <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                         Fotos
                       </TabsTrigger>
-                      {semantics.nicheId === "manufacturing" && (
+                      {true && (
                         <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                           Insumos
                         </TabsTrigger>
@@ -510,7 +510,13 @@ export function UnifiedNewProductPage() {
                     />
                   </TabsContent>
 
-                  {(nicheCtx.isFoodBusiness || semantics.nicheId === "manufacturing") && (
+                  {nicheCtx.isFoodBusiness && (
+                    <TabsContent value="cardapio" className="space-y-4 m-0">
+                      <ProductFoodSpecsCard value={editor.foodSpecs} onChange={editor.setFoodSpecs} />
+                    </TabsContent>
+                  )}
+
+                  {true && (
                     <TabsContent value="insumos" className="space-y-4 m-0">
                       <ProductBomCard
                         initialItems={editor.bomItems}

@@ -440,24 +440,29 @@ function RootComponent() {
  useEffect(() => {
   if (typeof window === "undefined") return;
   let authSubscription: { unsubscribe: () => void } | null = null;
+  let syncTimer: any = null;
   import("@/lib/supabase").then(({ getBrowserClient }) => {
    const client = getBrowserClient();
    const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
     if ((event === "TOKEN_REFRESHED" || event === "SIGNED_IN") && session?.access_token && session?.refresh_token) {
-     import("@/services/auth.functions").then(({ syncSessionToCookies }) => {
-      void syncSessionToCookies({
-       data: {
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
-       },
-      }).catch(() => {});
-     });
+     if (syncTimer) clearTimeout(syncTimer);
+     syncTimer = setTimeout(() => {
+      import("@/services/auth.functions").then(({ syncSessionToCookies }) => {
+       void syncSessionToCookies({
+        data: {
+         access_token: session.access_token,
+         refresh_token: session.refresh_token,
+        },
+       }).catch(() => {});
+      });
+     }, 300);
     }
    });
    authSubscription = subscription;
   });
 
   return () => {
+   if (syncTimer) clearTimeout(syncTimer);
    if (authSubscription) authSubscription.unsubscribe();
   };
  }, []);

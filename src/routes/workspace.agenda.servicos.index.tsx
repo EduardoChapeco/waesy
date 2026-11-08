@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench, Star, HelpCircle, Percent, DollarSign, Calendar, Globe, MessageSquare } from "lucide-react";
+import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench, Star, HelpCircle, Percent, DollarSign, Calendar, Globe, MessageSquare, Boxes, Package, Trash2 } from "lucide-react";
 import { ServiceSearchDialog } from "@/components/admin/services/service-search-dialog";
 import type { OnDemandMarketplaceService } from "@/lib/data/services-catalog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { listBookingServices, upsertBookingService, deleteBookingService } from "@/services/booking.functions";
+import { listServiceConsumedMaterials, saveServiceConsumedMaterials } from "@/services/services-erp.functions";
+import { listSupplies } from "@/services/gastronomy-supplies.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/agenda/servicos/")({
@@ -78,6 +80,21 @@ function ServicesIndexPage() {
    allowAiIndexing: true,
  });
 
+ const [materials, setMaterials] = useState<
+   Array<{ id: string; supply_id?: string; name: string; quantity: number; unit: string; cost_cents: number }>
+ >([]);
+ const [selectedSupplyId, setSelectedSupplyId] = useState<string>("");
+ const [manualMaterialName, setManualMaterialName] = useState("");
+ const [materialQty, setMaterialQty] = useState("1");
+ const [materialUnit, setMaterialUnit] = useState("un");
+ const [materialCostReais, setMaterialCostReais] = useState("0,00");
+
+ const { data: storeSupplies = [] } = useQuery({
+   queryKey: ["store-supplies-for-services"],
+   queryFn: () => listSupplies({}).catch(() => []),
+
+ });
+
  const { data: res, isLoading } = useQuery({
  queryKey: ["booking-services"],
  queryFn: () => listBookingServices(),
@@ -90,7 +107,7 @@ function ServicesIndexPage() {
  const cleanPrice = parseFloat(form.price_reais.replace(".", "").replace(",", ".")) || 0;
  const price_cents = Math.round(cleanPrice * 100);
 
- return upsertBookingService({
+ const res = await upsertBookingService({
  data: {
  id: form.id,
  title: form.title.trim(),
@@ -103,6 +120,22 @@ function ServicesIndexPage() {
  status: form.status,
  },
  });
+ const targetServiceId = (res as any)?.data?.id || form.id;
+ if (targetServiceId) {
+ await saveServiceConsumedMaterials({
+ data: {
+ serviceId: targetServiceId,
+ materials: materials.map((m) => ({
+ supply_id: m.supply_id || undefined,
+ quantity: m.quantity,
+ unit_measure: m.unit,
+ tolerance_extra: 0,
+ cost_cents: m.cost_cents,
+ })),
+ },
+ }).catch((err) => console.error("Erro ao salvar insumos do serviço:", err));
+ }
+ return res;
  },
  onSuccess: () => {
  toast.success(form.id ? "Serviço atualizado com sucesso." : "Novo serviço cadastrado.");
@@ -130,10 +163,11 @@ function ServicesIndexPage() {
 
  const handleOpenCreate = () => {
  setForm(INITIAL_FORM);
+ setMaterials([]);
  setIsSheetOpen(true);
  };
 
-  const handleOpenEdit = (service: any) => {
+  const handleOpenEdit = async (service: any) => {
     setForm({
       id: service.id,
       title: service.title || "",
@@ -153,6 +187,23 @@ function ServicesIndexPage() {
       post_care_notes: service.cancellation_policy || service.post_care_notes || "",
     });
     setIsSheetOpen(true);
+    try {
+      const consumed = await listServiceConsumedMaterials({ data: { serviceId: service.id } });
+      if (Array.isArray(consumed)) {
+        setMaterials(
+          consumed.map((c: any) => ({
+            id: c.id,
+            supply_id: c.supply_id || undefined,
+            name: c.supplies?.name || c.products?.title || "Insumo",
+            quantity: Number(c.quantity || 1),
+            unit: c.unit_measure || c.supplies?.unit || "un",
+            cost_cents: Number(c.cost_cents || c.supplies?.cost_cents_per_unit || 0),
+          }))
+        );
+      }
+    } catch {
+      setMaterials([]);
+    }
   };
 
   const handleSelectOnDemandService = (srv: OnDemandMarketplaceService) => {
@@ -302,12 +353,16 @@ function ServicesIndexPage() {
  <TooltipProvider delayDuration={200}>
  <div className="space-y-4 p-1 pb-16">
  <Tabs defaultValue="cadastro" className="w-full">
- <TabsList className="grid grid-cols-2 sm:grid-cols-4 max-w-lg h-auto sm:h-11 p-1 bg-muted/60 rounded-lg mb-4">
+ <TabsList className="grid grid-cols-2 sm:grid-cols-5 max-w-xl h-auto sm:h-11 p-1 bg-muted/60 rounded-lg mb-4">
  <TabsTrigger value="cadastro" className="rounded-lg font-bold text-xs">
  Cadastro
  </TabsTrigger>
  <TabsTrigger value="regras" className="rounded-lg font-bold text-xs">
  Preço & Comissões
+ </TabsTrigger>
+ <TabsTrigger value="insumos" className="rounded-lg font-bold text-xs gap-2">
+ <Boxes className="size-3.5 text-primary" />
+ Insumos & Kit
  </TabsTrigger>
  <TabsTrigger value="cuidados" className="rounded-lg font-bold text-xs">
  Cuidados & CRM
@@ -572,6 +627,191 @@ function ServicesIndexPage() {
  onChange={(e) => setForm({ ...form, post_care_notes: e.target.value })}
  className="rounded-lg text-xs resize-none"
  />
+ </div>
+ </TabsContent>
+
+ {/* ABA: INSUMOS & KIT DE PROCEDIMENTO (SERVIÇOS COMPOSTOS MULTI-NICHO) */}
+ <TabsContent value="insumos" className="space-y-4 pt-1">
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3">
+ <div className="flex items-center justify-between">
+ <div>
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
+ <Boxes className="size-4 text-primary" />
+ Kit de Materiais & Insumos do Procedimento
+ </span>
+ <p className="text-xs text-muted-foreground mt-1">
+ Adicione os materiais gastos na execução (tintura, óleos, lâminas, xampus, luvas) para cálculo de margem real e baixa de estoque.
+ </p>
+ </div>
+ </div>
+
+ {/* Métricas de Custo e Lucro do Procedimento */}
+ <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-muted/40 rounded-lg border border-border/50 text-xs">
+ <div>
+ <span className="text-2xs text-muted-foreground font-bold uppercase block">Preço do Serviço</span>
+ <span className="text-sm font-black font-mono text-foreground">{form.price_reais ? `R$ ${form.price_reais}` : "R$ 0,00"}</span>
+ </div>
+ <div>
+ <span className="text-2xs text-muted-foreground font-bold uppercase block">Custo dos Insumos</span>
+ <span className="text-sm font-black font-mono text-foreground">
+ {formatMoney(materials.reduce((acc, m) => acc + (m.cost_cents * m.quantity), 0))}
+ </span>
+ </div>
+ <div>
+ <span className="text-2xs text-muted-foreground font-bold uppercase block">Lucro Bruto Unitário</span>
+ <span className="text-sm font-black font-mono text-foreground">
+ {formatMoney(
+ Math.max(
+ 0,
+ Math.round((parseFloat(form.price_reais.replace(".", "").replace(",", ".")) || 0) * 100) -
+ materials.reduce((acc, m) => acc + (m.cost_cents * m.quantity), 0)
+ )
+ )}
+ </span>
+ </div>
+ <div>
+ <span className="text-2xs text-muted-foreground font-bold uppercase block">Margem do Serviço</span>
+ <Badge variant="secondary" className="font-mono text-xs mt-1">
+ {(() => {
+ const priceCents = Math.round((parseFloat(form.price_reais.replace(".", "").replace(",", ".")) || 0) * 100);
+ const costCents = materials.reduce((acc, m) => acc + (m.cost_cents * m.quantity), 0);
+ const profit = Math.max(0, priceCents - costCents);
+ return priceCents > 0 ? `${Math.round((profit / priceCents) * 100)}%` : "0%";
+ })()} Margem
+ </Badge>
+ </div>
+ </div>
+
+ {/* Formulário de Inclusão de Insumo */}
+ <div className="p-3 bg-background rounded-lg border border-border/60 space-y-3">
+ <span className="text-xs font-bold text-foreground block">Vincular Insumo ao Serviço</span>
+ <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+ <div className="sm:col-span-5 space-y-1">
+ <Label className="text-2xs font-bold">Insumo da Despensa / Almoxarifado</Label>
+ <Select
+ value={selectedSupplyId}
+ onValueChange={(val) => {
+ setSelectedSupplyId(val);
+ const s = (storeSupplies as any[]).find((x) => x.id === val);
+ if (s) {
+ setManualMaterialName(s.name);
+ setMaterialUnit(s.unit || "un");
+ setMaterialCostReais((Number(s.cost_cents_per_unit || 0) / 100).toFixed(2).replace(".", ","));
+ }
+ }}
+ >
+ <SelectTrigger className="h-9 text-xs rounded-lg">
+ <SelectValue placeholder="Selecionar do estoque..." />
+ </SelectTrigger>
+ <SelectContent className="max-h-56">
+ {(storeSupplies as any[]).map((s) => (
+ <SelectItem key={s.id} value={s.id} className="text-xs">
+ {s.name} ({s.stock_on_hand} {s.unit} • {formatMoney(s.cost_cents_per_unit)})
+ </SelectItem>
+ ))}
+ </SelectContent>
+ </Select>
+ </div>
+
+ <div className="sm:col-span-3 space-y-1">
+ <Label className="text-2xs font-bold">Ou Nome Manual</Label>
+ <Input
+ placeholder="Ex: Luvas látex"
+ value={manualMaterialName}
+ onChange={(e) => setManualMaterialName(e.target.value)}
+ className="h-9 text-xs rounded-lg"
+ />
+ </div>
+
+ <div className="sm:col-span-2 space-y-1">
+ <Label className="text-2xs font-bold">Qtd ({materialUnit})</Label>
+ <Input
+ type="number"
+ step="any"
+ min="0.001"
+ value={materialQty}
+ onChange={(e) => setMaterialQty(e.target.value)}
+ className="h-9 text-xs rounded-lg font-mono"
+ />
+ </div>
+
+ <div className="sm:col-span-2 space-y-1">
+ <Button
+ type="button"
+ size="sm"
+ className="h-11 min-h-11 sm:h-9 sm:min-h-0 w-full rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+ onClick={() => {
+ if (!manualMaterialName.trim()) {
+ toast.error("Informe o nome ou selecione um insumo.");
+ return;
+ }
+ const cleanCost = parseFloat(materialCostReais.replace(".", "").replace(",", ".")) || 0;
+ setMaterials((prev) => [
+ ...prev,
+ {
+ id: `mat-${Date.now()}`,
+ supply_id: selectedSupplyId || undefined,
+ name: manualMaterialName.trim(),
+ quantity: Number(materialQty) || 1,
+ unit: materialUnit || "un",
+ cost_cents: Math.round(cleanCost * 100),
+ },
+ ]);
+ setManualMaterialName("");
+ setSelectedSupplyId("");
+ setMaterialQty("1");
+ setMaterialCostReais("0,00");
+ }}
+ >
+ + Incluir
+ </Button>
+ </div>
+ </div>
+ </div>
+
+ {/* Lista de Materiais Vinculados */}
+ {materials.length === 0 ? (
+ <p className="text-xs text-muted-foreground text-center py-4">
+ Nenhum material vinculado a este procedimento ainda.
+ </p>
+ ) : (
+ <div className="rounded-lg border border-border/60 overflow-hidden">
+ <Table>
+ <TableHeader>
+ <TableRow>
+ <TableHead className="text-xs">Material / Insumo</TableHead>
+ <TableHead className="text-xs text-center">Quantidade</TableHead>
+ <TableHead className="text-xs text-right">Custo Unit.</TableHead>
+ <TableHead className="text-xs text-right">Total</TableHead>
+ <TableHead className="w-10"></TableHead>
+ </TableRow>
+ </TableHeader>
+ <TableBody>
+ {materials.map((m) => (
+ <TableRow key={m.id}>
+ <TableCell className="text-xs font-medium">{m.name}</TableCell>
+ <TableCell className="text-xs text-center font-mono">{m.quantity} {m.unit}</TableCell>
+ <TableCell className="text-xs text-right font-mono">{formatMoney(m.cost_cents)}</TableCell>
+ <TableCell className="text-xs text-right font-mono font-bold text-foreground">
+ {formatMoney(m.cost_cents * m.quantity)}
+ </TableCell>
+ <TableCell>
+ <Button
+ type="button"
+ variant="ghost"
+ size="icon"
+ className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-0 sm:min-w-0 text-muted-foreground hover:text-destructive cursor-pointer"
+ onClick={() => setMaterials((prev) => prev.filter((x) => x.id !== m.id))}
+ >
+ <Trash2 className="size-3.5" />
+ </Button>
+ </TableCell>
+ </TableRow>
+ ))}
+ </TableBody>
+ </Table>
+ </div>
+ )}
  </div>
  </TabsContent>
 

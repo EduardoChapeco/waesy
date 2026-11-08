@@ -39,9 +39,9 @@ describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => 
       expect(t("items")).toBe("Pratos & Itens");
       expect(t("catalog")).toBe("Cardápio");
       expect(t("order")).toBe("Comanda / Pedido");
-      expect(t("orders")).toBe("Pedidos da Cozinha");
+      expect(t("orders")).toBe("Histórico de Pedidos");
       expect(t("stock")).toBe("Insumos & Despensa");
-      expect(t("kds")).toBe("Gestor de Pedidos (KDS)");
+      expect(t("kds")).toBe("Gestor de Pedidos");
     });
 
     it("traduz termos perfeitamente para Advocacia & Jurídico (legal)", () => {

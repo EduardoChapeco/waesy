@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { type NeighborhoodPreset } from "@/lib/constants/cities";
+import { getNeighborhoodsForCity, CHAPECO_NEIGHBORHOODS, type NeighborhoodPreset } from "@/lib/constants/cities";
 
 export interface NeighborhoodItem {
  id?: string;
@@ -35,7 +35,43 @@ export function NeighborhoodsManager({
  const [newNeighborhoodName, setNewNeighborhoodName] = useState("");
  const [newNeighborhoodFee, setNewNeighborhoodFee] = useState<number>(500);
 
+ const officialPresets = useMemo(() => getNeighborhoodsForCity(cityName), [cityName]);
+
+ const handleNewNameChange = (val: string) => {
+   setNewNeighborhoodName(val);
+   const matched = officialPresets.find(
+     (p) => p.name.toLowerCase().trim() === val.toLowerCase().trim()
+   );
+   if (matched && matched.defaultFeeCents) {
+     setNewNeighborhoodFee(matched.defaultFeeCents);
+   }
+ };
+
  // Edição inline de nome
+  const handleImportOfficialNeighborhoods = () => {
+    const presets = getNeighborhoodsForCity(cityName);
+    const existingNames = new Set(value.map((n) => n.name.toLowerCase().trim()));
+    const newItems: NeighborhoodItem[] = [];
+    presets.forEach((p) => {
+      if (!existingNames.has(p.name.toLowerCase().trim())) {
+        newItems.push({
+          name: p.name,
+          defaultFeeCents: p.defaultFeeCents,
+          defaultTimeMinutes: p.defaultTimeMinutes,
+          active: p.active,
+        });
+      }
+    });
+
+    if (newItems.length === 0) {
+      toast.info(`Todos os ${presets.length} bairros oficiais de ${cityName} já estão na lista.`);
+      return;
+    }
+
+    onChange([...value, ...newItems]);
+    toast.success(`${newItems.length} bairros oficiais de ${cityName} foram importados com sucesso!`);
+  };
+
  const [editingIndex, setEditingIndex] = useState<number | null>(null);
  const [editingNameValue, setEditingNameValue] = useState("");
 
@@ -173,7 +209,18 @@ export function NeighborhoodsManager({
  </p>
  </div>
 
- <div className="flex items-center gap-2 shrink-0">
+ <div className="flex items-center gap-2 shrink-0 flex-wrap">
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={handleImportOfficialNeighborhoods}
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2"
+ title={`Carregar automaticamente os bairros oficiais de ${cityName}`}
+ >
+ <Layers className="size-3.5 text-primary" />
+ <span>Importar Bairros Oficiais</span>
+ </Button>
  <Button
  type="button"
  variant="outline"
@@ -214,11 +261,19 @@ export function NeighborhoodsManager({
  <Label className="text-xs text-muted-foreground">Nome do Bairro *</Label>
  <Input
  value={newNeighborhoodName}
- onChange={(e) => setNewNeighborhoodName(e.target.value)}
- placeholder="Ex: Jardim América, Loteamento Universitário..."
- className="h-9 rounded-lg text-xs bg-background"
+ onChange={(e) => handleNewNameChange(e.target.value)}
+ list="official-neighborhoods-presets"
+ placeholder={`Ex: ${officialPresets[0]?.name || "Centro"}, ${officialPresets[1]?.name || "Bairro"}`}
+ className="h-11 min-h-11 rounded-lg text-xs bg-background"
  autoFocus
  />
+ <datalist id="official-neighborhoods-presets">
+   {officialPresets.map((p) => (
+     <option key={p.name} value={p.name}>
+       {p.name} (Sugerido: {(p.defaultFeeCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})
+     </option>
+   ))}
+ </datalist>
  </div>
 
  <div className="sm:col-span-5 space-y-1">
@@ -227,7 +282,7 @@ export function NeighborhoodsManager({
  value={newNeighborhoodFee}
  onChange={(cents) => setNewNeighborhoodFee(cents || 0)}
  placeholder="0,00"
- className="h-9 text-xs rounded-lg font-mono"
+ className="h-11 min-h-11 text-xs rounded-lg font-mono"
  />
  </div>
  </div>

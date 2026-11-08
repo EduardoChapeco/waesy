@@ -328,6 +328,24 @@ export async function _createProduct(input: {
   const effectiveStoreId = await resolveStoreIdWithFallback(identity, input.store_id, db);
   assertStoreAccess(identity, MANAGER_ROLES, effectiveStoreId);
 
+  // Calcula menor preço de entrada entre variantes se houver matriz (DEC-433)
+  let effectiveBasePriceCents = input.price_cents;
+  if (input.variants && input.variants.length > 0) {
+    let minVariantPrice = Infinity;
+    for (const v of input.variants) {
+      const varPrice =
+        v.price_override_cents != null && Number(v.price_override_cents) > 0
+          ? Number(v.price_override_cents)
+          : input.price_cents;
+      if (varPrice > 0 && varPrice < minVariantPrice) {
+        minVariantPrice = varPrice;
+      }
+    }
+    if (minVariantPrice !== Infinity && minVariantPrice > 0) {
+      effectiveBasePriceCents = Math.min(input.price_cents, minVariantPrice);
+    }
+  }
+
  // 1. Tenta RPC atômico primeiro se existir
  try {
  const { data, error } = await db.rpc("create_product_transaction_v1", {
@@ -381,7 +399,7 @@ export async function _createProduct(input: {
  short_description: input.short_description || null,
  status: input.status || "draft",
  brand: input.brand || null,
- price_cents: effectivePriceCents,
+ price_cents: effectiveBasePriceCents,
  compare_at_cents: input.compare_at_cents || null,
  cost_cents: input.cost_cents || null,
  attributes: input.attributes || {},
@@ -1326,6 +1344,25 @@ export async function _batchUpsertVariantMatrix(input: {
  );
  }
 
+ // Sincroniza o menor preço efetivo da matriz no preço pai do produto (DEC-433)
+ if (input.matrix && input.matrix.length > 0) {
+  let minVariantPrice = Infinity;
+  for (const v of input.matrix) {
+   if (v.price_override_cents != null && Number(v.price_override_cents) > 0) {
+    if (Number(v.price_override_cents) < minVariantPrice) {
+     minVariantPrice = Number(v.price_override_cents);
+    }
+   }
+  }
+  if (minVariantPrice !== Infinity && minVariantPrice > 0) {
+   await db
+    .from("products")
+    .update({ price_cents: minVariantPrice })
+    .eq("id", input.product_id)
+    .eq("store_id", store_id);
+  }
+ }
+
  return data;
 }
 
@@ -1914,6 +1951,10 @@ const optionGroupSchema = z.object({
  max_selections: z.number().int().min(1).default(1),
  is_required: z.boolean().default(false),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
 });
 
 const optionValueSchema = z.object({
@@ -1924,6 +1965,10 @@ const optionValueSchema = z.object({
  is_default: z.boolean().default(false),
  is_active: z.boolean().default(true),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
 });
 
 /** Lista todos os grupos de opções de um produto com seus valores */
@@ -1976,6 +2021,10 @@ export const batchSaveOptionGroups = createServerFn({ method: "POST" })
  is_default: z.boolean().default(false),
  is_active: z.boolean().default(true),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
  }),
  ),
  }),
@@ -2059,8 +2108,20 @@ export const listOptionGroups = createServerFn({ method: "GET" })
         identity?.memberships?.[0]?.store_id ||
         null;
 
-      if (!targetStoreId) return [];
-      assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
+ const { data, error } = await db
+ .from("option_groups")
+ .select(
+ `
+ id, internal_name, display_name, description, selection_type,
+ min_selections, max_selections, is_required,
+ created_at, updated_at,
+ values:option_values(
+ id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order, supply_id, recipe_id, consume_quantity, consume_unit
+ )
+ `,
+ )
+ .eq("store_id", store_id)
+ .order("created_at", { ascending: false });
 
       const { data, error } = await db
         .from("option_groups")
@@ -2095,40 +2156,41 @@ export const listOptionGroups = createServerFn({ method: "GET" })
   });
 
 export const upsertOptionGroup = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      id: z.string().uuid().optional().nullable().or(z.literal("")),
-      store_id: z.string().uuid().optional().nullable(),
-      internal_name: z.string().min(1),
-      display_name: z.string().min(1),
-      description: z.string().optional().nullable(),
-      selection_type: z.enum(["single", "multiple"]),
-      min_selections: z.number().int().min(0),
-      max_selections: z.number().int().min(1),
-      is_required: z.boolean(),
-      values: z.array(
-        z.object({
-          id: z.string().uuid().optional().nullable().or(z.literal("")),
-          label: z.string().min(1),
-          description: z.string().optional().nullable(),
-          image_url: z.string().optional().nullable(),
-          price_modifier_cents: z.number().int().default(0),
-          max_quantity_per_item: z.number().int().min(1).default(1).optional(),
-          is_default: z.boolean().default(false),
-          is_active: z.boolean().default(true),
-          sort_order: z.number().int().default(0),
-        }),
-      ),
-    }),
-  )
-  .handler(async ({ data: input }) => {
-    try {
-      await requireAdmin();
-      const db = getServerClient();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      const targetStoreId = await resolveStoreIdWithFallback(identity, input.store_id, db);
-      assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
+ .validator(
+ z.object({
+ id: z.string().uuid().optional(),
+ internal_name: z.string().min(1),
+ display_name: z.string().min(1),
+ description: z.string().optional().nullable(),
+ selection_type: z.enum(["single", "multiple"]),
+ min_selections: z.number().int().min(0),
+ max_selections: z.number().int().min(1),
+ is_required: z.boolean(),
+ values: z.array(
+ z.object({
+ id: z.string().uuid().optional(),
+ label: z.string().min(1),
+ description: z.string().optional().nullable(),
+ image_url: z.string().optional().nullable(),
+ price_modifier_cents: z.number().int().default(0),
+ max_quantity_per_item: z.number().int().min(1).default(1).optional(),
+ is_default: z.boolean().default(false),
+ is_active: z.boolean().default(true),
+ sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
+ }),
+ ),
+ }),
+ )
+ .handler(async ({ data: input }) => {
+ try {
+ await requireAdmin();
+ const db = getServerClient();
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity();
 
       const cleanGroupId = input.id && input.id.trim() && !input.id.startsWith("temp-") ? input.id.trim() : undefined;
       let groupId = cleanGroupId;
@@ -2161,23 +2223,24 @@ export const upsertOptionGroup = createServerFn({ method: "POST" })
         if (error) throw error;
       }
 
-      // Sync Values
-      if (input.values && input.values.length > 0) {
-        const valuesToUpsert = input.values.map((v, index) => {
-          const cleanValId = v.id && v.id.trim() && !v.id.startsWith("temp-") ? v.id.trim() : undefined;
-          return {
-            ...(cleanValId ? { id: cleanValId } : {}),
-            group_id: groupId,
-            label: v.label,
-            description: v.description || null,
-            image_url: v.image_url || null,
-            price_modifier_cents: v.price_modifier_cents,
-            max_quantity_per_item: v.max_quantity_per_item ?? 1,
-            is_default: v.is_default,
-            is_active: v.is_active,
-            sort_order: v.sort_order ?? index,
-          };
-        });
+ // Sync Values
+ if (input.values && input.values.length > 0) {
+ const valuesToUpsert = input.values.map((v, index) => ({
+ ...(v.id ? { id: v.id } : {}),
+ group_id: groupId,
+ label: v.label,
+ description: v.description || null,
+ image_url: v.image_url || null,
+ price_modifier_cents: v.price_modifier_cents,
+ max_quantity_per_item: v.max_quantity_per_item ?? 1,
+ is_default: v.is_default,
+ is_active: v.is_active,
+ sort_order: v.sort_order ?? index,
+ supply_id: v.supply_id || null,
+ recipe_id: v.recipe_id || null,
+ consume_quantity: v.consume_quantity ?? 1,
+ consume_unit: v.consume_unit || "un",
+ }));
 
         const keepIds = input.values
           .map((v) => (v.id && v.id.trim() && !v.id.startsWith("temp-") ? v.id.trim() : null))
@@ -2193,13 +2256,21 @@ export const upsertOptionGroup = createServerFn({ method: "POST" })
           await db.from("option_values").delete().eq("group_id", groupId);
         }
 
-        const { error: upsertErr } = await db
-          .from("option_values")
-          .upsert(valuesToUpsert, { onConflict: "id" });
-        if (upsertErr) throw upsertErr;
-      } else {
-        await db.from("option_values").delete().eq("group_id", groupId);
-      }
+ // Busca o grupo completo para retorno atômico
+ const { data: fullGroup } = await db
+ .from("option_groups")
+ .select(
+ `
+ id, internal_name, display_name, description, selection_type,
+ min_selections, max_selections, is_required,
+ created_at, updated_at,
+ values:option_values(
+ id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order, supply_id, recipe_id, consume_quantity, consume_unit
+ )
+ `,
+ )
+ .eq("id", groupId)
+ .single();
 
       // Busca o grupo completo para retorno atômico
       const { data: fullGroup, error: fetchErr } = await db

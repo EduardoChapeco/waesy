@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/state/states";
 import { getStoreSettings } from "@/services/store.functions";
 import { listWorkspaceTasks, updateTaskStatus, toggleTaskMyDay, getDailyTaskDigest } from "@/services/tasks.functions";
 import { listKanbanStages, type KanbanStageDTO } from "@/services/kanban-config.functions";
+import { useWorkspaceViewMode } from "@/components/workspace/view-modes";
 
 import type { WorkspaceTask, TaskStatus } from "@/components/tasks/task-types";
 import { TaskItemCard } from "@/components/tasks/task-item-card";
@@ -53,7 +54,11 @@ function WorkspaceTasksPage() {
   const [tasks, setTasks] = useState<WorkspaceTask[]>(initialTasks || []);
   const [stages, setStages] = useState<KanbanStageDTO[]>(initialStages || []);
   const [digest, setDigest] = useState(initialDigest);
-  const [activeTab, setActiveTab] = useState<"my-day" | "kanban" | "list" | "calendar">("my-day");
+  const [activeTab, setActiveTab] = useState<"my-day" | "all" | "urgent" | "done">("my-day");
+  const { mode: viewMode, setMode: setViewMode } = useWorkspaceViewMode({
+    module: "tarefas",
+    defaultMode: "kanban",
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
@@ -144,6 +149,8 @@ function WorkspaceTasksPage() {
     return tasks.filter((t) => {
       // Filtro da aba
       if (activeTab === "my-day" && !t.is_my_day) return false;
+      if (activeTab === "urgent" && t.priority !== "urgent" && t.priority !== "high") return false;
+      if (activeTab === "done" && t.status !== "done") return false;
 
       // Filtro de contexto / nicho
       if (contextFilter !== "all" && t.context_type !== contextFilter) return false;
@@ -218,12 +225,19 @@ function WorkspaceTasksPage() {
       <WorkspaceCanonicalToolbar
         tabs={[
           { id: "my-day", label: "Meu Dia", icon: Sun, count: tasks.filter((t) => t.is_my_day && t.status !== "done").length },
-          { id: "kanban", label: "Kanban", icon: Kanban },
-          { id: "list", label: "Lista", icon: ListTodo, count: pendingTasks.length },
-          { id: "calendar", label: "Calendário", icon: Calendar },
+          { id: "all", label: "Todas", icon: ListTodo, count: tasks.filter((t) => t.status !== "done").length },
+          { id: "urgent", label: "Urgentes", icon: Flame, count: tasks.filter((t) => (t.priority === "urgent" || t.priority === "high") && t.status !== "done").length },
+          { id: "done", label: "Concluídas", icon: CheckCircle2, count: tasks.filter((t) => t.status === "done").length },
         ]}
         activeTab={activeTab}
         onTabChange={(id) => setActiveTab(id as any)}
+        viewModes={[
+          { id: "kanban", label: "Kanban", icon: Kanban },
+          { id: "table", label: "Lista", icon: ListTodo },
+          { id: "calendar", label: "Calendário", icon: Calendar },
+        ]}
+        activeViewMode={viewMode}
+        onViewModeChange={(m) => setViewMode(m as any)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholder="Buscar por título, código ou tag..."
@@ -258,7 +272,7 @@ function WorkspaceTasksPage() {
         ]}
         onMetricsClick={() => setIsDashboardOpen(true)}
         metricsBadge={(digest?.overdueCount ?? 0) > 0 ? `${digest.overdueCount} atrasadas` : undefined}
-        onColumnsClick={activeTab === "kanban" ? () => setIsCustomizerOpen(true) : undefined}
+        onColumnsClick={viewMode === "kanban" ? () => setIsCustomizerOpen(true) : undefined}
         primaryAction={{
           label: "Nova Tarefa",
           icon: Plus,
@@ -268,7 +282,7 @@ function WorkspaceTasksPage() {
 
       {/* ── 2. Área Principal de Visualização ── */}
       <div className="flex-1 min-h-0">
-        {activeTab === "calendar" ? (
+        {viewMode === "calendar" ? (
           <TaskCalendarView
             tasks={filteredTasks}
             onSelectTask={(task) => {
@@ -277,7 +291,7 @@ function WorkspaceTasksPage() {
             }}
             onAddTaskOnDate={() => setNewTaskOpen(true)}
           />
-        ) : activeTab === "kanban" ? (
+        ) : viewMode === "kanban" ? (
           <TaskKanbanBoard
             tasks={filteredTasks}
             stages={stages}

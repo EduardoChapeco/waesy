@@ -3,7 +3,8 @@ import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Users, Search, Plus, ArrowRight, TrendingUp, Building2, User, Phone, Mail, MapPin, Tag, AlertTriangle, Clock, CheckCircle2, Archive, ExternalLink, MessageCircle, MoreVertical, Filter, DollarSign, ShieldCheck, FileText, Plane, Ticket, List, LayoutGrid, Kanban } from "lucide-react";
+import { Users, Search, Plus, ArrowRight, TrendingUp, Building2, User, Phone, Mail, MapPin, Tag, AlertTriangle, Clock, CheckCircle2, Archive, ExternalLink, MessageCircle, MoreVertical, Filter, DollarSign, ShieldCheck, FileText, Plane, Ticket, LayoutGrid, Kanban, Table as TableIcon } from "lucide-react";
+import { UniversalViewManager, useWorkspaceViewMode, type WorkspaceViewMode } from "@/components/workspace/view-modes";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { Button } from "@/components/ui/button";
@@ -65,7 +66,10 @@ function CarteiraClientesPage() {
  const [statusFilter, setStatusFilter] = useState("all");
  const [kindFilter, setKindFilter] = useState("all");
  const [channelFilter, setChannelFilter] = useState("all");
- const [viewMode, setViewMode] = useState<"table" | "cards" | "kanban">("table");
+  const { mode: viewMode, setMode: setViewMode } = useWorkspaceViewMode({
+    module: "clientes",
+    defaultMode: "table",
+  });
 
  // Filtros em memória
  const filteredCustomers = useMemo(() => {
@@ -250,6 +254,13 @@ function CarteiraClientesPage() {
           onClick: () => setIsImporterOpen(true),
           variant: "outline",
         }}
+        viewModes={[
+          { id: "table", label: "Tabela", icon: TableIcon },
+          { id: "cards", label: "Cartões", icon: LayoutGrid },
+          { id: "kanban", label: "Funil CRM", icon: Kanban },
+        ]}
+        activeViewMode={viewMode}
+        onViewModeChange={(m) => setViewMode(m as any)}
         primaryAction={{
           label: isTourism ? "Novo Passageiro" : "Novo Cliente",
           icon: Plus,
@@ -300,438 +311,21 @@ function CarteiraClientesPage() {
  )}
 
 
-      {/* ── 5. Carteira de Clientes (Dual View: Mobile Cards & Desktop Table) ── */}
-      {filteredCustomers.length === 0 ? (
-        <div className="py-16 text-center rounded-lg border border-border/40 bg-card space-y-4 px-4">
-          <div className="size-14 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
-            <Users className="size-6" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-base sm:text-lg font-bold text-foreground">
-              Nenhum cliente encontrado
-            </h3>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              {searchTerm || statusFilter !== "all" || kindFilter !== "all" || channelFilter !== "all"
-                ? "Nenhum cliente atende aos filtros atuais. Tente ajustar os parâmetros de busca."
-                : "Sua carteira de clientes ainda está vazia. Comece cadastrando passageiros ou empresas parceiras."}
-            </p>
-          </div>
-          <Button
-            onClick={() => setIsWizardOpen(true)}
-            className="h-11 px-6 rounded-lg font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
-          >
-            <Plus className="size-4" />
-            <span>Cadastrar {t("client")}</span>
-          </Button>
-        </div>
-      ) : (
-        <>
-          {viewMode === "cards" ? (
-            /* ── CARDS GRID VIEW ── */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredCustomers.map((c: any) => {
-                const isCompany = c.kind === "company";
-                const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
-                const hasSoonDocs = (c.docAlerts?.soon || 0) > 0;
-
-                return (
-                  <div
-                    key={c.id}
-                    className="p-5 rounded-2xl border border-border/70 bg-card shadow-2xs hover:border-primary/40 transition-colors flex flex-col justify-between space-y-4"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className={`size-11 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 border border-border/40 ${
-                              isCompany
-                                ? "bg-primary/10 text-primary"
-                                : "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            {isCompany ? (
-                              <Building2 className="size-5" />
-                            ) : (
-                              c.fullName[0]?.toUpperCase() || <User className="size-5" />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <Link
-                              to="/workspace/clientes/$id"
-                              params={{ id: c.id }}
-                              className="font-bold text-sm text-foreground hover:text-primary transition-colors block truncate"
-                            >
-                              {c.fullName}
-                            </Link>
-                            <span className="text-xs text-muted-foreground block truncate font-mono">
-                              {c.document || (c.city ? `${c.city} - ${c.state || "UF"}` : "Sem documento")}
-                            </span>
-                          </div>
-                        </div>
-                        <Badge
-                          variant={c.status === "active" ? "secondary" : "outline"}
-                          className={`text-xs font-semibold px-2 py-1 rounded-full shrink-0 ${
-                            c.status === "active"
-                              ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                              : "text-muted-foreground"
-                          }`}
-                        >
-                          {c.status === "active" ? "Ativo" : c.status === "blocked" ? "Bloqueado" : "Inativo"}
-                        </Badge>
-                      </div>
-
-                      <div className="space-y-2 text-xs text-muted-foreground">
-                        {c.email && (
-                          <div className="flex items-center gap-2 truncate">
-                            <Mail className="size-3.5 shrink-0" />
-                            <span className="truncate">{c.email}</span>
-                          </div>
-                        )}
-                        {c.phone && (
-                          <div className="flex items-center gap-2 font-mono">
-                            <Phone className="size-3.5 shrink-0 text-emerald-600" />
-                            <span>{c.phone}</span>
-                          </div>
-                        )}
-                        {(hasExpiredDocs || hasSoonDocs) && (
-                          <div className="pt-1">
-                            {hasExpiredDocs ? (
-                              <Badge variant="destructive" className="text-xs font-bold gap-1 px-2 py-1">
-                                <AlertTriangle className="size-3" />
-                                <span>{c.docAlerts.expired} Vencido</span>
-                              </Badge>
-                            ) : (
-                              <Badge variant="secondary" className="text-xs font-bold bg-warning/20 text-warning-strong gap-1 px-2 py-1">
-                                <Clock className="size-3" />
-                                <span>{c.docAlerts.soon} Vence em breve</span>
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-3 border-t border-border/40">
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold gap-2 border-border hover:bg-muted cursor-pointer"
-                      >
-                        <Link to="/workspace/clientes/$id" params={{ id: c.id }}>
-                          <FileText className="size-3.5 text-muted-foreground" />
-                          <span>Ficha 360°</span>
-                        </Link>
-                      </Button>
-                      {c.phone && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => openWhatsApp(c.phone, c.fullName)}
-                          className="size-11 min-w-11 min-h-11 rounded-lg border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer shrink-0"
-                          title="Conversar no WhatsApp"
-                          aria-label={`Conversar no WhatsApp com ${c.fullName}`}
-                        >
-                          <MessageCircle className="size-4" />
-                        </Button>
-                      )}
-                      <CrudActionsMenu
-                        triggerVariant="outline"
-                        triggerClassName="size-11 min-w-11 min-h-11 p-0 rounded-lg border-border hover:bg-muted shrink-0"
-                        onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
-                        viewLabel="Ver Ficha Completa"
-                        onArchive={() => handleArchive(c.id, c.fullName)}
-                        archiveTitle={`Arquivar cliente "${c.fullName}"?`}
-                        archiveDescription="O cliente será arquivado e não aparecerá nas listagens ativas."
-                        customActions={[
-                          {
-                            label: "Ficha Rápida",
-                            icon: ShieldCheck,
-                            onClick: () => setSelectedDrawerCustomer(c),
-                          },
-                          {
-                            label: "Criar Oportunidade",
-                            icon: Plane,
-                            onClick: () => router.navigate({ to: "/workspace/comercial" }),
-                          },
-                        ]}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : viewMode === "kanban" ? (
-            /* ── FUNIL CRM KANBAN VIEW ── */
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              {[
-                {
-                  id: "new",
-                  title: "Novos Contatos",
-                  description: "Cadastrados recentemente",
-                  items: filteredCustomers.filter((c: any) => c.channel === "site" || c.channel === "direct" || !c.channel),
-                  badgeColor: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-                },
-                {
-                  id: "active",
-                  title: "Clientes Ativos",
-                  description: "Com compras e emissões",
-                  items: filteredCustomers.filter((c: any) => c.status === "active"),
-                  badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-                },
-                {
-                  id: "alerts",
-                  title: "Alertas de Documento",
-                  description: "Passaporte ou CNH pendente",
-                  items: filteredCustomers.filter((c: any) => (c.docAlerts?.expired || 0) > 0 || (c.docAlerts?.soon || 0) > 0),
-                  badgeColor: "bg-warning/10 text-warning-strong border-warning/20",
-                },
-                {
-                  id: "inactive",
-                  title: "Inativos & Retenção",
-                  description: "Ações de fidelização",
-                  items: filteredCustomers.filter((c: any) => c.status !== "active"),
-                  badgeColor: "bg-muted text-muted-foreground border-border",
-                },
-              ].map((column) => (
-                <div
-                  key={column.id}
-                  className="p-4 rounded-2xl border border-border/70 bg-card/60 flex flex-col space-y-3 min-h-96"
-                >
-                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground">{column.title}</h4>
-                      <p className="text-xs text-muted-foreground">{column.description}</p>
-                    </div>
-                    <Badge variant="outline" className={`text-xs font-bold font-mono px-2 py-1 rounded-full ${column.badgeColor}`}>
-                      {column.items.length}
-                    </Badge>
-                  </div>
-                  <div className="space-y-2 flex-1 overflow-y-auto no-scrollbar">
-                    {column.items.length === 0 ? (
-                      <div className="py-8 text-center text-xs text-muted-foreground">
-                        Nenhum contato nesta etapa
-                      </div>
-                    ) : (
-                      column.items.map((c: any) => (
-                        <div
-                          key={c.id}
-                          className="p-3 rounded-xl border border-border/60 bg-card shadow-2xs hover:border-primary/40 transition-colors space-y-2 cursor-pointer"
-                          onClick={() => setSelectedDrawerCustomer(c)}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <span className="font-bold text-xs text-foreground truncate">
-                              {c.fullName}
-                            </span>
-                            <Badge variant="outline" className="text-xs uppercase shrink-0">
-                              {c.kind === "company" ? "PJ" : "PF"}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span className="truncate">{c.city ? `${c.city}/${c.state || "UF"}` : "Local"}</span>
-                            {c.phone && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openWhatsApp(c.phone, c.fullName);
-                                }}
-                                className="text-emerald-600 hover:text-emerald-700 p-1 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
-                                title="WhatsApp"
-                              >
-                                <MessageCircle className="size-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : isMobile ? (
-            /* ── 1. Mobile List Layout (Zero-Cramping, Large Text & 44px Controls) ── */
-            <div className="bg-card border-y border-border/40 divide-y divide-border/30">
-            {filteredCustomers.map((c: any) => {
-              const isCompany = c.kind === "company";
-              const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
-              const hasSoonDocs = (c.docAlerts?.soon || 0) > 0;
-
-              return (
-                <div
-                  key={c.id}
-                  className="px-4 py-4 min-h-14 space-y-3 active:bg-muted/30 transition-colors"
-                >
-                  {/* Top: Avatar, Nome, Tipo & Status */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className={`size-12 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 border border-border/40 ${
-                          isCompany
-                            ? "bg-primary/10 text-primary"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {isCompany ? (
-                          <Building2 className="size-5" />
-                        ) : (
-                          c.fullName[0]?.toUpperCase() || <User className="size-5" />
-                        )}
-                      </div>
-
-                      <div className="min-w-0">
-                        <Link
-                          to="/workspace/clientes/$id"
-                          params={{ id: c.id }}
-                          className="font-bold text-base text-foreground hover:text-primary transition-colors block truncate"
-                        >
-                          {c.fullName}
-                        </Link>
-                        {c.legalName && c.legalName !== c.fullName && (
-                          <span className="text-xs text-muted-foreground block truncate font-mono">
-                            {c.legalName}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge
-                        variant={c.status === "active" ? "secondary" : "outline"}
-                        className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                          c.status === "active"
-                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {c.status === "active" ? "Ativo" : c.status === "blocked" ? "Bloqueado" : "Inativo"}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs font-bold uppercase">
-                        {isCompany ? "PJ (B2B)" : "PF (B2C)"}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {/* Informações de Contato e Documentos */}
-                  <div className="space-y-2 pt-1 text-xs text-muted-foreground">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <span className="font-mono text-foreground font-medium">
-                        Doc: {c.document || "Não informado"}
-                      </span>
-                      {c.city && (
-                        <span>
-                          {c.city} - {c.state || "UF"}
-                        </span>
-                      )}
-                    </div>
-
-                    {c.email && (
-                      <p className="text-xs text-muted-foreground truncate">{c.email}</p>
-                    )}
-
-                    {/* Alertas de Documentos */}
-                    {(hasExpiredDocs || hasSoonDocs) && (
-                      <div className="pt-1">
-                        {hasExpiredDocs ? (
-                          <Badge variant="destructive" className="text-xs font-bold gap-1 px-3 py-1">
-                            <AlertTriangle className="size-3" />
-                            <span>{c.docAlerts.expired} Documento(s) Vencido(s)</span>
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="text-xs font-bold bg-warning/20 text-warning-strong  gap-1 px-3 py-1">
-                            <Clock className="size-3" />
-                            <span>{c.docAlerts.soon} Vence em breve</span>
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Ações Móveis Ergonômicas (44px min height) */}
-                  <div className="flex items-center gap-2 pt-1 border-t border-border/30">
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="flex-1 h-11 rounded-lg text-sm font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
-                    >
-                      <Link to="/workspace/clientes/$id" params={{ id: c.id }}>
-                        <FileText className="size-4 text-muted-foreground" />
-                        <span>Ficha do Cliente</span>
-                      </Link>
-                    </Button>
-
-                    {c.phone && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => openWhatsApp(c.phone, c.fullName)}
-                        className="h-11 px-4 rounded-lg border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer shrink-0"
-                        title="Conversar no WhatsApp"
-                      >
-                        <MessageCircle className="size-5" />
-                      </Button>
-                    )}
-
-                    <CrudActionsMenu
- triggerVariant="outline"
- triggerClassName="h-11 px-4 rounded-lg border-border/60 hover:bg-muted shrink-0"
- onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
- viewLabel="Ver Ficha Completa"
- onArchive={() => handleArchive(c.id, c.fullName)}
- archiveTitle={`Arquivar cliente "${c.fullName}"?`}
- archiveDescription="O cliente será arquivado e não aparecerá nas listagens ativas, podendo ser restaurado futuramente."
- customActions={[
- {
- label: "Ficha Rápida",
- icon: ShieldCheck,
- onClick: () => setSelectedDrawerCustomer(c),
- },
- ...(c.phone
- ? [
- {
- label: "Conversar no WhatsApp",
- icon: MessageCircle,
- onClick: () => openWhatsApp(c.phone, c.fullName),
- },
- ]
- : []),
- {
- label: "Criar Oportunidade",
- icon: Plane,
- onClick: () => router.navigate({ to: "/workspace/comercial" }),
- },
- {
- label: "Iniciar Cotação",
- icon: DollarSign,
- onClick: () =>
- router.navigate({
- to: "/workspace/turismo/cotacoes",
- search: {
- leadName: c.fullName,
- leadPhone: c.phone || undefined,
- leadEmail: c.email || undefined,
- clientId: c.id,
- } as any,
- }),
- },
- {
- label: "Emitir Bilhete Aéreo",
- icon: Ticket,
- onClick: () => router.navigate({ to: "/workspace/turismo/aereos" }),
- },
- ]}
- />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          ) : (
-            /* ── 2. Desktop High-Density Table Layout ── */
-            <div className="rounded-lg border border-border bg-card overflow-hidden shadow-2xs">
+      {/* ── 5. Carteira de Clientes com Alternância Polimórfica (UniversalViewManager Marco M2) ── */}
+      <UniversalViewManager<any>
+        currentView={viewMode}
+        onViewChange={setViewMode}
+        data={filteredCustomers}
+        emptyTitle="Nenhum cliente encontrado"
+        emptyDescription={
+          searchTerm || statusFilter !== "all" || kindFilter !== "all" || channelFilter !== "all"
+            ? "Nenhum cliente atende aos filtros atuais. Tente ajustar os parâmetros de busca."
+            : "Sua carteira de clientes ainda está vazia. Comece cadastrando passageiros ou empresas parceiras."
+        }
+        emptyActionLabel={isTourism ? "Cadastrar Passageiro" : "Cadastrar Cliente"}
+        onEmptyAction={() => setIsWizardOpen(true)}
+        renderTable={(items) => (
+                      <div className="rounded-lg border border-border bg-card overflow-hidden shadow-2xs">
             <Table>
               <TableHeader className="bg-muted/40">
                 <TableRow>
@@ -762,7 +356,7 @@ function CarteiraClientesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCustomers.map((c: any) => {
+                {items.map((c: any) => {
                   const isCompany = c.kind === "company";
                   const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
                   const hasSoonDocs = (c.docAlerts?.soon || 0) > 0;
@@ -946,11 +540,188 @@ function CarteiraClientesPage() {
               </TableBody>
             </Table>
             </div>
-          )}
-        </>
-      )}
+        )}
+        renderCards={(items) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {items.map((c: any) => {
+              const isCompany = c.kind === "company";
+              const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
+              const hasSoonDocs = (c.docAlerts?.soon || 0) > 0;
 
+              return (
+                <div
+                  key={c.id}
+                  className="p-4 rounded-lg border border-border/80 bg-card hover:border-primary/40 transition-colors flex flex-col justify-between gap-3 shadow-2xs"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`size-10 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 border border-border/40 ${
+                            isCompany ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {isCompany ? (
+                            <Building2 className="size-4" />
+                          ) : (
+                            c.fullName?.[0]?.toUpperCase() || <User className="size-4" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <Link
+                            to="/workspace/clientes/$id"
+                            params={{ id: c.id }}
+                            className="font-bold text-sm text-foreground hover:underline block truncate"
+                          >
+                            {c.fullName}
+                          </Link>
+                          {isCompany && c.legalName && (
+                            <p className="text-xs text-muted-foreground truncate">{c.legalName}</p>
+                          )}
+                        </div>
+                      </div>
 
+                      <Badge
+                        variant={c.status === "active" ? "secondary" : "outline"}
+                        className={`text-xs font-semibold px-2 py-1 rounded-full shrink-0 ${
+                          c.status === "active"
+                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {c.status === "active" ? "Ativo" : c.status === "blocked" ? "Bloqueado" : "Inativo"}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-1 text-xs text-muted-foreground font-mono">
+                      {c.document && <p>Doc: {c.document}</p>}
+                      {c.phone && <p>Tel: {c.phone}</p>}
+                      {c.email && <p className="truncate font-sans">E-mail: {c.email}</p>}
+                    </div>
+
+                    {(hasExpiredDocs || hasSoonDocs) && (
+                      <div className="flex gap-2 flex-wrap pt-1">
+                        {hasExpiredDocs && (
+                          <Badge variant="destructive" className="text-xs gap-1 py-0">
+                            <AlertTriangle className="size-3" />
+                            <span>Doc. Vencido</span>
+                          </Badge>
+                        )}
+                        {hasSoonDocs && (
+                          <Badge variant="outline" className="text-xs gap-1 py-0 bg-warning/10 text-warning-strong border-warning/20">
+                            <Clock className="size-3" />
+                            <span>Vence em breve</span>
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedDrawerCustomer(c)}
+                      className="h-11 min-h-11 sm:h-8 px-2 text-xs font-bold text-primary gap-1 cursor-pointer"
+                    >
+                      <ShieldCheck className="size-3.5" />
+                      <span>Ficha 360°</span>
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {c.phone && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openWhatsApp(c.phone, c.fullName)}
+                          className="size-11 min-h-11 min-w-11 sm:size-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                          title="WhatsApp"
+                        >
+                          <MessageCircle className="size-3.5" />
+                        </Button>
+                      )}
+                      <CrudActionsMenu
+                        onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
+                        viewLabel="Ver Ficha Completa"
+                        onArchive={() => handleArchive(c.id, c.fullName)}
+                        archiveTitle={`Arquivar cliente "${c.fullName}"?`}
+                        archiveDescription="O cliente será arquivado e não aparecerá nas listagens ativas, podendo ser restaurado futuramente."
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        renderKanban={(items) => {
+          const funnelStages = [
+            { id: "leads", title: "Novos / Leads", filter: (c: any) => c.status === "lead" || c.status === "new" || !c.status },
+            { id: "negotiation", title: "Em Atendimento", filter: (c: any) => c.status === "negotiation" || c.status === "contact" },
+            { id: "active", title: "Clientes Ativos", filter: (c: any) => c.status === "active" },
+            { id: "inactive", title: "Inativos / Bloqueados", filter: (c: any) => c.status === "inactive" || c.status === "blocked" || c.status === "archived" },
+          ];
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 overflow-x-auto scroll-area-carousel no-scrollbar pb-4">
+              {funnelStages.map((stage) => {
+                const stageItems = items.filter(stage.filter);
+                return (
+                  <div key={stage.id} className="p-3 rounded-lg bg-card border border-border/80 flex flex-col gap-3 min-w-64">
+                    <div className="flex items-center justify-between pb-1 border-b border-border/40">
+                      <span className="text-xs font-bold text-foreground">{stage.title}</span>
+                      <Badge variant="outline" className="text-xs font-mono">{stageItems.length}</Badge>
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      {stageItems.length === 0 ? (
+                        <p className="text-xs text-muted-foreground py-6 text-center">Nenhum cliente</p>
+                      ) : (
+                        stageItems.map((c: any) => (
+                          <div
+                            key={c.id}
+                            className="p-3 rounded-lg bg-background border border-border/60 space-y-2 hover:border-primary/40 transition-colors"
+                          >
+                            <div className="flex items-start justify-between gap-1">
+                              <span className="text-xs font-bold text-foreground truncate block">{c.fullName}</span>
+                              {c.kind === "company" && (
+                                <Badge variant="outline" className="text-xs py-0">PJ</Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground font-mono">
+                              {c.phone && <p>{c.phone}</p>}
+                              {c.city && <p className="font-sans">{c.city}</p>}
+                            </div>
+                            <div className="flex items-center justify-between pt-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedDrawerCustomer(c)}
+                                className="h-11 min-h-11 sm:h-8 px-2 text-xs font-semibold text-primary"
+                              >
+                                Ficha 360°
+                              </Button>
+                              {c.phone && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => openWhatsApp(c.phone, c.fullName)}
+                                  className="size-11 min-h-11 min-w-11 sm:size-8 text-emerald-600"
+                                >
+                                  <MessageCircle className="size-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        }}
+      />
  {/* ── 6. Wizard Multi-Etapa de Novo Cliente ── */}
  <NewClientWizard
  isOpen={isWizardOpen}

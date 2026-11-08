@@ -2,9 +2,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Receipt, Check, CreditCard, Banknote, QrCode, Printer, Download, UtensilsCrossed, Clock, Plus, ShoppingBag, AlertTriangle, Users, LayoutGrid, ListFilter, ExternalLink } from "lucide-react";
+import { ArrowLeft, Receipt, Check, CreditCard, Banknote, QrCode, Printer, Download, UtensilsCrossed, Clock, Plus, ShoppingBag, AlertTriangle, Users, LayoutGrid, ListFilter, ExternalLink, Columns, UserPlus, Search } from "lucide-react";
 import { getSalonTablesOverview, closePdvComanda, openTableComanda, requestTableBill } from "@/services/order.functions";
 import { getStoreSettings } from "@/services/store.functions";
+import { listCustomers } from "@/services/crm.functions";
+import { getStoreFloorPlan } from "@/services/reservations.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { QuickWaiterOrderModal } from "@/components/pos/quick-waiter-order-modal";
 import { FloorPlanEditorSheet } from "@/components/reservations/floor-plan-editor-sheet";
@@ -14,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -44,37 +47,37 @@ const STATUS_CONFIG: Record<
  free: {
  label: "Livre",
  badgeVariant: "outline",
- cardClass: "border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/60",
- textClass: "text-emerald-700 dark:text-emerald-400",
- dotClass: "bg-emerald-500",
+ cardClass: "border-border/80 bg-card hover:border-border hover:bg-muted/30 shadow-2xs",
+ textClass: "text-muted-foreground font-semibold",
+ dotClass: "bg-muted-foreground/40",
  },
  occupied: {
  label: "Ocupada",
  badgeVariant: "default",
- cardClass: "border-primary/40 bg-primary/5 hover:border-primary/70",
- textClass: "text-primary",
+ cardClass: "border-primary/40 bg-primary/5 hover:border-primary/70 shadow-2xs",
+ textClass: "text-primary font-semibold",
  dotClass: "bg-primary",
  },
  awaiting_payment: {
- label: "Conta Solicitada",
+ label: "Pediu Conta",
  badgeVariant: "secondary",
- cardClass: "border-warning/50 bg-warning/10 hover:border-warning/80 animate-pulse motion-reduce:animate-none",
- textClass: "text-warning-strong ",
+ cardClass: "border-warning/50 bg-warning/10 hover:border-warning/70 shadow-2xs",
+ textClass: "text-warning-strong font-semibold",
  dotClass: "bg-warning",
  },
  delayed: {
  label: "Atraso (>40m)",
  badgeVariant: "destructive",
- cardClass: "border-rose-500/50 bg-rose-500/10 hover:border-rose-500/80",
- textClass: "text-rose-700 dark:text-rose-400",
+ cardClass: "border-rose-500/50 bg-rose-500/10 hover:border-rose-500/70 shadow-2xs",
+ textClass: "text-rose-600 dark:text-rose-400 font-semibold",
  dotClass: "bg-rose-500",
  },
  reserved: {
  label: "Reservada",
  badgeVariant: "outline",
- cardClass: "border-purple-500/30 bg-purple-500/5 hover:border-purple-500/60",
- textClass: "text-purple-700 dark:text-purple-400",
- dotClass: "bg-purple-500",
+ cardClass: "border-indigo-500/40 bg-indigo-500/10 hover:border-indigo-500/60 shadow-2xs",
+ textClass: "text-indigo-600 dark:text-indigo-400 font-semibold",
+ dotClass: "bg-indigo-500",
  },
 };
 
@@ -96,6 +99,31 @@ function PdvComandasPage() {
 
  // State para o Lançador Rápido de Salão / Garçom
  const [quickWaiterModalOpen, setQuickWaiterModalOpen] = useState(false);
+
+ // State para o Editor de Salão / Planta
+ const [floorPlanOpen, setFloorPlanOpen] = useState(false);
+
+ // State para Modal de Abertura de Mesa com CRM
+ const [openTableModalOpen, setOpenTableModalOpen] = useState(false);
+ const [tableToOpen, setTableToOpen] = useState<any | null>(null);
+ const [openGuestName, setOpenGuestName] = useState("");
+ const [openCustomerPhone, setOpenCustomerPhone] = useState("");
+ const [openCustomerCpf, setOpenCustomerCpf] = useState("");
+ const [openGuestsCount, setOpenGuestsCount] = useState(2);
+ const [openCustomerId, setOpenCustomerId] = useState<string | null>(null);
+ const [crmSearch, setCrmSearch] = useState("");
+
+ const { data: floorPlanData } = useQuery({
+   queryKey: ["store-floor-plan-comandas"],
+   queryFn: () => getStoreFloorPlan(),
+ });
+ const currentFloorTables = floorPlanData?.tables || [];
+
+ const { data: crmCustomers = [] } = useQuery({
+   queryKey: ["crm-customers-comanda", crmSearch],
+   queryFn: () => listCustomers({ data: { query: crmSearch || undefined, limit: 5 } }),
+   enabled: openTableModalOpen,
+ });
 
  const { data: salonData, refetch } = useQuery({
  queryKey: ["salon-tables-overview"],
@@ -134,10 +162,19 @@ function PdvComandasPage() {
  });
 
  const openTableMutation = useMutation({
- mutationFn: (tableNumber: string) => openTableComanda({ data: { tableNumber } }),
+ mutationFn: (payload: {
+   tableNumber: string;
+   guestName?: string;
+   customerId?: string | null;
+   customerPhone?: string | null;
+   customerCpf?: string | null;
+   guestsCount?: number;
+ }) => openTableComanda({ data: payload }),
  onSuccess: (res) => {
  toast.success(res.isExisting ? "Comanda vinculada à mesa!" : "Mesa aberta com sucesso!");
  queryClient.invalidateQueries({ queryKey: ["salon-tables-overview"] });
+ setOpenTableModalOpen(false);
+ setTableToOpen(null);
  },
  onError: (err: any) => {
  toast.error(err.message || "Erro ao abrir mesa");
@@ -158,10 +195,14 @@ function PdvComandasPage() {
 
  const handleTableClick = (table: any) => {
  if (table.status === "free") {
- // Abre confirmação para abrir atendimento na mesa
- if (confirm(`Deseja abrir atendimento para a Mesa ${table.table_number}?`)) {
- openTableMutation.mutate(table.table_number);
- }
+   setTableToOpen(table);
+   setOpenGuestName("");
+   setOpenCustomerPhone("");
+   setOpenCustomerCpf("");
+   setOpenGuestsCount(table.seats || 2);
+   setOpenCustomerId(null);
+   setCrmSearch("");
+   setOpenTableModalOpen(true);
  } else {
  setSelectedTable(table);
  }
@@ -188,7 +229,7 @@ function PdvComandasPage() {
  toolDescription="Gestão de mesas, comandas abertas e fechamento de conta."
  store={store}
  >
-      <div className="flex flex-col flex-1 min-h-screen bg-background text-foreground pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
+      <div className="flex flex-col min-h-dvh bg-background text-foreground pb-20 w-full px-0 sm:px-4 md:px-0">
         {/* ── Top Bar ── */}
         <div className="border-b border-border/80 bg-card px-3 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 rounded-lg">
           <div className="flex items-center gap-3">
@@ -233,6 +274,16 @@ function PdvComandasPage() {
  variant="outline"
  size="sm"
  className="h-9 gap-2 rounded-lg border-border/80 bg-card hover:bg-muted font-bold text-xs shadow-2xs cursor-pointer min-h-11 sm:min-h-0"
+ onClick={() => setFloorPlanOpen(true)}
+ >
+ <Columns className="size-4 text-primary" />
+ <span className="hidden sm:inline">Editar Salão</span>
+ </Button>
+
+ <Button
+ variant="outline"
+ size="sm"
+ className="h-9 gap-2 rounded-lg border-border/80 bg-card hover:bg-muted font-bold text-xs shadow-2xs cursor-pointer min-h-11 sm:min-h-0"
  onClick={() => setQrModalOpen(true)}
  >
  <QrCode className="size-4 text-primary" />
@@ -246,27 +297,27 @@ function PdvComandasPage() {
  <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Livres</span>
- <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
+ <p className="text-xl font-bold text-foreground font-mono">
  {summary?.free_count || 0}
  </p>
  </div>
- <div className="size-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
+ <div className="size-2.5 rounded-full bg-muted-foreground/30 ring-4 ring-muted/50" />
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Ocupadas</span>
- <p className="text-xl font-black text-blue-600 dark:text-blue-400">
+ <p className="text-xl font-bold text-primary font-mono">
  {summary?.occupied_count || 0}
  </p>
  </div>
- <div className="size-2.5 rounded-full bg-blue-500 ring-4 ring-blue-500/20" />
+ <div className="size-2.5 rounded-full bg-primary ring-4 ring-primary/20" />
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Pediram Conta</span>
- <p className="text-xl font-black text-warning-strong ">
+ <p className="text-xl font-bold text-warning-strong font-mono">
  {summary?.awaiting_payment_count || 0}
  </p>
  </div>
@@ -276,17 +327,17 @@ function PdvComandasPage() {
  <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Reservadas</span>
- <p className="text-xl font-black text-purple-600 dark:text-purple-400">
+ <p className="text-xl font-bold text-indigo-400 font-mono">
  {summary?.reserved_count || 0}
  </p>
  </div>
- <div className="size-2.5 rounded-full bg-purple-500 ring-4 ring-purple-500/20" />
+ <div className="size-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-500/20" />
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/70 col-span-2 sm:col-span-1 flex items-center justify-between">
  <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Total Salão</span>
- <p className="text-xl font-black text-foreground">
+ <p className="text-xl font-bold text-foreground font-mono">
  {formatMoney(summary?.total_active_cents || 0)}
  </p>
  </div>
@@ -297,14 +348,14 @@ function PdvComandasPage() {
  {/* ── Main Content Area ── */}
  <div className="flex-1 p-4 sm:px-6">
  {activeView === "grid" ? (
- /* ── GRID VISUAL DE MESAS (1 a 30) ── */
+ /* ── GRID VISUAL DE MESAS ── */
  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
  {tables.map((table: any) => {
  const config = STATUS_CONFIG[table.status as TableStatus] || STATUS_CONFIG.free;
 
  return (
  <button
- key={table.table_number}
+ key={table.id || table.table_number}
  type="button"
  onClick={() => handleTableClick(table)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
@@ -318,6 +369,11 @@ function PdvComandasPage() {
  <span className="text-2xl font-black text-foreground tracking-tight font-mono">
  {table.table_number}
  </span>
+ {table.label && table.label.startsWith("Mesa ") === false && (
+   <span className="text-xs text-muted-foreground truncate max-w-20" title={table.label}>
+     ({table.label})
+   </span>
+ )}
  </div>
 
  <div className="flex items-center gap-2">
@@ -330,9 +386,14 @@ function PdvComandasPage() {
 
  <div className="w-full space-y-1 mt-3">
  {table.status === "free" ? (
- <div className="flex items-center gap-1 text-xs text-muted-foreground/80 group-hover:text-foreground transition-colors">
+ <div className="flex items-center justify-between text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+ <span className="flex items-center gap-1">
  <Plus className="size-3.5" />
  <span>Abrir Mesa</span>
+ </span>
+ {table.seats ? (
+   <span className="font-mono text-xs opacity-75">{table.seats} lug.</span>
+ ) : null}
  </div>
  ) : table.status === "reserved" ? (
  <div className="text-xs space-y-1">
@@ -912,6 +973,158 @@ function PdvComandasPage() {
  store={store}
  onSuccess={() => refetch()}
  />
+
+ {/* ── EDITOR DE PLANTA / SALÃO DE MESAS ── */}
+ <FloorPlanEditorSheet
+ open={floorPlanOpen}
+ onOpenChange={setFloorPlanOpen}
+ currentTables={currentFloorTables}
+ onSaveSuccess={() => {
+ refetch();
+ queryClient.invalidateQueries({ queryKey: ["salon-tables-overview"] });
+ queryClient.invalidateQueries({ queryKey: ["store-floor-plan-comandas"] });
+ }}
+ />
+
+ {/* ── MODAL DE ABERTURA DE MESA COM CRM ── */}
+ <Dialog open={openTableModalOpen} onOpenChange={setOpenTableModalOpen}>
+ <DialogContent className="max-w-md bg-card p-5 border-border">
+ <DialogHeader>
+ <DialogTitle className="text-base font-bold text-foreground flex items-center justify-between">
+ <span>Abrir Atendimento — {tableToOpen?.label || `Mesa ${tableToOpen?.table_number}`}</span>
+ {tableToOpen?.seats ? (
+ <Badge variant="outline" className="text-xs font-mono">
+ {tableToOpen.seats} lug.
+ </Badge>
+ ) : null}
+ </DialogTitle>
+ <DialogDescription className="text-xs text-muted-foreground">
+ Inicie a comanda da mesa e vincule opcionalmente ao cliente para salvar o consumo no histórico.
+ </DialogDescription>
+ </DialogHeader>
+
+ <div className="space-y-4 py-2">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground">Nome do Cliente / Comanda</Label>
+ <Input
+ placeholder="Ex: Família Silva, João"
+ value={openGuestName}
+ onChange={(e) => setOpenGuestName(e.target.value)}
+ className="h-10 text-xs"
+ />
+ </div>
+
+ <div className="grid grid-cols-2 gap-3">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground">Telefone (WhatsApp)</Label>
+ <Input
+ placeholder="(00) 00000-0000"
+ value={openCustomerPhone}
+ onChange={(e) => setOpenCustomerPhone(e.target.value)}
+ className="h-10 text-xs font-mono"
+ />
+ </div>
+
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground">Lugares / Ocupantes</Label>
+ <Input
+ type="number"
+ min={1}
+ max={30}
+ value={openGuestsCount}
+ onChange={(e) => setOpenGuestsCount(Math.max(1, Number(e.target.value)))}
+ className="h-10 text-xs font-mono"
+ />
+ </div>
+ </div>
+
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground">CPF na Nota (Opcional)</Label>
+ <Input
+ placeholder="000.000.000-00"
+ value={openCustomerCpf}
+ onChange={(e) => setOpenCustomerCpf(e.target.value)}
+ className="h-10 text-xs font-mono"
+ />
+ </div>
+
+ {/* Busca rápida no CRM */}
+ <div className="space-y-2 pt-2 border-t border-border/60">
+ <div className="flex items-center justify-between">
+ <Label className="text-xs text-muted-foreground flex items-center gap-1">
+ <Search className="size-3" />
+ <span>Localizar no CRM</span>
+ </Label>
+ {openCustomerId ? (
+ <Badge variant="secondary" className="text-xs font-mono">
+ Cliente Selecionado
+ </Badge>
+ ) : null}
+ </div>
+ <Input
+ placeholder="Buscar cliente por nome ou telefone..."
+ value={crmSearch}
+ onChange={(e) => setCrmSearch(e.target.value)}
+ className="h-9 text-xs"
+ />
+
+ {crmCustomers.length > 0 && crmSearch.trim() ? (
+ <div className="p-1 rounded-lg border border-border bg-muted/30 space-y-1 max-h-32 overflow-y-auto">
+ {crmCustomers.map((c: any) => (
+ <Button
+ key={c.id}
+ type="button"
+ variant="ghost"
+ onClick={() => {
+ setOpenCustomerId(c.id);
+ setOpenGuestName(c.full_name || "");
+ setOpenCustomerPhone(c.phone || "");
+ setOpenCustomerCpf(c.document || "");
+ setCrmSearch("");
+ }}
+ className="w-full text-left p-2 h-auto min-h-11 rounded-md hover:bg-muted text-xs flex items-center justify-between transition-colors cursor-pointer justify-start"
+ >
+ <div className="text-left">
+ <p className="font-semibold text-foreground">{c.full_name}</p>
+ <p className="text-xs text-muted-foreground font-mono">{c.phone || c.document || "Sem contato"}</p>
+ </div>
+ <Plus className="size-3.5 text-primary shrink-0 ml-auto" />
+ </Button>
+ ))}
+ </div>
+ ) : null}
+ </div>
+ </div>
+
+ <DialogFooter className="gap-2 sm:gap-0 pt-2">
+ <Button
+ variant="outline"
+ className="h-11 min-h-11 sm:h-9 sm:min-h-0 text-xs font-semibold cursor-pointer"
+ onClick={() => setOpenTableModalOpen(false)}
+ >
+ Cancelar
+ </Button>
+ <Button
+ variant="default"
+ className="h-11 min-h-11 sm:h-9 sm:min-h-0 text-xs font-semibold gap-2 cursor-pointer"
+ disabled={openTableMutation.isPending}
+ onClick={() => {
+ if (!tableToOpen) return;
+ openTableMutation.mutate({
+ tableNumber: tableToOpen.table_number,
+ guestName: openGuestName || undefined,
+ customerId: openCustomerId,
+ customerPhone: openCustomerPhone || undefined,
+ customerCpf: openCustomerCpf || undefined,
+ guestsCount: openGuestsCount,
+ });
+ }}
+ >
+ {openTableMutation.isPending ? "Abrindo..." : "Abrir Atendimento"}
+ </Button>
+ </DialogFooter>
+ </DialogContent>
+ </Dialog>
  </div>
  </NicheOperationalGuard>
  );

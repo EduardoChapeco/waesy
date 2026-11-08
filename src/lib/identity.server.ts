@@ -284,24 +284,94 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       activeStoreId = null;
     }
 
-    // Se o usuário for platform admin e tiver activeStoreId (ex: via waesy_active_tenant) ou memberships vazio,
-    // carrega a loja explicitamente para assegurar contexto de gestão no Workspace sem falso-positivo.
-    if (isPlatformAdmin) {
-      if (activeStoreId && !memberships.some((m) => m.store_id === activeStoreId)) {
-        try {
-          const { data: adminTargetStore } = await serverClient
-            .from("stores")
-            .select("id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url")
-            .eq("id", activeStoreId)
-            .maybeSingle();
-          if (adminTargetStore) {
-            const settings = (adminTargetStore.settings as Record<string, any>) || {};
-            memberships.unshift({
-              store_id: adminTargetStore.id,
-              role: "owner",
-              name: adminTargetStore.name || "Minha Empresa",
-              slug: adminTargetStore.slug || "loja",
-              logo_url: adminTargetStore.logo_url || settings.logoUrl || settings.logo_url || null,
+    const guestIdentity: ServerIdentity = {
+      id: null,
+      role: "customer",
+      store_id: activeStoreId,
+      memberships: [],
+    };
+    if (evt?.context) evt.context.__server_identity__ = guestIdentity;
+    // NÃO armazena guestIdentity em IDENTITY_MEMO_CACHE para prevenir envenenamento
+    // de requisições concorrentes durante refreshes assíncronos ou logins (DEC-443).
+    return guestIdentity;
+  }
+
+  // ── Passo 1: Busca em paralelo de Perfil completo e Vínculos canônicos (1 roundtrip)
+  let userProfile: any = null;
+  let userProfileRole = "customer";
+  let memberRows: any[] = [];
+
+  try {
+    const [profileRes, wmRes] = await Promise.all([
+      serverClient
+        .from("profiles")
+        .select("id, full_name, username, avatar_url, role, phone, cpf, store_id")
+        .eq("id", user.id)
+        .maybeSingle(),
+      serverClient
+        .from("workspace_members")
+        .select("store_id, role")
+        .or(`profile_id.eq.${user.id},user_id.eq.${user.id}`),
+    ]);
+
+    userProfile = profileRes?.data || null;
+    userProfileRole = userProfile?.role || "customer";
+    memberRows = wmRes?.data || [];
+    if (wmRes?.error) {
+      console.warn("[identity.server] Erro ao buscar workspace_members:", wmRes.error.message);
+    }
+
+    // Fallback defensivo de vínculo (DEC-446): se workspace_members não retornou linhas
+    // mas o profile possui store_id associado, inclui como vínculo canônico de lojista.
+    if ((!memberRows || memberRows.length === 0) && userProfile?.store_id) {
+      memberRows = [{ store_id: userProfile.store_id, role: userProfileRole || "owner" }];
+    }
+
+    // Fallback secundário: verifica se o usuário é proprietário direto cadastrado na tabela stores
+    if (!memberRows || memberRows.length === 0) {
+      try {
+        const { data: ownedStores } = await serverClient
+          .from("stores")
+          .select("id")
+          .eq("owner_id", user.id)
+          .limit(5);
+        if (ownedStores && ownedStores.length > 0) {
+          memberRows = ownedStores.map((s: any) => ({ store_id: s.id, role: "owner" }));
+        }
+      } catch {}
+    }
+  } catch (err) {
+    console.warn("[identity.server] Erro ao buscar perfil ou workspace_members:", err);
+  }
+
+  if (memberRows && memberRows.length > 0) {
+    const storeIds = Array.from(new Set(memberRows.map((m: any) => m.store_id).filter(Boolean)));
+    if (storeIds.length > 0) {
+      try {
+        const { data: storesList, error: storesErr } = await serverClient
+          .from("stores")
+          .select(
+            "id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url",
+          )
+          .in("id", storeIds);
+
+        if (storesErr) {
+          console.warn("[identity.server] Erro ao buscar stores por ID:", storesErr.message);
+        }
+
+        const storeMap = new Map((storesList || []).map((s: any) => [s.id, s]));
+        const uniqueMembershipMap = new Map<string, any>();
+
+        memberRows.forEach((m: any) => {
+          if (storeMap.has(m.store_id) && !uniqueMembershipMap.has(m.store_id)) {
+            const s = storeMap.get(m.store_id)!;
+            const settings = (s.settings as Record<string, any>) || {};
+            uniqueMembershipMap.set(m.store_id, {
+              store_id: s.id,
+              role: m.role || "owner",
+              name: s.name || "Minha Empresa",
+              slug: s.slug || "loja",
+              logo_url: s.logo_url || settings.logoUrl || settings.logo_url || null,
               segment: settings.segment || settings.type || settings.niche || null,
               type: settings.type || settings.segment || null,
               category: settings.category || settings.segment || null,
@@ -369,12 +439,23 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       activeStoreId = matchedMembership ? matchedMembership.store_id : null;
       activeContext = activeStoreId ? "store" : "civil";
     }
+  } else {
+    // Se o cookie de contexto estiver ausente ou indefinido, mas o usuário possui lojas,
+    // adota a primeira loja como tenant padrão para não bloquear entrada no Workspace.
+    if (memberships.length > 0) {
+      activeContext = "store";
+      activeStoreId = memberships[0].store_id;
+    } else {
+      activeStoreId = null;
+      activeContext = "civil";
+    }
+  }
 
-    const currentMembership = activeStoreId
-      ? memberships.find((m) => m.store_id === activeStoreId)
-      : null;
-    const storeRole = (currentMembership?.role as any) || "customer";
-    const finalRole = isPlatformAdmin ? "platform_admin" : storeRole;
+  const currentMembership = activeStoreId
+    ? memberships.find((m) => m.store_id === activeStoreId)
+    : memberships[0] || null;
+  const storeRole = (currentMembership?.role as any) || userProfileRole || "customer";
+  const finalRole = isPlatformAdmin ? "platform_admin" : storeRole;
 
     const identityData = user.identities?.[0]?.identity_data as Record<string, any> | undefined;
     const resolvedAvatarUrl =

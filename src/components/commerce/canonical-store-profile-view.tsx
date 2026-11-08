@@ -166,20 +166,16 @@ export function CanonicalStoreProfileView({
     store?.logo_url ||
     store?.avatar_url ||
     store?.avatarUrl ||
-    store?.image_url ||
-    store?.imageUrl ||
-    (Array.isArray(store?.photos) && typeof store.photos[0] === "string" ? store.photos[0] : null) ||
-    (Array.isArray(store?.images) && typeof store.images[0] === "string" ? store.images[0] : null) ||
-    settings.logoUrl ||
-    settings.logo_url ||
-    settings.avatar_url ||
-    settings.avatarUrl ||
-    settings.image_url ||
-    settings.imageUrl ||
-    (Array.isArray(settings.photos) && typeof settings.photos[0] === "string" ? settings.photos[0] : null) ||
+    (Array.isArray(store?.photos) && store.photos.length > 0
+      ? typeof store.photos[0] === "string" ? store.photos[0] : store.photos[0]?.url
+      : null) ||
+    settings?.logoUrl ||
+    settings?.logo_url ||
+    settings?.avatar_url ||
+    settings?.avatarUrl ||
     null;
 
-  const [logoFailed, setLogoFailed] = useState(false);
+  const [logoLoadError, setLogoLoadError] = useState(false);
 
   // Modal de Orçamento
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
@@ -700,12 +696,13 @@ function cleanAddressSegment(text: string): string {
           {/* Avatar da Marca em Squircle 1:1 */}
           <div className="relative group shrink-0">
             <div className="size-20 sm:size-24 rounded-2xl bg-card border border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
-              {logoUrl && !logoFailed ? (
+              {logoUrl && !logoLoadError ? (
                 <img
                   src={logoUrl}
                   alt={store.name || store.business_name}
                   onError={() => setLogoFailed(true)}
                   className="size-full object-cover select-none"
+                  onError={() => setLogoLoadError(true)}
                 />
               ) : (
                 <span className="text-xl sm:text-2xl font-black bg-muted text-foreground font-mono">

@@ -1,10 +1,13 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, Fragment } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, ChefHat, Clock, CheckCircle2, Bike, PackageSearch, Maximize, Printer, FileText, MessageCircle, AlertTriangle, TrendingUp, Activity, Kanban, LayoutDashboard, Users, UtensilsCrossed, MapPin, Phone, Navigation, History } from "lucide-react";
+import { ArrowLeft, ChefHat, Clock, CheckCircle2, Bike, PackageSearch, Maximize, Printer, FileText, MessageCircle, AlertTriangle, TrendingUp, Activity, Kanban, LayoutDashboard, Users, UtensilsCrossed, MapPin, Phone, Navigation, History, Truck, UserCheck } from "lucide-react";
 
 import { getRealtimeChannel } from "@/services/realtime-channel";
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
+import { assignOrderCourier } from "@/services/kitchen-prep.functions";
+import { listDrivers } from "@/services/shipping.functions";
 import { formatMoney } from "@/lib/money";
 import { playNewOrderAlert, unlockAudioContext } from "@/lib/audio-chimes";
 import { formatDateTime } from "@/lib/datetime";
@@ -66,6 +69,15 @@ function KDSPage() {
  const [channelFilter, setChannelFilter] = useState<string>("all");
  const [searchQuery, setSearchQuery] = useState<string>("");
  const [sheetTab, setSheetTab] = useState<"details" | "customer" | "history">("details");
+ const [courierModalOpen, setCourierModalOpen] = useState(false);
+ const [orderToDispatch, setOrderToDispatch] = useState<any | null>(null);
+ const [selectedCourierType, setSelectedCourierType] = useState<"waesy_go" | "own_fleet" | "customer_pickup">("waesy_go");
+ const [selectedDriverId, setSelectedDriverId] = useState<string>("");
+
+ const { data: drivers = [], isLoading: isLoadingDrivers } = useQuery({
+   queryKey: ["delivery-drivers-gestor"],
+   queryFn: () => listDrivers().catch(() => []),
+ });
 
  const { nowCount, scheduledCount } = useMemo(() => {
  let now = 0;
@@ -250,6 +262,75 @@ function KDSPage() {
  }
  };
 
+ const handleConfirmDispatch = async () => {
+   if (!orderToDispatch) return;
+   const driverObj = (drivers as any[]).find((d) => d.id === selectedDriverId);
+   try {
+     const res = await assignOrderCourier({
+       data: {
+         orderId: orderToDispatch.id,
+         courierType: selectedCourierType,
+         driverId: selectedCourierType === "own_fleet" ? selectedDriverId : undefined,
+         driverName: selectedCourierType === "own_fleet" ? driverObj?.name : "Waesy Go Express",
+       },
+     });
+     if (res?.success) {
+       toast.success(
+         selectedCourierType === "customer_pickup"
+           ? "Pedido marcado para retirada no balcão!"
+           : selectedCourierType === "waesy_go"
+           ? "Chamado Waesy Go aberto! (R$ 0,99 taxa fixa)"
+           : `Despachado com ${driverObj?.name || "Entregador da Loja"}!`
+       );
+       setOrders((prev) =>
+         prev.map((o) =>
+           o.id === orderToDispatch.id
+             ? {
+                 ...o,
+                 status: "shipped",
+                 shipping_method: selectedCourierType === "customer_pickup" ? "pickup" : "delivery",
+                 assigned_driver_id: selectedDriverId || null,
+               }
+             : o
+         )
+       );
+       if (selectedOrder && selectedOrder.id === orderToDispatch.id) {
+         setSelectedOrder((prev: any) => ({
+           ...prev,
+           status: "shipped",
+           shipping_method: selectedCourierType === "customer_pickup" ? "pickup" : "delivery",
+         }));
+       }
+       setCourierModalOpen(false);
+       setOrderToDispatch(null);
+     }
+   } catch (err: any) {
+     toast.error(err.message || "Erro ao despachar pedido.");
+   }
+ };
+
+ const handleMarkReadyForPickup = async (order: any) => {
+   try {
+     const res = await assignOrderCourier({
+       data: {
+         orderId: order.id,
+         courierType: "customer_pickup",
+       },
+     });
+     if (res?.success) {
+       toast.success("Pedido pronto para retirada no balcão!");
+       setOrders((prev) =>
+         prev.map((o) => (o.id === order.id ? { ...o, status: "shipped", shipping_method: "pickup" } : o))
+       );
+       if (selectedOrder && selectedOrder.id === order.id) {
+         setSelectedOrder((prev: any) => ({ ...prev, status: "shipped", shipping_method: "pickup" }));
+       }
+     }
+   } catch (err: any) {
+     toast.error(err.message || "Erro ao marcar retirada.");
+   }
+ };
+
  const handlePrint = () => {
  window.print();
  };
@@ -302,7 +383,7 @@ function KDSPage() {
  },
  {
  id: "shipped",
- title: "Aguardando Retirada",
+ title: "Despacho & Retirada",
  icon: <Bike className="size-5" />,
  color: "bg-secondary text-secondary-foreground border-border",
  nextStatus: "delivered",
@@ -548,8 +629,8 @@ function KDSPage() {
  <p className="text-2xl font-black text-foreground font-mono">{kpis.total}</p>
  </div>
  <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
- <span className="text-xs text-muted-foreground/75 font-bold text-emerald-600 uppercase">Concluídos</span>
- <p className="text-2xl font-black text-emerald-600 font-mono">{kpis.completed}</p>
+ <span className="text-xs text-muted-foreground/75 font-bold text-success uppercase">Concluídos</span>
+ <p className="text-2xl font-black text-success font-mono">{kpis.completed}</p>
  </div>
  <div className="p-4 rounded-lg bg-card border border-border/80 space-y-1">
  <span className="text-xs text-muted-foreground/75 font-bold text-blue-600 uppercase">Em Fila</span>
@@ -645,7 +726,7 @@ function KDSPage() {
  <div
  className={cn(
  "h-full transition-colors duration-200",
- isLate ? "bg-rose-500" : elapsed > 20 ? "bg-warning" : "bg-emerald-500",
+ isLate ? "bg-destructive" : elapsed > 20 ? "bg-warning" : "bg-primary",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
  />
@@ -659,7 +740,7 @@ function KDSPage() {
  variant="outline"
  title="Avisar cliente WhatsApp"
  onClick={(e) => handleNotifyCustomerWhatsApp(ord, e)}
- className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-primary border-primary/30 hover:bg-primary/10 cursor-pointer shrink-0"
  >
  <MessageCircle className="size-4" />
  </Button>
@@ -744,7 +825,7 @@ function KDSPage() {
  <div
  className={cn(
  "h-full transition-colors duration-200",
- isLate ? "bg-rose-500" : elapsed > 20 ? "bg-warning" : "bg-emerald-500",
+ isLate ? "bg-destructive" : elapsed > 20 ? "bg-warning" : "bg-primary",
  )}
  style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
  />
@@ -759,7 +840,7 @@ function KDSPage() {
  variant="ghost"
  title="Avisar cliente WhatsApp"
  onClick={(e) => handleNotifyCustomerWhatsApp(ord, e)}
- className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
+ className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-primary hover:bg-primary/10 cursor-pointer"
  >
  <MessageCircle className="size-4" />
  </Button>
@@ -986,7 +1067,7 @@ function KDSPage() {
  ? "bg-rose-500"
  : elapsedMinutes > 20
  ? "bg-warning"
- : "bg-emerald-500",
+ : "bg-primary",
  )}
  style={{
  width: `${Math.min(100, Math.round((elapsedMinutes / 30) * 100))}%`,
@@ -1065,7 +1146,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Avisar cliente no WhatsApp"
- className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ className="h-11 min-h-11 min-w-11 sm:h-9 sm:min-h-9 sm:min-w-9 size-11 sm:size-9 rounded-lg text-primary border-primary/30 hover:bg-primary/10 cursor-pointer shrink-0"
  onClick={(e) => handleNotifyCustomerWhatsApp(order, e)}
  >
  <MessageCircle className="size-4" />
@@ -1090,9 +1171,22 @@ function KDSPage() {
  type="button"
  size="sm"
  className="flex-1 h-11 sm:h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
- onClick={(e) => handleStatusChange(e, order.id, col.nextStatus!)}
+ onClick={(e) => {
+   if (col.id === "processing") {
+     e.stopPropagation();
+     if (order.shipping_method === "pickup" || order.origin_type === "counter" || order.origin_type === "table") {
+       handleMarkReadyForPickup(order);
+     } else {
+       setOrderToDispatch(order);
+       setSelectedDriverId(order.assigned_driver_id || (drivers[0]?.id || ""));
+       setCourierModalOpen(true);
+     }
+   } else {
+     handleStatusChange(e, order.id, col.nextStatus!);
+   }
+ }}
  >
- {col.nextLabel}
+ {col.id === "processing" ? "Despachar / Pronto" : col.nextLabel}
  </Button>
  )}
  </div>
@@ -1266,7 +1360,7 @@ function KDSPage() {
  </div>
  )}
  {selectedOrder.discount_cents > 0 && (
- <div className="flex justify-between text-emerald-600">
+ <div className="flex justify-between text-success">
  <span>Desconto</span>
  <span className="font-mono font-semibold">
  -{formatMoney(selectedOrder.discount_cents)}
@@ -1318,7 +1412,7 @@ function KDSPage() {
  </div>
  ) : (
  <div className="space-y-3">
- <div className="flex items-center gap-2 text-emerald-600 font-bold">
+ <div className="flex items-center gap-2 text-primary font-bold">
  <Bike className="size-4" />
  <span>Entrega em Domicílio (Delivery)</span>
  </div>
@@ -1419,7 +1513,7 @@ function KDSPage() {
  <span className={cn(
  "absolute -left-6 top-1 size-3.5 rounded-full border-2 border-background",
  selectedOrder.delivered_at || selectedOrder.status === "delivered"
- ? "bg-emerald-500"
+ ? "bg-primary"
  : "bg-muted-foreground/40",
  )} />
  <p className="font-bold text-foreground">Pedido Entregue / Concluído</p>
@@ -1463,31 +1557,59 @@ function KDSPage() {
  size="icon"
  onClick={() => handleNotifyCustomerWhatsApp(selectedOrder)}
  title="Avisar cliente no WhatsApp"
- className="size-11 rounded-lg shrink-0 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+ className="size-11 rounded-lg shrink-0 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
  >
  <MessageCircle className="size-5" />
  </Button>
  )}
 
- {selectedOrder.status !== "delivered" && selectedOrder.status !== "completed" ? (
+ {selectedOrder.status === "paid" && (
  <Button
  type="button"
  className="flex-1 h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:opacity-90 cursor-pointer"
- onClick={(e) => {
- const nextSt = selectedOrder.status === "paid"
- ? "processing"
- : selectedOrder.status === "processing"
- ? "shipped"
- : "delivered";
- handleStatusChange(e, selectedOrder.id, nextSt);
+ onClick={(e) => handleStatusChange(e, selectedOrder.id, "processing")}
+ >
+ Iniciar Preparo
+ </Button>
+ )}
+
+ {selectedOrder.status === "processing" && (
+ <div className="flex-1 flex items-center gap-2">
+ <Button
+ type="button"
+ variant="outline"
+ className="flex-1 h-11 rounded-lg font-bold text-xs border-border/80 hover:bg-muted cursor-pointer"
+ onClick={() => handleMarkReadyForPickup(selectedOrder)}
+ >
+ Pronto p/ Retirada
+ </Button>
+ <Button
+ type="button"
+ className="flex-1 h-11 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-2"
+ onClick={() => {
+ setOrderToDispatch(selectedOrder);
+ setSelectedDriverId(selectedOrder.assigned_driver_id || (drivers[0]?.id || ""));
+ setCourierModalOpen(true);
  }}
  >
- {selectedOrder.status === "paid" && "Iniciar Preparo"}
- {selectedOrder.status === "processing" && "Marcar Pronto / Expedir"}
- {selectedOrder.status === "shipped" && "Finalizar (Entregue)"}
+ <Bike className="size-4" />
+ Despachar Motoboy
  </Button>
- ) : (
- <Badge variant="outline" className="flex-1 h-11 justify-center rounded-lg text-xs font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+ </div>
+ )}
+
+ {selectedOrder.status === "shipped" && (
+ <Button
+ type="button"
+ className="flex-1 h-11 rounded-lg font-bold text-xs bg-foreground text-background hover:opacity-90 cursor-pointer"
+ onClick={(e) => handleStatusChange(e, selectedOrder.id, "delivered")}
+ >
+ Finalizar (Entregue)
+ </Button>
+ )}
+
+ {(selectedOrder.status === "delivered" || selectedOrder.status === "completed") && (
+ <Badge variant="outline" className="flex-1 h-11 justify-center rounded-lg text-xs font-bold text-primary border-primary/30 bg-primary/10">
   Pedido Finalizado
  </Badge>
  )}
@@ -1599,7 +1721,7 @@ function KDSPage() {
  size="sm"
  variant="outline"
  onClick={() => handleNotifyCustomerWhatsApp(ord)}
- className="h-11 min-h-11 sm:h-9 text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg"
+ className="h-11 min-h-11 sm:h-9 text-xs font-bold text-primary border-primary/30 hover:bg-primary/10 rounded-lg"
  >
  <MessageCircle className="size-3.5 mr-1" />
  WhatsApp
@@ -1630,6 +1752,148 @@ function KDSPage() {
  className="rounded-lg text-xs font-semibold"
  >
  Fechar
+ </Button>
+ </DialogFooter>
+ </DialogContent>
+ </Dialog>
+
+ {/* Modal de Despacho & Chamado de Motoboy (Waesy Go vs Frota Própria vs Balcão) */}
+ <Dialog open={courierModalOpen} onOpenChange={setCourierModalOpen}>
+ <DialogContent className="max-w-md p-6 rounded-lg bg-card border border-border shadow-2xs">
+ <DialogHeader>
+ <DialogTitle className="text-base font-bold flex items-center gap-2">
+ <Bike className="size-5 text-primary" />
+ <span>Despachar Pedido #{orderToDispatch?.id?.slice(0, 6)?.toUpperCase()}</span>
+ </DialogTitle>
+ </DialogHeader>
+
+ <div className="space-y-4 py-2">
+ <div className="space-y-2">
+ <span className="text-xs font-bold text-muted-foreground uppercase">Método de Envio / Logística</span>
+ <div className="grid grid-cols-1 gap-2">
+ <button
+ type="button"
+ onClick={() => setSelectedCourierType("waesy_go")}
+ className={cn(
+ "flex items-start gap-3 p-3 rounded-lg border text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ selectedCourierType === "waesy_go"
+ ? "border-primary bg-primary/5 text-foreground"
+ : "border-border/80 bg-muted/20 hover:bg-muted/40 text-muted-foreground"
+ )}
+ >
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
+ <Bike className="size-4" />
+ </div>
+ <div className="flex-1 min-w-0">
+ <div className="flex items-center justify-between gap-1">
+ <span className="text-xs font-bold text-foreground">Waesy Go Motoboy</span>
+ <Badge variant="outline" className="text-2xs font-mono font-bold text-primary border-primary/30">
+ R$ 0,99 taxa fixa
+ </Badge>
+ </div>
+ <p className="text-xs text-muted-foreground mt-1">
+ Chama motoboy parceiro com telemetria GPS e 0% de comissão abusiva.
+ </p>
+ </div>
+ </button>
+
+ <button
+ type="button"
+ onClick={() => setSelectedCourierType("own_fleet")}
+ className={cn(
+ "flex items-start gap-3 p-3 rounded-lg border text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ selectedCourierType === "own_fleet"
+ ? "border-primary bg-primary/5 text-foreground"
+ : "border-border/80 bg-muted/20 hover:bg-muted/40 text-muted-foreground"
+ )}
+ >
+ <div className="size-8 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center shrink-0 mt-1">
+ <Truck className="size-4" />
+ </div>
+ <div className="flex-1 min-w-0">
+ <div className="flex items-center justify-between gap-1">
+ <span className="text-xs font-bold text-foreground">Entregador Próprio / Loja</span>
+ <Badge variant="secondary" className="text-2xs font-mono">
+ Frota Interna
+ </Badge>
+ </div>
+ <p className="text-xs text-muted-foreground mt-1">
+ Vincular a um dos motoboys cadastrados na sua equipe.
+ </p>
+ </div>
+ </button>
+
+ <button
+ type="button"
+ onClick={() => setSelectedCourierType("customer_pickup")}
+ className={cn(
+ "flex items-start gap-3 p-3 rounded-lg border text-left cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ selectedCourierType === "customer_pickup"
+ ? "border-primary bg-primary/5 text-foreground"
+ : "border-border/80 bg-muted/20 hover:bg-muted/40 text-muted-foreground"
+ )}
+ >
+ <div className="size-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center shrink-0 mt-1">
+ <UserCheck className="size-4" />
+ </div>
+ <div className="flex-1 min-w-0">
+ <div className="flex items-center justify-between gap-1">
+ <span className="text-xs font-bold text-foreground">Retirada no Balcão</span>
+ <Badge variant="outline" className="text-2xs font-mono">
+ Salão / Takeout
+ </Badge>
+ </div>
+ <p className="text-xs text-muted-foreground mt-1">
+ O cliente ou garçom retira diretamente no balcão de expedição.
+ </p>
+ </div>
+ </button>
+ </div>
+ </div>
+
+ {selectedCourierType === "own_fleet" && (
+ <div className="space-y-2 pt-2 border-t border-border/60">
+ <span className="text-xs font-bold text-muted-foreground uppercase">Selecione o Entregador</span>
+ {drivers.length === 0 ? (
+ <p className="text-xs text-muted-foreground">
+ Nenhum entregador cadastrado na frota. Acesse Despacho & Motoboys para cadastrar.
+ </p>
+ ) : (
+ <select
+ aria-label="Selecionar Entregador da Frota"
+ value={selectedDriverId}
+ onChange={(e) => setSelectedDriverId(e.target.value)}
+ className="w-full h-11 px-3 rounded-lg bg-background border border-border text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <option value="">Selecione um entregador...</option>
+ {drivers.map((d: any) => (
+ <option key={d.id} value={d.id}>
+ {d.name} {d.phone ? `(${d.phone})` : ""} - {d.vehicle_type || "Moto"}
+ </option>
+ ))}
+ </select>
+ )}
+ </div>
+ )}
+ </div>
+
+ <DialogFooter className="gap-2 sm:gap-0">
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs"
+ onClick={() => setCourierModalOpen(false)}
+ >
+ Cancelar
+ </Button>
+ <Button
+ type="button"
+ size="sm"
+ className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+ onClick={handleConfirmDispatch}
+ >
+ Confirmar Despacho
  </Button>
  </DialogFooter>
  </DialogContent>

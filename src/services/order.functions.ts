@@ -7,6 +7,7 @@ import { emitOrderNFeAutomated } from "@/services/fiscal-nfe.functions";
 import { sendWhatsAppNotification } from "@/services/integrations.functions";
 import { withDataPayload } from "@/services/cart-helpers";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
+import { DEFAULT_CANONICAL_TABLES } from "@/services/reservations.functions";
 
 // ---------------------------------------------------------------------------
 // Order status enum (shared between validator and domain logic)
@@ -966,276 +967,495 @@ export const respondToDispatch = createServerFn({ method: "POST" })
  });
 
 export const closePdvComanda = createServerFn({ method: "POST" })
- .validator(
- withDataPayload(
- z.object({
- orderId: z.string().min(1),
- paymentMethod: z.enum(["cash", "pix", "card", "token"]),
- }),
- ),
- )
- .handler(async ({ data: { orderId, paymentMethod } }) => {
- try {
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+  .validator(
+    withDataPayload(
+      z.object({
+        orderId: z.string().min(1),
+        paymentMethod: z.enum(["cash", "pix", "card", "token"]),
+      }),
+    ),
+  )
+  .handler(async ({ data: { orderId, paymentMethod } }) => {
+    try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
- const db = getServerClient();
+      const db = getServerClient();
 
- // 1. Fetch order
- const { data: order, error: orderError } = await db
- .from("orders")
- .select("id, total_cents, table_identifier, store_id")
- .eq("id", orderId)
- .eq("store_id", identity.store_id)
- .single();
+      // 1. Fetch order with items
+      const { data: order, error: orderError } = await db
+        .from("orders")
+        .select(`
+          id, total_cents, table_identifier, store_id, customer_id, customer_snapshot,
+          order_items ( id, variant_id, qty, product_title, variant_sku )
+        `)
+        .eq("id", orderId)
+        .eq("store_id", identity.store_id)
+        .single();
 
- if (orderError || !order) throw new Error("Comanda não encontrada.");
+      if (orderError || !order) throw new Error("Comanda não encontrada.");
 
- // 2. Update order status to 'paid'
- const { error: updateError } = await db
- .from("orders")
- .update({
- status: "paid",
- updated_at: new Date().toISOString(),
- })
- .eq("id", orderId);
+      // 2. Update order status to 'paid'
+      const { error: updateError } = await db
+        .from("orders")
+        .update({
+          status: "paid",
+          paid_at: new Date().toISOString(),
+          delivered_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", orderId);
 
- if (updateError) throw updateError;
+      if (updateError) throw updateError;
 
- // 3. If paid in cash, automatically inject entry into active cash register if open
- if (paymentMethod === "cash") {
- const { data: activeRegister } = await db
- .from("cash_registers")
- .select("id")
- .eq("store_id", identity.store_id)
- .eq("status", "open")
- .maybeSingle();
+      // 3. Register payment in payments table
+      const dbPaymentMethod =
+        paymentMethod === "pix"
+          ? "pix"
+          : paymentMethod === "card"
+            ? "credit_card"
+            : "manual";
 
- if (activeRegister) {
- await db.from("cash_register_entries").insert({
- cash_register_id: activeRegister.id,
- order_id: orderId,
- amount_cents: order.total_cents,
- entry_type: "cash",
- notes: `Pagamento de Comanda #${order.table_identifier || orderId.slice(0, 8)}`,
- created_by: identity.id,
- });
- }
- }
+      await db
+        .from("payments")
+        .insert({
+          order_id: orderId,
+          store_id: identity.store_id,
+          method: dbPaymentMethod,
+          status: "paid",
+          amount_cents: order.total_cents || 0,
+          idempotency_key: `comanda_pay_${orderId}_${Date.now()}`,
+          paid_at: new Date().toISOString(),
+          provider_name: `PDV Comanda (${paymentMethod.toUpperCase()})`,
+        })
+        .catch((payErr: any) => {
+          console.warn("[closePdvComanda] Erro ao registrar payment:", payErr.message);
+        });
 
-  // ── Ledger Criptográfico SHA-256 — PDV Comanda Liquidada ──────────────────────
-  // Toda comanda fechada no PDV gera entrada imutável encadeada (Bacen/PCI-DSS)
-  try {
-  await recordLedgerEntryCore({
-    transactionType: "order_payment",
-    amountCents: order.total_cents ?? 0,
-    storeId: order.store_id ?? identity.store_id,
-    referenceEntityType: "order",
-    referenceEntityId: orderId,
-    actorId: identity.id,
-    actorRole: identity.role ?? "seller",
-    metadata: {
-      payment_method: paymentMethod,
-      table_identifier: order.table_identifier,
-      pdv_close: true,
-    },
+      // 4. Se houver caixa aberto, lançar entrada no caixa físico
+      const { data: activeRegister } = await db
+        .from("cash_registers")
+        .select("id")
+        .eq("store_id", identity.store_id)
+        .eq("status", "open")
+        .maybeSingle();
+
+      if (activeRegister) {
+        await db
+          .from("cash_register_entries")
+          .insert({
+            cash_register_id: activeRegister.id,
+            order_id: orderId,
+            amount_cents: order.total_cents || 0,
+            entry_type: "sale",
+            payment_method: paymentMethod,
+            notes: `Comanda ${order.table_identifier || orderId.slice(0, 8)} (${paymentMethod.toUpperCase()})`,
+            created_by: identity.id,
+          })
+          .catch((regErr: any) => {
+            console.warn("[closePdvComanda] Erro ao registrar no caixa:", regErr.message);
+          });
+      }
+
+      // 5. Inserir em financial_transactions (DRE da Loja)
+      await db
+        .from("financial_transactions")
+        .insert({
+          store_id: identity.store_id,
+          type: "revenue_pos_sale",
+          amount_cents: order.total_cents || 0,
+          order_id: orderId,
+          description: `Comanda ${order.table_identifier || orderId.slice(0, 8)} - Salão`,
+          category: "Vendas de Salão (Comandas)",
+          reference_date: new Date().toISOString().split("T")[0],
+          created_by: identity.id,
+        })
+        .catch((finErr: any) => {
+          console.warn("[closePdvComanda] Erro ao registrar transação financeira:", finErr.message);
+        });
+
+      // 6. Baixa física de estoque e movimentações
+      const orderItems = (order.order_items as any[]) || [];
+      for (const item of orderItems) {
+        if (item.variant_id && item.qty) {
+          await db
+            .from("stock_movements")
+            .insert({
+              variant_id: item.variant_id,
+              store_id: identity.store_id,
+              movement_type: "sale",
+              qty: -1 * Math.abs(item.qty),
+              reference_type: "order",
+              reference_id: orderId,
+              channel_source: "pdv",
+              note: `Venda Comanda ${order.table_identifier || orderId.slice(0, 8)}: ${item.product_title}`,
+              actor_id: identity.id,
+            })
+            .catch(() => null);
+
+          // Abater saldo em product_variants
+          const { data: currentVar } = await db
+            .from("product_variants")
+            .select("stock_on_hand")
+            .eq("id", item.variant_id)
+            .maybeSingle();
+
+          if (currentVar && currentVar.stock_on_hand != null) {
+            await db
+              .from("product_variants")
+              .update({
+                stock_on_hand: Number(currentVar.stock_on_hand) - Math.abs(item.qty),
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", item.variant_id)
+              .catch(() => null);
+          }
+        }
+      }
+
+      // Dedução técnica de insumos e matérias-primas da cozinha (Gastronomia BOM & Kardex)
+      try {
+        const { deductSuppliesForOrder } = await import("./gastronomy-supplies.functions");
+        await deductSuppliesForOrder({ data: { orderId } });
+      } catch (suppliesErr: any) {
+        console.warn("[closePdvComanda] Falha defensiva ao abater insumos da cozinha:", suppliesErr.message);
+      }
+
+      // Atualização de fidelidade e histórico no CRM do cliente
+      if (order.customer_id) {
+        try {
+          const { data: customer } = await db
+            .from("customers")
+            .select("total_orders_count, total_spent_cents")
+            .eq("id", order.customer_id)
+            .single();
+
+          if (customer) {
+            await db
+              .from("customers")
+              .update({
+                total_orders_count: (customer.total_orders_count || 0) + 1,
+                total_spent_cents: (customer.total_spent_cents || 0) + (order.total_cents || 0),
+                last_order_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", order.customer_id);
+          }
+        } catch (crmErr: any) {
+          console.warn("[closePdvComanda] Erro defensivo ao atualizar CRM do cliente:", crmErr.message);
+        }
+      }
+
+      // 7. Ledger Criptográfico SHA-256 — PDV Comanda Liquidada
+      try {
+        await recordLedgerEntryCore({
+          transactionType: "order_payment",
+          amountCents: order.total_cents ?? 0,
+          storeId: order.store_id ?? identity.store_id,
+          referenceEntityType: "order",
+          referenceEntityId: orderId,
+          actorId: identity.id,
+          actorRole: identity.role ?? "seller",
+          metadata: {
+            payment_method: paymentMethod,
+            table_identifier: order.table_identifier,
+            pdv_close: true,
+          },
+        });
+      } catch (ledgerErr) {
+        console.error("[order.functions] Falha no ledger da comanda PDV:", ledgerErr);
+      }
+
+      return { success: true };
+    } catch (e: unknown) {
+      console.error("[order.functions] closePdvComanda error:", e);
+      throw new Error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao liquidar comanda.",
+      );
+    }
   });
-  } catch (ledgerErr) {
-  console.error("[order.functions] Falha no ledger da comanda PDV:", ledgerErr);
-  }
-
- return { success: true };
- } catch (e: unknown) {
- console.error("[order.functions] closePdvComanda error:", e);
- throw new Error(
- (e instanceof Error ? e.message : String(e)) || "Erro ao liquidar comanda.",
- );
- }
- });
 
 export const getSalonTablesOverview = createServerFn({ method: "GET" })
- .handler(async () => {
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+  .handler(async () => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
- const db = getServerClient();
- const todayStr = new Date().toISOString().split("T")[0];
+    const db = getServerClient();
+    const todayStr = new Date().toISOString().split("T")[0];
 
- // 1. Informações da Loja
- const { data: store } = await db
- .from("stores")
- .select("id, name, slug, settings")
- .eq("id", identity.store_id)
- .single();
+    // 1. Informações da Loja
+    const { data: store } = await db
+      .from("stores")
+      .select("id, name, slug, settings")
+      .eq("id", identity.store_id)
+      .single();
 
- const storeSettings = (store?.settings as any) || {};
- const totalConfiguredTables = Number(storeSettings.total_tables || 24);
+    const storeSettings = (store?.settings as any) || {};
 
- // 2. Pedidos em aberto vinculados a mesas/comandas
- const { data: activeOrders } = await db
- .from("orders")
- .select(`
- id, public_token, status, origin_type, table_identifier, subtotal_cents, total_cents, created_at,
- order_items ( id, product_title, qty, total_cents, selected_options )
- `)
- .eq("store_id", identity.store_id)
- .in("origin_type", ["pdv", "table", "counter", "totem"])
- .not("status", "in", '("cancelled","refunded","paid","completed")')
- .order("created_at", { ascending: false });
+    // 2. Planta do Salão 2D (SSOT compartilhado com Reservas)
+    const { data: floorPlan } = await db
+      .from("store_floor_plans")
+      .select("tables, grid_cols, grid_rows, name")
+      .eq("store_id", identity.store_id)
+      .eq("name", "Salão Principal")
+      .maybeSingle();
 
- // 3. Reservas de hoje
- const { data: reservations } = await db
- .from("store_table_reservations")
- .select("*")
- .eq("store_id", identity.store_id)
- .eq("reservation_date", todayStr)
- .in("status", ["pending", "confirmed"])
- .order("reservation_time", { ascending: true });
+    const rawFloorPlanTables: Array<{
+      id: string;
+      label: string;
+      seats?: number;
+      shape?: string;
+      col?: number;
+      row?: number;
+    }> =
+      Array.isArray(floorPlan?.tables) && (floorPlan.tables as any).length > 0
+        ? (floorPlan.tables as any)
+        : (DEFAULT_CANONICAL_TABLES as any);
 
- const ordersByTable = new Map<string, any>();
- (activeOrders || []).forEach((ord) => {
- if (!ord.table_identifier) return;
- const normalized = ord.table_identifier.trim().replace(/^Mesa\s+/i, "");
- if (!ordersByTable.has(normalized)) {
- ordersByTable.set(normalized, ord);
- }
- });
+    // 3. Pedidos em aberto vinculados a mesas/comandas
+    const { data: activeOrders } = await db
+      .from("orders")
+      .select(`
+        id, public_token, status, origin_type, table_identifier, subtotal_cents, total_cents, created_at, customer_id, customer_snapshot,
+        order_items ( id, product_title, qty, total_cents, selected_options )
+      `)
+      .eq("store_id", identity.store_id)
+      .in("origin_type", ["pdv", "table", "counter", "totem"])
+      .not("status", "in", '("cancelled","refunded","paid","completed")')
+      .order("created_at", { ascending: false });
 
- const reservationsByTable = new Map<string, any>();
- (reservations || []).forEach((res) => {
- if (!res.assigned_table) return;
- const normalized = res.assigned_table.trim().replace(/^Mesa\s+/i, "");
- if (!reservationsByTable.has(normalized)) {
- reservationsByTable.set(normalized, res);
- }
- });
+    // 4. Reservas de hoje
+    const { data: reservations } = await db
+      .from("store_table_reservations")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .eq("reservation_date", todayStr)
+      .in("status", ["pending", "confirmed"])
+      .order("reservation_time", { ascending: true });
 
- const now = Date.now();
- const tables = [];
+    const ordersByTable = new Map<string, any>();
+    (activeOrders || []).forEach((ord) => {
+      if (!ord.table_identifier) return;
+      const raw = ord.table_identifier.trim();
+      const normalized = raw.replace(/^Mesa\s+/i, "");
+      if (!ordersByTable.has(raw)) ordersByTable.set(raw, ord);
+      if (!ordersByTable.has(normalized)) ordersByTable.set(normalized, ord);
+    });
 
- for (let i = 1; i <= totalConfiguredTables; i++) {
- const tableNumberStr = i < 10 ? `0${i}` : `${i}`;
- const activeOrder = ordersByTable.get(tableNumberStr) || ordersByTable.get(`${i}`);
- const reservation = reservationsByTable.get(tableNumberStr) || reservationsByTable.get(`${i}`);
+    const reservationsByTable = new Map<string, any>();
+    (reservations || []).forEach((res) => {
+      if (!res.assigned_table) return;
+      const raw = res.assigned_table.trim();
+      const normalized = raw.replace(/^Mesa\s+/i, "");
+      if (!reservationsByTable.has(raw)) reservationsByTable.set(raw, res);
+      if (!reservationsByTable.has(normalized)) reservationsByTable.set(normalized, res);
+    });
 
- let status: "free" | "occupied" | "awaiting_payment" | "delayed" | "reserved" = "free";
- let elapsedMinutes = 0;
- let totalCents = 0;
- let itemsCount = 0;
- let orderId: string | null = null;
+    const now = Date.now();
+    const mappedTableLabels = new Set<string>();
 
- if (activeOrder) {
- orderId = activeOrder.id;
- totalCents = activeOrder.total_cents || 0;
- itemsCount = (activeOrder.order_items || []).reduce(
- (acc: number, item: any) => acc + (item.qty || 1),
- 0,
- );
- const orderTime = new Date(activeOrder.created_at).getTime();
- elapsedMinutes = Math.max(0, Math.floor((now - orderTime) / (1000 * 60)));
+    const tables = rawFloorPlanTables.map((t, idx) => {
+      const label = t.label || `Mesa ${idx + 1 < 10 ? `0${idx + 1}` : idx + 1}`;
+      const cleanNum = label.replace(/^Mesa\s+/i, "").trim();
+      const pad = cleanNum.length === 1 ? `0${cleanNum}` : cleanNum;
 
- if (["payment_processing", "awaiting_payment", "ready_for_pickup"].includes(activeOrder.status)) {
- status = "awaiting_payment";
- } else if (
- elapsedMinutes >= 40 &&
- ["pending", "processing", "kitchen_prep"].includes(activeOrder.status)
- ) {
- status = "delayed";
- } else {
- status = "occupied";
- }
- } else if (reservation) {
- status = "reserved";
- }
+      mappedTableLabels.add(label);
+      mappedTableLabels.add(cleanNum);
+      mappedTableLabels.add(pad);
+      mappedTableLabels.add(t.id);
 
- tables.push({
- table_number: tableNumberStr,
- status,
- elapsed_minutes: elapsedMinutes,
- total_cents: totalCents,
- items_count: itemsCount,
- order_id: orderId,
- order: activeOrder || null,
- reservation: reservation || null,
- });
- }
+      const activeOrder =
+        ordersByTable.get(label) ||
+        ordersByTable.get(cleanNum) ||
+        ordersByTable.get(pad) ||
+        ordersByTable.get(t.id);
 
- const occupiedCount = tables.filter((t) => t.status === "occupied" || t.status === "delayed").length;
- const awaitingPaymentCount = tables.filter((t) => t.status === "awaiting_payment").length;
- const freeCount = tables.filter((t) => t.status === "free").length;
- const reservedCount = tables.filter((t) => t.status === "reserved").length;
- const totalActiveCents = tables.reduce((acc, t) => acc + t.total_cents, 0);
+      const reservation =
+        reservationsByTable.get(label) ||
+        reservationsByTable.get(cleanNum) ||
+        reservationsByTable.get(pad) ||
+        reservationsByTable.get(t.id);
 
- return {
- tables,
- summary: {
- total_tables: totalConfiguredTables,
- occupied_count: occupiedCount,
- free_count: freeCount,
- awaiting_payment_count: awaitingPaymentCount,
- reserved_count: reservedCount,
- total_active_cents: totalActiveCents,
- },
- store_info: {
- id: store?.id || identity.store_id,
- name: store?.name || "Minha Loja",
- slug: store?.slug || "",
- wifi_ssid: storeSettings.wifi_ssid || store?.name || "Wi-Fi Clientes",
- wifi_password: storeSettings.wifi_password || "Conecte-se",
- },
- activeComandas: activeOrders || [],
- };
- });
+      let status: "free" | "occupied" | "awaiting_payment" | "delayed" | "reserved" = "free";
+      let elapsedMinutes = 0;
+      let totalCents = 0;
+      let itemsCount = 0;
+      let orderId: string | null = null;
+
+      if (activeOrder) {
+        orderId = activeOrder.id;
+        totalCents = activeOrder.total_cents || 0;
+        itemsCount = (activeOrder.order_items || []).reduce(
+          (acc: number, item: any) => acc + (item.qty || 1),
+          0,
+        );
+        const orderTime = new Date(activeOrder.created_at).getTime();
+        elapsedMinutes = Math.max(0, Math.floor((now - orderTime) / (1000 * 60)));
+
+        if (["payment_processing", "awaiting_payment", "ready_for_pickup"].includes(activeOrder.status)) {
+          status = "awaiting_payment";
+        } else if (
+          elapsedMinutes >= 40 &&
+          ["pending", "processing", "kitchen_prep"].includes(activeOrder.status)
+        ) {
+          status = "delayed";
+        } else {
+          status = "occupied";
+        }
+      } else if (reservation) {
+        status = "reserved";
+      }
+
+      return {
+        id: t.id,
+        label,
+        table_number: pad || label,
+        seats: t.seats || 4,
+        shape: t.shape || "square",
+        col: t.col || (idx % 4) + 1,
+        row: t.row || Math.floor(idx / 4) + 1,
+        status,
+        elapsed_minutes: elapsedMinutes,
+        total_cents: totalCents,
+        items_count: itemsCount,
+        order_id: orderId,
+        order: activeOrder || null,
+        reservation: reservation || null,
+      };
+    });
+
+    // 5. Garantir que comandas ativas fora da planta apareçam dinamicamente
+    (activeOrders || []).forEach((ord) => {
+      const raw = (ord.table_identifier || "").trim();
+      const cleanNum = raw.replace(/^Mesa\s+/i, "");
+      if (raw && !mappedTableLabels.has(raw) && !mappedTableLabels.has(cleanNum)) {
+        const orderTime = new Date(ord.created_at).getTime();
+        const elapsedMinutes = Math.max(0, Math.floor((now - orderTime) / (1000 * 60)));
+        const itemsCount = (ord.order_items || []).reduce(
+          (acc: number, item: any) => acc + (item.qty || 1),
+          0,
+        );
+
+        tables.push({
+          id: `dyn_${ord.id}`,
+          label: raw,
+          table_number: cleanNum || raw,
+          seats: ord.customer_snapshot?.guests_count || 4,
+          shape: "square",
+          col: 1,
+          row: 1,
+          status: "occupied",
+          elapsed_minutes: elapsedMinutes,
+          total_cents: ord.total_cents || 0,
+          items_count: itemsCount,
+          order_id: ord.id,
+          order: ord,
+          reservation: null,
+        });
+      }
+    });
+
+    const occupiedCount = tables.filter((t) => t.status === "occupied" || t.status === "delayed").length;
+    const awaitingPaymentCount = tables.filter((t) => t.status === "awaiting_payment").length;
+    const freeCount = tables.filter((t) => t.status === "free").length;
+    const reservedCount = tables.filter((t) => t.status === "reserved").length;
+    const totalActiveCents = tables.reduce((acc, t) => acc + t.total_cents, 0);
+
+    return {
+      tables,
+      summary: {
+        total_tables: tables.length,
+        occupied_count: occupiedCount,
+        free_count: freeCount,
+        awaiting_payment_count: awaitingPaymentCount,
+        reserved_count: reservedCount,
+        total_active_cents: totalActiveCents,
+      },
+      floor_plan: floorPlan || null,
+      store_info: {
+        id: store?.id || identity.store_id,
+        name: store?.name || "Minha Loja",
+        slug: store?.slug || "",
+        wifi_ssid: storeSettings.wifi_ssid || store?.name || "Wi-Fi Clientes",
+        wifi_password: storeSettings.wifi_password || "Conecte-se",
+      },
+      activeComandas: activeOrders || [],
+    };
+  });
 
 export const openTableComanda = createServerFn({ method: "POST" })
- .validator(
- withDataPayload(
- z.object({
- tableNumber: z.string().min(1),
- guestName: z.string().optional(),
- }),
- ),
- )
- .handler(async ({ data: { tableNumber, guestName } }) => {
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+  .validator(
+    withDataPayload(
+      z.object({
+        tableNumber: z.string().min(1),
+        guestName: z.string().optional(),
+        customerId: z.string().uuid().optional().nullable(),
+        customerPhone: z.string().optional().nullable(),
+        customerCpf: z.string().optional().nullable(),
+        guestsCount: z.number().int().positive().optional(),
+      }),
+    ),
+  )
+  .handler(
+    async ({
+      data: {
+        tableNumber,
+        guestName,
+        customerId,
+        customerPhone,
+        customerCpf,
+        guestsCount,
+      },
+    }) => {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
- const db = getServerClient();
- const cleanTable = tableNumber.trim().replace(/^Mesa\s+/i, "");
- const tableId = `Mesa ${cleanTable}`;
+      const db = getServerClient();
+      const cleanTable = tableNumber.trim().replace(/^Mesa\s+/i, "");
+      const tableId = `Mesa ${cleanTable}`;
 
- // Checa se mesa já possui comanda aberta
- const { data: existing } = await db
- .from("orders")
- .select("id")
- .eq("store_id", identity.store_id)
- .eq("table_identifier", tableId)
- .in("origin_type", ["pdv", "table", "counter"])
- .not("status", "in", '("cancelled","refunded","paid","completed")')
- .maybeSingle();
+      // Checa se mesa já possui comanda aberta
+      const { data: existing } = await db
+        .from("orders")
+        .select("id")
+        .eq("store_id", identity.store_id)
+        .eq("table_identifier", tableId)
+        .in("origin_type", ["pdv", "table", "counter"])
+        .not("status", "in", '("cancelled","refunded","paid","completed")')
+        .maybeSingle();
 
- if (existing) {
- return { orderId: existing.id, isExisting: true };
- }
+      if (existing) {
+        return { orderId: existing.id, isExisting: true };
+      }
 
- const { data: newOrder, error } = await db
- .from("orders")
- .insert({
- store_id: identity.store_id,
- seller_id: identity.id,
- origin_type: "table",
- table_identifier: tableId,
- status: "pending",
- subtotal_cents: 0,
- total_cents: 0,
- items_snapshot: [],
- })
- .select("id")
- .single();
+      const customerSnapshot = {
+        name: guestName?.trim() || "Cliente Salão",
+        phone: customerPhone?.trim() || null,
+        cpf: customerCpf?.trim() || null,
+        guests_count: guestsCount || 1,
+      };
 
- if (error) throw new Error("Erro ao abrir comanda de mesa: " + error.message);
- return { orderId: newOrder.id, isExisting: false };
- });
+      const { data: newOrder, error } = await db
+        .from("orders")
+        .insert({
+          store_id: identity.store_id,
+          seller_id: identity.id,
+          customer_id: customerId || null,
+          origin_type: "table",
+          table_identifier: tableId,
+          status: "pending",
+          subtotal_cents: 0,
+          total_cents: 0,
+          items_snapshot: [],
+          customer_snapshot: customerSnapshot,
+        })
+        .select("id")
+        .single();
+
+      if (error) throw new Error("Erro ao abrir comanda de mesa: " + error.message);
+      return { orderId: newOrder.id, isExisting: false };
+    },
+  );
 
 export const getLiveOperationalDashboard = createServerFn({ method: "GET" }).handler(async () => {
  const identity = await getServerIdentity().catch(() => null);
