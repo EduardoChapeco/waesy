@@ -59,7 +59,7 @@ export function PaymentReviewDrawer({
     <Sheet open={open} onOpenChange={(val) => !isLoading && onOpenChange(val)}>
       <SheetContent
         side="bottom"
-        className="h-auto max-h-[90dvh] p-0 flex flex-col rounded-t-3xl border-t border-border bg-background z-50 overflow-hidden"
+        className="h-auto max-h-vh-90 p-0 flex flex-col rounded-t-3xl border-t border-border bg-background z-50 overflow-hidden"
       >
         {/* Apple HIG Grab Handle */}
         <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto my-3 shrink-0" />

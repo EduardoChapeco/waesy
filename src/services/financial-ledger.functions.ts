@@ -16,6 +16,7 @@ import { getServerIdentity } from "@/lib/server-access";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { emitFinancialEvent } from "./financial-event-bus.service";
 import { createGatewayPayment } from "./payment-gateway.server";
+import { executeWithIdempotency } from "./idempotency.functions";
 
 // ============================================================
 // DTOs & Tipos Canônicos
@@ -594,7 +595,7 @@ export const depositPixToWallet = createServerFn({ method: "POST" })
   });
 
 /**
- * 3.1 Liquidação atômica de depósito Pix após confirmação de webhook
+ * 3.1 Liquidação atômica de depósito Pix após confirmação de webhook ("Carimbou PAGO, não paga de novo")
  */
 export async function settlePixDepositWebhookAtomic(params: {
   transactionId: string;
@@ -605,118 +606,132 @@ export async function settlePixDepositWebhookAtomic(params: {
   if (!params.providerRef.trim() || !params.provider.trim() || params.amountCents <= 0) {
     throw new Error("Confirmação Pix inválida: provedor, referência e valor são obrigatórios.");
   }
-  const supabase = getServerClient();
 
-  const { data: entry } = await supabase
-    .from("financial_ledger_entries")
-    .select("*, credit_account:credit_account_id(profile_id)")
-    .eq("transaction_id", params.transactionId)
-    .maybeSingle();
+  const eventKey = `${params.provider}:${params.providerRef || params.transactionId}`;
 
-  if (!entry) {
-    throw new Error(`Transação ${params.transactionId} não encontrada para liquidação.`);
-  }
+  const { data, isIdempotentReplay } = await executeWithIdempotency(
+    eventKey,
+    "pix_deposit_settlement",
+    async () => {
+      const supabase = getServerClient();
 
-  if (entry.status === "SETTLED") {
+      const { data: entry } = await supabase
+        .from("financial_ledger_entries")
+        .select("*, credit_account:credit_account_id(profile_id)")
+        .eq("transaction_id", params.transactionId)
+        .maybeSingle();
+
+      if (!entry) {
+        throw new Error(`Transação ${params.transactionId} não encontrada para liquidação.`);
+      }
+
+      if (entry.status === "SETTLED") {
+        return { settled: true, alreadySettled: true };
+      }
+
+      if (entry.status !== "PENDING") {
+        throw new Error(`Transação ${params.transactionId} não está pendente (status atual: ${entry.status}).`);
+      }
+
+      if (Number(entry.amount_cents) !== params.amountCents) {
+        throw new Error("Valor confirmado pelo provedor diverge do valor pendente.");
+      }
+
+      const nowIso = new Date().toISOString();
+      const authCode = `PIX-${Date.now().toString(36).toUpperCase()}-${randomBytes(3).toString("hex").toUpperCase()}`;
+      const profileId = entry.credit_account?.profile_id;
+
+      const { data: profile } = profileId
+        ? await supabase.from("profiles").select("full_name, cpf").eq("id", profileId).maybeSingle()
+        : { data: null };
+
+      const payerName = "Banco Central / Pix Integrado";
+      const payeeName = profile?.full_name || "Usuário Waesy";
+
+      const hmacSig = signReceiptPayload({
+        transactionId: entry.transaction_id,
+        authenticationCode: authCode,
+        amountCents: entry.amount_cents,
+        issuedAt: nowIso,
+        payerName,
+        payeeName,
+      });
+
+      // Atualiza para SETTLED atomicamente
+      const { data: updatedEntry, error: updateErr } = await supabase
+        .from("financial_ledger_entries")
+        .update({
+          status: "SETTLED",
+          metadata: {
+            ...(typeof entry.metadata === "object" ? entry.metadata : {}),
+            settled_at: nowIso,
+            settled_by: params.provider,
+            provider_ref: params.providerRef,
+          },
+        })
+        .eq("id", entry.id)
+        .eq("status", "PENDING")
+        .select("id")
+        .maybeSingle();
+
+      if (updateErr) {
+        throw new Error(`Falha ao liquidar lançamento contábil: ${updateErr.message}`);
+      }
+      if (!updatedEntry) {
+        return { settled: false, alreadySettled: true };
+      }
+
+      // Gera comprovante oficial assinado
+      const { data: receiptRecord } = await supabase
+        .from("financial_receipts")
+        .insert({
+          transaction_id: entry.transaction_id,
+          emitter_name: "Waesy Pagamentos e Tecnologia Ltda.",
+          payer_profile_id: null,
+          payer_name: payerName,
+          payer_document: null,
+          payee_profile_id: profileId,
+          payee_name: payeeName,
+          payee_document: profile?.cpf || null,
+          amount_cents: entry.amount_cents,
+          currency: "BRL",
+          payment_method: "PIX",
+          authentication_code: authCode,
+          hmac_signature: hmacSig,
+          details: { type: "DEPOSIT_PIX_SETTLED", provider: params.provider },
+          issued_at: nowIso,
+        })
+        .select()
+        .maybeSingle();
+
+      if (profileId) {
+        await emitFinancialEvent({
+          profileId,
+          sourceDomain: "WALLET",
+          sourceEntityId: entry.transaction_id,
+          eventType: "PIX_DEPOSIT_COMPLETED",
+          direction: "INCOMING",
+          amountCents: entry.amount_cents,
+          counterpartyName: "Pix",
+          counterpartyProfileId: null,
+          description: "Recarga de Saldo via Pix Liquidada",
+          categoryName: "Depósito",
+          categoryIcon: "ArrowDownLeft",
+          categoryColor: "emerald",
+          status: "COMPLETED",
+          referenceUrl: "/conta/financas",
+          receiptId: receiptRecord?.id || null,
+        });
+      }
+
+      return { settled: true, alreadySettled: false };
+    }
+  );
+
+  if (isIdempotentReplay) {
     return { settled: true, alreadySettled: true };
   }
-
-  if (entry.status !== "PENDING") {
-    throw new Error(`Transação ${params.transactionId} não está pendente (status atual: ${entry.status}).`);
-  }
-
-  if (Number(entry.amount_cents) !== params.amountCents) {
-    throw new Error("Valor confirmado pelo provedor diverge do valor pendente.");
-  }
-
-  const nowIso = new Date().toISOString();
-  const authCode = `PIX-${Date.now().toString(36).toUpperCase()}-${randomBytes(3).toString("hex").toUpperCase()}`;
-  const profileId = entry.credit_account?.profile_id;
-
-  const { data: profile } = profileId
-    ? await supabase.from("profiles").select("full_name, cpf").eq("id", profileId).maybeSingle()
-    : { data: null };
-
-  const payerName = "Banco Central / Pix Integrado";
-  const payeeName = profile?.full_name || "Usuário Waesy";
-
-  const hmacSig = signReceiptPayload({
-    transactionId: entry.transaction_id,
-    authenticationCode: authCode,
-    amountCents: entry.amount_cents,
-    issuedAt: nowIso,
-    payerName,
-    payeeName,
-  });
-
-  // Atualiza para SETTLED atomicamente
-  const { data: updatedEntry, error: updateErr } = await supabase
-    .from("financial_ledger_entries")
-    .update({
-      status: "SETTLED",
-      metadata: {
-        ...(typeof entry.metadata === "object" ? entry.metadata : {}),
-        settled_at: nowIso,
-        settled_by: params.provider,
-        provider_ref: params.providerRef,
-      },
-    })
-    .eq("id", entry.id)
-    .eq("status", "PENDING")
-    .select("id")
-    .maybeSingle();
-
-  if (updateErr) {
-    throw new Error(`Falha ao liquidar lançamento contábil: ${updateErr.message}`);
-  }
-  if (!updatedEntry) {
-    return { settled: false, alreadySettled: true };
-  }
-
-  // Gera comprovante oficial assinado
-  const { data: receiptRecord } = await supabase
-    .from("financial_receipts")
-    .insert({
-      transaction_id: entry.transaction_id,
-      emitter_name: "Waesy Pagamentos e Tecnologia Ltda.",
-      payer_profile_id: null,
-      payer_name: payerName,
-      payer_document: null,
-      payee_profile_id: profileId,
-      payee_name: payeeName,
-      payee_document: profile?.cpf || null,
-      amount_cents: entry.amount_cents,
-      currency: "BRL",
-      payment_method: "PIX",
-      authentication_code: authCode,
-      hmac_signature: hmacSig,
-      details: { type: "DEPOSIT_PIX_SETTLED", provider: params.provider },
-      issued_at: nowIso,
-    })
-    .select()
-    .maybeSingle();
-
-  if (profileId) {
-    await emitFinancialEvent({
-      profileId,
-      sourceDomain: "WALLET",
-      sourceEntityId: entry.transaction_id,
-      eventType: "PIX_DEPOSIT_COMPLETED",
-      direction: "INCOMING",
-      amountCents: entry.amount_cents,
-      counterpartyName: "Pix",
-      counterpartyProfileId: null,
-      description: "Recarga de Saldo via Pix Liquidada",
-      categoryName: "Depósito",
-      categoryIcon: "ArrowDownLeft",
-      categoryColor: "emerald",
-      status: "COMPLETED",
-      referenceUrl: "/conta/financas",
-      receiptId: receiptRecord?.id || null,
-    });
-  }
-
-  return { settled: true };
+  return data;
 }
 
 /**

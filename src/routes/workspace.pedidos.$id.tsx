@@ -398,7 +398,7 @@ function AdminOrderDetailPage() {
  };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto w-full pb-20">
+    <div className="space-y-6 w-full pb-20">
       <div className="flex justify-between items-start flex-wrap gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-3 flex-wrap">
@@ -475,7 +475,7 @@ function AdminOrderDetailPage() {
  )}
  </p>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-medium italic mt-1 bg-amber-500/10 px-2 py-1 rounded-md inline-block">
+ <p className="text-xs text-warning-strong  font-medium italic mt-1 bg-warning/10 px-2 py-1 rounded-md inline-block">
  Obs: {item.notes}
  </p>
  )}
@@ -644,7 +644,7 @@ function AdminOrderDetailPage() {
         <span className="text-foreground">{formatMoney(order.shipping_cents)}</span>
       </div>
       {order.cost_breakdown && ((order.cost_breakdown.platform_fee_cents ?? 0) > 0 || (order.cost_breakdown.marketplace_fee_cents ?? 0) > 0) && (
-        <div className="flex justify-between text-xs text-amber-600 dark:text-amber-400">
+        <div className="flex justify-between text-xs text-warning-strong ">
           <span>Taxa ({getChannelInfo(order.origin_channel || order.channel_origin || order.channel_source || order.metadata?.channel).label})</span>
           <span>-{formatMoney(order.cost_breakdown.platform_fee_cents || order.cost_breakdown.marketplace_fee_cents)}</span>
         </div>
@@ -738,7 +738,7 @@ function AdminOrderDetailPage() {
           onClick={handleEmitNFe}
           disabled={isEmittingNFe}
           size="sm"
-          className="w-full rounded-lg font-bold text-xs h-10 cursor-pointer"
+          className="w-full rounded-lg font-bold text-xs h-10 cursor-pointer min-h-11 sm:min-h-0"
         >
           {isEmittingNFe ? "Emitindo NF-e..." : "Emitir NF-e (1-Clique)"}
         </Button>
@@ -1158,7 +1158,7 @@ function AdminOrderDetailPage() {
  ))}
  </div>
  ) : (
- <p className="text-sm text-muted-foreground">Nenhum pacote enviado ainda.</p>
+ <p className="text-sm text-muted-foreground">Nenhum pacote enviado ainda (nenhum envio registrado).</p>
  )}
 
  {/* Comprovantes de Entrega com Foto & GPS */}

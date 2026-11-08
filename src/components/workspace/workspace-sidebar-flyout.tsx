@@ -66,7 +66,7 @@ export function WorkspaceSidebarFlyout({
  className={cn(
  "group flex min-h-11 items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isSingleActive
- ? "text-primary bg-primary/10 font-bold border border-primary/20"
+ ? "text-foreground bg-muted font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >
@@ -84,7 +84,7 @@ export function WorkspaceSidebarFlyout({
  className={cn(
  "px-2 py-1 rounded-md text-xs font-mono font-bold shrink-0",
  isSingleActive
- ? "bg-primary/20 text-primary"
+ ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground"
  )}
  >
@@ -106,7 +106,7 @@ export function WorkspaceSidebarFlyout({
  className={cn(
  "flex min-h-11 w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isGroupActive
- ? "text-primary bg-primary/10 font-bold"
+ ? "text-foreground bg-muted/60 font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >
@@ -137,7 +137,7 @@ export function WorkspaceSidebarFlyout({
  className={cn(
  "flex min-h-11 items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isItemActive
- ? "bg-primary/10 text-primary font-bold border border-primary/20"
+ ? "bg-muted text-foreground font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
  )}
  >
@@ -167,7 +167,7 @@ export function WorkspaceSidebarFlyout({
  className={cn(
  "group flex min-h-11 w-full items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isGroupActive
- ? "text-primary bg-primary/10 font-bold"
+ ? "text-foreground bg-muted/60 font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
  isFlyoutOpen && "bg-muted/80 text-foreground"
  )}
@@ -187,7 +187,7 @@ export function WorkspaceSidebarFlyout({
  className={cn(
  "px-2 py-1 rounded-md text-xs font-mono font-bold",
  isGroupActive
- ? "bg-primary/20 text-primary"
+ ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground"
  )}
  >
@@ -221,7 +221,7 @@ export function WorkspaceSidebarFlyout({
  className={cn(
  "flex min-h-11 items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isItemActive
- ? "bg-primary/10 text-primary font-bold border border-primary/20"
+ ? "bg-muted text-foreground font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >
@@ -241,7 +241,7 @@ export function WorkspaceSidebarFlyout({
  {/* Flyout Flutuante à Direita (Hover / Apenas quando recolhido) */}
  {isFlyoutOpen && !isExpanded && (
  <div
- className="absolute left-full top-0 ml-2 w-56 rounded-lg border border-border/80 bg-background/98 backdrop-blur-xl p-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
+ className="absolute left-full top-0 ml-2 w-56 rounded-lg border border-border/80 bg-background/98 p-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150"
 
  >
  <div className="px-3 py-2 pb-2 border-b border-border/40 mb-1">
@@ -267,7 +267,7 @@ export function WorkspaceSidebarFlyout({
  className={cn(
  "flex min-h-11 items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
  isItemActive
- ? "bg-primary/10 text-primary font-bold border border-primary/20"
+ ? "bg-muted text-foreground font-bold"
  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
  )}
  >

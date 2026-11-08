@@ -191,7 +191,7 @@ function OrderRow({ order }: { order: any }) {
               : ["shipped"].includes(order.status)
               ? "bg-sky-500"
               : ["awaiting_payment"].includes(order.status)
-              ? "bg-amber-400"
+              ? "bg-warning"
               : "bg-muted-foreground/40"
           }`}
         />
@@ -226,7 +226,7 @@ function OrderRow({ order }: { order: any }) {
               {statusLabel}
             </Badge>
             {isReadyPickup && (
-              <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md animate-pulse motion-reduce:animate-none">
+              <span className="text-xs font-bold text-warning-strong  bg-warning/10 border border-warning/20 px-2 py-1 rounded-md animate-pulse motion-reduce:animate-none">
                 Retirar já
               </span>
             )}
@@ -285,7 +285,7 @@ function DesktopOrderCard({ order }: { order: any }) {
 
         <div className="flex items-center gap-2">
           {isReadyPickup && (
-            <span className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md animate-pulse motion-reduce:animate-none">
+            <span className="text-xs font-bold text-warning-strong  bg-warning/10 border border-warning/20 px-2 py-1 rounded-md animate-pulse motion-reduce:animate-none">
               Pronto para Retirar
             </span>
           )}
@@ -583,7 +583,7 @@ function CustomerOrdersPage() {
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Carrinhos
               </span>
-              <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
+              <div className="text-xl font-bold text-warning-strong ">
                 {activeStoreCarts.length}
               </div>
               <div className="text-xs text-muted-foreground">Abertos por loja</div>
@@ -607,7 +607,7 @@ function CustomerOrdersPage() {
         <div
           role="tablist"
           aria-label="Seções de Compras"
-          className="grid grid-cols-3 w-full bg-muted/50 p-1 rounded-xl"
+          className="flex items-center w-full bg-muted/50 p-1 rounded-xl"
         >
           {(
             [
@@ -625,7 +625,7 @@ function CustomerOrdersPage() {
                 aria-selected={active}
                 onClick={() => setHubMode(tab.id)}
                 className={cn(
-                  "w-full h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "w-full h-11 min-h-11 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   active
                     ? "bg-background text-foreground font-bold shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
@@ -635,7 +635,7 @@ function CustomerOrdersPage() {
                 {tab.count > 0 && (
                   <span
                     className={cn(
-                      "px-1.5 py-0.5 rounded-full text-2xs font-mono leading-none",
+                      "px-2 py-1 rounded-full text-2xs font-mono leading-none",
                       active
                         ? "bg-primary/15 text-primary font-bold"
                         : "bg-muted text-muted-foreground",
@@ -910,7 +910,7 @@ function CustomerOrdersPage() {
             </div>
 
             {/* Chips de filtro */}
-            <div className="overflow-x-auto no-scrollbar py-1">
+            <div className="overflow-x-auto scroll-area-carousel no-scrollbar py-1">
               <div className="flex items-center gap-2 min-w-max">
                 {FILTER_CHIPS.map((chip) => {
                   const count = counts[chip.id] || 0;

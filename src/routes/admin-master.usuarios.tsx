@@ -935,7 +935,7 @@ function AdminUsuariosPage() {
                       onClick={() => setIsTransferStoreOpen(true)}
                       className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg gap-2 focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                      <Store className="size-4 text-amber-500" />
+                      <Store className="size-4 text-warning-strong" />
                       Transferir Titularidade de Loja
                     </Button>
                   </div>
@@ -1424,7 +1424,7 @@ function AdminUsuariosPage() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm text-foreground truncate">
                       {verificationModalUser.full_name || "Sem Nome"}
                     </span>

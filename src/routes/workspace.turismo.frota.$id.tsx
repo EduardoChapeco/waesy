@@ -44,7 +44,7 @@ const TOOL_OPTIONS: Array<{
 }> = [
  { type: "seat", label: "Poltrona", badgeColor: "bg-primary text-primary-foreground" },
  { type: "aisle", label: "Corredor", badgeColor: "bg-muted text-muted-foreground" },
- { type: "wc", label: "Banheiro (WC)", badgeColor: "bg-amber-500 text-foreground" },
+ { type: "wc", label: "Banheiro (WC)", badgeColor: "bg-warning text-foreground" },
  { type: "door", label: "Porta", badgeColor: "bg-emerald-500 text-foreground" },
  { type: "driver", label: "Motorista", badgeColor: "bg-indigo-500 text-foreground" },
  { type: "guide", label: "Guia", badgeColor: "bg-purple-500 text-foreground" },
@@ -60,7 +60,7 @@ const CATEGORY_OPTIONS: Array<{
  { key: "executivo", label: "Executivo", dotColor: "bg-primary" },
  { key: "semi_leito", label: "Semi-Leito", dotColor: "bg-emerald-500" },
  { key: "leito", label: "Leito", dotColor: "bg-indigo-500" },
- { key: "leito_cama", label: "Leito Cama", dotColor: "bg-amber-500" },
+ { key: "leito_cama", label: "Leito Cama", dotColor: "bg-warning" },
  { key: "convencional", label: "Convencional", dotColor: "bg-slate-500" },
 ];
 
@@ -463,7 +463,7 @@ function VehicleLayoutEditorPage() {
  "size-2.5 rounded-full inline-block",
  tool.type === "seat" && "bg-primary",
  tool.type === "aisle" && "bg-muted-foreground/40",
- tool.type === "wc" && "bg-amber-500",
+ tool.type === "wc" && "bg-warning",
  tool.type === "door" && "bg-emerald-500",
  tool.type === "driver" && "bg-indigo-500",
  tool.type === "guide" && "bg-purple-500",
@@ -554,7 +554,7 @@ function VehicleLayoutEditorPage() {
  !isAccessible &&
  !isBlocked &&
  (cell?.category === "leito_cama"
- ? "bg-amber-500 text-foreground border-amber-600 shadow-xs"
+ ? "bg-warning text-foreground border-warning shadow-xs"
  : cell?.category === "leito"
  ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : cell?.category === "semi_leito"
@@ -569,7 +569,7 @@ function VehicleLayoutEditorPage() {
  cellType === "aisle" &&
  "bg-muted/30 border border-dashed border-border/60 text-muted-foreground/30 hover:bg-muted/60",
  cellType === "wc" &&
- "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 font-mono text-xs",
+ "bg-warning/20 text-warning-strong  border border-warning/40 font-mono text-xs",
  cellType === "door" &&
  "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 text-xs",
  cellType === "driver" &&
@@ -718,7 +718,7 @@ function VehicleLayoutEditorPage() {
  className="p-4 rounded-lg border border-border hover:border-primary text-left transition-colors duration-200 hover:bg-muted/40 cursor-pointer space-y-1 sm:col-span-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="font-bold text-sm text-foreground flex items-center gap-2">
- <Layers className="size-4 text-amber-500" /> 60L Double Decker (G8 DD)
+ <Layers className="size-4 text-warning-strong" /> 60L Double Decker (G8 DD)
  </div>
  <p className="text-xs text-muted-foreground">
  2 Pisos · Piso 1: 12 Leito Cama VIP + WC + Escada · Piso 2: 48 Semi-Leito Panorâmico.

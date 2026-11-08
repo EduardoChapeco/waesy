@@ -44,10 +44,10 @@ export const SquircleCard = React.forwardRef<HTMLDivElement, AppleSquircleCardPr
           size === "lg" && "rounded-3xl p-5 sm:p-6",
           // Variantes de superfície e elevação
           variant === "default" && "bg-card border border-border/70 text-card-foreground",
-          variant === "elevated" && "bg-card border border-border/80 text-card-foreground shadow-sm",
+          variant === "elevated" && "bg-card border border-border/80 text-card-foreground ",
           variant === "subtle" && "bg-muted/40 border border-border/40 text-card-foreground",
           variant === "interactive" &&
-            "cursor-pointer bg-card border border-border/70 text-card-foreground active:scale-[0.98] hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+            "cursor-pointer bg-card border border-border/70 text-card-foreground active:scale-98 hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
           className
         )}
         {...props}

@@ -13,6 +13,7 @@ export interface ProductModifiersCardProps {
  selectedGroupIds: string[];
  onSelectedGroupsChange: (newSelectedIds: string[]) => void;
  onGroupsListChange?: (newGroups: any[]) => void;
+ store?: any;
 }
 
 export function ProductModifiersCard({
@@ -20,6 +21,7 @@ export function ProductModifiersCard({
  selectedGroupIds = [],
  onSelectedGroupsChange,
  onGroupsListChange,
+ store,
 }: ProductModifiersCardProps) {
  const [groups, setGroups] = useState<any[]>(initialGroups);
  const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -256,6 +258,7 @@ export function ProductModifiersCard({
  onOpenChange={setIsDialogOpen}
  groupToEdit={editingGroup}
  onSaved={handleSaved}
+ store={store}
  />
  </div>
  );

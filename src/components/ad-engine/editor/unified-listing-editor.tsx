@@ -207,7 +207,7 @@ export function UnifiedListingEditor({
                 </span>
               )}
               {saveStatus === "unsaved" && (
-                <span className="flex items-center gap-1 text-amber-500">
+                <span className="flex items-center gap-1 text-warning-strong">
                   <AlertCircle className="size-3" /> Alterações pendentes
                 </span>
               )}

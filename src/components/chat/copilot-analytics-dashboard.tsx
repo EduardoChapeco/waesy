@@ -177,7 +177,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
               <span>Tarefas</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-amber-500" />
+              <span className="size-2 rounded-full bg-warning" />
               <span>$WZ</span>
             </div>
           </div>
@@ -207,7 +207,7 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
                     className={cn(
                       "text-2xs font-mono font-semibold px-2 py-1 rounded-md transition-opacity pointer-events-none whitespace-nowrap",
                       isHovered
-                        ? "opacity-100 bg-foreground text-background shadow-sm"
+                        ? "opacity-100 bg-foreground text-background "
                         : "opacity-0"
                     )}
                   >

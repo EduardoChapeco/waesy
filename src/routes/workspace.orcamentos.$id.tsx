@@ -135,7 +135,7 @@ function QuoteDetailPage() {
  {/* Breadcrumb & Ações Superiores */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="flex items-center gap-2">
- <Button asChild variant="ghost" size="icon" className="rounded-lg size-9">
+ <Button asChild variant="ghost" size="icon" className="rounded-lg size-9 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0">
  <Link to="/workspace/orcamentos">
  <ChevronLeft className="size-4" />
  </Link>
@@ -160,7 +160,7 @@ function QuoteDetailPage() {
  <Button
  asChild
  variant="outline"
- className="h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
+ className="h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs min-h-11 sm:min-h-0"
  >
  <Link to="/workspace/turismo/propostas/$id" params={{ id: quote.id }}>
  <FileSpreadsheet className="size-3.5 text-primary" />
@@ -171,7 +171,7 @@ function QuoteDetailPage() {
  <Button
  onClick={handleCopyPublicLink}
  variant="outline"
- className="h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+ className="h-10 rounded-lg text-xs font-bold gap-2 cursor-pointer min-h-11 sm:min-h-0"
  >
  <Copy className="size-3.5" />
  <span>Copiar Link do Cliente</span>
@@ -180,7 +180,7 @@ function QuoteDetailPage() {
  <Button
  onClick={handleGenerateContract}
  disabled={isCreatingContract}
- className="h-10 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer shadow-sm"
+ className="h-10 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer  min-h-11 sm:min-h-0"
  >
  <FileCheck2 className="size-3.5" />
  <span>{isCreatingContract ? "Emitindo..." : "Gerar Contrato (SHA-256)"}</span>
@@ -269,7 +269,7 @@ function QuoteDetailPage() {
  <div key={i} className="p-4 rounded-lg bg-background/70 border border-border/60 space-y-2 text-xs">
  <div className="flex items-center justify-between font-bold">
  <span className="text-foreground">{h.hotel_name}</span>
- <span className="text-amber-500">{"".repeat(h.stars || 5)}</span>
+ <span className="text-warning-strong">{"".repeat(h.stars || 5)}</span>
  </div>
  <div className="flex items-center justify-between text-muted-foreground">
  <span>Quarto: {h.room_type}</span>
@@ -299,7 +299,7 @@ function QuoteDetailPage() {
  <div
  key={msg.id}
  className={`p-4 rounded-lg text-xs space-y-1 ${
- msg.is_internal ? "bg-amber-500/10 border border-amber-500/20 text-amber-950 dark:text-amber-200" : "bg-muted/60"
+ msg.is_internal ? "bg-warning/10 border border-warning/20 text-warning-strong " : "bg-muted/60"
  }`}
  >
  <div className="flex items-center justify-between font-semibold">
@@ -322,7 +322,7 @@ function QuoteDetailPage() {
  onClick={() => sendMessage.mutate()}
  disabled={!messageText.trim() || sendMessage.isPending}
  size="sm"
- className="h-10 px-4 rounded-lg text-xs font-bold"
+ className="h-10 px-4 rounded-lg text-xs font-bold min-h-11 sm:min-h-0"
  >
  <Send className="size-3.5" />
  </Button>
@@ -359,7 +359,7 @@ function QuoteDetailPage() {
  <Button
  onClick={() => changeStatus.mutate("sent")}
  disabled={changeStatus.isPending}
- className="w-full h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm"
+ className="w-full h-10 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer  min-h-11 sm:min-h-0"
  >
  <Send className="size-3.5" />
  <span>Marcar como Enviado</span>
@@ -371,7 +371,7 @@ function QuoteDetailPage() {
  <Button
  onClick={() => handleApprove.mutate()}
  disabled={handleApprove.isPending}
- className="w-full h-10 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer min-h-11 sm:min-h-0"
  >
  <CheckCircle2 className="size-3.5" />
  <span>Aprovar e Fechar Venda</span>
@@ -380,7 +380,7 @@ function QuoteDetailPage() {
  onClick={() => changeStatus.mutate("rejected")}
  disabled={changeStatus.isPending}
  variant="outline"
- className="w-full h-10 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10 cursor-pointer"
+ className="w-full h-10 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0"
  >
  <XCircle className="size-3.5" />
  <span>Marcar como Recusado</span>
@@ -393,13 +393,13 @@ function QuoteDetailPage() {
  <div className="p-5 rounded-lg bg-muted/40 border border-border/60 space-y-3 text-xs">
  <h4 className="font-bold text-foreground">Ações de Conversão Rápida</h4>
  <div className="space-y-2">
- <Button asChild variant="outline" className="w-full h-9 rounded-lg text-xs font-semibold justify-start gap-2">
+ <Button asChild variant="outline" className="w-full h-9 rounded-lg text-xs font-semibold justify-start gap-2 min-h-11 sm:min-h-0">
  <Link to="/workspace/turismo/propostas/$id" params={{ id: quote.id }}>
  <Download className="size-3.5 text-primary" />
  <span>Exportar Lâmina (PDF/PNG)</span>
  </Link>
  </Button>
- <Button onClick={handleCopyPublicLink} variant="outline" className="w-full h-9 rounded-lg text-xs font-semibold justify-start gap-2">
+ <Button onClick={handleCopyPublicLink} variant="outline" className="w-full h-9 rounded-lg text-xs font-semibold justify-start gap-2 min-h-11 sm:min-h-0">
  <Share2 className="size-3.5 text-primary" />
  <span>Link Direto para o WhatsApp</span>
  </Button>

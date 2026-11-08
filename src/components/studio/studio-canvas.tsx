@@ -551,7 +551,7 @@ export function StudioCanvas({
             onClick={() => addStickerLayer('DESTAQUE')}
             className="h-11 min-h-11 px-4 rounded-lg text-xs flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <Sparkles className="size-4 text-amber-500" />
+            <Sparkles className="size-4 text-warning-strong" />
             Selo / Badge
           </Button>
 

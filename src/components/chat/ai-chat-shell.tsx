@@ -373,7 +373,7 @@ export function AIChatShell({
         )}
       >
         {/* ── RÉGUA DE NAVEGAÇÃO CANÔNICA DO COPILOT ── */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-card/60 backdrop-blur-md gap-2 shrink-0 overflow-x-auto no-scrollbar">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-card/60 backdrop-blur-md gap-2 shrink-0 overflow-x-auto scroll-area-carousel no-scrollbar">
           <div className="flex items-center gap-2 min-w-max">
             <Button
               type="button"

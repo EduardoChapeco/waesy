@@ -134,7 +134,7 @@ function PublicRecipesPage() {
       </div>
 
       {/* ── 2. Filtro Horizontal de Categorias (Underlined Tabs) ── */}
-      <div className="flex items-center gap-6 overflow-x-auto no-scrollbar border-b border-border/40 pb-2">
+      <div className="flex items-center gap-6 overflow-x-auto scroll-area-carousel no-scrollbar border-b border-border/40 pb-2">
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
@@ -142,7 +142,7 @@ function PublicRecipesPage() {
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "text-xs sm:text-sm font-medium whitespace-nowrap transition-colors relative py-1 cursor-pointer",
               selectedCategory === cat
-                ? "text-foreground font-semibold after:absolute after:-bottom-2 after:left-0 after:right-0 after:h-0.5 after:bg-foreground"
+                ? "text-foreground font-semibold after:absolute after:-bottom-2 after:left-0 after:right-0 after:h-0.5 after:bg-foreground min-h-11 sm:min-h-0"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -166,7 +166,7 @@ function PublicRecipesPage() {
               setSearch("");
               setSelectedCategory("Todas");
             }}
-            className="rounded-lg text-xs h-8"
+            className="rounded-lg text-xs h-8 min-h-11 sm:min-h-0"
           >
             Limpar Filtros
           </Button>
@@ -320,7 +320,7 @@ function PublicRecipesPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => handleCopyShoppingList(selectedRecipe)}
-                      className="h-7 px-2 text-2xs rounded-lg gap-1 font-semibold cursor-pointer"
+                      className="h-7 px-2 text-2xs rounded-lg gap-1 font-semibold cursor-pointer min-h-11 sm:min-h-0"
                     >
                       <Copy className="size-3" />
                       Copiar Lista
@@ -400,7 +400,7 @@ function PublicRecipesPage() {
                         toast.success("Link da receita copiado!");
                       }
                     }}
-                    className="h-7 px-2 text-2xs rounded-lg gap-1 cursor-pointer"
+                    className="h-7 px-2 text-2xs rounded-lg gap-1 cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <Share2 className="size-3" />
                     Compartilhar

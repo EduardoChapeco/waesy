@@ -193,7 +193,7 @@ export function MotionStudioViewport({
           {/* Store Logo Chip (if enabled) */}
           {showLogo && (
             <div className="absolute top-4 right-4 z-10 pointer-events-none flex items-center gap-2 px-3 py-1 rounded-full bg-foreground/30 border border-white/10 backdrop-blur-md text-2xs font-semibold text-foreground/80">
-              <Zap className="size-3 text-amber-400" />
+              <Zap className="size-3 text-warning-strong" />
               <span>Waesy Loja</span>
             </div>
           )}
@@ -385,7 +385,7 @@ export function MotionStudioViewport({
                       }}
                       className={`absolute h-7 rounded-md px-2 text-left flex items-center justify-between transition-colors duration-200 truncate border text-2xs font-semibold ${
                         isSelected
-                          ? "bg-amber-500/20 border-amber-400 text-amber-300 ring-1 ring-amber-400/40"
+                          ? "bg-warning/20 border-warning text-warning-strong ring-1 ring-warning/40"
                           : "bg-zinc-800/80 border-zinc-700/60 text-zinc-300 hover:border-zinc-500"
                       } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                       style={{

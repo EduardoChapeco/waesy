@@ -65,7 +65,7 @@ export function SectionMap({ draft, save }: SectionMapProps) {
             </div>
             <Suspense
               fallback={
-                <div className="h-[400px] w-full rounded-full border bg-surface-alt/30 flex items-center justify-center text-muted-foreground text-sm animate-pulse motion-reduce:animate-none">
+                <div className="h-100 w-full rounded-full border bg-surface-alt/30 flex items-center justify-center text-muted-foreground text-sm animate-pulse motion-reduce:animate-none">
                   Carregando mapa interativo...
                 </div>
               }

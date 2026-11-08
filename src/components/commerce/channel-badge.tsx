@@ -44,7 +44,7 @@ export function getChannelInfo(source?: string | null): ChannelInfo {
     return {
       id: "mercadolivre",
       label: "Mercado Livre",
-      badgeClass: "text-amber-600 dark:text-amber-400",
+      badgeClass: "text-warning-strong ",
     };
   }
   if (norm.includes("ifood")) {
@@ -79,7 +79,7 @@ export function getChannelInfo(source?: string | null): ChannelInfo {
     return {
       id: "99food",
       label: "99Food",
-      badgeClass: "text-yellow-600 dark:text-yellow-400",
+      badgeClass: "text-warning-strong ",
     };
   }
   if (norm.includes("amodelivery") || norm.includes("amo_delivery")) {

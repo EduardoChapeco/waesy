@@ -24,6 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { ExtensionWebStoreModal } from "@/components/extensions/ExtensionWebStoreModal";
+import type { ExtensionPackageType } from "@/services/extensions-distributor.functions";
 import { ingestOperatorSyncBatch, listTravelOperatorSyncRuns } from "@/services/travel-operator-sync.functions";
 
 interface OperatorInfo {
@@ -77,6 +79,55 @@ export function InfotravelIntegrationPanel() {
   const [isUploading, setIsUploading] = useState(false);
   const [totalMinedTrips, setTotalMinedTrips] = useState(0);
   const [totalMinedPax, setTotalMinedPax] = useState(0);
+  const [downloadingType, setDownloadingType] = useState<string | null>(null);
+  const [webStoreType, setWebStoreType] = useState<ExtensionPackageType>("infotravel_extension");
+  const [isWebStoreOpen, setIsWebStoreOpen] = useState(false);
+
+  const openStoreShowcase = (type: ExtensionPackageType) => {
+    setWebStoreType(type);
+    setIsWebStoreOpen(true);
+  };
+
+  const handleDownloadExtension = async (type: "infotravel_extension" | "infotravel_miner") => {
+    setDownloadingType(type);
+    try {
+      const res = await fetch(`/api/v1/extensions/download?type=${type}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 403 || err?.can_request) {
+          openStoreShowcase(type);
+          toast.info("Acesso sob demanda. Veja as informações da extensão e solicite a liberação.");
+        } else {
+          toast.error(err?.error || "Acesso restrito para download desta extensão.");
+        }
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get("content-disposition") || "";
+      let filename =
+        type === "infotravel_extension"
+          ? "waesy-sync-infotravel-v2.1.zip"
+          : "waesy-miner-infotravel-scripts.zip";
+      const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+      if (filenameMatch?.[1]) filename = filenameMatch[1];
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Download de "${filename}" concluído com sucesso!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao realizar download.");
+    } finally {
+      setDownloadingType(null);
+    }
+  };
 
   const loadPersistedSyncStats = async () => {
     try {
@@ -327,16 +378,29 @@ export function InfotravelIntegrationPanel() {
             </div>
           </div>
 
-          <div className="pt-2 space-y-2">
+          <div className="pt-2 flex flex-col sm:flex-row gap-2">
             <Button
               variant="default"
-              className="w-full h-11 min-h-11 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring"
-              onClick={() => {
-                toast.info("A pasta da extensao esta localizada em tools/infotravel-extension.");
-              }}
+              className="flex-1 h-11 min-h-11 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring"
+              disabled={downloadingType === "infotravel_extension"}
+              onClick={() => handleDownloadExtension("infotravel_extension")}
             >
-              <Download className="mr-2 size-4" />
-              Ver Pasta da Extensao Chrome
+              {downloadingType === "infotravel_extension" ? (
+                <RefreshCw className="mr-2 size-4 animate-spin motion-reduce:animate-none" />
+              ) : (
+                <Download className="mr-2 size-4" />
+              )}
+              {downloadingType === "infotravel_extension"
+                ? "Empacotando..."
+                : "Baixar Extensão (.zip)"}
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 h-11 min-h-11 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring"
+              onClick={() => openStoreShowcase("infotravel_extension")}
+            >
+              <ExternalLink className="mr-2 size-4" />
+              Ver na Store / Acesso
             </Button>
           </div>
         </div>
@@ -384,22 +448,25 @@ export function InfotravelIntegrationPanel() {
             <Button
               variant="outline"
               className="flex-1 h-11 min-h-11 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring"
-              onClick={() => {
-                toast.info("Execute 'abrir_pasta_dos_arquivos.bat' na pasta tools/infotravel-miner.");
-              }}
+              disabled={downloadingType === "infotravel_miner"}
+              onClick={() => handleDownloadExtension("infotravel_miner")}
             >
-              <FolderOpen className="mr-2 size-4" />
-              Abrir Pasta dos Arquivos
+              {downloadingType === "infotravel_miner" ? (
+                <RefreshCw className="mr-2 size-4 animate-spin motion-reduce:animate-none" />
+              ) : (
+                <Download className="mr-2 size-4" />
+              )}
+              {downloadingType === "infotravel_miner"
+                ? "Empacotando..."
+                : "Baixar Scripts (.zip)"}
             </Button>
             <Button
-              variant="secondary"
+              variant="outline"
               className="flex-1 h-11 min-h-11 font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring"
-              onClick={() => {
-                toast.info("Execute 'iniciar_extracao_completa.bat' no terminal do Windows.");
-              }}
+              onClick={() => openStoreShowcase("infotravel_miner")}
             >
-              <Play className="mr-2 size-4" />
-              Executar Extrator
+              <ExternalLink className="mr-2 size-4" />
+              Ver na Store
             </Button>
           </div>
         </div>
@@ -557,6 +624,13 @@ export function InfotravelIntegrationPanel() {
           </div>
         </div>
       </div>
+
+      <ExtensionWebStoreModal
+        isOpen={isWebStoreOpen}
+        onClose={() => setIsWebStoreOpen(false)}
+        extensionType={webStoreType}
+        onDownloadDirect={(t) => handleDownloadExtension(t as any)}
+      />
     </div>
   );
 }

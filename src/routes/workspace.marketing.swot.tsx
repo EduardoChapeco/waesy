@@ -80,8 +80,8 @@ const QUADRANTS: Record<QuadrantKey, QuadrantMeta> = {
     badge: "Weaknesses",
     subtitle: "Limitações operacionais, gargalos internos e vulnerabilidades.",
     factorType: "Interno (Controlável)",
-    colorClass: "text-amber-500 bg-amber-500/10",
-    borderClass: "border-amber-500/30 hover:border-amber-500/60",
+    colorClass: "text-warning-strong bg-warning/10",
+    borderClass: "border-warning/30 hover:border-warning/60",
     icon: AlertTriangle,
   },
   opportunities: {
@@ -301,7 +301,7 @@ export function SwotMatrixPage() {
               variant="secondary"
               size="sm"
               disabled={!newItemText[quadrantKey]?.trim()}
-              className="h-9 w-9 p-0 flex-shrink-0"
+              className="h-9 w-9 p-0 flex-shrink-0 min-h-11 sm:min-h-0"
               title="Adicionar"
             >
               <Plus className="h-4 w-4" />
@@ -315,8 +315,8 @@ export function SwotMatrixPage() {
   return (
     <div className="w-full min-h-full bg-background text-foreground pb-24">
       {/* ── BARRA SUPERIOR ── */}
-      <div className="sticky top-0 z-20 border-b border-border/40 bg-card/60 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div className="sticky top-0 z-20 border-b border-border/40 bg-card ">
+        <div className="w-full px-4 sm:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -337,10 +337,10 @@ export function SwotMatrixPage() {
                 Rascunho qualitativo. Sem evidência suficiente, os fatores devem permanecer vazios ou ser tratados como hipóteses.
               </p>
               {analysisStatus === "ai_generated_draft" && (
-                <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">Rascunho de IA · requer revisão humana · não validado por resultados reais.</p>
+                <p className="mt-2 text-xs text-warning-strong ">Rascunho de IA · requer revisão humana · não validado por resultados reais.</p>
               )}
               {analysisStatus === "legacy_unverified" && (
-                <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">Dados legados sem proveniência verificável; revise antes de usar.</p>
+                <p className="mt-2 text-xs text-warning-strong ">Dados legados sem proveniência verificável; revise antes de usar.</p>
               )}
               {analysisStatus === "not_created" && (
                 <p className="mt-2 text-xs text-muted-foreground">Ainda não há análise salva. Os campos vazios não significam ausência de forças ou riscos.</p>
@@ -377,7 +377,7 @@ export function SwotMatrixPage() {
       </div>
 
       {/* ── GRID 2X2 DE QUADRANTES ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="w-full px-4 sm:px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {renderQuadrant("strengths")}
           {renderQuadrant("weaknesses")}

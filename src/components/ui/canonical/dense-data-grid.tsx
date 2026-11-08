@@ -123,7 +123,7 @@ export function DenseDataGrid<T>({
 
   // 5. Modo Desktop: Tabela Densa com Cabeçalho Fixo
   return (
-    <div className="w-full overflow-x-auto rounded-lg border border-border bg-card">
+    <div className="w-full overflow-x-auto scroll-area-carousel rounded-lg border border-border bg-card">
       <table className="w-full text-left border-collapse text-xs">
         <thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold uppercase tracking-wider">
           <tr>

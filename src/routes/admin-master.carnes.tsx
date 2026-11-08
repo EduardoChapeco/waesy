@@ -176,7 +176,7 @@ function AdminMasterCarnesPage() {
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Conciliações Pendentes
           </span>
-          <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-xl font-bold text-warning-strong ">
             {overview?.pendingConciliationCount || 0}
           </div>
           <div className="text-xs text-muted-foreground">Aguardando decisão da loja</div>
@@ -185,7 +185,7 @@ function AdminMasterCarnesPage() {
 
       {/* Barra de Filtros e Busca */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-        <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto">
+        <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto scroll-area-carousel">
           <button
             type="button"
             onClick={() => setActiveFilter("all")}
@@ -234,7 +234,7 @@ function AdminMasterCarnesPage() {
           >
             Comprovantes em análise
             {(overview?.pendingConciliationCount || 0) > 0 && (
-              <span className="px-2 py-0.2 rounded-full bg-amber-500/10 text-amber-600 font-bold text-xs text-muted-foreground/75">
+              <span className="px-2 py-0.2 rounded-full bg-warning/10 text-warning-strong font-bold text-xs text-muted-foreground/75">
                 {overview?.pendingConciliationCount}
               </span>
             )}
@@ -341,7 +341,7 @@ function AdminMasterCarnesPage() {
                         key={inst.id}
                         className={cn(
                           "py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs transition-colors",
-                          isPending && "bg-amber-500/5 -mx-5 px-5",
+                          isPending && "bg-warning/5 -mx-5 px-5",
                         )}
                       >
                         <div className="space-y-1">
@@ -357,7 +357,7 @@ function AdminMasterCarnesPage() {
                             )}
 
                             {!isPaid && isPending && (
-                              <Badge variant="outline" className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs text-muted-foreground/75 py-0 ">
+                              <Badge variant="outline" className="bg-warning/15 text-warning-strong  border-warning/30 text-xs text-muted-foreground/75 py-0 ">
                                 Comprovante enviado
                               </Badge>
                             )}
@@ -409,7 +409,7 @@ function AdminMasterCarnesPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 px-3 text-xs rounded-lg text-primary hover:bg-primary/10 border-primary/30"
+                            className="h-8 px-3 text-xs rounded-lg text-primary hover:bg-primary/10 border-primary/30 min-h-11 sm:min-h-0"
                             onClick={() => handleOpenIntervention(carne, inst)}
                           >
                             <ShieldAlert className="h-3.5 w-3.5 mr-1" /> Intervir Master
@@ -468,7 +468,7 @@ function AdminMasterCarnesPage() {
                 <Button
                   type="button"
                   variant={interventionAction === "force_approve" ? "default" : "outline"}
-                  className="h-10 text-xs rounded-lg"
+                  className="h-10 text-xs rounded-lg min-h-11 sm:min-h-0"
                   onClick={() => setInterventionAction("force_approve")}
                 >
                   Forçar Aprovação
@@ -476,7 +476,7 @@ function AdminMasterCarnesPage() {
                 <Button
                   type="button"
                   variant={interventionAction === "force_reject" ? "default" : "outline"}
-                  className="h-10 text-xs rounded-lg"
+                  className="h-10 text-xs rounded-lg min-h-11 sm:min-h-0"
                   onClick={() => setInterventionAction("force_reject")}
                 >
                   Forçar Recusa
@@ -484,7 +484,7 @@ function AdminMasterCarnesPage() {
                 <Button
                   type="button"
                   variant={interventionAction === "reopen" ? "default" : "outline"}
-                  className="h-10 text-xs rounded-lg"
+                  className="h-10 text-xs rounded-lg min-h-11 sm:min-h-0"
                   onClick={() => setInterventionAction("reopen")}
                 >
                   Reabrir Parcela
@@ -522,7 +522,7 @@ function AdminMasterCarnesPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-lg text-xs h-10"
+                className="rounded-lg text-xs h-10 min-h-11 sm:min-h-0"
                 onClick={() => setIsInterventionOpen(false)}
               >
                 Cancelar
@@ -530,7 +530,7 @@ function AdminMasterCarnesPage() {
               <Button
                 type="submit"
                 disabled={isIntervening || !interventionReason.trim()}
-                className="rounded-lg bg-primary text-primary-foreground text-xs h-10 px-4 font-medium"
+                className="rounded-lg bg-primary text-primary-foreground text-xs h-10 px-4 font-medium min-h-11 sm:min-h-0"
               >
                 {isIntervening ? "Executando..." : "Confirmar Intervenção Master"}
               </Button>

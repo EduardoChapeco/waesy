@@ -1,16 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Clock, MapPin, ShieldCheck, UserCheck, AlertCircle, CheckCircle2, Edit3, Search, Users, TrendingUp, SlidersHorizontal } from "lucide-react";
+import { Clock, MapPin, ShieldCheck, UserCheck, AlertCircle, CheckCircle2, Edit3, Search, Users, TrendingUp, SlidersHorizontal, FileText, Printer, Calendar, Wallet, Stethoscope } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { listEmployeeTimeEntries, adjustTimeEntry } from "@/services/hr.functions";
+import { listEmployeeTimeEntries, adjustTimeEntry, listStoreEmployees, type StoreEmployeeDTO } from "@/services/hr.functions";
 import { formatDateTime, formatTimeOnly } from "@/lib/datetime";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
+import { MonthlyTimecardSheetModal } from "@/components/hr/monthly-timecard-sheet-modal";
+import { MedicalCertificateModal } from "@/components/hr/medical-certificate-modal";
 
 export const Route = createFileRoute("/workspace/rh/ponto")({
   head: () => ({ meta: [{ title: "Espelho de Ponto Eletrônico | Gestão RH Waesy" }] }),
@@ -24,10 +26,18 @@ function WorkspaceRHPontoPage() {
   const [filterType, setFilterType] = useState<string>("all");
   const [searchEmployee, setSearchEmployee] = useState("");
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isTimecardSheetOpen, setIsTimecardSheetOpen] = useState(false);
+  const [isMedicalModalOpen, setIsMedicalModalOpen] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState("2026-11");
 
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["employee-time-entries"],
     queryFn: () => listEmployeeTimeEntries({ data: {} }),
+  });
+
+  const { data: employees = [] } = useQuery<StoreEmployeeDTO[]>({
+    queryKey: ["store-employees"],
+    queryFn: () => listStoreEmployees(),
   });
 
   const adjustMutation = useMutation({
@@ -65,7 +75,7 @@ function WorkspaceRHPontoPage() {
 
   const ENTRY_TYPE_LABELS: Record<string, { label: string; color: string }> = {
     clock_in: { label: "Entrada", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
-    lunch_out: { label: "Saída Almoço", color: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+    lunch_out: { label: "Saída Almoço", color: "bg-warning/10 text-warning-strong border-warning/20" },
     lunch_in: { label: "Volta Almoço", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
     clock_out: { label: "Saída", color: "bg-purple-500/10 text-purple-500 border-purple-500/20" },
     overtime_in: { label: "Início H. Extra", color: "bg-orange-500/10 text-orange-500 border-orange-500/20" },
@@ -74,6 +84,54 @@ function WorkspaceRHPontoPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-6 max-w-7xl mx-auto">
+      {/* ── Barra Superior de Ações de Ponto & Banco de Horas ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-4 rounded-lg border border-border">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/20">
+            <Clock className="size-5" />
+          </div>
+          <div>
+            <h1 className="text-base font-bold text-foreground">Ponto Eletrônico & Banco de Horas</h1>
+            <p className="text-xs text-muted-foreground">Conforme Portaria MTE 671/2021 com auditoria geolocalizada e assinatura mensal.</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Link to="/workspace/rh/folha">
+              <Wallet className="size-3.5 text-primary" />
+              <span>Folha de Pagamento</span>
+            </Link>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsMedicalModalOpen(true)}
+            className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Stethoscope className="size-3.5 text-primary" />
+            <span>+ Atestado Médico</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsTimecardSheetOpen(true)}
+            className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 cursor-pointer border-primary/30 text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Printer className="size-3.5" />
+            <span>Emitir Espelho Mensal (PDF)</span>
+          </Button>
+        </div>
+      </div>
       {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -195,7 +253,7 @@ function WorkspaceRHPontoPage() {
         </div>
 
         {/* Desktop View: Tabela Corporativa Densa */}
-        <div className="hidden sm:block overflow-x-auto no-scrollbar">
+        <div className="hidden sm:block overflow-x-auto scroll-area-carousel no-scrollbar">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/40 text-muted-foreground font-semibold border-b border-border">
               <tr>
@@ -325,6 +383,28 @@ function WorkspaceRHPontoPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Espelho de Ponto Mensal Oficial em PDF */}
+      <MonthlyTimecardSheetModal
+        isOpen={isTimecardSheetOpen}
+        onClose={() => setIsTimecardSheetOpen(false)}
+        companyName="Empresa Cadastrada"
+        companyCnpj="00.000.000/0001-00"
+        employeeName={entries[0]?.employee?.full_name || "Colaborador"}
+        employeeJobTitle={entries[0]?.employee?.job_title || "Operações"}
+        referenceMonth={selectedPeriod}
+        timeEntries={entries}
+      />
+
+      {/* Atestado Médico / Abono */}
+      <MedicalCertificateModal
+        isOpen={isMedicalModalOpen}
+        onClose={() => setIsMedicalModalOpen(false)}
+        employees={employees}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["employee-time-entries"] });
+        }}
+      />
     </div>
   );
 }

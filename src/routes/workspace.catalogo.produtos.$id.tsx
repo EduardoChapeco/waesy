@@ -38,6 +38,7 @@ import {
   listCategories,
   listProductTypes,
   listOptionGroups,
+  listStoreBrands,
 } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
@@ -47,12 +48,13 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/$id")({
   head: () => ({ meta: [{ title: "Editor Avançado de Produto | Workspace Waesy" }] }),
   loader: async ({ params }) => {
     try {
-      const [product, catsRes, typesRes, groupsRes, storeRes] = await Promise.all([
+      const [product, catsRes, typesRes, groupsRes, storeRes, brandsRes] = await Promise.all([
         getProductById({ data: { id: params.id } }).catch(() => null),
         listCategories().catch(() => []),
         listProductTypes().catch(() => []),
         listOptionGroups().catch(() => []),
         getStoreSettings().catch(() => null),
+        listStoreBrands().catch(() => []),
       ]);
       return {
         product: product || null,
@@ -60,6 +62,7 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/$id")({
         productTypes: typesRes || [],
         optionGroupsList: groupsRes || [],
         store: storeRes,
+        brands: brandsRes || [],
       };
     } catch {
       return {
@@ -68,6 +71,7 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/$id")({
         productTypes: [],
         optionGroupsList: [],
         store: null,
+        brands: [],
       };
     }
   },
@@ -75,7 +79,7 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/$id")({
 });
 
 function EditProductPage() {
-  const { product, categories, productTypes, optionGroupsList, store } = ((Route.useLoaderData?.() as any) || {});
+  const { product, categories, productTypes, optionGroupsList, store, brands = [] } = ((Route.useLoaderData?.() as any) || {});
   const semantics = getNicheSemantics(store);
   const nicheCtx = getNicheCatalogContext(store);
 
@@ -83,7 +87,7 @@ function EditProductPage() {
 
   if (!product) {
     return (
-      <div className="w-full max-w-7xl mx-auto px-4 space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="w-full px-4 space-y-6 pb-20 animate-in fade-in duration-200">
         <div className="flex items-center gap-3">
           <NativeBackButton fallbackHref="/workspace/catalogo/produtos" />
         </div>
@@ -154,6 +158,7 @@ function EditProductPage() {
                 selling_unit: product?.selling_unit || "un",
               }}
               images={edit.mediaUrls}
+              variants={edit.variants}
               activePreviewImage={edit.activePreviewImage}
               setActivePreviewImage={edit.setActivePreviewImage}
               store={store}
@@ -230,6 +235,7 @@ function EditProductPage() {
               product={product}
               categories={categories}
               productTypes={productTypes}
+              brands={brands}
               nicheCtx={nicheCtx}
               variants={edit.variants}
               onSavingChange={edit.setIsSavingGeneral}
@@ -256,6 +262,19 @@ function EditProductPage() {
               attributes={edit.nicheAttributes}
               onChange={edit.handleNicheAttributesChange}
               nicheContext={nicheCtx}
+              nicheId={semantics.nicheId}
+              selectedProductType={productTypes.find((pt: any) => pt.id === product.type_id) || null}
+              synchronizedLogistics={{
+                weightKg: Number(product.weight_kg) || 0,
+                widthCm: Number(product.width_cm) || 0,
+                heightCm: Number(product.height_cm) || 0,
+                lengthCm: Number(product.length_cm) || 0,
+                logistics: (product.attributes as any)?.logistics || {},
+                onJumpToPackaging: () => {
+                  const el = document.getElementById("geral");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                },
+              }}
             />
           </div>
 
@@ -313,6 +332,7 @@ function EditProductPage() {
               selectedGroupIds={edit.selectedOptionGroupIds}
               onSelectedGroupsChange={edit.handleSelectedGroupsChange}
               onGroupsListChange={edit.setOptionGroups}
+              store={store}
             />
           </div>
 

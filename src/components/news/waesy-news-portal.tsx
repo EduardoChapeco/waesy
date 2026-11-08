@@ -723,12 +723,12 @@ export function WaesyNewsPortal({
                   href={billboardBanners[0].target_url || "#"}
                   target={billboardBanners[0].target_url?.startsWith("http") ? "_blank" : undefined}
                   rel={billboardBanners[0].target_url?.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="block relative aspect-video md:aspect-[21/9] w-full bg-muted overflow-hidden group"
+                  className="block relative aspect-video md:aspect-21/9 w-full bg-muted overflow-hidden group"
                 >
                   <img
                     src={billboardBanners[0].media_url}
                     alt={billboardBanners[0].title || "Destaque"}
-                    className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    className="size-full object-cover transition-transform duration-300 group-hover:scale-102"
                   />
                   {billboardBanners[0].badge_text && (
                     <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-background/90 text-foreground text-xs font-bold border border-border/40">
@@ -753,7 +753,7 @@ export function WaesyNewsPortal({
           )}
 
           {/* ── BARRA DE INTELIGÊNCIA REGIONAL (CIDADES VIZINHAS DA MICRO/MACRORREGIÃO) ── */}
-          <div className="flex items-center gap-2 overflow-x-auto waesy-tab-strip py-1 scroll-smooth">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel waesy-tab-strip py-1 scroll-smooth">
             <span className="text-xs font-bold text-muted-foreground shrink-0 uppercase tracking-wider pl-1">
               Cidades da Região:
             </span>
@@ -764,7 +764,7 @@ export function WaesyNewsPortal({
                 selectedCity === "Todas as Cidades"
                   ? "bg-foreground text-background font-bold"
                   : "border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground"
-              }`}
+              } min-h-11 sm:min-h-0`}
             >
               Todas as Cidades
             </button>
@@ -779,7 +779,7 @@ export function WaesyNewsPortal({
                     isCurrent
                       ? "bg-foreground text-background font-bold"
                       : "border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground"
-                  }`}
+                  } min-h-11 sm:min-h-0`}
                 >
                   {c.name}
                 </button>
@@ -864,7 +864,7 @@ export function WaesyNewsPortal({
                     <button
                       type="button"
                       onClick={() => setSelectedCity("Todas as Cidades")}
-                      className="h-8 px-3 rounded-full border border-border bg-muted/30 hover:bg-muted text-xs font-semibold text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-8 px-3 rounded-full border border-border bg-muted/30 hover:bg-muted text-xs font-semibold text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                     >
                       {selectedCity} · Ver todas
                     </button>
@@ -880,7 +880,7 @@ export function WaesyNewsPortal({
                       viewMode === "stream"
                         ? "bg-foreground text-background"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                    } min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
                     title="Visualização em Lista / Stream"
                     aria-label="Visualização em Lista / Stream"
                   >
@@ -893,7 +893,7 @@ export function WaesyNewsPortal({
                       viewMode === "grid"
                         ? "bg-foreground text-background"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                    } min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
                     title="Visualização em Grade"
                     aria-label="Visualização em Grade"
                   >
@@ -982,7 +982,7 @@ export function WaesyNewsPortal({
                             <button
                               type="button"
                               onClick={() => setStudioArticle(art)}
-                              className="size-8 rounded-full border border-border bg-muted/30 hover:bg-muted flex items-center justify-center text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="size-8 rounded-full border border-border bg-muted/30 hover:bg-muted flex items-center justify-center text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                               title="Gerar post PNG"
                             >
                               <Layers className="size-3.5" />
@@ -990,7 +990,7 @@ export function WaesyNewsPortal({
                             <button
                               type="button"
                               onClick={() => openArticleView(art)}
-                              className="h-8 px-3 rounded-full bg-foreground text-background hover:bg-foreground/90 font-bold text-xs inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="h-8 px-3 rounded-full bg-foreground text-background hover:bg-foreground/90 font-bold text-xs inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                             >
                               Ler
                             </button>
@@ -1289,7 +1289,7 @@ export function WaesyNewsPortal({
                       rel={banner.target_url?.startsWith("http") ? "noopener noreferrer" : undefined}
                       className="block overflow-hidden rounded-3xl border border-border bg-card hover:opacity-95 transition-opacity"
                     >
-                      <div className="relative aspect-[4/5] w-full bg-muted">
+                      <div className="relative aspect-4/5 w-full bg-muted">
                         <img
                           src={banner.media_url}
                           alt={banner.title || "Anúncio"}

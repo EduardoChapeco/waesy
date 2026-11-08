@@ -23,6 +23,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,7 @@ import { Switch } from "@/components/ui/switch";
 import { formatMoney } from "@/lib/money";
 import { DigitalSignatureCanvas } from "./DigitalSignatureCanvas";
 import { listCustomerAnamneses, saveCustomerAnamnesis } from "@/services/services-erp.functions";
+import { getCustomer360, updateCustomer } from "@/services/crm.functions";
 import { toast } from "sonner";
 
 export interface CustomerDrawer360Props {
@@ -78,11 +80,25 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
   const [anamnesisAllergies, setAnamnesisAllergies] = useState("");
   const [isSavingAnamnesis, setIsSavingAnamnesis] = useState(false);
 
+  const [customer360, setCustomer360] = useState<any>(null);
+  const [cadName, setCadName] = useState("");
+  const [cadDoc, setCadDoc] = useState("");
+  const [cadPhone, setCadPhone] = useState("");
+  const [cadEmail, setCadEmail] = useState("");
+  const [cadNotes, setCadNotes] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
   useEffect(() => {
     const customerId = customer?.id;
+    setCadName(customer?.fullName || customer?.full_name || customer?.name || "");
+    setCadDoc(customer?.document || customer?.taxId || "");
+    setCadPhone(customer?.phone || "");
+    setCadEmail(customer?.email || "");
+    setCadNotes(customer?.notes || "");
     if (!isSheetOpen || !customerId) {
       setAnamneses([]);
       setAnamnesisLoadError(null);
+      setCustomer360(null);
       return;
     }
 
@@ -99,10 +115,45 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
         }
       });
 
+    void getCustomer360({ data: { customerId } })
+      .then((res) => {
+        if (!cancelled && res) {
+          setCustomer360(res);
+          setCadName(res.profile?.fullName || res.profile?.name || customer?.name || "");
+          setCadDoc(res.profile?.taxId || customer?.document || "");
+          setCadPhone(res.profile?.phone || customer?.phone || "");
+          setCadEmail(res.profile?.email || customer?.email || "");
+          setCadNotes(res.crm?.notes || customer?.notes || "");
+        }
+      })
+      .catch(() => {});
+
     return () => {
       cancelled = true;
     };
   }, [isSheetOpen, customer?.id]);
+
+  const handleSaveCustomerProfile = async () => {
+    if (!customer?.id) return;
+    setIsSavingProfile(true);
+    try {
+      await updateCustomer({
+        data: {
+          id: customer.id,
+          fullName: cadName.trim() || "Cliente",
+          document: cadDoc.trim() || null,
+          phone: cadPhone.trim() || null,
+          email: cadEmail.trim() || null,
+          notes: cadNotes.trim() || null,
+        },
+      });
+      toast.success("Dados do cliente atualizados no CRM!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao atualizar cadastro do cliente.");
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
 
   if (!isSheetOpen || !customer) return null;
 
@@ -135,10 +186,11 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
     <Sheet open={isSheetOpen} onOpenChange={(open) => !open && handleClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-3xl p-0 flex flex-col bg-background border-l border-border"
+        size="70"
+        className="p-0 flex flex-col bg-background border-l border-border"
       >
         {/* Header do Cliente */}
-        <div className="border-b border-border p-6 flex items-start justify-between bg-card">
+        <div className="border-b border-border/60 p-6 flex items-start justify-between bg-background">
           <div className="flex items-center gap-4">
             <div className="h-14 w-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg select-none">
               {displayName.slice(0, 2).toUpperCase()}
@@ -182,17 +234,18 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
 
         {/* Barra de Abas Horizontais com Scroll Tátil */}
         {/* design-lint-ignore DL-30 reason:"Barra horizontal de abas do CRM cliente requer rolagem suave no mobile" expiry:"2027-10-30" */}
-        <div className="flex items-center gap-2 overflow-x-auto border-b border-border px-6 py-2 bg-muted/20 scrollbar-none">
+        <div className="flex items-center gap-6 overflow-x-auto scroll-area-carousel border-b border-border/60 px-6 bg-background scrollbar-none">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`h-11 min-h-11 px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={cn(
+                "h-11 min-h-11 px-1 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === tab.key
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-              }`}
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border/60"
+              )}
             >
               {tab.label}
             </button>
@@ -249,7 +302,7 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
                       {customer.client_lifetime_days ?? 120} dias
                     </p>
                   </div>
-                  <Award className="h-4 w-4 text-amber-500" />
+                  <Award className="h-4 w-4 text-warning-strong" />
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
                   <div>
@@ -314,13 +367,25 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
                 ) : (
                   <div className="space-y-2">
                     {anamneses.map((record) => (
-                      <div key={record.id} className="rounded-xl border border-border bg-card p-4 space-y-1">
+                      <div key={record.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-sm font-semibold text-foreground break-words">
                             {record.template_name || "Anamnese"}
                           </span>
-                          <Badge variant="outline" className="text-2xs shrink-0">{record.status || "completed"}</Badge>
+                          <Badge variant="outline" className="text-2xs shrink-0">
+                            {record.status === "signed" ? "Assinada" : "Concluída"}
+                          </Badge>
                         </div>
+                        {(record.answers_payload?.notes || record.answers?.notes) && (
+                          <p className="text-xs text-foreground whitespace-pre-line break-words bg-muted/30 p-3 rounded-lg border border-border/50">
+                            {record.answers_payload?.notes || record.answers?.notes}
+                          </p>
+                        )}
+                        {(record.answers_payload?.allergies || record.answers?.allergies) && (
+                          <p className="text-2xs text-destructive font-medium">
+                            Alergias / Restrições: {record.answers_payload?.allergies || record.answers?.allergies}
+                          </p>
+                        )}
                         <p className="text-2xs text-muted-foreground">
                           {record.created_at ? new Date(record.created_at).toLocaleString("pt-BR") : "Data não informada"}
                         </p>
@@ -421,11 +486,11 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Nome Completo</Label>
-                  <Input defaultValue={displayName} className="h-11" />
+                  <Input value={cadName} onChange={(e) => setCadName(e.target.value)} className="h-11" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium">Apelido</Label>
-                  <Input defaultValue={customer.nickname || ""} className="h-11" />
+                  <Label className="text-xs font-medium">CPF / CNPJ</Label>
+                  <Input value={cadDoc} onChange={(e) => setCadDoc(e.target.value)} className="h-11 font-mono" />
                 </div>
               </div>
 
@@ -433,14 +498,15 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Celular / WhatsApp</Label>
                   <Input
-                    defaultValue={canViewPhones ? customer.phone : maskPhone(customer.phone)}
+                    value={canViewPhones ? cadPhone : maskPhone(cadPhone)}
+                    onChange={(e) => setCadPhone(e.target.value)}
                     disabled={!canViewPhones}
                     className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">E-mail</Label>
-                  <Input defaultValue={customer.email || ""} className="h-11" />
+                  <Input value={cadEmail} onChange={(e) => setCadEmail(e.target.value)} className="h-11" />
                 </div>
               </div>
 
@@ -460,12 +526,134 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
                   <Switch />
                 </div>
               </div>
+
+              <div className="pt-2 flex justify-end">
+                <Button
+                  type="button"
+                  onClick={handleSaveCustomerProfile}
+                  disabled={isSavingProfile || !customer.id}
+                  className="h-11 min-h-11 px-6 rounded-lg text-xs font-semibold"
+                >
+                  {isSavingProfile ? "Salvando..." : "Salvar Alterações"}
+                </Button>
+              </div>
             </div>
           )}
 
-          {activeTab !== "painel" && activeTab !== "anamneses" && activeTab !== "cadastro" && (
-            <div className="rounded-2xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
-              Histórico de {activeTab} registrado e integrado ao BFF multi-nicho.
+          {activeTab === "anotacoes" && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-foreground">Observações e Histórico de Atendimento</Label>
+                <Textarea
+                  value={cadNotes}
+                  onChange={(e) => setCadNotes(e.target.value)}
+                  placeholder="Registre preferências, restrições, acordos comerciais e observações sobre o cliente..."
+                  rows={6}
+                  className="text-xs rounded-xl"
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  onClick={handleSaveCustomerProfile}
+                  disabled={isSavingProfile || !customer.id}
+                  className="h-11 min-h-11 px-6 rounded-lg text-xs font-semibold"
+                >
+                  {isSavingProfile ? "Salvando..." : "Salvar Anotações"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "assinaturas" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">Contratos, Termos LGPD & Assinaturas</h4>
+                  <p className="text-xs text-muted-foreground">Documentos jurídicos e termos aceitos por este cliente.</p>
+                </div>
+              </div>
+              {(customer360?.contracts || []).length === 0 && (customer360?.consentRecords || []).length === 0 && anamneses.filter((a) => a.status === "signed").length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                  Nenhum documento assinado eletronicamente para este cliente até o momento.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {(customer360?.contracts || []).map((c: any) => (
+                    <div key={c.id} className="rounded-xl border border-border bg-card p-4 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold text-foreground">{c.title}</p>
+                        <p className="text-2xs text-muted-foreground font-mono">
+                          Código: {c.verification_code || c.id.slice(0, 8)} · Status: {c.status}
+                        </p>
+                      </div>
+                      <Button asChild variant="outline" size="sm" className="h-11 min-h-11 text-xs">
+                        <a href={`/workspace/contratos/${c.id}/editor`}>Abrir Editor</a>
+                      </Button>
+                    </div>
+                  ))}
+                  {(customer360?.consentRecords || []).map((cr: any) => (
+                    <div key={cr.id} className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-foreground">{cr.policy_title || "Termo LGPD"}</span>
+                        <Badge variant="outline" className="text-2xs border-emerald-500/40 text-emerald-600">{cr.status}</Badge>
+                      </div>
+                      {cr.content_hash_sha256 && (
+                        <p className="text-2xs font-mono text-muted-foreground break-all">SHA-256: {cr.content_hash_sha256}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "mensagens" && (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+                <h4 className="text-sm font-semibold text-foreground">Comunicação Direta via WhatsApp</h4>
+                <p className="text-xs text-muted-foreground">
+                  Inicie atendimento imediato ou envie links de propostas e contratos para {displayName}.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      const clean = (cadPhone || customer.phone || "").replace(/\D/g, "");
+                      if (!clean) {
+                        toast.error("Cadastre um telefone válido para abrir o WhatsApp.");
+                        return;
+                      }
+                      const full = clean.startsWith("55") ? clean : `55${clean}`;
+                      window.open(`https://wa.me/${full}?text=${encodeURIComponent(`Olá, ${displayName}! Tudo bem?`)}`, "_blank");
+                    }}
+                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2"
+                  >
+                    <MessageSquare className="size-4" />
+                    Abrir Conversa no WhatsApp
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {["vendas", "pacotes", "produtos", "agendamentos", "debitos", "creditos", "cashback"].includes(activeTab) && (
+            <div className="space-y-3">
+              {(customer360?.timeline || []).length > 0 ? (
+                (customer360.timeline as any[]).map((item: any) => (
+                  <div key={item.id} className="rounded-xl border border-border bg-card p-4 flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-foreground">{item.title}</p>
+                      <p className="text-2xs text-muted-foreground">{item.description}</p>
+                    </div>
+                    <Badge variant="outline" className="text-2xs">{item.status || "Ativo"}</Badge>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
+                  Nenhum registro encontrado em {TABS.find((t) => t.key === activeTab)?.label || activeTab} para este cliente até o momento.
+                </div>
+              )}
             </div>
           )}
         </div>

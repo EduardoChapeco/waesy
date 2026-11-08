@@ -40,7 +40,7 @@ export function EventFeatureMiniBannersRail({
         </h2>
       </div>
 
-      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
+      <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar px-3 sm:px-4 snap-x snap-mandatory">
         {items.map((item) => {
           return (
             <Link

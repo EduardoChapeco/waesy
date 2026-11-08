@@ -12,6 +12,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { microCache } from "@/lib/cache/micro-cache";
 import {
   createListingInputSchema,
   updateListingInputSchema,
@@ -368,12 +369,15 @@ export const createUnifiedListing = createServerFn({ method: "POST" })
 export const listUnifiedListings = createServerFn({ method: "GET" })
   .validator(listingFacetedSearchSchema)
   .handler(async ({ data }) => {
-    const db = getServerClient();
     const limit = data.limit || 24;
     const offset = data.offset || 0;
+    const isSearch = Boolean(data.q && data.q.trim());
+    const hasPriceFilter = data.min_price_cents !== undefined || data.max_price_cents !== undefined;
 
-    const shouldFetchProducts = !data.origin || data.origin === "workspace";
-    const shouldFetchClassifieds = !data.origin || data.origin === "classified";
+    const fetchListings = async () => {
+      const db = getServerClient();
+      const shouldFetchProducts = !data.origin || data.origin === "workspace";
+      const shouldFetchClassifieds = !data.origin || data.origin === "classified";
 
     // 1. Buscar produtos do catálogo Workspace Pro
     let productsQuery = shouldFetchProducts
@@ -477,7 +481,14 @@ export const listUnifiedListings = createServerFn({ method: "GET" })
       return combined.filter((l) => l.niche_id === data.niche_id);
     }
 
-    return combined.slice(0, limit);
+      return combined.slice(0, limit);
+    };
+
+    if (!isSearch && !hasPriceFilter) {
+      const cacheKey = `unified_listings:public:${data.origin || "all"}:${data.niche_id || "all"}:${offset}:${limit}`;
+      return microCache.getOrSet(cacheKey, 30_000, fetchListings);
+    }
+    return fetchListings();
   });
 
 // ---------------------------------------------------------------------------

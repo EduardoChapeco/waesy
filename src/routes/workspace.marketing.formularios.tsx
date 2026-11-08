@@ -470,7 +470,7 @@ function WorkspaceLeadFormsPage() {
           <Button
             size="sm"
             onClick={handleOpenNewForm}
-            className="rounded-lg h-10 gap-2 bg-primary text-primary-foreground shadow-sm"
+            className="rounded-lg h-10 gap-2 bg-primary text-primary-foreground "
           >
             <Plus className="w-4 h-4" />
             <span>Criar Formulário</span>
@@ -743,7 +743,7 @@ function WorkspaceLeadFormsPage() {
                   value={builderSubheadline}
                   onChange={(e) => setBuilderSubheadline(e.target.value)}
                   placeholder="Ex: Preencha as informações para receber opções de voo e hotel."
-                  className="rounded-lg text-sm min-h-[70px] resize-none"
+                  className="rounded-lg text-sm min-h-18 resize-none"
                 />
               </div>
 
@@ -872,7 +872,7 @@ function WorkspaceLeadFormsPage() {
                       <Textarea
                         value={builderWhatsappTemplate}
                         onChange={(e) => setBuilderWhatsappTemplate(e.target.value)}
-                        className="rounded-lg text-xs min-h-[60px] resize-none"
+                        className="rounded-lg text-xs min-h-15 resize-none"
                       />
                       <span className="text-xs text-muted-foreground">
                         Tags: {"{nome}"}, {"{telefone}"}, {"{formulario}"}
@@ -914,7 +914,7 @@ function WorkspaceLeadFormsPage() {
                 </Button>
               </div>
 
-              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-130 overflow-y-auto pr-1">
                 {builderFields.map((field, idx) => (
                   <div
                     key={idx}
@@ -1031,7 +1031,7 @@ function WorkspaceLeadFormsPage() {
                             + Adicionar Opção
                           </button>
                         </div>
-                        <div className="space-y-2 max-h-[140px] overflow-y-auto">
+                        <div className="space-y-2 max-h-35 overflow-y-auto">
                           {(field.options || []).map((opt, optIdx) => (
                             <div key={optIdx} className="flex items-center gap-2">
                               <Input
@@ -1103,7 +1103,7 @@ function WorkspaceLeadFormsPage() {
             <Button
               disabled={isSaving}
               onClick={handleSaveForm}
-              className="rounded-lg h-11 px-6 bg-primary text-primary-foreground font-medium gap-2 shadow-sm"
+              className="rounded-lg h-11 px-6 bg-primary text-primary-foreground font-medium gap-2 "
             >
               {isSaving ? (
                 <>
@@ -1136,7 +1136,7 @@ function WorkspaceLeadFormsPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0">
               <span className="text-xs text-muted-foreground whitespace-nowrap mr-1">Status:</span>
               {[
                 { label: "Todos", value: "all" },
@@ -1235,7 +1235,7 @@ function WorkspaceLeadFormsPage() {
                           onChange={(e) => handleStatusChange(sub.id, e.target.value)}
                           className={`h-9 px-3 text-xs font-medium rounded-lg border ${
                             sub.crm_status === "new"
-                              ? "bg-amber-500/10 text-amber-700 border-amber-500/20"
+                              ? "bg-warning/10 text-warning-strong border-warning/20"
                               : sub.crm_status === "won"
                               ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
                               : sub.crm_status === "lost"

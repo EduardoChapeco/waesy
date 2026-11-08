@@ -109,7 +109,7 @@ export function DigitalCompanionCard({
       case "hotel":
         return <Building2 size={22} className="text-emerald-500" />;
       case "transport":
-        return <Car size={22} className="text-amber-500" />;
+        return <Car size={22} className="text-warning-strong" />;
       case "tour":
         return <MapPin size={22} className="text-purple-500" />;
       case "insurance":
@@ -572,9 +572,9 @@ export function DigitalCompanionCard({
                 ))}
 
                 {observations && (
-                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs space-y-1">
+                  <div className="p-4 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  text-xs space-y-1">
                     <p className="font-bold flex items-center gap-1">
-                      <HelpCircle className="size-3.5 text-amber-600" />
+                      <HelpCircle className="size-3.5 text-warning-strong" />
                       Observações:
                     </p>
                     <p className="text-xs leading-relaxed whitespace-pre-line">{observations}</p>

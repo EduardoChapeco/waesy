@@ -25,9 +25,13 @@ export async function requireRole(allowedRoles: Role[]): Promise<{ id: string; r
  throw new Error(`Forbidden: Insufficient privileges (${identity.role}). Required one of: ${allowedRoles.join(", ")}`);
  }
 
- if (!isGlobalAdmin && !identity.store_id) {
- throw new Error("Forbidden: No active store context associated with this identity.");
- }
+  if (!identity.store_id) {
+    if (identity.memberships && identity.memberships.length > 0 && identity.memberships[0]?.store_id) {
+      identity.store_id = identity.memberships[0].store_id;
+    } else if (!isGlobalAdmin) {
+      throw new Error("Forbidden: No active store context associated with this identity.");
+    }
+  }
 
  return { id: identity.id, role: identity.role as Role, store_id: (identity.store_id || "") as string };
 }

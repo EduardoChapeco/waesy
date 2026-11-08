@@ -10,6 +10,8 @@ import { Compass, CheckCircle, MapPin, Clock, WhatsappLogo, Heartbeat, Wrench, C
 import { getPublicDirectory, type DirectoryListingDTO } from "@/services/directory.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listActiveBanners } from "@/services/banner.functions";
+import { resolveSurfacePageExperienceDocument } from "@/services/surface-cms.functions";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
@@ -53,11 +55,14 @@ export const Route = createFileRoute("/_store/diretorio/")({
   loader: async ({ location }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [banners, hotpages] = await Promise.all([
+      const [banners, hotpages, surfaceExperience] = await Promise.all([
         listActiveBanners({ data: { placement: "diretorio", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "diretorio" } }).catch(() => []),
+        resolveSurfacePageExperienceDocument({
+          data: { surfaceSlug: "diretorio", city: activeCity },
+        }).catch(() => ({ mode: "canonical_cms" as const, documentId: null, document: null, liveData: null })),
       ]);
-      return { banners: banners || [], hotpages: hotpages || [], activeCity };
+      return { banners: banners || [], hotpages: hotpages || [], activeCity, surfaceExperience: surfaceExperience || null };
     } catch (err) {
       console.error("[loader:_store.diretorio.index] Unhandled error:", err);
       return { banners: [], hotpages: [] };
@@ -71,6 +76,7 @@ export function DirectoryPage() {
   const activeCity = loaderData?.activeCity || "";
   const banners = loaderData?.banners || [];
   const hotpages = loaderData?.hotpages || [];
+  const surfaceExperience = loaderData?.surfaceExperience || null;
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [viewMode, setViewMode] = useState<ViewModeType>("feed");
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,6 +122,20 @@ export function DirectoryPage() {
  .filter((item) => item.rating >= 4.5)
  .slice(0, 6);
  }, [filteredListings]);
+
+  if (surfaceExperience?.mode === "omni_published" && surfaceExperience.document) {
+    const live = surfaceExperience.liveData || {};
+    return (
+      <main className="min-h-screen bg-background pb-14">
+        <OmniPageRenderer
+          document={surfaceExperience.document}
+          stores={live.stores?.length ? live.stores : listings || []}
+          banners={live.banners?.length ? live.banners : banners}
+          hotpages={live.hotpages?.length ? live.hotpages : hotpages}
+        />
+      </main>
+    );
+  }
 
   return (
     <div className="w-full pb-14">
@@ -340,7 +360,7 @@ function DirectoryMobileWhatsAppItem({ item }: { item: DirectoryListingDTO }) {
           </div>
           {item.rating && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono mt-1">
-              <Star size={10} weight="fill" className="text-amber-500" />
+              <Star size={10} weight="fill" className="text-warning-strong" />
               <span className="font-semibold text-foreground">{Number(item.rating).toFixed(1)}</span>
               {item.reviews_count > 0 && <span>({item.reviews_count})</span>}
             </div>
@@ -454,7 +474,7 @@ function DirectoryBusinessCard({
                 <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground h-4">
                   {item.rating ? (
                     <>
-                      <div className="flex items-center text-amber-500">
+                      <div className="flex items-center text-warning-strong">
                         <Star size={12} weight="fill" />
                         <span className="font-bold font-mono ml-1 text-foreground text-xs">
                           {Number(item.rating).toFixed(1)}
@@ -586,7 +606,7 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
 
           {item.rating && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="flex items-center text-amber-500 font-bold font-mono">
+              <span className="flex items-center text-warning-strong font-bold font-mono">
                 <Star size={12} weight="fill" className="mr-1" />
                 {Number(item.rating).toFixed(1)}
               </span>

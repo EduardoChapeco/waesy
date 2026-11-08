@@ -198,14 +198,32 @@ export default function AgencyQuotesPage() {
  createTravelProposal({
  data: {
  quoteId: q.id,
+ leadId: q.lead_id || undefined,
  title: `Proposta: ${q.destination_city} (${q.adults_count} adultos)`,
  clientName: q.contact_name,
  clientWhatsapp: q.contact_whatsapp,
+ clientEmail: q.contact_email || undefined,
  destinationCity: q.destination_city,
  travelStartDate: q.departure_date || undefined,
  travelEndDate: q.return_date || undefined,
  adultsCount: q.adults_count,
  childrenCount: q.children_count,
+ initialNotes: [q.special_notes, q.agency_notes].filter(Boolean).join("\n") || undefined,
+ rooms: Array.isArray(q.room_occupancies) && q.room_occupancies.length > 0
+   ? q.room_occupancies.map((r: any, idx: number) => ({
+       id: r.id || `room-${idx + 1}`,
+       type: r.room_type || r.type || "Duplo",
+       adults: Number(r.adults ?? 2),
+       children: Number(r.children ?? 0),
+       child_ages: Array.isArray(r.children_ages) ? r.children_ages : [],
+     }))
+   : undefined,
+ pricing: q.quote_amount_cents && q.quote_amount_cents > 0
+   ? {
+       base_price_per_person: Math.round(q.quote_amount_cents / 100 / Math.max(1, q.adults_count || 1)),
+       total_price: Math.round(q.quote_amount_cents / 100),
+     }
+   : undefined,
  },
  }),
  onSuccess: (res) => {
@@ -404,36 +422,36 @@ export default function AgencyQuotesPage() {
           </div>
         ) : viewMode === "kanban" ? (
           /* Visualização de Funil Kanban por Estágios */
-          <div className="tab-list flex gap-4 overflow-x-auto pb-4 min-h-96 no-scrollbar">
+          <div className="tab-list flex gap-4 overflow-x-auto pb-4 min-h-144 items-stretch no-scrollbar">
             {[
-              { id: "new", title: "Novas Solicitações", icon: Clock, borderClass: "border-t-primary", textClass: "text-primary" },
-              { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, borderClass: "border-t-amber-500", textClass: "text-amber-500" },
-              { id: "quoted", title: "Proposta Enviada", icon: FileText, borderClass: "border-t-purple-500", textClass: "text-purple-500" },
-              { id: "won", title: "Fechadas / Ganhas", icon: CheckCircle, borderClass: "border-t-emerald-500", textClass: "text-emerald-500" },
-              { id: "lost", title: "Perdidas", icon: Trash, borderClass: "border-t-destructive", textClass: "text-destructive" },
+              { id: "new", title: "Novas Solicitações", icon: Clock, textClass: "text-primary" },
+              { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, textClass: "text-warning-strong" },
+              { id: "quoted", title: "Proposta Enviada", icon: FileText, textClass: "text-purple-500" },
+              { id: "won", title: "Fechadas / Ganhas", icon: CheckCircle, textClass: "text-emerald-500" },
+              { id: "lost", title: "Perdidas", icon: Trash, textClass: "text-destructive" },
             ].map((col) => {
               const colQuotes = filteredQuotes.filter((q: any) => q.status === col.id);
               const ColIcon = col.icon;
               return (
                 <div
                   key={col.id}
-                  className={cn("flex-none w-80 bg-muted/40 border border-border/60 border-t-4 rounded-3xl flex flex-col overflow-hidden", col.borderClass)}
+                  className="flex-none w-80 min-h-144 bg-muted/50 dark:bg-muted/30 rounded-2xl flex flex-col overflow-hidden"
                 >
                   {/* Cabeçalho da Coluna */}
-                  <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0 bg-card/60 rounded-t-lg">
+                  <div className="px-4 py-3 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2">
                       <ColIcon size={16} className={col.textClass} weight="bold" />
                       <h3 className="text-xs font-bold text-foreground">{col.title}</h3>
                     </div>
-                    <Badge variant="outline" className="font-mono text-xs h-5 px-2">
+                    <Badge variant="outline" className="font-mono text-xs h-5 px-2 bg-card">
                       {colQuotes.length}
                     </Badge>
                   </div>
 
                   {/* Cards da Coluna */}
-                  <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
+                  <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-3 no-scrollbar">
                     {colQuotes.length === 0 ? (
-                      <div className="h-28 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-xs text-muted-foreground/75 text-muted-foreground text-center p-3">
+                      <div className="h-28 rounded-xl bg-card flex items-center justify-center text-xs text-muted-foreground text-center p-3">
                         Nenhum lead nesta etapa
                       </div>
                     ) : (
@@ -445,11 +463,11 @@ export default function AgencyQuotesPage() {
                         return (
                           <Card
                             key={q.id}
-                            className="p-4 rounded-2xl border border-border/60 bg-card space-y-3 hover:border-foreground/25 transition-colors duration-150 flex flex-col justify-between select-none"
+                            className="p-4 rounded-2xl bg-card space-y-3 transition-colors duration-150 flex flex-col justify-between select-none"
                           >
                             <div className="space-y-2">
                               <div className="flex items-center justify-between gap-1">
-                                <span className="text-xs font-mono font-bold px-2 py-1 rounded bg-primary/10 text-primary truncate max-w-44">
+                                <span className="text-xs font-mono font-bold px-2 py-1 rounded-md bg-muted text-foreground truncate max-w-44">
                                   {q.destination_city}
                                 </span>
                                 {q.quote_amount_cents && q.quote_amount_cents > 0 ? (
@@ -593,7 +611,7 @@ export default function AgencyQuotesPage() {
  : q.status === "quoted"
  ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-800"
  : q.status === "analyzing"
- ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+ ? "bg-warning/10 text-warning-strong   border-warning/30 "
  : q.status === "lost"
  ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800"
  : "bg-muted text-muted-foreground";
@@ -1173,7 +1191,7 @@ export default function AgencyQuotesPage() {
  label: "Somente Hotel / Resort",
  value: (quotes || []).filter((q: any) => q.trip_type === "hotel_only").length,
  total: Math.max((quotes || []).length, 1),
- color: "bg-amber-500",
+ color: "bg-warning",
  },
  {
  label: "Cruzeiro Marítimo",

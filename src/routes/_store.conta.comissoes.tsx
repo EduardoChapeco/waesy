@@ -339,7 +339,7 @@ function AffiliateCommissionsPage() {
         <div className="bg-card border border-border/70 rounded-lg p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">Cliques / Pedidos</span>
-            <MousePointerClick className="h-4 w-4 text-amber-500" />
+            <MousePointerClick className="h-4 w-4 text-warning-strong" />
           </div>
           <div className="text-2xl font-bold font-mono tracking-tight text-foreground">
             {profile?.total_clicks || 0} / {profile?.total_orders || 0}
@@ -427,7 +427,7 @@ function AffiliateCommissionsPage() {
               <tbody className="divide-y divide-border/40">
                 {payoutRequests.map((req: any) => {
                   const statusMap: Record<string, { label: string; badge: string; icon: any }> = {
-                    pending: { label: "Em Análise", badge: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: Clock },
+                    pending: { label: "Em Análise", badge: "bg-warning/10 text-warning-strong border-warning/20", icon: Clock },
                     processing: { label: "Processando", badge: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Clock },
                     paid: { label: "Pago", badge: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle2 },
                     rejected: { label: "Rejeitado", badge: "bg-red-500/10 text-red-600 border-red-500/20", icon: XCircle },

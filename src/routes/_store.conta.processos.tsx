@@ -127,7 +127,7 @@ function UserLawsuitsPage() {
         <Button
           size="sm"
           onClick={() => setActiveTab(activeTab === "new_demand" ? "lawsuits" : "new_demand")}
-          className="rounded-lg h-8 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
+          className="rounded-lg h-8 px-4 text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer min-h-11 sm:min-h-0"
         >
           <Plus className="size-3.5" />
           <span>{activeTab === "new_demand" ? "Ver Processos" : "Solicitar Advogado"}</span>
@@ -135,7 +135,7 @@ function UserLawsuitsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
         <button
           onClick={() => setActiveTab("lawsuits")}
           className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors duration-200 cursor-pointer ${
@@ -422,14 +422,14 @@ function UserLawsuitsPage() {
                 type="button"
                 variant="ghost"
                 onClick={() => setIsTrackModalOpen(false)}
-                className="rounded-lg text-xs h-9 cursor-pointer"
+                className="rounded-lg text-xs h-9 cursor-pointer min-h-11 sm:min-h-0"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isTracking || !cnjInput.trim()}
-                className="rounded-lg text-xs h-9 font-semibold gap-2 cursor-pointer"
+                className="rounded-lg text-xs h-9 font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
               >
                 {isTracking ? (
                   <Spinner className="size-3.5 animate-spin motion-reduce:animate-none" />

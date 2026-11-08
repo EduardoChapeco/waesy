@@ -75,7 +75,7 @@ function PeakHoursHeatmap({ peakHoursMap }: { peakHoursMap: Record<string, numbe
  const pct = val / maxVal;
  if (pct === 0) return "bg-muted/20 text-muted-foreground/30";
  if (pct < 0.25) return "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400";
- if (pct < 0.5) return "bg-amber-500/25 text-amber-700 dark:text-amber-400";
+ if (pct < 0.5) return "bg-warning/25 text-warning-strong ";
  if (pct < 0.75) return "bg-orange-500/30 text-orange-700 dark:text-orange-400";
  return "bg-red-500/40 text-red-700 dark:text-red-400 font-black";
  };
@@ -109,7 +109,7 @@ function PeakHoursHeatmap({ peakHoursMap }: { peakHoursMap: Record<string, numbe
  <span>Baixo</span>
  </div>
  <div className="flex items-center gap-1">
- <div className="size-2.5 rounded bg-amber-500/25" />
+ <div className="size-2.5 rounded bg-warning/25" />
  <span>Médio</span>
  </div>
  <div className="flex items-center gap-1">
@@ -270,7 +270,7 @@ function GastronomyReportsPage() {
  value={String(reports.ordersInProgress + reports.ordersReady)}
  sub={`${reports.ordersInProgress} em preparo · ${reports.ordersReady} prontos`}
  icon={ChefHat}
- iconCn="bg-amber-500/10 text-amber-600"
+ iconCn="bg-warning/10 text-warning-strong"
  />
  </div>
  </section>
@@ -308,7 +308,7 @@ function GastronomyReportsPage() {
  <div className="space-y-3">
  <ChannelBar label="Salão / Mesas" count={reports.channelBreakdown.table} total={totalChannelToday} icon={Store} colorCn="bg-blue-500/10 text-blue-600" />
  <ChannelBar label="Delivery" count={reports.channelBreakdown.delivery} total={totalChannelToday} icon={Bike} colorCn="bg-purple-500/10 text-purple-600" />
- <ChannelBar label="Balcão / Retirada" count={reports.channelBreakdown.counter} total={totalChannelToday} icon={Coffee} colorCn="bg-amber-500/10 text-amber-600" />
+ <ChannelBar label="Balcão / Retirada" count={reports.channelBreakdown.counter} total={totalChannelToday} icon={Coffee} colorCn="bg-warning/10 text-warning-strong" />
  </div>
  )}
  </div>

@@ -14,6 +14,11 @@ export type Flight = {
   flight_number: string;
   stops: number;
   baggage_rules: string;
+  origin_iata?: string;
+  destination_iata?: string;
+  departure_date?: string;
+  airline_name?: string;
+  stops_count?: number;
   price: number;
 };
 
@@ -82,6 +87,7 @@ export type ProposalOption = {
 export type Proposal = {
   id: string;
   number?: string;
+  description?: string | null;
   title: string;
   status: string;
   destination: string;

@@ -133,7 +133,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  </div>
 
  {/* Corpo de Resultados ou Histórico */}
- <div className="max-h-[65vh] overflow-y-auto no-scrollbar p-4 space-y-5">
+ <div className="max-h-vh-65 overflow-y-auto no-scrollbar p-4 space-y-5">
  {/* Se query vazia: Exibe Histórico e Tags em Alta */}
  {!query && (
  <div className="space-y-4">
@@ -302,7 +302,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  <Button
  size="sm"
  onClick={() => handleSelectTerm(query.trim())}
- className="gap-2 text-xs h-8 font-semibold"
+ className="gap-2 text-xs h-8 font-semibold min-h-11 sm:min-h-0"
  >
  <span>Ver todos os resultados</span>
  <ArrowRight className="size-3" />

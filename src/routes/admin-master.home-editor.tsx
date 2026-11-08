@@ -14,7 +14,10 @@ import {
   CheckCircle2,
   Grid,
   Sparkles,
+  Search,
+  ArrowUpRight,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,7 +65,7 @@ import { BentoGridTetris } from "@/components/home/BentoGridTetris";
 import { IFoodSquareCategoryButton } from "@/components/home/IFoodSquareCategoryButton";
 
 export const Route = createFileRoute("/admin-master/home-editor")({
-  head: () => ({ meta: [{ title: "CMS Página por Página & Home Builder | Admin Master" }] }),
+  head: () => ({ meta: [{ title: "Páginas & Seções | Admin Master" }] }),
   loader: async () => {
     try {
       const [sections, menus] = await Promise.all([
@@ -244,7 +247,7 @@ function AdminMasterHomeEditorPage() {
       const res = await openOrCreatePageExperienceDocument({
         data: { pageSlug, pageTitle },
       });
-      window.location.href = `/workspace/builder/${res.documentId}/editor`;
+      window.location.href = `/workspace/builder/${res.documentId}/editor?from=admin-master`;
     } catch (e: any) {
       toast.error(e.message || "Falha ao abrir Omni Builder.");
     } finally {
@@ -530,19 +533,13 @@ function AdminMasterHomeEditorPage() {
   return (
     <div className="w-full space-y-6 pb-20">
       {/* ── Top Header Canônico ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              CMS Página por Página & Home Builder
-            </h1>
-            <Badge variant="outline" className="text-3xs uppercase tracking-wider font-bold">
-              Omni-Builder 3.0
-            </Badge>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+            Páginas & Seções da Plataforma
+          </h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
-            Edite qualquer página, menu mobile, seção, banner ou botão da plataforma com upload de mídia,
-            ícones, cores, gradientes, sombras, cronômetro e filtro por cidade.
+            Gerencie os blocos, trilhos e menus do portal ou personalize o layout visual no Omni Builder.
           </p>
         </div>
 
@@ -563,25 +560,13 @@ function AdminMasterHomeEditorPage() {
                   ? "Página Explorar"
                   : activePageContext === "chat_noor"
                     ? "Página Chat Noor"
-                    : "Página Início (Home)",
+                    : "Página Início",
               )
             }
-            className="gap-2 h-11 min-h-11"
+            className="gap-2 h-11 min-h-11 font-semibold cursor-pointer"
           >
             <Sparkles size={16} />
-            <span>{isOpeningOmniBuilder ? "Abrindo..." : "Abrir Página no Omni Builder"}</span>
-          </Button>
-
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="gap-2 h-11 min-h-11"
-          >
-            <Link to="/admin-master/hubs">
-              <Layers size={16} />
-              <span>Editar Hotpages & Categorias</span>
-            </Link>
+            <span>{isOpeningOmniBuilder ? "Abrindo..." : "Editar no Omni Builder"}</span>
           </Button>
 
           <Button
@@ -589,10 +574,10 @@ function AdminMasterHomeEditorPage() {
             variant="outline"
             size="sm"
             onClick={() => setShowLivePreview(!showLivePreview)}
-            className="gap-2 min-h-11"
+            className="gap-2 h-11 min-h-11 sm:h-10 font-semibold cursor-pointer"
           >
             <Eye size={16} />
-            <span>{showLivePreview ? "Ocultar Preview" : "Ver Preview em Tempo Real"}</span>
+            <span>{showLivePreview ? "Ocultar Preview" : "Preview"}</span>
           </Button>
 
           <Button
@@ -600,38 +585,43 @@ function AdminMasterHomeEditorPage() {
             variant="default"
             size="sm"
             onClick={openNewSectionDialog}
-            className="gap-2 min-h-11 font-bold"
+            className="gap-2 h-11 min-h-11 sm:h-10 font-bold cursor-pointer"
           >
             <Plus size={16} />
-            <span>Adicionar Seção</span>
+            <span>Nova Seção</span>
+
           </Button>
         </div>
       </div>
 
-      {/* ── Seletor Estruturado Página por Página + Subeditores Rápidos ── */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 scroll-area-carousel pb-1">
+      {/* ── Seletor Estruturado Página por Página ── */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="inline-flex p-1 rounded-xl bg-muted/50 border border-border/60 gap-1 overflow-x-auto tab-list no-scrollbar max-w-full">
           <button
             type="button"
             onClick={() => setActivePageContext("all")}
-            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            className={cn(
+              "h-11 min-h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               activePageContext === "all"
-                ? "bg-primary text-primary-foreground"
-                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
-            }`}
+                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
-            <Layout size={14} />
-            <span>Todas as Seções ({sections.length})</span>
+            <span className="flex items-center gap-2">
+              <Layout size={14} />
+              <span>Todas as Seções ({sections.length})</span>
+            </span>
           </button>
 
           <button
             type="button"
             onClick={() => setActivePageContext("home")}
-            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            className={cn(
+              "h-11 min-h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               activePageContext === "home"
-                ? "bg-primary text-primary-foreground"
-                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
-            }`}
+                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
             <span>Página Início (Home)</span>
           </button>
@@ -642,11 +632,12 @@ function AdminMasterHomeEditorPage() {
               setActivePageContext("explorar");
               setSelectedMenuHandle("explore_menu");
             }}
-            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            className={cn(
+              "h-11 min-h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               activePageContext === "explorar"
-                ? "bg-primary text-primary-foreground"
-                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
-            }`}
+                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
             <span>Página Explorar (/explorar)</span>
           </button>
@@ -654,11 +645,12 @@ function AdminMasterHomeEditorPage() {
           <button
             type="button"
             onClick={() => setActivePageContext("chat_noor")}
-            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            className={cn(
+              "h-11 min-h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               activePageContext === "chat_noor"
-                ? "bg-primary text-primary-foreground"
-                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
-            }`}
+                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
             <span>Página Chat Noor (/chat)</span>
           </button>
@@ -669,72 +661,33 @@ function AdminMasterHomeEditorPage() {
               setActivePageContext("menus_globais");
               setSelectedMenuHandle("bottom_nav");
             }}
-            className={`h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            className={cn(
+              "h-11 min-h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               activePageContext === "menus_globais"
-                ? "bg-primary text-primary-foreground"
-                : "bg-card text-muted-foreground hover:text-foreground border border-border/60"
-            }`}
+                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
-            <Grid size={14} />
-            <span>Menus Mobile (5 Abas) & Header</span>
+            <span className="flex items-center gap-2">
+              <Grid size={14} />
+              <span>Menus Mobile (5 Abas) & Header</span>
+            </span>
           </button>
+        </div>
 
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "turismo" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-11 min-h-11 sm:h-9 text-xs text-muted-foreground hover:text-foreground gap-2"
           >
-            <span>Turismo</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "gastronomia" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Gastronomia</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "mercado" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Supermercado</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "farmacia" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Farmácia</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "classificados" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Classificados</span>
-          </Link>
-          <Link
-            to="/admin-master/vitrines"
-            search={{ surface: "feed" }}
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <span>Feed & Comunidades</span>
-          </Link>
-          <Link
-            to="/admin-master/banners"
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <ImageIcon size={14} />
-            <span>Banners Globais</span>
-          </Link>
-          <Link
-            to="/admin-master/botoes"
-            className="h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold shrink-0 transition-colors bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border/60 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <Sliders size={14} />
-            <span>Botões & Hotpages</span>
-          </Link>
+            <Link to="/admin-master/vitrines">
+              <span>Vitrines Verticais</span>
+              <ArrowUpRight size={14} />
+            </Link>
+          </Button>
+
         </div>
       </div>
 
@@ -921,47 +874,77 @@ function AdminMasterHomeEditorPage() {
         </div>
       )}
 
-      {/* ── Barra de Filtros e Adição Rápida de Presets ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/20 p-3 rounded-lg border border-border/50">
-        <div className="flex items-center gap-2 flex-1 flex-wrap">
-          <Input
-            placeholder="Filtrar seção por título ou chave..."
-            value={filterQuery}
-            onChange={(e) => setFilterQuery(e.target.value)}
-            className="h-9 text-xs bg-background max-w-xs"
-          />
-          <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/60">
+      {/* ── Barra de Ferramentas Integrada ── */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/60 shadow-xs">
+        <div className="flex flex-1 items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-56 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Buscar seção por título ou chave..."
+              value={filterQuery}
+              onChange={(e) => setFilterQuery(e.target.value)}
+              className="h-11 min-h-11 sm:h-9 pl-9 text-xs bg-muted/30 border-border/60 rounded-xl"
+            />
+          </div>
+
+          <div className="inline-flex p-1 rounded-xl bg-muted/40 border border-border/50 gap-1">
             <button
               type="button"
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                statusFilter === "all" ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={cn(
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                statusFilter === "all" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
+              )}
             >
               Todas ({sections.length})
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter("active")}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                statusFilter === "active" ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={cn(
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                statusFilter === "active" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
+              )}
             >
               Ativas ({sections.filter((s) => s.is_active).length})
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter("inactive")}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                statusFilter === "inactive" ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={cn(
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                statusFilter === "inactive" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
+              )}
             >
               Desativadas ({sections.filter((s) => !s.is_active).length})
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 justify-between lg:justify-end">
+          <div className="inline-flex p-1 rounded-xl bg-muted/40 border border-border/50 gap-1">
+            <button
+              type="button"
+              onClick={() => setSectionViewMode("cards")}
+              className={cn(
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                sectionViewMode === "cards" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Cards
+            </button>
+            <button
+              type="button"
+              onClick={() => setSectionViewMode("sheet")}
+              className={cn(
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                sectionViewMode === "sheet" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Planilha
+            </button>
+          </div>
+
           <Select
             onValueChange={(val) => {
               const preset = CANONICAL_PRESETS.find((p) => p.key === val);
@@ -979,7 +962,7 @@ function AdminMasterHomeEditorPage() {
               }
             }}
           >
-            <SelectTrigger className="h-9 text-xs font-semibold bg-background min-w-44">
+            <SelectTrigger className="h-9 text-xs font-medium bg-background min-w-44 rounded-xl border-border/60">
               <SelectValue placeholder="Adicionar Preset Rápido..." />
             </SelectTrigger>
             <SelectContent>
@@ -1078,46 +1061,51 @@ function AdminMasterHomeEditorPage() {
       )}
 
       {/* ── Lista de Seções da Home ── */}
-      <div className="space-y-4">
+      <div className="space-y-5">
         {filteredSections.map((section, secIdx) => (
           <div
             key={section.id}
-            className={`p-4 sm:p-5 rounded-lg border transition-colors ${
+            className={cn(
+              "p-5 sm:p-6 rounded-2xl border transition-colors shadow-xs",
               section.is_active
-                ? "bg-card border-border/80"
-                : "bg-muted/20 border-dashed border-border/50 opacity-60"
-            }`}
+                ? "bg-card border-border/70 hover:border-border"
+                : "bg-muted/10 border-border/40 opacity-75"
+            )}
           >
             {/* Header da Seção */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
-              <div className="space-y-1">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-border/40 pb-4">
+              <div className="space-y-2 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-xs font-bold text-primary">
-                    #{secIdx + 1} {section.section_key}
+                  <span className="font-mono text-xs font-bold px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                    #{secIdx + 1}
                   </span>
-                  <Badge variant="secondary" className="text-3xs font-semibold">
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {section.section_key}
+                  </span>
+                  <Badge variant="secondary" className="text-3xs font-medium rounded-md">
                     {LAYOUT_VARIANTS.find((l) => l.id === section.layout_variant)?.label || section.layout_variant}
                   </Badge>
-                  <Badge variant="outline" className="text-3xs font-semibold">
+                  <span className="text-3xs font-mono text-muted-foreground">
                     Ratio: {section.aspect_ratio}
-                  </Badge>
+                  </span>
                   {!section.is_active && (
-                    <Badge variant="destructive" className="text-3xs">
-                      Desativada
+                    <Badge variant="destructive" className="text-3xs rounded-md">
+                      Inativa
                     </Badge>
                   )}
                 </div>
-                <h3 className="text-base font-bold text-foreground">
-                  {section.title || "(Sem título textual — Modo visual limpo)"}
+                <h3 className="text-base font-bold text-foreground tracking-tight">
+                  {section.title || section.section_key}
                 </h3>
                 {section.subtitle && (
-                  <p className="text-xs text-muted-foreground">{section.subtitle}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-1">{section.subtitle}</p>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-2 pr-2 border-r border-border/40">
-                  <span className="text-3xs font-bold text-muted-foreground uppercase">
+              {/* Controles do Card */}
+              <div className="flex items-center gap-2 flex-wrap justify-between lg:justify-end shrink-0 pt-2 lg:pt-0">
+                <div className="flex items-center gap-2 pr-3 border-r border-border/40">
+                  <span className="text-2xs font-semibold text-muted-foreground">
                     {section.is_active ? "Ativa" : "Inativa"}
                   </span>
                   <Switch
@@ -1138,7 +1126,7 @@ function AdminMasterHomeEditorPage() {
                             sort_order: section.sort_order,
                           },
                         });
-                        toast.success(checked ? "Seção ativada na Home!" : "Seção desativada na Home!");
+                        toast.success(checked ? "Seção ativada!" : "Seção desativada!");
                         await refreshSections();
                       } catch (e: any) {
                         toast.error("Erro ao alterar visibilidade: " + e.message);
@@ -1147,104 +1135,92 @@ function AdminMasterHomeEditorPage() {
                     aria-label={`Ativar ou desativar seção ${section.section_key}`}
                   />
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-11"
-                  disabled={secIdx === 0}
-                  onClick={() => moveSection(secIdx, "up")}
-                  title="Mover para cima"
-                >
-                  <ArrowUp size={16} />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-11"
-                  disabled={secIdx === sections.length - 1}
-                  onClick={() => moveSection(secIdx, "down")}
-                  title="Mover para baixo"
-                >
-                  <ArrowDown size={16} />
-                </Button>
+
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="min-h-11 gap-1"
-                  onClick={() => openEditSectionDialog(section)}
-                >
-                  <Pencil size={14} />
-                  <span>Configurar</span>
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="min-h-11 gap-1 font-bold"
+                  className="min-h-11 sm:min-h-9 h-11 sm:h-9 px-3 text-xs font-semibold gap-2 rounded-lg cursor-pointer"
                   onClick={() => openNewItemDialog(section.id)}
                 >
                   <Plus size={14} />
                   <span>Novo Card</span>
                 </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-11 text-destructive hover:bg-destructive/10"
-                  onClick={() => handleDeleteSection(section.id)}
-                  title="Excluir seção"
-                >
-                  <Trash2 size={16} />
-                </Button>
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 h-11 w-11 sm:h-9 sm:w-9 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                    disabled={secIdx === 0}
+                    onClick={() => moveSection(secIdx, "up")}
+                    title="Mover para cima"
+                  >
+                    <ArrowUp size={15} />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 h-11 w-11 sm:h-9 sm:w-9 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                    disabled={secIdx === sections.length - 1}
+                    onClick={() => moveSection(secIdx, "down")}
+                    title="Mover para baixo"
+                  >
+                    <ArrowDown size={15} />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="min-h-11 sm:min-h-9 h-11 sm:h-9 px-3 text-xs text-muted-foreground hover:text-foreground gap-2 rounded-lg cursor-pointer"
+                    onClick={() => openEditSectionDialog(section)}
+                    title="Configurar seção"
+                  >
+                    <Pencil size={13} />
+                    <span>Configurar</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 h-11 w-11 sm:h-9 sm:w-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                    onClick={() => handleDeleteSection(section.id)}
+                    title="Excluir seção"
+                  >
+                    <Trash2 size={15} />
+                  </Button>
+                </div>
               </div>
             </div>
 
             {/* Itens / Cards de Mídia da Seção */}
             <div className="pt-4">
-              <div className="text-xs font-bold text-muted-foreground mb-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span>Cards de Mídia ({section.items?.length || 0})</span>
-                  <span className="text-3xs font-normal">
-                    {section.items?.every((i) => !i.show_text)
-                      ? "Modo Mídia Pura (sem textos excessivos)"
-                      : "Misto (alguns cards exibem texto)"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setSectionViewMode("cards")}
-                    className={`h-11 min-h-11 px-3 rounded-md text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                      sectionViewMode === "cards"
-                        ? "bg-background text-foreground shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Grade de Cards
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSectionViewMode("sheet")}
-                    className={`h-11 min-h-11 px-3 rounded-md text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                      sectionViewMode === "sheet"
-                        ? "bg-primary text-primary-foreground shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Modo Planilha (Sheet Editável)
-                  </button>
-                </div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Cards de Mídia ({section.items?.length || 0})
+                </span>
               </div>
 
               {(!section.items || section.items.length === 0) ? (
-                <div className="p-6 rounded-lg border border-dashed border-border/60 text-center space-y-2">
-                  <ImageIcon size={24} className="mx-auto text-muted-foreground/40" />
-                  <p className="text-xs text-muted-foreground">
-                    Nenhum card cadastrado nesta seção. Clique em "Novo Card" para fazer upload de mídia.
+                <div className="py-8 px-4 rounded-xl bg-muted/15 border border-border/40 text-center space-y-3">
+                  <div className="size-10 rounded-full bg-muted/40 flex items-center justify-center mx-auto text-muted-foreground/60">
+                    <ImageIcon className="size-5" />
+                  </div>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    Nenhum card cadastrado nesta seção.
                   </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openNewItemDialog(section.id)}
+                    className="min-h-11 sm:min-h-9 h-11 sm:h-9 px-3 text-xs font-semibold gap-2 rounded-lg cursor-pointer"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>Adicionar Card</span>
+                  </Button>
                 </div>
               ) : sectionViewMode === "sheet" ? (
                 <div className="rounded-xl border border-border/60 bg-background scroll-area-carousel">
@@ -1526,7 +1502,7 @@ function AdminMasterHomeEditorPage() {
                             type="button"
                             disabled={itIdx === 0}
                             onClick={() => moveItem(section, itIdx, "up")}
-                            className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-ring"
+                            className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-primary rounded cursor-pointer"
                             title="Mover card à esquerda"
                           >
                             <ArrowUp size={12} />
@@ -1535,7 +1511,7 @@ function AdminMasterHomeEditorPage() {
                             type="button"
                             disabled={itIdx === section.items.length - 1}
                             onClick={() => moveItem(section, itIdx, "down")}
-                            className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-ring"
+                            className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-primary rounded cursor-pointer"
                             title="Mover card à direita"
                           >
                             <ArrowDown size={12} />
@@ -1546,7 +1522,7 @@ function AdminMasterHomeEditorPage() {
                           <button
                             type="button"
                             onClick={() => openEditItemDialog(section.id, item)}
-                            className="p-2 text-primary hover:bg-primary/10 rounded focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-ring"
+                            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-primary cursor-pointer"
                             title="Editar card"
                           >
                             <Pencil size={12} />
@@ -1554,7 +1530,7 @@ function AdminMasterHomeEditorPage() {
                           <button
                             type="button"
                             onClick={() => handleDeleteItem(item.id)}
-                            className="p-2 text-destructive hover:bg-destructive/10 rounded focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-ring"
+                            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-primary cursor-pointer"
                             title="Excluir card"
                           >
                             <Trash2 size={12} />
@@ -1844,7 +1820,7 @@ function AdminMasterHomeEditorPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="squircle">Squircle Apple/iFood (Padrão)</SelectItem>
+                    <SelectItem value="squircle">Grade de Ícones (Padrão)</SelectItem>
                     <SelectItem value="rounded-lg">Retangular Suave (rounded-lg)</SelectItem>
                     <SelectItem value="rounded-full">Pílula / Circular (rounded-full)</SelectItem>
                   </SelectContent>

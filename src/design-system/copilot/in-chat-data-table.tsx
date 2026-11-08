@@ -26,7 +26,7 @@ export function InChatDataTable({
           {title}
         </div>
       )}
-      <div className="overflow-x-auto native-scroll">
+      <div className="overflow-x-auto scroll-area-carousel native-scroll">
         <table className="w-full text-left border-collapse">
           <thead className="bg-muted/20 border-b border-border/40 text-muted-foreground font-medium">
             <tr>

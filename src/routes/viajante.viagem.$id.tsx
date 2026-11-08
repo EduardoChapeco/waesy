@@ -140,13 +140,19 @@ export default function TripPortalPage() {
       })),
       transferDetails: trip.transfers?.[0]?.description || "Transfer conforme voucher oficial",
       transferConfirmationId: trip.transfers?.[0]?.confirmation_id || `TR-${id.slice(0, 8)}`,
-      emergencyPhone24h: agency.phone || "+55 (49) 99999-1372",
-      cancellationRulesText: trip.tariff_rules?.cancellation_penalty || "Cancelamento sujeito às normas do contrato de prestação de serviços turísticos.",
-      fineSchedule: [
-        { daysBeforeDeparture: 30, penaltyPct: 20 },
-        { daysBeforeDeparture: 15, penaltyPct: 50 },
-        { daysBeforeDeparture: 7, penaltyPct: 100 },
-      ],
+      emergencyPhone24h: agency.phone || "",
+      cancellationRulesText:
+        trip.cancellation_policy_snapshot?.contractClausesTemplate ||
+        trip.tariff_rules?.cancellation_penalty ||
+        "Cancelamento sujeito às normas do contrato de prestação de serviços turísticos.",
+      fineSchedule: Array.isArray(trip.cancellation_policy_snapshot?.fineTiers)
+        ? trip.cancellation_policy_snapshot.fineTiers.map((t: any) => ({
+            daysBeforeDeparture: Number(t.daysBeforeDeparture || 0),
+            penaltyPct: Number(t.finePct ?? t.penaltyPct ?? 0),
+          }))
+        : Array.isArray(trip.tariff_rules?.fine_schedule)
+          ? trip.tariff_rules.fine_schedule
+          : [],
       requiredDocuments: [
         "Documento de Identificação Oficial com foto (RG ou Passaporte)",
         "Voucher de Hospedagem e Localizador Aéreo",
@@ -221,10 +227,16 @@ export default function TripPortalPage() {
   const itineraryDays = useMemo(() => {
     if (trip.itinerary && Array.isArray(trip.itinerary) && trip.itinerary.length > 0) {
       return trip.itinerary.map((dayItem: any, idx: number) => ({
-        dayIndex: idx + 1,
-        dateFormatted: dayItem.date || `Dia ${idx + 1}`,
+        dayIndex: dayItem.day || idx + 1,
+        dateFormatted: dayItem.date || `Dia ${dayItem.day || idx + 1}`,
         title: dayItem.title || `Roteiro do Dia ${idx + 1}`,
         summary: dayItem.description || dayItem.summary || "",
+        location: dayItem.location || dayItem.city || "",
+        meals: Array.isArray(dayItem.meals)
+          ? dayItem.meals
+          : Array.isArray(dayItem.included_meals)
+            ? dayItem.included_meals
+            : [],
         tags: dayItem.tags || [],
         timeline: (dayItem.activities || []).map((act: any) => ({
           time: act.time || "09:00",
@@ -236,16 +248,12 @@ export default function TripPortalPage() {
     }
     return buildAutomaticTripItineraryFallback({
       destination: tripContext.destination,
-      startDate: trip.travel_start_date || "2027-01-09",
-      endDate: trip.travel_end_date || "2027-01-14",
+      startDate: trip.travel_start_date || "",
+      endDate: trip.travel_end_date || "",
       hotelName: tripContext.hotelName,
-      arrivalTime: tripContext.flights[0]?.arrivalTime || "14:00",
-      departureTime: tripContext.flights[1]?.departureTime || "18:00",
-      includedTours: trip.tours?.map((t: any) => t.title || t.name) || [
-        `City Tour Panorâmico por ${tripContext.destination}`,
-        "Experiência Gastronômica Regional",
-        "Dia Livre para Atividades Pessoais",
-      ],
+      arrivalTime: tripContext.flights[0]?.arrivalTime || "",
+      departureTime: tripContext.flights[1]?.departureTime || "",
+      includedTours: trip.tours?.map((t: any) => t.title || t.name) || [],
     });
   }, [trip, tripContext]);
   // Paradas Técnicas e Pontos de Embarque Rodoviários (Excursões e Viagens Terrestres)
@@ -260,6 +268,24 @@ export default function TripPortalPage() {
         durationText: p.durationText || "Embarque de passageiros",
         type: "boarding",
       }));
+    }
+    if (Array.isArray(trip?.transfers) && trip.transfers.length > 0) {
+      return trip.transfers
+        .filter((tr: any) => tr.pickup || tr.pickup_location || tr.route || tr.description)
+        .map((tr: any) => ({
+          location:
+            tr.route ||
+            [tr.pickup || tr.pickup_location, tr.dropoff || tr.dropoff_location]
+              .filter(Boolean)
+              .join(" → ") ||
+            tr.description ||
+            "Transporte Rodoviário",
+          time: tr.pickup_time || tr.time || tr.date || tr.service_date || "Horário programado",
+          durationText: [tr.vehicle || tr.type, tr.dropoff_time ? `Chegada: ${tr.dropoff_time}` : "", tr.notes]
+            .filter(Boolean)
+            .join(" • ") || "Transfer / Transporte confirmado",
+          type: "boarding",
+        }));
     }
     return [];
   }, [trip]);
@@ -519,7 +545,7 @@ export default function TripPortalPage() {
               onClick={() => setSupportModalOpen(true)}
               className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <LifeBuoy className="size-4 text-amber-500" />
+              <LifeBuoy className="size-4 text-warning-strong" />
               <span>Plantão & Suporte</span>
             </Button>
           </div>
@@ -534,9 +560,9 @@ export default function TripPortalPage() {
             .map((changeCase: any) => (
               <div
                 key={changeCase.id}
-                className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10 space-y-3"
+                className="p-4 rounded-lg border border-warning/30 bg-warning/10 space-y-3"
               >
-                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-xs sm:text-sm">
+                <div className="flex items-center gap-2 text-warning-strong  font-bold text-xs sm:text-sm">
                   <AlertTriangle className="size-4 shrink-0" />
                   <span>Alteração de Voo Compulsória pela Companhia Aérea (PNR: {changeCase.pnr})</span>
                 </div>
@@ -722,7 +748,7 @@ export default function TripPortalPage() {
                       }}
                       className="h-11 min-h-11 px-4 text-xs font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                     >
-                      <Luggage className="size-4 mr-2 text-amber-500" />
+                      <Luggage className="size-4 mr-2 text-warning-strong" />
                       <span>+ Alugar Carro / Transfer</span>
                     </Button>
                   </div>
@@ -776,7 +802,47 @@ export default function TripPortalPage() {
           {activeTab === "pre_embarque" && (
             <div className="space-y-6">
               <SmartPackingChecklist tripId={trip.id} destination={tripContext.destination} />
-              <PreBoardingPresentationStudio tripId={trip.id} />
+              <PreBoardingPresentationStudio
+                tripId={trip.id}
+                isPassengerPortal={true}
+                initialTripInput={{
+                  presentationType: "pre_boarding_guide",
+                  agencyName: agency?.name || tripContext.operatorName,
+                  agencyEmergencyPhone: tripContext.emergencyPhone24h,
+                  tripTitle: `Guia Oficial de Pré-Embarque — ${tripContext.destination}`,
+                  conceptSubtitle: `${tripContext.destination} · Reserva #${tripContext.reservationCode}`,
+                  passengersNames: passengers?.map((p: any) => p.full_name || p.name).filter(Boolean) || [trip.client_name || "Passageiro"],
+                  adultsCount: Math.max(1, passengers?.length || 1),
+                  childrenCount: 0,
+                  startDate: tripContext.travelStartDate,
+                  endDate: tripContext.travelEndDate,
+                  originCity: trip.origin_city || tripContext.flights[0]?.originIata || "",
+                  destinations: [tripContext.destination],
+                  countries: [trip.destination_country || "Brasil"],
+                  flights: tripContext.flights.map((f: any) => ({
+                    direction: f.direction === "volta" ? "volta" : "ida",
+                    date: f.direction === "volta" ? tripContext.travelEndDate : tripContext.travelStartDate,
+                    airline: f.airline,
+                    flightNumber: f.flightNumber,
+                    originIata: f.originIata,
+                    destinationIata: f.destinationIata,
+                    departureTime: f.departureTime,
+                    arrivalTime: f.arrivalTime,
+                    durationText: "",
+                    sameTicket: true,
+                  })),
+                  hotels: tripContext.hotelName
+                    ? [
+                        {
+                          name: tripContext.hotelName,
+                          city: tripContext.destination,
+                          address: tripContext.hotelAddress,
+                          mealPlan: tripContext.mealPlan,
+                        },
+                      ]
+                    : [],
+                }}
+              />
             </div>
           )}
 
@@ -869,10 +935,17 @@ export default function TripPortalPage() {
                   key={day.dayIndex}
                   className="p-5 rounded-lg border border-border bg-card space-y-3"
                 >
-                  <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2">
-                    <span className="font-bold text-sm text-foreground">
-                      Dia {day.dayIndex} · {day.title}
-                    </span>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 pb-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-sm text-foreground">
+                        Dia {day.dayIndex} · {day.title}
+                      </span>
+                      {day.location && (
+                        <Badge variant="secondary" className="text-xs">
+                          {day.location}
+                        </Badge>
+                      )}
+                    </div>
                     <Badge variant="outline" className="text-xs font-mono">
                       {day.dateFormatted}
                     </Badge>
@@ -881,6 +954,15 @@ export default function TripPortalPage() {
                     <p className="text-xs text-muted-foreground leading-relaxed break-words">
                       {day.summary}
                     </p>
+                  )}
+                  {Array.isArray(day.meals) && day.meals.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {day.meals.map((meal: string, mIdx: number) => (
+                        <Badge key={mIdx} variant="outline" className="text-xs">
+                          {meal}
+                        </Badge>
+                      ))}
+                    </div>
                   )}
                   {day.timeline && day.timeline.length > 0 && (
                     <div className="space-y-2 pt-2">
@@ -949,6 +1031,63 @@ export default function TripPortalPage() {
                   )}
                 </div>
               ))}
+
+              {(Array.isArray(trip.tours) && trip.tours.length > 0) ||
+              (Array.isArray(trip.includes) && trip.includes.length > 0) ||
+              (Array.isArray(trip.excludes) && trip.excludes.length > 0) ? (
+                <div className="p-5 rounded-lg border border-border bg-card space-y-4">
+                  {Array.isArray(trip.tours) && trip.tours.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                        Passeios & Experiências
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {trip.tours.map((tour: any, tIdx: number) => (
+                          <div key={tIdx} className="p-3 rounded-lg bg-muted/40 text-xs space-y-1">
+                            <span className="font-bold text-foreground block">
+                              {tour.title || tour.name}
+                            </span>
+                            {(tour.date || tour.tour_date || tour.duration) && (
+                              <span className="text-muted-foreground font-mono block">
+                                {[tour.date || tour.tour_date, tour.duration].filter(Boolean).join(" • ")}
+                              </span>
+                            )}
+                            {(tour.description || tour.notes) && (
+                              <p className="text-muted-foreground">{tour.description || tour.notes}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {Array.isArray(trip.includes) && trip.includes.length > 0 && (
+                      <div className="space-y-1 text-xs">
+                        <span className="font-bold text-foreground uppercase tracking-wider block">
+                          Incluso no Pacote
+                        </span>
+                        <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                          {trip.includes.map((inc: string, iIdx: number) => (
+                            <li key={iIdx}>{inc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {Array.isArray(trip.excludes) && trip.excludes.length > 0 && (
+                      <div className="space-y-1 text-xs">
+                        <span className="font-bold text-foreground uppercase tracking-wider block">
+                          Não Incluso
+                        </span>
+                        <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                          {trip.excludes.map((exc: string, eIdx: number) => (
+                            <li key={eIdx}>{exc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>
           )}
 
@@ -1267,7 +1406,7 @@ export default function TripPortalPage() {
           <div className="bg-card text-card-foreground border border-border rounded-lg max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="font-bold text-base text-foreground flex items-center gap-2">
-                <LifeBuoy className="size-5 text-amber-500" />
+                <LifeBuoy className="size-5 text-warning-strong" />
                 <span>Acionar Plantão de Atendimento</span>
               </h3>
               <Button

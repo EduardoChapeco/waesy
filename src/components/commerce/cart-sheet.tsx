@@ -154,7 +154,7 @@ export function CartSheet() {
 
           {/* ── 1. Seletor de Modalidade (Alinhamento Estratégico R1) ── */}
           {totalItemCount > 0 && (
-            <div className="px-4 py-2 bg-muted/20 border-b border-border/40 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+            <div className="px-4 py-2 bg-muted/20 border-b border-border/40 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar shrink-0">
               <button
                 type="button"
                 onClick={() => setModalityFilter("all")}
@@ -208,7 +208,7 @@ export function CartSheet() {
 
           {/* ── 2. Régua de Lojas (Mercado Livre Parity) se houver mais de 1 loja ── */}
           {globalCarts.length > 1 && (
-            <div className="px-4 py-2 bg-muted/40 border-b border-border/40 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+            <div className="px-4 py-2 bg-muted/40 border-b border-border/40 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar shrink-0">
               <span className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold shrink-0">
                 Lojas:
               </span>

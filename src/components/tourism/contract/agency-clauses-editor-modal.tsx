@@ -257,7 +257,7 @@ export function AgencyClausesEditorModal({
  size="sm"
  onClick={handleResetToCanonical}
  disabled={isSaving || isLoading}
- className="text-xs text-muted-foreground hover:text-destructive h-8 rounded-lg cursor-pointer"
+ className="text-xs text-muted-foreground hover:text-destructive h-8 rounded-lg cursor-pointer min-h-11 sm:min-h-0"
  >
  <RotateCcw className="size-3.5 mr-1" />
  Restaurar Padrão
@@ -299,7 +299,7 @@ export function AgencyClausesEditorModal({
  size="icon"
  disabled={idx === 0}
  onClick={() => handleMoveClause(idx, "up")}
- className="size-7 rounded-lg"
+ className="size-7 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Mover para cima"
  >
  <ChevronUp className="size-4 text-muted-foreground" />
@@ -310,7 +310,7 @@ export function AgencyClausesEditorModal({
  size="icon"
  disabled={idx === clauses.length - 1}
  onClick={() => handleMoveClause(idx, "down")}
- className="size-7 rounded-lg"
+ className="size-7 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Mover para baixo"
  >
  <ChevronDown className="size-4 text-muted-foreground" />
@@ -320,7 +320,7 @@ export function AgencyClausesEditorModal({
  variant="ghost"
  size="icon"
  onClick={() => handleRemoveClause(idx)}
- className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+ className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Excluir cláusula"
  >
  <Trash2 className="size-4" />
@@ -396,7 +396,7 @@ export function AgencyClausesEditorModal({
  type="button"
  variant="outline"
  onClick={() => onOpenChange(false)}
- className="rounded-lg text-xs font-bold h-10"
+ className="rounded-lg text-xs font-bold h-10 min-h-11 sm:min-h-0"
  >
  Cancelar
  </Button>
@@ -404,7 +404,7 @@ export function AgencyClausesEditorModal({
  type="button"
  disabled={isSaving || clauses.length === 0}
  onClick={handleSaveTemplate}
- className="rounded-lg text-xs font-bold h-10 bg-primary text-primary-foreground gap-2 cursor-pointer"
+ className="rounded-lg text-xs font-bold h-10 bg-primary text-primary-foreground gap-2 cursor-pointer min-h-11 sm:min-h-0"
  >
  {isSaving ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Save className="size-4" />}
  <span>{isSaving ? "Salvando..." : "Salvar como Minuta Padrão da Agência"}</span>

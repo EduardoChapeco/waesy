@@ -65,7 +65,7 @@ export function SupermarketClubDashboardView({
           </div>
 
           <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-border/60 shrink-0">
-            <Star weight="fill" className="size-6 text-amber-500" />
+            <Star weight="fill" className="size-6 text-warning-strong" />
           </div>
 
           <Button
@@ -91,7 +91,7 @@ export function SupermarketClubDashboardView({
 
           {/* Cupons Ativos */}
           <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 flex flex-col justify-between">
-            <Ticket size={20} weight="fill" className="text-amber-500 mb-1" />
+            <Ticket size={20} weight="fill" className="text-warning-strong mb-1" />
             <span className="text-3xs text-muted-foreground font-semibold">Cupons</span>
             <span className="text-sm font-black text-foreground">{clubData.activeCouponsCount} ativos</span>
           </div>
@@ -129,7 +129,7 @@ export function SupermarketClubDashboardView({
           { id: "cashback", label: "Cashback", icon: CurrencyCircleDollar, color: "text-emerald-600" },
           { id: "encarte", label: "Encarte Digital", icon: BookOpen, color: "text-blue-600", onClick: onOpenDigitalFlyer },
           { id: "lojas", label: "Nossas Lojas", icon: MapPin, color: "text-destructive", onClick: onOpenStoreList },
-          { id: "sorteios", label: "Sorteios", icon: Gift, color: "text-amber-600" },
+          { id: "sorteios", label: "Sorteios", icon: Gift, color: "text-warning-strong" },
           { id: "lista", label: "Lista de Compras", icon: ListChecks, color: "text-purple-600" },
         ].map((item) => {
           const IconComp = item.icon;

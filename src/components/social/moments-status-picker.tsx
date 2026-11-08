@@ -140,7 +140,7 @@ export function MomentsStatusPicker({
  type="button"
  size="sm"
  variant={durationHours === hours ? "default" : "outline"}
- className="rounded-lg text-xs font-bold h-9"
+ className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0"
  onClick={() => setDurationHours(hours)}
  >
  {hours} Horas

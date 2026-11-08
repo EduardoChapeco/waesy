@@ -252,7 +252,7 @@ export function WorkspaceViabilityPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-24">
+    <div className="w-full space-y-6 pb-24">
       {/* ── 1. CABEÇALHO E NAVEGAÇÃO DE INCUBADORA / VIABILIDADE ── */}
       <div className="p-5 sm:p-6 rounded-lg border border-border/70 bg-card space-y-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -553,7 +553,7 @@ export function WorkspaceViabilityPage() {
           </div>
         </div>
       ) : !activeStudy ? (
-        <div className="p-12 rounded-lg border border-dashed border-border/60 bg-card/40 text-center space-y-4">
+        <div className="p-12 rounded-lg border border-dashed border-border/60 bg-card text-center space-y-4">
           <Compass className="size-8 mx-auto text-muted-foreground" />
           <div className="space-y-1">
             <h2 className="text-base font-bold text-foreground">
@@ -881,7 +881,7 @@ export function WorkspaceViabilityPage() {
                     <ul className="space-y-2 text-xs text-foreground">
                       {(activeStudy.simlab_synthesis.topObjections || []).map((obj, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <AlertCircle className="size-4 text-amber-500 shrink-0 mt-1" />
+                          <AlertCircle className="size-4 text-warning-strong shrink-0 mt-1" />
                           <span>{obj}</span>
                         </li>
                       ))}
@@ -1105,8 +1105,8 @@ export function WorkspaceViabilityPage() {
                   />
                 </div>
 
-                <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-2">
-                  <span className="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 block">
+                <div className="p-4 rounded-lg border border-warning/30 bg-warning/5 space-y-2">
+                  <span className="text-xs font-bold uppercase text-warning-strong  block">
                     Pontos a Melhorar
                   </span>
                   <textarea

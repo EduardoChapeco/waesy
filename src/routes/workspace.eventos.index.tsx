@@ -212,7 +212,7 @@ export default function WorkspaceEventosPage() {
       toolDescription="Controle de ingressos, lotes promocionais, check-in de portaria com QR Code, orçamentos e fornecedores de eventos."
       store={store}
     >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
         {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}
         <WorkspaceCanonicalToolbar
           tabs={TABS}
@@ -650,10 +650,10 @@ export default function WorkspaceEventosPage() {
                       onClick={() => setForm({ ...form, is_external_ticket: !form.is_external_ticket })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
                         form.is_external_ticket ? "bg-primary" : "bg-muted"
-                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0`}
                     >
                       <span
-                        className={`inline-block size-4 transform rounded-full bg-background shadow-sm transition-transform ${
+                        className={`inline-block size-4 transform rounded-full bg-background  transition-transform ${
                           form.is_external_ticket ? "translate-x-6" : "translate-x-1"
                         }`}
                       />

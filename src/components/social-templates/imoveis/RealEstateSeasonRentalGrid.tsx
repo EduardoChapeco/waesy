@@ -30,7 +30,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
         </h1>
 
         {/* Badge Verde de Chamada (ex: Feriado de Carnaval Disponível) */}
-        <div className="inline-block bg-[#48BB78] text-foreground px-10 py-3 rounded-2xl shadow-md">
+        <div className="inline-block bg-[#48BB78] text-foreground px-10 py-3 rounded-2xl ">
           <span className="text-3xl sm:text-4xl font-black uppercase tracking-wide">
             {data.promoBadge || data.subtitle || "Disponível para Temporada"}
           </span>
@@ -56,7 +56,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
         </div>
 
         {/* Lado Direito: Card Flutuante Verde de Preço por Diária ou Pacote */}
-        <div className="bg-[#48BB78] text-foreground p-8 rounded-3xl shadow-xl text-center min-w-[340px] shrink-0">
+        <div className="bg-[#48BB78] text-foreground p-8 rounded-3xl  text-center min-w-85 shrink-0">
           <span className="text-xl font-bold uppercase tracking-wider block text-foreground/90 mb-1">
             {data.pricingMode === "monthly" ? "Aluguel Mensal" : "Promoção por apenas"}
           </span>
@@ -77,7 +77,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
 
       {/* ── 3. Grid Fotográfico 2x2 das Áreas do Imóvel ── */}
       <div className="grid grid-cols-2 gap-4 flex-1 my-2">
-        <div className="rounded-2xl overflow-hidden shadow-md bg-slate-200">
+        <div className="rounded-2xl overflow-hidden  bg-slate-200">
           <img
             src={data.backgroundImageUrl}
             alt="Cozinha / Sala"
@@ -85,7 +85,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="rounded-2xl overflow-hidden shadow-md bg-slate-200">
+        <div className="rounded-2xl overflow-hidden  bg-slate-200">
           <img
             src={data.backgroundImageUrl}
             alt="Piscina / Área Externa"
@@ -93,7 +93,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="rounded-2xl overflow-hidden shadow-md bg-slate-200">
+        <div className="rounded-2xl overflow-hidden  bg-slate-200">
           <img
             src={data.backgroundImageUrl}
             alt="Suíte Master"
@@ -101,7 +101,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="rounded-2xl overflow-hidden shadow-md bg-slate-200">
+        <div className="rounded-2xl overflow-hidden  bg-slate-200">
           <img
             src={data.backgroundImageUrl}
             alt="Living Room"

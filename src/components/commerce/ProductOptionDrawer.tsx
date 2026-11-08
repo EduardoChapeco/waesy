@@ -126,7 +126,7 @@ export function ProductOptionDrawer({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-11/12 sm:max-w-lg max-h-screen p-0 overflow-hidden rounded-lg border border-border/60 bg-card text-foreground shadow-2xl z-50 flex flex-col pt-5 pt-safe">
+      <DialogContent className="w-11/12 sm:max-w-lg max-h-screen p-0 overflow-hidden rounded-lg border border-border/60 bg-card text-foreground shadow-overlay z-50 flex flex-col pt-5 pt-safe">
         <DialogHeader className="p-4 sm:p-5 pb-2 border-b border-border/40 shrink-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">

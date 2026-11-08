@@ -1,23 +1,28 @@
-# Progress — Challenger M1_1 (Milestone 1 — Supabase Telemetry & Governance Migration)
+# Progress — Challenger M1_1 (Milestone M1 — View Preferences & Primitives)
 
-Last visited: 2026-10-05T04:26:00Z
+Last visited: 2026-11-04T11:20:00Z
 Status: In Progress
 
 ## Tasks
 - [x] Record new dispatch in DISPATCH.md
-- [x] Read ORIGINAL_REQUEST.md (section 2026-10-05T04:01:31Z, R1)
-- [x] Read PROJECT.md (orchestrator_6)
-- [x] Read Worker M1 handoff.md and inspect migration file `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`
-- [x] Author comprehensive empirical test harness `empirical_migration_stress_test.mjs` (83 assertions)
-- [x] Execute empirical stress test suite: 83/83 tests PASSED (Exit Code 0)
-  - [x] Verify syntax balance (parentheses, brackets, braces, dollar-quotes, single quotes, semicolons)
-  - [x] Verify table definitions (4 tables, UUID PKs, FKs to auth.users/stores/carts/products/product_variants)
-  - [x] Verify operator_cpf in employee_tenant_audit_logs
-  - [x] Verify strict UNIQUE constraint `uq_customer_store_affinity`
-  - [x] Verify RLS enablement on all 4 tables
-  - [x] Verify subquery caching `(SELECT auth.uid())` with 0 naked calls
-  - [x] Verify denial of anonymous mutations and immutability of audit records
-  - [x] Verify index coverage, triggers, and PL/pgSQL function security definer/search_path
-- [ ] Update BRIEFING.md
-- [ ] Generate self-contained handoff.md with verdict APPROVE
-- [ ] Send communication message back to orchestrator (parent)
+- [x] Read ORIGINAL_REQUEST.md, PROJECT.md, and Worker M1 handoff.md
+- [x] Inspect source code of all M1 artifacts:
+  - `workspace-view-preferences.functions.ts`
+  - `workspace-view-preferences.test.ts`
+  - `universal-view-manager.tsx`
+  - `view-mode-switcher.tsx`
+  - `use-workspace-view-mode.ts`
+  - `kpi-metric-card.tsx`
+  - `mini-sparkline.tsx`
+  - `20270220030000_workspace_user_view_preferences.sql`
+- [x] Launch initial baseline Vitest suite check
+- [ ] Author adversarial test suite covering:
+  - Boundary cases and Zod schema fuzzing (prototype pollution, SQL injection strings, unicode/emoji, massive payloads)
+  - Concurrency & race condition stress testing (simultaneous upserts, rapid sequential mutations)
+  - `UniversalViewManager` & `ViewModeSwitcher` keyboard events (rapid key switching, modifier keys, input focus blocking)
+  - `useWorkspaceViewMode` URL query & localStorage resilience (corrupted state, missing keys, invalid modes)
+  - `MiniSparkline` edge values (empty, single point, flatline, negative numbers, extreme floats)
+- [ ] Execute adversarial test suite and record empirical evidence
+- [ ] Run typecheck and design-lint ratchet verification
+- [ ] Complete BRIEFING.md and write comprehensive 5-component handoff.md with explicit verdict
+- [ ] Send message to orchestrator

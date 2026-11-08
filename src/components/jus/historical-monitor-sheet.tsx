@@ -244,7 +244,7 @@ export function HistoricalMonitorSheet({
  variant="ghost"
  size="icon"
  onClick={() => handleRemoveDocument(doc)}
- className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+ className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>

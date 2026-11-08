@@ -1,21 +1,15 @@
-# Progress — Challenger M1_2 (Supabase 360 Security & RLS Challenge)
+# Progress — Challenger M1_2
 
-Last visited: 2026-10-05T04:31:30Z
+**Status**: IN_PROGRESS  
+**Last visited**: 2026-11-04T11:16:00Z  
 
-## Status
-Completed — Verdict REQUEST_CHANGES issued with empirical evidence in handoff.md.
-
-## Completed Steps
-- [x] Received dispatch from orchestrator (2026-10-05T04:22:20Z)
-- [x] Initialized DISPATCH.md and updated BRIEFING.md
-- [x] Reviewed target migration `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`
-- [x] Analyzed RLS policies, trigger functions, and multi-tenant models
-- [x] Implemented automated empirical challenge script `empirical-rls-challenge.test.mjs`
-- [x] Ran empirical test harness and collected results (30 test scenarios + 8 mitigation tests)
-- [x] Evaluated threat modeling findings:
-  - User identity spoofing vulnerability confirmed on `user_form_submissions_log` and `user_cart_telemetry` (`WITH CHECK (true)`).
-  - Multi-tenant isolation across stores confirmed 100% strict.
-  - Zero collisions across 433 previous migrations.
-- [x] Formulated verdict: REQUEST_CHANGES
-- [x] Wrote 5-component handoff report `handoff.md`
-- [x] Communicated results to parent via `send_message`
+## Tasks
+- [x] Read DISPATCH, ORIGINAL_REQUEST, PROJECT, worker_m1 handoff
+- [x] Initialize BRIEFING.md and progress.md
+- [ ] Inspect implementation files (`mini-sparkline.tsx`, `kpi-metric-card.tsx`, `universal-view-manager.tsx`, `view-mode-switcher.tsx`, `use-workspace-view-mode.ts`)
+- [ ] Empirical Test 1: Math correctness of `MiniSparkline` bezier path generator under adversarial inputs (all zeros, single value, negative values, large values, NaN/Infinity, empty arrays)
+- [ ] Empirical Test 2: Single Sovereign Surface & Containeritis (DL-31) DOM/JSX structural audit
+- [ ] Empirical Test 3: Touch targets (DL-14) & Keyboard accessibility (DL-15, keybindings 1/2/3, input focus guards)
+- [ ] Document findings & challenges
+- [ ] Write handoff.md with verdict (APPROVE or REQUEST_CHANGES)
+- [ ] Send completion message to parent

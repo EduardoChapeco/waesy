@@ -104,7 +104,7 @@ export function SupermarketCatalogGrid({
 
       {/* ── 2. Régua de Corredores e Departamentos (Scroll Horizontal com Alvo de 44px) ── */}
       {departments.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar py-1">
           {departments.map((dept) => {
             const isSelected = dept.id === activeDepartment;
             return (
@@ -138,7 +138,7 @@ export function SupermarketCatalogGrid({
 
       {/* ── 3. Seletor de Redes e Supermercados Parceiros ── */}
       {availableStores.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar py-1">
           <span className="text-2xs uppercase tracking-wider text-muted-foreground font-semibold shrink-0">
             Rede:
           </span>
@@ -196,7 +196,7 @@ export function SupermarketCatalogGrid({
       <Sheet open={isBarcodeScannerOpen} onOpenChange={setIsBarcodeScannerOpen}>
         <SheetContent
           side="bottom"
-          className="w-full max-w-md mx-auto rounded-t-2xl sm:rounded-2xl p-5 bg-card border-border/80 shadow-xl"
+          className="w-full max-w-md mx-auto rounded-t-2xl sm:rounded-2xl p-5 bg-card border-border/80 "
         >
           <SheetHeader className="pb-3 border-b border-border/40 text-left">
             <SheetTitle className="text-base font-bold tracking-tight text-foreground flex items-center gap-2">

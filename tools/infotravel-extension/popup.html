@@ -2,310 +2,546 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Waesy Sync • Infotravel</title>
+  <title>Waesy Sync • Operadoras e Infotravel</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     body {
-      width: 380px;
+      width: 540px;
+      min-height: 560px;
+      max-height: 590px;
       background: #090d16;
-      color: #f1f5f9;
+      color: #f0f6fc;
       padding: 16px;
       font-size: 13px;
+      line-height: 1.5;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
+    /* Scrollbar sutil */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 9999px;
+    }
+
+    /* Cabeçalho */
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #1e293b;
-      padding-bottom: 12px;
-      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 14px;
+      margin-bottom: 12px;
     }
-    .brand {
+    .brand-wrap {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
-    .brand-logo {
-      width: 24px;
-      height: 24px;
-      background: linear-gradient(135deg, #3b82f6, #06b6d4);
-      border-radius: 6px;
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #0066ff, #0052cc);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      font-size: 14px;
-      color: white;
+      font-weight: 800;
+      font-size: 16px;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
     }
     .brand-title {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
+      color: #ffffff;
       letter-spacing: -0.01em;
+      line-height: 1.2;
     }
-    .badge {
+    .brand-subtitle {
+      font-size: 11px;
+      color: #8b949e;
+      font-weight: 500;
+    }
+
+    /* Status Pill */
+    .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 3px 8px;
+      padding: 5px 10px;
       border-radius: 9999px;
       font-size: 11px;
       font-weight: 600;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
     }
-    .badge-online {
-      background: rgba(16, 185, 129, 0.15);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+    .status-badge.online {
+      background: rgba(35, 134, 54, 0.15);
+      color: #3fb950;
+      border-color: rgba(63, 185, 80, 0.3);
     }
-    .badge-offline {
-      background: rgba(245, 158, 11, 0.15);
+    .status-badge.offline {
+      background: rgba(217, 119, 6, 0.15);
       color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-color: rgba(245, 158, 11, 0.3);
     }
     .pulse-dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: currentColor;
     }
-    .grid-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+
+    /* Navegação por Abas */
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      background: #161b22;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       margin-bottom: 14px;
     }
-    .stat-card {
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 12px;
-    }
-    .stat-label {
-      font-size: 11px;
-      color: #94a3b8;
-      margin-bottom: 4px;
-    }
-    .stat-value {
-      font-size: 16px;
-      font-weight: 700;
-      color: #f8fafc;
-    }
-    .stat-value.primary { color: #38bdf8; }
-    .stat-value.success { color: #34d399; }
-
-    .control-group {
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 14px;
-    }
-    .control-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: #cbd5e1;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .pacing-badge {
-      color: #38bdf8;
-      font-weight: normal;
-    }
-    .pacing-slider {
-      width: 100%;
-      accent-color: #38bdf8;
-      margin-bottom: 6px;
-      height: 6px;
-      border-radius: 4px;
-    }
-    .pacing-slider:focus-visible {
-      outline: 2px solid #38bdf8;
-      outline-offset: 2px;
-    }
-    .pacing-hint {
-      font-size: 11px;
-      color: #64748b;
-      line-height: 1.3;
-    }
-
-    .action-btn {
-      width: 100%;
-      min-height: 44px;
-      height: 44px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
+    .tab-btn {
+      flex: 1;
+      height: 34px;
       border: none;
-      margin-bottom: 8px;
-    }
-    .action-btn:focus-visible {
-      outline: 2px solid #38bdf8;
-      outline-offset: 2px;
-    }
-    .btn-primary {
-      background: #2563eb;
-      color: white;
-    }
-    .btn-primary:hover {
-      background: #1d4ed8;
-    }
-    .btn-primary:disabled {
-      background: #1e293b;
-      color: #64748b;
-      cursor: not-allowed;
-    }
-    .btn-danger {
-      background: #dc2626;
-      color: white;
-    }
-    .btn-danger:hover {
-      background: #b91c1c;
-    }
-    .btn-secondary {
-      background: #1e293b;
-      color: #e2e8f0;
-      border: 1px solid #334155;
-    }
-    .btn-secondary:hover {
-      background: #334155;
-    }
-
-    .export-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .export-btn {
-      min-height: 44px;
-      height: 44px;
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #e2e8f0;
+      background: transparent;
+      color: #8b949e;
       font-size: 12px;
       font-weight: 600;
-      border-radius: 10px;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      transition: all 0.15s ease;
     }
-    .export-btn:focus-visible {
+    .tab-btn:hover {
+      color: #f0f6fc;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tab-btn.active {
+      background: #21262d;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .tab-btn:focus-visible {
       outline: 2px solid #38bdf8;
-      outline-offset: 2px;
-    }
-    .export-btn:hover {
-      background: #334155;
-      color: white;
+      outline-offset: 1px;
     }
 
+    /* Conteúdo das Abas */
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Grid de Métricas */
+    .grid-kpis {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .kpi-card {
+      background: #161b22;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+      transition: border-color 0.15s ease;
+    }
+    .kpi-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .kpi-label {
+      font-size: 11px;
+      color: #8b949e;
+      font-weight: 500;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .kpi-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f0f6fc;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+    .kpi-value.blue { color: #58a6ff; }
+    .kpi-value.green { color: #3fb950; }
+
+    /* Controles e Sliders */
+    .control-card {
+      background: #161b22;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .control-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #f0f6fc;
+    }
+    .control-pill {
+      font-size: 11px;
+      color: #58a6ff;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+    .range-input {
+      width: 100%;
+      height: 6px;
+      accent-color: #58a6ff;
+      background: #21262d;
+      border-radius: 9999px;
+      outline: none;
+      margin-bottom: 8px;
+    }
+    .range-input:focus-visible {
+      outline: 2px solid #58a6ff;
+      outline-offset: 2px;
+    }
+    .control-hint {
+      font-size: 11px;
+      color: #8b949e;
+      line-height: 1.4;
+    }
+
+    /* Botões Táteis (h-11 = 44px canônico) */
+    .btn-action {
+      width: 100%;
+      height: 44px;
+      min-height: 44px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: 8px;
+    }
+    .btn-action:focus-visible {
+      outline: 2px solid #58a6ff;
+      outline-offset: 2px;
+    }
+    .btn-primary {
+      background: #238636;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #2ea043;
+    }
+    .btn-primary:disabled {
+      background: #21262d;
+      color: #6e7681;
+      cursor: not-allowed;
+    }
+    .btn-danger {
+      background: #da3633;
+      color: #ffffff;
+    }
+    .btn-danger:hover {
+      background: #f85149;
+    }
+    .btn-secondary {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .btn-secondary:hover {
+      background: #30363d;
+      color: #ffffff;
+    }
+    .btn-secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Formulários e Inputs */
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .text-input {
+      width: 100%;
+      height: 44px;
+      background: #0d1117;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 13px;
+      color: #f0f6fc;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .text-input:focus {
+      border-color: #58a6ff;
+      outline: 2px solid rgba(88, 166, 255, 0.3);
+    }
+
+    /* Lista de Cotações */
+    .quotes-list {
+      max-height: 250px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      background: #0d1117;
+      padding: 6px;
+      margin-bottom: 12px;
+    }
+    .quote-item {
+      background: #161b22;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .quote-item:last-child {
+      margin-bottom: 0;
+    }
+    .quote-dest {
+      font-size: 12px;
+      font-weight: 700;
+      color: #f0f6fc;
+    }
+    .quote-dates {
+      font-size: 11px;
+      color: #8b949e;
+    }
+    .quote-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: #3fb950;
+      text-align: right;
+    }
+    .empty-state {
+      padding: 30px 16px;
+      text-align: center;
+      color: #8b949e;
+      font-size: 12px;
+    }
+
+    /* Terminal de Logs */
     .log-box {
       background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
-      padding: 8px;
-      height: 100px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px;
+      height: 180px;
       overflow-y: auto;
-      font-family: monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 11px;
-      color: #94a3b8;
-      line-height: 1.4;
+      color: #8b949e;
+      line-height: 1.5;
+      margin-bottom: 12px;
     }
     .log-line {
       white-space: pre-wrap;
       word-break: break-all;
     }
-    .log-line.success { color: #34d399; }
-    .log-line.warn { color: #fbbf24; }
-    .log-line.error { color: #f87171; }
+    .log-line.success { color: #3fb950; }
+    .log-line.warn { color: #f59e0b; }
+    .log-line.error { color: #f85149; }
+    .log-line.info { color: #58a6ff; }
+
+    /* Linha de Exportação */
+    .export-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
 
     .footer {
-      margin-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 10px;
+      margin-top: 8px;
       text-align: center;
       font-size: 11px;
-      color: #64748b;
+      color: #6e7681;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
   </style>
 </head>
 <body>
+  <!-- Header Principal -->
   <div class="header">
-    <div class="brand">
-      <div class="brand-logo">W</div>
+    <div class="brand-wrap">
+      <div class="brand-icon">W</div>
       <div>
         <div class="brand-title">Waesy Sync</div>
-        <div style="font-size: 10px; color: #64748b;">Operadoras e Infotravel</div>
+        <div class="brand-subtitle">Excelência Tour • Operadoras & Infotravel</div>
       </div>
     </div>
-    <div id="statusBadge" class="badge badge-offline">
+    <div id="statusBadge" class="status-badge offline">
       <span class="pulse-dot"></span>
       <span id="statusText">Aguardando Portal</span>
     </div>
   </div>
 
-  <div class="grid-stats">
-    <div class="stat-card">
-      <div class="stat-label">Reservas Coletadas</div>
-      <div id="statReservas" class="stat-value primary">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Passageiros (Pax)</div>
-      <div id="statPassageiros" class="stat-value success">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Volume Total Vendas</div>
-      <div id="statVendas" class="stat-value">R$ 0,00</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Comissão Estimada</div>
-      <div id="statComissao" class="stat-value">R$ 0,00</div>
-    </div>
-  </div>
-
-  <div class="control-group">
-    <div class="control-title">
-      <span>Ritmo Humano (Anti-Rate Limit)</span>
-      <span id="pacingLabel" class="pacing-badge">1.5s a 5.0s</span>
-    </div>
-    <input id="pacingSlider" type="range" min="1" max="6" value="3" class="pacing-slider" aria-label="Ritmo Humano">
-    <div class="pacing-hint">
-      Variação randômica automática a cada requisição para segurança total e prevenção contra detecção de bot.
-    </div>
-  </div>
-
-  <button id="toggleSyncBtn" class="action-btn btn-primary" aria-label="Alternar sincronização em segundo plano">
-    <span id="toggleSyncText">Iniciar Sincronização em Segundo Plano</span>
-  </button>
-
-  <div class="export-row">
-    <button id="exportCsvBtn" class="export-btn" title="Baixar CSV formatado com ponto e vírgula e BOM UTF-8 para Excel" aria-label="Baixar CSV para Excel">
-      Exportar CSV (Excel)
+  <!-- Barra de Abas -->
+  <div class="nav-tabs" role="tablist">
+    <button class="tab-btn active" data-tab="tab-dashboard" role="tab" aria-selected="true">
+      Dashboard
     </button>
-    <button id="exportJsonBtn" class="export-btn" title="Baixar JSON completo com passageiros e financeiro" aria-label="Baixar JSON completo">
-      Exportar JSON
+    <button class="tab-btn" data-tab="tab-quotes" role="tab" aria-selected="false">
+      Cotações & Radar (<span id="tabQuotesCount">0</span>)
+    </button>
+    <button class="tab-btn" data-tab="tab-config" role="tab" aria-selected="false">
+      Conexão Waesy
+    </button>
+    <button class="tab-btn" data-tab="tab-logs" role="tab" aria-selected="false">
+      Logs & Exportar
     </button>
   </div>
 
-  <div style="margin-bottom: 6px; font-size: 11px; color: #94a3b8; font-weight: 600;">
-    Registro de Atividade em Tempo Real:
-  </div>
-  <div id="logBox" class="log-box">
-    <div class="log-line">Extensão carregada. Aguardando comando...</div>
+  <!-- ABA 1: DASHBOARD -->
+  <div id="tab-dashboard" class="tab-panel active">
+    <div class="grid-kpis">
+      <div class="kpi-card">
+        <div class="kpi-label">Reservas Processadas</div>
+        <div id="statReservas" class="kpi-value blue">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Passageiros (Pax)</div>
+        <div id="statPassageiros" class="kpi-value green">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Volume Total Vendas</div>
+        <div id="statVendas" class="kpi-value">R$ 0,00</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Comissão Estimada</div>
+        <div id="statComissao" class="kpi-value green">R$ 0,00</div>
+      </div>
+    </div>
+
+    <div class="control-card">
+      <div class="control-header">
+        <span class="control-label">Ritmo Humano Anti-Rate Limit</span>
+        <span id="pacingLabel" class="control-pill">2.0s a 5.0s</span>
+      </div>
+      <input id="pacingSlider" type="range" min="1" max="6" value="2" class="range-input" aria-label="Velocidade da Varredura">
+      <div class="control-hint">
+        Simula o comportamento humano com variação de tempo randômica a cada requisição, prevenindo bloqueios ou CAPTCHAs.
+      </div>
+    </div>
+
+    <button id="toggleSyncBtn" class="btn-action btn-primary" aria-label="Iniciar ou Pausar Sincronização">
+      <span id="toggleSyncText">Iniciar Sincronização em 2º Plano</span>
+    </button>
   </div>
 
+  <!-- ABA 2: COTAÇÕES & RADAR -->
+  <div id="tab-quotes" class="tab-panel">
+    <div class="control-card" style="padding: 10px 14px; margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 12px; font-weight: 600; color: #f0f6fc;">Memória de Cotações Capturadas</span>
+        <span id="quotesBadgeCount" class="control-pill">0 orçamentos</span>
+      </div>
+      <p style="font-size: 11px; color: #8b949e; margin-top: 4px;">
+        Cotações de voos, hotéis e carrinhos visualizados nas operadoras capturados passivamente para cruzar com clientes do CRM.
+      </p>
+    </div>
+
+    <div id="quotesListContainer" class="quotes-list">
+      <div class="empty-state">Nenhuma cotação capturada na sessão atual.</div>
+    </div>
+
+    <button id="syncCrmBtn" class="btn-action btn-primary" aria-label="Transmitir cotações ao Waesy CRM">
+      Transmitir ao Waesy CRM & Radar
+    </button>
+    <button id="clearQuotesBtn" class="btn-action btn-secondary" aria-label="Limpar Cotações em Memória">
+      Limpar Memória de Cotações
+    </button>
+  </div>
+
+  <!-- ABA 3: CONEXÃO WAESY -->
+  <div id="tab-config" class="tab-panel">
+    <div class="control-card">
+      <div class="form-group">
+        <label class="form-label" for="waesyServerUrlInput">URL do Servidor Waesy</label>
+        <input id="waesyServerUrlInput" type="text" class="text-input" value="https://waesy.com.br" placeholder="https://waesy.com.br">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="waesyStoreIdInput">ID da Loja / Workspace (Excelência Tour SMO)</label>
+        <input id="waesyStoreIdInput" type="text" class="text-input" placeholder="ID da loja ou gerado automaticamente">
+      </div>
+      <button id="saveConfigBtn" class="btn-action btn-primary" style="margin-top: 8px;">
+        Salvar Configurações de Conexão
+      </button>
+      <button id="testConnectionBtn" class="btn-action btn-secondary">
+        Testar Conexão com Servidor
+      </button>
+      <div id="testConnResult" style="font-size: 11px; margin-top: 6px; text-align: center;"></div>
+    </div>
+  </div>
+
+  <!-- ABA 4: LOGS & EXPORTAÇÃO -->
+  <div id="tab-logs" class="tab-panel">
+    <div class="export-grid">
+      <button id="exportCsvBtn" class="btn-action btn-secondary" title="Exportar CSV formatado com ponto e vírgula para Excel">
+        Exportar CSV (Excel BR)
+      </button>
+      <button id="exportJsonBtn" class="btn-action btn-secondary" title="Exportar JSON completo com passageiros">
+        Exportar JSON
+      </button>
+    </div>
+
+    <div id="logBox" class="log-box"></div>
+
+    <button id="clearLogsBtn" class="btn-action btn-secondary" style="height: 38px; min-height: 38px;">
+      Limpar Terminal de Logs
+    </button>
+  </div>
+
+  <!-- Rodapé -->
   <div class="footer">
-    Waesy Operacional • Sincronização Segura de Turismo
+    <span>Waesy Sync v2.1.0 • Manifest V3</span>
+    <span>Excelência Tour SMO</span>
   </div>
 
   <script src="popup.js"></script>

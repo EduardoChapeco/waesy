@@ -50,7 +50,7 @@ export function TravelPackageHero({
  };
 
  return (
- <section className="relative w-full rounded-lg overflow-hidden border border-border/70 min-h-[460px] flex flex-col justify-end p-6 sm:p-10 shadow-lg group">
+ <section className="relative w-full rounded-lg overflow-hidden border border-border/70 min-h-115 flex flex-col justify-end p-6 sm:p-10  group">
  {/* Imagem de Fundo com Parallax e Gradiente Editorial */}
  <img
  src={coverImageUrl}
@@ -78,7 +78,7 @@ export function TravelPackageHero({
  <MapPin className="size-3.5 text-rose-400" />
  <span>{destination}</span>
  </div>
- <h2 className="text-2xl sm:text-4xl font-serif font-bold text-foreground tracking-tight drop-shadow-sm leading-tight">
+ <h2 className="text-2xl sm:text-4xl font-serif font-bold text-foreground tracking-tight  leading-tight">
  {title}
  </h2>
  </div>
@@ -114,7 +114,7 @@ export function TravelPackageHero({
  <Button
  onClick={handleBooking}
  size="lg"
- className="rounded-full px-8 h-12 text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg cursor-pointer flex items-center gap-2 shrink-0"
+ className="rounded-full px-8 h-12 text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90  cursor-pointer flex items-center gap-2 shrink-0"
  >
  <MessageCircle className="size-4" />
  <span>Reservar Agora</span>

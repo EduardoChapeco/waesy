@@ -46,6 +46,7 @@
     "src/components/ui/sidebar.tsx": "primitiva UI reutilizável",
     "src/components/ui/toggle-group.tsx": "primitiva UI reutilizável",
     "src/components/workspace/notification-bell.tsx": "widget opcional do shell workspace",
+    "src/components/workspace/kanban/universal-kanban-card.tsx": "componente canônico polimórfico de cartão universal para kanbans multi-nicho",
     "src/hooks/tourism/use-lead-detail.ts": "hook de vertical turismo carregado por tela opcional",
     "src/hooks/use-classifieds-draft.ts": "hook de compatibilidade do fluxo de classificados",
     "src/hooks/use-picking.ts": "hook de seleção reutilizável",

@@ -73,7 +73,7 @@ export function ImageHotspots({
  <img
  src={displayImage}
  alt={title || "Shop the Look"}
- className="w-full h-auto object-cover max-h-[700px]"
+ className="w-full h-auto object-cover max-h-175"
  />
 
  {/* Hotspots */}

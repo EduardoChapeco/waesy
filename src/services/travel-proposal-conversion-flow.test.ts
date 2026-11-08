@@ -131,7 +131,8 @@ describe("conversão de proposta — superfície exclusivamente staff e tenant-s
       p_actor_profile_id: STAFF_A,
     });
     expect(result).toMatchObject({ success: true, tripId: TRIP_A, tripStatus: "pending_review" });
-    expect(db.fromCalls.flatMap((call) => call.writes)).toEqual([]);
+    expect(db.fromCalls.filter((call) => call.table === "travel_proposals").flatMap((call) => call.writes)).toEqual([]);
+    expect(db.fromCalls.find((call) => call.table === "tourism_trips")?.writes).toEqual(["update"]);
   });
 
   it("rejeita storeId de outro tenant antes da consulta ou RPC", async () => {

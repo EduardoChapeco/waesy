@@ -68,7 +68,7 @@ export function BookingDrawerSheet({
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col justify-between bg-card border-l border-border/80 shadow-2xl"
+        className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col justify-between bg-card border-l border-border/80 shadow-overlay"
       >
         <div className="p-5 pb-4 border-b border-border/40 shrink-0">
           <SheetHeader className="text-left space-y-1">
@@ -150,7 +150,7 @@ export function BookingDrawerSheet({
                     <Label className="text-xs font-bold text-foreground">Profissional / Atendente</Label>
                     <span className="text-2xs text-muted-foreground font-mono">Opcional</span>
                   </div>
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                  <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar">
                     <button
                       type="button"
                       onClick={() => {
@@ -328,7 +328,7 @@ export function BookingDrawerSheet({
               type="submit"
               form="booking-form"
               disabled={isPending}
-              className="h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-sm"
+              className="h-11 px-6 rounded-lg font-bold text-xs bg-primary text-primary-foreground cursor-pointer shadow-overlay"
             >
               {isPending ? (
                 <CircleNotch size={16} className="animate-spin motion-reduce:animate-none" />

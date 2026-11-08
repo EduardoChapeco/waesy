@@ -30,7 +30,7 @@ export const Route = createFileRoute("/admin-master/termos")({
  return { documents, logs: logsRes.logs, totalLogs: logsRes.total, stats };
    } catch (err) {
      console.error("[loader:admin-master.termos] Unhandled loader error:", err);
-     return { documents: null, logs: null, totalLogs: null, stats: null };
+     return { documents: [], logs: [], totalLogs: 0, stats: null };
    }
  },
  component: AdminMasterTermosPage,
@@ -191,7 +191,7 @@ function AdminMasterTermosPage() {
 
  {/* Tabs */}
  <Tabs defaultValue="documents" className="space-y-6">
- <TabsList className="grid w-full sm:w-[480px] grid-cols-2">
+ <TabsList className="grid w-full sm:w-120 grid-cols-2">
  <TabsTrigger value="documents" className="font-bold text-xs">
  <FileText className="size-3.5 mr-2" />
  Políticas da Plataforma ({documents.length})
@@ -238,7 +238,7 @@ function AdminMasterTermosPage() {
  ● Publicado Online
  </span>
  ) : (
- <span className="text-amber-600 font-semibold flex items-center gap-1">
+ <span className="text-warning-strong font-semibold flex items-center gap-1">
  ○ Rascunho Interno
  </span>
  )}
@@ -248,7 +248,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant="outline"
- className="rounded-lg text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8 min-h-11 sm:min-h-0"
  onClick={() => handleOpenEdit(doc)}
  >
  <Edit className="size-3 mr-1" />
@@ -269,7 +269,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant={termFilter === "all" ? "default" : "outline"}
- className="rounded-lg text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8 min-h-11 sm:min-h-0"
  onClick={() => {
  setTermFilter("all");
  handleFilterLogs("all", searchLog);
@@ -280,7 +280,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant={termFilter === "cookie_policy" ? "default" : "outline"}
- className="rounded-lg text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8 min-h-11 sm:min-h-0"
  onClick={() => {
  setTermFilter("cookie_policy");
  handleFilterLogs("cookie_policy", searchLog);
@@ -291,7 +291,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant={termFilter === "privacy_policy" ? "default" : "outline"}
- className="rounded-lg text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8 min-h-11 sm:min-h-0"
  onClick={() => {
  setTermFilter("privacy_policy");
  handleFilterLogs("privacy_policy", searchLog);
@@ -302,7 +302,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant={termFilter === "terms_of_service" ? "default" : "outline"}
- className="rounded-lg text-xs font-bold h-8"
+ className="rounded-lg text-xs font-bold h-8 min-h-11 sm:min-h-0"
  onClick={() => {
  setTermFilter("terms_of_service");
  handleFilterLogs("terms_of_service", searchLog);
@@ -342,7 +342,7 @@ function AdminMasterTermosPage() {
  </p>
  </div>
  ) : (
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <Table>
  <TableHeader>
  <TableRow>
@@ -397,7 +397,7 @@ function AdminMasterTermosPage() {
  <Button
  size="sm"
  variant="ghost"
- className="rounded-lg text-xs font-semibold h-7 gap-1"
+ className="rounded-lg text-xs font-semibold h-7 gap-1 min-h-11 sm:min-h-0"
  onClick={() => setSelectedLog(log)}
  >
  <Eye className="size-3 text-primary" />

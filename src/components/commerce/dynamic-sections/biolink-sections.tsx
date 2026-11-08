@@ -23,11 +23,11 @@ export function BiolinkProfileSection({
  return (
  <section className="py-6 flex flex-col items-center text-center max-w-md mx-auto px-4 space-y-3 select-none">
  <div className="relative">
- <div className="size-24 rounded-full overflow-hidden border-2 border-primary/20 bg-muted shadow-md">
+ <div className="size-24 rounded-full overflow-hidden border-2 border-primary/20 bg-muted ">
  <img src={avatarUrl} alt={name} className="size-full object-cover" />
  </div>
  {isVerified && (
- <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-1 rounded-full shadow-md">
+ <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-1 rounded-full ">
  <CheckCircle2 className="size-3.5 fill-current" />
  </div>
  )}
@@ -167,7 +167,7 @@ export function BiolinkPixCardSection({
  type="button"
  size="sm"
  onClick={handleCopy}
- className="h-8 rounded-lg font-bold text-2xs gap-2 bg-primary text-primary-foreground cursor-pointer shrink-0"
+ className="h-8 rounded-lg font-bold text-2xs gap-2 bg-primary text-primary-foreground cursor-pointer shrink-0 min-h-11 sm:min-h-0"
  >
  {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
  <span>{copied ? "Copiado!" : "Copiar"}</span>

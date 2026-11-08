@@ -12,6 +12,7 @@ import type {} from "@tanstack/react-start";
  * without being processed — leaving users permanently stuck.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { getResponseHeaders } from "@tanstack/start-server-core";
 import { readCookieFromRequest } from "@/lib/http-cookies";
 import { normalizeInternalReturnPath } from "@/lib/return-path";
 import { getSSRClient } from "@/lib/server-access";
@@ -64,10 +65,30 @@ export const Route = createFileRoute("/api/auth/confirm")({
  }
  }
 
- // Redirect the user to their intended destination.
+ // Redirect the user to their intended destination preserving Set-Cookie headers.
+ const headers = new Headers();
+ headers.set("Location", next);
+ try {
+   const resHeaders = getResponseHeaders();
+   if (resHeaders) {
+     const setCookies =
+       typeof (resHeaders as any).getSetCookie === "function"
+         ? ((resHeaders as any).getSetCookie() as string[])
+         : [];
+     if (setCookies.length > 0) {
+       for (const sc of setCookies) {
+         if (sc) headers.append("Set-Cookie", sc);
+       }
+     } else {
+       const sc = resHeaders.get("set-cookie");
+       if (sc) headers.set("Set-Cookie", sc);
+     }
+   }
+ } catch {}
+
  return new Response(null, {
  status: 302,
- headers: { Location: next },
+ headers,
  }) as any;
  },
  },

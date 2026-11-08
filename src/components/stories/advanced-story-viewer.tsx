@@ -245,7 +245,7 @@ export function AdvancedStoryViewer({
 
  {/* ── Frame Central do Story (Proporção 9:16 Responsiva) ── */}
  <div
- className="relative w-full max-w-sm md:max-w-md h-full sm:h-5/6 sm:max-h-full sm:rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 shadow-2xl flex flex-col justify-between"
+ className="relative w-full max-w-sm md:max-w-md h-full sm:h-5/6 sm:max-h-full sm:rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 shadow-overlay flex flex-col justify-between"
  onPointerDown={handlePointerDown}
  onPointerUp={handlePointerUp}
  >
@@ -285,7 +285,7 @@ export function AdvancedStoryViewer({
 
  <div className="min-w-0">
  <div className="flex items-center gap-2">
- <span className="text-sm font-bold text-foreground leading-none truncate drop-shadow-md">
+ <span className="text-sm font-bold text-foreground leading-none truncate shadow-overlay">
  {currentGroup.entityName}
  </span>
 
@@ -297,7 +297,7 @@ export function AdvancedStoryViewer({
  )}
 
  {currentStory.is_sponsored && (
- <Badge className="bg-amber-500 text-foreground text-2xs font-black px-2 py-1 rounded-md">
+ <Badge className="bg-warning text-foreground text-2xs font-black px-2 py-1 rounded-md">
  Patrocinado
  </Badge>
  )}
@@ -374,7 +374,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  handleContinueLongStory();
  }}
- className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-lg"
+ className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-overlay"
  >
  <span>Continuar assistindo</span>
  <ArrowRight size={14} weight="bold" />
@@ -398,7 +398,7 @@ export function AdvancedStoryViewer({
  <div className="relative z-30 p-4 space-y-3 pointer-events-auto">
  {/* Card Flutuante de Produto Marcado */}
  {currentStory.product_info && (
- <div className="flex items-center justify-between p-3 rounded-lg bg-card/15 backdrop-blur-xl border border-white/20 text-foreground shadow-lg">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-card/15 backdrop-blur-xl border border-white/20 text-foreground shadow-overlay">
  <div className="flex items-center gap-3 min-w-0">
  {currentStory.product_info.image_url ? (
  <img

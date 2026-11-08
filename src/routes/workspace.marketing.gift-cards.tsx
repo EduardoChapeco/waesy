@@ -116,7 +116,7 @@ function NewGiftCardDrawer({
     >
       <div className="py-2 space-y-4 text-xs">
         {/* Aviso de Isolamento Econômico Obrigatório */}
-        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-amber-600 dark:text-amber-400">
+        <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 flex items-start gap-2 text-warning-strong ">
           <AlertTriangle className="size-4 shrink-0 mt-1" />
           <p className="leading-tight">
             <strong>Invariante de Financiamento:</strong> Este vale é restrito a compras nesta loja. Vales de cortesia não geram recebíveis em dinheiro nem obrigações de repasse por parte da Waesy.
@@ -225,7 +225,7 @@ function GiftCardsDashboardPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 space-y-6 pb-24 animate-in fade-in duration-200">
+    <div className="w-full px-4 sm:px-6 space-y-6 pb-24 animate-in fade-in duration-200">
       {/* ── 1. Top Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <PageHeader title="Vales-Presente & Gifting $WZ" />

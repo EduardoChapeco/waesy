@@ -5,7 +5,7 @@
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Plane, Hotel, Compass, Check, X, PhoneCall } from "lucide-react";
+import { Plane, Hotel, Compass, Check, X, PhoneCall, Car, MapPin, Utensils } from "lucide-react";
 
 interface TemplateProps {
   proposal: Proposal;
@@ -26,7 +26,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
         CAPA SPLIT SCREEN - 450px 
         break-inside-avoid para não quebrar a capa no PDF
       */}
-      <div className="w-full h-[450px] grid grid-cols-2 break-inside-avoid">
+      <div className="w-full h-113 grid grid-cols-2 break-inside-avoid">
         {/* Esquerda: Sólido com Cor Primária */}
         <div
           className="flex flex-col justify-center px-12 py-16"
@@ -149,7 +149,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       <div className="flex items-center gap-2">
                         <Plane className="w-4 h-4" style={{ color: brand }} />
                         <span className="ds-label-caps" style={{ color: brand }}>
-                          {f.airline || "Companhia"}
+                          {f.airline_name || f.airline || "Companhia Aérea"}
                         </span>
                       </div>
                       <span className="bg-card px-3 py-1 rounded-full ds-meta font-mono font-bold text-slate-700 border border-slate-200">
@@ -157,28 +157,28 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       </span>
                     </div>
                     <div className="p-6 flex items-center">
-                      <div className="w-[30%] text-center">
+                      <div className="w-3/10 text-center">
                         <div className="text-4xl font-bold font-sans tracking-tighter text-slate-900">
-                          {(f.origin || "---").slice(0, 3).toUpperCase()}
+                          {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-sm font-semibold text-slate-700 mt-2">
                           {f.departure_time || "--:--"}
                         </div>
-                        {f.date && (
-                          <div className="text-xs text-slate-500 mt-1">{formatDate(f.date)}</div>
+                        {(f.departure_date || f.date) && (
+                          <div className="text-xs text-slate-500 mt-1">{formatDate(f.departure_date || f.date!)}</div>
                         )}
                       </div>
                       <div className="flex-1 flex flex-col items-center relative px-4">
                         <div className="w-full border-t-2 border-dashed border-slate-200 absolute top-1/2 -translate-y-1/2 z-0" />
                         <div className="bg-card z-10 px-3 py-1 rounded-full border border-slate-200 ds-meta font-semibold text-slate-500 uppercase tracking-wider">
-                          {f.stops === 0
+                          {(f.stops_count ?? f.stops ?? 0) === 0
                             ? "Voo Direto"
-                            : `${f.stops} Parada${f.stops > 1 ? "s" : ""}`}
+                            : `${f.stops_count ?? f.stops} Parada${(f.stops_count ?? f.stops ?? 1) > 1 ? "s" : ""}`}
                         </div>
                       </div>
-                      <div className="w-[30%] text-center">
+                      <div className="w-3/10 text-center">
                         <div className="text-4xl font-bold font-sans tracking-tighter text-slate-900">
-                          {(f.destination || "---").slice(0, 3).toUpperCase()}
+                          {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-sm font-semibold text-slate-700 mt-2">
                           {f.arrival_time || "--:--"}
@@ -205,8 +205,8 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                     key={i}
                     className="rounded-lg overflow-hidden border border-slate-200 bg-card break-inside-avoid"
                   >
-                    <div className="bg-[#FFFBEB] px-5 py-3 flex items-center gap-2 border-b border-amber-100">
-                      <span className="ds-label-caps text-amber-700">Hospedagem</span>
+                    <div className="bg-[#FFFBEB] px-5 py-3 flex items-center gap-2 border-b border-warning/30">
+                      <span className="ds-label-caps text-warning-strong">Hospedagem</span>
                     </div>
                     <div className="p-6">
                       <h3 className="text-2xl font-bold text-slate-900 mb-6">{h.name}</h3>
@@ -263,7 +263,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       >
                         {i + 1}
                       </div>
-                      <div className="flex items-center gap-3 mb-3">
+                      <div className="flex items-center gap-3 mb-2">
                         <span
                           className="px-3 py-1 rounded-full ds-label-caps text-foreground"
                           style={{ backgroundColor: brand }}
@@ -272,12 +272,100 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                         </span>
                         <h4 className="text-lg font-bold text-slate-900">{d.title}</h4>
                       </div>
+                      {((d as any).city || (d as any).location || ((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          {((d as any).city || (d as any).location) && (
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full font-medium">
+                              <MapPin className="size-3 text-slate-400" />
+                              {(d as any).city || (d as any).location}
+                            </span>
+                          )}
+                          {(((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full font-medium">
+                              <Utensils className="size-3 text-slate-400" />
+                              {Array.isArray((d as any).meals) ? (d as any).meals.join(", ") : Array.isArray((d as any).included_meals) ? (d as any).included_meals.join(", ") : (d as any).meals || (d as any).included_meals}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-slate-600 leading-relaxed text-sm text-justify whitespace-pre-wrap">
                         {d.description}
                       </p>
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {vm.hasTransfers && (
+            <div className="break-inside-avoid">
+              <h2
+                className="text-2xl mb-8 pb-4 border-b border-slate-200"
+                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
+              >
+                Traslados & Receptivo
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {p.transfers!.map((t, i) => (
+                  <div
+                    key={i}
+                    className="p-5 rounded-lg border border-slate-200 bg-slate-50 space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                        <Car className="size-4 text-primary shrink-0" />
+                        <span>{t.description || "Transfer In/Out"}</span>
+                      </div>
+                      <span className="px-2 py-1 rounded text-3xs font-bold uppercase tracking-wider bg-slate-200 text-slate-700">
+                        {t.type === "shared" ? "Regular" : "Privativo"}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                      {t.vehicle && <span>Veículo: <strong>{t.vehicle}</strong></span>}
+                      {t.date && <span>Data: {formatDate(t.date)}</span>}
+                    </div>
+                    {t.notes && (
+                      <p className="text-xs text-slate-500 leading-relaxed italic">
+                        {t.notes}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {vm.hasTours && (
+            <div className="break-inside-avoid">
+              <h2
+                className="text-2xl mb-8 pb-4 border-b border-slate-200"
+                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
+              >
+                Passeios & Experiências
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {p.tours!.map((tour, i) => (
+                  <div
+                    key={i}
+                    className="p-5 rounded-lg border border-slate-200 bg-slate-50 space-y-2"
+                  >
+                    <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                      <Compass className="size-4 text-primary shrink-0" />
+                      <span>{tour.description || (tour as any).title || "Passeio Turístico"}</span>
+                    </div>
+                    {tour.date && (
+                      <div className="text-xs text-slate-500">
+                        Programação / Duração: {tour.date}
+                      </div>
+                    )}
+                    {tour.notes && (
+                      <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
+                        {tour.notes}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -290,11 +378,11 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
               >
                 Mapa da Rota
               </h2>
-              <div className="w-full h-auto max-h-[280px] rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex justify-center">
+              <div className="w-full h-auto max-h-70 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex justify-center">
                 <img
                   src={p.map_image_url}
                   crossOrigin="anonymous"
-                  className="max-w-full max-h-[280px] object-contain"
+                  className="max-w-full max-h-70 object-contain"
                 />
               </div>
             </div>
@@ -408,7 +496,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 src={vm.agency.logo_url}
                 crossOrigin="anonymous"
                 alt="Logo Agência"
-                className="h-10 w-auto max-w-40 aspect-[4/1] object-contain"
+                className="h-10 w-auto max-w-40 aspect-4/1 object-contain"
                 width={160}
                 height={40}
               />

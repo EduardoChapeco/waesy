@@ -225,7 +225,7 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
  {item.product_title}
  </h4>
  {item.notes && (
- <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold italic mt-1">
+ <p className="text-xs text-warning-strong  font-semibold italic mt-1">
  Obs: {item.notes}
  </p>
  )}

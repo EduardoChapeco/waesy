@@ -573,7 +573,7 @@ export function CreatorProfileSheetEditor({
                         size="sm"
                         variant={privacyMode === "public" ? "default" : "ghost"}
                         onClick={() => setPrivacyMode("public")}
-                        className="h-9 px-3 rounded-md text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-9 px-3 rounded-md text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                       >
                         Pública
                       </Button>
@@ -582,7 +582,7 @@ export function CreatorProfileSheetEditor({
                         size="sm"
                         variant={privacyMode === "unlisted" ? "default" : "ghost"}
                         onClick={() => setPrivacyMode("unlisted")}
-                        className="h-9 px-3 rounded-md text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-9 px-3 rounded-md text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                       >
                         Não Listada
                       </Button>

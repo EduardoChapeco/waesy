@@ -178,7 +178,7 @@ function WorkspaceCollectionsPage() {
           <Button
             onClick={handleOpenCreate}
             size="sm"
-            className="h-9 px-4 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground shadow-sm cursor-pointer hover:opacity-90"
+            className="h-9 px-4 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground  cursor-pointer hover:opacity-90"
           >
             <Plus className="size-4" />
             <span>Nova Coleção</span>
@@ -203,7 +203,7 @@ function WorkspaceCollectionsPage() {
             value={statusFilter}
             onValueChange={(val: any) => setStatusFilter(val)}
           >
-            <SelectTrigger className="h-9 text-xs rounded-lg w-[130px] bg-background border-border/50">
+            <SelectTrigger className="h-9 text-xs rounded-lg w-33 bg-background border-border/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -219,7 +219,7 @@ function WorkspaceCollectionsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-40 rounded-lg bg-card/60 animate-pulse motion-reduce:animate-none border border-border/40" />
+            <div key={n} className="h-40 rounded-lg bg-card animate-pulse motion-reduce:animate-none border border-border/40" />
           ))}
         </div>
       ) : filteredCollections.length === 0 ? (
@@ -309,7 +309,7 @@ function WorkspaceCollectionsPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleOpenEdit(col)}
-                      className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Editar Coleção"
                     >
                       <Edit2 className="size-3.5" />
@@ -318,7 +318,7 @@ function WorkspaceCollectionsPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setDeleteTarget(col)}
-                      className="size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                      className="size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Excluir Coleção"
                     >
                       <Trash2 className="size-3.5" />
@@ -406,14 +406,14 @@ function WorkspaceCollectionsPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
-                className="h-9 rounded-lg text-xs font-medium"
+                className="h-9 rounded-lg text-xs font-medium min-h-11 sm:min-h-0"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground"
+                className="h-9 rounded-lg text-xs font-bold bg-primary text-primary-foreground min-h-11 sm:min-h-0"
               >
                 {createMutation.isPending || updateMutation.isPending
                   ? "Salvando..."

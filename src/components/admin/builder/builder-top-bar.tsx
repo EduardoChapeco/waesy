@@ -83,9 +83,9 @@ export function BuilderTopBar({
  variant="outline"
  className={cn(
  "text-2xs font-bold px-2 py-0 rounded-md",
- version?.status === "published"
- ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
- : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                  version?.status === "published"
+                    ? "bg-success/10 text-success border-success/20"
+                    : "bg-warning/10 text-warning-strong border-warning/20"
  )}
  >
  {version?.status === "published" ? "Publicada" : "Rascunho"} v{version?.version_number ?? 1}

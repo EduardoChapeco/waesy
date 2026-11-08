@@ -79,7 +79,7 @@ export function TaskKanbanBoard({
         />
 
         {/* Ações Rápidas de Mover Coluna (Mobile & Hover) */}
-        <div className="absolute right-2 bottom-2 hidden group-hover/card:flex items-center gap-1 bg-background/95 backdrop-blur-md rounded-lg p-1 border border-border shadow-xs">
+        <div className="absolute right-2 bottom-2 hidden group-hover/card:flex items-center gap-1 bg-muted rounded-xl p-1">
           {colIdx > 0 && (
             <button
               type="button"

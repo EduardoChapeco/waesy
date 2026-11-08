@@ -165,7 +165,7 @@ export function ImageCropperDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden bg-card border-border sm:rounded-2xl shadow-2xl select-none max-h-[92vh] flex flex-col z-50">
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden bg-card border-border sm:rounded-2xl shadow-overlay select-none max-h-vh-92 flex flex-col z-50">
         <DialogHeader className="p-4 px-5 pb-3 border-b border-border/40 flex flex-row items-center justify-between shrink-0">
           <DialogTitle className="flex items-center gap-2 text-sm font-bold text-foreground">
             <Crop className="size-4 text-foreground" />
@@ -176,7 +176,7 @@ export function ImageCropperDialog({
               type="button"
               variant="outline"
               size="sm"
-              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 rounded-lg text-xs gap-1 cursor-pointer"
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 rounded-lg text-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
               onClick={handleRotate}
               title="Girar 90 graus"
             >
@@ -187,7 +187,7 @@ export function ImageCropperDialog({
               type="button"
               variant="outline"
               size="sm"
-              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 rounded-lg text-xs gap-1 cursor-pointer"
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8 px-3 rounded-lg text-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
               onClick={() => setObjectFit((prev) => (prev === "contain" ? "cover" : "contain"))}
               title={objectFit === "contain" ? "Preencher enquadramento" : "Ajustar à tela"}
             >
@@ -215,7 +215,7 @@ export function ImageCropperDialog({
 
             {/* Seletor de Proporções Rápidas (quando o aspecto for livre) */}
             {!isRound && !lockAspect && (
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
                 <span className="text-xs font-mono uppercase text-muted-foreground mr-1 shrink-0">
                   Proporção:
                 </span>
@@ -240,7 +240,7 @@ export function ImageCropperDialog({
             )}
 
             {/* Viewport Amplo do Cropper com Máscara e Puxa/Arrasta Livre */}
-            <div className="relative w-full h-[300px] sm:h-[380px] overflow-hidden rounded-xl bg-[#09090b] select-none border border-border/40">
+            <div className="relative w-full h-75 sm:h-95 overflow-hidden rounded-xl bg-[#09090b] select-none border border-border/40">
               <Suspense
                 fallback={
                   <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground font-mono">
@@ -283,7 +283,7 @@ export function ImageCropperDialog({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-8 rounded-lg cursor-pointer shrink-0"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-8 rounded-lg cursor-pointer shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 onClick={handleZoomOut}
                 title="Diminuir Zoom"
               >
@@ -306,7 +306,7 @@ export function ImageCropperDialog({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-8 rounded-lg cursor-pointer shrink-0"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary size-8 rounded-lg cursor-pointer shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 onClick={handleZoomIn}
                 title="Aumentar Zoom"
               >
@@ -334,7 +334,7 @@ export function ImageCropperDialog({
             type="button"
             variant="ghost"
             size="sm"
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-9 px-4 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-9 px-4 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
             onClick={() => onOpenChange(false)}
           >
             Cancelar
@@ -344,7 +344,7 @@ export function ImageCropperDialog({
             type="button"
             size="sm"
             disabled={isProcessing || !imageSrc}
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-9 px-5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary h-9 px-5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer min-h-11 sm:min-h-0"
             onClick={handleConfirm}
           >
             {isProcessing ? (

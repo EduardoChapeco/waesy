@@ -98,7 +98,7 @@ export function BoostBottomSheet({
       <div className="space-y-4">
         <div className="space-y-1 text-left">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
+            <div className="size-8 rounded-lg bg-warning/10 text-warning-strong  flex items-center justify-center border border-warning/20">
               <Zap className="size-4 fill-current" />
             </div>
             <div>
@@ -179,12 +179,12 @@ export function BoostBottomSheet({
                     onClick={() => setSelectedDays(plan.days)}
                     className={`min-h-16 p-3 rounded-lg border text-center flex flex-col items-center justify-center transition-colors cursor-pointer active:scale-97 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       isSelected
-                        ? "border-amber-500 bg-amber-500/12 ring-2 ring-amber-500/20 shadow-xs"
+                        ? "border-warning bg-warning/12 ring-2 ring-warning/20 shadow-xs"
                         : "border-border/60 bg-card hover:bg-muted/30"
                     }`}
                   >
                     <span className="text-xs font-bold text-foreground">{plan.title}</span>
-                    <span className="font-mono text-xs font-black text-amber-700 dark:text-amber-400 mt-1">
+                    <span className="font-mono text-xs font-black text-warning-strong  mt-1">
                       {formatMoney(plan.priceCents)}
                     </span>
                     <span className="text-2xs text-muted-foreground font-mono mt-1">
@@ -196,13 +196,13 @@ export function BoostBottomSheet({
             </div>
 
             {/* Estimativa de Alcance Dinâmico */}
-            <div className="p-4 rounded-lg bg-amber-500/8 border border-amber-500/20 space-y-1">
+            <div className="p-4 rounded-lg bg-warning/8 border border-warning/20 space-y-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground flex items-center gap-2 font-medium">
-                  <TrendingUp className="size-3.5 text-amber-600 dark:text-amber-400" />
+                  <TrendingUp className="size-3.5 text-warning-strong " />
                   Alcance Estimado na Cidade:
                 </span>
-                <span className="font-mono font-bold text-amber-700 dark:text-amber-400">
+                <span className="font-mono font-bold text-warning-strong ">
                   {currentPlan.estimatedReach}
                 </span>
               </div>
@@ -273,7 +273,7 @@ export function BoostBottomSheet({
             type="button"
             disabled={isLoading}
             onClick={() => onConfirmBoost(selectedDays)}
-            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-amber-500 text-foreground hover:bg-amber-400 cursor-pointer shadow-xs active:scale-98 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full h-11 rounded-lg text-xs font-bold gap-2 bg-warning text-foreground hover:bg-warning cursor-pointer shadow-xs active:scale-98 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             {isLoading ? (
               <span>Gerando Pagamento Seguro...</span>
@@ -313,7 +313,7 @@ export function BoostBottomSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-lg p-0 overflow-hidden bg-card border border-border/70 shadow-2xl">
+      <DialogContent className="max-w-md rounded-lg p-0 overflow-hidden bg-card border border-border/70 shadow-overlay">
         {content}
       </DialogContent>
     </Dialog>

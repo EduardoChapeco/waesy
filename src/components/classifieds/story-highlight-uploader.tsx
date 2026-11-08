@@ -110,7 +110,7 @@ export function StoryHighlightUploader({
         aria-label="Upload de foto para destaque"
       />
 
-      <div className="flex items-end gap-3 overflow-x-auto no-scrollbar py-2 px-1 -mx-1">
+      <div className="flex items-end gap-3 overflow-x-auto scroll-area-carousel no-scrollbar py-2 px-1 -mx-1">
         {/* Destaques existentes */}
         {highlights.map((hl) => {
           const isUploading = uploadingId === hl.id;
@@ -162,7 +162,7 @@ export function StoryHighlightUploader({
                   <button
                     type="button"
                     onClick={() => handleRemove(hl.id)}
-                    className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute -top-1 -right-1 size-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center  opacity-0 group-hover:opacity-100 transition-opacity z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     aria-label={`Remover destaque ${hl.title}`}
                   >
                     <X className="size-3" />
@@ -182,7 +182,7 @@ export function StoryHighlightUploader({
                     if (e.key === "Escape") setEditingId(null);
                   }}
                   maxLength={14}
-                  className="w-16 text-center text-[10.5px] font-medium bg-transparent border-b border-primary outline-none text-foreground"
+                  className="w-16 text-center text-2xs font-medium bg-transparent border-b border-primary outline-none text-foreground"
                   aria-label="Título do destaque"
                 />
               ) : (
@@ -195,7 +195,7 @@ export function StoryHighlightUploader({
                     }
                   }}
                   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                    "text-2xs font-medium text-foreground tracking-tight max-w-[64px] truncate",
+                    "text-2xs font-medium text-foreground tracking-tight max-w-16 truncate",
                     !readOnly && "hover:text-primary transition-colors cursor-pointer"
                   )}
                 >

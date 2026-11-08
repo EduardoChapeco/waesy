@@ -7,7 +7,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, Phone, MapPin, SlidersHorizontal, Shield, Star, ShieldCheck, Share2, ArrowLeft, Store, ShoppingBag, Layers, UtensilsCrossed, Briefcase, Building2, ChevronRight, Search, ExternalLink, Plus, MessageSquare, Award, CreditCard, Truck, CheckCircle, Eye, Check, Navigation, Ticket, FileCheck, Grid, List, Camera, Edit3, Package, LayoutGrid, Tag, Sparkles, ArrowRight } from "lucide-react";
+import { Clock, Phone, MapPin, SlidersHorizontal, Shield, Star, ShieldCheck, Share2, ArrowLeft, Store, ShoppingBag, Layers, UtensilsCrossed, Briefcase, Building2, ChevronRight, Search, ExternalLink, Plus, MessageSquare, Award, CreditCard, Truck, CheckCircle, Eye, Check, Navigation, Ticket, FileCheck, Grid, List, Camera, Edit3, Package, LayoutGrid, Tag, Sparkles, ArrowRight, Handshake } from "lucide-react";
 import { WhatsappLogo, PaperPlaneTilt, Globe, InstagramLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +64,7 @@ export interface CanonicalStoreProfileViewProps {
   sponsors?: any[];
   concursos?: any[];
   employerStats?: any;
+  associatedMembers?: any[];
   builderTree?: any[] | null;
   omniPageDoc?: any | null;
   initialTab?: string;
@@ -88,6 +89,7 @@ export function CanonicalStoreProfileView({
   sponsors = [],
   concursos = [],
   employerStats = null,
+  associatedMembers = [],
   omniPageDoc = null,
   initialTab = "vitrine",
   isOwner = false,
@@ -160,11 +162,24 @@ export function CanonicalStoreProfileView({
     settings.banner_url ||
     null;
   const logoUrl =
-    store?.avatar_url ||
+    store?.logoUrl ||
     store?.logo_url ||
+    store?.avatar_url ||
+    store?.avatarUrl ||
+    store?.image_url ||
+    store?.imageUrl ||
+    (Array.isArray(store?.photos) && typeof store.photos[0] === "string" ? store.photos[0] : null) ||
+    (Array.isArray(store?.images) && typeof store.images[0] === "string" ? store.images[0] : null) ||
     settings.logoUrl ||
     settings.logo_url ||
+    settings.avatar_url ||
+    settings.avatarUrl ||
+    settings.image_url ||
+    settings.imageUrl ||
+    (Array.isArray(settings.photos) && typeof settings.photos[0] === "string" ? settings.photos[0] : null) ||
     null;
+
+  const [logoFailed, setLogoFailed] = useState(false);
 
   // Modal de Orçamento
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
@@ -391,9 +406,10 @@ export function CanonicalStoreProfileView({
       ...(jobs.length > 0 ? ["vagas"] : []),
       ...(ads.length > 0 ? ["classificados"] : []),
       ...(concursos.length > 0 ? ["concursos"] : []),
+      ...(associatedMembers.length > 0 ? ["associadas"] : []),
     ]);
     if (!available.has(activeTab)) setActiveTab("vitrine");
-  }, [activeTab, ads.length, catalog.length, concursos.length, hasAboutData, jobs.length, posts.length, reviews.length]);
+  }, [activeTab, ads.length, associatedMembers.length, catalog.length, concursos.length, hasAboutData, jobs.length, posts.length, reviews.length]);
 
   // Semântica por Nicho
   const segment = (store?.type || store?.category || settings.segment || "loja").toLowerCase();
@@ -641,7 +657,7 @@ function cleanAddressSegment(text: string): string {
             <div>
               <div className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
                 <span>Você é proprietário(a) desta empresa?</span>
-                <Badge variant="outline" className="text-xs font-mono py-0 px-2 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                <Badge variant="outline" className="text-xs font-mono py-0 px-2 border-warning/40 text-warning-strong ">
                   {store?.is_verified ? "Perfil Verificado" : "Aguardando Reivindicação"}
                 </Badge>
               </div>
@@ -654,7 +670,7 @@ function cleanAddressSegment(text: string): string {
           <Button
             size="sm"
             variant="outline"
-            className="h-8 sm:h-9 px-4 rounded-lg font-medium text-xs shrink-0 w-full sm:w-auto cursor-pointer border-border/60 hover:bg-card text-foreground"
+            className="h-8 sm:h-9 px-4 rounded-lg font-medium text-xs shrink-0 w-full sm:w-auto cursor-pointer border-border/60 hover:bg-card text-foreground min-h-11 sm:min-h-0"
             onClick={() => setIsClaimModalOpen(true)}
           >
             Reivindicar Negócio
@@ -684,10 +700,11 @@ function cleanAddressSegment(text: string): string {
           {/* Avatar da Marca em Squircle 1:1 */}
           <div className="relative group shrink-0">
             <div className="size-20 sm:size-24 rounded-2xl bg-card border border-border/60 overflow-hidden flex items-center justify-center shadow-xs">
-              {logoUrl ? (
+              {logoUrl && !logoFailed ? (
                 <img
                   src={logoUrl}
                   alt={store.name || store.business_name}
+                  onError={() => setLogoFailed(true)}
                   className="size-full object-cover select-none"
                 />
               ) : (
@@ -766,7 +783,7 @@ function cleanAddressSegment(text: string): string {
                   onClick={() => setActiveTab("avaliacoes")}
                   className="inline-flex items-center gap-1 font-bold text-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <Star className="size-4 fill-amber-500 text-amber-500 shrink-0" />
+                  <Star className="size-4 fill-warning text-warning-strong shrink-0" />
                   <span>{realRatingAverage.toFixed(1)}</span>
                   <span className="text-muted-foreground font-medium">({realReviewsCount})</span>
                 </button>
@@ -1044,7 +1061,7 @@ function cleanAddressSegment(text: string): string {
                         <Button
                           type="submit"
                           disabled={isSendingQuote}
-                          className="w-full h-10 rounded-lg font-bold text-xs bg-foreground text-background mt-2"
+                          className="w-full h-10 rounded-lg font-bold text-xs bg-foreground text-background mt-2 min-h-11 sm:min-h-0"
                         >
                           {isSendingQuote ? "Enviando..." : "Enviar Solicitação"}
                         </Button>
@@ -1237,6 +1254,26 @@ function cleanAddressSegment(text: string): string {
                 </span>
               </button>
             )}
+
+            {/* Aba 9: Empresas Associadas / Rede de Parceiros */}
+            {associatedMembers.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("associadas")}
+                className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
+                  "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
+                  activeTab === "associadas"
+                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Handshake className="size-4 sm:size-4" />
+                <span>Empresas Associadas</span>
+                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                  {associatedMembers.length}
+                </span>
+              </button>
+            )}
           </div>
 
           {/* Fade-out visual de affordance no mobile */}
@@ -1257,7 +1294,7 @@ function cleanAddressSegment(text: string): string {
                     size="sm"
                     variant="ghost"
                     onClick={() => setIsSectionsEditorOpen(true)}
-                    className="h-7 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+                    className="h-7 px-3 rounded-lg text-xs font-semibold gap-2 cursor-pointer hover:bg-muted/60 text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0"
                   >
                     <SlidersHorizontal className="size-4 text-primary" />
                     <span>Personalizar</span>
@@ -1383,7 +1420,7 @@ function cleanAddressSegment(text: string): string {
                                 className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 {card.imageUrl ? (
-                                  <div className="aspect-[21/9] w-full overflow-hidden bg-muted/30 relative">
+                                  <div className="aspect-21/9 w-full overflow-hidden bg-muted/30 relative">
                                     <img
                                       src={card.imageUrl}
                                       alt={card.title}
@@ -1567,7 +1604,7 @@ function cleanAddressSegment(text: string): string {
                     type="button"
                     onClick={() => setPostViewMode("grid")}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer",
+                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                       postViewMode === "grid"
                         ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground"
@@ -1580,7 +1617,7 @@ function cleanAddressSegment(text: string): string {
                     type="button"
                     onClick={() => setPostViewMode("feed")}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer",
+                      "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
                       postViewMode === "feed"
                         ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground"
@@ -1830,7 +1867,7 @@ function cleanAddressSegment(text: string): string {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleImportMinedProduct(p)}
-                                className="rounded-lg h-10 px-3 font-semibold text-xs border-primary/30 text-primary gap-1 cursor-pointer"
+                                className="rounded-lg h-10 px-3 font-semibold text-xs border-primary/30 text-primary gap-1 cursor-pointer min-h-11 sm:min-h-0"
                               >
                                 <Plus className="size-4" />
                                 <span>Importar</span>
@@ -1892,7 +1929,7 @@ function cleanAddressSegment(text: string): string {
                           customMessage: `Olá! Gostaria de um orçamento ou informações sobre seus serviços.`,
                         })
                       }
-                      className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer mx-auto"
+                      className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer mx-auto min-h-11 sm:min-h-0"
                     >
                       <WhatsappLogo size={16} weight="bold" />
                       <span>Falar no WhatsApp</span>
@@ -1923,8 +1960,8 @@ function cleanAddressSegment(text: string): string {
                       </p>
                     </div>
                     {employerStats.avgRating && (
-                      <div className="flex items-center gap-2 bg-amber-500/10 text-amber-600 px-3 py-2 rounded-lg border border-amber-500/20 shrink-0">
-                        <Star className="size-4 fill-amber-500 text-muted-foreground" />
+                      <div className="flex items-center gap-2 bg-warning/10 text-warning-strong px-3 py-2 rounded-lg border border-warning/20 shrink-0">
+                        <Star className="size-4 fill-warning text-muted-foreground" />
                         <span className="text-sm font-black font-mono">{employerStats.avgRating} / 5.0</span>
                       </div>
                     )}
@@ -2000,7 +2037,7 @@ function cleanAddressSegment(text: string): string {
                       <Button
                         asChild
                         size="sm"
-                        className="rounded-lg h-9 px-4 font-bold text-xs bg-foreground text-background w-full"
+                        className="rounded-lg h-9 px-4 font-bold text-xs bg-foreground text-background w-full min-h-11 sm:min-h-0"
                       >
                         <Link to="/empregos/$id" params={{ id: j.id }}>
                           <span>Candidatar-se</span>
@@ -2034,7 +2071,7 @@ function cleanAddressSegment(text: string): string {
                       params={{ id: ad.id }}
                       className="group flex flex-col rounded-lg bg-card border border-border/70 overflow-hidden hover:border-primary/50 transition-colors duration-200 cursor-pointer shadow-xs"
                     >
-                      <div className="aspect-[16/10] w-full bg-muted/40 relative overflow-hidden">
+                      <div className="aspect-16/10 w-full bg-muted/40 relative overflow-hidden">
                         {firstImage ? (
                           <img
                             src={firstImage}
@@ -2085,7 +2122,7 @@ function cleanAddressSegment(text: string): string {
               <div className="space-y-4">
                 <div className="p-5 rounded-lg bg-card border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-12 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-black text-xl font-mono">
+                    <div className="size-12 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center font-black text-xl font-mono">
                       {store.rating ? Number(store.rating).toFixed(1) : "—"}
                     </div>
                     <div>
@@ -2096,7 +2133,7 @@ function cleanAddressSegment(text: string): string {
                             className={cn(
                               "size-4",
                               store.rating && s <= Math.round(Number(store.rating))
-                                ? "fill-amber-500 text-amber-500"
+                                ? "fill-warning text-warning-strong"
                                 : "text-muted-foreground/30",
                             )}
                           />
@@ -2123,7 +2160,7 @@ function cleanAddressSegment(text: string): string {
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center text-muted-foreground">
                             {Array.from({ length: Math.max(1, Math.min(5, Number(r.rating) || 5)) }).map((_, i) => (
-                              <Star key={i} className="size-3 fill-amber-500" />
+                              <Star key={i} className="size-3 fill-warning" />
                             ))}
                           </div>
                           <span className="text-xs text-muted-foreground font-mono">
@@ -2165,7 +2202,7 @@ function cleanAddressSegment(text: string): string {
                       </p>
                     </div>
                     {employerStats.avgRating && (
-                      <Badge variant="outline" className="font-mono text-xs font-bold text-amber-600 bg-amber-500/10 border-amber-500/20">
+                      <Badge variant="outline" className="font-mono text-xs font-bold text-warning-strong bg-warning/10 border-warning/20">
                          {employerStats.avgRating} / 5.0
                       </Badge>
                     )}
@@ -2181,7 +2218,7 @@ function cleanAddressSegment(text: string): string {
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center text-muted-foreground">
                               {Array.from({ length: Math.max(0, Math.min(5, Number(rev.company_rating) || 0)) }).map((_, i) => (
-                                <Star key={i} className="size-3 fill-amber-500" />
+                                <Star key={i} className="size-3 fill-warning" />
                               ))}
                             </div>
                             <Badge variant="outline" className="text-xs text-muted-foreground">
@@ -2230,7 +2267,7 @@ function cleanAddressSegment(text: string): string {
                           className={cn(
                             "text-xs uppercase font-bold",
                             sp.tier === "gold"
-                              ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                              ? "bg-warning/10 text-warning-strong border-warning/30"
                               : sp.tier === "silver"
                               ? "bg-slate-500/10 text-slate-600 border-slate-500/30"
                               : "bg-muted/30"
@@ -2268,7 +2305,7 @@ function cleanAddressSegment(text: string): string {
                         asChild
                         size="sm"
                         variant="outline"
-                        className="rounded-lg h-9 px-3 text-xs font-semibold w-full gap-2"
+                        className="rounded-lg h-9 px-3 text-xs font-semibold w-full gap-2 min-h-11 sm:min-h-0"
                       >
                         <a href={sp.website_url} target="_blank" rel="noopener noreferrer">
                           <span>{sp.cta_label || "Conhecer Parceiro"}</span>
@@ -2360,7 +2397,7 @@ function cleanAddressSegment(text: string): string {
                         asChild
                         variant="outline"
                         size="sm"
-                        className="flex-1 h-9 rounded-lg text-xs font-semibold gap-2"
+                        className="flex-1 h-9 rounded-lg text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
                       >
                         <a
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formattedAddress.mapsQuery)}`}
@@ -2377,7 +2414,7 @@ function cleanAddressSegment(text: string): string {
                       <Button
                         asChild
                         size="sm"
-                        className="flex-1 h-9 rounded-lg text-xs font-bold gap-2 bg-foreground text-background"
+                        className="flex-1 h-9 rounded-lg text-xs font-bold gap-2 bg-foreground text-background min-h-11 sm:min-h-0"
                       >
                         <a
                           href={`https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`}
@@ -2767,7 +2804,7 @@ function cleanAddressSegment(text: string): string {
                               setSelectedConcurso(c);
                               setAcceptedTerms(true);
                             }}
-                            className="h-10 px-4 rounded-lg text-xs font-bold gap-2"
+                            className="h-10 px-4 rounded-lg text-xs font-bold gap-2 min-h-11 sm:min-h-0"
                           >
                             <Ticket className="size-4" />
                             <span>Participar do Sorteio</span>
@@ -2777,6 +2814,74 @@ function cleanAddressSegment(text: string): string {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* ── CONTEÚDO DA ABA 9: EMPRESAS ASSOCIADAS / PARCEIRAS ── */}
+          {activeTab === "associadas" && associatedMembers.length > 0 && (
+            <div className="space-y-4 pt-2 animate-in fade-in duration-150">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
+                <div>
+                  <h2 className="text-base font-bold text-foreground">Rede de Empresas Associadas</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Empresas parceiras e membros com benefícios exclusivos pactuados com esta entidade.
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+                  {associatedMembers.length} Empresas Parceiras
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {associatedMembers.map((m: any) => (
+                  <div
+                    key={m.membershipId}
+                    className="p-4 rounded-lg border border-border/60 bg-card flex flex-col justify-between gap-3 shadow-2xs hover:border-primary/40 transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="size-14 rounded-xl bg-muted/40 border border-border/50 shrink-0 overflow-hidden flex items-center justify-center">
+                        {m.store?.logoUrl ? (
+                          <img
+                            src={m.store.logoUrl}
+                            alt={m.store.name}
+                            className="size-full object-cover select-none"
+                          />
+                        ) : (
+                          <Store className="size-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <h3 className="text-sm font-bold text-foreground truncate">
+                          {m.store?.name || "Empresa Parceira"}
+                        </h3>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {m.store?.city ? `${m.store.city} - ${m.store.state}` : "Localidade integrada"}
+                        </p>
+                        <div className="flex items-center gap-2 pt-1">
+                          <Badge variant="outline" className="text-2xs font-bold border-primary/40 text-primary">
+                            {m.discountPercent}% OFF para Associados
+                          </Badge>
+                          {m.customBenefitDescription && (
+                            <span className="text-2xs text-muted-foreground truncate">
+                              {m.customBenefitDescription}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {m.store?.slug && (
+                      <div className="flex justify-end pt-2 border-t border-border/40">
+                        <Button asChild variant="outline" className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer">
+                          <Link to="/loja/$slug" params={{ slug: m.store.slug }}>
+                            <span>Ver Vitrine</span>
+                            <ExternalLink className="size-4" />
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -3123,7 +3228,7 @@ function cleanAddressSegment(text: string): string {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveBiolink(idx)}
-                          className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                          className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0"
                         >
                           <Trash2 className="size-4" />
                         </Button>
@@ -3149,7 +3254,7 @@ function cleanAddressSegment(text: string): string {
                     variant="outline"
                     size="sm"
                     onClick={handleAddBiolink}
-                    className="h-9 rounded-lg text-xs font-semibold px-3"
+                    className="h-9 rounded-lg text-xs font-semibold px-3 min-h-11 sm:min-h-0"
                   >
                     Adicionar
                   </Button>

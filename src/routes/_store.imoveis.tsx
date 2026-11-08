@@ -389,7 +389,7 @@ function PropertyListItem({ item }: { item: any }) {
     <Link
       to="/classificados/$id"
       params={{ id: item.id }}
-      className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors duration-200 min-h-[136px] pl-32 sm:pl-44 flex items-center justify-between pr-4 py-4 gap-3 cursor-pointer w-full"
+      className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors duration-200 min-h-34 pl-32 sm:pl-44 flex items-center justify-between pr-4 py-4 gap-3 cursor-pointer w-full"
     >
       <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-lg overflow-hidden bg-muted/60">
         {img ? (

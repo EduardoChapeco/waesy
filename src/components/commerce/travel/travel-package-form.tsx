@@ -75,6 +75,7 @@ import {
 } from "@/lib/classifieds/canonical-airports";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { formatMoney } from "@/lib/money";
+import { CurrencyField } from "@/components/ui/currency-field";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { cn } from "@/lib/utils";
 import { TravelAiImporterBanner } from "@/components/tourism/promotional-flyer/travel-ai-importer-banner";
@@ -217,6 +218,15 @@ export function TravelPackageForm({
   );
   const pixDiscountPercent = paymentConditions.pix_discount_percent ?? 0;
   const depositPercent = paymentConditions.deposit_percent ?? 0;
+  const acceptsBoleto = paymentConditions.accepts_boleto ?? true;
+  const boletoInstallments = Math.max(1, Math.min(24, paymentConditions.boleto_installments ?? 12));
+  const hasBoletoDownpayment = Boolean(paymentConditions.has_boleto_downpayment);
+  const boletoDownpaymentType = paymentConditions.boleto_downpayment_type || "percentage";
+  const boletoDownpaymentPct = paymentConditions.boleto_downpayment_pct ?? 20;
+  const boletoDownpaymentFixedCents = paymentConditions.boleto_downpayment_fixed_cents ?? 0;
+  const firstBoletoDue = paymentConditions.first_boleto_due || "Primeiro boleto para 30 dias";
+  const firstBoletoCondition = paymentConditions.first_boleto_condition || "Sem juros operadora";
+  const customTermsText = paymentConditions.custom_terms_text || "";
 
   const installmentCents = maxInstallments > 0 && priceCents > 0 ? Math.round(priceCents / maxInstallments) : 0;
   const pixCents =
@@ -2329,6 +2339,131 @@ export function TravelPackageForm({
                   className="h-11 rounded-lg text-xs bg-background font-mono"
                 />
                 <p className="text-2xs text-muted-foreground">Percentual exigido no momento da confirmação da reserva.</p>
+              </div>
+
+              {/* Boleto Bancário Faturado */}
+              <div className="space-y-3 p-3.5 rounded-lg bg-muted/20 border border-border/50 sm:col-span-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={acceptsBoleto}
+                      onChange={(e) => updatePaymentConditions("accepts_boleto", e.target.checked)}
+                      className="size-4 rounded border-border text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    <span className="text-xs font-bold text-foreground">Boleto Bancário Faturado</span>
+                  </label>
+                  {acceptsBoleto && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xs text-muted-foreground">Exigir Entrada?</span>
+                      <button
+                        type="button"
+                        onClick={() => updatePaymentConditions("has_boleto_downpayment", !hasBoletoDownpayment)}
+                        className={`h-7 px-2.5 rounded-full text-2xs font-bold transition-colors cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          hasBoletoDownpayment
+                            ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30"
+                            : "bg-muted text-muted-foreground border-transparent"
+                        }`}
+                      >
+                        {hasBoletoDownpayment ? "Com Entrada" : "Sem Entrada (Livre)"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {acceptsBoleto && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/30">
+                    <div className="space-y-1">
+                      <Label className="text-2xs text-muted-foreground font-semibold">Qtd. Parcelas</Label>
+                      <select
+                        value={boletoInstallments}
+                        onChange={(e) => updatePaymentConditions("boleto_installments", Number(e.target.value))}
+                        className="w-full h-10 rounded-lg bg-background border border-border px-2 text-xs font-medium text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 18, 24].map((n) => (
+                          <option key={n} value={n}>
+                            Até {n}x {hasBoletoDownpayment ? `(Entrada + ${n - 1}x)` : "no Boleto"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {hasBoletoDownpayment ? (
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Valor da Entrada</Label>
+                        <div className="flex items-center gap-1">
+                          <select
+                            value={boletoDownpaymentType}
+                            onChange={(e) => updatePaymentConditions("boleto_downpayment_type", e.target.value as any)}
+                            className="h-10 rounded-lg bg-background border border-border px-1.5 text-2xs text-foreground cursor-pointer"
+                          >
+                            <option value="percentage">%</option>
+                            <option value="fixed_cents">R$</option>
+                          </select>
+                          {boletoDownpaymentType === "percentage" ? (
+                            <Input
+                              type="number"
+                              min={1}
+                              max={90}
+                              value={boletoDownpaymentPct}
+                              onChange={(e) => updatePaymentConditions("boleto_downpayment_pct", Number(e.target.value))}
+                              className="h-10 rounded-lg text-xs font-mono"
+                              placeholder="%"
+                            />
+                          ) : (
+                            <CurrencyField
+                              value={boletoDownpaymentFixedCents}
+                              onChange={(val: any) => updatePaymentConditions("boleto_downpayment_fixed_cents", val || 0)}
+                              className="h-10 rounded-lg text-xs font-mono"
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <Label className="text-2xs text-muted-foreground font-semibold">Vencimento do 1º Boleto</Label>
+                        <Input
+                          value={firstBoletoDue}
+                          onChange={(e) => updatePaymentConditions("first_boleto_due", e.target.value)}
+                          placeholder="Ex: 30 dias da emissão"
+                          className="h-10 rounded-lg text-xs"
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      <Label className="text-2xs text-muted-foreground font-semibold">
+                        {hasBoletoDownpayment ? "Vencimento 1º Boleto" : "Condição / Carência"}
+                      </Label>
+                      <Input
+                        value={hasBoletoDownpayment ? firstBoletoDue : firstBoletoCondition}
+                        onChange={(e) => {
+                          if (hasBoletoDownpayment) {
+                            updatePaymentConditions("first_boleto_due", e.target.value);
+                          } else {
+                            updatePaymentConditions("first_boleto_condition", e.target.value);
+                          }
+                        }}
+                        placeholder={hasBoletoDownpayment ? "Ex: 30 dias após entrada" : "Sem juros operadora"}
+                        className="h-10 text-xs rounded-lg"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Texto das Condições Comerciais ao Cliente */}
+              <div className="space-y-1.5 pt-1 sm:col-span-2">
+                <Label className="text-xs font-semibold text-foreground">
+                  Texto Comercial das Condições de Pagamento
+                </Label>
+                <Textarea
+                  rows={2}
+                  value={customTermsText}
+                  onChange={(e) => updatePaymentConditions("custom_terms_text", e.target.value)}
+                  placeholder="Ex: Entrada via PIX + saldo em até 10x sem juros no cartão de crédito ou boleto bancário..."
+                  className="text-xs rounded-lg"
+                />
               </div>
             </div>
           </div>

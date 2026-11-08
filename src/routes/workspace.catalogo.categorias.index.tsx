@@ -157,7 +157,7 @@ function CategoriesDesktopView({
 }: CategoriesViewProps) {
   return (
     <div className="rounded-lg overflow-hidden bg-card border border-border/40 shadow-2xs">
-      <div className="overflow-x-auto no-scrollbar">
+      <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40">
@@ -299,7 +299,7 @@ function AdminCategoriesPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <WorkspaceCanonicalToolbar
         tabs={[
           { id: "active", label: "Ativas", count: activeCategoriesCount },
@@ -318,7 +318,7 @@ function AdminCategoriesPage() {
       />
 
       {filteredCategories.length === 0 ? (
-        <div className="py-16 text-center rounded-lg border border-border/40 bg-card/60 space-y-4 px-4">
+        <div className="py-16 text-center rounded-lg border border-border/40 bg-card space-y-4 px-4">
           <div className="size-14 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Plus className="size-6" />
           </div>

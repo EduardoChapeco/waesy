@@ -100,10 +100,10 @@ export function RideBookingBottomSheet({
   return (
     <div
       className={cn(
-        "absolute z-30 bottom-0 left-0 right-0 bg-card/95 backdrop-blur-2xl border-t border-border/80 shadow-2xl transition-colors duration-300 rounded-t-3xl overflow-hidden flex flex-col",
+        "absolute z-30 bottom-0 left-0 right-0 bg-card/95 backdrop-blur-2xl border-t border-border/80 shadow-overlay transition-colors duration-300 rounded-t-3xl overflow-hidden flex flex-col",
         currentSnap === "compact" && "h-36 sm:h-40",
-        currentSnap === "medium" && "h-[54vh] sm:h-[480px]",
-        currentSnap === "expanded" && "h-[88vh] sm:h-[620px]",
+        currentSnap === "medium" && "h-vh-54 sm:h-120",
+        currentSnap === "expanded" && "h-vh-88 sm:h-155",
         className
       )}
     >
@@ -302,7 +302,7 @@ export function RideBookingBottomSheet({
                 type="button"
                 onClick={onConfirmRide}
                 disabled={isConfirming}
-                className="w-full rounded-2xl h-11 min-h-11 text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none cursor-pointer"
+                className="w-full rounded-2xl h-11 min-h-11 text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-overlay focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none cursor-pointer"
               >
                 <span>{isConfirming ? "Chamando condutor..." : `Confirmar ${selectedOption?.name || "Corrida"}`}</span>
                 <ArrowRight className="size-4" />

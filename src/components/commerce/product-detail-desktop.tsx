@@ -195,7 +195,7 @@ export function ProductDetailDesktop({
 
         {/* ══ COLUNA DIREITA (5 Colunas): Card Sticky de Conversão ══ */}
         <div className="col-span-5 space-y-6">
-          <div className="sticky top-20 rounded-lg border border-border/60 bg-card p-6 shadow-sm space-y-6">
+          <div className="sticky top-20 rounded-lg border border-border/60 bg-card p-6  space-y-6">
             {/* Bloco de Título & Preço */}
             <div className="space-y-2 pb-4 border-b border-border/50">
               <div className="flex items-center justify-between gap-2">
@@ -207,7 +207,7 @@ export function ProductDetailDesktop({
                 <FavoriteButton
                   itemId={product.id}
                   itemType="product"
-                  className="size-8 rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground"
+                  className="size-8 rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 />
               </div>
 
@@ -263,7 +263,7 @@ export function ProductDetailDesktop({
                                 setSelectedAttributes((prev) => ({ ...prev, [key]: val }));
                               }}
                               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                                "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center justify-center",
+                                "h-9 min-w-10 px-3 rounded-lg border text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center justify-center min-h-11 sm:min-h-0",
                                 isSelected
                                   ? "border-primary bg-primary text-primary-foreground shadow-xs"
                                   : "border-border/70 bg-card text-foreground hover:bg-muted/30"
@@ -379,7 +379,7 @@ export function ProductDetailDesktop({
                     <button
                       type="button"
                       onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       aria-label="Diminuir"
                     >
                       <Minus className="size-4" />
@@ -390,7 +390,7 @@ export function ProductDetailDesktop({
                     <button
                       type="button"
                       onClick={() => setQuantity((prev) => prev + 1)}
-                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       aria-label="Aumentar"
                     >
                       <Plus className="size-4" />
@@ -411,7 +411,7 @@ export function ProductDetailDesktop({
                     </Button>
                     <Button
                       size="lg"
-                      className="font-bold text-xs uppercase rounded-lg h-12 transition-colors duration-200 cursor-pointer gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground shadow-sm"
+                      className="font-bold text-xs uppercase rounded-lg h-12 transition-colors duration-200 cursor-pointer gap-2 bg-emerald-600 hover:bg-emerald-700 text-foreground "
                       onClick={() => setIsQuickOrderOpen(true)}
                     >
                       <MessageCircle className="size-4" />
@@ -490,7 +490,7 @@ export function ProductDetailDesktop({
               <Button
                 size="sm"
                 variant={isFollowingStore ? "secondary" : "outline"}
-                className="text-xs font-bold rounded-lg h-9 shrink-0 cursor-pointer"
+                className="text-xs font-bold rounded-lg h-9 shrink-0 cursor-pointer min-h-11 sm:min-h-0"
                 onClick={handleToggleFollow}
               >
                 {isFollowingStore ? "Seguindo" : "+ Seguir"}

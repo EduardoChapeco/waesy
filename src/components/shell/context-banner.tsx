@@ -74,7 +74,7 @@ export function ActiveContextBanner({ session }: ActiveContextBannerProps) {
         "w-full z-40 transition-colors border-b px-4 py-2 shrink-0 flex items-center justify-between gap-3 text-xs",
         isStore
           ? "bg-primary/10 border-primary/20 text-foreground"
-          : "bg-amber-500/10 border-amber-500/20 text-foreground"
+          : "bg-warning/10 border-warning/20 text-foreground"
       )}
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -83,7 +83,7 @@ export function ActiveContextBanner({ session }: ActiveContextBannerProps) {
             "size-6 rounded-md flex items-center justify-center shrink-0 border",
             isStore
               ? "bg-primary/20 border-primary/30 text-primary"
-              : "bg-amber-500/20 border-amber-500/30 text-amber-600 dark:text-amber-400"
+              : "bg-warning/20 border-warning/30 text-warning-strong "
           )}
         >
           {isStore ? <Store className="size-3.5" /> : <Award className="size-3.5" />}
@@ -106,7 +106,7 @@ export function ActiveContextBanner({ session }: ActiveContextBannerProps) {
         <button
           type="button"
           onClick={handleSwitchToCivil}
-          className="h-8 min-h-8 px-3 rounded-md text-xs font-bold bg-background text-foreground hover:bg-muted/80 border border-border/80 shadow-xs flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-8 min-h-8 px-3 rounded-md text-xs font-bold bg-background text-foreground hover:bg-muted/80 border border-border/80 shadow-xs flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0"
         >
           <ArrowRightLeft className="size-3" />
           <span>Alternar para Pessoal</span>
@@ -115,7 +115,7 @@ export function ActiveContextBanner({ session }: ActiveContextBannerProps) {
         <button
           type="button"
           onClick={() => setIsDismissed(true)}
-          className="size-8 min-h-8 min-w-8 rounded-md hover:bg-muted/60 text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="size-8 min-h-8 min-w-8 rounded-md hover:bg-muted/60 text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
           title="Fechar aviso temporariamente"
           aria-label="Fechar aviso de contexto"
         >

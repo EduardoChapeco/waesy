@@ -125,6 +125,21 @@ const ARTIFACT_TYPE_CONFIG: Record<
     icon: Layout,
     defaultExport: "json",
   },
+  dashboard: {
+    label: "Painel Executivo",
+    icon: BarChart3,
+    defaultExport: "json",
+  },
+  map_view: {
+    label: "Mapa Interativo",
+    icon: Compass,
+    defaultExport: "json",
+  },
+  creative_post: {
+    label: "Criativo para Redes",
+    icon: Image,
+    defaultExport: "png",
+  },
 };
 
 // ── Barra de pontuação inline (sem cores literais — usa classes semânticas de token) ──
@@ -134,7 +149,7 @@ function ScoreBar({ value, max = 20 }: { value: number; max?: number }) {
     pct >= 80
       ? "bg-green-500"
       : pct >= 60
-      ? "bg-yellow-500"
+      ? "bg-warning"
       : "bg-destructive";
   return (
     <div className="h-1 w-full rounded-full bg-border/60 overflow-hidden">
@@ -157,7 +172,7 @@ function QualityScorePanel({ rubric, totalScore }: { rubric: Record<string, numb
     totalScore >= 80 ? (
       <CheckCircle className="size-3.5 text-green-500 shrink-0" aria-hidden="true" />
     ) : totalScore >= 60 ? (
-      <AlertCircle className="size-3.5 text-yellow-500 shrink-0" aria-hidden="true" />
+      <AlertCircle className="size-3.5 text-warning-strong shrink-0" aria-hidden="true" />
     ) : (
       <XCircle className="size-3.5 text-destructive shrink-0" aria-hidden="true" />
     );
@@ -193,7 +208,7 @@ function QualityScorePanel({ rubric, totalScore }: { rubric: Record<string, numb
               totalScore >= 80
                 ? "text-green-600"
                 : totalScore >= 60
-                ? "text-yellow-600"
+                ? "text-warning-strong"
                 : "text-destructive"
             )}
           >
@@ -206,7 +221,7 @@ function QualityScorePanel({ rubric, totalScore }: { rubric: Record<string, numb
               totalScore >= 80
                 ? "border-green-500/40 text-green-600"
                 : totalScore >= 60
-                ? "border-yellow-500/40 text-yellow-600"
+                ? "border-warning/40 text-warning-strong"
                 : "border-destructive/40 text-destructive"
             )}
           >

@@ -338,7 +338,7 @@ export function NeighborhoodsManager({
  type="button"
  size="sm"
  onClick={handleApplyBulkFee}
- className="h-11 min-h-11 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-foreground gap-1"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold bg-warning hover:bg-warning-strong text-foreground gap-1"
  >
  <Check className="size-3.5" />
  <span>Aplicar a Todos</span>

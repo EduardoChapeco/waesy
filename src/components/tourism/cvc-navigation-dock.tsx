@@ -87,7 +87,7 @@ interface CvcNavigationDockProps {
 }
 
 const ICON_MAP: Record<string, { icon: PhosphorIcon; bg: string; text: string }> = {
-  SuitcaseRolling: { icon: SuitcaseRolling, bg: "bg-amber-500/15", text: "text-amber-600" },
+  SuitcaseRolling: { icon: SuitcaseRolling, bg: "bg-warning/15", text: "text-warning-strong" },
   AirplaneTilt: { icon: AirplaneTilt, bg: "bg-sky-500/15", text: "text-sky-600" },
   Bed: { icon: Bed, bg: "bg-rose-500/15", text: "text-rose-600" },
   Sailboat: { icon: Sailboat, bg: "bg-blue-500/15", text: "text-blue-600" },
@@ -111,7 +111,7 @@ export function CvcNavigationDock({
       aria-label="Canais de Viagem e Turismo (CVC & Decolar)"
       className={cn("w-full py-1", className)}
     >
-      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-2 px-1 snap-x snap-mandatory">
+      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-area-carousel no-scrollbar py-2 px-1 snap-x snap-mandatory">
         {menuList.map((item) => {
           const isActive = activeId === item.id;
           const conf = ICON_MAP[item.iconName] || ICON_MAP.SuitcaseRolling;
@@ -125,7 +125,7 @@ export function CvcNavigationDock({
               className={cn(
                 "relative group flex flex-col items-center justify-between p-2 rounded-2xl border text-center transition-colors cursor-pointer select-none snap-start shrink-0 min-w-20 sm:min-w-24 h-24 sm:h-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
-                  ? "bg-foreground text-background border-foreground shadow-sm scale-102"
+                  ? "bg-foreground text-background border-foreground  scale-102"
                   : "bg-card text-foreground border-border/70 hover:border-foreground/30 hover:bg-muted/40"
               )}
             >
@@ -136,7 +136,7 @@ export function CvcNavigationDock({
                     "absolute -top-1.5 px-2 py-1 rounded-full text-3xs font-extrabold uppercase tracking-wider shadow-2xs whitespace-nowrap",
                     isActive
                       ? "bg-primary text-primary-foreground"
-                      : "bg-amber-500 text-primary-foreground"
+                      : "bg-warning text-primary-foreground"
                   )}
                 >
                   {item.badge}

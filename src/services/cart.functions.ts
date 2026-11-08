@@ -562,30 +562,45 @@ export const addToCart = createServerFn({ method: "POST" })
  return { status: "error" as const, message: "Loja do produto indisponível." };
  }
 
-  // 1. Tenta inserção atômica via RPC
+  // 1. Tenta inserção atômica v7 (com Bloqueio Pessimista e Reserva de 15 Minutos)
   let insertedSuccessfully = false;
   try {
-    const { data: cartId, error: rpcError } = await supabase.rpc("add_to_cart_atomic_v6", {
-      p_store_id: storeId,
-      p_customer_id: identity.customer_id,
-      p_session_token: identity.session_token,
-      p_seller_id: activeSellerId,
+    const cartId = await getOrCreateCartId(identity, storeId);
+    const { data: v7Res, error: rpcError } = await supabase.rpc("add_to_cart_atomic_v7", {
+      p_cart_id: cartId,
       p_variant_id: variantId,
       p_qty: quantity,
       p_options: options || {},
+      p_notes: null,
+      p_session_id: identity.session_token || null,
+      p_user_id: identity.customer_id || (identity as any).user_id || null,
     });
-    if (!rpcError && cartId) {
+    if (!rpcError && v7Res && (v7Res as any).success) {
       insertedSuccessfully = true;
     } else if (rpcError && rpcError.message && (rpcError.message.includes("Estoque insuficiente") || rpcError.message.includes("insuficiente"))) {
       return { status: "error" as const, message: "Estoque insuficiente para esta variação." };
-    } else if (rpcError && rpcError.message && rpcError.message.includes("Variante não encontrada")) {
-      return { status: "error" as const, message: "Opção de produto não encontrada ou indisponível." };
+    } else if (v7Res && !(v7Res as any).success && (v7Res as any).message?.includes("Estoque insuficiente")) {
+      return { status: "error" as const, message: (v7Res as any).message };
+    } else {
+      // Fallback para RPC v6 caso v7 ainda não esteja migrada
+      const { data: v6CartId, error: v6Err } = await supabase.rpc("add_to_cart_atomic_v6", {
+        p_store_id: storeId,
+        p_customer_id: identity.customer_id,
+        p_session_token: identity.session_token,
+        p_seller_id: activeSellerId,
+        p_variant_id: variantId,
+        p_qty: quantity,
+        p_options: options || {},
+      });
+      if (!v6Err && v6CartId) {
+        insertedSuccessfully = true;
+      }
     }
   } catch (err: any) {
     if (err?.message && (err.message.includes("Estoque insuficiente") || err.message.includes("insuficiente"))) {
       return { status: "error" as const, message: "Estoque insuficiente para esta variação." };
     }
-    console.warn("[cart.functions] RPC add_to_cart_atomic_v6 falhou, aplicando fallback:", err);
+    console.warn("[cart.functions] RPCs de carrinho falharam, aplicando fallback relacional:", err);
   }
 
   // 2. Fallback relacional direto
@@ -606,6 +621,19 @@ export const addToCart = createServerFn({ method: "POST" })
     const availableStock = variantRecord.stock_on_hand ?? 0;
     const allowBackorder = Boolean(variantRecord.allow_backorder);
 
+    // Desconta reservas ativas de 15min de outras sessões
+    const { data: activeResData } = await supabase
+      .from("universal_reservations")
+      .select("qty")
+      .eq("resource_type", "product_variant")
+      .eq("resource_id", variantId)
+      .eq("status", "active")
+      .gte("expires_at", new Date().toISOString())
+      .neq("session_id", identity.session_token || "__none__");
+
+    const reservedCount = (activeResData || []).reduce((acc: number, r: any) => acc + (r.qty || 0), 0);
+    const netAvailableStock = Math.max(0, availableStock - reservedCount);
+
     const { data: existingVariantItems } = await supabase
       .from("cart_items")
       .select("id, qty")
@@ -613,10 +641,10 @@ export const addToCart = createServerFn({ method: "POST" })
       .eq("variant_id", variantId);
 
     const existingTotalQty = (existingVariantItems || []).reduce((acc: number, row: any) => acc + (row.qty || 0), 0);
-    if ((existingTotalQty + quantity) > availableStock && !allowBackorder) {
+    if ((existingTotalQty + quantity) > netAvailableStock && !allowBackorder) {
       return {
         status: "error" as const,
-        message: `Estoque insuficiente. Apenas ${availableStock} unidade${availableStock === 1 ? "" : "s"} disponível${availableStock === 1 ? "" : "is"}.`,
+        message: `Estoque insuficiente considerando reservas ativas. Apenas ${netAvailableStock} unidade${netAvailableStock === 1 ? "" : "s"} disponível${netAvailableStock === 1 ? "" : "is"}.`,
       };
     }
 
@@ -679,6 +707,22 @@ export const addToCart = createServerFn({ method: "POST" })
  price_snapshot_cents: priceSnapshot,
  selected_options: options || {},
  });
+ }
+
+ // Registra / renova reserva universal de 15 minutos
+ if (identity.session_token || identity.customer_id) {
+ try {
+ await supabase.rpc("reserve_resource_15min_atomic", {
+ p_resource_type: "product_variant",
+ p_resource_id: variantId,
+ p_qty: quantity,
+ p_user_id: identity.customer_id || null,
+ p_session_id: identity.session_token || null,
+ p_metadata: { cart_id: cartId, variant_id: variantId },
+ });
+ } catch (e: any) {
+ console.warn("[cart] Falha ao registrar reserva universal de 15min:", e?.message);
+ }
  }
  }
 

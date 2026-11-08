@@ -323,7 +323,7 @@ export function WhatsAppUnifiedSearchModal({
       />
 
       {/* Surface */}
-      <div className="relative z-10 w-full h-full sm:h-auto sm:max-h-144 sm:max-w-lg bg-background text-foreground sm:rounded-2xl border-b sm:border border-border/60 shadow-2xl flex flex-col overflow-hidden pt-safe-modal pb-safe">
+      <div className="relative z-10 w-full h-full sm:h-auto sm:max-h-144 sm:max-w-lg bg-background text-foreground sm:rounded-2xl border-b sm:border border-border/60 shadow-overlay flex flex-col overflow-hidden pt-safe-modal pb-safe">
         {/* Top Search Bar */}
         <div className="px-4 pt-3 pb-2 border-b border-border/40 space-y-3 shrink-0">
           <div className="flex items-center gap-2">

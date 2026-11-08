@@ -24,7 +24,7 @@ export function RetailSupermarketClassicFlyer({ data, scale = 1, className = "" 
         transform: `scale(${scale})`,
         transformOrigin: "top left",
       }}
-      className={`relative bg-amber-400 text-slate-950 overflow-hidden font-sans select-none flex flex-col justify-between p-12 border-12 border-red-600 ${className}`}
+      className={`relative bg-warning text-slate-950 overflow-hidden font-sans select-none flex flex-col justify-between p-12 border-12 border-red-600 ${className}`}
     >
       {/* Moldura Clássica Interna de Linha Fina */}
       <div className="absolute inset-4 border-4 border-red-600 pointer-events-none rounded-xl" />

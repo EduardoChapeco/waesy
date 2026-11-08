@@ -218,7 +218,7 @@ const STATUS_CONFIG: Record<
   published: { label: "Publicado", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
   active: { label: "Publicado", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
   draft: { label: "Rascunho", className: "border-border/60 bg-muted/50 text-muted-foreground" },
-  paused: { label: "Pausado", className: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400" },
+  paused: { label: "Pausado", className: "border-warning/30 bg-warning/10 text-warning-strong " },
   reserved: { label: "Reservado", className: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400" },
   negotiating: { label: "Negociando", className: "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400" },
   completed: { label: "Finalizado", className: "border-border/60 bg-muted/40 text-muted-foreground" },
@@ -574,7 +574,7 @@ function ClassificadosIndex() {
 
       {/* ── Aviso Gateway ── */}
       {!gatewayLoading && !gatewayAvailable && (
-        <div className="mx-4 sm:mx-0 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-700 dark:text-amber-400">
+        <div className="mx-4 sm:mx-0 flex items-start gap-3 rounded-lg border border-warning/30 bg-warning/5 p-4 text-xs text-warning-strong ">
           <AlertTriangle className="size-4 shrink-0 mt-1" />
           <div>
             <span className="font-bold">Impulsionamento temporariamente indisponível.</span> Estamos aprimorando os métodos de pagamento locais. Suas publicações e tráfego orgânico continuam ativos normalmente.
@@ -703,7 +703,7 @@ function ClassificadosIndex() {
                       <ImageIcon className="size-7 text-muted-foreground/35" />
                     )}
                     {isBoosted && (
-                      <span className="absolute top-1 left-1 px-2 py-0 rounded bg-amber-500 text-primary-foreground text-xs font-black uppercase">
+                      <span className="absolute top-1 left-1 px-2 py-0 rounded bg-warning text-primary-foreground text-xs font-black uppercase">
                         Boost
                       </span>
                     )}
@@ -775,8 +775,8 @@ function ClassificadosIndex() {
                         !gatewayAvailable
                           ? "bg-muted text-muted-foreground opacity-50"
                           : isBoosted
-                          ? "bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30"
-                          : "bg-amber-500 text-primary-foreground hover:bg-amber-400"
+                          ? "bg-warning/20 text-warning-strong  border border-warning/30"
+                          : "bg-warning text-primary-foreground hover:bg-warning"
                       )}
                       title={isBoosted ? "Renovar Destaque" : "Impulsionar"}
                     >
@@ -850,7 +850,7 @@ function ClassificadosIndex() {
                             </>
                           ) : (
                             <>
-                              <Lock className="size-4 mr-2 text-amber-600" />
+                              <Lock className="size-4 mr-2 text-warning-strong" />
                               <span>Tornar Não Listado</span>
                             </>
                           )}
@@ -883,7 +883,7 @@ function ClassificadosIndex() {
                             </>
                           ) : (
                             <>
-                              <PauseCircle className="size-4 mr-2 text-amber-600" />
+                              <PauseCircle className="size-4 mr-2 text-warning-strong" />
                               <span>Pausar Anúncio</span>
                             </>
                           )}
@@ -991,7 +991,7 @@ function ClassificadosIndex() {
                       <ImageIcon className="size-8 text-muted-foreground/35" />
                     )}
                     {isBoosted && (
-                      <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-amber-500 text-primary-foreground text-xs font-black uppercase tracking-wider shadow-xs">
+                      <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-warning text-primary-foreground text-xs font-black uppercase tracking-wider shadow-xs">
                         Boost
                       </span>
                     )}
@@ -1089,8 +1089,8 @@ function ClassificadosIndex() {
                             !gatewayAvailable
                               ? "bg-muted text-muted-foreground border border-border/50 cursor-not-allowed opacity-60"
                               : isBoosted
-                              ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20"
-                              : "bg-amber-500 text-primary-foreground hover:bg-amber-400"
+                              ? "bg-warning/15 text-warning-strong  border border-warning/30 hover:bg-warning/20"
+                              : "bg-warning text-primary-foreground hover:bg-warning"
                           )}
                         >
                           <Zap className="size-3.5 fill-current" />
@@ -1157,7 +1157,7 @@ function ClassificadosIndex() {
                                 </>
                               ) : (
                                 <>
-                                  <Lock className="size-4 mr-2 text-amber-600" />
+                                  <Lock className="size-4 mr-2 text-warning-strong" />
                                   <span>Tornar Não Listado</span>
                                 </>
                               )}
@@ -1190,7 +1190,7 @@ function ClassificadosIndex() {
                                 </>
                               ) : (
                                 <>
-                                  <PauseCircle className="size-4 mr-2 text-amber-600" />
+                                  <PauseCircle className="size-4 mr-2 text-warning-strong" />
                                   <span>Pausar Anúncio</span>
                                 </>
                               )}

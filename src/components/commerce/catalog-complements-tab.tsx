@@ -177,7 +177,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  <Button
  onClick={handleOpenNew}
  size="sm"
- className="rounded-lg font-bold text-xs h-9 px-4 gap-2 bg-primary text-primary-foreground cursor-pointer"
+ className="rounded-lg font-bold text-xs h-9 px-4 gap-2 bg-primary text-primary-foreground cursor-pointer min-h-11 sm:min-h-0"
  >
  <Plus className="size-4" />
  {newGroupLabel}
@@ -258,7 +258,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  size="sm"
  variant="ghost"
  onClick={() => handleEdit(grp)}
- className="rounded-lg text-xs font-semibold h-8 gap-1"
+ className="rounded-lg text-xs font-semibold h-8 gap-1 min-h-11 sm:min-h-0"
  >
  <Edit2 className="size-3.5" />
  Editar
@@ -271,7 +271,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  deleteMutation.mutate(grp.id);
  }
  }}
- className="rounded-lg text-xs font-semibold h-8 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 gap-1"
+ className="rounded-lg text-xs font-semibold h-8 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 gap-1 min-h-11 sm:min-h-0"
  >
  <Trash2 className="size-3.5" />
  Excluir
@@ -352,7 +352,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  variant="outline"
  size="sm"
  onClick={handleAddOption}
- className="h-7 text-2xs rounded-lg font-bold gap-1"
+ className="h-7 text-2xs rounded-lg font-bold gap-1 min-h-11 sm:min-h-0"
  >
  <Plus className="size-3" />
  Adicionar Opção
@@ -392,7 +392,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  size="icon"
  variant="ghost"
  onClick={() => handleRemoveOption(idx)}
- className="size-9 rounded-lg text-rose-500 hover:bg-rose-500/10 shrink-0"
+ className="size-9 rounded-lg text-rose-500 hover:bg-rose-500/10 shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-4" />
  </Button>
@@ -416,7 +416,7 @@ export function CatalogComplementsTab({ store }: { store?: any } = {}) {
  size="sm"
  onClick={handleSave}
  disabled={saveMutation.isPending}
- className="rounded-lg font-bold text-xs h-9 px-4 bg-primary text-primary-foreground"
+ className="rounded-lg font-bold text-xs h-9 px-4 bg-primary text-primary-foreground min-h-11 sm:min-h-0"
  >
  {saveMutation.isPending ? "Salvando..." : "Salvar Grupo"}
  </Button>

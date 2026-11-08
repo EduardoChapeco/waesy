@@ -118,7 +118,7 @@ function AIConfigurationPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header Operacional */}
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
  <div>
@@ -359,7 +359,7 @@ function AIConfigurationPage() {
  })}
  </div>
  ) : (
- <div className="bg-card rounded-lg p-8 border border-border/60 text-center space-y-2">
+ <div className="bg-card rounded-lg p-8 border border-border/60 text-center space-y-2 empty-state">
  <Key className="size-8 mx-auto text-muted-foreground/50" />
  <p className="text-xs font-semibold text-foreground">Nenhuma API Key conectada</p>
  <p className="text-xs text-muted-foreground max-w-sm mx-auto">

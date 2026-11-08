@@ -57,12 +57,12 @@ export function SupermarketFulfillmentPill({
         type="button"
         onClick={() => setIsOpen(true)}
         className={cn(
-          "w-full h-11 min-h-11 px-3.5 rounded-2xl bg-card border border-border/70 hover:border-border transition-colors flex items-center justify-between gap-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary select-none",
+          "w-full h-11 min-h-11 px-4 rounded-2xl bg-card border border-border/70 hover:border-border transition-colors flex items-center justify-between gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary select-none",
           className,
         )}
         aria-label={`Modalidade de entrega: ${mode === "delivery" ? "Entrega" : "Retirada"}. Clique para alterar horário`}
       >
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             {mode === "delivery" ? (
               <Truck size={18} weight="bold" />
@@ -71,7 +71,7 @@ export function SupermarketFulfillmentPill({
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 min-w-0 text-xs">
+          <div className="flex items-center gap-2 min-w-0 text-xs">
             <span className="font-bold text-foreground">
               {mode === "delivery" ? "Entrega" : "Retirada"}
             </span>
@@ -116,9 +116,9 @@ export function SupermarketFulfillmentPill({
               type="button"
               onClick={() => setActiveTab("delivery")}
               className={cn(
-                "h-11 min-h-11 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "delivery"
-                  ? "bg-card text-foreground shadow-sm"
+                  ? "bg-card text-foreground "
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -129,9 +129,9 @@ export function SupermarketFulfillmentPill({
               type="button"
               onClick={() => setActiveTab("pickup")}
               className={cn(
-                "h-11 min-h-11 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 activeTab === "pickup"
-                  ? "bg-card text-foreground shadow-sm"
+                  ? "bg-card text-foreground "
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -141,7 +141,7 @@ export function SupermarketFulfillmentPill({
           </div>
 
           {/* Localização Atual */}
-          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/40 border border-border/40 text-xs">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border/40 text-xs">
             <MapPin size={18} weight="duotone" className="text-primary shrink-0" />
             <span className="text-muted-foreground truncate">
               {activeTab === "delivery" ? addressSummary : storeAddressSummary}
@@ -171,7 +171,7 @@ export function SupermarketFulfillmentPill({
                       !win.isAvailable && "opacity-50 cursor-not-allowed bg-muted/30",
                     )}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                       <Clock size={16} weight={isSelected ? "fill" : "regular"} className={isSelected ? "text-primary" : "text-muted-foreground"} />
                       <div className="flex flex-col min-w-0">
                         <span className="text-xs font-bold leading-tight">

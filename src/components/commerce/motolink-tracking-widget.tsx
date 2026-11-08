@@ -63,11 +63,11 @@ export function MotoLinkTrackingWidget({
   const waLink = `https://wa.me/55${courierPhone.replace(/\D/g, "")}?text=Ol%C3%A1%20${encodeURIComponent(courierName)}%2C%20estou%20acompanhando%20o%20pedido%20%23${orderId.slice(0, 6)}`;
 
   return (
-    <div className="bg-surface-paper border border-border rounded-lg p-4 sm:p-6 shadow-sm space-y-5">
+    <div className="bg-surface-paper border border-border rounded-lg p-4 sm:p-6  space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+          <div className="w-9 h-9 rounded-lg bg-warning/10 text-warning-strong  flex items-center justify-center font-bold">
             <Motorcycle className="w-5 h-5" />
           </div>
           <div>
@@ -91,7 +91,7 @@ export function MotoLinkTrackingWidget({
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200 duration-300 ${
                   stage.active
-                    ? "bg-foreground text-background shadow-sm"
+                    ? "bg-foreground text-background "
                     : "bg-muted text-muted-foreground opacity-60"
                 }`}
               >
@@ -126,14 +126,14 @@ export function MotoLinkTrackingWidget({
             href={waLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground text-xs font-medium transition-colors cursor-pointer"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground text-xs font-medium transition-colors cursor-pointer min-h-11 sm:min-h-0"
           >
             <WhatsappLogo className="w-4 h-4" />
             WhatsApp
           </a>
           <a
             href={`tel:${courierPhone.replace(/\D/g, "")}`}
-            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-medium transition-colors cursor-pointer"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-medium transition-colors cursor-pointer min-h-11 sm:min-h-0"
           >
             <Phone className="w-4 h-4" />
             Ligar

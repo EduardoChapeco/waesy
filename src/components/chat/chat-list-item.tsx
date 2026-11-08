@@ -238,10 +238,10 @@ export function ChatListItem({
                 {item.isOutgoingLastMessage && (
                   <span className="shrink-0 inline-flex items-center" title={`Status: ${readState}`}>
                     {readState === "sent" && (
-                      <Check className="size-3.5 text-gray-400 stroke-[2.2]" />
+                      <Check className="size-3.5 text-gray-400 stroke-regular" />
                     )}
                     {readState === "delivered" && (
-                      <CheckCheck className="size-3.5 text-gray-400 stroke-[2.2]" />
+                      <CheckCheck className="size-3.5 text-gray-400 stroke-regular" />
                     )}
                     {readState === "read" && (
                       <CheckCheck className="size-3.5 text-sky-500 stroke-[2.4]" />

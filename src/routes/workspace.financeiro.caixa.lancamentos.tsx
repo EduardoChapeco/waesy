@@ -49,7 +49,7 @@ function translateMethod(method: string) {
 function renderChannelBadge(source?: string) {
   switch (source) {
     case "mercadolivre":
-      return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-xs font-medium">Mercado Livre</Badge>;
+      return <Badge variant="outline" className="bg-warning/10 text-warning-strong border-warning/30 text-xs font-medium">Mercado Livre</Badge>;
     case "ifood":
       return <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/30 text-xs font-medium">iFood</Badge>;
     case "shopee":
@@ -136,7 +136,7 @@ function CaixaLancamentosPage() {
 
   if (!register) {
     return (
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
         <div>
           <NativeBackButton fallbackHref="/workspace/financeiro/caixa" />
         </div>
@@ -235,7 +235,7 @@ function CaixaLancamentosPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <div>
         <NativeBackButton fallbackHref="/workspace/financeiro/caixa" />
       </div>

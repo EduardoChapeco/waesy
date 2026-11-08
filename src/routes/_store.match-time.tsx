@@ -61,7 +61,7 @@ function MatchTimePage() {
 
  if (loadResult.state === "error") {
  return (
- <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-6 space-y-6">
+ <div className="flex flex-col items-center justify-center min-h-vh-70 text-center p-6 space-y-6">
  <div className="size-24 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
  <Layers className="size-12" />
  </div>
@@ -74,7 +74,7 @@ function MatchTimePage() {
 
  if (offers.length === 0) {
  return (
- <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-6 space-y-6">
+ <div className="flex flex-col items-center justify-center min-h-vh-70 text-center p-6 space-y-6">
  <div className="size-24 rounded-full bg-primary/10 text-primary flex items-center justify-center">
  <Layers className="size-12" />
  </div>
@@ -87,7 +87,7 @@ function MatchTimePage() {
 
  if (!currentOffer) {
  return (
- <div className="flex flex-col items-center justify-center min-h-[70vh] text-center p-6 space-y-6">
+ <div className="flex flex-col items-center justify-center min-h-vh-70 text-center p-6 space-y-6">
  <div className="size-24 rounded-full bg-primary/10 text-primary flex items-center justify-center">
  <Layers className="size-12" />
  </div>
@@ -109,7 +109,7 @@ function MatchTimePage() {
  }
 
  return (
- <div className="flex flex-col items-center justify-center min-h-[75vh] py-8 relative overflow-hidden">
+ <div className="flex flex-col items-center justify-center min-h-vh-75 py-8 relative overflow-hidden">
  <div className="w-full max-w-sm mb-6 flex items-center justify-between px-4">
  <Link
  to="/"
@@ -125,14 +125,14 @@ function MatchTimePage() {
  <div className="w-11" /> {/* spacer 44px */}
  </div>
 
- <div className="relative w-full max-w-sm aspect-[3/4] mx-auto px-0 sm:px-4 perspective-1000">
+ <div className="relative w-full max-w-sm aspect-3/4 mx-auto px-0 sm:px-4 perspective-1000">
  {currentOffer && (
  <div
  className={`absolute inset-0 px-4 transition-colors duration-200 duration-300 ease-out transform ${direction === "left" ? "-translate-x-full rotate-[-20deg] opacity-0" : direction === "right" ? "translate-x-full rotate-[20deg] opacity-0" : "translate-x-0 opacity-100"}`}
  >
  <div className="w-full h-full bg-card border overflow-hidden relative group">
  {/* Image */}
- <div className="w-full h-[65%] bg-muted relative">
+ <div className="w-full h-13/20 bg-muted relative">
  {currentOffer.image ? (
  <img
  src={currentOffer.image}
@@ -148,7 +148,7 @@ function MatchTimePage() {
  </div>
 
  {/* Info */}
- <div className="p-6 flex flex-col justify-between h-[35%]">
+ <div className="p-6 flex flex-col justify-between h-7/20">
  <div>
  <h2 className="font-bold text-xl leading-tight line-clamp-2">
  {currentOffer.title}

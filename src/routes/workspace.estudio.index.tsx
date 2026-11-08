@@ -231,7 +231,7 @@ function StudioWorkspacePage() {
  return (
  <div className="fixed inset-0 w-screen h-dvh z-50 flex flex-col bg-background text-foreground overflow-hidden font-sans select-none">
  {/* ── 1. HEADER DO ESTÚDIO FULLPAGE: Título + Modos + Salvar/Exportar ── */}
- <header className="h-14 border-b border-border/80 bg-card/95 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20">
+ <header className="h-14 border-b border-border/80 bg-card px-4 flex items-center justify-between shrink-0 z-20">
  <div className="flex items-center gap-2 sm:gap-3">
  <NativeBackButton fallbackHref="/workspace" />
 
@@ -302,7 +302,7 @@ function StudioWorkspacePage() {
  variant="outline"
  disabled={saveMutation.isPending}
  onClick={() => saveMutation.mutate()}
- className="h-8 rounded-lg font-bold text-xs gap-2"
+ className="h-8 rounded-lg font-bold text-xs gap-2 min-h-11 sm:min-h-0"
  >
  {saveMutation.isPending ? (
  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
@@ -316,7 +316,7 @@ function StudioWorkspacePage() {
  size="sm"
  disabled={isExporting}
  onClick={handleExport}
- className="h-8 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2"
+ className="h-8 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 min-h-11 sm:min-h-0"
  >
  {isExporting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Download className="size-3.5" />}
  <span>{isExporting ? "Exportando..." : "Exportar"}</span>
@@ -363,7 +363,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={handleAddText}
- className="w-full h-9 rounded-lg font-semibold text-xs justify-start gap-2"
+ className="w-full h-9 rounded-lg font-semibold text-xs justify-start gap-2 min-h-11 sm:min-h-0"
  >
  <Type className="size-4 text-primary" />
  <span>Adicionar Texto</span>
@@ -374,7 +374,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={() => handleAddShape("rectangle")}
- className="h-9 rounded-lg font-semibold text-xs gap-2"
+ className="h-9 rounded-lg font-semibold text-xs gap-2 min-h-11 sm:min-h-0"
  >
  <Square className="size-3.5 text-info" />
  <span>Retângulo</span>
@@ -383,7 +383,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={() => handleAddShape("badge")}
- className="h-9 rounded-lg font-semibold text-xs gap-2"
+ className="h-9 rounded-lg font-semibold text-xs gap-2 min-h-11 sm:min-h-0"
  >
  <Award className="size-3.5 text-primary" />
  <span>Selo / Badge</span>
@@ -439,7 +439,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={() => document.getElementById('studio-video-file-input')?.click()}
- className="w-full h-9 rounded-lg font-semibold text-xs justify-start gap-2"
+ className="w-full h-9 rounded-lg font-semibold text-xs justify-start gap-2 min-h-11 sm:min-h-0"
  >
  <Film className="size-4 text-primary" />
  <span>Importar Vídeo (MP4)</span>
@@ -448,7 +448,7 @@ function StudioWorkspacePage() {
  type="button"
  variant="outline"
  onClick={() => document.getElementById('studio-audio-file-input')?.click()}
- className="w-full h-9 rounded-lg font-semibold text-xs justify-start gap-2"
+ className="w-full h-9 rounded-lg font-semibold text-xs justify-start gap-2 min-h-11 sm:min-h-0"
  >
  <Music className="size-4 text-emerald-500" />
  <span>Adicionar Áudio</span>
@@ -464,7 +464,7 @@ function StudioWorkspacePage() {
  </div>
 
  {/* Filtro Rápido por Nicho */}
- <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+ <div className="flex items-center gap-1 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
  {[
  { id: "all", label: "Todos" },
  { id: "veiculos", label: "Veículos" },
@@ -540,7 +540,7 @@ function StudioWorkspacePage() {
  >
  <Film className="size-12 text-zinc-600 mb-2" />
  <p className="text-xs font-mono text-zinc-400">Vídeo Preview (4K Canvas)</p>
- <div className="absolute bottom-3 left-3 right-3 bg-foreground/60 backdrop-blur-md p-2 rounded-lg flex items-center justify-between text-xs font-mono text-foreground">
+ <div className="absolute bottom-3 left-3 right-3 bg-foreground/60 p-2 rounded-lg flex items-center justify-between text-xs font-mono text-foreground">
  <span>{currentTime.toFixed(1)}s</span>
  <span>/ {videoDuration}s</span>
  </div>
@@ -555,7 +555,7 @@ function StudioWorkspacePage() {
  size="icon"
  variant="outline"
  onClick={() => setIsPlaying(!isPlaying)}
- className="size-8 rounded-lg font-bold"
+ className="size-8 rounded-lg font-bold min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  {isPlaying ? <Pause className="size-4" /> : <Play className="size-4" />}
  </Button>
@@ -585,7 +585,7 @@ function StudioWorkspacePage() {
                 );
                 toast.success(`Trilha dividida aos ${currentTime.toFixed(1)}s`);
               }}
-              className="h-8 text-xs gap-2"
+              className="h-8 text-xs gap-2 min-h-11 sm:min-h-0"
             >
               <Scissors className="size-3.5" />
               <span>Dividir (Split)</span>
@@ -626,7 +626,7 @@ function StudioWorkspacePage() {
  setSelectedElementId(null);
  toast.success("Elemento removido.");
  }}
- className="size-7 text-destructive hover:bg-destructive/10"
+ className="size-7 text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Excluir Elemento"
  >
  <Trash2 className="size-3.5" />

@@ -46,7 +46,7 @@ export function SupermarketCategoryCircleDock({
   return (
     <nav
       aria-label="Departamentos de Supermercado"
-      className={cn("w-full overflow-x-auto scrollbar-none py-2 px-4 select-none", className)}
+      className={cn("w-full overflow-x-auto scroll-area-carousel scrollbar-none py-2 px-4 select-none", className)}
     >
       <div className="flex items-center gap-3 w-max min-w-full">
         {categories.map((cat) => {
@@ -58,15 +58,15 @@ export function SupermarketCategoryCircleDock({
               key={cat.id}
               type="button"
               onClick={() => onSelectCategory(cat.id)}
-              className="flex flex-col items-center gap-1.5 focus-visible:outline-none group shrink-0 min-w-16"
+              className="flex flex-col items-center gap-2 focus-visible:outline-none group shrink-0 min-w-16"
               aria-label={`Departamento ${cat.label}`}
               aria-pressed={isSelected}
             >
               <div
                 className={cn(
-                  "size-14 rounded-full flex items-center justify-center transition-all duration-200 border-2 overflow-hidden relative group-focus-visible:ring-2 group-focus-visible:ring-primary",
+                  "size-14 rounded-full flex items-center justify-center transition duration-200 border-2 overflow-hidden relative group-focus-visible:ring-2 group-focus-visible:ring-primary",
                   isSelected
-                    ? "border-primary bg-primary/10 text-primary shadow-sm scale-105"
+                    ? "border-primary bg-primary/10 text-primary  scale-105"
                     : "border-border/60 bg-muted/60 text-muted-foreground group-hover:border-border group-hover:text-foreground",
                 )}
               >

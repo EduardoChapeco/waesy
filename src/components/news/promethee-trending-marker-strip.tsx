@@ -115,7 +115,7 @@ export function PrometheeTrendingMarkerStrip({
 
             {/* Destaque com efeito marca-texto translúcido */}
             <div>
-              <span className="inline-block rounded-md bg-amber-400/20 text-foreground font-black text-sm tracking-tight px-2 py-1">
+              <span className="inline-block rounded-md bg-warning/20 text-foreground font-black text-sm tracking-tight px-2 py-1">
                 {item.label}
               </span>
               <p className="text-xs text-muted-foreground mt-1 line-clamp-1">

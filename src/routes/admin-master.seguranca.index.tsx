@@ -63,10 +63,10 @@ function AdminSecurityOverviewPage() {
  return (
  <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 text-foreground">
       {/* ── Sub-navegação Canônica de Segurança ── */}
-      <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-xs overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-xs overflow-x-auto scroll-area-carousel no-scrollbar">
         <Link
           to="/admin-master/seguranca"
-          className="px-4 py-2 rounded-lg font-bold transition-colors bg-primary text-primary-foreground shadow-sm"
+          className="px-4 py-2 rounded-lg font-bold transition-colors bg-primary text-primary-foreground "
         >
           Visão Geral e Autenticações
         </Link>
@@ -127,7 +127,7 @@ function AdminSecurityOverviewPage() {
 
  <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <span className="text-xs font-semibold text-muted-foreground">Eventos de Risco</span>
- <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{stats.highRiskCount}</p>
+ <p className="text-xl font-bold text-warning-strong ">{stats.highRiskCount}</p>
  </div>
  </div>
 
@@ -135,15 +135,15 @@ function AdminSecurityOverviewPage() {
  {highRiskEvents.length > 0 && (
  <div className="space-y-3">
  <div className="flex items-center gap-2">
- <AlertTriangle className="size-5 text-amber-500" />
+ <AlertTriangle className="size-5 text-warning-strong" />
  <h2 className="text-base font-bold text-foreground">Alertas de Risco Ativo</h2>
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
  {highRiskEvents.slice(0, 6).map((ev: any) => (
- <div key={ev.id} className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/30 space-y-2">
+ <div key={ev.id} className="p-4 rounded-lg bg-warning/5 border border-warning/30 space-y-2">
  <div className="flex items-center justify-between">
- <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-2xs">
+ <Badge variant="outline" className="bg-warning/10 text-warning-strong border-warning/30 text-2xs">
  Risco: {ev.risk_score}%
  </Badge>
  <span className="text-2xs text-muted-foreground">
@@ -228,7 +228,7 @@ function AdminSecurityOverviewPage() {
  </div>
  ) : (
  <div className="rounded-lg border border-border/70 bg-card overflow-hidden">
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground uppercase text-2xs tracking-wider font-bold">
  <tr>
@@ -251,7 +251,7 @@ function AdminSecurityOverviewPage() {
  <div className="flex items-center gap-2">
  <div
  className={`size-2 rounded-full ${
- isSuccess ? "bg-green-500" : isFailed ? "bg-red-500" : "bg-amber-500"
+ isSuccess ? "bg-green-500" : isFailed ? "bg-red-500" : "bg-warning"
  }`}
  />
  <span className="font-semibold text-foreground">
@@ -303,7 +303,7 @@ function AdminSecurityOverviewPage() {
  ev.risk_score >= 40
  ? "bg-red-500/10 text-red-600 border-red-500/30"
  : ev.risk_score > 0
- ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
+ ? "bg-warning/10 text-warning-strong border-warning/30"
  : "bg-green-500/10 text-green-600 border-green-500/30"
  }`}
  >

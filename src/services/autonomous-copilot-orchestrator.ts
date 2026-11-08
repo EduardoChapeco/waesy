@@ -580,7 +580,7 @@ export async function executeSubagentDAG(
     context: { threadId: ctx.threadId, storeId: ctx.storeId, city: ctx.city, state: ctx.state },
     execute: async () => ({
       detail: `Etapas organizadas: @investigator (contexto local) + @harvester (registros oficiais) -> @critic (conferência de qualidade)`,
-      tokensUsed: 60,
+      tokensUsed: 0,
     }),
   });
   dagSteps.push(plannerRes.step);
@@ -594,10 +594,22 @@ export async function executeSubagentDAG(
       label: "Consulta de Contexto Local (@investigator)",
       detail: `Verificando contexto de dados locais e preferências de atendimento`,
       context: { threadId: ctx.threadId, storeId: ctx.storeId, city: ctx.city, state: ctx.state },
-      execute: async () => ({
-        detail: `Parâmetros e histórico consultados com sucesso`,
-        tokensUsed: 50,
-      }),
+      execute: async () => {
+        let localCount = 0;
+        try {
+          const db = getServerClient();
+          const { count } = await db
+            .from("directory_listings")
+            .select("id", { count: "exact", head: true });
+          localCount = count || 0;
+        } catch {
+          localCount = 0;
+        }
+        return {
+          detail: `Parâmetros e histórico territorial consultados (${localCount} registros base verificados).`,
+          tokensUsed: 0,
+        };
+      },
     }),
     spawnSubagentTask({
       role: "@harvester",
@@ -639,7 +651,7 @@ export async function executeSubagentDAG(
       }
       return {
         detail: `0 dados fictícios detectados. Conferência e integridade validadas com sucesso.`,
-        tokensUsed: 40,
+        tokensUsed: 0,
       };
     },
   });

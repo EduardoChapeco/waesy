@@ -153,6 +153,9 @@ function PublicLeadPassageirosPage() {
           paxList,
           lgpdAccepted: true,
           healthNotes: combinedNotes || null,
+          pcd,
+          reducedMobility,
+          autism,
         },
       });
 
@@ -219,7 +222,7 @@ function PublicLeadPassageirosPage() {
     <div className="min-h-dvh bg-neutral-50 dark:bg-neutral-950 text-foreground py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
       <div className="max-w-2xl mx-auto w-full space-y-6">
         {/* Cabeçalho da Agência */}
-        <header className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm flex items-center justify-between gap-4">
+        <header className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6  flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             {leadData.store_logo ? (
               <img
@@ -248,7 +251,7 @@ function PublicLeadPassageirosPage() {
         </header>
 
         {/* Card do Titular e Destino */}
-        <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
+        <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6  space-y-4">
           <div className="space-y-1">
             <span className="text-2xs font-mono uppercase font-bold text-primary">
               Titular da Cotação
@@ -277,7 +280,7 @@ function PublicLeadPassageirosPage() {
             </div>
 
             <div className="p-4 rounded-lg bg-neutral-100/70 dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-700/50 flex items-center gap-3">
-              <div className="size-9 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+              <div className="size-9 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center shrink-0">
                 <Calendar className="size-4" />
               </div>
               <div className="min-w-0">
@@ -297,7 +300,7 @@ function PublicLeadPassageirosPage() {
         {/* Formulário Principal */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Seção 1: Lista de Acompanhantes */}
-          <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
+          <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6  space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-foreground flex items-center gap-2">
@@ -313,7 +316,7 @@ function PublicLeadPassageirosPage() {
                 type="button"
                 size="sm"
                 onClick={() => setIsPaxModalOpen(true)}
-                className="rounded-lg h-9 px-3 text-xs font-bold gap-2 shadow-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+                className="rounded-lg h-9 px-3 text-xs font-bold gap-2 shadow-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer min-h-11 sm:min-h-0"
               >
                 <Plus className="size-3.5" />
                 <span>Adicionar</span>
@@ -373,7 +376,7 @@ function PublicLeadPassageirosPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemovePax(index)}
-                      className="size-8 text-muted-foreground hover:text-rose-500 rounded-lg shrink-0"
+                      className="size-8 text-muted-foreground hover:text-rose-500 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     >
                       <Trash2 className="size-3.5" />
                     </Button>
@@ -384,7 +387,7 @@ function PublicLeadPassageirosPage() {
           </div>
 
           {/* Seção 2: Saúde, Acessibilidade & Restrições */}
-          <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
+          <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6  space-y-4">
             <div>
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <HeartPulse className="size-4 text-rose-500" />
@@ -436,7 +439,7 @@ function PublicLeadPassageirosPage() {
           </div>
 
           {/* Seção 3: Termo LGPD & Consentimento */}
-          <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-3">
+          <div className="rounded-lg bg-card dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6  space-y-3">
             <div className="flex items-center gap-2">
               <ShieldCheck className="size-4 text-emerald-600" />
               <h3 className="text-sm font-bold text-foreground">

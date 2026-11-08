@@ -127,7 +127,7 @@ export function AiLiveExtractionDisplay({
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="size-2.5 rounded-full bg-destructive/60" />
-            <span className="size-2.5 rounded-full bg-amber-500/60" />
+            <span className="size-2.5 rounded-full bg-warning/60" />
             <span className="size-2.5 rounded-full bg-emerald-500/60" />
           </div>
           <div className="flex items-center gap-2 ml-2 text-xs font-bold text-foreground">
@@ -269,7 +269,7 @@ export function AiLiveExtractionDisplay({
                   variant="ghost"
                   size="sm"
                   onClick={onCancel}
-                  className="h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer"
+                  className="h-9 px-3 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
                 >
                   Fechar
                 </Button>

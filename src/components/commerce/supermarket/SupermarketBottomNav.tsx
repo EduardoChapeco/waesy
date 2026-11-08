@@ -1,3 +1,4 @@
+// design-lint-ignore DL-24 reason:"Componente de barra inferior isolado; clearance pb-20 pb-safe aplicado na rota _store.mercado.tsx" expiry:"2027-12-31"
 import React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
@@ -66,7 +67,7 @@ export function SupermarketBottomNav({
         className,
       )}
     >
-      <div className="grid grid-cols-5 items-center h-14 min-h-11 px-1">
+      <div className="waesy-bottom-nav-grid items-center h-14 min-h-11 px-1">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const IconComp = tab.icon;
@@ -104,7 +105,7 @@ export function SupermarketBottomNav({
                 )}
 
                 {tab.badge ? (
-                  <span className="absolute -top-1.5 -right-3 px-1.5 py-0.2 rounded-full text-3xs font-extrabold bg-emerald-600 text-white">
+                  <span className="absolute -top-1.5 -right-3 px-2 py-0.2 rounded-full text-3xs font-extrabold bg-emerald-600 text-white">
                     {tab.badge}
                   </span>
                 ) : null}

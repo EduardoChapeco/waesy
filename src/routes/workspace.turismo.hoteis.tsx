@@ -451,7 +451,7 @@ function WorkspaceHotelsPage() {
      address: hotel.address || prev.address,
      stars: hotel.stars || prev.stars,
    }));
-   toast.success(`Hotel canônico "${hotel.name}" selecionado.`);
+   toast.success(`Hotel "${hotel.name}" selecionado.`);
  };
 
  const toggleAmenityBadge = (amenity: string) => {
@@ -853,7 +853,7 @@ function WorkspaceHotelsPage() {
  variant="outline"
  className="h-11 sm:h-11 px-5 rounded-lg font-medium cursor-pointer"
  >
- <Zap className="size-4 mr-2 text-amber-500" />
+ <Zap className="size-4 mr-2 text-warning-strong" />
  Importar Nannai Muro Alto (Preset Completo)
  </Button>
  </div>
@@ -878,22 +878,21 @@ function WorkspaceHotelsPage() {
  className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  ) : (
- <div className="size-full flex flex-col items-center justify-center text-muted-foreground/40 gap-2">
+ <div className="size-full flex items-center justify-center text-muted-foreground/40">
  <Camera className="size-8 stroke-1" />
- <span className="text-xs">Sem foto de capa</span>
  </div>
  )}
  <div className="absolute inset-0 bg-slate-950/60 pointer-events-none" />
 
  {/* Top Badges */}
  <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
- <span className="px-3 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-xs font-bold font-mono tracking-wide">
+ <span className="px-3 py-1 rounded-full bg-foreground/60 text-foreground text-xs font-bold font-mono tracking-wide">
  {hotel.stars || 4} Estrelas
  </span>
 
  <div className="flex items-center gap-2">
  {photosCount > 1 && (
- <span className="px-2 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-xs font-semibold flex items-center gap-1">
+ <span className="px-2 py-1 rounded-full bg-foreground/60 text-foreground text-xs font-semibold flex items-center gap-1">
  <Camera className="size-3" />
  <span>{photosCount} fotos</span>
  </span>
@@ -1049,7 +1048,7 @@ function WorkspaceHotelsPage() {
  /* ── MODO TABELA OPERACIONAL ── */
  <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs">
  {/* design-lint-ignore DL-30 reason:"Tabela operacional com rolagem horizontal no workspace de hoteis" expiry:"2027-12-31" */}
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <table className="w-full text-left text-xs">
  <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-semibold">
  <tr>
@@ -1093,7 +1092,7 @@ function WorkspaceHotelsPage() {
  <span className="text-muted-foreground ml-1">({hotel.state || hotel.country})</span>
  </td>
  <td className="p-3 whitespace-nowrap">
- <div className="flex items-center gap-1 text-amber-500 font-bold">
+ <div className="flex items-center gap-1 text-warning-strong font-bold">
  <span>{hotel.stars} Estrelas</span>
  {(hotel.internal_rating || 0) > 0 ? <span className="text-muted-foreground text-xs font-normal ml-1">({hotel.internal_rating})</span> : null}
  </div>
@@ -1186,15 +1185,14 @@ function WorkspaceHotelsPage() {
                       className="size-full object-cover"
                     />
                   ) : (
-                    <div className="size-full flex flex-col items-center justify-center bg-muted/60 text-muted-foreground gap-2">
-                      <Building2 className="size-8 text-muted-foreground/60" />
-                      <span className="text-xs font-medium">Sem foto de capa cadastrada</span>
+                    <div className="size-full flex items-center justify-center bg-muted/60 text-muted-foreground/40">
+                      <Building2 className="size-8" />
                     </div>
                   )}
  <div className="absolute inset-0 bg-slate-950/60" />
  <div className="absolute bottom-4 left-5 right-5 text-foreground">
  <div className="flex items-center gap-2 text-xs font-bold mb-1">
- <span className="px-2 py-1 rounded-full bg-card/20 backdrop-blur-md text-foreground font-mono text-xs">
+ <span className="px-2 py-1 rounded-full bg-card text-foreground font-mono text-xs">
  {previewHotel.stars || 4} Estrelas
  </span>
  {(previewHotel.internal_rating || 0) > 0 ? <span className="text-foreground/80 font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}
@@ -1370,12 +1368,12 @@ function WorkspaceHotelsPage() {
  <div className="mt-3 pt-3 border-t border-border/50">
  <div className="flex items-center justify-between mb-2">
  <span className="text-xs text-muted-foreground/75 font-bold text-foreground flex items-center gap-1">
- <Zap className="size-3 text-amber-500" />
+ <Zap className="size-3 text-warning-strong" />
  <span>Preencher com Preset de Resort Famoso (1 Toque):</span>
  </span>
  </div>
  {/* design-lint-ignore DL-30 reason:"Trilho horizontal de presets de resort no sheet de hoteis" expiry:"2027-12-31" */}
- <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar">
  {FAMOUS_HOTEL_PRESETS.map((preset) => (
  <button
  key={preset.id}
@@ -1392,7 +1390,7 @@ function WorkspaceHotelsPage() {
 
  <Tabs value={sheetTab} onValueChange={setSheetTab} className="flex-1 flex flex-col">
  {/* design-lint-ignore DL-30 reason:"Trilho horizontal de abas do sheet de configuracao de hotel" expiry:"2027-12-31" */}
- <div className="px-5 pt-3 border-b border-border/60 bg-muted/10 shrink-0 overflow-x-auto no-scrollbar">
+ <div className="px-5 pt-3 border-b border-border/60 bg-muted/10 shrink-0 overflow-x-auto scroll-area-carousel no-scrollbar">
  <TabsList className="bg-transparent border-b-0 h-9 p-0 gap-4">
  <TabsTrigger
  value="dados"

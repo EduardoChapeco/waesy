@@ -236,9 +236,9 @@ export function LeadFormRenderer({
   // ─── TELA DE SUCESSO PÓS-ENVIO ───────────────────────────────────────────────
   if (submissionResult) {
     return (
-      <div className="flex flex-col items-center justify-center p-6 text-center bg-card rounded-lg border border-border/60 shadow-sm animate-in fade-in-50 duration-300">
+      <div className="flex flex-col items-center justify-center p-6 text-center bg-card rounded-lg border border-border/60  animate-in fade-in-50 duration-300">
         <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-4">
-          <Check className="w-7 h-7 stroke-[2.5]" />
+          <Check className="w-7 h-7 stroke-bold" />
         </div>
 
         <h3 className="text-xl font-semibold tracking-tight text-foreground mb-2">
@@ -255,7 +255,7 @@ export function LeadFormRenderer({
             <Button
               type="button"
               onClick={() => onStartSdrChat?.({ answers, name: name.trim(), phone: phone.trim() })}
-              className="w-full h-12 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-base gap-2 shadow-sm"
+              className="w-full h-12 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-base gap-2 "
             >
               <Bot className="w-5 h-5" />
               Conversar com o SDR IA Agora
@@ -270,7 +270,7 @@ export function LeadFormRenderer({
           <div className="w-full max-w-sm flex flex-col gap-3">
             <Button
               asChild
-              className="w-full h-12 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-medium text-base gap-2 shadow-sm"
+              className="w-full h-12 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-medium text-base gap-2 "
             >
               <a
                 href={submissionResult.whatsappUrl}
@@ -402,7 +402,7 @@ export function LeadFormRenderer({
                     placeholder={field.placeholder || ""}
                     value={answers[field.field_key] || ""}
                     onChange={(e) => handleFieldChange(field.field_key, e.target.value)}
-                    className={`rounded-lg text-sm resize-none min-h-[80px] ${hasError ? "border-destructive" : ""}`}
+                    className={`rounded-lg text-sm resize-none min-h-20 ${hasError ? "border-destructive" : ""}`}
                   />
                 ) : field.field_type === "select" ? (
                   <select
@@ -507,7 +507,7 @@ export function LeadFormRenderer({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-medium text-base gap-2 shadow-sm transition-transform duration-200 active:scale-[0.99]"
+          className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-medium text-base gap-2  transition-transform duration-200 active:scale-99"
         >
           {isSubmitting ? (
             <>

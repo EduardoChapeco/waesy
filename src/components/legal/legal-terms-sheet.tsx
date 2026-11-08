@@ -97,7 +97,7 @@ export function LegalTermsSheet({
  </div>
 
  {/* Seletor de Documentos (Tabs) */}
- <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar text-xs">
  {[
  { slug: "termos", label: "Termos Gerais de Uso" },
  { slug: "privacidade", label: "Privacidade e LGPD" },

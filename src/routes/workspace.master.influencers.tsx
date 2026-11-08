@@ -75,7 +75,7 @@ function MasterInfluencersPage() {
   const ambassadorCount = creators.filter((c: any) => c.is_official_ambassador).length;
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Curadoria Master"
         title="Influenciadores"

@@ -83,7 +83,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
   const personaBadge = {
     civil: { label: "Conta Civil / Pessoal", icon: User, color: "bg-primary/10 text-primary border-primary/20" },
     company: { label: "Perfil Empresarial", icon: Building2, color: "bg-sky-500/10 text-sky-600 border-sky-500/20" },
-    creator: { label: "Perfil de Criador", icon: Star, color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+    creator: { label: "Perfil de Criador", icon: Star, color: "bg-warning/10 text-warning-strong border-warning/20" },
   }[formData.personaType];
   const PersonaIcon = personaBadge.icon;
 

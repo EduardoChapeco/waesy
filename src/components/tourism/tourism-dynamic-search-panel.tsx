@@ -45,7 +45,7 @@ export function TourismDynamicSearchPanel({
   className,
 }: TourismDynamicSearchPanelProps) {
   // Search state
-  const [origin, setOrigin] = useState("Chapecó (XAP)");
+  const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
@@ -111,12 +111,12 @@ export function TourismDynamicSearchPanel({
   return (
     <div
       className={cn(
-        "w-full rounded-2xl bg-card border border-border/80 shadow-md p-4 sm:p-6 space-y-5",
+        "w-full rounded-2xl bg-card border border-border/80  p-4 sm:p-6 space-y-5",
         className
       )}
     >
       {/* ── Sub-Aba Horizontal de Seleção Rápida de Tipo de Busca ── */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-border/40">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 border-b border-border/40">
         <button
           type="button"
           onClick={() => onChannelChange("pacotes")}
@@ -258,7 +258,7 @@ export function TourismDynamicSearchPanel({
           {/* Hóspedes / Passageiros */}
           <div className="space-y-2">
             <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
-              <Users size={14} className="text-amber-500" />
+              <Users size={14} className="text-warning-strong" />
               <span>Viajantes</span>
             </Label>
             <Select value={guests} onValueChange={setGuests}>
@@ -279,7 +279,7 @@ export function TourismDynamicSearchPanel({
         {/* ── Botão de Execução de Busca com Feedback Tátil (DL-14 Piso 44px) ── */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-border/40">
           <div className="flex items-center gap-2 text-3xs sm:text-xs text-muted-foreground">
-            <Sparkle size={14} className="text-amber-500 shrink-0" weight="fill" />
+            <Sparkle size={14} className="text-warning-strong shrink-0" weight="fill" />
             <span>
               Integração ativa:{" "}
               <strong className="text-foreground">InfoTravel GDS & Operadoras Homologadas</strong>
@@ -299,7 +299,7 @@ export function TourismDynamicSearchPanel({
             <Button
               type="submit"
               disabled={isSearching}
-              className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-black text-xs sm:text-sm shadow-sm gap-2 cursor-pointer transition-transform active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring w-full sm:w-auto"
+              className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-black text-xs sm:text-sm  gap-2 cursor-pointer transition-transform active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring w-full sm:w-auto"
             >
               {isSearching ? (
                 <>

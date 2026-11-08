@@ -32,7 +32,7 @@ export function MobilityQuickButton() {
  isActive
  ? "bg-foreground text-background border-foreground scale-102"
  : "bg-card border-border text-foreground hover:bg-muted hover:border-foreground/30 "
- }`}
+ } min-h-11 sm:min-h-0`}
  >
  <div className="relative size-4 flex items-center justify-center overflow-hidden">
  <Icon

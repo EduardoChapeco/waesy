@@ -173,9 +173,7 @@ function PublicPage() {
   }
 
   const omniDoc =
-    document?.settings?.omni_page ||
-    document?.settings?.omni_page_published ||
-    document?.settings?.omni_page_draft;
+    document?.settings?.omni_page_published || document?.settings?.omni_page || document?.settings?.omni_page_draft || null;
 
   if (
     omniDoc?.blocks &&

@@ -47,7 +47,7 @@ export function Modal({
         {/* Modal Window */}
         <DialogPrimitive.Content
           className={cn(
-            "fixed z-50 bg-card text-foreground border border-border/80 shadow-2xl transition-colors duration-200 duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "fixed z-50 bg-card text-foreground border border-border/80 shadow-overlay transition-colors duration-200 duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             isCompact
               ? "inset-x-0 bottom-0 rounded-t-2xl border-b-0 p-5 max-h-sheet flex flex-col overscroll-contain"
               : cn(
@@ -203,7 +203,7 @@ export function FormDialog({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-xs" />
         <DialogPrimitive.Content
           className={cn(
-            "fixed z-50 bg-card text-foreground border border-border/80 shadow-2xl p-6 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full rounded-lg max-h-modal flex flex-col focus-visible:outline-none",
+            "fixed z-50 bg-card text-foreground border border-border/80 shadow-overlay p-6 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full rounded-lg max-h-modal flex flex-col focus-visible:outline-none",
             MAX_WIDTH_MAP[maxWidth]
           )}
         >
@@ -280,7 +280,7 @@ export function DetailModal({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-xs" />
-        <DialogPrimitive.Content className="fixed z-50 bg-card text-foreground border border-border/80 shadow-2xl p-6 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl rounded-lg max-h-modal flex flex-col focus-visible:outline-none">
+        <DialogPrimitive.Content className="fixed z-50 bg-card text-foreground border border-border/80 shadow-overlay p-6 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl rounded-lg max-h-modal flex flex-col focus-visible:outline-none">
           <div className="flex items-center justify-between pb-4 border-b border-border/40 shrink-0">
             <div className="flex items-center gap-3 min-w-0">
               <DialogPrimitive.Title className="text-lg font-bold text-foreground truncate">
@@ -328,7 +328,7 @@ export function CommandModal({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-xs" />
-        <DialogPrimitive.Content className="fixed z-50 bg-card text-foreground border border-border/80 shadow-2xl p-0 left-1/2 top-1/4 -translate-x-1/2 w-full max-w-2xl rounded-lg overflow-hidden flex flex-col focus-visible:outline-none">
+        <DialogPrimitive.Content className="fixed z-50 bg-card text-foreground border border-border/80 shadow-overlay p-0 left-1/2 top-1/4 -translate-x-1/2 w-full max-w-2xl rounded-lg overflow-hidden flex flex-col focus-visible:outline-none">
           <div className="flex items-center px-4 border-b border-border/40 min-h-12">
             <Search className="size-5 text-muted-foreground shrink-0 mr-3" />
             <input
@@ -441,7 +441,7 @@ export function BottomSheet({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-xs transition-opacity duration-200" />
         <DialogPrimitive.Content
           className={cn(
-            "fixed inset-x-0 bottom-0 z-50 bg-card text-foreground border-t border-border/80 rounded-t-2xl shadow-2xl p-5 max-h-sheet flex flex-col focus-visible:outline-none overscroll-contain",
+            "fixed inset-x-0 bottom-0 z-50 bg-card text-foreground border-t border-border/80 rounded-t-2xl shadow-overlay p-5 max-h-sheet flex flex-col focus-visible:outline-none overscroll-contain",
             className
           )}
         >
@@ -519,7 +519,7 @@ export function SideSheet({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-xs transition-opacity" />
         <DialogPrimitive.Content
           className={cn(
-            "fixed right-0 top-0 bottom-0 z-50 w-full bg-card text-foreground border-l border-border/80 shadow-2xl p-6 flex flex-col focus-visible:outline-none overscroll-contain",
+            "fixed right-0 top-0 bottom-0 z-50 w-full bg-card text-foreground border-l border-border/80 shadow-overlay p-6 flex flex-col focus-visible:outline-none overscroll-contain",
             widthClasses
           )}
         >

@@ -56,7 +56,7 @@ export function DealReviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-6 rounded-lg bg-background/95 backdrop-blur-xl border border-border/60 shadow-2xl">
+      <DialogContent className="max-w-md p-6 rounded-lg bg-background/95 backdrop-blur-xl border border-border/60 shadow-overlay">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-2xs font-bold gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
@@ -93,7 +93,7 @@ export function DealReviewModal({
                       className={cn(
                         "size-7 transition-colors",
                         isFilled
-                          ? "fill-amber-400 text-amber-500 drop-shadow-xs"
+                          ? "fill-warning text-warning-strong drop-shadow-xs"
                           : "text-muted-foreground/40"
                       )}
                     />
@@ -120,7 +120,7 @@ export function DealReviewModal({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Conte o que achou do atendimento, agilidade ou do pacote..."
-              className="text-xs rounded-lg min-h-[90px] resize-none"
+              className="text-xs rounded-lg min-h-23 resize-none"
               maxLength={1000}
             />
           </div>
@@ -130,7 +130,7 @@ export function DealReviewModal({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="h-10 text-xs rounded-lg"
+              className="h-10 text-xs rounded-lg min-h-11 sm:min-h-0"
               disabled={submitting}
             >
               Cancelar
@@ -138,7 +138,7 @@ export function DealReviewModal({
             <Button
               type="submit"
               disabled={submitting}
-              className="h-10 px-5 text-xs font-bold rounded-lg bg-foreground text-background hover:bg-foreground/90 shadow-sm"
+              className="h-10 px-5 text-xs font-bold rounded-lg bg-foreground text-background hover:bg-foreground/90 shadow-overlay min-h-11 sm:min-h-0"
             >
               {submitting ? "Enviando..." : "Publicar Avaliação"}
             </Button>

@@ -136,7 +136,7 @@ function ConcursosPublicPage() {
         <Button
           asChild
           variant="outline"
-          className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+          className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
         >
           <Link to="/conta/concursos">
             <Ticket className="size-4 mr-2" />
@@ -146,13 +146,13 @@ function ConcursosPublicPage() {
       </div>
 
       {/* ── Filtros de Descoberta (Tabs Limpas) ── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 no-scrollbar">
         <Button
           type="button"
           variant={filter === "all" ? "default" : "outline"}
           size="sm"
           onClick={() => handleFilterChange("all")}
-          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
         >
           Todos os Sorteios
         </Button>
@@ -161,7 +161,7 @@ function ConcursosPublicPage() {
           variant={filter === "stores" ? "default" : "outline"}
           size="sm"
           onClick={() => handleFilterChange("stores")}
-          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
         >
           Lojas da Região
         </Button>
@@ -170,7 +170,7 @@ function ConcursosPublicPage() {
           variant={filter === "official" ? "default" : "outline"}
           size="sm"
           onClick={() => handleFilterChange("official")}
-          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
         >
           Oficiais Waesy
         </Button>
@@ -179,7 +179,7 @@ function ConcursosPublicPage() {
           variant={filter === "completed" ? "default" : "outline"}
           size="sm"
           onClick={() => handleFilterChange("completed")}
-          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+          className="h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
         >
           Recém-Sorteados
         </Button>
@@ -227,7 +227,7 @@ function ConcursosPublicPage() {
                       <img
                         src={raffle.imageUrl}
                         alt={raffle.title}
-                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-muted/40">
@@ -301,8 +301,8 @@ function ConcursosPublicPage() {
                     </div>
 
                     {isCompleted && raffle.winnerTicketNumber && (
-                      <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 flex items-center gap-3">
-                        <Trophy className="size-5 text-amber-500 shrink-0" />
+                      <div className="rounded-lg bg-warning/10 border border-warning/30 p-3 flex items-center gap-3">
+                        <Trophy className="size-5 text-warning-strong shrink-0" />
                         <div className="text-xs">
                           <span className="font-bold text-foreground block">
                             Cupom Vencedor #{raffle.winnerTicketNumber}
@@ -320,7 +320,7 @@ function ConcursosPublicPage() {
                     variant="ghost"
                     size="sm"
                     onClick={(e) => handleShareConcurso(raffle, e)}
-                    className="h-10 px-3 rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="h-10 px-3 rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <Share2 className="size-3.5" />
                     <span>Compartilhar</span>
@@ -331,7 +331,7 @@ function ConcursosPublicPage() {
                       asChild
                       variant="outline"
                       size="sm"
-                      className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+                      className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
                     >
                       <Link to="/concurso/$id" params={{ id: raffle.id }}>
                         <span>Ver Detalhes</span>
@@ -344,7 +344,7 @@ function ConcursosPublicPage() {
                         size="sm"
                         disabled={hasReachedLimit}
                         onClick={(e) => handleOpenRaffleModal(raffle, e)}
-                        className="h-10 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
+                        className="h-10 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer min-h-11 sm:min-h-0"
                       >
                         <Ticket className="size-3.5" />
                         <span>{hasReachedLimit ? "Esgotado" : "Emitir Cupom"}</span>

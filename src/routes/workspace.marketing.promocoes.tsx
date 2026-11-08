@@ -201,7 +201,7 @@ function WorkspacePromotionsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── PageHeader Canônico ── */}
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Marketing"
@@ -298,7 +298,7 @@ function WorkspacePromotionsPage() {
           {/* Lista de Promoções */}
           <div className="space-y-3">
             {promos.length === 0 ? (
-              <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card/40">
+              <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-lg bg-card">
                 <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
                   <Tag className="size-6" />
                 </div>
@@ -308,7 +308,7 @@ function WorkspacePromotionsPage() {
                     Crie sua primeira oferta relâmpago para aparecer em destaque na vitrine e atrair mais pedidos.
                   </p>
                 </div>
-                <Button onClick={() => setIsPromoOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
+                <Button onClick={() => setIsPromoOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0">
                   <Plus className="size-3.5 mr-1" />
                   Criar Primeira Promoção
                 </Button>
@@ -323,7 +323,7 @@ function WorkspacePromotionsPage() {
                     <div
                       className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${
                         promo.type === "flash_offer"
-                          ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                          ? "bg-warning/10 text-warning-strong border border-warning/20"
                           : "bg-primary/10 text-primary border border-primary/20"
                       }`}
                     >
@@ -409,7 +409,7 @@ function WorkspacePromotionsPage() {
             <Button
               onClick={() => setIsCouponOpen(true)}
               size="sm"
-              className="gap-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground h-9 px-4 cursor-pointer"
+              className="gap-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground h-9 px-4 cursor-pointer min-h-11 sm:min-h-0"
             >
               <Plus className="size-4" />
               <span>Novo Cupom</span>
@@ -425,7 +425,7 @@ function WorkspacePromotionsPage() {
                   <p className="text-sm font-semibold text-foreground">Nenhum cupom cadastrado</p>
                   <p className="text-xs text-muted-foreground">Crie cupons de desconto fixo, percentual ou frete grátis para sua loja.</p>
                 </div>
-                <Button onClick={() => setIsCouponOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9">
+                <Button onClick={() => setIsCouponOpen(true)} size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0">
                   <Plus className="size-3.5 mr-1" />
                   Criar Primeiro Cupom
                 </Button>

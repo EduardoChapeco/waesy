@@ -42,7 +42,7 @@ export function HotelDeadlinesSentinelCard({
   const hasUrgent = auditSummary.criticalCount > 0 || auditSummary.warningCount > 0;
 
   return (
-    <div className="p-5 rounded-lg border border-border bg-card space-y-4 shadow-sm">
+    <div className="p-5 rounded-lg border border-border bg-card space-y-4 ">
       {/* Header do Card */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div className="flex items-center gap-3">
@@ -50,7 +50,7 @@ export function HotelDeadlinesSentinelCard({
             auditSummary.criticalCount > 0
               ? "bg-destructive/10 text-destructive"
               : auditSummary.warningCount > 0
-              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+              ? "bg-warning/10 text-warning-strong "
               : "bg-emerald-500/10 text-emerald-600"
           }`}>
             <Clock className="size-5" />
@@ -75,7 +75,7 @@ export function HotelDeadlinesSentinelCard({
           )}
 
           {auditSummary.warningCount > 0 && (
-            <Badge variant="outline" className="border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10 text-xs font-semibold px-3 py-1 flex items-center gap-2">
+            <Badge variant="outline" className="border-warning/30 text-warning-strong  bg-warning/10 text-xs font-semibold px-3 py-1 flex items-center gap-2">
               <span>{auditSummary.warningCount} Atenção (&lt;5 dias)</span>
             </Badge>
           )}
@@ -141,7 +141,7 @@ export function HotelDeadlinesSentinelCard({
                   alert.status === "critical"
                     ? "bg-destructive/5 border-destructive/30"
                     : alert.status === "warning"
-                    ? "bg-amber-500/5 border-amber-500/30"
+                    ? "bg-warning/5 border-warning/30"
                     : "bg-muted/30 border-border/60"
                 }`}
               >

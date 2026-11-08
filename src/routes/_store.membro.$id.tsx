@@ -658,7 +658,7 @@ export function MemberPublicProfileView({
  href={link.url}
  target="_blank"
  rel="noopener noreferrer"
- className="block w-full aspect-[3/1] rounded-lg overflow-hidden border border-border/60 relative group hover:border-border transition-colors motion-reduce:transition-none select-none"
+ className="block w-full aspect-3/1 rounded-lg overflow-hidden border border-border/60 relative group hover:border-border transition-colors motion-reduce:transition-none select-none"
  >
  <img
  src={link.imageUrl}
@@ -703,7 +703,7 @@ export function MemberPublicProfileView({
  href={profile.featured_banner_link || "#"}
  target={profile.featured_banner_link ? "_blank" : undefined}
  rel="noopener noreferrer"
- className="block w-full aspect-[3/1] rounded-lg overflow-hidden border border-border/60 relative group select-none hover:border-border transition-colors motion-reduce:transition-none"
+ className="block w-full aspect-3/1 rounded-lg overflow-hidden border border-border/60 relative group select-none hover:border-border transition-colors motion-reduce:transition-none"
  >
  <img
  src={profile.featured_banner_url}
@@ -746,7 +746,7 @@ export function MemberPublicProfileView({
 
  {/* ── Seletor de Tipo de Perfil / Modos: Segmented Control 100% de Largura (Padrão Threads / Apple HIG) ── */}
  <div className="w-full pt-2 pb-1 border-t border-border/40">
- <div className="w-full flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar text-xs sm:text-sm font-semibold">
+ <div className="w-full flex items-center gap-6 sm:gap-8 overflow-x-auto scroll-area-carousel no-scrollbar text-xs sm:text-sm font-semibold">
  {isBrandPersonaView ? (
  <>
  <Link
@@ -1145,7 +1145,7 @@ export function MemberPublicProfileView({
  <div className="flex items-start justify-between gap-4">
  <div className="flex items-start gap-4">
  <div className="size-12 rounded-lg bg-muted/50 flex-shrink-0 flex items-center justify-center">
- <Award className="size-6 text-amber-500" />
+ <Award className="size-6 text-warning-strong" />
  </div>
  <div className="space-y-1">
  <h3 className="text-base font-bold text-foreground leading-snug">

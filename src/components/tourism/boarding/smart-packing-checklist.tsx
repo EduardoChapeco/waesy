@@ -68,7 +68,7 @@ const CATEGORY_CONFIG: Record<
 > = {
   docs: { label: "Documentos & Financeiro", icon: ShieldCheck, color: "text-emerald-500" },
   tech: { label: "Eletrônicos & Conectividade", icon: Smartphone, color: "text-sky-500" },
-  clothes: { label: "Vestuário & Calçados", icon: Shirt, color: "text-amber-500" },
+  clothes: { label: "Vestuário & Calçados", icon: Shirt, color: "text-warning-strong" },
   health: { label: "Farmácia & Saúde", icon: Pill, color: "text-rose-500" },
   comfort: { label: "Higiene & Conforto", icon: Sparkles, color: "text-purple-500" },
 };

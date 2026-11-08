@@ -96,7 +96,7 @@ export function LawsuitDetailsSheet({
  <Button
  size="sm"
  onClick={() => setIsDeadlineSheetOpen(true)}
- className="h-8 px-3 rounded-lg bg-primary text-primary-foreground font-bold text-2xs gap-2 shadow-2xs"
+ className="h-8 px-3 rounded-lg bg-primary text-primary-foreground font-bold text-2xs gap-2 shadow-2xs min-h-11 sm:min-h-0"
  >
  <Clock className="size-3.5" />
  <span>+ Prazo Fatal</span>
@@ -105,7 +105,7 @@ export function LawsuitDetailsSheet({
  variant="ghost"
  size="icon"
  onClick={handleShare}
- className="size-8 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-8 rounded-lg text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Compartilhar Processo"
  >
  <Share2 className="size-4" />
@@ -186,7 +186,7 @@ export function LawsuitDetailsSheet({
 
  <div className="p-3 rounded-lg bg-card border border-border/70 space-y-1">
  <div className="flex items-center gap-2 text-2xs font-bold text-muted-foreground uppercase">
- <Users className="size-3.5 text-amber-500" />
+ <Users className="size-3.5 text-warning-strong" />
  <span>Partes</span>
  </div>
  <p className="font-mono text-xs sm:text-sm font-bold text-foreground">
@@ -329,7 +329,7 @@ export function LawsuitDetailsSheet({
 
  {/* Polo Passivo */}
  <div className="space-y-2 pt-2">
- <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+ <span className="text-xs font-bold text-warning-strong  uppercase tracking-wider">
  Polo Passivo (Réu / Executado)
  </span>
  <div className="p-3 rounded-lg bg-background border border-border/60 text-xs space-y-1">

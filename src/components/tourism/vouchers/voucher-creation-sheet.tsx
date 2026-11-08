@@ -34,22 +34,22 @@ export function VoucherCreationSheet({
   const [passengerDocument, setPassengerDocument] = useState("");
 
   // Flight Fields
-  const [airline, setAirline] = useState("LATAM Airlines");
+  const [airline, setAirline] = useState("");
   const [flightNumber, setFlightNumber] = useState("");
-  const [originAirport, setOriginAirport] = useState("GRU");
-  const [destinationAirport, setDestinationAirport] = useState("FLN");
+  const [originAirport, setOriginAirport] = useState("");
+  const [destinationAirport, setDestinationAirport] = useState("");
   const [departureDate, setDepartureDate] = useState("");
-  const [departureTime, setDepartureTime] = useState("10:00");
+  const [departureTime, setDepartureTime] = useState("");
   const [seat, setSeat] = useState("");
   const [cabinClass, setCabinClass] = useState("Econômica");
-  const [baggage, setBaggage] = useState("1 mala de mão (10kg)");
+  const [baggage, setBaggage] = useState("");
 
   // Hotel Fields
   const [hotelName, setHotelName] = useState("");
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
-  const [roomType, setRoomType] = useState("Apartamento Luxo");
-  const [boardBasis, setBoardBasis] = useState("All Inclusive");
+  const [roomType, setRoomType] = useState("");
+  const [boardBasis, setBoardBasis] = useState("");
   const [hotelConfirmation, setHotelConfirmation] = useState("");
 
   // Transfer Fields

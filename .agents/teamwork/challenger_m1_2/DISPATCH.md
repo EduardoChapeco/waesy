@@ -1,20 +1,38 @@
-# DISPATCH — Challenger 2 (M1 Supabase Migration)
+# Dispatch: Challenger M1_2
 
-Scope: Empirical boundary and security challenge of `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`.
-Read `ORIGINAL_REQUEST.md` at `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md` (specifically ## 2026-10-05T04:01:31Z, R1).
-Read `PROJECT.md` at `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\orchestrator_6\PROJECT.md`.
-Write an empirical verification harness in your working directory `.agents/teamwork/challenger_m1_2/` testing:
-1. Threat modeling: Can a normal authenticated user spoof another user's form submissions or cart telemetry?
-2. Multi-tenant leakage: Can a store see another store's telemetry or employee audit logs?
-3. Syntax and identifier collisions with earlier migrations.
-Issue your empirical verdict (APPROVE or REQUEST_CHANGES) in `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_2\handoff.md` and communicate back.
+## Objective
+Empirically verify Milestone M1 visual and layout invariants:
+- Math correctness of `MiniSparkline` bezier path generator: test with edge cases (all zeros, single value, negative values, very large values, NaN prevention).
+- Single Sovereign Surface & Containeritis: inspect DOM structure to ensure no nested card-in-card containers.
+- Verify touch targets and keyboard accessibility (focus-visible, keybindings 1, 2, 3).
 
-## 2026-10-05T04:22:20Z
-You are Challenger M1_2.
-Your working directory is: c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_2
-Read DISPATCH.md in your working directory.
-Read ORIGINAL_REQUEST.md at: c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md (specifically section ## 2026-10-05T04:01:31Z, R1).
-Read PROJECT.md at: c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\orchestrator_6\PROJECT.md.
-Empirically challenge multi-tenant security and RLS boundaries of `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`.
-Verify isolation across tenants and absence of policy bypasses.
-Provide your verdict (APPROVE or REQUEST_CHANGES) in `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_2\handoff.md` and communicate back.
+## Mandatory Inputs to Read
+1. `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md`
+2. `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\PROJECT.md`
+3. `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\worker_m1\handoff.md`
+
+## Instructions
+- Run empirical verification and tests.
+- Write your report to `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_2\handoff.md`.
+- State your verdict: **APPROVE** or **REQUEST_CHANGES**.
+- Message orchestrator (`71cb6393-bf04-4e51-946b-1dd9ac61e734`) when complete.
+
+
+## 2026-11-04T11:13:23Z
+You are Challenger M1_2 for Milestone M1.
+Your working directory is c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_2.
+Your parent orchestrator is conversation ID: 71cb6393-bf04-4e51-946b-1dd9ac61e734.
+
+Read your task instructions in c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_2\DISPATCH.md.
+Also read:
+- c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md
+- c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\PROJECT.md
+- c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\worker_m1\handoff.md
+
+Empirically verify visual and layout invariants:
+- Math correctness of `MiniSparkline` bezier path generator: test with edge cases (all zeros, single value, negative values, very large values, NaN prevention).
+- Single Sovereign Surface & Containeritis: inspect DOM structure to ensure no nested card-in-card containers.
+- Verify touch targets and keyboard accessibility (focus-visible, keybindings 1, 2, 3).
+Write your report to c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\challenger_m1_2\handoff.md.
+State your verdict explicitly: APPROVE or REQUEST_CHANGES.
+Send a message to your parent when complete.

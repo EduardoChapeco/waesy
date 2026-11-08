@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/state/states";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/datetime";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
+import { getClientActiveTenant } from "@/lib/context-auth";
 
 import { listProductTypes, createProductType, updateProductType, deleteProductType } from "@/services/admin-catalog.functions";
 
@@ -81,35 +82,38 @@ function ProductTypesPage() {
  name: "fields",
  });
 
- const onSubmit = async (values: FormValues) => {
- setIsSubmitting(true);
- try {
- if (editingType) {
- const res = await updateProductType({
- data: {
- id: editingType.id,
- name: values.name,
- slug: values.slug,
- field_schema: values.fields,
- },
- });
- if (res) {
- toast.success("Tipo de produto atualizado!");
- setOpen(false);
- setEditingType(null);
- form.reset();
- router.invalidate();
- } else {
- toast.error(res.message || "Erro ao atualizar tipo");
- }
- } else {
- const res = await createProductType({
- data: {
- name: values.name,
- slug: values.slug,
- field_schema: values.fields,
- },
- });
+  const onSubmit = async (values: FormValues) => {
+    setIsSubmitting(true);
+    try {
+      const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+      if (editingType) {
+        const res = await updateProductType({
+          data: {
+            id: editingType.id,
+            name: values.name,
+            slug: values.slug,
+            field_schema: values.fields,
+            store_id: clientTenant || undefined,
+          },
+        });
+        if (res) {
+          toast.success("Tipo de produto atualizado!");
+          setOpen(false);
+          setEditingType(null);
+          form.reset();
+          router.invalidate();
+        } else {
+          toast.error(res.message || "Erro ao atualizar tipo");
+        }
+      } else {
+        const res = await createProductType({
+          data: {
+            name: values.name,
+            slug: values.slug,
+            field_schema: values.fields,
+            store_id: clientTenant || undefined,
+          },
+        });
 
  if (res) {
  toast.success("Tipo de produto criado com sucesso!");
@@ -253,7 +257,7 @@ function ProductTypesPage() {
  type="button"
  variant="ghost"
  size="icon"
- className="absolute right-2 top-2 size-6 text-rose-500 hover:bg-rose-500/10 rounded-lg"
+ className="absolute right-2 top-2 size-6 text-rose-500 hover:bg-rose-500/10 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  onClick={() => remove(index)}
  >
  <Trash2 className="size-3.5" />
@@ -365,7 +369,7 @@ function ProductTypesPage() {
  <EmptyState title="Nenhum tipo de produto cadastrado" />
  ) : (
  <div className="bg-card rounded-lg border border-border/60 overflow-hidden">
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/30 border-b border-border/40">
@@ -373,7 +377,7 @@ function ProductTypesPage() {
  <TableHead className="text-xs font-bold text-foreground">Slug</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Campos e Atributos</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Criado em</TableHead>
- <TableHead className="w-[80px] text-right text-xs font-bold text-foreground">Ações</TableHead>
+ <TableHead className="w-20 text-right text-xs font-bold text-foreground">Ações</TableHead>
  </TableRow>
  </TableHeader>
  <TableBody>

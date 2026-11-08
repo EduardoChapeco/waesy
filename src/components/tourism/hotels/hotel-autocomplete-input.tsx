@@ -78,7 +78,7 @@ export function HotelAutocompleteInput({
       </button>
 
       {isOpen && !disabled && (
-        <div className="absolute left-0 right-0 top-12 z-50 space-y-2 rounded-lg border border-border bg-card p-2 shadow-lg">
+        <div className="absolute left-0 right-0 top-12 z-50 space-y-2 rounded-lg border border-border bg-card p-2 shadow-overlay">
           <Input
             autoFocus
             value={query}
@@ -97,7 +97,7 @@ export function HotelAutocompleteInput({
             ) : query.trim().length < 2 ? (
               <p className="p-3 text-center text-xs text-muted-foreground">Digite o nome, cidade ou destino.</p>
             ) : options.length === 0 ? (
-              <p className="p-3 text-center text-xs text-muted-foreground">Nenhum hotel canônico encontrado.</p>
+              <p className="p-3 text-center text-xs text-muted-foreground">Nenhum hotel encontrado.</p>
             ) : (
               options.map((hotel) => (
                 <button

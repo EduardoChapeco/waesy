@@ -565,7 +565,7 @@ function MarketplaceHubPage() {
       </div>
 
       {/* Barra de Abas Principal (Apple Segmented Control) */}
-      <div className="flex items-center gap-2 border-b border-border pb-3 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-border pb-3 overflow-x-auto scroll-area-carousel">
         <button
           type="button"
           onClick={() => setMainView("connectors")}
@@ -610,7 +610,7 @@ function MarketplaceHubPage() {
       {mainView === "connectors" && (
         <div className="space-y-4">
           {/* Filtros de Categoria */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1">
             <Button
               size="sm"
               variant={categoryFilter === "all" ? "default" : "outline"}
@@ -983,7 +983,7 @@ function MarketplaceHubPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
                             onClick={() => reprocessEventMutation.mutate(evt.id)}
                             disabled={reprocessEventMutation.isPending}
                           >
@@ -1231,7 +1231,7 @@ function MarketplaceHubPage() {
 
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label className="text-xs font-medium">URL Canônica de Recepção (POST)</Label>
+              <Label className="text-xs font-medium">URL de Webhook (POST)</Label>
               <div className="flex items-center gap-2">
                 <Input
                   readOnly

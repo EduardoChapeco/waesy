@@ -169,7 +169,7 @@ function WorkspaceNovaMateriaPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header */}
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="Redação"
@@ -258,7 +258,7 @@ function WorkspaceNovaMateriaPage() {
  <Button
  type="submit"
  disabled={isAiProcessing || !aiUrl.trim()}
- className="rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 h-10 px-4 shrink-0"
+ className="rounded-lg font-bold text-xs bg-primary text-primary-foreground gap-2 h-10 px-4 shrink-0 min-h-11 sm:min-h-0"
  >
  {isAiProcessing ? (
  <>
@@ -425,7 +425,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("paragraph")}
- className="h-8 text-xs font-bold gap-1 rounded-lg"
+ className="h-8 text-xs font-bold gap-1 rounded-lg min-h-11 sm:min-h-0"
  >
  <AlignLeft className="size-3" />
  Parágrafo
@@ -435,7 +435,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("heading")}
- className="h-8 text-xs font-bold gap-1 rounded-lg"
+ className="h-8 text-xs font-bold gap-1 rounded-lg min-h-11 sm:min-h-0"
  >
  <Heading className="size-3" />
  Subtítulo
@@ -445,7 +445,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("quote")}
- className="h-8 text-xs font-bold gap-1 rounded-lg"
+ className="h-8 text-xs font-bold gap-1 rounded-lg min-h-11 sm:min-h-0"
  >
  <Quote className="size-3" />
  Citação
@@ -455,7 +455,7 @@ function WorkspaceNovaMateriaPage() {
  variant="outline"
  size="sm"
  onClick={() => addSection("gallery")}
- className="h-8 text-xs font-bold gap-1 rounded-lg"
+ className="h-8 text-xs font-bold gap-1 rounded-lg min-h-11 sm:min-h-0"
  >
  <Image className="size-3" />
  Foto

@@ -47,6 +47,7 @@ describe("Cross-Module CRM, Contracts & Silent Design Integrations (Big Tech Cou
 
     // Desktop Corporate Table
     expect(content).toContain("BIFURCAÇÃO DESKTOP: Tabela Corporativa Densa");
+    // design-lint-ignore DL-30 reason:"Asserção de teste sobre classe de tabela corporativa" expiry:"2027-12-31"
     expect(content).toContain("hidden sm:block overflow-x-auto");
   });
 
@@ -71,6 +72,7 @@ describe("Cross-Module CRM, Contracts & Silent Design Integrations (Big Tech Cou
 
     const candidaturasPath = path.resolve(__dirname, "../routes/_store.conta.candidaturas.tsx");
     const candidaturasContent = fs.readFileSync(candidaturasPath, "utf8");
+    // design-lint-ignore DL-33 reason:"Asserção negativa de teste proibindo botão âmbar" expiry:"2027-12-31"
     expect(candidaturasContent).not.toContain("bg-amber-600 hover:bg-amber-700");
     expect(candidaturasContent).toContain("min-h-11");
   });

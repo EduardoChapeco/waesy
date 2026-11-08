@@ -207,7 +207,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
       markerEl.innerHTML = `
         <div class="relative flex items-center justify-center">
           <div class="size-8 rounded-full bg-primary/20 animate-ping motion-reduce:animate-none absolute inset-0"></div>
-          <div class="size-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg border-2 border-background">
+          <div class="size-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center  border-2 border-background">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
         </div>
@@ -569,7 +569,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-card border border-border/80 shadow-sm space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-card border border-border/80  space-y-6">
           {/* ── ETAPA 1: IDENTIFICAÇÃO COMERCIAL ── */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 border-b border-border/40 pb-2">
@@ -819,7 +819,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Descreva suas especialidades, diferenciais, horário de atendimento ou principais atrações/serviços..."
-                className="min-h-[80px] rounded-lg text-xs resize-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="min-h-20 rounded-lg text-xs resize-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 maxLength={600}
               />
             </div>
@@ -864,7 +864,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="space-y-2">
-                <label className="text-2xs font-medium text-muted-foreground">Logotipo Oficial (1:1 Squircle)</label>
+                <label className="text-2xs font-medium text-muted-foreground">Logotipo da Empresa</label>
                 <div className="size-24 sm:size-28">
                   <ImageUpload
                     value={logoUrl}
@@ -873,15 +873,9 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                     aspectPreset="square"
                     variant="avatar"
                     className="size-full"
-                    helperText="Upload da logo quadrada (1:1)"
+                    helperText="Formato quadrado"
                   />
                 </div>
-              </div>
-              <div className="space-y-1 flex-1">
-                <p className="text-xs font-semibold text-foreground">Identidade Padrão Threads</p>
-                <p className="text-xs text-muted-foreground">
-                  A identidade visual do perfil público opera sem capa superior decorativa, destacando a sua marca através do logotipo squircle e catálogo.
-                </p>
               </div>
             </div>
           </div>
@@ -891,7 +885,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 min-h-12 rounded-lg text-xs sm:text-sm font-black gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-xs active:scale-[0.99] transition-transform duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="w-full h-12 min-h-12 rounded-lg text-xs sm:text-sm font-black gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-xs active:scale-99 transition-transform duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {isSubmitting ? (
                 <>

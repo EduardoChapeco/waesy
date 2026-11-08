@@ -130,7 +130,7 @@ function MyActivityPage() {
       case "forms":
         return <FileText className="size-4 text-primary" />;
       case "cart":
-        return <ShoppingCart className="size-4 text-amber-500" />;
+        return <ShoppingCart className="size-4 text-warning-strong" />;
       case "mobility":
         return <Car className="size-4 text-emerald-500" />;
       case "orders":

@@ -132,7 +132,7 @@ function WorkspaceLogisticsInvoicesPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── HEADER DA PÁGINA ── */}
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Logística & Frota"
@@ -167,10 +167,10 @@ function WorkspaceLogisticsInvoicesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Clock className="size-3.5 text-amber-600" />
+            <Clock className="size-3.5 text-warning-strong" />
             Pendente de Repasse
           </span>
-          <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-2xl font-mono font-bold text-warning-strong ">
             {formatMoney(kpis.totalPendingCents)}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
@@ -230,12 +230,12 @@ function WorkspaceLogisticsInvoicesPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0">
           <Button
             variant={statusFilter === "all" ? "default" : "outline"}
             size="sm"
             onClick={() => setStatusFilter("all")}
-            className="h-9 rounded-lg text-xs font-bold cursor-pointer"
+            className="h-9 rounded-lg text-xs font-bold cursor-pointer min-h-11 sm:min-h-0"
           >
             Todos ({invoices.length})
           </Button>
@@ -243,7 +243,7 @@ function WorkspaceLogisticsInvoicesPage() {
             variant={statusFilter === "pending" ? "default" : "outline"}
             size="sm"
             onClick={() => setStatusFilter("pending")}
-            className="h-9 rounded-lg text-xs font-bold cursor-pointer"
+            className="h-9 rounded-lg text-xs font-bold cursor-pointer min-h-11 sm:min-h-0"
           >
             Pendentes ({kpis.pendingCount})
           </Button>
@@ -251,7 +251,7 @@ function WorkspaceLogisticsInvoicesPage() {
             variant={statusFilter === "paid" ? "default" : "outline"}
             size="sm"
             onClick={() => setStatusFilter("paid")}
-            className="h-9 rounded-lg text-xs font-bold cursor-pointer"
+            className="h-9 rounded-lg text-xs font-bold cursor-pointer min-h-11 sm:min-h-0"
           >
             Liquidados ({kpis.paidCount})
           </Button>
@@ -282,7 +282,7 @@ function WorkspaceLogisticsInvoicesPage() {
               <Button
                 asChild
                 variant="outline"
-                className="rounded-lg font-bold text-xs h-10 px-4"
+                className="rounded-lg font-bold text-xs h-10 px-4 min-h-11 sm:min-h-0"
               >
                 <Link to="/workspace/pedidos/frota">
                   <Truck className="size-3.5 mr-2" />
@@ -306,7 +306,7 @@ function WorkspaceLogisticsInvoicesPage() {
                       className={
                         inv.status === "paid"
                           ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 text-xs font-bold"
-                          : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 text-xs font-bold"
+                          : "bg-warning/10 text-warning-strong border-warning/30    text-xs font-bold"
                       }
                     >
                       {inv.status === "paid" ? "Liquidado" : "Pendente"}
@@ -332,7 +332,7 @@ function WorkspaceLogisticsInvoicesPage() {
                       onClick={() => setSelectedInvoice(inv)}
                       variant="outline"
                       size="sm"
-                      className="h-10 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer"
+                      className="h-10 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer min-h-11 sm:min-h-0"
                     >
                       <Eye className="size-3.5 text-muted-foreground" />
                       <span className="hidden sm:inline">Detalhes</span>
@@ -343,7 +343,7 @@ function WorkspaceLogisticsInvoicesPage() {
                         onClick={() => handleMarkAsPaid(inv.id)}
                         disabled={settleMutation.isPending}
                         size="sm"
-                        className="h-10 px-4 rounded-lg font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-2xs"
+                        className="h-10 px-4 rounded-lg font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-2xs min-h-11 sm:min-h-0"
                       >
                         {settleMutation.isPending ? (
                           <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
@@ -404,7 +404,7 @@ function WorkspaceLogisticsInvoicesPage() {
                     className={
                       selectedInvoice.status === "paid"
                         ? "text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/40 text-xs"
-                        : "text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/40 text-xs"
+                        : "text-warning-strong bg-warning/10   text-xs"
                     }
                   >
                     {selectedInvoice.status === "paid" ? "Liquidado via PIX" : "Pendente de Liquidação"}
@@ -429,7 +429,7 @@ function WorkspaceLogisticsInvoicesPage() {
               variant="outline"
               size="sm"
               onClick={() => setSelectedInvoice(null)}
-              className="rounded-lg h-10 text-xs font-bold"
+              className="rounded-lg h-10 text-xs font-bold min-h-11 sm:min-h-0"
             >
               Fechar
             </Button>
@@ -438,7 +438,7 @@ function WorkspaceLogisticsInvoicesPage() {
                 onClick={() => selectedInvoice && handleMarkAsPaid(selectedInvoice.id)}
                 disabled={settleMutation.isPending}
                 size="sm"
-                className="rounded-lg h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-2xs"
+                className="rounded-lg h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-2xs min-h-11 sm:min-h-0"
               >
                 {settleMutation.isPending ? (
                   <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />

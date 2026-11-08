@@ -187,7 +187,7 @@ export function ObservedExperimentPanel({
   };
 
   return (
-    <section className="rounded-lg border border-border/80 bg-card p-5 space-y-5 shadow-sm">
+    <section className="rounded-lg border border-border/80 bg-card p-5 space-y-5 ">
       <div className="flex items-start gap-3">
         <div className="rounded-lg bg-primary/10 p-2 text-primary"><BarChart3 className="size-4" /></div>
         <div className="space-y-1">
@@ -199,7 +199,7 @@ export function ObservedExperimentPanel({
       </div>
 
       {!experimentId && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-700 dark:text-amber-300">
+        <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-xs text-warning-strong ">
           Execute uma exploração para criar um registro de experimento antes de anexar resultados reais.
         </div>
       )}
@@ -246,7 +246,7 @@ export function ObservedExperimentPanel({
               <h4 className="text-xs font-bold text-foreground">Braços do experimento</h4>
               <p className="text-2xs text-muted-foreground">Denominador = unidades únicas atribuídas; conte conversões na mesma janela e com a mesma regra.</p>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={addArm} disabled={arms.length >= 12} className="h-8 gap-1 text-2xs"><Plus className="size-3" /> Variante</Button>
+            <Button type="button" variant="outline" size="sm" onClick={addArm} disabled={arms.length >= 12} className="h-8 gap-1 text-2xs min-h-11 sm:min-h-0"><Plus className="size-3 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0" /> Variante</Button>
           </div>
           {arms.map((arm, index) => (
             <div key={arm.key} className="grid grid-cols-1 gap-2 rounded-lg border border-border/70 bg-background p-3 sm:grid-cols-12">

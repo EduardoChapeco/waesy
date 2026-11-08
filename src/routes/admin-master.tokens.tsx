@@ -156,13 +156,13 @@ function AdminTokensPage() {
  disabled={isReconciling}
  variant="outline"
  size="sm"
- className="gap-2 text-xs h-8"
+ className="gap-2 text-xs h-8 min-h-11 sm:min-h-0"
  >
  {isReconciling ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <RefreshCw className="size-3.5" />}
  Auditar Solvência
  </Button>
 
- <Button onClick={() => handleOpenBonus()} size="sm" className="text-xs h-8">
+ <Button onClick={() => handleOpenBonus()} size="sm" className="text-xs h-8 min-h-11 sm:min-h-0">
  Conceder Bônus
  </Button>
  </div>
@@ -269,7 +269,7 @@ function AdminTokensPage() {
  size="sm"
  variant="ghost"
  onClick={() => handleOpenBonus(s.store_id)}
- className="text-xs h-7 px-2"
+ className="text-xs h-7 px-2 min-h-11 sm:min-h-0"
  >
  Bônus
  </Button>
@@ -313,7 +313,7 @@ function AdminTokensPage() {
                 size="sm"
                 onClick={handleRunReconciliation}
                 disabled={isReconciling}
-                className="text-xs h-9 rounded-lg font-semibold gap-2"
+                className="text-xs h-9 rounded-lg font-semibold gap-2 min-h-11 sm:min-h-0"
               >
                 {isReconciling && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />}
                 <span>{isReconciling ? "Auditando..." : "Reconciliar Agora"}</span>
@@ -480,7 +480,7 @@ function AdminTokensPage() {
                           size="sm"
                           disabled={isProcessingDiscount === disc.id}
                           onClick={() => handleConciliateDiscount(disc.id, true)}
-                          className="h-8 px-3 rounded-lg text-xs font-semibold"
+                          className="h-8 px-3 rounded-lg text-xs font-semibold min-h-11 sm:min-h-0"
                         >
                           {isProcessingDiscount === disc.id ? <Loader2 className="size-3 animate-spin motion-reduce:animate-none" /> : "Aprovar"}
                         </Button>
@@ -489,7 +489,7 @@ function AdminTokensPage() {
                           variant="outline"
                           disabled={isProcessingDiscount === disc.id}
                           onClick={() => handleConciliateDiscount(disc.id, false)}
-                          className="h-8 px-3 rounded-lg text-xs text-destructive hover:bg-destructive/10"
+                          className="h-8 px-3 rounded-lg text-xs text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0"
                         >
                           Recusar
                         </Button>
@@ -557,10 +557,10 @@ function AdminTokensPage() {
  </div>
 
  <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
- <Button type="button" variant="outline" onClick={() => setBonusModalOpen(false)} className="w-full sm:w-auto text-xs h-9">
+ <Button type="button" variant="outline" onClick={() => setBonusModalOpen(false)} className="w-full sm:w-auto text-xs h-9 min-h-11 sm:min-h-0">
  Cancelar
  </Button>
- <Button type="submit" disabled={isSubmittingBonus} className="w-full sm:w-auto text-xs h-9 font-semibold">
+ <Button type="submit" disabled={isSubmittingBonus} className="w-full sm:w-auto text-xs h-9 font-semibold min-h-11 sm:min-h-0">
  {isSubmittingBonus && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-2" />}
  Confirmar (+{(bonusTokens || 0).toLocaleString()})
  </Button>

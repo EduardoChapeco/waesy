@@ -7,11 +7,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
+import { extractDocumentMechanically } from "./mechanical-document-extractor.server";
 
 // ─── CONTRATOS DE DADOS DE COTAÇÃO DE OPERADORA B2B ─────────────────────────
 
 export const OperatorFlightItemSchema = z.object({
   airline: z.string().optional(),
+  airline_name: z.string().optional(),
   flight_number: z.string().optional(),
   origin_iata: z.string().optional(),
   origin_city: z.string().optional(),
@@ -20,44 +22,61 @@ export const OperatorFlightItemSchema = z.object({
   departure_time: z.string().optional(),
   arrival_time: z.string().optional(),
   date: z.string().optional(),
+  departure_date: z.string().optional(),
   baggage: z.string().optional(),
+  baggage_included: z.string().optional(),
   connections_count: z.number().int().optional(),
+  stops_count: z.number().int().optional(),
 });
 
 export const OperatorHotelItemSchema = z.object({
-  hotel_name: z.string(),
-  city: z.string().optional(),
-  room_category: z.string().optional(),
-  meal_plan: z.string().optional(),
-  checkin_date: z.string().optional(),
-  checkout_date: z.string().optional(),
-  nights_count: z.number().int().optional(),
-  stars: z.number().optional(),
-  address: z.string().optional(),
+  hotel_name: z.string().optional().default("Hotel a definir"),
+  city: z.string().optional().nullable(),
+  room_category: z.string().optional().nullable(),
+  meal_plan: z.string().optional().nullable(),
+  checkin_date: z.string().optional().nullable(),
+  checkout_date: z.string().optional().nullable(),
+  nights_count: z.coerce.number().optional().nullable(),
+  stars: z.coerce.number().optional().nullable(),
+  address: z.string().optional().nullable(),
+  price_cents: z.coerce.number().optional().nullable(),
 });
 
 export const OperatorQuoteExtractionResultSchema = z.object({
-  operator_name: z.string().optional(),
-  quote_reference_number: z.string().optional(),
-  destination: z.string(),
+  client_name: z.string().optional().nullable(),
+  client_phone: z.string().optional().nullable(),
+  client_email: z.string().optional().nullable(),
+  client_document: z.string().optional().nullable(),
+  operator_name: z.string().optional().nullable(),
+  quote_reference_number: z.string().optional().nullable(),
+  origin: z.string().optional().nullable(),
+  destination: z.string().optional().default("Destino a definir"),
   travel_start: z.string().optional().nullable(),
   travel_end: z.string().optional().nullable(),
-  adults_count: z.number().int().optional(),
-  children_count: z.number().int().optional(),
-  flights: z.array(OperatorFlightItemSchema).optional(),
-  hotels: z.array(OperatorHotelItemSchema).optional(),
-  transfers: z.array(z.string()).optional(),
-  tours: z.array(z.string()).optional(),
-  inclusions: z.array(z.string()).optional(),
-  exclusions: z.array(z.string()).optional(),
-  gross_price_cents: z.number().int().optional(),
-  operator_net_cents: z.number().int().optional(),
-  suggested_commission_cents: z.number().int().optional(),
-  max_installments: z.number().int().optional(),
-  installment_cents: z.number().int().optional(),
-  currency: z.string().optional(),
-  cancellation_rules: z.string().optional(),
-  notes: z.string().optional(),
+  adults_count: z.coerce.number().int().optional().nullable(),
+  children_count: z.coerce.number().int().optional().nullable(),
+  children_ages: z.array(z.coerce.number().int()).optional().nullable(),
+  flights: z.array(OperatorFlightItemSchema).optional().nullable(),
+  hotels: z.array(OperatorHotelItemSchema).optional().nullable(),
+  transfers: z.array(z.string()).optional().nullable(),
+  tours: z.array(z.string()).optional().nullable(),
+  inclusions: z.array(z.string()).optional().nullable(),
+  exclusions: z.array(z.string()).optional().nullable(),
+  gross_price_cents: z.coerce.number().int().optional().nullable(),
+  operator_net_cents: z.coerce.number().int().optional().nullable(),
+  suggested_commission_cents: z.coerce.number().int().optional().nullable(),
+  max_installments: z.coerce.number().int().optional().nullable(),
+  installment_cents: z.coerce.number().int().optional().nullable(),
+  has_downpayment: z.boolean().optional().nullable(),
+  downpayment_pct: z.coerce.number().optional().nullable(),
+  downpayment_cents: z.coerce.number().int().optional().nullable(),
+  first_installment_due: z.string().optional().nullable(),
+  pix_discount_pct: z.coerce.number().optional().nullable(),
+  card_installments: z.coerce.number().int().optional().nullable(),
+  boleto_installments: z.coerce.number().int().optional().nullable(),
+  currency: z.string().optional().nullable(),
+  cancellation_rules: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
 });
 
 export type OperatorQuoteExtractionResult = z.infer<typeof OperatorQuoteExtractionResultSchema>;
@@ -79,33 +98,51 @@ export const processOperatorQuoteOcr = createServerFn({ method: "POST" })
 Sua missão é ler documentos, PDFs, vouchers ou prints de sistemas de operadoras de viagem (ex: CVC Corp, Orinter, Trend, Visual Turismo, E-HTL, Azul Viagens, RexturAdvance, Decolar B2B) e extrair os dados estruturados da cotação.
 
 DIRETRIZES FUNDAMENTAIS (ZERO ALUCINAÇÃO):
-1. Identifique a operadora emitente (ex: 'Orinter', 'Trend Viagens', 'CVC', 'Visual').
-2. Identifique o Destino principal (ex: 'Maceió - AL', 'Cancún - México', 'Gramado - RS').
-3. Extraia os voos com precisão:
+1. Identifique o passageiro titular / cliente se constar no documento (client_name, client_phone, client_email, client_document).
+2. Identifique a operadora emitente (ex: 'Orinter', 'Trend Viagens', 'CVC', 'Visual Turismo', 'FRT', 'Incomum', 'Azul Viagens').
+3. Identifique a Origem (origin: cidade e/ou aeroporto IATA, ex: 'Chapecó (XAP)', 'Curitiba (CWB)', 'São Paulo (GRU)').
+4. Identifique o Destino principal (destination: apenas o nome do destino/cidade/região, ex: 'Maceió', 'Cancún', 'Gramado'). NUNCA inclua frases ou observações longas no destino.
+5. Extraia as datas exatas no formato YYYY-MM-DD:
+   - travel_start: Data de início/embarque/check-in
+   - travel_end: Data de retorno/desembarque/check-out
+6. Extraia a composição de passageiros:
+   - adults_count: Quantidade de adultos
+   - children_count: Quantidade de crianças
+   - children_ages: Array de números com as idades das crianças (ex: [4, 8])
+7. Extraia os voos com precisão:
    - Cia aérea (GOL, LATAM, Azul, TAP, Copa, etc.)
    - Número do voo, origem (IATA e cidade), destino (IATA e cidade)
    - Datas e horários de partida/chegada
    - Bagagem inclusa (se mala despachada 23kg ou apenas mão 10kg)
-4. Extraia os hotéis/resorts:
+8. Extraia os hotéis/resorts:
    - Nome do hotel
    - Categoria do quarto (Standard, Luxo, Suíte Vista Mar)
    - Regime de alimentação (Café da Manhã, Meia Pensão, All Inclusive)
    - Datas de check-in e check-out
-5. Extraia traslados e passeios inclusos.
-6. Extraia a composição financeira:
+9. Extraia traslados e passeios inclusos.
+10. Extraia a composição financeira e condições comerciais:
    - Preço bruto total da venda (gross_price_cents, em centavos)
    - Preço líquido do operador (operator_net_cents, valor pago à operadora)
-   - A comissão estimada da agência (gross_price_cents - operator_net_cents)
-   - Quantidade de parcelas (ex: 10x, 12x) e valor de cada parcela em centavos
+   - A comissão estimada da agência (suggested_commission_cents)
+   - has_downpayment: boolean indicando se exige entrada (true) ou se é sem entrada (false)
+   - downpayment_pct: percentual de entrada se informado (ex: 20)
+   - downpayment_cents: valor fixo de entrada em centavos se informado
+   - first_installment_due: texto ou prazo de vencimento do primeiro boleto (ex: '30 dias da emissão', 'Sem entrada')
+   - max_installments: quantidade máxima de parcelas
+   - card_installments: quantidade máxima de parcelas no cartão sem juros
+   - boleto_installments: quantidade de parcelas no boleto
+   - pix_discount_pct: percentual de desconto no Pix se informado (ex: 5)
    - Se os valores estiverem em reais com vírgula (ex: R$ 5.480,00), multiplique por 100 para centavos (548000).
 
 Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionResult:
 {
+  "client_name": "Simone Costa",
+  "client_phone": "499988456758",
   "operator_name": "Orinter",
   "quote_reference_number": "OR-98412",
   "destination": "Maceió - AL",
-  "travel_start": "2026-10-15",
-  "travel_end": "2026-10-22",
+  "travel_start": "2027-01-09",
+  "travel_end": "2027-01-14",
   "adults_count": 2,
   "children_count": 0,
   "flights": [
@@ -118,7 +155,7 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       "destination_city": "Maceió",
       "departure_time": "09:40",
       "arrival_time": "16:20",
-      "date": "2026-10-15",
+      "date": "2027-01-09",
       "baggage": "1 mala de 23kg inclusa",
       "connections_count": 1
     }
@@ -129,15 +166,15 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
       "city": "Maceió",
       "room_category": "Superior Jardim",
       "meal_plan": "Meia Pensão (Café + Jantar)",
-      "checkin_date": "2026-10-15",
-      "checkout_date": "2026-10-22",
-      "nights_count": 7,
+      "checkin_date": "2027-01-09",
+      "checkout_date": "2027-01-14",
+      "nights_count": 5,
       "stars": 5
     }
   ],
   "transfers": ["Traslado Aeroporto de Maceió / Hotel / Aeroporto Regular"],
   "tours": ["City tour em Maceió com Praia do Francês"],
-  "inclusions": ["Passagem aérea ida e volta", "7 noites de hospedagem com Meia Pensão", "Traslados in/out", "Seguro viagem GTA"],
+  "inclusions": ["Passagem aérea ida e volta", "5 noites de hospedagem com Meia Pensão", "Traslados in/out", "Seguro viagem GTA"],
   "exclusions": ["Despesas pessoais", "Bebidas nas refeições", "Passeios opcionais"],
   "gross_price_cents": 890000,
   "operator_net_cents": 780000,
@@ -147,17 +184,41 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
   "currency": "BRL"
 }`;
 
-    const userPrompt = data.fileBase64
-      ? `Analise este arquivo anexo de cotação da operadora (${data.fileName || "cotacao"}) e extraia todos os dados estruturados no formato JSON.`
-      : `Analise o seguinte texto bruto copiado do sistema da operadora e extraia todos os dados estruturados no formato JSON:\n\n${data.rawText || ""}`;
+    let extractedMechanicalText = "";
+    if (data.fileBase64) {
+      try {
+        const mech = await extractDocumentMechanically({
+          base64: data.fileBase64,
+          mimeType: data.fileMime || "application/pdf",
+          name: data.fileName,
+        });
+        if (mech && mech.text && mech.text.trim().length >= 40) {
+          extractedMechanicalText = mech.text.trim();
+        }
+      } catch (mechErr) {
+        console.warn("[travel-operator-ocr] Extração mecânica indisponível:", mechErr);
+      }
+    }
+
+    const hasRawTextOnly = Boolean(data.rawText?.trim() && !data.fileBase64);
+    const hasFile = Boolean(data.fileBase64);
+
+    let userPrompt = "";
+    if (hasRawTextOnly) {
+      userPrompt = `Analise o seguinte texto estruturado de cotação/orçamento da operadora (${data.fileName || "cotação"}) e extraia todos os dados no formato JSON:\n\n${data.rawText!.trim().slice(0, 30000)}`;
+    } else {
+      userPrompt = `Analise o documento anexo de cotação/proposta da operadora (${data.fileName || "cotação"}) e extraia todos os dados estruturados no formato JSON.${
+        extractedMechanicalText ? `\n\nTexto auxiliar pré-extraído do arquivo:\n${extractedMechanicalText.slice(0, 15000)}` : ""
+      }`;
+    }
 
     const aiResponse = await executeUnifiedAiCall({
-      preferredProvider: "gemini",
+      preferredProvider: hasRawTextOnly ? "groq" : "gemini",
       feature: "ocr_operator_quote",
       systemPrompt,
       userPrompt,
-      fileBase64: data.fileBase64,
-      fileMime: data.fileMime || "application/pdf",
+      fileBase64: hasFile ? data.fileBase64 : undefined,
+      fileMime: hasFile ? (data.fileMime || "application/pdf") : undefined,
       responseFormat: "json_object",
       temperature: 0.1,
     });
@@ -171,6 +232,195 @@ Retorne ESTRITAMENTE um JSON compatível com o schema OperatorQuoteExtractionRes
         rawJson = JSON.parse(match[0]);
       } else {
         throw new Error("Não foi possível decodificar os dados retornados pela IA.");
+      }
+    }
+
+    // Normalização defensiva pré-validação (Blindagem contra formatações mistas de IA)
+    if (rawJson && typeof rawJson === "object") {
+      const parseCents = (val: any): number | undefined => {
+        if (val === null || val === undefined) return undefined;
+        if (typeof val === "number") {
+          if (!Number.isFinite(val)) return undefined;
+          if (val === 0) return 0;
+          if (!Number.isInteger(val)) return Math.round(val * 100);
+          return val > 50000 ? Math.round(val) : Math.round(val * 100);
+        }
+        if (typeof val === "string") {
+          const cleaned = val.replace(/[^\d.,]/g, "").trim();
+          if (!cleaned) return undefined;
+          if (cleaned.includes(",")) {
+            const num = parseFloat(cleaned.replace(/\./g, "").replace(",", "."));
+            return isNaN(num) ? undefined : Math.round(num * 100);
+          }
+          if (cleaned.includes(".") && cleaned.split(".")[1]?.length === 2) {
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? undefined : Math.round(num * 100);
+          }
+          const num = parseInt(cleaned, 10);
+          return isNaN(num) ? undefined : (num > 50000 ? num : num * 100);
+        }
+        return undefined;
+      };
+
+      const extractPriceField = (keys: string[]): number | undefined => {
+        for (const k of keys) {
+          if (rawJson[k] !== undefined && rawJson[k] !== null) {
+            const parsed = parseCents(rawJson[k]);
+            if (parsed !== undefined) return parsed;
+          }
+        }
+        const containers = [rawJson.pricing, rawJson.financials, rawJson.valores, rawJson.financeiro, rawJson.totais];
+        for (const c of containers) {
+          if (c && typeof c === "object") {
+            for (const k of keys) {
+              if (c[k] !== undefined && c[k] !== null) {
+                const parsed = parseCents(c[k]);
+                if (parsed !== undefined) return parsed;
+              }
+            }
+          }
+        }
+        return undefined;
+      };
+
+      rawJson.gross_price_cents = extractPriceField([
+        "gross_price_cents",
+        "gross_price",
+        "total_price_cents",
+        "total_price",
+        "total_cents",
+        "total",
+        "valor_total",
+        "total_value_cents",
+        "total_value",
+        "price",
+        "preco",
+        "tarifa_total",
+        "total_geral",
+      ]);
+
+      rawJson.operator_net_cents = extractPriceField([
+        "operator_net_cents",
+        "operator_net",
+        "net_price_cents",
+        "net_price",
+        "valor_liquido",
+        "net_cost_cents",
+        "net_cost",
+        "custo_operadora",
+        "liquido",
+      ]);
+
+      rawJson.suggested_commission_cents = extractPriceField([
+        "suggested_commission_cents",
+        "commission_cents",
+        "commission",
+        "comissao",
+        "over_cents",
+        "over",
+        "margem",
+      ]);
+
+      rawJson.client_name = rawJson.client_name || rawJson.client || rawJson.cliente || rawJson.passageiro || rawJson.titular || rawJson.passenger_name;
+      rawJson.client_phone = rawJson.client_phone || rawJson.phone || rawJson.telefone || rawJson.whatsapp || rawJson.celular;
+      rawJson.client_email = rawJson.client_email || rawJson.email;
+      rawJson.client_document = rawJson.client_document || rawJson.cpf || rawJson.document || rawJson.documento || rawJson.passaporte;
+      rawJson.operator_name = rawJson.operator_name || rawJson.operator || rawJson.operadora || rawJson.fornecedor;
+      rawJson.origin = rawJson.origin || rawJson.origem || rawJson.cidade_origem || rawJson.origin_city || rawJson.origin_iata;
+      rawJson.destination = rawJson.destination || rawJson.cidade_destino || rawJson.destino;
+      rawJson.travel_start = rawJson.travel_start || rawJson.start_date || rawJson.data_ida || rawJson.checkin;
+      rawJson.travel_end = rawJson.travel_end || rawJson.end_date || rawJson.data_volta || rawJson.checkout;
+      rawJson.adults_count = rawJson.adults_count || rawJson.adults || rawJson.adultos || rawJson.pax_adults;
+      rawJson.children_count = rawJson.children_count ?? rawJson.children ?? rawJson.criancas ?? rawJson.pax_children;
+      rawJson.children_ages = Array.isArray(rawJson.children_ages)
+        ? rawJson.children_ages.map(Number).filter((n: any) => !isNaN(n))
+        : (Array.isArray(rawJson.idades_criancas)
+          ? rawJson.idades_criancas.map(Number).filter((n: any) => !isNaN(n))
+          : undefined);
+      rawJson.max_installments = rawJson.max_installments || rawJson.installments || rawJson.parcelas || rawJson.num_parcelas;
+      rawJson.card_installments = rawJson.card_installments || rawJson.parcelas_cartao || rawJson.max_installments;
+      rawJson.boleto_installments = rawJson.boleto_installments || rawJson.parcelas_boleto || rawJson.max_installments;
+      rawJson.has_downpayment = typeof rawJson.has_downpayment === "boolean"
+        ? rawJson.has_downpayment
+        : (typeof rawJson.com_entrada === "boolean"
+          ? rawJson.com_entrada
+          : (rawJson.downpayment_pct || rawJson.entrada_pct || rawJson.downpayment_cents || rawJson.entrada_valor
+            ? true
+            : (rawJson.sem_entrada ? false : undefined)));
+      rawJson.downpayment_pct = rawJson.downpayment_pct !== undefined
+        ? Number(rawJson.downpayment_pct)
+        : (rawJson.entrada_pct !== undefined ? Number(rawJson.entrada_pct) : undefined);
+      rawJson.downpayment_cents = extractPriceField([
+        "downpayment_cents",
+        "downpayment",
+        "entrada",
+        "valor_entrada",
+        "entrada_cents",
+      ]);
+      rawJson.first_installment_due = rawJson.first_installment_due || rawJson.vencimento_primeiro_boleto || rawJson.primeiro_vencimento || rawJson.primeiro_boleto;
+      rawJson.pix_discount_pct = rawJson.pix_discount_pct !== undefined
+        ? Number(rawJson.pix_discount_pct)
+        : (rawJson.desconto_pix !== undefined ? Number(rawJson.desconto_pix) : undefined);
+
+      if (Array.isArray(rawJson.hotels)) {
+        rawJson.hotels = rawJson.hotels.map((h: any) => ({
+          hotel_name: h.hotel_name || h.name || h.hotel || h.nome || "Hotel a definir",
+          city: h.city || h.cidade,
+          room_category: h.room_category || h.quarto || h.categoria || h.apartamento,
+          meal_plan: h.meal_plan || h.regime || h.alimentacao || h.board_basis,
+          checkin_date: h.checkin_date || h.checkin || h.entrada,
+          checkout_date: h.checkout_date || h.checkout || h.saida,
+          nights_count: h.nights_count ? Number(h.nights_count) : undefined,
+          stars: h.stars ? Number(h.stars) : undefined,
+          address: h.address || h.endereco,
+          price_cents: parseCents(h.price_cents || h.price || h.valor || h.preco || h.total),
+        }));
+      } else if (rawJson.hotel && typeof rawJson.hotel === "object") {
+        rawJson.hotels = [{
+          hotel_name: rawJson.hotel.hotel_name || rawJson.hotel.name || "Hotel a definir",
+          city: rawJson.hotel.city,
+          room_category: rawJson.hotel.room_category,
+          meal_plan: rawJson.hotel.meal_plan,
+          checkin_date: rawJson.hotel.checkin_date,
+          checkout_date: rawJson.hotel.checkout_date,
+          price_cents: parseCents(rawJson.hotel.price_cents || rawJson.hotel.price || rawJson.hotel.valor),
+        }];
+      }
+
+      if (Array.isArray(rawJson.flights)) {
+        rawJson.flights = rawJson.flights.map((f: any) => ({
+          airline: f.airline || f.airline_name || f.cia || f.companhia,
+          airline_name: f.airline_name || f.airline || f.cia || f.companhia,
+          flight_number: f.flight_number || f.numero_voo || f.flight || f.voo,
+          origin_iata: f.origin_iata || f.origin || f.origem,
+          origin_city: f.origin_city || f.cidade_origem,
+          destination_iata: f.destination_iata || f.destination || f.destino,
+          destination_city: f.destination_city || f.cidade_destino,
+          departure_time: f.departure_time || f.horario_partida || f.saida || f.embarque,
+          arrival_time: f.arrival_time || f.horario_chegada || f.chegada || f.pouso,
+          date: f.date || f.departure_date || f.data,
+          departure_date: f.departure_date || f.date || f.data,
+          baggage: f.baggage || f.bagagem || f.baggage_included,
+          baggage_included: f.baggage_included || f.baggage || f.bagagem,
+          connections_count: f.connections_count ?? f.stops_count ?? f.conexoes ?? f.stops,
+          stops_count: f.stops_count ?? f.connections_count ?? f.conexoes ?? f.stops,
+        }));
+      } else if (rawJson.flight && typeof rawJson.flight === "object") {
+        rawJson.flights = [{
+          airline: rawJson.flight.airline || rawJson.flight.airline_name,
+          airline_name: rawJson.flight.airline_name || rawJson.flight.airline,
+          flight_number: rawJson.flight.flight_number,
+          origin_iata: rawJson.flight.origin_iata || rawJson.flight.origin,
+          destination_iata: rawJson.flight.destination_iata || rawJson.flight.destination,
+          departure_time: rawJson.flight.departure_time,
+          arrival_time: rawJson.flight.arrival_time,
+          date: rawJson.flight.date || rawJson.flight.departure_date,
+          departure_date: rawJson.flight.departure_date || rawJson.flight.date,
+        }];
+      }
+
+      if (!rawJson.destination || rawJson.destination === "Destino a definir") {
+        rawJson.destination = rawJson.hotels?.[0]?.city || rawJson.flights?.[0]?.destination_city || rawJson.destino || "Destino a definir";
       }
     }
 

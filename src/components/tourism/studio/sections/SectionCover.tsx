@@ -109,7 +109,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                   setShowAssetPicker(true);
                   setShowAiPrompt(false);
                 }}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-surface text-xs hover:bg-surface-alt transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-surface text-xs hover:bg-surface-alt transition-colors focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
               >
                 <Search className="h-3.5 w-3.5" />
               </Button>
@@ -125,7 +125,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                     );
                   }
                 }}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/40 bg-brand/5 text-brand text-xs hover:bg-brand/10 transition-colors"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/40 bg-brand/5 text-brand text-xs hover:bg-brand/10 transition-colors min-h-11 sm:min-h-0"
               >
                 <Zap className="h-3.5 w-3.5" />
               </Button>
@@ -180,7 +180,7 @@ export function SectionCover({ draft, save }: SectionCoverProps) {
                       setGeneratingCover(false);
                     }
                   }}
-                  className="w-full flex h-8 items-center justify-center gap-2 rounded-lg bg-brand text-brand-foreground text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-colors"
+                  className="w-full flex h-8 items-center justify-center gap-2 rounded-lg bg-brand text-brand-foreground text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-colors min-h-11 sm:min-h-0"
                 >
                   {generatingCover ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />

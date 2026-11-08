@@ -87,7 +87,7 @@ export function QuickAnswersManagerModal({
         <DialogHeader>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="size-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+              <div className="size-9 rounded-xl bg-warning/10 text-warning-strong flex items-center justify-center shrink-0">
                 <Zap className="size-5" />
               </div>
               <div>
@@ -238,7 +238,7 @@ export function QuickAnswersManagerModal({
                   >
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="px-2 py-1 rounded-md bg-amber-500/10 text-amber-500 font-mono text-xs font-bold border border-amber-500/20">
+                        <span className="px-2 py-1 rounded-md bg-warning/10 text-warning-strong font-mono text-xs font-bold border border-warning/20">
                           /{item.shortcut}
                         </span>
                         <span className="font-semibold text-xs text-foreground truncate">

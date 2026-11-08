@@ -223,7 +223,7 @@ export function BuilderPagesPanel({
  <div className={cn(
  "size-7 rounded-lg flex items-center justify-center shrink-0",
  p.is_home
- ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+ ? "bg-warning/10 text-warning-strong "
  : isActive
  ? "bg-primary text-primary-foreground"
  : "bg-muted text-muted-foreground"
@@ -237,7 +237,7 @@ export function BuilderPagesPanel({
  {p.title}
  </span>
  {p.is_home && (
- <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-none text-xs py-0 px-1 font-bold">
+ <Badge className="bg-warning/15 text-warning-strong  border-none text-xs py-0 px-1 font-bold">
  Início
  </Badge>
  )}
@@ -264,9 +264,8 @@ export function BuilderPagesPanel({
  <button
  type="button"
  onClick={() => {
- if (confirm(`Deseja realmente remover a página "${p.title}"?`)) {
  onDeletePage(p.id);
- }
+ toast.success(`Página "${p.title}" removida.`);
  }}
  aria-label={`Excluir página ${p.title}`}
  title="Excluir página"

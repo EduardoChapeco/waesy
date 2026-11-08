@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { SlidersHorizontal, Plus, Trash2, Sliders, Check, AlertCircle, Layers, Utensils, Coffee, PlusCircle, Image as ImageIcon, ImagePlus, X, Scissors, Gift, ShieldCheck, Loader2 } from 'lucide-react';
+import { SlidersHorizontal, Plus, Trash2, Sliders, Check, AlertCircle, Layers, Utensils, Coffee, PlusCircle, Image as ImageIcon, ImagePlus, X, Scissors, Gift, ShieldCheck, Loader2, Search, BookOpen } from 'lucide-react';
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,10 @@ import { Badge } from "@/components/ui/badge";
 import { upsertOptionGroup } from "@/services/admin-catalog.functions";
 import { uploadStoreMedia } from "@/services/storage.functions";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
-import { cn } from "@/lib/utils";
+import { cn, extractErrorMessage } from "@/lib/utils";
 
 const optionValueSchema = z.object({
- id: z.string().uuid().optional(),
+ id: z.string().uuid().optional().nullable().or(z.literal("")),
  label: z.string().min(1, "Obrigatório"),
  description: z.string().optional().nullable(),
  image_url: z.string().optional().nullable(),
@@ -26,10 +26,12 @@ const optionValueSchema = z.object({
  max_quantity_per_item: z.number().int().min(1).default(1).optional(),
  is_default: z.boolean().default(false),
  is_active: z.boolean().default(true),
+ sort_order: z.number().int().default(0).optional(),
 });
 
 const formSchema = z.object({
- id: z.string().uuid().optional(),
+ id: z.string().uuid().optional().nullable().or(z.literal("")),
+ store_id: z.string().uuid().optional().nullable(),
  internal_name: z.string().min(1, "Nome interno é obrigatório"),
  display_name: z.string().min(1, "Nome de exibição é obrigatório"),
  description: z.string().optional().nullable(),
@@ -43,7 +45,13 @@ const formSchema = z.object({
 export type OptionGroupFormData = z.infer<typeof formSchema>;
 
 import { getNicheSemantics } from "@/lib/niche-semantics";
-import { getNicheOptionGroupPresets, type OptionGroupPreset } from "@/lib/niche-presets";
+import {
+  getNicheOptionGroupPresets,
+  getNicheModifierPlaceholders,
+  searchOptionGroupPresets,
+  NICHE_LABELS,
+  type OptionGroupPreset,
+} from "@/lib/niche-presets";
 
 export interface QuickOptionGroupDialogProps {
  open: boolean;
@@ -66,13 +74,21 @@ export function QuickOptionGroupDialog({
  const isRetail = semantics.nicheId === "retail" || semantics.nicheId === "supermarket" || semantics.nicheId === "wholesale";
 
  const activePresets = useMemo(() => getNicheOptionGroupPresets(semantics.nicheId), [semantics.nicheId]);
+ const placeholders = useMemo(() => getNicheModifierPlaceholders(semantics.nicheId), [semantics.nicheId]);
 
  const [isSubmitting, setIsSubmitting] = useState(false);
+ const [isGlobalLibraryOpen, setIsGlobalLibraryOpen] = useState(false);
+ const [searchPresetQuery, setSearchPresetQuery] = useState("");
+ const [selectedLibraryNiche, setSelectedLibraryNiche] = useState<string>("all");
  const [cropDialogOpen, setCropDialogOpen] = useState(false);
  const [currentImageToCrop, setCurrentImageToCrop] = useState<string | null>(null);
  const [activeValueIndexForUpload, setActiveValueIndexForUpload] = useState<number | null>(null);
  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
  const fileInputRef = useRef<HTMLInputElement>(null);
+
+ const libraryPresets = useMemo(() => {
+   return searchOptionGroupPresets(searchPresetQuery, selectedLibraryNiche);
+ }, [searchPresetQuery, selectedLibraryNiche]);
 
  const form = useForm<OptionGroupFormData>({
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -226,34 +242,44 @@ export function QuickOptionGroupDialog({
  };
 
  const onSubmit = async (data: OptionGroupFormData) => {
- setIsSubmitting(true);
- try {
- const cleanedData = {
- ...data,
- internal_name: data.internal_name.trim() || data.display_name.trim().toLowerCase().replace(/\s+/g, "-"),
- min_selections: data.selection_type === "single" ? (data.is_required ? 1 : 0) : data.min_selections,
- max_selections: data.selection_type === "single" ? 1 : Math.max(data.min_selections, data.max_selections),
- };
+		setIsSubmitting(true);
+		try {
+			const cleanGroupId =
+				data.id && data.id.trim() && !data.id.startsWith("temp-") ? data.id.trim() : undefined;
 
- const result = await upsertOptionGroup({ data: cleanedData });
- toast.success(groupToEdit ? "Grupo de adicionais atualizado!" : "Grupo de adicionais criado com sucesso!");
+			const cleanedData = {
+				...data,
+				id: cleanGroupId,
+				store_id: store?.id || undefined,
+				internal_name: data.internal_name.trim() || data.display_name.trim().toLowerCase().replace(/\s+/g, "-"),
+				min_selections: data.selection_type === "single" ? (data.is_required ? 1 : 0) : data.min_selections,
+				max_selections: data.selection_type === "single" ? 1 : Math.max(data.min_selections, data.max_selections),
+				values: data.values.map((v, idx) => ({
+					...v,
+					id: v.id && v.id.trim() && !v.id.startsWith("temp-") ? v.id.trim() : undefined,
+					sort_order: idx,
+				})),
+			};
 
- const savedGroup = result?.group || {
- ...cleanedData,
- id: groupToEdit?.id || "temp-" + Date.now(),
- values: cleanedData.values,
- };
+			const result = await upsertOptionGroup({ data: cleanedData });
+			toast.success(groupToEdit ? "Grupo de adicionais atualizado!" : "Grupo de adicionais criado com sucesso!");
 
- onSaved(savedGroup);
- onOpenChange(false);
- } catch (e: any) {
- toast.error(e?.message || "Erro ao salvar grupo de adicionais.");
- } finally {
- setIsSubmitting(false);
- }
- };
+			const savedGroup = result?.group || {
+				...cleanedData,
+				id: cleanGroupId || groupToEdit?.id || "temp-" + Date.now(),
+				values: cleanedData.values,
+			};
 
- return (
+			onSaved(savedGroup);
+			onOpenChange(false);
+		} catch (e: unknown) {
+			toast.error(extractErrorMessage(e, "Erro ao salvar grupo de adicionais."));
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	return (
  <>
  <input
  type="file"
@@ -305,11 +331,79 @@ export function QuickOptionGroupDialog({
  <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-6">
  {/* PRESETS RÁPIDOS (Se for criação) */}
  {!groupToEdit && (
- <div className="space-y-2">
+ <div className="space-y-3">
+ <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-2xs font-bold uppercase tracking-wider text-muted-foreground">
  <Sliders className="size-3.5 text-primary" />
- <span>Modelos Prontos (Presets de 1 Clique)</span>
+ <span>Modelos Recomendados para {semantics.name}</span>
  </div>
+ <Button
+ type="button"
+ variant="ghost"
+ size="sm"
+ onClick={() => setIsGlobalLibraryOpen((prev) => !prev)}
+ className="h-11 min-h-11 sm:h-9 text-xs font-semibold text-primary hover:text-primary/90 gap-2 px-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <Layers className="size-3.5" />
+ <span>{isGlobalLibraryOpen ? "Ver Apenas do Nicho" : "Explorar Todos os Nichos"}</span>
+ </Button>
+ </div>
+
+ {isGlobalLibraryOpen ? (
+ <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+ <div className="relative">
+ <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+ <Input
+ placeholder="Buscar em todos os presets..."
+ value={searchPresetQuery}
+ onChange={(e) => setSearchPresetQuery(e.target.value)}
+ className="h-9 pl-8 text-xs rounded-lg"
+ />
+ </div>
+ <select
+ aria-label="Filtrar modelos por nicho de negócio"
+ value={selectedLibraryNiche}
+ onChange={(e) => setSelectedLibraryNiche(e.target.value)}
+ className="h-9 text-xs rounded-lg border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <option value="all">Todos os Nichos Comerciais</option>
+ {Object.entries(NICHE_LABELS).map(([k, label]) => (
+ <option key={k} value={k}>
+ {label}
+ </option>
+ ))}
+ </select>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto no-scrollbar pt-1">
+ {libraryPresets.slice(0, 16).map((preset) => {
+ const Icon = preset.icon;
+ return (
+ <button
+ key={preset.id || preset.name}
+ type="button"
+ onClick={() => {
+ applyPreset(preset);
+ setIsGlobalLibraryOpen(false);
+ }}
+ className="flex items-start gap-2 p-3 rounded-lg border border-border/70 bg-background hover:bg-muted/40 hover:border-primary/50 transition-colors text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11"
+ >
+ <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <Icon className="size-4" />
+ </div>
+ <div className="min-w-0 flex-1">
+ <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+ {preset.name}
+ </p>
+ <p className="text-2xs text-muted-foreground line-clamp-1">{preset.desc}</p>
+ </div>
+ </button>
+ );
+ })}
+ </div>
+ </div>
+ ) : (
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
  {activePresets.map((preset) => {
  const Icon = preset.icon;
@@ -318,7 +412,7 @@ export function QuickOptionGroupDialog({
  key={preset.name}
  type="button"
  onClick={() => applyPreset(preset)}
- className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-colors duration-200 text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="flex flex-col items-start p-3 rounded-lg border border-border/80 bg-background hover:bg-muted/40 hover:border-primary/40 transition-colors duration-200 text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 justify-center"
  >
  <div className="flex items-center gap-2 w-full mb-1">
  <Icon className="size-3.5 text-primary shrink-0" />
@@ -329,6 +423,7 @@ export function QuickOptionGroupDialog({
  );
  })}
  </div>
+ )}
  </div>
  )}
 
@@ -340,16 +435,8 @@ export function QuickOptionGroupDialog({
  Nome para o Cliente <span className="text-destructive">*</span>
  </Label>
  <Input
- placeholder={
- isTourism
- ? "Ex: Escolha o Regime de Alimentação"
- : isServices
- ? "Ex: Procedimento Adicional"
- : isRetail
- ? "Ex: Selecione o Tamanho da Peça"
- : "Ex: Escolha o Ponto da Carne"
- }
-  className="h-11 min-h-11 text-xs rounded-lg"
+ placeholder={placeholders.groupNamePlaceholder}
+ className="h-11 min-h-11 text-xs rounded-lg"
  {...form.register("display_name", {
  onChange: (e) => {
  if (!form.getValues("internal_name") || form.getValues("internal_name") === "") {
@@ -378,16 +465,8 @@ export function QuickOptionGroupDialog({
  Identificador Interno
  </Label>
  <Input
- placeholder={
- isTourism
- ? "Ex: regime-alimentacao"
- : isServices
- ? "Ex: extras-atendimento"
- : isRetail
- ? "Ex: tamanho-peca"
- : "Ex: ponto-carne"
- }
-  className="h-11 min-h-11 text-xs font-mono rounded-lg"
+ placeholder={placeholders.groupInternalPlaceholder}
+ className="h-11 min-h-11 text-xs font-mono rounded-lg"
  {...form.register("internal_name")}
  />
  </div>
@@ -398,15 +477,7 @@ export function QuickOptionGroupDialog({
  Instrução ou Descrição do Grupo (Opcional)
  </Label>
  <Input
- placeholder={
- isTourism
- ? "Ex: Selecione os opcionais desejados para sua viagem"
- : isServices
- ? "Ex: Escolha adicionais para enriquecer seu atendimento"
- : isRetail
- ? "Ex: Selecione o tamanho e cor ideais"
- : "Ex: Escolha até 3 opções para turbinar seu prato"
- }
+ placeholder={placeholders.groupDescPlaceholder}
  className="h-9 text-xs rounded-lg"
  {...form.register("description")}
  />
@@ -569,7 +640,7 @@ export function QuickOptionGroupDialog({
  {/* Nome da Opção */}
  <div className="flex-1 min-w-35">
  <Input
- placeholder="Nome do adicional (ex: Bacon Extra)"
+ placeholder={placeholders.optionLabelPlaceholder}
  className="h-9 text-xs rounded-lg"
  {...form.register(`values.${index}.label` as const)}
  />
@@ -594,7 +665,7 @@ export function QuickOptionGroupDialog({
  size="icon"
  disabled={fields.length === 1}
  onClick={() => remove(index)}
-  className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+ className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -603,8 +674,8 @@ export function QuickOptionGroupDialog({
  {/* Descrição curta dos ingredientes / detalhes */}
  <div className="pl-14">
  <Input
- placeholder="Descrição curta (ex: 2 fatias de bacon defumado crocante)"
-  className="h-11 min-h-11 text-2xs rounded-lg bg-muted/20 border-border/50 text-muted-foreground"
+ placeholder={placeholders.optionDescPlaceholder}
+ className="h-11 min-h-11 text-2xs rounded-lg bg-muted/20 border-border/50 text-muted-foreground"
  {...form.register(`values.${index}.description` as const)}
  />
  </div>

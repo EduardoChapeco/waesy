@@ -103,7 +103,7 @@ export function SupermarketProductDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg p-0 rounded-3xl overflow-hidden gap-0 max-h-[92vh] flex flex-col">
+      <DialogContent className="sm:max-w-lg p-0 rounded-3xl overflow-hidden gap-0 max-h-vh-92 flex flex-col">
         {/* ── Top Bar Flutuante com Fechar, Favorito e Compartilhar ── */}
         <div className="flex items-center justify-between p-4 border-b border-border/40 shrink-0 bg-background z-20">
           <button
@@ -152,13 +152,13 @@ export function SupermarketProductDetailModal({
               {product.badges?.map((b, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 text-2xs font-bold rounded-lg bg-background/90 text-foreground border border-border/60 shadow-sm capitalize"
+                  className="px-3 py-1 text-2xs font-bold rounded-lg bg-background/90 text-foreground border border-border/60 shadow-overlay capitalize"
                 >
                   {b}
                 </span>
               ))}
               {product.freshFoodSpecs?.temperature_tag && product.freshFoodSpecs.temperature_tag !== "none" ? (
-                <span className="px-2.5 py-1 text-2xs font-bold rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 capitalize">
+                <span className="px-3 py-1 text-2xs font-bold rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 capitalize">
                   {product.freshFoodSpecs.temperature_tag}
                 </span>
               ) : null}
@@ -205,8 +205,8 @@ export function SupermarketProductDetailModal({
                   type="button"
                   onClick={() => setUnitMode("un")}
                   className={cn(
-                    "h-11 min-h-11 rounded-lg text-xs font-bold transition-all flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    unitMode === "un" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                    "h-11 min-h-11 rounded-lg text-xs font-bold transition flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    unitMode === "un" ? "bg-card text-foreground shadow-overlay" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   Unidade
@@ -215,8 +215,8 @@ export function SupermarketProductDetailModal({
                   type="button"
                   onClick={() => setUnitMode("kg")}
                   className={cn(
-                    "h-11 min-h-11 rounded-lg text-xs font-bold transition-all flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    unitMode === "kg" ? "bg-emerald-600 text-white font-extrabold shadow-sm" : "text-muted-foreground hover:text-foreground",
+                    "h-11 min-h-11 rounded-lg text-xs font-bold transition flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    unitMode === "kg" ? "bg-emerald-600 text-white font-extrabold shadow-overlay" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   Peso (Kg)
@@ -244,7 +244,7 @@ export function SupermarketProductDetailModal({
                       type="button"
                       onClick={() => setRipeness(item.id as any)}
                       className={cn(
-                        "h-11 min-h-11 px-4 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        "h-11 min-h-11 px-4 rounded-xl border text-xs font-semibold flex items-center gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                         isSelected
                           ? "border-emerald-600 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 font-bold"
                           : "border-border/60 hover:border-border text-foreground",
@@ -274,7 +274,7 @@ export function SupermarketProductDetailModal({
                       type="button"
                       onClick={() => setSelectedPrep(opt)}
                       className={cn(
-                        "h-11 min-h-11 px-4 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        "h-11 min-h-11 px-4 rounded-xl border text-xs font-semibold flex items-center gap-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                         isSelected
                           ? "border-primary bg-primary/10 text-primary font-bold"
                           : "border-border/60 hover:border-border text-foreground",
@@ -312,7 +312,7 @@ export function SupermarketProductDetailModal({
             ) : null}
 
             {isMember && product.clubPriceCents ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400">
+              <span className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400">
                 <IdentificationCard size={15} weight="fill" />
                 Preço exclusivo para membros do Clube
               </span>
@@ -324,7 +324,7 @@ export function SupermarketProductDetailModal({
             <button
               type="button"
               onClick={() => setIsEditingInstructions(!isEditingInstructions)}
-              className="w-full h-11 min-h-11 px-3.5 rounded-xl border border-border/60 hover:border-border text-xs font-semibold text-foreground flex items-center justify-between gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-full h-11 min-h-11 px-4 rounded-xl border border-border/60 hover:border-border text-xs font-semibold text-foreground flex items-center justify-between gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <div className="flex items-center gap-2">
                 <PencilSimple size={16} weight="bold" className="text-muted-foreground" />
@@ -364,8 +364,8 @@ export function SupermarketProductDetailModal({
 
             {/* Aviso Obrigatório de Pesagem do Varejo Alimentar */}
             {isFreshFood ? (
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 text-amber-900 dark:text-amber-200">
-                <Info size={16} weight="bold" className="shrink-0 text-amber-600 mt-0.5" />
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-warning/10 text-warning-strong ">
+                <Info size={16} weight="bold" className="shrink-0 text-warning-strong mt-1" />
                 <span>
                   O peso final e o valor exato poderão sofrer pequenas variações durante o processo de pesagem na loja física.
                 </span>

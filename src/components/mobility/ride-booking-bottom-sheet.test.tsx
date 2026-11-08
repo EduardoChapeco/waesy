@@ -12,6 +12,10 @@ describe("Mobility — RideBookingBottomSheet (BlaBlaCar & Apple HIG Parity)", (
         destinationText="Aeroporto de Congonhas"
         walkingDistanceMeters={220}
         walkingMinutes={3}
+        options={[
+          { id: "opt-1", name: "MotoLink Express", category: "moto", etaMinutes: 3, priceCents: 850 },
+          { id: "opt-2", name: "Waesy Go Econômico", category: "car", etaMinutes: 6, priceCents: 1690 },
+        ]}
       />
     );
 

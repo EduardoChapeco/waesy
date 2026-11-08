@@ -429,9 +429,9 @@ export function ClassifiedBookingDialog({
                       type="button"
                       onClick={() => setServiceAppointmentTime?.(slot)}
                       className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "h-10 rounded-lg text-xs font-mono font-semibold transition-colors border cursor-pointer",
+                        "h-10 rounded-lg text-xs font-mono font-semibold transition-colors border cursor-pointer min-h-11 sm:min-h-0",
                         serviceAppointmentTime === slot
-                          ? "bg-primary text-primary-foreground border-primary font-bold shadow-sm"
+                          ? "bg-primary text-primary-foreground border-primary font-bold shadow-overlay"
                           : "bg-card text-muted-foreground border-border/70 hover:border-primary/40 hover:text-foreground"
                       )}
                     >
@@ -460,7 +460,7 @@ export function ClassifiedBookingDialog({
                 type="button"
                 onClick={handleDirectBooking}
                 disabled={isBooking || !serviceAppointmentDate}
-                className="w-full h-12 rounded-lg font-bold text-sm bg-primary text-primary-foreground shadow-sm hover:opacity-95 active:scale-98 transition-transform duration-200 gap-2 cursor-pointer"
+                className="w-full h-12 rounded-lg font-bold text-sm bg-primary text-primary-foreground shadow-overlay hover:opacity-95 active:scale-98 transition-transform duration-200 gap-2 cursor-pointer"
               >
                 {isBooking ? (
                   <>
@@ -531,12 +531,12 @@ export function ClassifiedBookingDialog({
               {bookedDates.length > 0 && (
                 <div className="p-3 rounded-lg bg-muted/40 border border-border text-xs space-y-1">
                   <span className="font-semibold text-muted-foreground flex items-center gap-2">
-                    <Calendar className="size-3.5 text-amber-500 shrink-0" />
+                    <Calendar className="size-3.5 text-warning-strong shrink-0" />
                     Datas já reservadas neste anúncio:
                   </span>
                   <div className="flex flex-wrap gap-2 pt-1">
                     {bookedDates.slice(0, 4).map((b: any, i: number) => (
-                      <span key={i} className="px-2 py-1 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 font-mono text-xs">
+                      <span key={i} className="px-2 py-1 rounded-md bg-warning/10 text-warning-strong  font-mono text-xs">
                         {b.startDate} a {b.endDate}
                       </span>
                     ))}

@@ -130,7 +130,7 @@ export function MobilityTipModal({
                     : "bg-muted/20 border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 }`}
               >
-                <Sparkles className="size-3.5 text-amber-500" />
+                <Sparkles className="size-3.5 text-warning-strong" />
                 <span>Outro valor personalizado</span>
               </button>
             </div>

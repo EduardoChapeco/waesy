@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { requireAdmin } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
+import { getOrSetMicroCache } from "@/lib/cache/micro-cache";
 import { logSystemError } from "@/lib/logger";
 import { getOpenStatus } from "@/lib/datetime";
 import {
@@ -496,49 +497,60 @@ async function hydrateBindings(
 // ---------------------------------------------------------------------------
 
 export async function resolveStoreContext(
-  identity: {
+  identity?: {
     id: string | null;
     role?: string;
     store_id?: string | null;
-    memberships?: Array<{ store_id: string }>;
+    memberships?: Array<{ store_id: string; role?: string }>;
   },
   targetStoreId?: string | null,
   documentId?: string | null,
 ): Promise<string> {
-  const isGlobalAdmin = identity.role === "platform_admin" || identity.role === "master";
+  if (identity) {
+    const isGlobalAdmin = identity.role === "platform_admin" || identity.role === "master";
 
-  // 1. Se targetStoreId foi passado explicitamente
-  if (targetStoreId) {
-    if (isGlobalAdmin) return targetStoreId;
-    if (identity.store_id === targetStoreId) return targetStoreId;
-    if (identity.memberships?.some((m) => m.store_id === targetStoreId)) return targetStoreId;
-  }
-
-  // 2. Se documentId foi fornecido, resolve do documento no banco
-  if (documentId) {
-    const db = getServerClient();
-    const { data: doc } = await db
-      .from("experience_documents")
-      .select("store_id")
-      .eq("id", documentId)
-      .maybeSingle();
-
-    if (doc?.store_id) {
-      if (isGlobalAdmin) return doc.store_id;
-      if (identity.store_id === doc.store_id) return doc.store_id;
-      if (identity.memberships?.some((m) => m.store_id === doc.store_id)) return doc.store_id;
-      throw new Error("Acesso negado ao documento desta loja.");
+    // 1. Se targetStoreId foi passado explicitamente
+    if (targetStoreId) {
+      if (isGlobalAdmin) return targetStoreId;
+      if (identity.store_id === targetStoreId) return targetStoreId;
+      if (identity.memberships?.some((m) => m.store_id === targetStoreId)) return targetStoreId;
+      if (identity.store_id) return identity.store_id;
     }
+
+    // 2. Se documentId foi fornecido, resolve do documento no banco
+    if (documentId) {
+      const db = getServerClient();
+      const { data: doc } = await db
+        .from("experience_documents")
+        .select("store_id")
+        .eq("id", documentId)
+        .maybeSingle();
+
+      if (doc?.store_id) {
+        if (isGlobalAdmin) return doc.store_id;
+        if (identity.store_id === doc.store_id) return doc.store_id;
+        if (identity.memberships?.some((m) => m.store_id === doc.store_id)) return doc.store_id;
+        throw new Error("Acesso negado ao documento desta loja.");
+      }
+    }
+
+    // 3. Fallback para store_id ativo na identidade
+    if (identity.store_id) {
+      return identity.store_id;
+    }
+
+    // Administrador global também precisa declarar o tenant-alvo.
+    // Nunca inferir uma loja arbitrária para uma operação de escrita/leitura.
+    throw new Error("Nenhum contexto de loja válido encontrado para a operação do builder.");
   }
 
-  // 3. Fallback para store_id ativo na identidade
-  if (identity.store_id) {
-    return identity.store_id;
-  }
-
-  // Administrador global também precisa declarar o tenant-alvo.
-  // Nunca inferir uma loja arbitrária para uma operação de escrita/leitura.
-  throw new Error("Nenhum contexto de loja válido encontrado para a operação do builder.");
+  const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+  const authCtx = await authorizeBuilderStoreContext({
+    requestedStoreId: targetStoreId || undefined,
+    documentId: documentId || undefined,
+    allowPlatformRootForGlobalAdmin: true,
+  });
+  return authCtx.storeId;
 }
 
 export const listExperienceDocuments = createServerFn({ method: "GET" })
@@ -654,27 +666,22 @@ async function hydrateOmniVitrineCollections(db: any, storeId: string | null): P
         .eq("is_active", true)
         .limit(16),
     ),
-    storeId
-      ? safeQuery(
-          db
-            .from("banners")
-            .select("*")
-            .eq("store_id", storeId)
-            .eq("is_active", true)
-            .order("sort_order", { ascending: true })
-            .limit(12),
-        )
-      : Promise.resolve([]),
-    storeId
-      ? safeQuery(
-          db
-            .from("hotpages")
-            .select("id, slug, title, subtitle, category, cover_url, is_published")
-            .eq("store_id", storeId)
-            .eq("is_published", true)
-            .limit(12),
-        )
-      : Promise.resolve([]),
+    safeQuery(
+      db
+        .from("banners")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .limit(12),
+    ),
+    safeQuery(
+      db
+        .from("hotpages")
+        .select("id, slug, title, description, module, cover_image_url, badge_label, target_route, is_active")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .limit(12),
+    ),
   ]);
 
   return { classifieds, posts, flyers, events, jobs, stores, banners, hotpages };
@@ -684,37 +691,26 @@ export const getExperienceDocument = createServerFn({ method: "GET" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data: input }) => {
     try {
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      if (!identity.id) {
-        throw new Error("Não autenticado.");
-      }
-
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      const authCtx = await authorizeBuilderStoreContext({ documentId: input.id });
       const db = getServerClient();
+      const doc = authCtx.document as Record<string, any>;
+      const storeId = authCtx.storeId;
 
-      // 1. Busca documento diretamente por ID (permite resolução tolerante cross-tenant para admin/membro)
-      const { data: doc, error: docError } = await db
-        .from("experience_documents")
-        .select("*")
-        .eq("id", input.id)
-        .maybeSingle();
-
-      if (docError) throw docError;
-      if (!doc) throw new Error("Documento não encontrado.");
-
-      const storeId = await resolveStoreContext(identity, doc.store_id, doc.id);
-
-      // 2. Busca versão rascunho mais recente (ou publicada)
+      // 2. Busca versões recentes priorizando rascunho ativo (draft) sobre publicada
       const { data: versions, error: versionsError } = await db
         .from("experience_versions")
         .select("*")
         .eq("document_id", input.id)
+        .order("version_number", { ascending: false })
         .order("created_at", { ascending: false })
-        .limit(1);
+        .limit(5);
 
       if (versionsError) throw versionsError;
 
-      let version = versions && versions.length > 0 ? versions[0] : null;
+      let version =
+        versions?.find((v) => v.status === "draft") ||
+        (versions && versions.length > 0 ? versions[0] : null);
 
       // Auto-cria versão rascunho inicial se inexistente
       if (!version) {
@@ -781,18 +777,18 @@ export const createExperienceDocument = createServerFn({ method: "POST" })
         "institutional",
       ]),
       template_id: z.string().optional(),
+      store_id: z.string().uuid().optional(),
     }),
   )
   .handler(async ({ data: input }) => {
     try {
-      await requireAdmin(); // SECURITY FIX
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      const authCtx = await authorizeBuilderStoreContext({
+        requestedStoreId: input.store_id,
+        allowPlatformRootForGlobalAdmin: true,
+      });
       const db = getServerClient();
-
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-      const storeData = { id: identity.store_id };
-      if (!storeData) throw new Error("No store found");
+      const storeData = { id: authCtx.storeId };
 
       // 1. Build initial OmniPageDocument snapshot from selected template
       const { createEmptyOmniPage } = await import("@/types/omni-builder");
@@ -1141,19 +1137,14 @@ export const createExperienceDocument = createServerFn({ method: "POST" })
 
 export const listMediaAssets = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    await requireAdmin(); // SECURITY FIX
+    const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+    const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
     const db = getServerClient();
-
-    const { getServerIdentity } = await import("@/lib/server-access");
-    const identity = await getServerIdentity();
-    if (!identity.store_id) throw new Error("No store found");
-    const store = { id: identity.store_id };
-    if (!store) throw new Error("No store found");
 
     const { data, error } = await db
       .from("media_assets")
       .select("*")
-      .eq("store_id", store.id)
+      .eq("store_id", authCtx.storeId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -1172,22 +1163,20 @@ export const updateExperienceDocument = createServerFn({ method: "POST" })
       title: z.string().min(1).max(200),
       slug: z.string().regex(/^[a-z0-9-]+$/),
       is_active: z.boolean(),
+      seo_metadata: z.record(z.any()).optional(),
     }),
   )
   .handler(async ({ data: input }) => {
     try {
-      await requireAdmin(); // SECURITY FIX
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      const authCtx = await authorizeBuilderStoreContext({ documentId: input.id });
       const db = getServerClient();
 
-      // Check slug collision
+      // Check slug collision within the same store
       const { data: existing } = await db
         .from("experience_documents")
         .select("id")
-        .eq("store_id", identity.store_id)
+        .eq("store_id", authCtx.storeId)
         .eq("slug", input.slug)
         .neq("id", input.id)
         .eq("is_active", true)
@@ -1197,23 +1186,31 @@ export const updateExperienceDocument = createServerFn({ method: "POST" })
         throw new Error("Este slug já está em uso por outra página ativa.");
       }
 
+      const updatePayload: Record<string, any> = {
+        title: input.title,
+        slug: input.slug,
+        is_active: input.is_active,
+        updated_at: new Date().toISOString(),
+      };
+      if (input.seo_metadata) {
+        updatePayload.seo_metadata = {
+          ...((authCtx.document?.seo_metadata as Record<string, any>) || {}),
+          ...input.seo_metadata,
+        };
+      }
+
       const { error } = await db
         .from("experience_documents")
-        .update({
-          title: input.title,
-          slug: input.slug,
-          is_active: input.is_active,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq("id", input.id)
-        .eq("store_id", identity.store_id);
+        .eq("store_id", authCtx.storeId);
 
       if (error) throw error;
 
       return { status: "success" as const };
     } catch (e: unknown) {
       console.error("[builder.functions] updateExperienceDocument error:", e);
-      throw new Error("Erro ao atualizar configurações.");
+      throw new Error(e instanceof Error ? e.message : "Erro ao atualizar configurações.");
     }
   });
 
@@ -1471,13 +1468,14 @@ export const checkExperienceDocumentExists = createServerFn({ method: "GET" })
       await requireAdmin(); // SECURITY FIX
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
+      const storeId = identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!storeId) throw new Error("Nenhuma loja ativa selecionada.");
 
       const db = getServerClient();
       const { data: doc } = await db
         .from("experience_documents")
         .select("id")
-        .eq("store_id", identity.store_id)
+        .eq("store_id", storeId)
         .eq("slug", slug)
         .eq("document_type", document_type)
         .eq("is_active", true)
@@ -1497,8 +1495,8 @@ export const getOrCreateHomeDocument = createServerFn({ method: "POST" })
       // 0. Get Identity
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-      const storeId = identity.store_id;
+      const storeId = identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!storeId) throw new Error("Nenhuma loja ativa selecionada.");
 
       const db = getServerClient();
 
@@ -1575,8 +1573,8 @@ export const applyHomeTemplate = createServerFn({ method: "POST" })
       await requireAdmin(); // SECURITY FIX
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-      const storeId = identity.store_id;
+      const storeId = identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!storeId) throw new Error("Nenhuma loja ativa selecionada.");
 
       const db = getServerClient();
 
@@ -2253,8 +2251,8 @@ export const getOrCreateInstitutionalDocument = createServerFn({ method: "POST" 
       // 0. Get Identity
       const { getServerIdentity } = await import("@/lib/server-access");
       const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-      const storeId = identity.store_id;
+      const storeId = identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!storeId) throw new Error("Nenhuma loja ativa selecionada.");
 
       if (input?.overwrite) {
         await db
@@ -2398,89 +2396,29 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
         }
       }
 
-      // Fallback 2: se acessado via rota pública /paginas/$slug sem subdomínio específico da agência/loja, localiza pelo slug ativo
+      // Fallback 2: apenas na loja raiz canônica da plataforma (NUNCA vazar páginas de outras lojas privadas)
       if (!doc && input.slug !== "home") {
-        const { data: globalSlugDoc } = await db
-          .from("experience_documents")
-          .select("*")
-          .eq("slug", input.slug)
-          .eq("is_active", true)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        const { findPlatformRootStoreIdReadOnly } = await import("@/lib/server-access");
+        const platformRootStoreId = await findPlatformRootStoreIdReadOnly(db);
+        if (platformRootStoreId && platformRootStoreId !== storeId) {
+          const { data: rootSlugDoc } = await db
+            .from("experience_documents")
+            .select("*")
+            .eq("store_id", platformRootStoreId)
+            .eq("slug", input.slug)
+            .eq("is_active", true)
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-        if (globalSlugDoc) {
-          doc = globalSlugDoc;
-          docError = null;
+          if (rootSlugDoc) {
+            doc = rootSlugDoc;
+            docError = null;
+          }
         }
       }
 
       if (docError) {
-        if (
-          docError.code === "PGRST116" &&
-          input.slug === "home" &&
-          input.document_type === "storefront"
-        ) {
-          // Auto-seed default storefront template for new store
-          const { HOME_TEMPLATES_LIBRARY } = await import("@/lib/home-templates-library");
-          const { randomUUID } = await import("crypto");
-          const defaultPreset =
-            HOME_TEMPLATES_LIBRARY["minimalist_luxury"] || Object.values(HOME_TEMPLATES_LIBRARY)[0];
-
-          const { data: newDoc, error: newDocError } = await db
-            .from("experience_documents")
-            .insert({
-              store_id: storeId,
-              title: "Vitrine Principal",
-              slug: "home",
-              document_type: "storefront",
-              is_active: true,
-            })
-            .select()
-            .single();
-
-          if (newDocError || !newDoc)
-            throw newDocError || new Error("Falha ao criar documento storefront");
-          if (newDoc) {
-            const { data: newVersion, error: newVersionError } = await db
-              .from("experience_versions")
-              .insert({
-                document_id: newDoc.id,
-                version_number: 1,
-                status: "published",
-              })
-              .select()
-              .single();
-            if (newVersionError || !newVersion)
-              throw newVersionError || new Error("Falha ao criar versão publicada");
-
-            if (newVersion && defaultPreset) {
-              const seedNodes = defaultPreset.nodesFactory(() => randomUUID());
-              const nodesToInsert = seedNodes.map((n: any) => ({
-                ...n,
-                version_id: newVersion.id,
-              }));
-              const { error: nodesError } = await db.from("experience_nodes").insert(nodesToInsert);
-              if (nodesError) throw nodesError;
-
-              const hydratedNodes = await hydrateBindings(nodesToInsert as any, db, storeId);
-              const buildTree = (flatNodes: any[], parentId: string | null = null): any[] => {
-                return flatNodes
-                  .filter((n) => (parentId === null ? !n.parent_id : n.parent_id === parentId))
-                  .sort((a, b) => a.sort_order - b.sort_order)
-                  .map((node) => ({
-                    ...node,
-                    children: buildTree(flatNodes, node.id),
-                  }));
-              };
-              const tree = buildTree(hydratedNodes);
-              return {
-                status: "ok" as const,
-                data: { document: newDoc as ExperienceDocument, tree },
-              };
-            }
-          }
-        }
         if (docError.code === "PGRST116") return { status: "not_found" as const };
         throw docError;
       }
@@ -2497,29 +2435,34 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
 
       const effectiveDocStoreId = doc.store_id || storeId;
 
-      // Suporte a Documento Moderno Omni-Builder com hidratação da loja proprietária e portal de notícias
-      let omniDoc =
-        (doc.settings as any)?.omni_page_published ||
-        (doc.settings as any)?.omni_page ||
-        (doc.settings as any)?.omni_page_draft ||
-        null;
+      // ESTRITAMENTE snapshots PUBLICADOS — rascunhos (omni_page_draft / draft versions) NUNCA vazam para rotas públicas!
+      const docSettings = ((doc.settings as Record<string, any>) || {});
+      const legacyPublishedOmni =
+        !docSettings.omni_page_published &&
+        !docSettings.omni_page_draft &&
+        docSettings.omni_page?.is_published === true
+          ? docSettings.omni_page
+          : null;
+
+      let omniDoc = docSettings.omni_page_published || legacyPublishedOmni || null;
 
       if (!omniDoc) {
-        const { data: recentVersions } = await db
+        const { data: publishedVersionRow } = await db
           .from("experience_versions")
           .select("*")
           .eq("document_id", doc.id)
+          .eq("status", "published")
           .order("version_number", { ascending: false })
           .order("created_at", { ascending: false })
-          .limit(3);
+          .limit(1)
+          .maybeSingle();
 
-        const targetVer =
-          recentVersions?.find((v) => v.status === "published" && v.document_snapshot) ||
-          recentVersions?.find((v) => v.document_snapshot) ||
-          null;
-
-        if (targetVer?.document_snapshot) {
-          omniDoc = targetVer.document_snapshot;
+        if (
+          publishedVersionRow?.document_snapshot &&
+          Array.isArray((publishedVersionRow.document_snapshot as any)?.blocks) &&
+          (publishedVersionRow.document_snapshot as any).blocks.length > 0
+        ) {
+          omniDoc = publishedVersionRow.document_snapshot;
         }
       }
 
@@ -2718,59 +2661,66 @@ export const getActiveGlobalPopups = createServerFn({ method: "GET" }).handler(a
     const storeId = await resolveTenantStoreId();
     if (!storeId) return [];
 
-    const db = getServerClient();
+    const cacheKey = "active_popups:" + storeId;
+    return await getOrSetMicroCache(
+      cacheKey,
+      async () => {
+        const db = getServerClient();
 
-    const { data: docs, error: docError } = await db
-      .from("experience_documents")
-      .select("*")
-      .eq("store_id", storeId)
-      .eq("document_type", "campaign_popup")
-      .eq("is_active", true);
-
-    if (docError) throw docError;
-    if (!docs || docs.length === 0) return [];
-
-    // Load published versions for all active popup documents
-    const activePopups = await Promise.all(
-      docs.map(async (doc) => {
-        const { data: versions } = await db
-          .from("experience_versions")
-          .select("id")
-          .eq("document_id", doc.id)
-          .eq("status", "published")
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        const version = versions && versions.length > 0 ? versions[0] : null;
-        if (!version) return null;
-
-        const { data: nodesData } = await db
-          .from("experience_nodes")
+        const { data: docs, error: docError } = await db
+          .from("experience_documents")
           .select("*")
-          .eq("version_id", version.id)
-          .order("sort_order", { ascending: true });
+          .eq("store_id", storeId)
+          .eq("document_type", "campaign_popup")
+          .eq("is_active", true);
 
-        const nodes = (nodesData || []) as ExperienceNode[];
+        if (docError) throw docError;
+        if (!docs || docs.length === 0) return [];
 
-        const buildTree = (flatNodes: any[], parentId: string | null = null): any[] => {
-          return flatNodes
-            .filter((n) => (parentId === null ? !n.parent_id : n.parent_id === parentId))
-            .sort((a, b) => a.sort_order - b.sort_order)
-            .map((node) => ({
-              ...node,
-              children: buildTree(flatNodes, node.id),
-            }));
-        };
+        // Load published versions for all active popup documents
+        const activePopups = await Promise.all(
+          docs.map(async (doc) => {
+            const { data: versions } = await db
+              .from("experience_versions")
+              .select("id")
+              .eq("document_id", doc.id)
+              .eq("status", "published")
+              .order("created_at", { ascending: false })
+              .limit(1);
 
-        return {
-          id: doc.id,
-          trigger_rules: doc.trigger_rules || {},
-          tree: buildTree(nodes),
-        };
-      }),
+            const version = versions && versions.length > 0 ? versions[0] : null;
+            if (!version) return null;
+
+            const { data: nodesData } = await db
+              .from("experience_nodes")
+              .select("*")
+              .eq("version_id", version.id)
+              .order("sort_order", { ascending: true });
+
+            const nodes = (nodesData || []) as ExperienceNode[];
+
+            const buildTree = (flatNodes: any[], parentId: string | null = null): any[] => {
+              return flatNodes
+                .filter((n) => (parentId === null ? !n.parent_id : n.parent_id === parentId))
+                .sort((a, b) => a.sort_order - b.sort_order)
+                .map((node) => ({
+                  ...node,
+                  children: buildTree(flatNodes, node.id),
+                }));
+            };
+
+            return {
+              id: doc.id,
+              trigger_rules: doc.trigger_rules || {},
+              tree: buildTree(nodes),
+            };
+          }),
+        );
+
+        return activePopups.filter(Boolean);
+      },
+      60_000,
     );
-
-    return activePopups.filter(Boolean);
   } catch (e) {
     throw new Error("Erro ao carregar popups globais.");
   }
@@ -3034,23 +2984,28 @@ export const publishBuilderVersion = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 
 export const getBuilderProducts = createServerFn({ method: "GET" })
-  .validator(z.object({ limit: z.number().optional() }).optional())
+  .validator(z.object({ limit: z.number().optional(), storeId: z.string().uuid().optional() }).optional())
   .handler(async ({ data: input }) => {
     try {
-      await requireAdmin(); // SECURITY FIX
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      const authCtx = await authorizeBuilderStoreContext({
+        requestedStoreId: input?.storeId,
+        allowPlatformRootForGlobalAdmin: true,
+      });
       const db = getServerClient();
       const { data, error } = await db
         .from("products")
         .select(
           "id, title, slug, price_cents, compare_at_cents, media:product_media(url, alt, sort_order)",
         )
-        .eq("status", "active")
+        .eq("store_id", authCtx.storeId)
+        .eq("status", "published")
         .order("created_at", { ascending: false })
-        .limit(input?.limit || 4);
+        .limit(input?.limit || 8);
 
       if (error) throw error;
 
-      const formatted = data.map((p) => {
+      const formatted = (data || []).map((p) => {
         const sortedMedia = p.media
           ? [...p.media].sort((a: any, b: any) => a.sort_order - b.sort_order)
           : [];
@@ -3076,11 +3031,13 @@ export const getBuilderProducts = createServerFn({ method: "GET" })
 
 export const getBuilderReviews = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    await requireAdmin(); // SECURITY FIX
+    const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+    const authCtx = await authorizeBuilderStoreContext({ allowPlatformRootForGlobalAdmin: true });
     const db = getServerClient();
     const { data, error } = await db
       .from("reviews")
       .select("id, rating, comment, user_id, profiles(full_name, avatar_url)")
+      .eq("store_id", authCtx.storeId)
       .eq("status", "approved")
       .not("comment", "is", null)
       .neq("comment", "")
@@ -3089,7 +3046,7 @@ export const getBuilderReviews = createServerFn({ method: "GET" }).handler(async
 
     if (error) throw error;
 
-    const formatted = data.map((r) => {
+    const formatted = (data || []).map((r) => {
       const profile = (r.profiles as any) || {};
       return {
         author: profile.full_name || "Cliente",
@@ -3109,19 +3066,20 @@ export const getBuilderReviews = createServerFn({ method: "GET" }).handler(async
 });
 
 export const getOrCreateStorefrontExperienceDocument = createServerFn({ method: "POST" })
-  .validator(z.object({ template_id: z.string().optional() }).optional())
+  .validator(z.object({ template_id: z.string().optional(), store_id: z.string().uuid().optional() }).optional())
   .handler(async ({ data: input }) => {
-    await requireAdmin();
-    const { getServerIdentity } = await import("@/lib/server-access");
-    const identity = await getServerIdentity();
-    if (!identity.store_id) throw new Error("No store found");
+    const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+    const authCtx = await authorizeBuilderStoreContext({
+      requestedStoreId: input?.store_id,
+      allowPlatformRootForGlobalAdmin: true,
+    });
     const db = getServerClient();
 
     // Check if storefront document exists
     const { data: existing } = await db
       .from("experience_documents")
       .select("id")
-      .eq("store_id", identity.store_id)
+      .eq("store_id", authCtx.storeId)
       .eq("slug", "home")
       .eq("document_type", "storefront")
       .maybeSingle();
@@ -3137,6 +3095,7 @@ export const getOrCreateStorefrontExperienceDocument = createServerFn({ method: 
         slug: "home",
         document_type: "storefront",
         template_id: input?.template_id || "homepage_classic",
+        store_id: authCtx.storeId,
       },
     });
 
@@ -3144,19 +3103,20 @@ export const getOrCreateStorefrontExperienceDocument = createServerFn({ method: 
   });
 
 export const getOrCreateBiolinkExperienceDocument = createServerFn({ method: "POST" })
-  .validator(z.object({ template_id: z.string().optional() }).optional())
+  .validator(z.object({ template_id: z.string().optional(), store_id: z.string().uuid().optional() }).optional())
   .handler(async ({ data: input }) => {
-    await requireAdmin();
-    const { getServerIdentity } = await import("@/lib/server-access");
-    const identity = await getServerIdentity();
-    if (!identity.store_id) throw new Error("No store found");
+    const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+    const authCtx = await authorizeBuilderStoreContext({
+      requestedStoreId: input?.store_id,
+      allowPlatformRootForGlobalAdmin: true,
+    });
     const db = getServerClient();
 
     // Check if biolink document exists
     const { data: existing } = await db
       .from("experience_documents")
       .select("id")
-      .eq("store_id", identity.store_id)
+      .eq("store_id", authCtx.storeId)
       .eq("slug", "bio")
       .eq("document_type", "biolink")
       .maybeSingle();
@@ -3172,6 +3132,7 @@ export const getOrCreateBiolinkExperienceDocument = createServerFn({ method: "PO
         slug: "bio",
         document_type: "biolink",
         template_id: input?.template_id || "biolink_classic",
+        store_id: authCtx.storeId,
       },
     });
 
@@ -3181,10 +3142,8 @@ export const getOrCreateBiolinkExperienceDocument = createServerFn({ method: "PO
 export const duplicateExperienceDocument = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data: input }) => {
-    await requireAdmin();
-    const { getServerIdentity } = await import("@/lib/server-access");
-    const identity = await getServerIdentity();
-    if (!identity.store_id) throw new Error("No store found");
+    const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+    const authCtx = await authorizeBuilderStoreContext({ documentId: input.id });
     const db = getServerClient();
 
     // 1. Get original doc
@@ -3192,19 +3151,54 @@ export const duplicateExperienceDocument = createServerFn({ method: "POST" })
     if (!original.data?.document) throw new Error("Documento original não encontrado.");
 
     const origDoc = original.data.document;
+    const origVersion = original.data.version;
     const origNodes: any[] = original.data.nodes || [];
+    const origSettings = ((origDoc.settings as Record<string, any>) || {});
 
     const newSlug = `${origDoc.slug}-copia-${Date.now().toString().slice(-4)}`;
     const newTitle = `${origDoc.title} (Cópia)`;
+    const newDocId = crypto.randomUUID();
+
+    const sourceOmniSnapshot =
+      origVersion?.document_snapshot ||
+      origSettings.omni_page_draft ||
+      origSettings.omni_page_published ||
+      origSettings.omni_page ||
+      null;
+
+    const copiedOmniDraft = sourceOmniSnapshot
+      ? {
+          ...sourceOmniSnapshot,
+          id: newDocId,
+          store_id: authCtx.storeId,
+          slug: newSlug,
+          title: newTitle,
+          is_published: false,
+          updated_at: new Date().toISOString(),
+        }
+      : undefined;
+
+    const copiedSettings: Record<string, any> = {
+      ...origSettings,
+      omni_page_published: undefined,
+      published_version_id: undefined,
+      published_at: undefined,
+      ...(copiedOmniDraft ? { omni_page_draft: copiedOmniDraft } : {}),
+    };
+    delete copiedSettings.omni_page_published;
+    delete copiedSettings.omni_page;
 
     // 2. Create new document
     const { data: newDoc, error: docError } = await db
       .from("experience_documents")
       .insert({
-        store_id: identity.store_id,
+        id: newDocId,
+        store_id: authCtx.storeId,
         title: newTitle,
         slug: newSlug,
-        document_type: origDoc.document_type || "campaign",
+        document_type: origDoc.document_type === "storefront" ? "landing_page" : (origDoc.document_type || "campaign"),
+        seo_metadata: origDoc.seo_metadata || {},
+        settings: copiedSettings,
         is_active: true,
       })
       .select()
@@ -3212,13 +3206,14 @@ export const duplicateExperienceDocument = createServerFn({ method: "POST" })
 
     if (docError || !newDoc) throw new Error("Erro ao duplicar documento.");
 
-    // 3. Create version
+    // 3. Create draft version preserving Omni snapshot
     const { data: newVersion, error: verError } = await db
       .from("experience_versions")
       .insert({
         document_id: newDoc.id,
         version_number: 1,
         status: "draft",
+        ...(copiedOmniDraft ? { document_snapshot: copiedOmniDraft } : {}),
       })
       .select()
       .single();
@@ -3260,10 +3255,8 @@ export const deleteExperienceDocument = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data: input }) => {
     try {
-      await requireAdmin();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      const authCtx = await authorizeBuilderStoreContext({ documentId: input.id });
 
       const db = getServerClient();
 
@@ -3272,7 +3265,7 @@ export const deleteExperienceDocument = createServerFn({ method: "POST" })
         .from("experience_documents")
         .delete()
         .eq("id", input.id)
-        .eq("store_id", identity.store_id);
+        .eq("store_id", authCtx.storeId);
 
       if (error) throw error;
       return { status: "success" as const };
@@ -3290,6 +3283,9 @@ export const listExperiencePages = createServerFn({ method: "GET" })
   .validator(z.object({ document_id: z.string().uuid() }))
   .handler(async ({ data: { document_id } }): Promise<ExperiencePage[]> => {
     try {
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      await authorizeBuilderStoreContext({ documentId: document_id });
+
       const db = getServerClient();
       const { data, error } = await db
         .from("experience_pages")
@@ -3314,9 +3310,8 @@ export const saveExperiencePage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: input }) => {
     try {
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      if (!identity.id) throw new Error("Não autenticado.");
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      await authorizeBuilderStoreContext({ documentId: input.document_id });
 
       const db = getServerClient();
 
@@ -3374,9 +3369,8 @@ export const deleteExperiencePage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: input }) => {
     try {
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      if (!identity.id) throw new Error("Não autenticado.");
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      await authorizeBuilderStoreContext({ documentId: input.document_id });
 
       const db = getServerClient();
       const { error } = await db
@@ -3397,29 +3391,17 @@ export const setActiveStorefrontDocument = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data: input }) => {
     try {
-      await requireAdmin();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      const authCtx = await authorizeBuilderStoreContext({ documentId: input.id });
       const db = getServerClient();
-
-      // 1. Get the target document to know its type
-      const { data: targetDoc, error: findError } = await db
-        .from("experience_documents")
-        .select("id, document_type")
-        .eq("id", input.id)
-        .eq("store_id", identity.store_id)
-        .single();
-
-      if (findError || !targetDoc) throw new Error("Documento não encontrado.");
+      const targetDoc = authCtx.document as Record<string, any>;
 
       // 2. If it is a storefront or biolink, ensure only this one is active for that type
       if (targetDoc.document_type === "storefront" || targetDoc.document_type === "biolink") {
         await db
           .from("experience_documents")
           .update({ is_active: false })
-          .eq("store_id", identity.store_id)
+          .eq("store_id", authCtx.storeId)
           .eq("document_type", targetDoc.document_type);
       }
 
@@ -3428,7 +3410,7 @@ export const setActiveStorefrontDocument = createServerFn({ method: "POST" })
         .from("experience_documents")
         .update({ is_active: true })
         .eq("id", input.id)
-        .eq("store_id", identity.store_id);
+        .eq("store_id", authCtx.storeId);
 
       if (updateError) throw updateError;
 
@@ -3443,6 +3425,8 @@ export const updateExperienceDocumentSettings = createServerFn({ method: "POST" 
   .validator(
     z.object({
       document_id: z.string().uuid(),
+      seo_metadata: z.record(z.any()).optional(),
+      custom_domain: z.string().optional().nullable(),
       settings: z.object({
         theme: z
           .object({
@@ -3472,24 +3456,12 @@ export const updateExperienceDocumentSettings = createServerFn({ method: "POST" 
   )
   .handler(async ({ data: input }) => {
     try {
-      await requireAdmin();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      if (!identity.store_id) throw new Error("No store found");
-
+      const { authorizeBuilderStoreContext } = await import("@/lib/server-access");
+      const authCtx = await authorizeBuilderStoreContext({ documentId: input.document_id });
       const db = getServerClient();
 
-      // 1. Fetch current settings to merge
-      const { data: currentDoc, error: fetchErr } = await db
-        .from("experience_documents")
-        .select("settings")
-        .eq("id", input.document_id)
-        .eq("store_id", identity.store_id)
-        .single();
-
-      if (fetchErr || !currentDoc) throw new Error("Documento não encontrado.");
-
-      const currentSettings = (currentDoc.settings || {}) as Record<string, any>;
+      const currentDoc = authCtx.document as Record<string, any>;
+      const currentSettings = (currentDoc?.settings || {}) as Record<string, any>;
       const mergedSettings = {
         ...currentSettings,
         ...input.settings,
@@ -3499,15 +3471,26 @@ export const updateExperienceDocumentSettings = createServerFn({ method: "POST" 
         },
       };
 
+      const updateFields: Record<string, any> = {
+        settings: mergedSettings,
+        updated_at: new Date().toISOString(),
+      };
+      if (input.seo_metadata) {
+        updateFields.seo_metadata = {
+          ...((currentDoc?.seo_metadata as Record<string, any>) || {}),
+          ...input.seo_metadata,
+        };
+      }
+      if (input.custom_domain !== undefined) {
+        updateFields.custom_domain = input.custom_domain;
+      }
+
       const { data: updatedDoc, error: updateErr } = await db
         .from("experience_documents")
-        .update({
-          settings: mergedSettings,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateFields)
         .eq("id", input.document_id)
-        .eq("store_id", identity.store_id)
-        .select("id, settings")
+        .eq("store_id", authCtx.storeId)
+        .select("id, settings, seo_metadata, custom_domain")
         .single();
 
       if (updateErr) throw updateErr;

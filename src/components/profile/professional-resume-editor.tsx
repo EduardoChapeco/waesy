@@ -628,7 +628,7 @@ export function ProfessionalResumeEditor({
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
  <div>
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
- <Award className="size-4 text-amber-500" />
+ <Award className="size-4 text-warning-strong" />
  <span>Licenças & Certificados ({certifications.length})</span>
  </h3>
  <p className="text-xs text-muted-foreground">
@@ -662,7 +662,7 @@ export function ProfessionalResumeEditor({
  className="p-4 rounded-lg bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
  >
  <div className="flex items-start gap-3 min-w-0">
- <div className="size-10 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 border border-amber-500/20">
+ <div className="size-10 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center shrink-0 border border-warning/20">
  <Award className="size-5" />
  </div>
  <div className="space-y-1 min-w-0">
@@ -1760,7 +1760,7 @@ export function ExperienceEditSheet({
               />
 
               {suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg bg-popover border border-border shadow-lg p-1 space-y-1">
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg bg-popover border border-border shadow-overlay p-1 space-y-1">
                   {suggestions.map((s) => (
                     <button
                       key={s.id}
@@ -1919,14 +1919,14 @@ export function ExperienceEditSheet({
                         className={cn(
                           "size-5 transition-colors",
                           star <= companyRating
-                            ? "fill-amber-400 text-amber-400"
+                            ? "fill-warning text-warning-strong"
                             : "text-muted-foreground/40 hover:text-muted-foreground"
                         )}
                       />
                     </button>
                   ))}
                   {companyRating > 0 && (
-                    <span className="text-xs font-mono font-bold text-amber-500 ml-2">
+                    <span className="text-xs font-mono font-bold text-warning-strong ml-2">
                       {companyRating}.0 / 5.0
                     </span>
                   )}

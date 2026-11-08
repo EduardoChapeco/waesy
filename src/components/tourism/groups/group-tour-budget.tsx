@@ -19,7 +19,7 @@ const CATEGORY_LABELS: Record<string, { label: string; className: string }> = {
  transport: { label: "Transporte / Ônibus", className: "bg-sky-500/10 text-sky-600 border-sky-500/30" },
  hotel: { label: "Hospedagem / Hotel", className: "bg-indigo-500/10 text-indigo-600 border-indigo-500/30" },
  insurance: { label: "Seguro Viagem", className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" },
- tickets: { label: "Ingressos / Passeios", className: "bg-amber-500/10 text-amber-600 border-amber-500/30" },
+ tickets: { label: "Ingressos / Passeios", className: "bg-warning/10 text-warning-strong border-warning/30" },
  guide: { label: "Guia Local", className: "bg-purple-500/10 text-purple-600 border-purple-500/30" },
  food: { label: "Alimentação / Refeições", className: "bg-rose-500/10 text-rose-600 border-rose-500/30" },
  other: { label: "Outros Custos", className: "bg-muted text-muted-foreground border-border" },
@@ -159,9 +159,9 @@ export function GroupTourBudgetManager({
  <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-semibold">Break-Even (Mínimo)</span>
- <ShieldCheck className="size-4 text-amber-500" />
+ <ShieldCheck className="size-4 text-warning-strong" />
  </div>
- <p className="text-xl sm:text-2xl font-extrabold text-foreground font-mono text-amber-600">
+ <p className="text-xl sm:text-2xl font-extrabold text-foreground font-mono text-warning-strong">
  {summary?.breakEvenPax ?? 0} passageiros
  </p>
  <p className="text-2xs text-muted-foreground">
@@ -203,7 +203,7 @@ export function GroupTourBudgetManager({
  <Button
  type="button"
  onClick={() => setModalOpen(true)}
- className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs"
+ className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" /> Adicionar Custo
  </Button>
@@ -243,7 +243,7 @@ export function GroupTourBudgetManager({
  variant="ghost"
  size="icon"
  onClick={() => handleDeleteCost(item.id)}
- className="size-7 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer"
+ className="size-7 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Trash2 className="size-3.5" />
  </Button>
@@ -323,7 +323,7 @@ export function GroupTourBudgetManager({
  variant={isFixed ? "default" : "outline"}
  size="sm"
  onClick={() => setIsFixed(!isFixed)}
- className="h-8 px-3 rounded-lg text-xs cursor-pointer"
+ className="h-8 px-3 rounded-lg text-xs cursor-pointer min-h-11 sm:min-h-0"
  >
  {isFixed ? "Fixo" : "Por PAX"}
  </Button>
@@ -335,14 +335,14 @@ export function GroupTourBudgetManager({
  variant="ghost"
  onClick={() => setModalOpen(false)}
  disabled={submitting}
- className="h-10 px-4 rounded-lg text-xs cursor-pointer"
+ className="h-10 px-4 rounded-lg text-xs cursor-pointer min-h-11 sm:min-h-0"
  >
  Cancelar
  </Button>
  <Button
  type="submit"
  disabled={submitting || !description.trim() || !amountStr.trim()}
- className="h-10 px-5 rounded-lg text-xs font-semibold cursor-pointer"
+ className="h-10 px-5 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
  >
  {submitting ? "Adicionando..." : "Salvar Custo"}
  </Button>

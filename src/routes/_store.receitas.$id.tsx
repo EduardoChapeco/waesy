@@ -101,7 +101,7 @@ function RecipeDetailPage() {
         <p className="text-xs text-muted-foreground">
           Esta receita pode ter sido removida ou não está disponível no momento.
         </p>
-        <Button asChild variant="outline" className="rounded-lg text-xs h-9">
+        <Button asChild variant="outline" className="rounded-lg text-xs h-9 min-h-11 sm:min-h-0">
           <Link to="/receitas">Voltar para Receitas</Link>
         </Button>
       </div>
@@ -220,7 +220,7 @@ function RecipeDetailPage() {
               }}
               variant="ghost"
               size="sm"
-              className="rounded-lg h-8 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2"
+              className="rounded-lg h-8 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 min-h-11 sm:min-h-0"
               title="Gerar Story para Instagram (9:16)"
             >
               <Star className="size-3.5 text-primary" />
@@ -231,7 +231,7 @@ function RecipeDetailPage() {
               onClick={handlePrint}
               variant="ghost"
               size="sm"
-              className="rounded-lg h-8 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2"
+              className="rounded-lg h-8 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 min-h-11 sm:min-h-0"
               title="Imprimir ou Salvar PDF"
             >
               <Printer className="size-3.5" />
@@ -244,7 +244,7 @@ function RecipeDetailPage() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="rounded-lg h-8 px-3 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 gap-2"
+                className="rounded-lg h-8 px-3 text-xs text-warning-strong hover:text-warning-strong hover:bg-warning/10 gap-2 min-h-11 sm:min-h-0"
                 title="Editar Receita no Painel de Curadoria"
               >
                 <Link to="/workspace/conteudo/receitas">
@@ -258,7 +258,7 @@ function RecipeDetailPage() {
               onClick={handleShare}
               variant="ghost"
               size="sm"
-              className="rounded-lg h-8 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2"
+              className="rounded-lg h-8 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 min-h-11 sm:min-h-0"
               title="Compartilhar"
             >
               <Share2 className="size-3.5" />
@@ -269,9 +269,9 @@ function RecipeDetailPage() {
 
         {/* ── 1.1 Banner de Modo Proprietário / Curador (Regra 23) ── */}
         {isOwner && (
-          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200 print:hidden">
+          <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-warning-strong  print:hidden">
             <div className="flex items-center gap-2">
-              <Star className="size-4 text-amber-600 shrink-0" />
+              <Star className="size-4 text-warning-strong shrink-0" />
               <span>
                 <strong>Modo de Curadoria:</strong> Você tem autoridade para moderar, editar ingredientes e alterar a visibilidade desta receita.
               </span>
@@ -280,7 +280,7 @@ function RecipeDetailPage() {
               asChild
               size="sm"
               variant="outline"
-              className="h-7 text-2xs rounded-lg border-amber-500/40 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20 shrink-0"
+              className="h-7 text-2xs rounded-lg border-warning/40 text-warning-strong  hover:bg-warning/20 shrink-0 min-h-11 sm:min-h-0"
             >
               <Link to="/workspace/conteudo/receitas">
                 Abrir Curadoria
@@ -290,7 +290,7 @@ function RecipeDetailPage() {
         )}
 
         {/* ── 2. Imersão Visual: Imagem Destaque Clean (Apple HIG) ── */}
-        <div className="relative w-full aspect-video sm:aspect-[21/9] rounded-lg overflow-hidden bg-muted border border-border/50 flex items-center justify-center">
+        <div className="relative w-full aspect-video sm:aspect-21/9 rounded-lg overflow-hidden bg-muted border border-border/50 flex items-center justify-center">
           {recipe.cover_image_url ? (
             <img
               src={recipe.cover_image_url}
@@ -423,7 +423,7 @@ function RecipeDetailPage() {
               <p className="text-2xs text-muted-foreground leading-snug">
                 Encontre estes ingredientes nos supermercados, hortifrutis e açougues da cidade.
               </p>
-              <Button asChild variant="outline" size="sm" className="w-full rounded-lg text-xs h-8 gap-2">
+              <Button asChild variant="outline" size="sm" className="w-full rounded-lg text-xs h-8 gap-2 min-h-11 sm:min-h-0">
                 <Link to="/mercado">
                   <span>Ver Mercados Locais</span>
                   <ArrowRight className="size-3" />

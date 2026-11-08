@@ -202,7 +202,7 @@ function StockDesktopView({ filteredStock, onOpenMovementModal }: StockViewProps
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs h-9 px-3 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                      className="text-xs h-9 px-3 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer min-h-11 sm:min-h-0"
                       onClick={() => onOpenMovementModal(variant, "purchase")}
                     >
                       <Plus className="size-3.5 mr-1" /> Entrada
@@ -210,7 +210,7 @@ function StockDesktopView({ filteredStock, onOpenMovementModal }: StockViewProps
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs h-9 px-3 text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer"
+                      className="text-xs h-9 px-3 text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0"
                       onClick={() => onOpenMovementModal(variant, "damage")}
                     >
                       <Minus className="size-3.5 mr-1" /> Avaria
@@ -410,7 +410,7 @@ function AdminStockPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
+    <div className="space-y-6 w-full px-0 sm:px-4 md:px-0">
       <PageHeader
         eyebrow="Opera��es"
         title="Estoque"
@@ -436,7 +436,7 @@ function AdminStockPage() {
 
       {/* Seletor de Armazém / Local de Estoque (Omni-Hub ERP V122) */}
       {locations.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
           <span className="text-xs font-semibold text-muted-foreground shrink-0 flex items-center gap-2">
             <Box className="size-3.5 text-primary" /> Armazém:
           </span>

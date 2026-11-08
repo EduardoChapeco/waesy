@@ -1,123 +1,132 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getAnonServerClient, getServerClient } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/server-access";
+import { requirePlatformAdmin } from "@/lib/server-access";
+import { getOrSetMicroCache, invalidateMicroCachePrefix } from "@/lib/cache/micro-cache";
 
 export type HotpageModule =
- | "home"
- | "mercado"
- | "marketplace"
- | "noticias"
- | "agenda"
- | "events"
- | "eventos"
- | "diretorio"
- | "turismo"
- | "empregos"
- | "classificados"
- | "classifieds"
- | "mobilidade"
- | "gastronomia"
- | "moda"
- | "pet"
- | "livros"
- | "imoveis"
- | "limpeza"
- | "beleza"
- | "servicos"
- | "acougue"
- | "bebidas"
- | "farmacia"
- | "construcao"
- | "casa"
- | "eletronicos"
- | "doacoes"
- | "ofertas"
- | "feed"
- | "afiliados"
- | "all";
+  | "home"
+  | "mercado"
+  | "marketplace"
+  | "noticias"
+  | "agenda"
+  | "events"
+  | "eventos"
+  | "diretorio"
+  | "turismo"
+  | "empregos"
+  | "classificados"
+  | "classifieds"
+  | "mobilidade"
+  | "gastronomia"
+  | "moda"
+  | "pet"
+  | "livros"
+  | "imoveis"
+  | "limpeza"
+  | "beleza"
+  | "servicos"
+  | "acougue"
+  | "bebidas"
+  | "farmacia"
+  | "construcao"
+  | "casa"
+  | "eletronicos"
+  | "doacoes"
+  | "ofertas"
+  | "feed"
+  | "afiliados"
+  | "all";
 
 export const HotpageModuleSchema = z.enum([
- "home",
- "mercado",
- "marketplace",
- "noticias",
- "agenda",
- "events",
- "eventos",
- "diretorio",
- "turismo",
- "empregos",
- "classificados",
- "classifieds",
- "mobilidade",
- "gastronomia",
- "moda",
- "pet",
- "livros",
- "imoveis",
- "limpeza",
- "beleza",
- "servicos",
- "acougue",
- "bebidas",
- "farmacia",
- "construcao",
- "casa",
- "eletronicos",
- "doacoes",
- "ofertas",
- "feed",
- "afiliados",
- "all",
+  "home",
+  "mercado",
+  "marketplace",
+  "noticias",
+  "agenda",
+  "events",
+  "eventos",
+  "diretorio",
+  "turismo",
+  "empregos",
+  "classificados",
+  "classifieds",
+  "mobilidade",
+  "gastronomia",
+  "moda",
+  "pet",
+  "livros",
+  "imoveis",
+  "limpeza",
+  "beleza",
+  "servicos",
+  "acougue",
+  "bebidas",
+  "farmacia",
+  "construcao",
+  "casa",
+  "eletronicos",
+  "doacoes",
+  "ofertas",
+  "feed",
+  "afiliados",
+  "all",
 ]);
 
 export type HotpageBgMediaType = "none" | "image" | "video" | "gif";
 export type HotpageBgTexture = "none" | "noise" | "dots" | "grid" | "mesh" | "glass";
 
 export type HotpageTemplateType =
- | "hero_module"
- | "category_hub"
- | "editorial_card"
+  | "hero_module"
+  | "category_hub"
+  | "editorial_card"
   | "drawer_module"
- | "turbo"
- | "hits"
- | "bogo"
- | "market"
- | "travel"
- | "services"
- | "custom";
-export type HotpageRulePreset = "all" | "free_shipping" | "turbo_express" | "bogo" | "discount_only" | "top_rated" | "under_20" | "custom";
+  | "turbo"
+  | "hits"
+  | "bogo"
+  | "market"
+  | "travel"
+  | "services"
+  | "custom";
+export type HotpageRulePreset =
+  | "all"
+  | "free_shipping"
+  | "turbo_express"
+  | "bogo"
+  | "discount_only"
+  | "top_rated"
+  | "under_20"
+  | "custom";
 
 export interface HotpageDTO {
- id: string;
- slug: string;
- title: string;
- badge_label?: string | null;
- description?: string | null;
- cover_image_url?: string | null;
- icon_name?: string | null;
- icon_url?: string | null;
- custom_icon_url?: string | null;
- target_route?: string | null;
- bg_media_type?: HotpageBgMediaType | null;
- bg_media_url?: string | null;
- bg_color?: string | null;
- bg_overlay_opacity?: number | null;
- bg_texture?: HotpageBgTexture | null;
- filter_rules?: Record<string, any>;
- module?: HotpageModule;
- is_active: boolean;
- sort_order: number;
- show_title?: boolean;
- show_description?: boolean;
- show_overlay?: boolean;
- show_badge?: boolean;
- template_type?: HotpageTemplateType;
- rule_preset?: HotpageRulePreset;
- hero_stat_badge?: string | null;
- hero_secondary_badge?: string | null;
- hero_floating_render_url?: string | null;
+  id: string;
+  slug: string;
+  title: string;
+  badge_label?: string | null;
+  description?: string | null;
+  cover_image_url?: string | null;
+  icon_name?: string | null;
+  icon_url?: string | null;
+  custom_icon_url?: string | null;
+  target_route?: string | null;
+  bg_media_type?: HotpageBgMediaType | null;
+  bg_media_url?: string | null;
+  bg_color?: string | null;
+  bg_overlay_opacity?: number | null;
+  bg_texture?: HotpageBgTexture | null;
+  filter_rules?: Record<string, any>;
+  module?: HotpageModule;
+  is_active: boolean;
+  sort_order: number;
+  show_title?: boolean;
+  show_description?: boolean;
+  show_overlay?: boolean;
+  show_badge?: boolean;
+  template_type?: HotpageTemplateType;
+  rule_preset?: HotpageRulePreset;
+  hero_stat_badge?: string | null;
+  hero_secondary_badge?: string | null;
+  hero_floating_render_url?: string | null;
   featured_rail_title?: string | null;
   show_shadow?: boolean;
   text_color?: string | null;
@@ -127,7 +136,12 @@ export interface HotpageDTO {
   city_filter?: string | null;
 }
 
-export function isCampaignActive(item: { starts_at?: string | null; ends_at?: string | null; auto_archive_at?: string | null; is_active: boolean }): boolean {
+export function isCampaignActive(item: {
+  starts_at?: string | null;
+  ends_at?: string | null;
+  auto_archive_at?: string | null;
+  is_active: boolean;
+}): boolean {
   if (!item.is_active) return false;
   const now = Date.now();
   if (item.starts_at) {
@@ -147,12 +161,15 @@ export function isCampaignActive(item: { starts_at?: string | null; ends_at?: st
 
 export function mapHotpageDTO(row: any): HotpageDTO {
   if (!row) return row;
-  const filterRules = row.filter_rules && typeof row.filter_rules === "object" ? row.filter_rules : {};
+  const filterRules =
+    row.filter_rules && typeof row.filter_rules === "object" ? row.filter_rules : {};
   const rawTarget = typeof row.target_route === "string" ? row.target_route.trim() : null;
   const targetRoute =
     rawTarget && rawTarget !== "null" && rawTarget !== "undefined" && rawTarget.length > 0
       ? rawTarget
-      : (row.slug ? `/explorar?nicho=${encodeURIComponent(row.slug)}` : "/explorar");
+      : row.slug
+        ? `/explorar?nicho=${encodeURIComponent(row.slug)}`
+        : "/explorar";
 
   return {
     ...row,
@@ -194,15 +211,15 @@ export function sanitizeHotpagePayload(payload: Record<string, any>): Record<str
 }
 
 export const listHotpages = createServerFn({ method: "GET" })
- .validator(
- z
- .object({
- module: HotpageModuleSchema.optional(),
- template_type: z.string().optional(),
+  .validator(
+    z
+      .object({
+        module: HotpageModuleSchema.optional(),
+        template_type: z.string().optional(),
         city: z.string().optional(),
- })
- .optional(),
- )
+      })
+      .optional(),
+  )
   .handler(async ({ data }): Promise<HotpageDTO[]> => {
     const supabase = getAnonServerClient();
     const reqModule = data?.module;
@@ -267,231 +284,250 @@ export const listHomeHeroCards = createServerFn({ method: "GET" }).handler(
       .from("hotpages")
       .select("*")
       .eq("is_active", true)
-      .or("template_type.eq.hero_module,and(module.eq.home,template_type.neq.category_hub,template_type.neq.editorial_card)")
+      .or(
+        "template_type.eq.hero_module,and(module.eq.home,template_type.neq.category_hub,template_type.neq.editorial_card)",
+      )
       .order("sort_order", { ascending: true });
 
     return (rows || []).filter(isCampaignActive).map(mapHotpageDTO);
-  }
+  },
 );
 
 /**
  * Lista exclusivamente os Botões / Chips de Supercategorias (Continuação das categorias)
  */
 export const listSubcategoryChips = createServerFn({ method: "GET" }).handler(
- async (): Promise<HotpageDTO[]> => {
- const supabase = getAnonServerClient();
- const { data: rows } = await supabase
- .from("hotpages")
- .select("*")
- .eq("is_active", true)
- .eq("template_type", "category_hub")
- .order("sort_order", { ascending: true });
+  async (): Promise<HotpageDTO[]> => {
+    const supabase = getAnonServerClient();
+    const { data: rows } = await supabase
+      .from("hotpages")
+      .select("*")
+      .eq("is_active", true)
+      .eq("template_type", "category_hub")
+      .order("sort_order", { ascending: true });
 
- return (rows || []).filter(isCampaignActive).map(mapHotpageDTO);
- }
+    return (rows || []).filter(isCampaignActive).map(mapHotpageDTO);
+  },
 );
 
 /**
  * Lista exclusivamente as Coleções & Hotpages Editoriais (para o HotpagesRail)
  */
 export const listEditorialHotpages = createServerFn({ method: "GET" })
- .validator(z.object({ module: HotpageModuleSchema.optional() }).optional())
- .handler(async ({ data }): Promise<HotpageDTO[]> => {
- const supabase = getAnonServerClient();
- const mod = data?.module || "home";
- let query = supabase
- .from("hotpages")
- .select("*")
- .eq("is_active", true);
+  .validator(z.object({ module: HotpageModuleSchema.optional() }).optional())
+  .handler(async ({ data }): Promise<HotpageDTO[]> => {
+    const mod = data?.module || "home";
+    const cacheKey = `editorial_hotpages:${mod}`;
+    return await getOrSetMicroCache(
+      cacheKey,
+      async () => {
+        const supabase = getAnonServerClient();
+        let query = supabase.from("hotpages").select("*").eq("is_active", true);
 
- if (mod && mod !== "all") {
- query = query.or(`module.eq.${mod},template_type.eq.editorial_card`);
- } else {
- query = query.eq("template_type", "editorial_card");
- }
+        if (mod && mod !== "all") {
+          query = query.or(`module.eq.${mod},template_type.eq.editorial_card`);
+        } else {
+          query = query.eq("template_type", "editorial_card");
+        }
 
- const { data: rows } = await query.order("sort_order", { ascending: true });
-    return (rows || []).filter(isCampaignActive).map(mapHotpageDTO);
- });
+        const { data: rows } = await query.order("sort_order", { ascending: true });
+        return (rows || []).filter(isCampaignActive).map(mapHotpageDTO);
+      },
+      60_000,
+    );
+  });
 
 /**
  * Lista exclusivamente os 4 Cards Squircle Hero do Topo da Vitrine Home
  */
 export const listHeroSquircleCards = createServerFn({ method: "GET" }).handler(
- async (): Promise<HotpageDTO[]> => {
- const supabase = getAnonServerClient();
- const { data: rows } = await supabase
- .from("hotpages")
- .select("*")
- .eq("is_active", true)
- .in("template_type", ["hero_squircle", "hero_module"])
- .order("sort_order", { ascending: true });
+  async (): Promise<HotpageDTO[]> => {
+    return await getOrSetMicroCache(
+      "hero_squircle_cards:home",
+      async () => {
+        const supabase = getAnonServerClient();
+        const { data: rows } = await supabase
+          .from("hotpages")
+          .select("*")
+          .eq("is_active", true)
+          .in("template_type", ["hero_squircle", "hero_module"])
+          .order("sort_order", { ascending: true });
 
- const filtered = (rows || []).filter(
- (r: any) => r.template_type === "hero_squircle" || r.module === "home"
- );
- return filtered.filter(isCampaignActive).map(mapHotpageDTO);
- }
+        const filtered = (rows || []).filter(
+          (r: any) => r.template_type === "hero_squircle" || r.module === "home",
+        );
+        return filtered.filter(isCampaignActive).map(mapHotpageDTO);
+      },
+      60_000,
+    );
+  },
 );
 
 export const getHotpageBySlug = createServerFn({ method: "GET" })
- .validator(z.object({ slug: z.string() }))
- .handler(async ({ data: { slug } }): Promise<HotpageDTO | null> => {
- const supabase = getAnonServerClient();
- const { data, error } = await supabase
- .from("hotpages")
- .select("*")
- .eq("slug", slug)
- .eq("is_active", true)
- .single();
+  .validator(z.object({ slug: z.string() }))
+  .handler(async ({ data: { slug } }): Promise<HotpageDTO | null> => {
+    const supabase = getAnonServerClient();
+    const { data, error } = await supabase
+      .from("hotpages")
+      .select("*")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .single();
 
- if (error || !data) {
- return null;
- }
+    if (error || !data) {
+      return null;
+    }
 
- return {
- ...data,
- show_title: data.show_title !== false,
- show_description: data.show_description !== false,
- show_overlay: data.show_overlay !== false,
- show_badge: data.show_badge !== false,
- } as HotpageDTO;
- });
+    return {
+      ...data,
+      show_title: data.show_title !== false,
+      show_description: data.show_description !== false,
+      show_overlay: data.show_overlay !== false,
+      show_badge: data.show_badge !== false,
+    } as HotpageDTO;
+  });
 
 export const saveUserPreferences = createServerFn({ method: "POST" })
- .validator(
- z.object({
- selected_niches: z.array(z.string()),
- default_city: z.string().optional(),
- onboarding_done: z.boolean().default(true),
- }),
- )
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const { getCurrentIdentity } = await import("@/services/cart-helpers");
- const identity = await getCurrentIdentity().catch(() => null);
- const userId = identity?.customer_id || null;
+  .validator(
+    z.object({
+      selected_niches: z.array(z.string()),
+      default_city: z.string().optional(),
+      onboarding_done: z.boolean().default(true),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { getCurrentIdentity } = await import("@/services/cart-helpers");
+    const identity = await getCurrentIdentity().catch(() => null);
+    const userId = identity?.customer_id || null;
 
- if (userId) {
- const { error } = await supabase.from("user_preferences").upsert(
- {
- user_id: userId,
- selected_niches: data.selected_niches,
- default_city: data.default_city || "Global",
- onboarding_done: data.onboarding_done,
- updated_at: new Date().toISOString(),
- },
- { onConflict: "user_id" },
- );
+    if (userId) {
+      const { error } = await supabase.from("user_preferences").upsert(
+        {
+          user_id: userId,
+          selected_niches: data.selected_niches,
+          default_city: data.default_city || "Global",
+          onboarding_done: data.onboarding_done,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
 
- if (error) {
- console.error("[PREFERENCES] Falha ao salvar preferências no Supabase:", error);
- }
- }
+      if (error) {
+        console.error("[PREFERENCES] Falha ao salvar preferências no Supabase:", error);
+      }
+    }
 
- // 2. Alimenta o motor de afinidade preditiva para os nichos selecionados
- for (const niche of data.selected_niches) {
- if (niche !== "all") {
- try {
- await supabase.rpc("record_user_behavior_event", {
- p_user_id: userId,
- p_session_id: userId ? null : "anon_session",
- p_event_type: "search",
- p_entity_type: "product",
- p_entity_id: null,
- p_category_slug: niche,
- p_niche: niche,
- p_metadata: { source: "onboarding_picker", weight_boost: 10 },
- });
- } catch {
- // rpc telemetry optional
- }
- }
- }
+    // 2. Alimenta o motor de afinidade preditiva para os nichos selecionados
+    for (const niche of data.selected_niches) {
+      if (niche !== "all") {
+        try {
+          await supabase.rpc("record_user_behavior_event", {
+            p_user_id: userId,
+            p_session_id: userId ? null : "anon_session",
+            p_event_type: "search",
+            p_entity_type: "product",
+            p_entity_id: null,
+            p_category_slug: niche,
+            p_niche: niche,
+            p_metadata: { source: "onboarding_picker", weight_boost: 10 },
+          });
+        } catch {
+          // rpc telemetry optional
+        }
+      }
+    }
 
- return { success: true };
- });
+    return { success: true };
+  });
 
 export const getUserPreferences = createServerFn({ method: "GET" }).handler(
- async (): Promise<{
- selected_niches: string[];
- default_city: string;
- onboarding_done: boolean;
- } | null> => {
- const supabase = getServerClient();
- const { getCurrentIdentity } = await import("@/services/cart-helpers");
- const identity = await getCurrentIdentity().catch(() => null);
- const userId = identity?.customer_id || null;
+  async (): Promise<{
+    selected_niches: string[];
+    default_city: string;
+    onboarding_done: boolean;
+  } | null> => {
+    const supabase = getServerClient();
+    const { getCurrentIdentity } = await import("@/services/cart-helpers");
+    const identity = await getCurrentIdentity().catch(() => null);
+    const userId = identity?.customer_id || null;
 
- if (!userId) return null;
+    if (!userId) return null;
 
- const { data, error } = await supabase
- .from("user_preferences")
- .select("*")
- .eq("user_id", userId)
- .limit(1)
- .maybeSingle();
+    const { data, error } = await supabase
+      .from("user_preferences")
+      .select("*")
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
 
- if (error || !data) return null;
- return {
- selected_niches: data.selected_niches || [],
- default_city: data.default_city || "Global",
- onboarding_done: !!data.onboarding_done,
- };
- },
+    if (error || !data) return null;
+    return {
+      selected_niches: data.selected_niches || [],
+      default_city: data.default_city || "Global",
+      onboarding_done: !!data.onboarding_done,
+    };
+  },
 );
 
+function invalidateHotpagesCache() {
+  invalidateMicroCachePrefix("editorial_hotpages:");
+  invalidateMicroCachePrefix("hero_squircle_cards:");
+}
+
 export const createHotpage = createServerFn({ method: "POST" })
- .validator(
- z.object({
- slug: z.string().min(2),
- title: z.string().min(2),
- badge_label: z.string().nullable().optional(),
- hero_stat_badge: z.string().nullable().optional(),
- hero_secondary_badge: z.string().nullable().optional(),
- description: z.string().nullable().optional(),
- cover_image_url: z.string().nullable().optional(),
- icon_name: z.string().nullable().optional(),
- icon_url: z.string().nullable().optional(),
- custom_icon_url: z.string().nullable().optional(),
- target_route: z.string().nullable().optional(),
- bg_media_type: z.enum(["none", "image", "video", "gif"]).default("none"),
- bg_media_url: z.string().nullable().optional(),
- bg_color: z.string().nullable().optional(),
- bg_overlay_opacity: z.number().min(0).max(100).default(30),
- bg_texture: z.enum(["none", "noise", "dots", "grid", "mesh", "glass"]).default("none"),
- filter_rules: z.record(z.any()).optional(),
- module: HotpageModuleSchema.default("home"),
- template_type: z.enum([
- "hero_module",
- "category_hub",
- "editorial_card",
-  "drawer_module",
- "turbo",
- "hits",
- "bogo",
- "market",
- "travel",
- "services",
- "custom",
- ]).default("editorial_card"),
- sort_order: z.number().int().default(0),
- show_title: z.boolean().default(true),
- show_description: z.boolean().default(true),
- show_overlay: z.boolean().default(false),
- show_shadow: z.boolean().default(false),
- show_badge: z.boolean().default(true),
- text_color: z.string().nullable().optional(),
+  .validator(
+    z.object({
+      slug: z.string().min(2),
+      title: z.string().min(2),
+      badge_label: z.string().nullable().optional(),
+      hero_stat_badge: z.string().nullable().optional(),
+      hero_secondary_badge: z.string().nullable().optional(),
+      description: z.string().nullable().optional(),
+      cover_image_url: z.string().nullable().optional(),
+      icon_name: z.string().nullable().optional(),
+      icon_url: z.string().nullable().optional(),
+      custom_icon_url: z.string().nullable().optional(),
+      target_route: z.string().nullable().optional(),
+      bg_media_type: z.enum(["none", "image", "video", "gif"]).default("none"),
+      bg_media_url: z.string().nullable().optional(),
+      bg_color: z.string().nullable().optional(),
+      bg_overlay_opacity: z.number().min(0).max(100).default(30),
+      bg_texture: z.enum(["none", "noise", "dots", "grid", "mesh", "glass"]).default("none"),
+      filter_rules: z.record(z.any()).optional(),
+      module: HotpageModuleSchema.default("home"),
+      template_type: z
+        .enum([
+          "hero_module",
+          "category_hub",
+          "editorial_card",
+          "drawer_module",
+          "turbo",
+          "hits",
+          "bogo",
+          "market",
+          "travel",
+          "services",
+          "custom",
+        ])
+        .default("editorial_card"),
+      sort_order: z.number().int().default(0),
+      show_title: z.boolean().default(true),
+      show_description: z.boolean().default(true),
+      show_overlay: z.boolean().default(false),
+      show_shadow: z.boolean().default(false),
+      show_badge: z.boolean().default(true),
+      text_color: z.string().nullable().optional(),
       starts_at: z.string().nullable().optional(),
       ends_at: z.string().nullable().optional(),
       auto_archive_at: z.string().nullable().optional(),
       city_filter: z.string().nullable().optional(),
- }),
- )
- .handler(async ({ data }) => {
- await requireAdmin();
- const supabase = getServerClient();
- const sanitized = sanitizeHotpagePayload({
+    }),
+  )
+  .handler(async ({ data }) => {
+    await requirePlatformAdmin();
+    const supabase = getServerClient();
+    const sanitized = sanitizeHotpagePayload({
       slug: data.slug,
       title: data.title,
       template_type: data.template_type || "editorial_card",
@@ -532,18 +568,20 @@ export const createHotpage = createServerFn({ method: "POST" })
       .single();
 
     // Blindagem extrema: se o schema cache do PostgREST ainda não tiver a coluna física show_shadow ou text_color
-    if (error && (error.message.includes("schema cache") || error.message.includes("show_shadow") || error.message.includes("text_color"))) {
+    if (
+      error &&
+      (error.message.includes("schema cache") ||
+        error.message.includes("show_shadow") ||
+        error.message.includes("text_color"))
+    ) {
       const { show_shadow, text_color, ...safePayload } = sanitized;
-      const fallbackResult = await supabase
-        .from("hotpages")
-        .insert(safePayload)
-        .select()
-        .single();
+      const fallbackResult = await supabase.from("hotpages").insert(safePayload).select().single();
       created = fallbackResult.data;
       error = fallbackResult.error;
     }
 
     if (error) throw new Error(error.message);
+    invalidateHotpagesCache();
     return mapHotpageDTO(created);
   });
 
@@ -569,19 +607,21 @@ export const updateHotpage = createServerFn({ method: "POST" })
       bg_texture: z.enum(["none", "noise", "dots", "grid", "mesh", "glass"]).optional(),
       filter_rules: z.record(z.any()).nullable().optional(),
       module: HotpageModuleSchema.optional(),
-      template_type: z.enum([
-        "hero_module",
-        "category_hub",
-        "editorial_card",
-  "drawer_module",
-        "turbo",
-        "hits",
-        "bogo",
-        "market",
-        "travel",
-        "services",
-        "custom",
-      ]).optional(),
+      template_type: z
+        .enum([
+          "hero_module",
+          "category_hub",
+          "editorial_card",
+          "drawer_module",
+          "turbo",
+          "hits",
+          "bogo",
+          "market",
+          "travel",
+          "services",
+          "custom",
+        ])
+        .optional(),
       sort_order: z.number().int().optional(),
       show_title: z.boolean().optional(),
       show_description: z.boolean().optional(),
@@ -597,9 +637,24 @@ export const updateHotpage = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data: { id, ...patch } }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const sanitized = sanitizeHotpagePayload(patch);
+    const { data: existingRow } = await supabase
+      .from("hotpages")
+      .select("filter_rules")
+      .eq("id", id)
+      .maybeSingle();
+    const existingRules =
+      existingRow?.filter_rules && typeof existingRow.filter_rules === "object"
+        ? (existingRow.filter_rules as Record<string, any>)
+        : {};
+    const sanitized = sanitizeHotpagePayload({
+      ...patch,
+      filter_rules: {
+        ...existingRules,
+        ...(patch.filter_rules && typeof patch.filter_rules === "object" ? patch.filter_rules : {}),
+      },
+    });
     let { data: updated, error } = await supabase
       .from("hotpages")
       .update(sanitized)
@@ -608,7 +663,12 @@ export const updateHotpage = createServerFn({ method: "POST" })
       .single();
 
     // Blindagem extrema: se o schema cache do PostgREST ainda não tiver a coluna física show_shadow ou text_color
-    if (error && (error.message.includes("schema cache") || error.message.includes("show_shadow") || error.message.includes("text_color"))) {
+    if (
+      error &&
+      (error.message.includes("schema cache") ||
+        error.message.includes("show_shadow") ||
+        error.message.includes("text_color"))
+    ) {
       const { show_shadow, text_color, ...safePayload } = sanitized;
       const fallbackResult = await supabase
         .from("hotpages")
@@ -621,13 +681,14 @@ export const updateHotpage = createServerFn({ method: "POST" })
     }
 
     if (error) throw new Error(error.message);
+    invalidateHotpagesCache();
     return mapHotpageDTO(updated);
   });
 
 export const deleteHotpage = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid(), soft: z.boolean().optional() }))
   .handler(async ({ data: { id, soft = true } }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
     if (soft) {
       const { error } = await supabase
@@ -635,83 +696,88 @@ export const deleteHotpage = createServerFn({ method: "POST" })
         .update({ is_active: false, updated_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw new Error(error.message);
+      invalidateHotpagesCache();
       return { success: true, deactivated: true };
     }
     const { error } = await supabase.from("hotpages").delete().eq("id", id);
     if (error) throw new Error(error.message);
+    invalidateHotpagesCache();
     return { success: true };
   });
 
 export const toggleHotpageActive = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid(), is_active: z.boolean() }))
   .handler(async ({ data: { id, is_active } }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
     const { error } = await supabase
       .from("hotpages")
       .update({ is_active, updated_at: new Date().toISOString() })
       .eq("id", id);
     if (error) throw new Error(error.message);
+    invalidateHotpagesCache();
     return { success: true, is_active };
   });
 
 export const saveHotpage = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid().optional(),
- slug: z.string().min(2),
- title: z.string().min(2),
- badge_label: z.string().optional(),
- hero_stat_badge: z.string().optional(),
- hero_secondary_badge: z.string().optional(),
- description: z.string().optional(),
- cover_image_url: z.string().optional(),
- icon_name: z.string().optional(),
- icon_url: z.string().optional(),
- custom_icon_url: z.string().optional(),
- target_route: z.string().optional(),
- bg_media_type: z.enum(["none", "image", "video", "gif"]).optional(),
- bg_media_url: z.string().optional(),
- bg_color: z.string().optional(),
- bg_overlay_opacity: z.number().min(0).max(100).optional(),
- bg_texture: z.enum(["none", "noise", "dots", "grid", "mesh", "glass"]).optional(),
- filter_rules: z.record(z.any()).optional(),
- module: HotpageModuleSchema.optional(),
- template_type: z.enum([
- "hero_module",
- "category_hub",
- "editorial_card",
-  "drawer_module",
- "turbo",
- "hits",
- "bogo",
- "market",
- "travel",
- "services",
- "custom",
- ]).optional(),
- sort_order: z.number().int().default(0),
- show_title: z.boolean().default(true),
- show_description: z.boolean().default(true),
- show_overlay: z.boolean().default(true),
- show_shadow: z.boolean().optional(),
- show_badge: z.boolean().default(true),
- text_color: z.string().nullable().optional(),
- starts_at: z.string().nullable().optional(),
- ends_at: z.string().nullable().optional(),
- auto_archive_at: z.string().nullable().optional(),
- city_filter: z.string().nullable().optional(),
- is_active: z.boolean().default(true),
- }),
- )
- .handler(async ({ data }) => {
- await requireAdmin();
- if (data.id) {
- return updateHotpage({ data: { id: data.id, ...data } });
- } else {
- return createHotpage({ data: { ...data, sort_order: data.sort_order ?? 0 } });
- }
- });
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      slug: z.string().min(2),
+      title: z.string().min(2),
+      badge_label: z.string().optional(),
+      hero_stat_badge: z.string().optional(),
+      hero_secondary_badge: z.string().optional(),
+      description: z.string().optional(),
+      cover_image_url: z.string().optional(),
+      icon_name: z.string().optional(),
+      icon_url: z.string().optional(),
+      custom_icon_url: z.string().optional(),
+      target_route: z.string().optional(),
+      bg_media_type: z.enum(["none", "image", "video", "gif"]).optional(),
+      bg_media_url: z.string().optional(),
+      bg_color: z.string().optional(),
+      bg_overlay_opacity: z.number().min(0).max(100).optional(),
+      bg_texture: z.enum(["none", "noise", "dots", "grid", "mesh", "glass"]).optional(),
+      filter_rules: z.record(z.any()).optional(),
+      module: HotpageModuleSchema.optional(),
+      template_type: z
+        .enum([
+          "hero_module",
+          "category_hub",
+          "editorial_card",
+          "drawer_module",
+          "turbo",
+          "hits",
+          "bogo",
+          "market",
+          "travel",
+          "services",
+          "custom",
+        ])
+        .optional(),
+      sort_order: z.number().int().default(0),
+      show_title: z.boolean().default(true),
+      show_description: z.boolean().default(true),
+      show_overlay: z.boolean().default(true),
+      show_shadow: z.boolean().optional(),
+      show_badge: z.boolean().default(true),
+      text_color: z.string().nullable().optional(),
+      starts_at: z.string().nullable().optional(),
+      ends_at: z.string().nullable().optional(),
+      auto_archive_at: z.string().nullable().optional(),
+      city_filter: z.string().nullable().optional(),
+      is_active: z.boolean().default(true),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await requirePlatformAdmin();
+    if (data.id) {
+      return updateHotpage({ data: { id: data.id, ...data } });
+    } else {
+      return createHotpage({ data: { ...data, sort_order: data.sort_order ?? 0 } });
+    }
+  });
 
 // ── 4. BOTÕES CANÔNICOS DO SUPERAPP DRAWER (PARIDADE IFOOD & HIG) ──
 export const CANONICAL_DRAWER_MODULES = [
@@ -1252,19 +1318,20 @@ export const listDrawerModules = createServerFn({ method: "GET" })
         return true;
       });
 
-      return filtered.length > 0 ? filtered.map(mapHotpageDTO) : CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
+      return filtered.length > 0
+        ? filtered.map(mapHotpageDTO)
+        : CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
     } catch {
       return CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
     }
   });
 
-export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
-  async () => {
-    await requireAdmin();
-    const supabase = getServerClient();
+export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(async () => {
+  await requirePlatformAdmin();
+  const supabase = getServerClient();
 
-    // ── 1. CARDS HERÓI DE MÓDULOS PRINCIPAIS (SEPARADOS E SEM FALLBACKS EXTERNOS) ──
-    const CANONICAL_HERO_MODULES = [
+  // ── 1. CARDS HERÓI DE MÓDULOS PRINCIPAIS (SEPARADOS E SEM FALLBACKS EXTERNOS) ──
+  const CANONICAL_HERO_MODULES = [
     {
       slug: "home-places",
       title: "Places (Lista Telefônica)",
@@ -1363,228 +1430,222 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
     },
   ];
 
+  // ── 2. BOTÕES / CHIPS DE SUPERCATEGORIAS (CONTINUAÇÃO - NÃO REPETE O TOPO) ──
+  const CANONICAL_SUBCATEGORY_CHIPS = [
+    {
+      slug: "chip-farmacia",
+      title: "Farmácia",
+      target_route: "/farmacia",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Heartbeat",
+      sort_order: 1,
+      show_title: true,
+    },
+    {
+      slug: "chip-bebidas",
+      title: "Bebidas e Adega",
+      target_route: "/bebidas",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Coffee",
+      sort_order: 2,
+      show_title: true,
+    },
+    {
+      slug: "chip-acougue",
+      title: "Açougue e Carnes",
+      target_route: "/acougue",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Flame",
+      sort_order: 3,
+      show_title: true,
+    },
+    {
+      slug: "chip-eletronicos",
+      title: "Eletrônicos e Tech",
+      target_route: "/eletronicos",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Storefront",
+      sort_order: 4,
+      show_title: true,
+    },
+    {
+      slug: "chip-moda",
+      title: "Roupas e Moda",
+      target_route: "/moda",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "TShirt",
+      sort_order: 5,
+      show_title: true,
+    },
+    {
+      slug: "chip-casa",
+      title: "Casa e Decoração",
+      target_route: "/casa",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Storefront",
+      sort_order: 6,
+      show_title: true,
+    },
+    {
+      slug: "chip-pet",
+      title: "Pet Shop e Veterinária",
+      target_route: "/pet",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Heartbeat",
+      sort_order: 7,
+      show_title: true,
+    },
+    {
+      slug: "chip-beleza",
+      title: "Beleza e Estética",
+      target_route: "/beleza",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Scissors",
+      sort_order: 8,
+      show_title: true,
+    },
+    {
+      slug: "chip-construcao",
+      title: "Construção e Reforma",
+      target_route: "/construcao",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Storefront",
+      sort_order: 9,
+      show_title: true,
+    },
+    {
+      slug: "chip-servicos",
+      title: "Serviços e Profissionais",
+      target_route: "/servicos",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Briefcase",
+      sort_order: 10,
+      show_title: true,
+    },
+    {
+      slug: "chip-imoveis",
+      title: "Imóveis e Locação",
+      target_route: "/imoveis",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "House",
+      sort_order: 11,
+      show_title: true,
+    },
+    {
+      slug: "chip-doacoes",
+      title: "Doações e Solidariedade",
+      target_route: "/doacoes",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Heartbeat",
+      sort_order: 12,
+      show_title: true,
+    },
+    {
+      slug: "chip-diretorio",
+      title: "Diretório Comercial",
+      target_route: "/diretorio",
+      template_type: "category_hub" as const,
+      module: "home" as const,
+      icon_name: "Compass",
+      sort_order: 13,
+      show_title: true,
+    },
+  ];
 
- // ── 2. BOTÕES / CHIPS DE SUPERCATEGORIAS (CONTINUAÇÃO - NÃO REPETE O TOPO) ──
- const CANONICAL_SUBCATEGORY_CHIPS = [
- {
- slug: "chip-farmacia",
- title: "Farmácia",
- target_route: "/farmacia",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Heartbeat",
- sort_order: 1,
- show_title: true,
- },
- {
- slug: "chip-bebidas",
- title: "Bebidas e Adega",
- target_route: "/bebidas",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Coffee",
- sort_order: 2,
- show_title: true,
- },
- {
- slug: "chip-acougue",
- title: "Açougue e Carnes",
- target_route: "/acougue",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Flame",
- sort_order: 3,
- show_title: true,
- },
- {
- slug: "chip-eletronicos",
- title: "Eletrônicos e Tech",
- target_route: "/eletronicos",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Storefront",
- sort_order: 4,
- show_title: true,
- },
- {
- slug: "chip-moda",
- title: "Roupas e Moda",
- target_route: "/moda",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "TShirt",
- sort_order: 5,
- show_title: true,
- },
- {
- slug: "chip-casa",
- title: "Casa e Decoração",
- target_route: "/casa",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Storefront",
- sort_order: 6,
- show_title: true,
- },
- {
- slug: "chip-pet",
- title: "Pet Shop e Veterinária",
- target_route: "/pet",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Heartbeat",
- sort_order: 7,
- show_title: true,
- },
- {
- slug: "chip-beleza",
- title: "Beleza e Estética",
- target_route: "/beleza",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Scissors",
- sort_order: 8,
- show_title: true,
- },
- {
- slug: "chip-construcao",
- title: "Construção e Reforma",
- target_route: "/construcao",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Storefront",
- sort_order: 9,
- show_title: true,
- },
- {
- slug: "chip-servicos",
- title: "Serviços e Profissionais",
- target_route: "/servicos",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Briefcase",
- sort_order: 10,
- show_title: true,
- },
- {
- slug: "chip-imoveis",
- title: "Imóveis e Locação",
- target_route: "/imoveis",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "House",
- sort_order: 11,
- show_title: true,
- },
- {
- slug: "chip-doacoes",
- title: "Doações e Solidariedade",
- target_route: "/doacoes",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Heartbeat",
- sort_order: 12,
- show_title: true,
- },
- {
- slug: "chip-diretorio",
- title: "Diretório Comercial",
- target_route: "/diretorio",
- template_type: "category_hub" as const,
- module: "home" as const,
- icon_name: "Compass",
- sort_order: 13,
- show_title: true,
- },
- ];
-
- // ── 3. COLEÇÕES & HOTPAGES EDITORIAIS (HOTPAGES RAIL) ──
- const CANONICAL_EDITORIAL_HOTPAGES = [
- {
- slug: "ofertas-relampago",
- title: "Ofertas Relâmpago",
- badge_label: "OFERTAS",
- hero_stat_badge: "ATÉ 60% OFF",
- cover_image_url: null,
- target_route: "/ofertas",
- template_type: "editorial_card" as const,
- module: "home" as const,
- sort_order: 1,
- show_title: true,
- show_badge: true,
- show_overlay: true,
- },
- {
- slug: "almoco-executivo",
- title: "Almoço Rápido e Pratos Executivos",
- badge_label: "SABOR",
- hero_stat_badge: "DELIVERY",
- cover_image_url: null,
- target_route: "/gastronomia",
- template_type: "editorial_card" as const,
- module: "home" as const,
- sort_order: 2,
- show_title: true,
- show_badge: true,
- show_overlay: true,
- },
- {
- slug: "supermercado-express",
- title: "Supermercado em 15 Minutos",
- badge_label: "ESSENCIAL",
- hero_stat_badge: "EXPRESS",
- cover_image_url: null,
- target_route: "/mercado",
- template_type: "editorial_card" as const,
- module: "home" as const,
- sort_order: 3,
- show_title: true,
- show_badge: true,
- show_overlay: true,
- },
- ];
-
- 
-
+  // ── 3. COLEÇÕES & HOTPAGES EDITORIAIS (HOTPAGES RAIL) ──
+  const CANONICAL_EDITORIAL_HOTPAGES = [
+    {
+      slug: "ofertas-relampago",
+      title: "Ofertas Relâmpago",
+      badge_label: "OFERTAS",
+      hero_stat_badge: "ATÉ 60% OFF",
+      cover_image_url: null,
+      target_route: "/ofertas",
+      template_type: "editorial_card" as const,
+      module: "home" as const,
+      sort_order: 1,
+      show_title: true,
+      show_badge: true,
+      show_overlay: true,
+    },
+    {
+      slug: "almoco-executivo",
+      title: "Almoço Rápido e Pratos Executivos",
+      badge_label: "SABOR",
+      hero_stat_badge: "DELIVERY",
+      cover_image_url: null,
+      target_route: "/gastronomia",
+      template_type: "editorial_card" as const,
+      module: "home" as const,
+      sort_order: 2,
+      show_title: true,
+      show_badge: true,
+      show_overlay: true,
+    },
+    {
+      slug: "supermercado-express",
+      title: "Supermercado em 15 Minutos",
+      badge_label: "ESSENCIAL",
+      hero_stat_badge: "EXPRESS",
+      cover_image_url: null,
+      target_route: "/mercado",
+      template_type: "editorial_card" as const,
+      module: "home" as const,
+      sort_order: 3,
+      show_title: true,
+      show_badge: true,
+      show_overlay: true,
+    },
+  ];
 
   const ALL_ITEMS = [
     ...CANONICAL_DRAWER_MODULES,
- ...CANONICAL_HERO_MODULES,
- ...CANONICAL_SUBCATEGORY_CHIPS,
- ...CANONICAL_EDITORIAL_HOTPAGES,
- ];
+    ...CANONICAL_HERO_MODULES,
+    ...CANONICAL_SUBCATEGORY_CHIPS,
+    ...CANONICAL_EDITORIAL_HOTPAGES,
+  ];
 
- let insertedCount = 0;
- for (const item of ALL_ITEMS) {
- const { data: existing } = await supabase
- .from("hotpages")
- .select("id, cover_image_url, custom_icon_url")
- .eq("slug", item.slug)
- .maybeSingle();
+  let insertedCount = 0;
+  for (const item of ALL_ITEMS) {
+    const { data: existing } = await supabase
+      .from("hotpages")
+      .select("id, cover_image_url, custom_icon_url")
+      .eq("slug", item.slug)
+      .maybeSingle();
 
- if (!existing) {
- await supabase.from("hotpages").insert({
- ...item,
- is_active: true,
- });
- insertedCount++;
- } else {
- // Atualiza campos sem sobrescrever uploads personalizados
- await supabase
- .from("hotpages")
- .update({
- template_type: item.template_type,
- target_route: item.target_route,
- show_title: (item as any).show_title ?? false,
- show_badge: (item as any).show_badge ?? false,
- show_overlay: (item as any).show_overlay ?? false,
- sort_order: item.sort_order,
- })
- .eq("id", existing.id);
- }
- }
+    if (!existing) {
+      await supabase.from("hotpages").insert({
+        ...item,
+        is_active: true,
+      });
+      insertedCount++;
+    } else {
+      // Atualiza campos sem sobrescrever uploads personalizados
+      await supabase
+        .from("hotpages")
+        .update({
+          template_type: item.template_type,
+          target_route: item.target_route,
+          show_title: (item as any).show_title ?? false,
+          show_badge: (item as any).show_badge ?? false,
+          show_overlay: (item as any).show_overlay ?? false,
+          sort_order: item.sort_order,
+        })
+        .eq("id", existing.id);
+    }
+  }
 
- return { success: true, insertedCount };
- }
-);
-
+  return { success: true, insertedCount };
+});

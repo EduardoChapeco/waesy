@@ -510,7 +510,7 @@ export function WhatsAppTeamSectorsDrawer({
             <div className="space-y-3">
               <div className="flex items-center justify-between rounded-xl border border-border/70 p-4">
                 <div className="flex items-start gap-3 pr-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning-strong ">
                     <Car className="size-5" />
                   </div>
                   <div className="space-y-1">

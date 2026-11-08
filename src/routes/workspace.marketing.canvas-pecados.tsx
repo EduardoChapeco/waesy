@@ -19,6 +19,16 @@ export const Route = createFileRoute("/workspace/marketing/canvas-pecados")({
   component: SevenSinsCanvasPage,
 });
 
+const SIN_COLOR_CLASSES: Record<string, string> = {
+  orgulho: "bg-warning",
+  ganancia: "bg-emerald-600",
+  luxuria: "bg-rose-500",
+  inveja: "bg-teal-500",
+  gula: "bg-warning",
+  ira: "bg-destructive",
+  preguica: "bg-sky-500",
+};
+
 export function SevenSinsCanvasPage() {
   const { store } = (Route.useLoaderData() as any) || {};
   const storeId = store?.id || "";
@@ -162,8 +172,8 @@ export function SevenSinsCanvasPage() {
   return (
     <div className="w-full min-h-full bg-background text-foreground pb-24">
       {/* ── HEADER EXECUTIVO COM SELO SILENCIOSO APPLE HIG ── */}
-      <div className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-0 sm:px-0 py-5">
+      <div className="border-b border-border/40 bg-card sticky top-0 z-20">
+        <div className="w-full px-0 sm:px-0 py-5">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -187,7 +197,7 @@ export function SevenSinsCanvasPage() {
                 type="button"
                 onClick={() => handleGenerateCopy()}
                 disabled={generating || !storeId || (!selectedProductId && !productName.trim())}
-                className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground shadow-sm hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground  hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <RefreshCw className={`w-4 h-4 ${generating ? "animate-spin motion-reduce:animate-none" : ""}`} />
                 {generating ? "Gerando rascunho..." : "Gerar rascunho de copy"}
@@ -199,7 +209,7 @@ export function SevenSinsCanvasPage() {
 
       {/* ── FEEDBACK ALERT ── */}
       {feedback && (
-        <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-4">
+        <div className="w-full px-0 sm:px-0 mt-4">
           <div
             className={`p-4 rounded-lg border text-xs font-medium flex items-center justify-between ${
               feedback.type === "success"
@@ -223,7 +233,7 @@ export function SevenSinsCanvasPage() {
       )}
 
       {/* ── LENTES CRIATIVAS OPCIONAIS ── */}
-      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
+      <div className="w-full px-0 sm:px-0 mt-6">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           Lente criativa
         </h2>
@@ -240,14 +250,13 @@ export function SevenSinsCanvasPage() {
                   onClick={() => setSelectedSin(sinKey)}
                   className={`p-4 rounded-lg border text-left transition-colors duration-200 ${
                     isSelected
-                      ? "bg-card border-primary shadow-sm ring-1 ring-primary/30"
-                      : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
+                      ? "bg-card border-primary  ring-1 ring-primary/30"
+                      : "bg-card border-border/50 hover:bg-card hover:border-border"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: def.color }}
+                      className={`w-2.5 h-2.5 rounded-full ${SIN_COLOR_CLASSES[sinKey] || "bg-primary"}`}
                     />
                     <span className="text-xs font-bold capitalize text-foreground">
                       {sinKey}
@@ -264,7 +273,7 @@ export function SevenSinsCanvasPage() {
       </div>
 
       {/* ── FORMULÁRIO DE PRODUTO & CANAL ── */}
-      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
+      <div className="w-full px-0 sm:px-0 mt-6">
         <div className="p-4 rounded-lg bg-card border border-border/50 shadow-xs flex flex-col sm:flex-row items-center gap-4">
           {/* Seletor ou Nome do Produto */}
           <div className="w-full sm:flex-1 space-y-1">
@@ -333,7 +342,7 @@ export function SevenSinsCanvasPage() {
       </div>
 
       {/* ── RASCUNHO E EXPLORAÇÃO QUALITATIVA ── */}
-      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-8">
+      <div className="w-full px-0 sm:px-0 mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Coluna Esquerda: A Peça de Copy Pronta */}
           <div className="lg:col-span-6 space-y-6">
@@ -386,7 +395,7 @@ export function SevenSinsCanvasPage() {
                           `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n${generatedHook.call_to_action}`
                         )
                       }
-                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       Copiar
@@ -395,7 +404,7 @@ export function SevenSinsCanvasPage() {
                     <button
                       type="button"
                       onClick={handleOpenWhatsApp}
-                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-emerald-600 text-foreground hover:bg-emerald-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-emerald-600 text-foreground hover:bg-emerald-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       WhatsApp
@@ -427,7 +436,7 @@ export function SevenSinsCanvasPage() {
                 </div>
               </div>
             ) : (
-              <div className="p-12 border border-dashed border-border/60 rounded-lg text-center bg-card/30">
+              <div className="p-12 border border-dashed border-border/60 rounded-lg text-center bg-card">
                 <Target className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-60" />
                 <p className="text-sm font-medium text-foreground">Nenhuma copy gerada ainda</p>
                 <p className="text-xs text-muted-foreground mt-1 mb-4">
@@ -437,7 +446,7 @@ export function SevenSinsCanvasPage() {
                   type="button"
                   onClick={() => handleGenerateCopy()}
                   disabled={generating || !storeId || (!selectedProductId && !productName.trim())}
-                  className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-10 px-4 inline-flex items-center gap-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Gerar rascunho
@@ -487,7 +496,7 @@ export function SevenSinsCanvasPage() {
 
                     {p.primary_objection && (
                       <div className="flex items-start gap-2 text-xs text-muted-foreground pt-1">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-1" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-warning-strong shrink-0 mt-1" />
                         <span>
                           <strong>Objeção:</strong> {p.primary_objection}{" "}
                           {p.recommended_fix && (
@@ -502,7 +511,7 @@ export function SevenSinsCanvasPage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-card/40 border border-border/40 rounded-lg p-12 text-center text-muted-foreground">
+              <div className="bg-card border border-border/40 rounded-lg p-12 text-center text-muted-foreground">
                 <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
                 <p className="text-sm font-medium">Nenhuma exploração qualitativa executada</p>
                 <p className="text-xs text-muted-foreground mt-1">

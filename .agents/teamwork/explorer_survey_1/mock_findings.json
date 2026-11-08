@@ -1,0 +1,102 @@
+[
+  {
+    "file": "src/components/chat/ChatQuickComposerModals.tsx",
+    "matches": [
+      "const DEFAULT_SPREADSHEET_PRESETS = [\r\n  {"
+    ]
+  },
+  {
+    "file": "src/components/commerce/master-hero-cards.tsx",
+    "matches": [
+      "const DEFAULT_HERO_MODULES = [\r\n {",
+      "const DEFAULT_CONTINUATION_CHIPS = [\r\n {"
+    ]
+  },
+  {
+    "file": "src/components/commerce/master-squircle-hero.tsx",
+    "matches": [
+      "const DEFAULT_HERO_CARDS = [\r\n  {"
+    ]
+  },
+  {
+    "file": "src/components/commerce/public-header.tsx",
+    "matches": [
+      "const DEFAULT_NAV_LINKS = [\r\n  {"
+    ]
+  },
+  {
+    "file": "src/components/crm/UniversalCrmSpreadsheetImporterModal.tsx",
+    "matches": [
+      "SAMPLE_CRM_SPREADSHEET"
+    ]
+  },
+  {
+    "file": "src/components/design-system/media-showcase-family.tsx",
+    "matches": [
+      "const sampleAvatars = [\n    { id: \"1\", name: \""
+    ]
+  },
+  {
+    "file": "src/routes/api.v1.public.discovery.ts",
+    "matches": [
+      "const pillars = [\n          {\n            id: \"marketplace\",\n            name: \""
+    ]
+  },
+  {
+    "file": "src/routes/workspace.cms.paginas.index.tsx",
+    "matches": [
+      "const TEMPLATE_OPTIONS = [\r\n  {\r\n    id: \"blank\",\r\n    name: \""
+    ]
+  },
+  {
+    "file": "src/routes/workspace.comercial.tsx",
+    "matches": [
+      "const DEFAULT_CHECKLIST_TEMPLATE = [\r\n  {"
+    ]
+  },
+  {
+    "file": "src/routes/workspace.turismo.index.tsx",
+    "matches": [
+      "const DEFAULT_CHECKLIST_TEMPLATE = [\r\n  {"
+    ]
+  },
+  {
+    "file": "src/routes/_store.destaques.$slug.tsx",
+    "matches": [
+      "const DEFAULT_QUICK_CHIPS = [\r\n {"
+    ]
+  },
+  {
+    "file": "src/services/autonomous-copilot-orchestrator.ts",
+    "matches": [
+      "sampleData"
+    ]
+  },
+  {
+    "file": "src/services/public-apis.functions.ts",
+    "matches": [
+      "const tests = [\n      {\n        id: \"brasilapi_cep\",\n        name: \""
+    ]
+  },
+  {
+    "file": "src/services/reservations.functions.ts",
+    "matches": [
+      "const DEFAULT_CANONICAL_TABLES = [\n {"
+    ]
+  },
+  {
+    "file": "src/test/setup.ts",
+    "matches": [
+      "mockIdentity",
+      "mockResolvedValue",
+      "mockReturnValue"
+    ]
+  },
+  {
+    "file": "src/types/travel-package.ts",
+    "matches": [
+      "const DEFAULT_TRAVEL_INCLUSIONS_PRESETS = [\n {",
+      "const DEFAULT_TRAVEL_EXCLUSIONS_PRESETS = [\n {"
+    ]
+  }
+]

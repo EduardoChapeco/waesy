@@ -2073,7 +2073,7 @@ export function CheckoutPage() {
  <div className="space-y-1">
  <p className="font-bold text-xs text-foreground">{rateName}</p>
  {rate.notice && (
- <p className="text-xs text-muted-foreground/75 font-medium text-amber-600 dark:text-amber-400">
+ <p className="text-xs text-muted-foreground/75 font-medium text-warning-strong ">
  {rate.notice}
  </p>
  )}
@@ -2091,7 +2091,7 @@ export function CheckoutPage() {
  })}
  </div>
  ) : noShippingRatesFound ? (
- <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
+ <div className="p-4 rounded-lg bg-warning/10 border border-warning/20 text-xs text-warning-strong ">
  Nenhuma tabela fixa automática encontrada para este CEP. A entrega será combinada diretamente com a loja.
  </div>
  ) : (
@@ -2161,7 +2161,7 @@ export function CheckoutPage() {
               </div>
 
               {deliveryToDoor && (
-                <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20 space-y-3 animate-in fade-in duration-150">
+                <div className="p-4 rounded-lg bg-warning/5 border border-warning/20 space-y-3 animate-in fade-in duration-150">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label className="text-xs font-bold text-foreground">Bloco / Torre / Edifício</Label>
@@ -2182,7 +2182,7 @@ export function CheckoutPage() {
                       />
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground/75 text-amber-700 dark:text-amber-400 font-medium leading-relaxed">
+                  <p className="text-xs text-muted-foreground/75 text-warning-strong  font-medium leading-relaxed">
                     Aviso Pétreo: Caso as normas do condomínio impeçam a subida de entregadores, a entrega será finalizada na portaria e o valor da taxa não é reembolsado.
                   </p>
                 </div>

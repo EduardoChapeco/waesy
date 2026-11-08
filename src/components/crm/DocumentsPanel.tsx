@@ -127,7 +127,7 @@ export function DocumentsPanel({
  )}
 
  {soonCount > 0 && (
- <Badge variant="secondary" className="gap-1 text-xs font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400 py-1">
+ <Badge variant="secondary" className="gap-1 text-xs font-semibold bg-warning/15 text-warning-strong  py-1">
  <Clock className="size-3" />
  <span>{soonCount} Vence(m) em breve</span>
  </Badge>
@@ -136,7 +136,7 @@ export function DocumentsPanel({
  <Button
  size="sm"
  onClick={() => setModalOpen(true)}
- className="rounded-lg text-xs font-bold gap-2 h-9 bg-primary text-primary-foreground cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-9 bg-primary text-primary-foreground cursor-pointer min-h-11 sm:min-h-0"
  >
  <Plus className="size-3.5" />
  <span>Adicionar Documento</span>
@@ -177,7 +177,7 @@ export function DocumentsPanel({
  isExpired
  ? "border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/10"
  : isSoon
- ? "border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/10"
+ ? "border-warning/30 bg-warning/5 "
  : "border-border bg-card"
  }`}
  >
@@ -190,7 +190,7 @@ export function DocumentsPanel({
  </Badge>
  )}
  {isSoon && (
- <Badge variant="secondary" className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 py-0 h-4">
+ <Badge variant="secondary" className="text-xs font-bold bg-warning/20 text-warning-strong  py-0 h-4">
  VENCE EM BREVE
  </Badge>
  )}
@@ -230,7 +230,7 @@ export function DocumentsPanel({
  {doc.expires_at && (
  <div>
  <span className="text-xs block text-muted-foreground/80">Validade</span>
- <span className={`font-bold ${isExpired ? "text-destructive" : isSoon ? "text-amber-600" : "text-foreground"}`}>
+ <span className={`font-bold ${isExpired ? "text-destructive" : isSoon ? "text-warning-strong" : "text-foreground"}`}>
  {new Date(doc.expires_at + "T00:00:00").toLocaleDateString("pt-BR")}
  </span>
  </div>

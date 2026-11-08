@@ -198,10 +198,10 @@ export function VariantMatrixGrid({
 
       {/* Visualizacao Desktop: Tabela Ampla com Rolagem Suave sem Esmagamento */}
       <div className="hidden md:block border rounded-lg overflow-x-auto table-container bg-card mb-4">
-        <table className="w-full min-w-3xl text-sm text-left">
+        <table className="w-max min-w-full text-sm text-left">
           <thead className="bg-muted/40 text-muted-foreground text-xs uppercase font-semibold">
             <tr>
-              <th className="px-4 py-3 min-w-48 group bg-muted/90 backdrop-blur-xs sticky left-0 z-20 border-r border-border shadow-xs">
+              <th className="px-3 py-3 w-44 group bg-muted/90 backdrop-blur-xs sticky left-0 z-20 border-r border-border shadow-xs">
                 <div className="flex items-center gap-1">
                   <Input
                     value={rowKey}
@@ -214,7 +214,7 @@ export function VariantMatrixGrid({
                   </span>
                 </div>
               </th>
-              <th className="px-4 py-3">
+              <th className="px-3 py-3 w-48">
                 <div className="flex flex-wrap items-center gap-2">
                   {displayColKeys.map((k, colIndex) => (
                     <Input
@@ -227,9 +227,9 @@ export function VariantMatrixGrid({
                   ))}
                 </div>
               </th>
-              <th className="px-4 py-3 text-center">Estoque</th>
-              <th className="px-4 py-3">SKU</th>
-              <th className="px-4 py-3">Preço Exceção</th>
+              <th className="px-3 py-3 w-24 text-center">Estoque</th>
+              <th className="px-3 py-3 w-36">SKU</th>
+              <th className="px-3 py-3 w-36">Preço Exceção</th>
               {wholesaleEnabled && <th className="px-4 py-3">Preço Atacado (B2B)</th>}
               <th className="px-4 py-3 text-right">Ações</th>
             </tr>
@@ -251,7 +251,7 @@ export function VariantMatrixGrid({
                       {/* Celula Agrupada (Matriz Mae) */}
                       {localIdx === 0 && (
                         <td
-                          className="px-4 py-3 w-56 align-top border-r border-border bg-card sticky left-0 z-10 shadow-xs"
+                          className="px-3 py-3 w-44 align-top border-r border-border bg-card sticky left-0 z-10 shadow-xs"
                           rowSpan={gData.variants.length + 1}
                         >
                           <div className="flex flex-col gap-3">
@@ -688,7 +688,7 @@ function PriceInput({
       currencySymbol="R$"
       allowZero={true}
       value={valueCents}
-      placeholder={placeholder || `Base: ${formatMoney(basePriceCents)}`}
+      placeholder={placeholder || formatMoney(basePriceCents)}
       onChange={(cents) => {
         onChange(cents === undefined ? null : cents);
       }}

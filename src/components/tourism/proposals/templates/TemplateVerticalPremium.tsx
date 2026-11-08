@@ -1,7 +1,7 @@
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Check, X, PhoneCall, Calendar, MapPin, Plane, Hotel } from "lucide-react";
+import { Check, X, PhoneCall, Calendar, MapPin, Plane, Hotel, Car, Compass } from "lucide-react";
 
 interface TemplateProps {
   proposal: Proposal;
@@ -167,11 +167,11 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                       <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 leading-tight">
                         {day.title || `Dia ${idx + 1}`}
                       </h3>
-                      {(day.day || day.city) && (
+                      {(day.day || day.city || (day as any).location) && (
                         <div className="text-xs sm:text-sm text-slate-500 font-semibold uppercase tracking-wide mt-1 flex items-center gap-2">
                           {day.day && <span>{day.day}</span>}
-                          {day.day && day.city && <span className="opacity-50">•</span>}
-                          {day.city && <span>{day.city}</span>}
+                          {day.day && (day.city || (day as any).location) && <span className="opacity-50">•</span>}
+                          {(day.city || (day as any).location) && <span>{day.city || (day as any).location}</span>}
                         </div>
                       )}
                     </div>
@@ -186,9 +186,9 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                       </p>
 
                       {/* Atributos Extras do Dia (Opcional) */}
-                      {(day.meals?.length || day.overnight) && (
+                      {((day.meals?.length || (day as any).included_meals?.length) || day.overnight) && (
                         <div className="mt-4 sm:mt-6 flex flex-wrap gap-2 sm:gap-3">
-                          {day.meals?.map((meal, mIdx) => (
+                          {(day.meals || (day as any).included_meals || []).map((meal: string, mIdx: number) => (
                             <span
                               key={mIdx}
                               className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-2"
@@ -334,6 +334,71 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                           </span>
                         </div>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TRASLADOS & EXPERIÊNCIAS */}
+        {(vm.hasTransfers || vm.hasTours) && (
+          <div className="mt-8 sm:mt-14 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            {vm.hasTransfers && (
+              <div className={vm.hasTours ? "col-span-12 lg:col-span-6" : "col-span-12"}>
+                <h2
+                  className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6"
+                  style={{
+                    fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)",
+                    color: brand,
+                  }}
+                >
+                  Traslados & Receptivo
+                </h2>
+                <div className="space-y-4">
+                  {p.transfers!.map((t, idx) => (
+                    <div key={idx} className="bg-card rounded-lg p-4 sm:p-6 border border-blue-100 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 font-bold text-slate-900 text-sm sm:text-base">
+                          <Car className="size-4 shrink-0 text-primary" />
+                          <span>{t.description || "Transfer In/Out"}</span>
+                        </div>
+                        <span className="px-2 py-1 rounded text-3xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700">
+                          {t.type === "shared" ? "Regular" : "Privativo"}
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-600">
+                        {t.vehicle && <span>Veículo: <strong>{t.vehicle}</strong> </span>}
+                        {t.date && <span>· Data: {formatDate(t.date)}</span>}
+                      </div>
+                      {t.notes && <p className="text-xs text-slate-500 italic">{t.notes}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {vm.hasTours && (
+              <div className={vm.hasTransfers ? "col-span-12 lg:col-span-6" : "col-span-12"}>
+                <h2
+                  className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6"
+                  style={{
+                    fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)",
+                    color: brand,
+                  }}
+                >
+                  Passeios & Experiências
+                </h2>
+                <div className="space-y-4">
+                  {p.tours!.map((tour, idx) => (
+                    <div key={idx} className="bg-card rounded-lg p-4 sm:p-6 border border-blue-100 space-y-2">
+                      <div className="flex items-center gap-2 font-bold text-slate-900 text-sm sm:text-base">
+                        <Compass className="size-4 shrink-0 text-primary" />
+                        <span>{tour.description || (tour as any).title || "Passeio Turístico"}</span>
+                      </div>
+                      {tour.date && <div className="text-xs text-slate-500">Programação: {tour.date}</div>}
+                      {tour.notes && <p className="text-xs text-slate-600 whitespace-pre-wrap">{tour.notes}</p>}
                     </div>
                   ))}
                 </div>

@@ -202,7 +202,7 @@ function CustomerAgendaPage() {
  </p>
  {activeTab === "upcoming" && (
  <div className="pt-2">
- <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-9">
+ <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold h-9 min-h-11 sm:min-h-0">
  <Link to="/agendar">Explorar</Link>
  </Button>
  </div>
@@ -272,7 +272,7 @@ function CustomerAgendaPage() {
                   type="button"
                   size="sm"
                   onClick={() => setSelectedDossierAppt(appt)}
-                  className="rounded-lg text-xs font-semibold h-8 cursor-pointer"
+                  className="rounded-lg text-xs font-semibold h-8 cursor-pointer min-h-11 sm:min-h-0"
                 >
                   <span>Dossiê</span>
                 </Button>
@@ -281,7 +281,7 @@ function CustomerAgendaPage() {
    variant="outline"
    size="sm"
    onClick={() => setSelectedCompanionAppt(appt)}
-   className="rounded-lg text-xs font-semibold h-8 text-primary border-primary/30 hover:bg-primary/5 cursor-pointer gap-1"
+   className="rounded-lg text-xs font-semibold h-8 text-primary border-primary/30 hover:bg-primary/5 cursor-pointer gap-1 min-h-11 sm:min-h-0"
    title="Visualizar Cartão Digital de Atendimento 9:16 e WhatsApp"
  >
    <Smartphone className="size-3.5" />
@@ -294,7 +294,7 @@ function CustomerAgendaPage() {
  variant="outline"
  size="sm"
  onClick={() => setCancellingAppt(appt)}
- className="rounded-lg text-xs font-semibold h-8 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 border-border/60 cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-8 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 border-border/60 cursor-pointer min-h-11 sm:min-h-0"
  >
  Cancelar
  </Button>
@@ -305,7 +305,7 @@ function CustomerAgendaPage() {
  asChild
  variant="ghost"
  size="sm"
- className="rounded-lg text-xs font-semibold h-8 text-muted-foreground hover:text-foreground cursor-pointer"
+ className="rounded-lg text-xs font-semibold h-8 text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
  >
  <Link to="/c/$storeSlug" params={{ storeSlug: appt.stores.slug }}>
  Loja ↗
@@ -343,7 +343,7 @@ function CustomerAgendaPage() {
  variant="outline"
  size="sm"
  onClick={() => setCancellingAppt(null)}
- className="rounded-lg text-xs font-semibold h-9"
+ className="rounded-lg text-xs font-semibold h-9 min-h-11 sm:min-h-0"
  >
  Manter Horário
  </Button>
@@ -353,7 +353,7 @@ function CustomerAgendaPage() {
  size="sm"
  disabled={cancelMutation.isPending}
  onClick={() => cancellingAppt && cancelMutation.mutate(cancellingAppt.id)}
- className="rounded-lg text-xs font-semibold h-9"
+ className="rounded-lg text-xs font-semibold h-9 min-h-11 sm:min-h-0"
  >
  {cancelMutation.isPending ? "Cancelando..." : "Confirmar Cancelamento"}
  </Button>

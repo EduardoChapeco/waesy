@@ -91,7 +91,7 @@ function FeedPage() {
         {/* ── 1. Menu de Abas Discreto no Topo (Padrão TikTok / Threads) ── */}
         <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/40">
           <div className="flex items-center justify-between px-3 sm:px-4 h-11 min-h-11 gap-2">
-            <div className="flex items-center gap-5 sm:gap-8 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-5 sm:gap-8 overflow-x-auto scroll-area-carousel no-scrollbar">
               {FEED_TABS.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -170,7 +170,7 @@ function FeedPage() {
         ) : items.length === 0 ? (
           <div className="py-12 px-4 text-center space-y-3">
             <div className="size-12 rounded-lg bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
-              <MessageSquare className="size-5 stroke-[1.5]" />
+              <MessageSquare className="size-5 stroke-thin" />
             </div>
             <div className="space-y-1">
               <h3 className="text-base font-bold text-foreground">
@@ -218,7 +218,7 @@ function FeedPage() {
         title="Criar publicação"
         className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-30 size-14 rounded-full bg-primary text-primary-foreground shadow-xs hover:opacity-95 active:scale-95 transition-transform duration-200 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
-        <Plus className="size-6 stroke-[2.5]" />
+        <Plus className="size-6 stroke-bold" />
       </button>
 
       {/* ── Modal Canônico Nova Thread (Padrão Threads / Imagens 2 e 5) ── */}
@@ -228,7 +228,7 @@ function FeedPage() {
             <button
               type="button"
               onClick={() => setIsComposerOpen(false)}
-              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md px-1 py-0.5"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md px-1 py-1"
             >
               Cancelar
             </button>
@@ -238,7 +238,7 @@ function FeedPage() {
             <div className="w-12" />
           </DialogHeader>
 
-          <div className="p-4 max-h-[80vh] overflow-y-auto">
+          <div className="p-4 max-h-vh-80 overflow-y-auto">
             <InlinePostComposer
               session={session || (profile ? { user: profile } : undefined)}
               profile={profile}

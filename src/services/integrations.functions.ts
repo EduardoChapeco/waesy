@@ -5,6 +5,7 @@ import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { decryptSecret, encryptSecret } from "@/lib/crypto-vault.server";
 import { randomUUID } from "node:crypto";
 import { logAuditAction } from "./audit.functions";
+import { getOrSetMicroCache } from "@/lib/cache/micro-cache";
 
 /**
  * SERVER ONLY Helper: Retrieves the secure token payload for a given integration.
@@ -12,27 +13,33 @@ import { logAuditAction } from "./audit.functions";
  * (like checkout.functions.ts) to communicate with external APIs.
  */
 export async function getActiveIntegrationPayload(storeId: string, provider: string) {
- const supabase = getServerClient();
- const { data, error } = await supabase
-  .from("integration_credentials")
-  .select("token_payload, public_metadata, secret_payload_encrypted")
- .eq("store_id", storeId)
- .eq("provider", provider)
- .eq("is_active", true)
- .single();
+  const supabase = getServerClient();
+  const { data, error } = await supabase
+    .from("integration_credentials")
+    .select("token_payload, public_metadata, secret_payload_encrypted")
+    .eq("store_id", storeId)
+    .eq("provider", provider)
+    .eq("is_active", true)
+    .single();
 
- if (error || !data) return null;
+  if (error || !data) return null;
 
- const publicPayload = (data.public_metadata || data.token_payload || {}) as Record<string, string>;
- if (!data.secret_payload_encrypted) return publicPayload;
+  const publicPayload = (data.public_metadata || data.token_payload || {}) as Record<
+    string,
+    string
+  >;
+  if (!data.secret_payload_encrypted) return publicPayload;
 
- try {
-   const privatePayload = JSON.parse(decryptSecret(data.secret_payload_encrypted)) as Record<string, string>;
-   return { ...publicPayload, ...privatePayload };
- } catch (vaultError) {
-   console.error("[integrations] Não foi possível descriptografar a credencial:", vaultError);
-   return null;
- }
+  try {
+    const privatePayload = JSON.parse(decryptSecret(data.secret_payload_encrypted)) as Record<
+      string,
+      string
+    >;
+    return { ...publicPayload, ...privatePayload };
+  } catch (vaultError) {
+    console.error("[integrations] Não foi possível descriptografar a credencial:", vaultError);
+    return null;
+  }
 }
 
 /**
@@ -41,19 +48,19 @@ export async function getActiveIntegrationPayload(storeId: string, provider: str
  * only the provider name and its active status.
  */
 export const listIntegrationSettings = createServerFn({ method: "GET" }).handler(async () => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin"]);
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin"]);
 
- const { data: credentials, error } = await supabase
- .from("integration_credentials")
- .select("id, provider, is_active, updated_at")
- .eq("store_id", identity.store_id)
- .order("provider", { ascending: true });
+  const { data: credentials, error } = await supabase
+    .from("integration_credentials")
+    .select("id, provider, is_active, updated_at")
+    .eq("store_id", identity.store_id)
+    .order("provider", { ascending: true });
 
- if (error || !credentials) return [];
+  if (error || !credentials) return [];
 
- return credentials;
+  return credentials;
 });
 
 /**
@@ -64,87 +71,97 @@ export const getPublicPixels = createServerFn({ method: "GET" }).handler(async (
   const storeId = await resolveTenantStoreId();
   if (!storeId) return [];
 
-  const supabase = getServerClient();
+  const cacheKey = "public_pixels:" + storeId;
+  return await getOrSetMicroCache(
+    cacheKey,
+    async () => {
+      const supabase = getServerClient();
 
-  // 1. Prioridade: Tabela moderna e centralizada store_pixel_configs
-  const { data: pixelConfig } = await supabase
-    .from("store_pixel_configs")
-    .select("*")
-    .eq("store_id", storeId)
-    .maybeSingle();
+      // 1. Prioridade: Tabela moderna e centralizada store_pixel_configs
+      const { data: pixelConfig } = await supabase
+        .from("store_pixel_configs")
+        .select("*")
+        .eq("store_id", storeId)
+        .maybeSingle();
 
-  const results: Array<{
-    provider: "meta_pixel" | "google_analytics" | "google_ads" | "tiktok_pixel";
-    pixelId?: string | null;
-    measurementId?: string | null;
-    conversionId?: string | null;
-  }> = [];
+      const results: Array<{
+        provider: "meta_pixel" | "google_analytics" | "google_ads" | "tiktok_pixel";
+        pixelId?: string | null;
+        measurementId?: string | null;
+        conversionId?: string | null;
+      }> = [];
 
-  if (pixelConfig) {
-    if (pixelConfig.meta_pixel_id) {
-      results.push({
-        provider: "meta_pixel",
-        pixelId: pixelConfig.meta_pixel_id,
-      });
-    }
-    if (pixelConfig.google_analytics_id) {
-      results.push({
-        provider: "google_analytics",
-        measurementId: pixelConfig.google_analytics_id,
-      });
-    }
-    if (pixelConfig.google_ads_id) {
-      results.push({
-        provider: "google_ads",
-        conversionId: pixelConfig.google_ads_id,
-      });
-    }
-    if (pixelConfig.tiktok_pixel_id) {
-      results.push({
-        provider: "tiktok_pixel",
-        pixelId: pixelConfig.tiktok_pixel_id,
-      });
-    }
+      if (pixelConfig) {
+        if (pixelConfig.meta_pixel_id) {
+          results.push({
+            provider: "meta_pixel",
+            pixelId: pixelConfig.meta_pixel_id,
+          });
+        }
+        if (pixelConfig.google_analytics_id) {
+          results.push({
+            provider: "google_analytics",
+            measurementId: pixelConfig.google_analytics_id,
+          });
+        }
+        if (pixelConfig.google_ads_id) {
+          results.push({
+            provider: "google_ads",
+            conversionId: pixelConfig.google_ads_id,
+          });
+        }
+        if (pixelConfig.tiktok_pixel_id) {
+          results.push({
+            provider: "tiktok_pixel",
+            pixelId: pixelConfig.tiktok_pixel_id,
+          });
+        }
 
-    if (results.length > 0) {
+        if (results.length > 0) {
+          return results;
+        }
+      }
+
+      // 2. Sincronização canônica e fallback com integration_credentials
+      const { data: credentials, error } = await supabase
+        .from("integration_credentials")
+        .select("provider, token_payload")
+        .eq("store_id", storeId)
+        .eq("is_active", true)
+        .in("provider", ["meta_pixel", "google_analytics", "google_ads", "tiktok_pixel"]);
+
+      if (error || !credentials) return results;
+
+      for (const c of credentials) {
+        if (c.provider === "meta_pixel" && c.token_payload?.pixel_id) {
+          if (!results.some((r) => r.provider === "meta_pixel")) {
+            results.push({ provider: "meta_pixel", pixelId: c.token_payload.pixel_id });
+          }
+        }
+        if (c.provider === "google_analytics" && c.token_payload?.measurement_id) {
+          if (!results.some((r) => r.provider === "google_analytics")) {
+            results.push({
+              provider: "google_analytics",
+              measurementId: c.token_payload.measurement_id,
+            });
+          }
+        }
+        if (c.provider === "google_ads" && c.token_payload?.conversion_id) {
+          if (!results.some((r) => r.provider === "google_ads")) {
+            results.push({ provider: "google_ads", conversionId: c.token_payload.conversion_id });
+          }
+        }
+        if (c.provider === "tiktok_pixel" && c.token_payload?.pixel_id) {
+          if (!results.some((r) => r.provider === "tiktok_pixel")) {
+            results.push({ provider: "tiktok_pixel", pixelId: c.token_payload.pixel_id });
+          }
+        }
+      }
+
       return results;
-    }
-  }
-
-  // 2. Sincronização canônica e fallback com integration_credentials
-  const { data: credentials, error } = await supabase
-    .from("integration_credentials")
-    .select("provider, token_payload")
-    .eq("store_id", storeId)
-    .eq("is_active", true)
-    .in("provider", ["meta_pixel", "google_analytics", "google_ads", "tiktok_pixel"]);
-
-  if (error || !credentials) return results;
-
-  for (const c of credentials) {
-    if (c.provider === "meta_pixel" && c.token_payload?.pixel_id) {
-      if (!results.some((r) => r.provider === "meta_pixel")) {
-        results.push({ provider: "meta_pixel", pixelId: c.token_payload.pixel_id });
-      }
-    }
-    if (c.provider === "google_analytics" && c.token_payload?.measurement_id) {
-      if (!results.some((r) => r.provider === "google_analytics")) {
-        results.push({ provider: "google_analytics", measurementId: c.token_payload.measurement_id });
-      }
-    }
-    if (c.provider === "google_ads" && c.token_payload?.conversion_id) {
-      if (!results.some((r) => r.provider === "google_ads")) {
-        results.push({ provider: "google_ads", conversionId: c.token_payload.conversion_id });
-      }
-    }
-    if (c.provider === "tiktok_pixel" && c.token_payload?.pixel_id) {
-      if (!results.some((r) => r.provider === "tiktok_pixel")) {
-        results.push({ provider: "tiktok_pixel", pixelId: c.token_payload.pixel_id });
-      }
-    }
-  }
-
-  return results;
+    },
+    60_000,
+  );
 });
 
 /**
@@ -153,127 +170,160 @@ export const getPublicPixels = createServerFn({ method: "GET" }).handler(async (
  * when calling the external API.
  */
 export const saveIntegrationCredential = createServerFn({ method: "POST" })
- .validator(
- z.object({
- provider: z.string().min(2),
- tokenPayload: z.record(z.any()),
- isActive: z.boolean().default(true),
- }),
- )
- .handler(async ({ data: { provider, tokenPayload, isActive } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin"]);
+  .validator(
+    z.object({
+      provider: z.string().min(2),
+      tokenPayload: z.record(z.any()),
+      isActive: z.boolean().default(true),
+    }),
+  )
+  .handler(async ({ data: { provider, tokenPayload, isActive } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin"]);
 
- if (isActive) {
- const hasKeys = Object.keys(tokenPayload).length > 0;
- const allValid = Object.values(tokenPayload).every(
- (val) => typeof val === "string" && val.trim() !== "",
- );
- if (!hasKeys || !allValid) {
- throw new Error("Integração não pode ser ativada sem as chaves de API/Tokens válidos.");
- }
- }
+    if (isActive) {
+      const hasKeys = Object.keys(tokenPayload).length > 0;
+      const allValid = Object.values(tokenPayload).every(
+        (val) => typeof val === "string" && val.trim() !== "",
+      );
+      if (!hasKeys || !allValid) {
+        throw new Error("Integração não pode ser ativada sem as chaves de API/Tokens válidos.");
+      }
+    }
 
- const isWhatsAppCloud = provider === "whatsapp_cloud_api";
- const isInfotravel = provider === "infotravel";
- const publicKeysByProvider: Record<string, string[]> = {
-   meta_pixel: ["pixel_id", "page_id", "ad_account_id", "catalog_id"],
-   meta_ads: ["account_id", "account_name", "pixel_id", "page_id", "catalog_id"],
-   google_analytics: ["measurement_id"],
-   google_ads: ["conversion_id", "customer_id", "account_name"],
-   tiktok_pixel: ["pixel_id"],
- };
- const providerPublicKeys = publicKeysByProvider[provider] || [];
- const publicMetadata = providerPublicKeys.length > 0
-   ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => providerPublicKeys.includes(key)))
-   : isWhatsAppCloud
-   ? Object.fromEntries(
-       Object.entries(tokenPayload).filter(([key]) => ["phone_number_id", "business_account_id", "waba_id"].includes(key)),
-     )
-   : isInfotravel
-     ? Object.fromEntries(
-         Object.entries(tokenPayload).filter(([key]) => ["base_url", "auth", "api_key_header", "search_hotels_path", "search_flights_path", "search_transfers_path", "search_activities_path", "import_booking_path", "create_booking_path", "run_periodic_sync_path", "test_connection_path"].includes(key)),
-       )
-     : {};
- const secretPayload = providerPublicKeys.length > 0
-   ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => !providerPublicKeys.includes(key)))
-   : isWhatsAppCloud
-   ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => !Object.keys(publicMetadata).includes(key)))
-   : isInfotravel
-     ? Object.fromEntries(Object.entries(tokenPayload).filter(([key]) => !Object.keys(publicMetadata).includes(key)))
-     : tokenPayload;
+    const isWhatsAppCloud = provider === "whatsapp_cloud_api";
+    const isInfotravel = provider === "infotravel";
+    const publicKeysByProvider: Record<string, string[]> = {
+      meta_pixel: ["pixel_id", "page_id", "ad_account_id", "catalog_id"],
+      meta_ads: ["account_id", "account_name", "pixel_id", "page_id", "catalog_id"],
+      google_analytics: ["measurement_id"],
+      google_ads: ["conversion_id", "customer_id", "account_name"],
+      tiktok_pixel: ["pixel_id"],
+    };
+    const providerPublicKeys = publicKeysByProvider[provider] || [];
+    const publicMetadata =
+      providerPublicKeys.length > 0
+        ? Object.fromEntries(
+            Object.entries(tokenPayload).filter(([key]) => providerPublicKeys.includes(key)),
+          )
+        : isWhatsAppCloud
+          ? Object.fromEntries(
+              Object.entries(tokenPayload).filter(([key]) =>
+                ["phone_number_id", "business_account_id", "waba_id"].includes(key),
+              ),
+            )
+          : isInfotravel
+            ? Object.fromEntries(
+                Object.entries(tokenPayload).filter(([key]) =>
+                  [
+                    "base_url",
+                    "auth",
+                    "api_key_header",
+                    "search_hotels_path",
+                    "search_flights_path",
+                    "search_transfers_path",
+                    "search_activities_path",
+                    "import_booking_path",
+                    "create_booking_path",
+                    "run_periodic_sync_path",
+                    "test_connection_path",
+                  ].includes(key),
+                ),
+              )
+            : {};
+    const secretPayload =
+      providerPublicKeys.length > 0
+        ? Object.fromEntries(
+            Object.entries(tokenPayload).filter(([key]) => !providerPublicKeys.includes(key)),
+          )
+        : isWhatsAppCloud
+          ? Object.fromEntries(
+              Object.entries(tokenPayload).filter(
+                ([key]) => !Object.keys(publicMetadata).includes(key),
+              ),
+            )
+          : isInfotravel
+            ? Object.fromEntries(
+                Object.entries(tokenPayload).filter(
+                  ([key]) => !Object.keys(publicMetadata).includes(key),
+                ),
+              )
+            : tokenPayload;
 
- const { data: record, error } = await supabase
-  .from("integration_credentials")
-  .upsert(
-  {
- store_id: identity.store_id,
- provider,
-   token_payload: publicMetadata,
-   public_metadata: publicMetadata,
-   secret_payload_encrypted: Object.keys(secretPayload).length > 0 ? encryptSecret(JSON.stringify(secretPayload)) : null,
- is_active: isActive,
- updated_at: new Date().toISOString(),
- },
- { onConflict: "store_id, provider" },
- )
- .select("id")
- .single();
+    const { data: record, error } = await supabase
+      .from("integration_credentials")
+      .upsert(
+        {
+          store_id: identity.store_id,
+          provider,
+          token_payload: publicMetadata,
+          public_metadata: publicMetadata,
+          secret_payload_encrypted:
+            Object.keys(secretPayload).length > 0
+              ? encryptSecret(JSON.stringify(secretPayload))
+              : null,
+          is_active: isActive,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "store_id, provider" },
+      )
+      .select("id")
+      .single();
 
- if (error) {
- throw new Error("Erro ao salvar credencial: " + error.message);
- }
+    if (error) {
+      throw new Error("Erro ao salvar credencial: " + error.message);
+    }
 
- // Audit Log (do NOT log the tokenPayload for security reasons)
- await logAuditAction(
- identity,
- "UPDATED_INTEGRATION_CREDENTIAL",
- "integration_credentials",
- record.id,
- {
- provider,
- isActive,
- },
- );
+    // Audit Log (do NOT log the tokenPayload for security reasons)
+    await logAuditAction(
+      identity,
+      "UPDATED_INTEGRATION_CREDENTIAL",
+      "integration_credentials",
+      record.id,
+      {
+        provider,
+        isActive,
+      },
+    );
 
- return { status: "success", recordId: record.id };
- });
+    return { status: "success", recordId: record.id };
+  });
 
 /**
  * Removes a credential entirely.
  */
 export const deleteIntegrationCredential = createServerFn({ method: "POST" })
- .validator(
- z.object({
- provider: z.string().min(2),
- }),
- )
- .handler(async ({ data: { provider } }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin"]);
+  .validator(
+    z.object({
+      provider: z.string().min(2),
+    }),
+  )
+  .handler(async ({ data: { provider } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin"]);
 
- const { error } = await supabase
- .from("integration_credentials")
- .delete()
- .eq("store_id", identity.store_id)
- .eq("provider", provider);
+    const { error } = await supabase
+      .from("integration_credentials")
+      .delete()
+      .eq("store_id", identity.store_id)
+      .eq("provider", provider);
 
- if (error) throw new Error("Erro ao remover integração: " + error.message);
+    if (error) throw new Error("Erro ao remover integração: " + error.message);
 
- await logAuditAction(
- identity,
- "DELETED_INTEGRATION_CREDENTIAL",
- "integration_credentials",
- null,
- {
- provider,
- },
- );
+    await logAuditAction(
+      identity,
+      "DELETED_INTEGRATION_CREDENTIAL",
+      "integration_credentials",
+      null,
+      {
+        provider,
+      },
+    );
 
- return { status: "success" };
- });
+    return { status: "success" };
+  });
 
 import { getPublicApiGovernanceSettings } from "./public-apis.functions";
 
@@ -306,7 +356,10 @@ export const getPublicMapConfig = createServerFn({ method: "GET" }).handler(asyn
       };
     }
   } catch (err) {
-    console.warn("[map-config] Falha ao consultar governança global, usando fallback defensivo:", err);
+    console.warn(
+      "[map-config] Falha ao consultar governança global, usando fallback defensivo:",
+      err,
+    );
   }
 
   // 2. Fallback de credenciais legadas
@@ -361,7 +414,7 @@ export const testWhatsAppCloudConnection = createServerFn({ method: "POST" })
       phoneNumberId: z.string().min(5, "Phone Number ID é obrigatório"),
       accessToken: z.string().min(10, "Access Token é obrigatório"),
       recipientPhone: z.string().optional(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
@@ -440,7 +493,7 @@ export const testMelhorEnvioConnection = createServerFn({ method: "POST" })
     z.object({
       apiToken: z.string().min(10, "Token de API do Melhor Envio é obrigatório"),
       environment: z.enum(["sandbox", "production"]).default("production"),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
@@ -494,7 +547,7 @@ export const testErpConnection = createServerFn({ method: "POST" })
     z.object({
       provider: z.enum(["bling", "tiny"]),
       apiKey: z.string().min(5, "Chave de API / Token é obrigatório"),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
@@ -511,12 +564,17 @@ export const testErpConnection = createServerFn({ method: "POST" })
         });
 
         if (res.status === 401 || res.status === 403) {
-          return { success: false, message: "Token de API do Bling v3 inválido ou sem permissões suficientes." };
+          return {
+            success: false,
+            message: "Token de API do Bling v3 inválido ou sem permissões suficientes.",
+          };
         }
 
         return {
           success: res.ok,
-          message: res.ok ? "Conexão com Bling ERP v3 validada com sucesso!" : `Bling retornou status ${res.status}.`,
+          message: res.ok
+            ? "Conexão com Bling ERP v3 validada com sucesso!"
+            : `Bling retornou status ${res.status}.`,
         };
       } else {
         // Tiny ERP v2
@@ -574,28 +632,36 @@ export async function sendWhatsAppNotification(params: {
       .eq("store_id", params.storeId)
       .eq("idempotency_key", idempotencyKey)
       .maybeSingle();
-    if (existingOutboxError) return { sent: false, reason: `Outbox WhatsApp indisponível: ${existingOutboxError.message}` };
+    if (existingOutboxError)
+      return {
+        sent: false,
+        reason: `Outbox WhatsApp indisponível: ${existingOutboxError.message}`,
+      };
     if (existingOutbox?.status === "sent" || existingOutbox?.status === "accepted") {
       return { sent: true, externalMessageId: existingOutbox.external_message_id || undefined };
     }
 
     const { data: outboxRow, error: outboxError } = await db
       .from("whatsapp_outbox")
-      .upsert({
-        store_id: params.storeId,
-        thread_id: params.threadId || null,
-        provider: "whatsapp_cloud_api",
-        idempotency_key: idempotencyKey,
-        recipient_phone: cleanPhone,
-        message_type: "text",
-        payload: { text: params.messageText },
-        status: "processing",
-        attempts: 1,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: "store_id,idempotency_key" })
+      .upsert(
+        {
+          store_id: params.storeId,
+          thread_id: params.threadId || null,
+          provider: "whatsapp_cloud_api",
+          idempotency_key: idempotencyKey,
+          recipient_phone: cleanPhone,
+          message_type: "text",
+          payload: { text: params.messageText },
+          status: "processing",
+          attempts: 1,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "store_id,idempotency_key" },
+      )
       .select("id, status, external_message_id")
       .single();
-    if (outboxError) return { sent: false, reason: `Outbox WhatsApp indisponível: ${outboxError.message}` };
+    if (outboxError)
+      return { sent: false, reason: `Outbox WhatsApp indisponível: ${outboxError.message}` };
     outboxId = outboxRow?.id || null;
 
     const sendUrl = `https://graph.facebook.com/v20.0/${creds.phone_number_id}/messages`;
@@ -616,32 +682,43 @@ export async function sendWhatsAppNotification(params: {
 
     if (!res.ok) {
       const errJson = await res.json().catch(() => ({}));
-      await getServerClient().from("whatsapp_outbox").update({
-        status: "failed",
-        last_error_code: errJson?.error?.code ? String(errJson.error.code) : `HTTP_${res.status}`,
-        last_error_message: errJson?.error?.message || `HTTP ${res.status}`,
-        updated_at: new Date().toISOString(),
-      }).eq("id", outboxId);
+      await getServerClient()
+        .from("whatsapp_outbox")
+        .update({
+          status: "failed",
+          last_error_code: errJson?.error?.code ? String(errJson.error.code) : `HTTP_${res.status}`,
+          last_error_message: errJson?.error?.message || `HTTP ${res.status}`,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", outboxId);
       return { sent: false, reason: errJson?.error?.message || `HTTP ${res.status}` };
     }
 
     const responseJson = await res.json().catch(() => ({}));
-    const externalMessageId = responseJson?.messages?.[0]?.id ? String(responseJson.messages[0].id) : undefined;
-    await db.from("whatsapp_outbox").update({
-      status: externalMessageId ? "accepted" : "sent",
-      external_message_id: externalMessageId || null,
-      updated_at: new Date().toISOString(),
-    }).eq("id", outboxId);
+    const externalMessageId = responseJson?.messages?.[0]?.id
+      ? String(responseJson.messages[0].id)
+      : undefined;
+    await db
+      .from("whatsapp_outbox")
+      .update({
+        status: externalMessageId ? "accepted" : "sent",
+        external_message_id: externalMessageId || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", outboxId);
     if (externalMessageId) {
-      await db.from("whatsapp_delivery_events").upsert({
-        store_id: params.storeId,
-        phone_number_id: String(creds.phone_number_id),
-        external_message_id: externalMessageId,
-        delivery_status: "accepted",
-        recipient_phone: cleanPhone,
-        payload: responseJson,
-        occurred_at: new Date().toISOString(),
-      }, { onConflict: "store_id,external_message_id,delivery_status" });
+      await db.from("whatsapp_delivery_events").upsert(
+        {
+          store_id: params.storeId,
+          phone_number_id: String(creds.phone_number_id),
+          external_message_id: externalMessageId,
+          delivery_status: "accepted",
+          recipient_phone: cleanPhone,
+          payload: responseJson,
+          occurred_at: new Date().toISOString(),
+        },
+        { onConflict: "store_id,external_message_id,delivery_status" },
+      );
       if (params.threadId) {
         await db.from("chat_messages").insert({
           thread_id: params.threadId,
@@ -665,11 +742,14 @@ export async function sendWhatsAppNotification(params: {
   } catch (err: any) {
     if (outboxId) {
       try {
-        await getServerClient().from("whatsapp_outbox").update({
-          status: "failed",
-          last_error_message: err?.message || "Erro desconhecido",
-          updated_at: new Date().toISOString(),
-        }).eq("id", outboxId);
+        await getServerClient()
+          .from("whatsapp_outbox")
+          .update({
+            status: "failed",
+            last_error_message: err?.message || "Erro desconhecido",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", outboxId);
       } catch {
         // A falha original continua sendo retornada; o erro de auditoria não a mascara.
       }
@@ -690,7 +770,7 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
       apiKey: z.string().min(5, "Chave de API / Token do Gateway é obrigatório"),
       secretKey: z.string().optional(),
       environment: z.enum(["sandbox", "production", "live"]).default("production"),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
@@ -698,14 +778,15 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
 
     try {
       if (data.provider === "asaas") {
-        const baseUrl = data.environment === "sandbox"
-          ? "https://sandbox.asaas.com/api/v3/myAccount"
-          : "https://api.asaas.com/v3/myAccount";
+        const baseUrl =
+          data.environment === "sandbox"
+            ? "https://sandbox.asaas.com/api/v3/myAccount"
+            : "https://api.asaas.com/v3/myAccount";
 
         const res = await fetch(baseUrl, {
           method: "GET",
           headers: {
-            "access_token": data.apiKey.trim(),
+            access_token: data.apiKey.trim(),
             "Content-Type": "application/json",
             "User-Agent": "Waesy Platform (contato@waesy.com)",
           },

@@ -168,6 +168,7 @@ describe("Milestone 1 Challenger: Empirical Omni-Builder & Dynamic Blocks Stress
             page_id: "page-789",
             slug: "turismo-pacotes",
             title: "Pacotes de Viagem",
+            is_published: true,
             blocks: [
               {
                 id: "blk-1",
@@ -188,6 +189,10 @@ describe("Milestone 1 Challenger: Empirical Omni-Builder & Dynamic Blocks Stress
           maybeSingle: async () => {
             if (spy) spy();
             return { data: finalData, error: null };
+          },
+          then: (resolve: any, reject?: any) => {
+            if (spy) spy();
+            return Promise.resolve({ data: finalData, error: null }).then(resolve, reject);
           },
         };
         return query;
@@ -260,13 +265,14 @@ describe("Milestone 1 Challenger: Empirical Omni-Builder & Dynamic Blocks Stress
           select: () => query,
           eq: () => query,
           order: () => query,
-          limit: () => {
-            if (spy) spy();
-            return Promise.resolve({ data: finalData, error: null });
-          },
+          limit: () => query,
           maybeSingle: async () => {
             if (spy) spy();
             return { data: finalData, error: null };
+          },
+          then: (resolve: any, reject?: any) => {
+            if (spy) spy();
+            return Promise.resolve({ data: finalData, error: null }).then(resolve, reject);
           },
         };
         return query;

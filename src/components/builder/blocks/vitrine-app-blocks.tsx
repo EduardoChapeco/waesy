@@ -38,6 +38,8 @@ export interface OmniVitrineRuntimeContextProps {
   id: string;
   styling?: OmniBlockStyling;
   className?: string;
+  isEditing?: boolean;
+  activeSubstate?: string | null;
   products?: Array<Record<string, unknown>>;
   categories?: Array<Record<string, unknown>>;
   collections?: Array<Record<string, unknown>>;
@@ -269,14 +271,20 @@ export function VitrineLateralDrawerBlock({
   data,
   styling,
   className,
+  isEditing,
+  activeSubstate,
 }: OmniVitrineRuntimeContextProps & { data: any }) {
-  const [isOpen, setIsOpen] = React.useState(Boolean(data?.previewOpen));
+  const { isEditorCanvas } = useEffectiveViewport();
+  const isSubstateOpen = activeSubstate === "drawer_open" || activeSubstate === "open";
+  const [isOpen, setIsOpen] = React.useState(Boolean(data?.previewOpen || isSubstateOpen));
 
   React.useEffect(() => {
-    if (typeof data?.previewOpen === "boolean") {
+    if (isSubstateOpen) {
+      setIsOpen(true);
+    } else if (typeof data?.previewOpen === "boolean") {
       setIsOpen(data.previewOpen);
     }
-  }, [data?.previewOpen]);
+  }, [data?.previewOpen, isSubstateOpen]);
 
   const sections = React.useMemo(() => {
     if (Array.isArray(data?.sections) && data.sections.length > 0) {
@@ -329,37 +337,54 @@ export function VitrineLateralDrawerBlock({
     return list;
   }, [sections]);
 
+  const showEditorTrigger = Boolean(isEditorCanvas || isEditing);
+  if (!showEditorTrigger && mappedItems.length === 0) return null;
+
   return (
     <VitrineBlockShell id={id} styling={styling} className={className}>
       <div className="w-full py-2">
-        <div className="flex items-center justify-between p-4 rounded-2xl border border-dashed border-border/80 bg-muted/20">
-          <div className="flex items-center gap-3">
+        {showEditorTrigger ? (
+          <div className="flex items-center justify-between p-4 rounded-2xl border border-dashed border-border/80 bg-muted/20">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsOpen(true)}
+                aria-label="Abrir menu lateral mobile"
+                className="size-11 min-w-11 min-h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <LayoutGrid className="size-5" />
+              </button>
+              <div>
+                <p className="text-xs font-bold text-foreground">
+                  {data?.greetingTitle || data?.drawerTitle || "Menu Lateral Hambúrguer (Subestado Drawer)"}
+                </p>
+                <p className="text-2xs text-muted-foreground">
+                  {sections.length} seções • {itemsCount} atalhos configurados (clique para inspecionar o subestado aberto)
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsOpen((prev) => !prev)}
+              className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {isOpen ? "Fechar Subestado Drawer" : "Inspecionar Menu Aberto"}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between py-1">
             <button
               type="button"
               onClick={() => setIsOpen(true)}
-              aria-label="Abrir menu lateral mobile"
-              className="size-11 min-w-11 min-h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Abrir menu de categorias"
+              className="h-11 min-h-11 px-4 rounded-xl border border-border bg-card text-foreground text-xs font-semibold inline-flex items-center gap-2 cursor-pointer hover:border-primary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <LayoutGrid className="size-5" />
+              <LayoutGrid className="size-4 text-primary" />
+              <span>{data?.greetingTitle || data?.drawerTitle || "Categorias & Atalhos"}</span>
             </button>
-            <div>
-              <p className="text-xs font-bold text-foreground">
-                {data?.greetingTitle || data?.drawerTitle || "Menu Lateral Hambúrguer (Subestado Drawer)"}
-              </p>
-              <p className="text-2xs text-muted-foreground">
-                {sections.length} seções • {itemsCount} atalhos configurados (clique para inspecionar o subestado aberto)
-              </p>
-            </div>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setIsOpen((prev) => !prev)}
-            className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            {isOpen ? "Fechar Subestado Drawer" : "Inspecionar Menu Aberto"}
-          </button>
-        </div>
+        )}
 
         <VitrineLateralMenuSheet
           open={isOpen}
@@ -392,29 +417,44 @@ export function VitrineVisualSpotlightRailBlock({
     viewMoreLabel?: string;
   };
 }) {
+  const { isEditorCanvas } = useEffectiveViewport();
   const spotlightStores = React.useMemo(() => {
     return (stores || []).map((s: any, idx: number) => ({
       id: s.id || `spot-${idx}`,
-      name: s.name || s.title || s.business_name || "Restaurante Parceiro",
+      name: s.name || s.title || s.business_name || "Estabelecimento",
       slug: s.slug || s.id || "",
       logoUrl: s.logoUrl || s.logo_url || s.avatar_url || null,
       coverUrl: s.coverUrl || s.cover_url || s.banner_url || null,
       isAd: Boolean(s.isAd ?? s.is_ad),
       rating: typeof s.rating === "number" && s.rating > 0 ? s.rating : undefined,
-      reviewCount: typeof s.reviewCount === "number" && s.reviewCount > 0 ? s.reviewCount : undefined,
+      reviewCount:
+        typeof s.reviewCount === "number" && s.reviewCount > 0
+          ? s.reviewCount
+          : typeof s.reviews_count === "number" && s.reviews_count > 0
+            ? s.reviews_count
+            : undefined,
       deliveryTime: s.deliveryTime || s.delivery_time || undefined,
-      deliveryFee: s.deliveryFee || s.delivery_fee || "Grátis",
+      deliveryFee:
+        s.delivery_fee === 0
+          ? "Grátis"
+          : typeof s.deliveryFee === "string"
+            ? s.deliveryFee
+            : typeof s.delivery_fee === "string"
+              ? s.delivery_fee
+              : undefined,
       couponBadge: s.couponBadge || s.coupon_badge || undefined,
-      hasHighlightCrown: Boolean(s.hasHighlightCrown ?? idx % 2 === 0),
+      hasHighlightCrown: Boolean(s.hasHighlightCrown ?? s.is_featured),
     }));
   }, [stores]);
+
+  if (spotlightStores.length === 0 && !isEditorCanvas) return null;
 
   return (
     <VitrineBlockShell id={id} styling={styling} className={className}>
       <IFoodVisualSpotlightRail
-        title={data?.title || "Restaurantes com Cupom"}
+        title={data?.title || "Estabelecimentos em Destaque"}
         subtitle={data?.subtitle}
-        isAd={data?.isAd ?? true}
+        isAd={data?.isAd ?? false}
         viewMoreTo={data?.viewMoreTo || "/gastronomia"}
         viewMoreLabel={data?.viewMoreLabel || "Ver mais"}
         stores={spotlightStores}
@@ -428,16 +468,22 @@ export function VitrineIFoodHeaderBlock({
   data,
   styling,
   className,
+  activeSubstate,
 }: OmniVitrineRuntimeContextProps & {
   data?: {
     showSearch?: boolean;
     searchPlaceholder?: string;
   };
 }) {
+  const effectiveShowSearch =
+    Boolean(data?.showSearch) ||
+    activeSubstate === "header_search_open" ||
+    activeSubstate === "search_open";
+
   return (
     <VitrineBlockShell id={id} styling={styling} className={className}>
       <IFoodHeader
-        showSearch={data?.showSearch ?? false}
+        showSearch={effectiveShowSearch}
         searchPlaceholder={data?.searchPlaceholder || "Buscar lojas, pratos ou produtos..."}
       />
     </VitrineBlockShell>
@@ -528,11 +574,18 @@ export function VitrineFeatureMiniBannersBlock({
     items?: FeatureMiniBannerItem[];
   };
 }) {
+  const { isEditorCanvas } = useEffectiveViewport();
+  const explicitItems = Array.isArray(data?.items) ? data.items : undefined;
+  if (!isEditorCanvas && (!explicitItems || explicitItems.length === 0)) {
+    return null;
+  }
+
   return (
     <VitrineBlockShell id={id} styling={styling} className={className}>
       <IFoodFeatureMiniBannersRail
         title={data?.title || "No Waesy também tem"}
-        items={data?.items}
+        items={explicitItems}
+        allowDemoFallback={isEditorCanvas}
       />
     </VitrineBlockShell>
   );
@@ -550,6 +603,7 @@ export function VitrineStoresFeedListBlock({
     showFilterChips?: boolean;
   };
 }) {
+  const { isEditorCanvas } = useEffectiveViewport();
   const [activeFilters, setActiveFilters] = React.useState<string[]>([]);
   const [favorites, setFavorites] = React.useState<Record<string, boolean>>({});
 
@@ -564,20 +618,57 @@ export function VitrineStoresFeedListBlock({
   };
 
   const mappedStores: IFoodStoreCardData[] = React.useMemo(() => {
-    return (stores || []).map((s: any, idx: number) => ({
+    let list: IFoodStoreCardData[] = (stores || []).map((s: any, idx: number) => ({
       id: String(s.id || `feed-st-${idx}`),
       name: String(s.name || s.business_name || s.title || "Estabelecimento Local"),
       slug: String(s.slug || s.id || ""),
-      logoUrl: typeof s.logoUrl === "string" ? s.logoUrl : typeof s.avatar_url === "string" ? s.avatar_url : null,
+      logoUrl:
+        typeof s.logoUrl === "string"
+          ? s.logoUrl
+          : typeof s.avatar_url === "string"
+            ? s.avatar_url
+            : null,
       category: typeof s.category === "string" ? s.category : "Comércio Local",
       rating: typeof s.rating === "number" && s.rating > 0 ? s.rating : undefined,
-      reviewCount: typeof s.reviews_count === "number" && s.reviews_count > 0 ? s.reviews_count : undefined,
+      reviewCount:
+        typeof s.reviews_count === "number" && s.reviews_count > 0
+          ? s.reviews_count
+          : typeof s.reviewCount === "number" && s.reviewCount > 0
+            ? s.reviewCount
+            : undefined,
       deliveryTime: typeof s.delivery_time === "string" ? s.delivery_time : undefined,
-      deliveryFee: s.delivery_fee === 0 ? "Grátis" : typeof s.delivery_fee === "string" ? s.delivery_fee : undefined,
+      deliveryFee:
+        s.delivery_fee === 0
+          ? "Grátis"
+          : typeof s.delivery_fee === "string"
+            ? s.delivery_fee
+            : typeof s.deliveryFee === "string"
+              ? s.deliveryFee
+              : undefined,
       couponBadge: typeof s.coupon_badge === "string" ? s.coupon_badge : undefined,
       isFavorite: Boolean(favorites[String(s.id || `feed-st-${idx}`)]),
     }));
-  }, [stores, favorites]);
+
+    if (activeFilters.includes("free_delivery")) {
+      list = list.filter((st) => st.deliveryFee === "Grátis");
+    }
+    if (activeFilters.includes("promo") || activeFilters.includes("coupons")) {
+      list = list.filter((st) => Boolean(st.couponBadge));
+    }
+    if (activeFilters.includes("top_rated")) {
+      list = list.filter((st) => typeof st.rating === "number" && st.rating >= 4.5);
+    }
+    if (activeFilters.includes("favorites")) {
+      list = list.filter((st) => Boolean(st.isFavorite));
+    }
+    if (activeFilters.includes("sort_rating")) {
+      list = [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    }
+
+    return list;
+  }, [stores, favorites, activeFilters]);
+
+  if (stores.length === 0 && !isEditorCanvas) return null;
 
   return (
     <VitrineBlockShell id={id} styling={styling} className={className}>
@@ -592,16 +683,22 @@ export function VitrineStoresFeedListBlock({
           <h2 className="text-base font-bold text-foreground tracking-tight">
             {data?.title || "Lojas"}
           </h2>
-          <div className="space-y-3">
-            {mappedStores.map((st) => (
-              <IFoodStoreFeedCard
-                key={st.id}
-                store={st}
-                variant="list"
-                onFavoriteToggle={handleFavoriteToggle}
-              />
-            ))}
-          </div>
+          {mappedStores.length === 0 ? (
+            <div className="p-6 rounded-lg border border-dashed border-border bg-muted/20 text-center text-xs text-muted-foreground">
+              Nenhum estabelecimento corresponde aos filtros selecionados.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {mappedStores.map((st) => (
+                <IFoodStoreFeedCard
+                  key={st.id}
+                  store={st}
+                  variant="list"
+                  onFavoriteToggle={handleFavoriteToggle}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </VitrineBlockShell>

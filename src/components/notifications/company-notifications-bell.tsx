@@ -33,7 +33,7 @@ export function CompanyNotificationsBell() {
           type="button"
           variant="outline"
           size="icon"
-          className="relative size-9 rounded-lg border-border/60 hover:bg-muted/50 cursor-pointer"
+          className="relative size-9 rounded-lg border-border/60 hover:bg-muted/50 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
           aria-label={`Notificações (${unreadCount} não lidas)`}
         >
           <Bell className="size-4 text-foreground" />
@@ -45,7 +45,7 @@ export function CompanyNotificationsBell() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-80 sm:w-96 p-2 rounded-lg bg-card border border-border/60 shadow-xl">
+      <DropdownMenuContent align="end" className="w-80 sm:w-96 p-2 rounded-lg bg-card border border-border/60 shadow-overlay">
         <div className="p-2 border-b border-border/40 flex items-center justify-between">
           <span className="text-xs font-bold text-foreground">Alertas da Empresa</span>
           {unreadCount > 0 && (

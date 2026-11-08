@@ -250,43 +250,78 @@ export const updateOrderStatusFn = createServerFn({ method: "POST" })
     assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
     const db = getServerClient();
-    const updatePayload: Record<string, any> = {
-      status: data.status,
-      updated_at: new Date().toISOString(),
-    };
 
-    if (data.status === "paid") {
-      updatePayload.paid_at = new Date().toISOString();
-    } else if (data.status === "processing") {
-      updatePayload.prep_started_at = new Date().toISOString();
-    } else if (data.status === "shipped") {
-      updatePayload.shipped_at = new Date().toISOString();
-    } else if (data.status === "delivered") {
-      updatePayload.delivered_at = new Date().toISOString();
-    }
-
-    const { error } = await db
-      .from("orders")
-      .update(updatePayload)
-      .eq("id", data.orderId)
-      .eq("store_id", targetStoreId);
-
-    if (error) {
-      console.error("[orders.functions] updateOrderStatusFn error:", error);
-      throw new Error("Erro ao atualizar status do pedido no banco de dados.");
-    }
-
-    // Sincroniza comissão de afiliados (Méliuz clawback ou escrow de maturação)
+    // 1. Transição Atômica de Estado ("Carimbou PAGO, não paga de novo")
+    let isIdempotentReplay = false;
+    let rpcExecuted = false;
     try {
-      await syncCommissionOnOrderStatusChange({
-        data: {
-          orderId: data.orderId,
-          newStatus: data.status,
-          cancellationReason: data.status === "cancelled" ? "Cancelado pelo lojista no painel" : undefined,
-        },
-      });
-    } catch (syncErr) {
-      console.warn("[orders.functions] Falha silenciosa ao sincronizar comissão de afiliados:", syncErr);
+      if (typeof (db as any).rpc === "function") {
+        const { data: atomicRes, error: rpcErr } = await db.rpc("transition_order_status_atomic", {
+          p_order_id: data.orderId,
+          p_store_id: targetStoreId,
+          p_new_status: data.status,
+          p_reason: data.status === "cancelled" ? "Cancelado pelo lojista no painel" : null,
+          p_actor_id: identity.id || null,
+          p_idempotency_key: `order-status-${data.orderId}-${data.status}`,
+        });
+
+        if (!rpcErr && atomicRes && typeof atomicRes === "object") {
+          rpcExecuted = true;
+          if (!(atomicRes as any).success) {
+            throw new Error((atomicRes as any).message || "Transição de status inválida");
+          }
+          isIdempotentReplay = Boolean((atomicRes as any).is_idempotent_replay);
+        } else if (rpcErr) {
+          console.warn("[orders.functions] transition_order_status_atomic fallback:", rpcErr.message);
+        }
+      }
+
+      if (!rpcExecuted) {
+        // Fallback defensivo caso RPC ainda não aplicada ou falha
+        const updatePayload: Record<string, any> = {
+          status: data.status,
+          updated_at: new Date().toISOString(),
+        };
+
+        if (data.status === "paid") {
+          updatePayload.paid_at = new Date().toISOString();
+        } else if (data.status === "processing") {
+          updatePayload.prep_started_at = new Date().toISOString();
+        } else if (data.status === "shipped") {
+          updatePayload.shipped_at = new Date().toISOString();
+        } else if (data.status === "delivered") {
+          updatePayload.delivered_at = new Date().toISOString();
+        }
+
+        const { error } = await db
+          .from("orders")
+          .update(updatePayload)
+          .eq("id", data.orderId)
+          .eq("store_id", targetStoreId);
+
+        if (error) {
+          console.error("[orders.functions] updateOrderStatusFn error:", error);
+          throw new Error("Erro ao atualizar status do pedido no banco de dados.");
+        }
+      }
+    } catch (e: any) {
+      if (e?.message && e.message.includes("Transição")) throw e;
+      throw new Error(e?.message || "Erro ao atualizar status do pedido.");
+    }
+
+    // 2. Sincroniza comissão apenas se NÃO for repetição idempotente ("Carimbou PAGO")
+    if (!isIdempotentReplay) {
+      try {
+        await syncCommissionOnOrderStatusChange({
+          data: {
+            orderId: data.orderId,
+            newStatus: data.status,
+            cancellationReason: data.status === "cancelled" ? "Cancelado pelo lojista no painel" : undefined,
+          },
+        });
+      } catch (syncErr) {
+        console.warn("[orders.functions] Falha silenciosa ao sincronizar comissão de afiliados:", syncErr);
+      }
     }
 
     return {

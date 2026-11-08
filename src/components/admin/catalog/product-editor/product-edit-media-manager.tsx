@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Settings, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Settings, Trash2, Sparkles, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,35 @@ export function ProductEditMediaManager({ product }: ProductEditMediaManagerProp
   const [, setIsAdding] = useState(false);
   const [editingMedia, setEditingMedia] = useState<any>(null);
   const [isSavingMetadata, setIsSavingMetadata] = useState(false);
+
+  const variantImages: string[] = (product.product_variants || [])
+    .map((v: any) => v.image_url?.trim())
+    .filter((u: any): u is string => Boolean(u));
+  const existingMediaUrls = new Set<string>((product.product_media || []).map((m: any) => String(m.url?.trim() || "")));
+  const missingVariantImages: string[] = Array.from(new Set(variantImages)).filter((u: string) => !existingMediaUrls.has(u));
+
+  const handlePullAllVariantImages = async () => {
+    if (missingVariantImages.length === 0) return;
+    setIsAdding(true);
+    let count = 0;
+    try {
+      for (const url of missingVariantImages) {
+        await addProductMediaLink({
+          data: {
+            product_id: product.id,
+            url,
+          },
+        });
+        count++;
+      }
+      toast.success(`${count} foto(s) de variações adicionada(s) à galeria!`);
+      router.invalidate();
+    } catch {
+      toast.error("Erro ao puxar fotos de variações.");
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   const handleAddImage = async (url: string) => {
     if ((!url)) return;
@@ -122,6 +151,31 @@ export function ProductEditMediaManager({ product }: ProductEditMediaManagerProp
         </p>
       </div>
       <div className="space-y-6">
+        {missingVariantImages.length > 0 && (
+          <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-primary" />
+                <span className="text-xs font-bold text-foreground">
+                  Fotos de Variações Detectadas ({missingVariantImages.length})
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Existem fotos cadastradas nas variações deste produto que ainda não estão na galeria principal.
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              className="h-11 min-h-11 px-4 text-xs font-bold cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              onClick={handlePullAllVariantImages}
+            >
+              <Download className="size-4 mr-2" />
+              Puxar Fotos da Grade ({missingVariantImages.length})
+            </Button>
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label className="text-xs font-semibold">Fazer Upload de Nova Imagem</Label>
           <div className="max-w-md">

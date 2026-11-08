@@ -57,7 +57,10 @@ export type ChatArtifactType =
   | "travel_dossier"
   | "document_preview"
   | "website"
-  | "social_post";
+  | "social_post"
+  | "dashboard"
+  | "map_view"
+  | "creative_post";
 
 export interface ChatArtifactData {
   id: string;

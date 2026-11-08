@@ -36,8 +36,18 @@ export const Route = createFileRoute("/api/auth/callback")({
             try {
               const resHeaders = getResponseHeaders();
               if (resHeaders) {
-                const sc = resHeaders.get("set-cookie");
-                if (sc) headers.set("Set-Cookie", sc);
+                const setCookies =
+                  typeof (resHeaders as any).getSetCookie === "function"
+                    ? ((resHeaders as any).getSetCookie() as string[])
+                    : [];
+                if (setCookies.length > 0) {
+                  for (const sc of setCookies) {
+                    if (sc) headers.append("Set-Cookie", sc);
+                  }
+                } else {
+                  const sc = resHeaders.get("set-cookie");
+                  if (sc) headers.set("Set-Cookie", sc);
+                }
               }
             } catch {}
 

@@ -279,7 +279,7 @@ export default function WorkspaceMarketingEncartesPage() {
   );
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+    <div className="space-y-6 w-full pb-16">
       {/* ─── Header Canônico do Módulo ─────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
         <div>
@@ -300,7 +300,7 @@ export default function WorkspaceMarketingEncartesPage() {
         <div className="flex items-center gap-3">
           <Button
             onClick={handleOpenCreate}
-            className="h-10 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer shadow-sm bg-red-600 hover:bg-red-700 text-foreground"
+            className="h-10 px-4 rounded-lg font-bold text-xs gap-2 cursor-pointer  bg-red-600 hover:bg-red-700 text-foreground min-h-11 sm:min-h-0"
           >
             <Plus className="size-4" />
             <span>Novo Encarte da Semana</span>
@@ -340,7 +340,7 @@ export default function WorkspaceMarketingEncartesPage() {
         <div className="p-4 rounded-lg bg-card border border-border/60 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-muted-foreground text-xs font-semibold">
             <span>Interações</span>
-            <ShoppingBag className="size-3.5 text-amber-500" />
+            <ShoppingBag className="size-3.5 text-warning-strong" />
           </div>
           <p className="text-2xl font-black text-foreground">
             {flyers.reduce((acc: any, f: any) => acc + (f.clicks_count || 0), 0)}
@@ -382,7 +382,7 @@ export default function WorkspaceMarketingEncartesPage() {
               <Button
                 onClick={handleOpenCreate}
                 variant="outline"
-                className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer mt-2"
+                className="h-9 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer mt-2 min-h-11 sm:min-h-0"
               >
                 <Plus className="size-4" />
                 <span>Criar Primeiro Encarte</span>
@@ -399,7 +399,7 @@ export default function WorkspaceMarketingEncartesPage() {
                     key={flyer.id}
                     className={cn(
                       "rounded-lg border overflow-hidden flex flex-col justify-between transition-colors duration-200 bg-card shadow-xs",
-                      isRetro ? "border-amber-400/80 bg-amber-50/20 dark:bg-amber-950/10" : "border-border/60"
+                      isRetro ? "border-warning/80 bg-warning/20 " : "border-border/60"
                     )}
                   >
                     {/* Header do Card com Status & Badges */}
@@ -426,7 +426,7 @@ export default function WorkspaceMarketingEncartesPage() {
                           className={cn(
                             "px-2 py-1 rounded text-xs font-bold",
                             isRetro
-                              ? "bg-amber-300 text-red-950 font-black"
+                              ? "bg-warning/30 text-red-950 font-black"
                               : "bg-muted text-muted-foreground"
                           )}
                         >
@@ -490,7 +490,7 @@ export default function WorkspaceMarketingEncartesPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => setPreviewFlyer(flyer)}
-                          className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer"
+                          className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer min-h-11 sm:min-h-0"
                         >
                           <Eye className="size-3.5" />
                           <span>Ver</span>
@@ -500,7 +500,7 @@ export default function WorkspaceMarketingEncartesPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleOpenEdit(flyer)}
-                          className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer border-border/60"
+                          className="h-8 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer border-border/60 min-h-11 sm:min-h-0"
                         >
                           <Edit3 className="size-3.5" />
                           <span>Editar</span>
@@ -540,7 +540,7 @@ export default function WorkspaceMarketingEncartesPage() {
 
       {/* ─── Modal Drawer de Criação & Edição de Encarte ──────────────── */}
       <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-        <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto sm:rounded-lg p-5 sm:p-6 space-y-4">
+        <DialogContent className="max-w-3xl max-h-vh-92 overflow-y-auto sm:rounded-lg p-5 sm:p-6 space-y-4">
           <DialogHeader className="pb-2 border-b border-border/60">
             <DialogTitle className="text-lg font-black flex items-center gap-2">
               <Flame className="size-5 text-red-600" />
@@ -589,7 +589,7 @@ export default function WorkspaceMarketingEncartesPage() {
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "p-3 rounded-lg border-2 cursor-pointer transition-colors duration-200 flex items-start gap-3",
                       formTheme === "retro_mercado"
-                        ? "border-red-600 bg-amber-100/60 dark:bg-amber-950/30 text-red-950 dark:text-amber-100"
+                        ? "border-red-600 bg-warning/60  text-red-950 "
                         : "border-border/60 hover:border-foreground/30"
                     )}
                   >
@@ -684,7 +684,7 @@ export default function WorkspaceMarketingEncartesPage() {
                       <img
                         src={formImageUrl}
                         alt="Prévia do encarte"
-                        className="max-h-48 object-contain rounded-lg shadow-sm"
+                        className="max-h-48 object-contain rounded-lg "
                       />
                     ) : (
                       <div className="text-center space-y-1 text-muted-foreground">
@@ -722,7 +722,7 @@ export default function WorkspaceMarketingEncartesPage() {
                         src={formImageUrl}
                         alt="Canvas de marcação de hotspots"
                         onClick={handleImageClick}
-                        className="max-h-[500px] w-auto object-contain rounded-lg select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="max-h-125 w-auto object-contain rounded-lg select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       />
 
                       {/* Pins já posicionados */}
@@ -735,7 +735,7 @@ export default function WorkspaceMarketingEncartesPage() {
                           }}
                           className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group"
                         >
-                          <div className="size-8 rounded-full bg-red-600 text-amber-300 border-2 border-amber-300 flex items-center justify-center font-black text-xs shadow-xs">
+                          <div className="size-8 rounded-full bg-red-600 text-warning-strong border-2 border-warning/30 flex items-center justify-center font-black text-xs shadow-xs">
                             {idx + 1}
                           </div>
 
@@ -790,7 +790,7 @@ export default function WorkspaceMarketingEncartesPage() {
                               size="icon"
                               variant="ghost"
                               onClick={() => handleRemoveHotspot(h.id)}
-                              className="size-7 rounded text-muted-foreground hover:text-red-600 cursor-pointer shrink-0"
+                              className="size-7 rounded text-muted-foreground hover:text-red-600 cursor-pointer shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                             >
                               <Trash2 className="size-3.5" />
                             </Button>
@@ -808,7 +808,7 @@ export default function WorkspaceMarketingEncartesPage() {
                 type="button"
                 variant="ghost"
                 onClick={() => setIsEditorOpen(false)}
-                className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer"
+                className="h-10 px-4 rounded-lg text-xs font-semibold cursor-pointer min-h-11 sm:min-h-0"
               >
                 Cancelar
               </Button>
@@ -816,7 +816,7 @@ export default function WorkspaceMarketingEncartesPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer bg-red-600 hover:bg-red-700 text-foreground shadow-sm"
+                className="h-10 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer bg-red-600 hover:bg-red-700 text-foreground  min-h-11 sm:min-h-0"
               >
                 {isSubmitting ? (
                   <span>Salvando...</span>
@@ -923,7 +923,7 @@ export default function WorkspaceMarketingEncartesPage() {
                 setIsProductPickerOpen(false);
                 setPendingPinCoords(null);
               }}
-              className="h-8 rounded-lg text-xs"
+              className="h-8 rounded-lg text-xs min-h-11 sm:min-h-0"
             >
               Cancelar
             </Button>

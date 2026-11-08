@@ -192,9 +192,9 @@ export function ProductCatalogPricingSheet({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Coluna 1: Preço Online (App/Web) */}
-              <div className="p-3.5 rounded-2xl bg-card border border-border/60 space-y-2">
+              <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <span className="flex items-center gap-2 text-xs font-bold text-foreground">
                     <Globe size={16} weight="bold" className="text-blue-500" />
                     Online (App)
                   </span>
@@ -224,10 +224,10 @@ export function ProductCatalogPricingSheet({
               </div>
 
               {/* Coluna 2: Preço Clube (Fidelidade/CPF) */}
-              <div className="p-3.5 rounded-2xl bg-card border border-border/60 space-y-2">
+              <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <IdentificationCard size={16} weight="fill" className="text-amber-500" />
+                  <span className="flex items-center gap-2 text-xs font-bold text-foreground">
+                    <IdentificationCard size={16} weight="fill" className="text-warning-strong" />
                     Preço Clube
                   </span>
                   <input
@@ -256,9 +256,9 @@ export function ProductCatalogPricingSheet({
               </div>
 
               {/* Coluna 3: Preço Balcão / Loja Física */}
-              <div className="p-3.5 rounded-2xl bg-card border border-border/60 space-y-2">
+              <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <span className="flex items-center gap-2 text-xs font-bold text-foreground">
                     <Storefront size={16} weight="bold" className="text-emerald-600" />
                     Loja Física
                   </span>
@@ -300,9 +300,9 @@ export function ProductCatalogPricingSheet({
 
             <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-3 text-xs">
               {/* Tipo de Regra */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="font-semibold text-foreground">Mecânica da Promoção</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {[
                     { id: "none", label: "Nenhuma" },
                     { id: "buy_x_pay_y", label: "Leve X Pague Y" },
@@ -313,7 +313,7 @@ export function ProductCatalogPricingSheet({
                       type="button"
                       onClick={() => setRuleType(m.id as any)}
                       className={cn(
-                        "h-11 min-h-11 rounded-xl border text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-primary",
+                        "h-11 min-h-11 rounded-xl border text-xs font-bold transition focus-visible:ring-2 focus-visible:ring-primary",
                         ruleType === m.id
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border/60 hover:border-border text-foreground",
@@ -388,9 +388,9 @@ export function ProductCatalogPricingSheet({
             </h3>
 
             <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-3 text-xs">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <label className="font-semibold text-foreground">Unidade de Medida</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {[
                     { id: "un", label: "Unidade (un)" },
                     { id: "kg", label: "Quilo (Kg)" },
@@ -401,7 +401,7 @@ export function ProductCatalogPricingSheet({
                       type="button"
                       onClick={() => setUnitType(u.id as any)}
                       className={cn(
-                        "h-11 min-h-11 rounded-xl border text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-primary",
+                        "h-11 min-h-11 rounded-xl border text-xs font-bold transition focus-visible:ring-2 focus-visible:ring-primary",
                         unitType === u.id
                           ? "border-emerald-600 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400"
                           : "border-border/60 hover:border-border text-foreground",

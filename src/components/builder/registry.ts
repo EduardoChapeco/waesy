@@ -2056,16 +2056,52 @@ export function getSiteBlocksByCategory(category: string): SiteBuilderBlockDefin
 }
 
 /**
- * Lookup canônico para fronteiras de publicação. Diferente da API legada abaixo,
- * não transforma um tipo desconhecido no primeiro bloco do catálogo.
+ * Tabela canônica de resolução de aliases de tipos de bloco.
+ * Garante compatibilidade retroativa com templates legados, presets do painel de adição
+ * e suítes de aplicativos sem jamais mascarar tipos desconhecidos como `news_promethee_portal`.
+ */
+export const BLOCK_TYPE_ALIASES: Record<string, string> = {
+  bento_asymmetric_grid: "bento_asymmetric_4",
+  bento_grid: "bento_asymmetric_4",
+  pricing_tables_clean: "pricing_three_tiers",
+  ifood_feature_cards_rail: "vitrine_visual_spotlight_rail",
+  ifood_recent_stores_shelf: "vitrine_recent_stores_rail",
+  ifood_category_grid_custom: "vitrine_buttons_dock",
+  ifood_showcase_store_rail: "vitrine_stores_feed_list",
+  supermarket_hero_carousel: "vitrine_metamorphic_banner",
+  supermarket_category_dock: "vitrine_buttons_dock",
+  supermarket_product_shelf: "vitrine_product_shelf",
+  supermarket_offers_grid: "vitrine_product_shelf",
+  supermarket_fulfillment_pill: "vitrine_coupon_strip",
+  supermarket_flyer_viewer: "vitrine_feature_mini_banners",
+  vitrine_retail_flyers_rail: "vitrine_feature_mini_banners",
+  tourism_itinerary_timeline: "travel_itinerary_timeline",
+};
+
+export function resolveCanonicalBlockId(id: string): string {
+  return BLOCK_TYPE_ALIASES[id] || id;
+}
+
+/**
+ * Lookup canônico para fronteiras de publicação e preview.
+ * Resolve aliases conhecidos e retorna `undefined` para tipos genuinamente inexistentes.
  */
 export function getSiteBlockByIdStrict(id: string): SiteBuilderBlockDefinition | undefined {
-  return SITE_BUILDER_BLOCKS.find((b) => b.id === id);
+  const canonicalId = resolveCanonicalBlockId(id);
+  return SITE_BUILDER_BLOCKS.find((b) => b.id === canonicalId);
 }
 
 export function getSiteBlockById(id: string): SiteBuilderBlockDefinition {
-  const found = SITE_BUILDER_BLOCKS.find((b) => b.id === id);
-  return found || SITE_BUILDER_BLOCKS[0];
+  const found = getSiteBlockByIdStrict(id);
+  if (found) return found;
+  if (import.meta.env?.DEV) {
+    console.warn(`[BuilderRegistry] Bloco desconhecido "${id}" resolvido para rich_text neutro.`);
+  }
+  return (
+    SITE_BUILDER_BLOCKS.find((b) => b.id === "rich_text") ||
+    SITE_BUILDER_BLOCKS.find((b) => b.id === "hero_minimal_split") ||
+    SITE_BUILDER_BLOCKS[0]
+  );
 }
 
 import {

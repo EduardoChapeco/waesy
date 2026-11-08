@@ -3,7 +3,7 @@
  *
  * Design System: Apple HIG / Super App Hub Pattern / WhatsApp Minimalist List
  * - Substitui barras inferiores sobrecarregadas por uma tela limpa e organizada.
- * - Touch targets >= 44px (h-12 / min-h-12) com active:scale-[0.98].
+ * - Touch targets >= 44px (h-12 / min-h-12) com active:scale-98.
  * - Agrupamento canônico de módulos: Minha Atividade, Serviços Regionais, Negócios e Conta.
  */
 
@@ -86,8 +86,10 @@ export function GlobalMenuHub({
     } else if (type === "store") {
       if (storeId) {
         setClientContextCookies({ context: "store", storeId });
+        window.location.href = `/workspace?storeId=${encodeURIComponent(storeId)}`;
+      } else {
+        window.location.href = "/workspace";
       }
-      window.location.href = "/workspace";
     }
   };
 

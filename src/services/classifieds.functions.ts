@@ -11,6 +11,7 @@ import { withDataPayload } from "@/services/cart-helpers";
 import { classifiedSchema } from "@/types/community";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { applyServerFnEdgeCache, CACHE_TAGS } from "@/lib/cache/edge-cache";
+import { microCache } from "@/lib/cache/micro-cache";
 
 // ---------------------------------------------------------------------------
 // PUBLIC (no auth required) — 100% Real no Supabase | Zero Mocks
@@ -324,19 +325,22 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
       .optional(),
   )
   .handler(async ({ data }) => {
-    const supabase = getServerClient();
     const limit = Math.min(Math.max(data?.limit ?? 50, 1), 100);
+    const isSearch = Boolean(data?.search && data.search.trim());
+    const isCursor = Boolean(data?.cursor);
 
-    try {
-      let query = supabase
-        .from("classifieds")
-        .select(
-          "id, author_profile_id, store_id, category, deal_type, title, content, price_cents, images, contact_whatsapp, location_name, location_text, city, state, expires_at, condition, negotiable, attributes, status, is_sponsored, is_boosted, sponsored_until, boosted_until, created_at, updated_at",
-        )
-        .eq("status", "active")
-        .or("visibility.is.null,visibility.neq.unlisted")
-        .order("created_at", { ascending: false })
-        .limit(limit);
+    const fetchClassifieds = async () => {
+      const supabase = getServerClient();
+      try {
+        let query = supabase
+          .from("classifieds")
+          .select(
+            "id, author_profile_id, store_id, category, deal_type, title, content, price_cents, images, contact_whatsapp, location_name, location_text, city, state, expires_at, condition, negotiable, attributes, status, is_sponsored, is_boosted, sponsored_until, boosted_until, created_at, updated_at",
+          )
+          .eq("status", "active")
+          .or("visibility.is.null,visibility.neq.unlisted")
+          .order("created_at", { ascending: false })
+          .limit(limit);
 
       if (data?.cursor) {
         query = query.lt("created_at", data.cursor);
@@ -436,6 +440,13 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
     }
 
     return [];
+    };
+
+    if (!isSearch && !isCursor) {
+      const cacheKey = `classifieds:public:${data?.city || "all"}:${data?.category || "all"}:${data?.dealType || "all"}:${data?.storeId || "all"}:${limit}`;
+      return microCache.getOrSet(cacheKey, 30_000, fetchClassifieds);
+    }
+    return fetchClassifieds();
   });
 
 // ---------------------------------------------------------------------------
@@ -1727,6 +1738,7 @@ export const upsertClassified = createServerFn({ method: "POST" })
       }
     }
 
+    microCache.invalidatePrefix("classifieds:");
     return savedRecord;
   });
 
@@ -1786,6 +1798,8 @@ export const deleteClassified = createServerFn({ method: "POST" })
       console.error("Error deleting classified:", error);
       throw new Error("Failed to delete classified");
     }
+
+    microCache.invalidatePrefix("classifieds:");
 
     return { success: true };
   });
@@ -2790,6 +2804,61 @@ export const getBoostPaymentById = createServerFn({ method: "GET" })
 // Mantido para compatibilidade com imports antigos — agora é alias seguro
 // que retorna erro se não há gateway configurado.
 export const boostClassifiedAd = initiateBoostPayment;
+
+/**
+ * Expira checkouts de impulsionamento e promoções de anúncios abandonados há mais de 24 horas.
+ * Cancela tentativas pendentes que ultrapassaram expires_at ou a janela de tolerância de 24h.
+ */
+export const expireAbandonedPromotionCheckouts = createServerFn({ method: "POST" })
+  .validator(
+    z
+      .object({
+        maxAgeHours: z.number().int().min(1).max(168).optional().default(24),
+      })
+      .optional(),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const maxAgeHours = data?.maxAgeHours ?? 24;
+    const thresholdDate = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000).toISOString();
+    const now = new Date().toISOString();
+
+    const { data: expiredPayments, error: searchErr } = await supabase
+      .from("classified_boost_payments")
+      .select("id, classified_id, created_at, expires_at, status")
+      .eq("status", "pending")
+      .or(`expires_at.lt.${now},created_at.lt.${thresholdDate}`)
+      .limit(200);
+
+    if (searchErr) {
+      console.error("[boost] Erro ao buscar pagamentos expirados:", searchErr);
+      return { expiredCount: 0, expiredIds: [] };
+    }
+
+    if (!expiredPayments || expiredPayments.length === 0) {
+      return { expiredCount: 0, expiredIds: [] };
+    }
+
+    const expiredIds = expiredPayments.map((p) => p.id);
+
+    const { error: updateErr } = await supabase
+      .from("classified_boost_payments")
+      .update({
+        status: "expired",
+        failure_reason: "checkout_abandoned_timeout_24h",
+      })
+      .in("id", expiredIds);
+
+    if (updateErr) {
+      console.error("[boost] Erro ao atualizar status de pagamentos expirados:", updateErr);
+      throw new Error("Erro ao expirar pagamentos abandonados.");
+    }
+
+    return {
+      expiredCount: expiredIds.length,
+      expiredIds,
+    };
+  });
 
 /**
  * Refina título, descrição persuasiva, resumo/destaques, trechos selecionados e tags

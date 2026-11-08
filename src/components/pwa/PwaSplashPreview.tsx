@@ -32,16 +32,16 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
           <img
             src={splashImageUrl}
             alt={appName}
-            className="max-h-48 max-w-48 object-contain rounded-lg shadow-sm transition-transform duration-200"
+            className="max-h-48 max-w-48 object-contain rounded-lg  transition-transform duration-200"
           />
         ) : iconUrl ? (
-          <div className="size-24 rounded-lg overflow-hidden shadow-lg border border-white/10 shrink-0">
+          <div className="size-24 rounded-lg overflow-hidden  border border-white/10 shrink-0">
             <img src={iconUrl} alt={shortName} className="size-full object-cover" />
           </div>
         ) : (
           <div
             style={{ backgroundColor: themeColor }}
-            className="size-24 rounded-lg flex items-center justify-center font-black text-3xl text-foreground shadow-lg border border-white/15"
+            className="size-24 rounded-lg flex items-center justify-center font-black text-3xl text-foreground  border border-white/15"
           >
             {shortName.slice(0, 2).toUpperCase()}
           </div>

@@ -49,7 +49,7 @@ const CANONICAL_CATALOG_AGENTS: ArchitectAgent[] = [
     name: "Despachante MotoLink Autônomo",
     role_label: "Roteamento e Entregas",
     specialty: "Surge pricing, raio de atendimento e frota",
-    color: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+    color: "text-warning-strong bg-warning/10 border-warning/20",
   },
 ];
 
@@ -207,7 +207,7 @@ export function SquadArchitectSheet({
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveAgent(idx)}
-                      className="size-7 text-muted-foreground hover:text-destructive rounded-lg"
+                      className="size-7 text-muted-foreground hover:text-destructive rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                     >
                       <Trash2 className="size-3.5" />
                     </Button>

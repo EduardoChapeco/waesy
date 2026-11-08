@@ -175,10 +175,10 @@ function CourierOnboardingPage() {
               </div>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                <Button asChild className="rounded-lg h-10 px-5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground flex-1">
+                <Button asChild className="rounded-lg h-10 px-5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground flex-1 min-h-11 sm:min-h-0">
                   <Link to="/mobilidade">Acessar Painel de Corridas</Link>
                 </Button>
-                <Button asChild variant="outline" className="rounded-lg h-10 px-4 font-semibold text-xs border-border flex-1">
+                <Button asChild variant="outline" className="rounded-lg h-10 px-4 font-semibold text-xs border-border flex-1 min-h-11 sm:min-h-0">
                   <Link to="/conta">Minha Conta</Link>
                 </Button>
               </div>
@@ -187,13 +187,13 @@ function CourierOnboardingPage() {
 
           {/* Banner de Divergência Detectada / Análise Manual */}
           {(isDivergent || isManualReview) && (
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-6 space-y-4">
+            <div className="rounded-lg border border-warning/30 bg-warning/10 p-6 space-y-4">
               <div className="flex items-start gap-3">
-                <div className="size-12 rounded-lg bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0 mt-1">
+                <div className="size-12 rounded-lg bg-warning/20 text-warning-strong flex items-center justify-center shrink-0 mt-1">
                   <Warning size={28} weight="bold" />
                 </div>
                 <div className="space-y-2 flex-1">
-                  <h2 className="text-base font-bold text-amber-700 dark:text-amber-400">
+                  <h2 className="text-base font-bold text-warning-strong ">
                     Documentação em Revisão de Segurança
                   </h2>
                   <p className="text-xs text-foreground/80 leading-relaxed">
@@ -212,7 +212,7 @@ function CourierOnboardingPage() {
               </div>
 
               <div className="pt-2 flex justify-end">
-                <Button asChild variant="outline" className="rounded-lg h-9 px-4 text-xs font-semibold">
+                <Button asChild variant="outline" className="rounded-lg h-9 px-4 text-xs font-semibold min-h-11 sm:min-h-0">
                   <Link to="/conta">Voltar para Minha Conta</Link>
                 </Button>
               </div>
@@ -413,7 +413,7 @@ function CourierOnboardingPage() {
                     }
                     setStep(2);
                   }}
-                  className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
+                  className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer min-h-11 sm:min-h-0"
                 >
                   <span>Avançar para Biometria</span>
                   <ArrowRight size={14} weight="bold" />
@@ -475,7 +475,7 @@ function CourierOnboardingPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setStep(1)}
-                  className="rounded-lg h-10 px-4 font-semibold text-xs gap-2"
+                  className="rounded-lg h-10 px-4 font-semibold text-xs gap-2 min-h-11 sm:min-h-0"
                 >
                   <ArrowLeft size={14} weight="bold" />
                   <span>Voltar</span>
@@ -490,7 +490,7 @@ function CourierOnboardingPage() {
                     }
                     setStep(3);
                   }}
-                  className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer"
+                  className="rounded-lg h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer min-h-11 sm:min-h-0"
                 >
                   <span>Avançar para Termos de Autonomia</span>
                   <ArrowRight size={14} weight="bold" />
@@ -549,7 +549,7 @@ function CourierOnboardingPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setStep(2)}
-                  className="rounded-lg h-10 px-4 font-semibold text-xs gap-2"
+                  className="rounded-lg h-10 px-4 font-semibold text-xs gap-2 min-h-11 sm:min-h-0"
                 >
                   <ArrowLeft size={14} weight="bold" />
                   <span>Voltar</span>
@@ -558,7 +558,7 @@ function CourierOnboardingPage() {
                 <Button
                   type="submit"
                   disabled={isPending || !form.termsAccepted}
-                  className="rounded-lg h-11 px-6 font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-sm"
+                  className="rounded-lg h-11 px-6 font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer "
                 >
                   {isPending ? (
                     <span>Processando Biometria...</span>

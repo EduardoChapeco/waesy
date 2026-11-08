@@ -126,7 +126,7 @@ export default function WorkspaceOnboardingPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. HEADER DE ATIVAÇÃO APPLE HIG ── */}
       <div className="relative overflow-hidden rounded-lg border border-border/70 bg-card p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -142,7 +142,7 @@ export default function WorkspaceOnboardingPage() {
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="text-xs font-semibold gap-1">
-                  <Clock className="size-3 text-amber-500" />
+                  <Clock className="size-3 text-warning-strong" />
                   Em Configuração
                 </Badge>
               )}
@@ -155,7 +155,7 @@ export default function WorkspaceOnboardingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col items-start sm:items-end w-full sm:w-auto gap-2 shrink-0 bg-background/80 backdrop-blur-sm p-4 sm:p-5 rounded-lg border border-border/60">
+          <div className="flex flex-col items-start sm:items-end w-full sm:w-auto gap-2 shrink-0 bg-background/80 p-4 sm:p-5 rounded-lg border border-border/60">
             <div className="flex items-baseline gap-1">
               <span className="text-3xl sm:text-4xl font-black text-foreground">
                 {onboarding.progressPercentage}%
@@ -240,7 +240,7 @@ export default function WorkspaceOnboardingPage() {
                 key={step.id}
                 className={`p-5 rounded-lg border transition-colors flex flex-col justify-between gap-4 ${
                   isDone
-                    ? "bg-card/40 border-border/50"
+                    ? "bg-card border-border/50"
                     : "bg-card border-border/80 hover:border-primary/40 shadow-xs"
                 }`}
               >

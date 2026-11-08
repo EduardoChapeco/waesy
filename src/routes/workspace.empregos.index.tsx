@@ -326,7 +326,7 @@ function WorkspaceJobsPage() {
                   >
                     <Linkedin className="size-3 fill-current" />
                     <span>{isSyndicatingJobId === job.id ? "Sindicando..." : "LinkedIn"}</span>
-                    {!isPro && <Lock className="size-2.5 text-amber-500" />}
+                    {!isPro && <Lock className="size-2.5 text-warning-strong" />}
                   </Button>
                 )}
                 <Button
@@ -596,7 +596,7 @@ function WorkspaceJobsPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-foreground">Publicar no LinkedIn</span>
                     {!isPro && (
-                      <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-600 bg-amber-500/10 px-1 py-0 flex items-center gap-1">
+                      <Badge variant="outline" className="text-xs border-warning/40 text-warning-strong bg-warning/10 px-1 py-0 flex items-center gap-1">
                         <Lock className="size-2" /> PRO
                       </Badge>
                     )}
@@ -613,7 +613,7 @@ function WorkspaceJobsPage() {
                   size="sm"
                   variant="outline"
                   onClick={() => setIsPaywallOpen(true)}
-                  className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-bold border-amber-500/40 text-amber-700 bg-amber-500/10 hover:bg-amber-500/20"
+                  className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-bold border-warning/40 text-warning-strong bg-warning/10 hover:bg-warning/20"
                 >
                   <Lock className="size-3 mr-1" /> Desbloquear
                 </Button>

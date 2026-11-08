@@ -117,7 +117,7 @@ export function EventsShowcaseDesktopView({
 
       {/* ── 3. RÉGUA HORIZONTAL DE CATEGORIAS (Com Ícones e Contadores) ── */}
       <section aria-label="Filtro por Categorias">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
           {ALL_EXPANDED_EVENT_CATEGORIES.map((cat) => {
             const CatIcon = cat.icon;
             const isSelected = activeCategory === cat.id;
@@ -232,7 +232,7 @@ export function EventsShowcaseDesktopView({
                 type="button"
                 onClick={() => scrollInstagramRail("left")}
                 aria-label="Rolar para esquerda"
-                className="size-10 rounded-full border border-border/80 bg-card hover:bg-muted/60 text-foreground flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="size-10 rounded-full border border-border/80 bg-card hover:bg-muted/60 text-foreground flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               >
                 <CaretLeft size={18} weight="bold" />
               </button>
@@ -240,7 +240,7 @@ export function EventsShowcaseDesktopView({
                 type="button"
                 onClick={() => scrollInstagramRail("right")}
                 aria-label="Rolar para direita"
-                className="size-10 rounded-full border border-border/80 bg-card hover:bg-muted/60 text-foreground flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="size-10 rounded-full border border-border/80 bg-card hover:bg-muted/60 text-foreground flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               >
                 <CaretRight size={18} weight="bold" />
               </button>
@@ -249,14 +249,14 @@ export function EventsShowcaseDesktopView({
 
           <div
             ref={instagramRailRef}
-            className="flex items-center gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory py-1"
+            className="flex items-center gap-4 overflow-x-auto scroll-area-carousel no-scrollbar snap-x snap-mandatory py-1"
           >
             {trendingEvents.map((ev) => (
               <Link
                 key={ev.id}
                 to="/evento/$id"
                 params={{ id: ev.id }}
-                className="w-68 shrink-0 snap-start rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-md transition-colors duration-200 group cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="w-68 shrink-0 snap-start rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30  transition-colors duration-200 group cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {/* Imagem Quadrada Estilo Post Instagram (Aspect Square) */}
                 <div className="aspect-square relative overflow-hidden bg-muted">
@@ -401,7 +401,7 @@ export function EventsShowcaseDesktopView({
                   </div>
                   <div className="flex items-center gap-2 text-2xs text-muted-foreground">
                     {prod.rating && (
-                      <span className="flex items-center gap-1 font-bold text-amber-500 font-mono">
+                      <span className="flex items-center gap-1 font-bold text-warning-strong font-mono">
                         <Star size={11} weight="fill" />
                         <span>{prod.rating.toFixed(1)}</span>
                       </span>

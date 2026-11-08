@@ -55,7 +55,7 @@ function ContractEditorPage() {
   )[0] || { content_markdown: "", signature_fields: [], page_count: 1 };
 
   // Etapa ativa: 1 = Revisão, 2 = Posicionamento, 3 = Configurações & Selagem
-  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(2);
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
 
   // Estados do Contrato & Versão
   const [docTitle, setDocTitle] = useState(contract.title || "");
@@ -234,10 +234,12 @@ function ContractEditorPage() {
   };
 
   // Se já foi selado nesta sessão ou previamente
-  const isAlreadySealed = contract.status !== "draft" || Boolean(sealedData);
+  const isImmutableSigned = contract.status === "signed" || contract.status === "completed";
+  const [isEditingUnlocked, setIsEditingUnlocked] = useState(!isImmutableSigned);
+  const isAlreadySealed = isImmutableSigned || Boolean(sealedData) || !isEditingUnlocked;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-4 md:px-0 py-6 space-y-6 animate-in fade-in duration-200">
       {/* Barra de Topo do Editor */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/70 pb-4">
         <div className="flex items-center gap-3">
@@ -276,7 +278,7 @@ function ContractEditorPage() {
           <div className="flex items-center p-1 bg-muted/80 rounded-lg text-xs sm:text-sm">
             <button
               type="button"
-              onClick={() => setActiveStep(1)}
+              onClick={() => { if (!isImmutableSigned) { setIsEditingUnlocked(true); setSealedData(null); } setActiveStep(1); }}
               className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-colors duration-200 font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
                 activeStep === 1 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
@@ -285,7 +287,7 @@ function ContractEditorPage() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveStep(2)}
+              onClick={() => { if (!isImmutableSigned) { setIsEditingUnlocked(true); setSealedData(null); } setActiveStep(2); }}
               className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-colors duration-200 font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
                 activeStep === 2 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
@@ -294,7 +296,7 @@ function ContractEditorPage() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveStep(3)}
+              onClick={() => { if (!isImmutableSigned) { setIsEditingUnlocked(true); setSealedData(null); } setActiveStep(3); }}
               className={`px-4 py-2 min-h-11 inline-flex items-center rounded-lg transition-colors duration-200 font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${
                 activeStep === 3 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
@@ -326,6 +328,22 @@ function ContractEditorPage() {
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {(sealedData?.envelopes || existingEnvelopes).length === 0 && contract.verification_code && (
+                  <div className="p-4 rounded-lg border border-border/80 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm col-span-full">
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm text-foreground truncate">{(contract.metadata as any)?.client_name || "Contratante Titular"}</p>
+                      <p className="text-xs text-muted-foreground truncate">Token Público: {contract.verification_code}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button asChild variant="outline" size="sm" className="min-h-11 px-4 rounded-lg text-xs font-semibold">
+                        <a href={`/contrato/${contract.verification_code}`} target="_blank" rel="noreferrer">
+                          <ExternalLink className="size-3.5 mr-2" />
+                          Abrir Portal de Assinatura
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 {(sealedData?.envelopes || existingEnvelopes).map((env: any, idx: number) => {
                   const signingUrl = `/assinar/${env.signing_token}`;
                   const cleanPhone = (env.signer_phone || "").replace(/\D/g, "");
@@ -434,8 +452,8 @@ function ContractEditorPage() {
                 <div className="flex justify-end pt-2">
                   <Button
                     type="button"
-                    onClick={() => setActiveStep(2)}
-                    className="rounded-lg text-xs h-10 px-5 font-semibold"
+                    onClick={() => { if (!isImmutableSigned) { setIsEditingUnlocked(true); setSealedData(null); } setActiveStep(2); }}
+                    className="rounded-lg text-xs h-10 px-5 font-semibold min-h-11 sm:min-h-0"
                   >
                     Avançar para Posicionamento
                     <ArrowRight className="size-4 ml-2" />
@@ -448,7 +466,7 @@ function ContractEditorPage() {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Prévia de Leitura
                 </h3>
-                <div className="max-h-[500px] overflow-y-auto pr-2 text-xs font-serif leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert">
+                <div className="max-h-125 overflow-y-auto pr-2 text-xs font-serif leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert">
                   <ReactMarkdown>{contentMarkdown}</ReactMarkdown>
                 </div>
               </div>
@@ -457,7 +475,7 @@ function ContractEditorPage() {
 
           {/* PASSO 2: POSICIONAMENTO VISUAL DE TAGS (SignaturePositionerCanvas) */}
           {activeStep === 2 && (
-            <div className="h-[760px]">
+            <div className="h-190">
               <SignaturePositionerCanvas
                 signers={signers}
                 fields={signatureFields}
@@ -581,7 +599,7 @@ function ContractEditorPage() {
                         variant="outline"
                         size="sm"
                         onClick={addObserver}
-                        className="rounded-lg h-9 text-xs shrink-0"
+                        className="rounded-lg h-9 text-xs shrink-0 min-h-11 sm:min-h-0"
                       >
                         Adicionar
                       </Button>
@@ -604,8 +622,8 @@ function ContractEditorPage() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setActiveStep(2)}
-                    className="rounded-lg text-xs h-10 px-4"
+                    onClick={() => { if (!isImmutableSigned) { setIsEditingUnlocked(true); setSealedData(null); } setActiveStep(2); }}
+                    className="rounded-lg text-xs h-10 px-4 min-h-11 sm:min-h-0"
                   >
                     Voltar ao Posicionamento
                   </Button>

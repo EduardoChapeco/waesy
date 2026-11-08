@@ -16,7 +16,7 @@ interface EventoParceirosProps {
 
 const NIVEIS_PARCERIA = [
   { value: "diamante", label: "Cota Master / Diamante", badge: "bg-purple-500/15 text-purple-600 border-purple-500/30" },
-  { value: "ouro", label: "Cota Ouro", badge: "bg-amber-500/15 text-amber-600 border-amber-500/30" },
+  { value: "ouro", label: "Cota Ouro", badge: "bg-warning/15 text-warning-strong border-warning/30" },
   { value: "prata", label: "Cota Prata", badge: "bg-slate-500/15 text-slate-600 border-slate-500/30" },
   { value: "bronze", label: "Cota Bronze", badge: "bg-orange-500/15 text-orange-600 border-orange-500/30" },
   { value: "apoio", label: "Apoio Institucional", badge: "bg-sky-500/15 text-sky-600 border-sky-500/30" },
@@ -239,7 +239,7 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(p.id)}
-                      className="size-11 sm:size-9 text-muted-foreground hover:text-destructive cursor-pointer"
+                      className="size-11 sm:size-9 text-muted-foreground hover:text-destructive cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Excluir parceiro"
                     >
                       <Trash2 className="size-4" />

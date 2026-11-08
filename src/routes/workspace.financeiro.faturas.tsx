@@ -198,7 +198,7 @@ function WorkspaceFaturasPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 space-y-6 pb-20">
+    <div className="w-full px-0 sm:px-4 space-y-6 pb-20">
       {/* ── 1. Cabeçalho Clean ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
         <div>
@@ -220,7 +220,7 @@ function WorkspaceFaturasPage() {
             variant={viewMode === "invoices" ? "default" : "ghost"}
             size="sm"
             onClick={() => setViewMode("invoices")}
-            className="h-8 text-xs font-semibold rounded-lg"
+            className="h-8 text-xs font-semibold rounded-lg min-h-11 sm:min-h-0"
           >
             Faturas Mensais
           </Button>
@@ -228,7 +228,7 @@ function WorkspaceFaturasPage() {
             variant={viewMode === "ledger" ? "default" : "ghost"}
             size="sm"
             onClick={() => setViewMode("ledger")}
-            className="h-8 text-xs font-semibold rounded-lg gap-2"
+            className="h-8 text-xs font-semibold rounded-lg gap-2 min-h-11 sm:min-h-0"
           >
             <Scale className="size-3.5" />
             Razão & Microtaxas
@@ -307,7 +307,7 @@ function WorkspaceFaturasPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto scroll-area-carousel">
           {[
             { id: "all", label: "Todas" },
             { id: "pending", label: "Em Aberto" },
@@ -319,7 +319,7 @@ function WorkspaceFaturasPage() {
               variant={statusFilter === f.id ? "default" : "ghost"}
               size="sm"
               onClick={() => setStatusFilter(f.id)}
-              className="h-8 text-xs font-semibold rounded-lg"
+              className="h-8 text-xs font-semibold rounded-lg min-h-11 sm:min-h-0"
             >
               {f.label}
             </Button>
@@ -346,7 +346,7 @@ function WorkspaceFaturasPage() {
               <TableRow>
                 <TableCell colSpan={7} className="h-44 text-center text-muted-foreground text-xs">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <Receipt className="size-8 stroke-[1.5] text-muted-foreground/50" />
+                    <Receipt className="size-8 stroke-thin text-muted-foreground/50" />
                     <p className="font-semibold text-foreground">Nenhuma fatura encontrada</p>
                     <p className="text-xs">As faturas emitidas pela administração aparecerão listadas aqui.</p>
                   </div>
@@ -432,7 +432,7 @@ function WorkspaceFaturasPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleOpenPix(inv)}
-                              className="h-7 text-xs font-bold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/10"
+                              className="h-7 text-xs font-bold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/10 min-h-11 sm:min-h-0"
                             >
                               <QrCode className="size-3.5" />
                               <span>PIX</span>
@@ -446,7 +446,7 @@ function WorkspaceFaturasPage() {
                                 setProofUrl(inv.receipt_url || "");
                                 setProofNotes("");
                               }}
-                              className="h-7 text-xs font-bold rounded-lg gap-1"
+                              className="h-7 text-xs font-bold rounded-lg gap-1 min-h-11 sm:min-h-0"
                             >
                               <UploadCloud className="size-3.5" />
                               <span>Comprovante</span>
@@ -554,7 +554,7 @@ function WorkspaceFaturasPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => refetchLedger()}
-                    className="h-8 text-xs font-semibold rounded-lg gap-2"
+                    className="h-8 text-xs font-semibold rounded-lg gap-2 min-h-11 sm:min-h-0"
                   >
                     <RefreshCw className="size-3.5" />
                     <span>Recarregar</span>
@@ -668,7 +668,7 @@ function WorkspaceFaturasPage() {
                       navigator.clipboard.writeText(pixDetails.pixKey);
                       toast.success("Chave PIX copiada!");
                     }}
-                    className="h-9 rounded-lg font-bold"
+                    className="h-9 rounded-lg font-bold min-h-11 sm:min-h-0"
                   >
                     <Copy className="size-3.5" />
                   </Button>
@@ -682,7 +682,7 @@ function WorkspaceFaturasPage() {
                 </div>
                 <Button
                   onClick={handleCopyPix}
-                  className="w-full rounded-lg font-bold h-10 text-xs bg-foreground text-background gap-2 mt-2"
+                  className="w-full rounded-lg font-bold h-10 text-xs bg-foreground text-background gap-2 mt-2 min-h-11 sm:min-h-0"
                 >
                   <Copy className="size-3.5" />
                   <span>Copiar Código PIX Copia e Cola</span>
@@ -794,7 +794,7 @@ function WorkspaceFaturasPage() {
                   className="w-full h-96 rounded-lg border border-border/60"
                 />
               ) : (
-                <div className="max-h-[70vh] overflow-y-auto rounded-lg border border-border/60 bg-muted/20 flex items-center justify-center p-2">
+                <div className="max-h-vh-70 overflow-y-auto rounded-lg border border-border/60 bg-muted/20 flex items-center justify-center p-2">
                   <img
                     src={previewReceiptUrl}
                     alt="Comprovante Bancário"

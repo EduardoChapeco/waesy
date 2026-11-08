@@ -474,7 +474,7 @@ function WorkspaceAtendimentoPage() {
   // Estados de Conversas
   const [threads, setThreads] = useState<any[]>(initialThreads || []);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(
-    (searchParams as any).threadId || (initialThreads && initialThreads.length > 0 ? initialThreads[0].id : null),
+    (searchParams as any).threadId || (initialThreads && initialThreads.length > 0 ? initialThreads[0]?.id : null) || null,
   );
 
   useEffect(() => {
@@ -554,7 +554,7 @@ function WorkspaceAtendimentoPage() {
         if (res?.threads) {
           setThreads(res.threads);
           if (activeThreadId && !res.threads.some((t: any) => t.id === activeThreadId)) {
-            setActiveThreadId(res.threads.length > 0 ? res.threads[0].id : null);
+            setActiveThreadId(res.threads.length > 0 ? (res.threads[0]?.id || null) : null);
           }
         }
       })
@@ -644,7 +644,7 @@ function WorkspaceAtendimentoPage() {
           if (newThread.thread_type === "ai_assistant" || newThread.thread_type === "copilot") {
             return;
           }
-          if (newThread.store_id === store.id) {
+          if (newThread?.store_id === store?.id) {
             listChatThreads({ data: { status: (statusFilter === "waiting" ? "open" : statusFilter) as any } }).then((res) => {
               if (res?.threads) setThreads(res.threads);
             });
@@ -657,7 +657,7 @@ function WorkspaceAtendimentoPage() {
         { event: "INSERT", schema: "public", table: "intranet_messages" },
         (payload: any) => {
           const newMsg = payload.new as any;
-          if (newMsg && newMsg.store_id === store.id) {
+          if (newMsg && newMsg.store_id === store?.id) {
             setIntranetChannels((prev) =>
               prev.map((c) => {
                 if (c.id === newMsg.channel_id) {
@@ -688,7 +688,7 @@ function WorkspaceAtendimentoPage() {
         { event: "*", schema: "public", table: "intranet_milestones" },
         (payload: any) => {
           const updated = payload.new as any;
-          if (updated && updated.store_id === store.id) {
+          if (updated && updated.store_id === store?.id) {
             setIntranetChannels((prev) =>
               prev.map((c) => {
                 if (c.id === updated.channel_id) {
@@ -734,6 +734,7 @@ function WorkspaceAtendimentoPage() {
           message_type: messageType,
           payload,
           attachments: [],
+          is_internal: isWhisperMode,
         },
       });
 
@@ -847,6 +848,7 @@ function WorkspaceAtendimentoPage() {
   // Filtros SDR
   const filteredSdrSessions = useMemo(() => {
     return sdrSessions.filter((session) => {
+      if (!session) return false;
       const matchIntent = sdrIntentFilter === "all" || session.intent_classification === sdrIntentFilter;
       const matchSearch =
         !sdrSearchTerm.trim() ||
@@ -866,7 +868,7 @@ function WorkspaceAtendimentoPage() {
     <div className="flex flex-col h-full flex-1 overflow-hidden bg-background">
       {/* CABEÇALHO DO HUB DE ATENDIMENTO */}
       <header className={cn(
-        "shrink-0 border-b border-border/80 bg-card/90 px-4 py-3 flex-col md:flex-row md:items-center justify-between gap-3",
+        "shrink-0 border-b border-border/80 bg-card px-4 py-3 flex-col md:flex-row md:items-center justify-between gap-3",
         activeHubTab === "live" && activeThreadId ? "hidden md:flex" : "flex"
       )}>
         <div className="flex items-center justify-between gap-3 min-w-0">
@@ -900,11 +902,11 @@ function WorkspaceAtendimentoPage() {
               className={cn(
                 "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "busy"
-                  ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold"
+                  ? "bg-warning/15 text-warning-strong  font-bold"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <span className="size-2 rounded-full bg-amber-500" />
+              <span className="size-2 rounded-full bg-warning" />
               <span>Ocupado</span>
             </button>
             <button
@@ -1043,7 +1045,7 @@ function WorkspaceAtendimentoPage() {
             )}
           >
             {/* Busca & Chips de Status */}
-            <div className="p-3 border-b border-border/80 space-y-2 bg-card/40">
+            <div className="p-3 border-b border-border/80 space-y-2 bg-card">
               <div className="relative">
                 <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
                 <Input
@@ -1117,10 +1119,10 @@ function WorkspaceAtendimentoPage() {
                       key={t.id}
                       onClick={() => setActiveThreadId(t.id)}
                       className={cn(
-                        "w-full p-4 text-left flex items-start gap-3 transition-colors duration-150 cursor-pointer border-l-4 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                        "w-full p-4 text-left flex items-start gap-3 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         isActive
-                          ? "bg-muted/70 border-primary"
-                          : "border-transparent hover:bg-muted/30",
+                          ? "bg-muted"
+                          : "hover:bg-muted/40",
                       )}
                     >
                       {/* Avatar com foto real ou iniciais */}
@@ -1248,11 +1250,11 @@ function WorkspaceAtendimentoPage() {
                     {/* Tags Semânticas Coloridas (Whaticket / CRM Parity) */}
                     <div className="pt-1">
                       <ThreadTagsPicker
-                        threadId={activeThread.id}
+                        threadId={activeThread?.id || ""}
                         tags={activeThread.tags || []}
                         onTagsChange={(newTags) => {
                           setThreads((prev) =>
-                            prev.map((t) => (t.id === activeThread.id ? { ...t, tags: newTags } : t))
+                            prev.map((t) => (t.id === activeThread?.id ? { ...t, tags: newTags } : t))
                           );
                         }}
                       />
@@ -1330,7 +1332,7 @@ function WorkspaceAtendimentoPage() {
                       className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                       title="Agendar envio de mensagem futura"
                     >
-                      <CalendarClock className="size-4 text-amber-500" />
+                      <CalendarClock className="size-4 text-warning-strong" />
                       <span className="hidden sm:inline">Agendar</span>
                     </Button>
                   )}
@@ -1342,7 +1344,7 @@ function WorkspaceAtendimentoPage() {
                     size="sm"
                     disabled={isArchiving}
                     onClick={() =>
-                      handleArchiveThread(activeThread.id, activeThread.status !== "archived")
+                      activeThread?.id && handleArchiveThread(activeThread.id, activeThread.status !== "archived")
                     }
                     className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     title={activeThread.status === "archived" ? "Desarquivar conversa" : "Arquivar conversa"}
@@ -1394,7 +1396,7 @@ function WorkspaceAtendimentoPage() {
 
               {/* Painel Recolhível: Linha do Tempo Cronológica (Pedidos, Chamados e Planilhas) */}
               {showLiveTimeline && (
-                <div className="bg-card/95 border-b border-border/80 p-4 space-y-3 animate-in fade-in duration-150">
+                <div className="bg-card border-b border-border/80 p-4 space-y-3 animate-in fade-in duration-150">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                       <GitBranch className="size-4 text-primary" />
@@ -1508,9 +1510,9 @@ function WorkspaceAtendimentoPage() {
                     ) {
                       return (
                         <div key={msg.id} className="w-full flex justify-center my-2">
-                          <div className="max-w-lg w-full p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1 shadow-2xs">
+                          <div className="max-w-lg w-full p-3 rounded-lg bg-warning/10 border border-warning/30 text-warning-strong  text-xs space-y-1 shadow-2xs">
                             <div className="flex items-center justify-between text-xs font-bold">
-                              <span className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                              <span className="flex items-center gap-2 text-warning-strong ">
                                 <Lock className="size-4 shrink-0" />
                                 <span>Nota Interna da Equipe (Whisper)</span>
                               </span>
@@ -1647,11 +1649,11 @@ function WorkspaceAtendimentoPage() {
                       className={cn(
                         "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                         isWhisperMode
-                          ? "bg-amber-500/20 text-amber-800 dark:text-amber-200 shadow-2xs font-bold"
+                          ? "bg-warning/20 text-warning-strong  shadow-2xs font-bold"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
-                      <Lock className="size-3.5 text-amber-600" />
+                      <Lock className="size-3.5 text-warning-strong" />
                       <span>Nota Interna (Equipe)</span>
                     </button>
                   </div>
@@ -1669,9 +1671,9 @@ function WorkspaceAtendimentoPage() {
 
                 {/* Banner Modo Nota Interna (Whisper) com Design Âmbar Whaticket/Chatwoot */}
                 {isWhisperMode && (
-                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-950 dark:text-amber-100 text-xs font-semibold animate-in fade-in">
+                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-warning/15 border border-warning/40 text-warning-strong  text-xs font-semibold animate-in fade-in">
                     <div className="flex items-center gap-2">
-                      <Lock className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <Lock className="size-4 shrink-0 text-warning-strong " />
                       <span>Nota Interna Privada: Visível apenas para a equipe (NÃO é enviada ao WhatsApp).</span>
                     </div>
                     <Button
@@ -1679,7 +1681,7 @@ function WorkspaceAtendimentoPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsWhisperMode(false)}
-                      className="h-11 min-h-11 px-3 text-xs text-amber-900 dark:text-amber-200 hover:bg-amber-500/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-11 min-h-11 px-3 text-xs text-warning-strong  hover:bg-warning/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Voltar ao Chat
                     </Button>
@@ -1697,7 +1699,7 @@ function WorkspaceAtendimentoPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setQuickAnswersModalOpen(true)}
-                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-amber-500/30 text-amber-500 hover:bg-amber-500/10 cursor-pointer"
+                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-warning/30 text-warning-strong hover:bg-warning/10 cursor-pointer"
                     title="Gerenciar respostas rápidas personalizadas"
                   >
                     <Zap className="size-3.5" />
@@ -1757,7 +1759,7 @@ function WorkspaceAtendimentoPage() {
                         className={cn(
                           "min-h-11 max-h-32 text-xs rounded-lg resize-none p-3",
                           isWhisperMode
-                            ? "border-amber-500/50 bg-amber-500/5 placeholder:text-amber-700/60"
+                            ? "border-warning/50 bg-warning/5 placeholder:text-warning-strong/60"
                             : "bg-muted/30",
                         )}
                         rows={1}
@@ -1772,7 +1774,7 @@ function WorkspaceAtendimentoPage() {
                       onClick={() => setIsWhisperMode(!isWhisperMode)}
                       className={cn(
                         "size-11 rounded-lg shrink-0 cursor-pointer",
-                        isWhisperMode ? "bg-amber-600 hover:bg-amber-700 text-amber-50" : "",
+                        isWhisperMode ? "bg-warning hover:bg-warning-strong text-warning-strong" : "",
                       )}
                       title={
                         isWhisperMode
@@ -1842,11 +1844,11 @@ function WorkspaceAtendimentoPage() {
                       </span>
                     </div>
                     <Switch
-                      checked={aiAutoReplyPerThread[activeThread.id] ?? true}
+                      checked={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
                       onCheckedChange={(checked) => {
                         setAiAutoReplyPerThread((prev) => ({
                           ...prev,
-                          [activeThread.id]: checked,
+                          ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
                         }));
                         toast.success(
                           checked
@@ -1866,7 +1868,7 @@ function WorkspaceAtendimentoPage() {
                     Setor / Fila (Assigned Team Router)
                   </Label>
                   <select
-                    value={activeThread.department || "geral"}
+                    value={activeThread?.department || "geral"}
                     onChange={(e) => handleDepartmentChange(e.target.value)}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                   >
@@ -1883,12 +1885,12 @@ function WorkspaceAtendimentoPage() {
                     Atendente Responsável (Assigned To)
                   </Label>
                   <select
-                    value={assignedAgentPerThread[activeThread.id] || ""}
+                    value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
                     onChange={(e) => {
                       const val = e.target.value;
                       setAssignedAgentPerThread((prev) => ({
                         ...prev,
-                        [activeThread.id]: val,
+                        ...(activeThread?.id ? { [activeThread.id]: val } : {}),
                       }));
                       toast.success("Atendente atribuído à conversa!");
                     }}
@@ -1904,8 +1906,11 @@ function WorkspaceAtendimentoPage() {
                 </div>
               </div>
               <Customer360Sidebar
-                customerId={activeThread.customer?.id}
+                customerId={activeThread?.customer?.id}
                 storeId={store?.id || ""}
+                threadId={activeThread?.id}
+                guestName={activeThread?.customer?.full_name}
+                guestPhone={activeThread?.customer?.phone}
               />
             </div>
           )}
@@ -1918,6 +1923,7 @@ function WorkspaceAtendimentoPage() {
                   Perfil 360º do Cliente
                 </SheetTitle>
               </SheetHeader>
+              {activeThread?.id && (
               <div className="p-4">
                 {/* Controles estilo TrackChat / WhatsOmni: AI Assistant Control, Team Router & Assignee */}
               <div className="space-y-3 mb-4 pb-4 border-b border-border/60">
@@ -1930,11 +1936,11 @@ function WorkspaceAtendimentoPage() {
                       </span>
                     </div>
                     <Switch
-                      checked={aiAutoReplyPerThread[activeThread.id] ?? true}
+                      checked={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
                       onCheckedChange={(checked) => {
                         setAiAutoReplyPerThread((prev) => ({
                           ...prev,
-                          [activeThread.id]: checked,
+                          ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
                         }));
                         toast.success(
                           checked
@@ -1954,7 +1960,7 @@ function WorkspaceAtendimentoPage() {
                     Setor / Fila (Assigned Team Router)
                   </Label>
                   <select
-                    value={activeThread.department || "geral"}
+                    value={activeThread?.department || "geral"}
                     onChange={(e) => handleDepartmentChange(e.target.value)}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                   >
@@ -1971,12 +1977,12 @@ function WorkspaceAtendimentoPage() {
                     Atendente Responsável (Assigned To)
                   </Label>
                   <select
-                    value={assignedAgentPerThread[activeThread.id] || ""}
+                    value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
                     onChange={(e) => {
                       const val = e.target.value;
                       setAssignedAgentPerThread((prev) => ({
                         ...prev,
-                        [activeThread.id]: val,
+                        ...(activeThread?.id ? { [activeThread.id]: val } : {}),
                       }));
                       toast.success("Atendente atribuído à conversa!");
                     }}
@@ -1994,8 +2000,12 @@ function WorkspaceAtendimentoPage() {
               <Customer360Sidebar
                   customerId={activeThread?.customer?.id}
                   storeId={store?.id || ""}
+                  threadId={activeThread?.id}
+                  guestName={activeThread?.customer?.full_name}
+                  guestPhone={activeThread?.customer?.phone}
                 />
               </div>
+              )}
             </SheetContent>
           </Sheet>
         </div>
@@ -2007,7 +2017,7 @@ function WorkspaceAtendimentoPage() {
       {activeHubTab === "intranet" && (
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-background">
           {/* COLUNA ESQUERDA: Sidebar Segmentada por Departamento (Estilo Slack / Corporativo) */}
-          <aside className="w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-border/80 bg-card/40 flex flex-col shrink-0">
+          <aside className="w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-border/80 bg-card flex flex-col shrink-0">
             <div className="p-3 border-b border-border/80 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -2137,7 +2147,7 @@ function WorkspaceAtendimentoPage() {
                               "w-full p-3 rounded-lg text-left transition-colors cursor-pointer border space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                               isSelected
                                 ? "bg-primary/10 border-primary/40 text-foreground"
-                                : "bg-card/60 border-border/50 hover:bg-muted/40 text-foreground",
+                                : "bg-card border-border/50 hover:bg-muted/40 text-foreground",
                             )}
                           >
                             <div className="flex items-start justify-between gap-2">
@@ -2155,7 +2165,7 @@ function WorkspaceAtendimentoPage() {
                                 className={cn(
                                   "text-2xs gap-1",
                                   ch.scope === "private"
-                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                    ? "bg-warning/10 text-warning-strong  border-warning/30"
                                     : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
                                 )}
                               >
@@ -2380,7 +2390,7 @@ function WorkspaceAtendimentoPage() {
                     onClick={() => setIntranetModalOverride("sticker")}
                     className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <Sparkles className="size-3.5 text-amber-500" />
+                    <Sparkles className="size-3.5 text-warning-strong" />
                     <span>Stickers</span>
                   </Button>
                 </div>
@@ -2402,7 +2412,7 @@ function WorkspaceAtendimentoPage() {
                     }
                     setIntranetChannels((prev) =>
                       prev.map((ch) =>
-                        ch.id === activeIntranetChannel.id
+                        ch.id === activeIntranetChannel?.id
                           ? {
                               ...ch,
                               updatedAt: "Agora",
@@ -2512,6 +2522,7 @@ function WorkspaceAtendimentoPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredSdrSessions.map((session) => {
+                  if (!session?.id) return null;
                   const isReady = session.intent_classification === "ready_to_buy";
                   const isWarm = session.intent_classification === "warm";
 
@@ -2523,7 +2534,7 @@ function WorkspaceAtendimentoPage() {
                         isReady
                           ? "border-emerald-500/40 bg-emerald-500/5 dark:bg-emerald-950/10"
                           : isWarm
-                          ? "border-amber-500/40 bg-amber-500/5 dark:bg-amber-950/10"
+                          ? "border-warning/40 bg-warning/5 "
                           : "border-border/70",
                       )}
                     >
@@ -2536,7 +2547,7 @@ function WorkspaceAtendimentoPage() {
                               isReady
                                 ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                                 : isWarm
-                                ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                ? "bg-warning/15 text-warning-strong  border-warning/30"
                                 : "bg-muted text-muted-foreground border border-border/60",
                             )}
                           >
@@ -2641,8 +2652,8 @@ function WorkspaceAtendimentoPage() {
             <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
               <span className="text-xs text-muted-foreground font-semibold">Satisfação (CSAT)</span>
               {Number(metrics?.avg_rating || 0) > 0 ? (
-                <p className="text-2xl font-bold font-mono text-amber-500 flex items-center gap-1">
-                  <Star className="size-5 fill-amber-500" />
+                <p className="text-2xl font-bold font-mono text-warning-strong flex items-center gap-1">
+                  <Star className="size-5 fill-warning" />
                   <span>{metrics.avg_rating} / 5.0</span>
                 </p>
               ) : (
@@ -2690,7 +2701,7 @@ function WorkspaceAtendimentoPage() {
                     "text-xs px-2 py-1 font-bold",
                     whatsappInstances.some((i) => i.is_active && i.status === "connected")
                       ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                      : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+                      : "bg-warning/15 text-warning-strong  border-warning/30",
                   )}
                 >
                   {whatsappInstances.some((i) => i.is_active && i.status === "connected")
@@ -2949,7 +2960,7 @@ function WorkspaceAtendimentoPage() {
                     selectedSdrSession.intent_classification === "ready_to_buy"
                       ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                       : selectedSdrSession.intent_classification === "warm"
-                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                      ? "bg-warning/15 text-warning-strong  border-warning/30"
                       : "bg-muted text-muted-foreground",
                   )}
                 >
@@ -3123,7 +3134,7 @@ function WorkspaceAtendimentoPage() {
       )}
 
       {/* MODAIS DE OPERAÇÕES AVANÇADAS WHATICKET / OMNICHANNEL */}
-      {activeThread && (
+      {activeThread?.id && (
         <TransferChatThreadModal
           isOpen={transferModalOpen}
           onClose={() => setTransferModalOpen(false)}
@@ -3142,7 +3153,7 @@ function WorkspaceAtendimentoPage() {
         isOpen={quickAnswersModalOpen}
         onClose={() => setQuickAnswersModalOpen(false)}
       />
-      {activeThread && (
+      {activeThread?.id && (
         <ScheduleWhatsAppMessageModal
           isOpen={scheduleModalOpen}
           onClose={() => setScheduleModalOpen(false)}
@@ -3197,7 +3208,7 @@ function WorkspaceAtendimentoPage() {
         onClearModalOverride={() => setIntranetModalOverride(null)}
         storeName={store?.name || "Intranet"}
         onDispatchMessage={(data: StructuredDispatchPayload) => {
-          if (!activeIntranetChannel) return;
+          if (!activeIntranetChannel?.id) return;
           if (activeIntranetChannel.id && !activeIntranetChannel.id.startsWith("ch-")) {
             sendIntranetMessage({
               data: {
@@ -3211,7 +3222,7 @@ function WorkspaceAtendimentoPage() {
           }
           setIntranetChannels((prev) =>
             prev.map((ch) =>
-              ch.id === activeIntranetChannel.id
+              ch.id === activeIntranetChannel?.id
                 ? {
                     ...ch,
                     updatedAt: "Agora",

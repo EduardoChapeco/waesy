@@ -517,7 +517,7 @@ export function BusinessLocationPicker({
  {value.isAddressPublic ? (
  <Eye className="size-4 text-primary shrink-0" />
  ) : (
- <EyeOff className="size-4 text-amber-500 shrink-0" />
+ <EyeOff className="size-4 text-warning-strong shrink-0" />
  )}
  <span className="text-xs font-bold text-foreground">
  {value.isAddressPublic

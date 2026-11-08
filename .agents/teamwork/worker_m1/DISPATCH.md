@@ -1,34 +1,68 @@
-# DISPATCH — Worker M1 (Supabase Migration Telemetry 360º)
+## 2026-11-04T04:51:50Z
+Your identity: Worker M1 — Foundations, Primitives & View Preferences Implementation
+Your working directory: c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\worker_m1
+Authoritative User Request: c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md
+Scope Document: c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\PROJECT.md
 
-## Task
-Implement the database migration `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql` strictly according to:
-- `ORIGINAL_REQUEST.md` (section ## 2026-10-05T04:01:31Z, R1) at `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md`.
-- Explorer 1 Survey Report at `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\explorer_survey_db\report.md`.
-- `PROJECT.md` at `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\orchestrator_6\PROJECT.md`.
-- Skills:
-  - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\skills\supabase\SKILL.md`
-  - `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\skills\supabase-postgres-best-practices\SKILL.md`
+You MUST read c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\ORIGINAL_REQUEST.md before starting work.
 
-## Exclusive File Ownership
-- `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql`
+MANDATORY INTEGRITY WARNING:
+DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A teamwork_auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
 
-## Requirements
-1. Create `user_form_submissions_log` with all columns, check constraints, foreign keys, b-tree indexes, and RLS Deny-by-Default policies (platform_admin, user, store, insert for anon/auth).
-2. Create `user_cart_telemetry` with all columns, check constraints, foreign keys, b-tree indexes, and RLS Deny-by-Default policies.
-3. Create `employee_tenant_audit_logs` with all columns, operator_cpf, store_id, module, action, b-tree indexes, and RLS Deny-by-Default policies.
-4. Create `customer_store_affinity` with `CONSTRAINT uq_customer_store_affinity UNIQUE (customer_id, store_id)`, metrics, affinity_level check constraint, updated_at trigger, b-tree indexes, and RLS policies.
-5. All RLS policies must use `(SELECT auth.uid())` subqueries for query-level caching.
+Objective:
+Implement all 5 features of Milestone M1 with 100% genuine code, zero TypeScript errors, clean build, and passing Vitest tests:
+1. Feature 1 & 2:
+   - Implement `src/components/workspace/mini-sparkline.tsx` and `src/components/workspace/kpi-metric-card.tsx` per `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\explorer_m1_1\handoff.md`.
+   - Update `src/components/workspace/index.ts` to export these new components.
+2. Feature 3:
+   - Implement `src/components/workspace/view-modes/universal-view-manager.tsx`, `src/components/workspace/view-modes/view-mode-switcher.tsx`, `src/components/workspace/view-modes/use-workspace-view-mode.ts`, and `src/components/workspace/view-modes/index.ts` per `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\explorer_m1_2\handoff.md`.
+   - Update `src/components/workspace/workspace-canonical-toolbar.tsx` surgically with the `viewSwitcher?: React.ReactNode` prop in Tier 1.
+3. Feature 4 & 5:
+   - Implement migration `supabase/migrations/20270220030000_workspace_user_view_preferences.sql` using `.agents/teamwork/explorer_m1_3/proposed_migration.sql`.
+   - Implement BFF service `src/services/workspace-view-preferences.functions.ts` using `.agents/teamwork/explorer_m1_3/proposed_bff_functions.ts` (100% parameter destructuring per Invariant B.25).
+   - Implement Vitest suite `src/services/__tests__/workspace-view-preferences.test.ts` using `.agents/teamwork/explorer_m1_3/proposed_test.ts`.
 
-## MANDATORY INTEGRITY WARNING
-DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A teamwork_preview_auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
+Verification requirements:
+- Run Vitest tests: `cmd /c npx vitest run src/services/__tests__/workspace-view-preferences.test.ts`
+- Run TypeScript typecheck: `cmd /c npm run typecheck`
+- Run production build: `cmd /c npm run build`
+- Run design lint ratchet: `node scripts/design-lint.mjs --ratchet`
+All commands must pass with Exit Code 0 and zero errors.
 
-Deliver your handoff report to `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\worker_m1\handoff.md` and communicate completion back to the orchestrator.
+Write ownership:
+You own exclusively:
+- `src/components/workspace/kpi-metric-card.tsx`
+- `src/components/workspace/mini-sparkline.tsx`
+- `src/components/workspace/view-modes/*`
+- `src/components/workspace/index.ts` (surgical edit)
+- `src/components/workspace/workspace-canonical-toolbar.tsx` (surgical edit)
+- `supabase/migrations/20270220030000_workspace_user_view_preferences.sql`
+- `src/services/workspace-view-preferences.functions.ts`
+- `src/services/__tests__/workspace-view-preferences.test.ts`
 
-## 2026-10-05T04:15:52Z
-Implement the complete SQL migration file `supabase/migrations/20270105000000_master_360_telemetry_and_governance.sql` implementing:
-1. `user_form_submissions_log` (table, columns, foreign keys, indexes, RLS Deny-by-Default policies).
-2. `user_cart_telemetry` (table, columns, foreign keys, indexes, RLS Deny-by-Default policies).
-3. `employee_tenant_audit_logs` (table, columns, foreign keys, operator_cpf, indexes, RLS Deny-by-Default policies).
-4. `customer_store_affinity` (table, columns, unique constraint on customer_id + store_id, indexes, trigger, RLS Deny-by-Default policies).
-Ensure all RLS policies wrap session lookups in subqueries `(SELECT auth.uid())` and use `public.is_platform_admin()` and `public.auth_user_store_ids()`.
+Output requirements:
+- Write detailed handoff report to: `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\worker_m1\handoff.md`
+- Regularly update: `c:\Users\Eduardo Antônio Ramo\Documents\waesy\.agents\teamwork\worker_m1\progress.md`
+- Send completion message to caller when done.
 
+
+## 2026-11-04T10:35:01Z
+**Context**: Retomada pós-reboot do Milestone M1
+**Content**: O servidor foi reiniciado. Você já implementou com sucesso:
+- `src/components/workspace/kpi-metric-card.tsx`
+- `src/components/workspace/mini-sparkline.tsx`
+- `src/components/workspace/view-modes/` (`universal-view-manager.tsx`, `view-mode-switcher.tsx`, `use-workspace-view-mode.ts`, `index.ts`)
+
+Itens pendentes para conclusão imediata:
+1. Exportar os novos componentes em `src/components/workspace/index.ts`.
+2. Atualização cirúrgica em `src/components/workspace/workspace-canonical-toolbar.tsx` adicionando `viewSwitcher?: React.ReactNode` no Tier 1.
+3. Criar a migration `supabase/migrations/20270220030000_workspace_user_view_preferences.sql` usando `.agents/teamwork/explorer_m1_3/proposed_migration.sql`.
+4. Criar a Server Function `src/services/workspace-view-preferences.functions.ts` usando `.agents/teamwork/explorer_m1_3/proposed_bff_functions.ts` (destruturação 100% de parâmetros conforme Invariante B.25).
+5. Criar a suíte de testes Vitest `src/services/__tests__/workspace-view-preferences.test.ts` usando `.agents/teamwork/explorer_m1_3/proposed_test.ts`.
+6. Executar e comprovar:
+   - `cmd /c npx vitest run src/services/__tests__/workspace-view-preferences.test.ts`
+   - `cmd /c npm run typecheck`
+   - `cmd /c npm run build`
+   - `node scripts/design-lint.mjs --ratchet`
+7. Escrever `handoff.md` e enviar mensagem de conclusão.
+**Action**: Conclua os itens pendentes e envie seu handoff.md.

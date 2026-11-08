@@ -18,6 +18,7 @@ import { listStorePublicReviews } from "@/services/cms.functions";
 import { listStorePublicSponsors } from "@/services/news.functions";
 import { listActiveStoreFlyers } from "@/services/store-flyers.functions";
 import { getAdsByStoreId } from "@/services/classifieds.functions";
+import { listEntityMembers } from "@/services/association.functions";
 import { CanonicalStoreProfileView } from "@/components/commerce/canonical-store-profile-view";
 import { UnconfiguredState } from "@/components/state/states";
 
@@ -113,6 +114,7 @@ export const Route = createFileRoute("/_store/loja/$slug")({
         employerStatsRes,
         identityRes,
         adsRes,
+        associatedMembersRes,
       ] = await Promise.all([
         getPublicExperienceDocumentBySlug({
           data: { slug: "home", document_type: "storefront", storeId },
@@ -127,6 +129,7 @@ export const Route = createFileRoute("/_store/loja/$slug")({
         getCompanyEmployerStats({ data: { storeId } }).catch(() => null),
         getIdentity().catch(() => null),
         getAdsByStoreId({ data: { storeId } }).catch(() => []),
+        listEntityMembers({ data: { entityStoreId: storeId, status: "approved" } }).catch(() => []),
       ]);
 
       return {
@@ -144,6 +147,7 @@ export const Route = createFileRoute("/_store/loja/$slug")({
         sponsors: sponsorsRes || [],
         employerStats: employerStatsRes,
         identity: identityRes,
+        associatedMembers: associatedMembersRes || [],
         slug: params.slug,
       };
     } catch (err) {
@@ -275,8 +279,13 @@ function StoreSlugCanonicalPage() {
         reviews={data.reviews}
         sponsors={data.sponsors}
         employerStats={data.employerStats}
+        associatedMembers={data.associatedMembers || []}
         builderTree={data.experienceDoc?.nodes || null}
-        omniPageDoc={data.experienceDoc?.settings?.omni_page || null}
+        omniPageDoc={
+          data.experienceDoc?.settings?.omni_page_published ||
+          data.experienceDoc?.settings?.omni_page ||
+          null
+        }
         isOwner={isOwner}
         source="storefront"
       />

@@ -38,7 +38,7 @@ export function JobDetailDesktop({
           variant="outline"
           size="sm"
           onClick={onShare}
-          className="rounded-lg font-semibold text-xs gap-2 h-8 border-border/70"
+          className="rounded-lg font-semibold text-xs gap-2 h-8 border-border/70 min-h-11 sm:min-h-0"
         >
           <ShareNetwork size={15} weight="bold" />
           <span>Compartilhar</span>
@@ -199,7 +199,7 @@ export function JobDetailDesktop({
                 <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                   Perfil do Empregador
                 </span>
-                <span className="text-xs font-bold text-amber-500">
+                <span className="text-xs font-bold text-warning-strong">
                    {employerInsights.average_rating} ({employerInsights.total_reviews} avaliações)
                 </span>
               </div>
@@ -213,7 +213,7 @@ export function JobDetailDesktop({
 
         {/* Coluna Direita (5 cols Sticky): Salário, Candidatura & Contato */}
         <div className="col-span-5 space-y-5 sticky top-24">
-          <div className="rounded-lg border border-border/80 bg-card p-6 space-y-5 shadow-sm">
+          <div className="rounded-lg border border-border/80 bg-card p-6 space-y-5 ">
             {/* Salário */}
             <div className="space-y-1">
               <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block font-bold">
@@ -228,7 +228,7 @@ export function JobDetailDesktop({
             {job.is_external && job.external_url ? (
               <Button
                 asChild
-                className="w-full rounded-lg font-bold h-12 text-sm bg-foreground text-background gap-2 hover:bg-foreground/90 transition-colors shadow-sm"
+                className="w-full rounded-lg font-bold h-12 text-sm bg-foreground text-background gap-2 hover:bg-foreground/90 transition-colors "
               >
                 <a
                   href={job.external_url}
@@ -243,7 +243,7 @@ export function JobDetailDesktop({
             ) : (
               <Button
                 onClick={onOpenApply}
-                className="w-full rounded-lg font-bold h-12 text-sm bg-foreground text-background gap-2 hover:bg-foreground/90 transition-colors shadow-sm"
+                className="w-full rounded-lg font-bold h-12 text-sm bg-foreground text-background gap-2 hover:bg-foreground/90 transition-colors "
               >
                 <PaperPlaneTilt size={18} weight="bold" />
                 <span>Enviar Candidatura</span>

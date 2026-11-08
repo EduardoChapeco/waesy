@@ -70,8 +70,8 @@ describe("resolveClassifiedDetailedSpecs", () => {
         { label: "Suítes", value: "1", category: "technical", highlight: true },
         { label: "Banheiros", value: "2", category: "technical" },
         { label: "Vagas", value: "2", category: "technical", highlight: true },
-        { label: "Condomínio", value: formatMoney(65000), category: "commercial" },
-        { label: "IPTU", value: formatMoney(12000), category: "commercial" },
+        { label: "Condomínio", value: formatMoney(65000), category: "commercial", highlight: false },
+        { label: "IPTU", value: formatMoney(12000), category: "commercial", highlight: false },
         { label: "Mobiliado", value: "Sim, completo", category: "technical" },
       ])
     );

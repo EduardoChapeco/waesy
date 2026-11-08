@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { applyServerFnEdgeCache } from "@/lib/cache/edge-cache";
+import { microCache } from "@/lib/cache/micro-cache";
 import { eventSchema, ticketLotSchema } from "@/types/community";
 import { generateTicketQRHash } from "@/lib/tokens";
 import { signTicketPayload, verifyTicketPayload } from "@/lib/ticket-crypto";
@@ -229,6 +230,7 @@ async function _upsertEvent(data: any) {
  }
 
  await logAuditAction(identity, data.id ? "UPDATE" : "INSERT", "events", event.id, event);
+ microCache.invalidatePrefix("events:");
 
  return event;
 }
@@ -1534,15 +1536,19 @@ async function _getPublicEvents(opts: {
   state?: string;
   searchQuery?: string;
 } = {}) {
-  const supabase = getServerClient();
   const limit = Math.min(Math.max(opts.limit ?? 50, 1), 100);
+  const isSearch = Boolean(opts.searchQuery && opts.searchQuery.trim());
+  const isCursor = Boolean(opts.cursor);
 
-  try {
-    let query = supabase
-      .from("events")
-      .select(
-        "id, store_id, title, description, event_date, end_date, location, venue, city, state, cover_image, status, category, is_free, is_external, external_source, is_external_ticket, external_ticket_url, organizer_name, price_min_cents, price_max_cents, rsvp_going_count, rsvp_interested_count, rsvp_not_going_count, created_at",
-      )
+  const fetchEvents = async () => {
+    const supabase = getServerClient();
+
+    try {
+      let query = supabase
+        .from("events")
+        .select(
+          "id, store_id, title, description, event_date, end_date, location, venue, city, state, cover_image, status, category, is_free, is_external, external_source, is_external_ticket, external_ticket_url, organizer_name, price_min_cents, price_max_cents, rsvp_going_count, rsvp_interested_count, rsvp_not_going_count, created_at",
+        )
       .eq("status", "published")
       .is("deleted_at", null)
       .gte("event_date", new Date().toISOString()) // só eventos futuros
@@ -1699,12 +1705,19 @@ async function _getPublicEvents(opts: {
       String(a.event_date || "").localeCompare(String(b.event_date || "")),
     );
 
-    return baseEvents.slice(0, limit);
-  } catch (err) {
-    console.warn("[events] Erro ao listar eventos:", err);
-  }
+      return baseEvents.slice(0, limit);
+    } catch (err) {
+      console.warn("[events] Erro ao listar eventos:", err);
+    }
 
-  return [];
+    return [];
+  };
+
+  if (!isSearch && !isCursor) {
+    const cacheKey = `events:public:${opts.city || "all"}:${opts.category || "all"}:${opts.dateFrom || "all"}:${opts.dateTo || "all"}:${opts.state || "all"}:${limit}`;
+    return microCache.getOrSet(cacheKey, 60_000, fetchEvents);
+  }
+  return fetchEvents();
 }
 
 export const getPublicEvents = createServerFn({ method: "GET" })

@@ -163,8 +163,9 @@ export const Route = createFileRoute("/workspace/pdv/")({
  orderId: typeof search.orderId === "string" ? search.orderId : undefined,
  }),
  head: () => ({ meta: [{ title: "Frente de Caixa (PDV) Pro | Waesy" }] }),
- loader: async () => {
+ loader: async ({ context }) => {
    try {
+     const session = (context as any)?.session;
      const activeRegister = await getActiveRegister().catch(() => null);
 
      const [catalog, priceTables, store] = await Promise.all([
@@ -178,10 +179,11 @@ export const Route = createFileRoute("/workspace/pdv/")({
        catalog: catalog || [],
        priceTables: priceTables || [],
        store: store || null,
+       userRole: session?.role || "seller",
      };
    } catch (err) {
      console.error("[loader:workspace.pdv.index] Unhandled loader error:", err);
-     return { activeRegister: null, catalog: [], priceTables: [], store: null };
+     return { activeRegister: null, catalog: [], priceTables: [], store: null, userRole: "seller" };
    }
  },
  errorComponent: ({ error }) => {
@@ -244,7 +246,13 @@ interface SplitPayment {
 }
 
 function PdvTerminal() {
-  const { activeRegister, catalog = [], priceTables = [], store } = ((Route.useLoaderData?.() as any) || {});
+  const { activeRegister, catalog = [], priceTables = [], store, userRole = "seller" } = ((Route.useLoaderData?.() as any) || {});
+  const isManager = Boolean(
+    userRole === "owner" ||
+    userRole === "admin" ||
+    userRole === "manager" ||
+    userRole === "platform_admin"
+  );
   const search = Route.useSearch() as { mesa?: string; orderId?: string };
   const semantics = useMemo(() => getNicheSemantics(store), [store]);
   const availableModes = useMemo(
@@ -276,8 +284,52 @@ function PdvTerminal() {
   const [companionCardOpen, setCompanionCardOpen] = useState(false);
   const [isFloorPlanModalOpen, setIsFloorPlanModalOpen] = useState(false);
   const [managerOverrideOpen, setManagerOverrideOpen] = useState(false);
+  const [overrideActionType, setOverrideActionType] = useState<"discount" | "void" | "refund" | "price_override">("void");
+  const [overrideTitle, setOverrideTitle] = useState("Autorização Gerencial");
+  const [overrideDescription, setOverrideDescription] = useState("Digite o PIN do gerente para continuar.");
+  const [pendingAction, setPendingAction] = useState<
+    | { type: "remove_item"; id: string }
+    | { type: "clear_cart" }
+    | { type: "discount"; cents: number }
+    | null
+  >(null);
   const [pendingDiscountCents, setPendingDiscountCents] = useState(0);
   const floorPlan = (store as any)?.floor_plan || null;
+
+  const handleRequestRemoveItem = (id: string) => {
+    if (isManager) {
+      removeItem(id);
+      return;
+    }
+    setPendingAction({ type: "remove_item", id });
+    setOverrideActionType("void");
+    setOverrideTitle("Autorização para Cancelar Item");
+    setOverrideDescription("A exclusão de item do ticket exige validação de PIN de supervisor/gerente.");
+    setManagerOverrideOpen(true);
+  };
+
+  const handleRequestUpdateQty = (id: string, delta: number) => {
+    const item = cart.find((i) => i.id === id);
+    if (!item) return;
+    if (item.qty + delta <= 0) {
+      handleRequestRemoveItem(id);
+      return;
+    }
+    updateQty(id, delta);
+  };
+
+  const handleRequestClearCart = () => {
+    if (cart.length === 0) return;
+    if (isManager) {
+      setCart([]);
+      return;
+    }
+    setPendingAction({ type: "clear_cart" });
+    setOverrideActionType("void");
+    setOverrideTitle("Autorização para Cancelar Ticket");
+    setOverrideDescription("O cancelamento de toda a venda em andamento exige validação de PIN de supervisor/gerente.");
+    setManagerOverrideOpen(true);
+  };
 
   const handleGenerateContractFromPOS = async (orderId: string) => {
     setIsGeneratingContract(true);
@@ -883,7 +935,7 @@ function PdvTerminal() {
     return (
       <div className="flex min-h-140 items-center justify-center w-full px-4 sm:px-0 animate-in fade-in duration-200">
         <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-lg sm:border border-border/60 space-y-6 text-center">
-          <div className="size-14 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+          <div className="size-14 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center mx-auto">
             <Clock className="size-7" />
           </div>
           <div className="space-y-1">
@@ -919,7 +971,7 @@ function PdvTerminal() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setCart([])}
+            onClick={handleRequestClearCart}
             className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
           >
             Limpar
@@ -967,7 +1019,7 @@ function PdvTerminal() {
                       variant="ghost"
                       size="icon"
                       className="size-11 min-h-11 sm:size-8 rounded-lg cursor-pointer"
-                      onClick={() => updateQty(item.id, -1)}
+                      onClick={() => handleRequestUpdateQty(item.id, -1)}
                     >
                       <Minus className="size-3.5" />
                     </Button>
@@ -986,7 +1038,7 @@ function PdvTerminal() {
                     variant="ghost"
                     size="icon"
                     className="size-11 min-h-11 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => handleRequestRemoveItem(item.id)}
                   >
                     <X className="size-4" />
                   </Button>
@@ -1194,7 +1246,7 @@ function PdvTerminal() {
  title="Comandas"
  >
  <Link to="/workspace/pdv/comandas">
- <Utensils className="size-3.5 text-amber-500" />
+ <Utensils className="size-3.5 text-warning-strong" />
  <span className="hidden xl:inline">Comandas</span>
  </Link>
  </Button>
@@ -1232,7 +1284,7 @@ function PdvTerminal() {
  <div className="flex-1 flex flex-col min-w-0 border-r border-border/70 overflow-hidden">
  {/* Carrossel Tátil de Categorias */}
  {/* design-lint-ignore DL-30 reason:"Trilho horizontal de categorias de produtos no PDV" expiry:"2027-12-31" */}
- <div className="p-3 sm:p-3 border-b border-border/70 bg-card/60 overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0 snap-x snap-mandatory">
+ <div className="p-3 sm:p-3 border-b border-border/70 bg-card overflow-x-auto scroll-area-carousel no-scrollbar flex items-center gap-2 shrink-0 snap-x snap-mandatory">
  <button
  type="button"
  onClick={() => setSelectedCategory("all")}
@@ -1348,14 +1400,28 @@ function PdvTerminal() {
  </div>
 
  
-      {/* ── DIALOG DE AUTORIZAÇÃO GERENCIAL PARA DESCONTOS ── */}
+      {/* ── DIALOG DE AUTORIZAÇÃO GERENCIAL (CANCELAMENTOS, DESCONTOS, ESTORNOS) ── */}
       <ManagerOverrideDialog
         isOpen={managerOverrideOpen}
-        onClose={() => setManagerOverrideOpen(false)}
-        actionType="discount"
-        onSuccess={() => {
-          setDiscountInput((pendingDiscountCents / 100).toFixed(2));
-          toast.success("Desconto autorizado e aplicado");
+        onClose={() => {
+          setManagerOverrideOpen(false);
+          setPendingAction(null);
+        }}
+        actionType={overrideActionType}
+        title={overrideTitle}
+        description={overrideDescription}
+        onSuccess={(managerName) => {
+          if (pendingAction?.type === "remove_item") {
+            removeItem(pendingAction.id);
+            toast.success(`Item cancelado com autorização de ${managerName || "Gerente"}`);
+          } else if (pendingAction?.type === "clear_cart") {
+            setCart([]);
+            toast.success(`Venda cancelada com autorização de ${managerName || "Gerente"}`);
+          } else if (pendingAction?.type === "discount") {
+            setDiscountInput((pendingDiscountCents / 100).toFixed(2));
+            toast.success(`Desconto autorizado por ${managerName || "Gerente"}`);
+          }
+          setPendingAction(null);
         }}
       />
 
@@ -1906,7 +1972,7 @@ function PdvTerminal() {
 
       {/* ── BARRA FLUTUANTE MOBILE (THUMB ZONE) ── */}
       {cart.length > 0 && (
-        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 p-3 rounded-lg bg-card/95 backdrop-blur-md border border-border shadow-xs flex items-center justify-between gap-3 animate-in slide-in-from-bottom-3">
+        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 p-3 rounded-lg bg-card border border-border shadow-xs flex items-center justify-between gap-3 animate-in slide-in-from-bottom-3">
           <div className="flex items-center gap-3 min-w-0 pl-1">
             <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <ShoppingCart className="size-4" />

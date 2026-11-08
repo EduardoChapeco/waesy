@@ -307,13 +307,13 @@ function AdminMiningHubPage() {
  const qualityColor = (score: number | null) => {
  if (!score) return "text-muted-foreground";
  if (score >= 75) return "text-emerald-500";
- if (score >= 50) return "text-amber-500";
+ if (score >= 50) return "text-warning-strong";
  return "text-red-400";
  };
 
  const statusBadge = (status: string) => {
  const map: Record<string, { label: string; cls: string }> = {
- pending_review: { label: "Aguardando Curadoria", cls: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+ pending_review: { label: "Aguardando Curadoria", cls: "bg-warning/10 text-warning-strong " },
  approved: { label: "Aprovado", cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
  published: { label: "Publicado", cls: "bg-primary/10 text-primary" },
  rejected: { label: "Rejeitado", cls: "bg-destructive/10 text-destructive" },
@@ -525,7 +525,7 @@ function AdminMiningHubPage() {
         },
       });
       setSourcesList((prev) => [created, ...prev]);
-      toast.success("Fonte canônica cadastrada com sucesso!");
+      toast.success("Fonte cadastrada com sucesso!");
       setNewSourceName("");
       setNewSourceUrl("");
       setIsCreatingSource(false);
@@ -626,7 +626,7 @@ function AdminMiningHubPage() {
  </div>
 
  {/* ── Tabs ───────────────────────────────────────────────────────── */}
- <div className="mb-6 flex flex-nowrap overflow-x-auto no-scrollbar gap-2 pb-1">
+ <div className="mb-6 flex flex-nowrap overflow-x-auto scroll-area-carousel no-scrollbar gap-2 pb-1">
  {TABS.map((tab) => (
  <button
  key={tab.id}
@@ -682,7 +682,7 @@ function AdminMiningHubPage() {
             <Button
               size="sm"
               onClick={() => setIsCreatingSource(!isCreatingSource)}
-              className="h-10 rounded-lg font-bold text-xs gap-2 shrink-0"
+              className="h-10 rounded-lg font-bold text-xs gap-2 shrink-0 min-h-11 sm:min-h-0"
             >
               <Plus size={16} weight="bold" />
               <span>{isCreatingSource ? "Cancelar" : "Nova Fonte Oficial"}</span>
@@ -776,7 +776,7 @@ function AdminMiningHubPage() {
 
           {/* Tabela de Fontes */}
           <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scroll-area-carousel">
               <table className="w-full text-left text-xs">
                 <thead className="border-b border-border/40 bg-muted/40 text-muted-foreground">
                   <tr>
@@ -796,7 +796,7 @@ function AdminMiningHubPage() {
                       rss: "bg-blue-500/10 text-blue-500 border-blue-500/20",
                       jobs_portal: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
                       tenders: "bg-violet-500/10 text-violet-500 border-violet-500/20",
-                      auctions: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                      auctions: "bg-warning/10 text-warning-strong border-warning/20",
                       real_estate: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
                       news: "bg-primary/10 text-primary border-primary/20",
                     };
@@ -859,7 +859,7 @@ function AdminMiningHubPage() {
                               variant="outline"
                               disabled={isTriggering}
                               onClick={() => handleTriggerSourceFetch(source)}
-                              className="h-8 px-3 rounded-lg text-2xs font-bold gap-1 cursor-pointer"
+                              className="h-8 px-3 rounded-lg text-2xs font-bold gap-1 cursor-pointer min-h-11 sm:min-h-0"
                             >
                               {isTriggering ? (
                                 <SpinnerGap className="size-3.5 animate-spin motion-reduce:animate-none" />
@@ -910,7 +910,7 @@ function AdminMiningHubPage() {
                   <span className="text-xs font-mono text-muted-foreground">{focusedArticle.source_domain}</span>
                   <span className="text-xs text-muted-foreground">·</span>
                   <span className={`text-2xs font-bold px-2 py-1 rounded-full ${
-                    (focusedArticle.quality_score ?? 0) >= 80 ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"
+                    (focusedArticle.quality_score ?? 0) >= 80 ? "bg-emerald-500/10 text-emerald-600" : "bg-warning/10 text-warning-strong"
                   }`}>
                     Qualidade: {focusedArticle.quality_score ?? "--"}/100
                   </span>
@@ -969,7 +969,7 @@ function AdminMiningHubPage() {
                 </div>
 
                 {/* Imagem de Capa com Recuperação Resiliente */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-muted">
+                <div className="relative aspect-16/9 w-full overflow-hidden rounded-lg bg-muted">
                   <img
                     src={focusedArticle.ai_suggested_cover_url || getFallbackThematicImage(focusedArticle.ai_suggested_category)}
                     alt=""
@@ -1145,7 +1145,7 @@ function AdminMiningHubPage() {
                       }}
                     />
                     {!isHealthyImageUrl(article.ai_suggested_cover_url) && (
-                      <span className="absolute bottom-0 right-0 rounded-tl-md bg-amber-500 text-3xs font-bold px-1 text-foreground" title="Imagem gerada via fallback temático fotográfico">
+                      <span className="absolute bottom-0 right-0 rounded-tl-md bg-warning text-3xs font-bold px-1 text-foreground" title="Imagem gerada via fallback temático fotográfico">
                         HD
                       </span>
                     )}
@@ -1264,7 +1264,7 @@ function AdminMiningHubPage() {
  )}
  </div>
 
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <table className="w-full text-left text-xs">
  <thead className="border-b border-border text-muted-foreground uppercase">
  <tr>
@@ -1600,7 +1600,7 @@ function AdminMiningHubPage() {
         {/* Tabela de Vagas Mineradas */}
         <div className="rounded-lg border border-border bg-card p-6">
           <h3 className="text-sm font-bold text-foreground mb-4">Vagas Externas Ativas no Ecossistema</h3>
-          <div className="overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
             <table className="w-full text-left text-xs">
               <thead className="border-b border-border text-muted-foreground uppercase">
                 <tr>
@@ -1703,7 +1703,7 @@ function AdminMiningHubPage() {
 
   {/* Tabela de Editais */}
   <div className="rounded-lg border border-border bg-card p-6">
-  <div className="overflow-x-auto no-scrollbar">
+  <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
   <table className="w-full text-left text-xs">
   <thead className="border-b border-border text-muted-foreground uppercase">
   <tr>
@@ -1747,7 +1747,7 @@ function AdminMiningHubPage() {
   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
   : item.modalidadeNome.toLowerCase().includes("concorrência") || item.modalidadeNome.toLowerCase().includes("tomada")
   ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
-  : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+  : "bg-warning/10 text-warning-strong  border-warning/20"
   )}
   >
   {item.modalidadeNome}
@@ -1909,7 +1909,7 @@ function AdminMiningHubPage() {
  <span className="text-xs text-muted-foreground">{scrapers.filter((s) => !s.is_blocked).length} ativos · {scrapers.filter((s) => s.is_blocked).length} bloqueados</span>
  </div>
 
- <div className="overflow-x-auto no-scrollbar">
+ <div className="overflow-x-auto scroll-area-carousel no-scrollbar">
  <table className="w-full text-left text-xs">
  <thead className="border-b border-border text-muted-foreground uppercase">
  <tr>
@@ -1937,7 +1937,7 @@ function AdminMiningHubPage() {
  <td className="py-3 pr-4">
  <span className={`font-semibold capitalize ${
  sc.source_credibility === "high" ? "text-emerald-500" :
- sc.source_credibility === "medium" ? "text-amber-500" : "text-red-400"
+ sc.source_credibility === "medium" ? "text-warning-strong" : "text-red-400"
  }`}>
  {sc.source_credibility}
  </span>
@@ -2084,7 +2084,7 @@ function StatCard({
  {icon}
  </div>
  <div className={`text-xl font-bold ${
- accent === "amber" ? "text-amber-500" :
+ accent === "amber" ? "text-warning-strong" :
  accent === "green" ? "text-emerald-500" :
  accent === "red" ? "text-red-400" : "text-foreground"
  }`}>

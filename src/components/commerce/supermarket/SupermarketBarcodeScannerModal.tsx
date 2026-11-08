@@ -248,7 +248,7 @@ export function SupermarketBarcodeScannerModal({
 
               {cameraError ? (
                 <div className="absolute inset-0 p-6 bg-card/95 flex flex-col items-center justify-center text-center space-y-3">
-                  <WarningCircle size={36} className="text-amber-500" weight="duotone" />
+                  <WarningCircle size={36} className="text-warning-strong" weight="duotone" />
                   <p className="text-xs text-muted-foreground max-w-xs">{cameraError}</p>
                   <Button
                     type="button"

@@ -162,7 +162,7 @@ function CreatorProfilesManagementPage() {
           <Button
             size="sm"
             onClick={handleOpenNew}
-            className="h-9 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+            className="h-9 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
           >
             <Plus className="size-3.5" />
             <span>Novo Perfil</span>
@@ -239,9 +239,9 @@ function CreatorProfilesManagementPage() {
                         <div className="flex items-center gap-2 shrink-0">
                           <Badge
                             variant="outline"
-                            className="h-9 px-3 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-600 border-amber-500/30 gap-2 shrink-0"
+                            className="h-9 px-3 rounded-lg text-xs font-bold bg-warning/10 text-warning-strong border-warning/30 gap-2 shrink-0"
                           >
-                            <CheckCircle2 className="size-3.5 text-amber-600" />
+                            <CheckCircle2 className="size-3.5 text-warning-strong" />
                             <span>Persona Ativa</span>
                           </Badge>
                           <Button
@@ -249,7 +249,7 @@ function CreatorProfilesManagementPage() {
                             variant="ghost"
                             size="sm"
                             onClick={handleDeactivatePersona}
-                            className="h-9 px-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+                            className="h-9 px-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
                             title="Voltar ao Perfil Civil"
                           >
                             Desativar
@@ -261,9 +261,9 @@ function CreatorProfilesManagementPage() {
                           variant="secondary"
                           size="sm"
                           onClick={() => handleActivatePersona(cp)}
-                          className="h-9 px-3 rounded-lg text-xs gap-2 font-medium cursor-pointer shrink-0"
+                          className="h-9 px-3 rounded-lg text-xs gap-2 font-medium cursor-pointer shrink-0 min-h-11 sm:min-h-0"
                         >
-                          <Star className="size-3.5 text-amber-500" />
+                          <Star className="size-3.5 text-warning-strong" />
                           <span>Ativar Persona</span>
                         </Button>
                       )}
@@ -273,7 +273,7 @@ function CreatorProfilesManagementPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenEdit(cp)}
-                        className="h-9 px-3 rounded-lg text-xs gap-2 font-medium cursor-pointer"
+                        className="h-9 px-3 rounded-lg text-xs gap-2 font-medium cursor-pointer min-h-11 sm:min-h-0"
                       >
                         <Edit3 className="size-3.5" />
                         <span>Editar Perfil</span>
@@ -284,7 +284,7 @@ function CreatorProfilesManagementPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleCopy(showcaseUrl)}
-                        className="h-9 px-3 rounded-lg text-xs gap-2 font-medium cursor-pointer"
+                        className="h-9 px-3 rounded-lg text-xs gap-2 font-medium cursor-pointer min-h-11 sm:min-h-0"
                       >
                         {copiedHandle === showcaseUrl ? (
                           <CheckCircle2 className="size-3.5 text-emerald-500" />
@@ -294,7 +294,7 @@ function CreatorProfilesManagementPage() {
                         <span>{copiedHandle === showcaseUrl ? "Copiado!" : "Copiar Vitrine"}</span>
                       </Button>
 
-                      <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs gap-2 font-medium">
+                      <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs gap-2 font-medium min-h-11 sm:min-h-0">
                         <Link to="/u/$username" params={{ username: handle }}>
                           <Globe className="size-3.5" />
                           <span>Ver Vitrine</span>
@@ -333,14 +333,14 @@ function CreatorProfilesManagementPage() {
 
                   {/* Ações de Operação */}
                   <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/40">
-                    <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs font-semibold gap-2">
+                    <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 min-h-11 sm:min-h-0">
                       <Link to="/feed">
                         <PenSquare className="size-3.5" />
                         <span>Publicar como @{handle}</span>
                       </Link>
                     </Button>
 
-                    <Button asChild size="sm" className="h-9 px-3 rounded-lg text-xs font-semibold gap-2">
+                    <Button asChild size="sm" className="h-9 px-3 rounded-lg text-xs font-semibold gap-2 min-h-11 sm:min-h-0">
                       <Link to="/afiliados">
                         <SlidersHorizontal className="size-3.5" />
                         <span>Gerenciar Vitrine e Cupons</span>

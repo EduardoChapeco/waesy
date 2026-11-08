@@ -4,7 +4,7 @@
  */
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
-import { Plane, Hotel, Car, Compass, Check, X, PhoneCall } from "lucide-react";
+import { Plane, Hotel, Car, Compass, Check, X, PhoneCall, MapPin, Utensils } from "lucide-react";
 import { buildBaseViewModel } from "@/lib/adapters";
 
 interface TemplateProps {
@@ -25,7 +25,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
             alt="Logo"
-            className="h-12 w-auto max-w-45 aspect-[4/1] object-contain"
+            className="h-12 w-auto max-w-45 aspect-4/1 object-contain"
             width={180}
             height={48}
           />
@@ -39,7 +39,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
       </div>
 
       {/* JANELA CENTRAL (Capa) */}
-      <div className="w-full h-[250px] rounded-lg overflow-hidden relative mb-12 flex items-center justify-center break-inside-avoid border border-slate-200">
+      <div className="w-full h-63 rounded-lg overflow-hidden relative mb-12 flex items-center justify-center break-inside-avoid border border-slate-200">
         {p.cover_image_url ? (
           <img
             src={p.cover_image_url}
@@ -98,7 +98,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                   className="border border-slate-200 rounded-card p-5 break-inside-avoid"
                 >
                   <div className="flex justify-between items-center mb-4">
-                    <span className="ds-label-caps text-slate-500">{f.airline || "Cia Aérea"}</span>
+                    <span className="ds-label-caps text-slate-500">{f.airline_name || f.airline || "Cia Aérea"}</span>
                     <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">
                       {f.flight_number}
                     </span>
@@ -106,19 +106,19 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                   <div className="flex items-center justify-between">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-slate-900">
-                        {(f.origin || "---").slice(0, 3).toUpperCase()}
+                        {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                       </div>
                       <div className="text-sm font-medium text-slate-600">{f.departure_time}</div>
                     </div>
                     <div className="flex-1 px-8 flex flex-col items-center">
                       <div className="w-full h-px bg-slate-200 mb-1" />
                       <div className="ds-meta text-slate-400 uppercase font-bold tracking-widest">
-                        {f.stops === 0 ? "Direto" : `${f.stops} paradas`}
+                        {(f.stops_count ?? f.stops ?? 0) === 0 ? "Direto" : `${f.stops_count ?? f.stops} paradas`}
                       </div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-slate-900">
-                        {(f.destination || "---").slice(0, 3).toUpperCase()}
+                        {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                       </div>
                       <div className="text-sm font-medium text-slate-600">{f.arrival_time}</div>
                     </div>
@@ -180,6 +180,48 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                       </div>
                     )}
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {vm.hasItinerary && (
+          <div className="break-inside-avoid">
+            <h2 className="text-xl font-bold text-slate-900 mb-6 pt-6 border-t border-slate-100">
+              Roteiro Detalhado
+            </h2>
+            <div className="space-y-4">
+              {p.itinerary!.map((d, i) => (
+                <div
+                  key={i}
+                  className="border border-slate-200 rounded-lg p-5 bg-slate-50/50 break-inside-avoid space-y-2"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="px-2 py-1 rounded bg-slate-200 text-slate-800 text-xs font-bold font-mono">
+                      {d.day || `Dia ${i + 1}`}
+                    </span>
+                    <h3 className="font-bold text-slate-900 text-base">{d.title}</h3>
+                  </div>
+                  {((d as any).city || (d as any).location || ((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {((d as any).city || (d as any).location) && (
+                        <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-background border border-slate-200 px-2 py-1 rounded font-medium">
+                          <MapPin className="size-3 text-slate-400" />
+                          {(d as any).city || (d as any).location}
+                        </span>
+                      )}
+                      {(((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                        <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-background border border-slate-200 px-2 py-1 rounded font-medium">
+                          <Utensils className="size-3 text-slate-400" />
+                          {Array.isArray((d as any).meals) ? (d as any).meals.join(", ") : Array.isArray((d as any).included_meals) ? (d as any).included_meals.join(", ") : (d as any).meals || (d as any).included_meals}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">
+                    {d.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -252,13 +294,13 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                 </div>
                 {p.valid_until && (
                   <div className="text-xs text-slate-400 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span className="w-2 h-2 rounded-full bg-warning" />
                     Válida até {formatDate(p.valid_until)}
                   </div>
                 )}
               </div>
 
-              <div className="w-full md:w-[45%] space-y-4">
+              <div className="w-full md:w-9/20 space-y-4">
                 <div className="glass-dark border border-border rounded-card p-5">
                   <div className="ds-meta uppercase font-bold tracking-widest text-slate-400 mb-2">
                     Cartão de Crédito
@@ -326,7 +368,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
             src={vm.agency.logo_url}
             crossOrigin="anonymous"
             alt="Logo Agência"
-            className="h-8 w-auto max-w-30 aspect-[4/1] object-contain grayscale opacity-60"
+            className="h-8 w-auto max-w-30 aspect-4/1 object-contain grayscale opacity-60"
             width={120}
             height={32}
           />

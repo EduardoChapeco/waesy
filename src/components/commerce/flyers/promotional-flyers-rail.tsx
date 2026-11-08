@@ -81,7 +81,7 @@ export function PromotionalFlyersRail({
                   "w-44 sm:w-52 h-68 sm:h-76",
                   // Estilo Visual 1: Retrô Mercadista (Cartazista de Supermercado Antigo)
                   isRetro &&
-                    "rounded-lg bg-amber-300 dark:bg-amber-400 border-3 border-red-600 hover:-translate-y-1",
+                    "rounded-lg bg-warning/30  border-3 border-red-600 hover:-translate-y-1",
                   // Estilo Visual 2: Clean & Apple HIG
                   !isRetro &&
                     "rounded-lg bg-card border border-border/70 hover:border-foreground/30 hover:-translate-y-0.5"
@@ -103,7 +103,7 @@ export function PromotionalFlyersRail({
                   {/* Ribbon Superior de Destaque */}
                   <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
                     {isRetro ? (
-                      <span className="px-2 py-1 rounded bg-red-600 text-amber-100 font-black text-xs uppercase tracking-tighter">
+                      <span className="px-2 py-1 rounded bg-red-600 text-warning-strong font-black text-xs uppercase tracking-tighter">
                         {flyer.badge_text || "OFERTAÇO"}
                       </span>
                     ) : (
@@ -118,7 +118,7 @@ export function PromotionalFlyersRail({
                         className={cn(
                           "px-2 py-1 rounded text-xs font-bold flex items-center gap-1 backdrop-blur-md shadow-xs",
                           isRetro
-                            ? "bg-amber-400 text-red-950 font-black border border-amber-500"
+                            ? "bg-warning text-red-950 font-black border border-warning"
                             : "bg-background/80 text-foreground border border-border/60"
                         )}
                       >
@@ -141,7 +141,7 @@ export function PromotionalFlyersRail({
                 <div
                   className={cn(
                     "p-3 sm:p-3 flex items-center justify-between gap-2 shrink-0",
-                    isRetro ? "bg-amber-300 dark:bg-amber-400 text-red-950 border-t-2 border-red-600/30" : "bg-card text-foreground"
+                    isRetro ? "bg-warning/30  text-red-950 border-t-2 border-red-600/30" : "bg-card text-foreground"
                   )}
                 >
                   <div className="min-w-0 flex-1">
@@ -161,7 +161,7 @@ export function PromotionalFlyersRail({
                   <div
                     className={cn(
                       "size-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 motion-reduce:transition-none group-hover:scale-105",
-                      isRetro ? "bg-red-600 text-amber-100" : "bg-primary text-primary-foreground"
+                      isRetro ? "bg-red-600 text-warning-strong" : "bg-primary text-primary-foreground"
                     )}
                   >
                     <Eye className="size-3.5" />

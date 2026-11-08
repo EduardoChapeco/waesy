@@ -107,7 +107,7 @@ export function DynamicMediaChip({
 
  const content = (
  <div
-   className={`relative overflow-hidden inline-flex items-center gap-2 sm:gap-3 border transition-colors duration-200 select-none group cursor-pointer shrink-0 max-w-full active:scale-[0.98] ${heightClasses} ${
+   className={`relative overflow-hidden inline-flex items-center gap-2 sm:gap-3 border transition-colors duration-200 select-none group cursor-pointer shrink-0 max-w-full active:scale-98 ${heightClasses} ${
      show_shadow ? "shadow-xs" : ""
    } ${
      isActive
@@ -158,7 +158,7 @@ export function DynamicMediaChip({
  <div
  className={`relative ${iconSizes} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 ${
  hasMedia
- ? "text-foreground drop-shadow-sm"
+ ? "text-foreground "
  : isActive
  ? "text-background"
  : "text-foreground"
@@ -168,7 +168,7 @@ export function DynamicMediaChip({
  <img
  src={icon_url}
  alt={label}
- className="size-full object-contain drop-shadow-sm"
+ className="size-full object-contain "
  loading="lazy"
  onError={(e) => {
  (e.currentTarget as HTMLElement).style.display = "none";
@@ -192,7 +192,7 @@ export function DynamicMediaChip({
  text_color
  ? ""
  : hasMedia
- ? "text-foreground drop-shadow-sm group-hover:text-amber-200"
+ ? "text-foreground  group-hover:text-warning-strong"
  : isActive
  ? "text-background"
  : "text-foreground"
@@ -221,9 +221,9 @@ export function DynamicMediaChip({
  {badge && (
  <Badge
  variant="outline"
- className={`text-3xs uppercase font-mono px-2 py-0 h-4 shrink-0 max-w-[110px] truncate ${
+ className={`text-3xs uppercase font-mono px-2 py-0 h-4 shrink-0 max-w-28 truncate ${
  hasMedia
- ? "bg-amber-500/20 text-amber-300 border-amber-400/40"
+ ? "bg-warning/20 text-warning-strong border-warning/40"
  : isActive
  ? "bg-background/20 text-background border-background/40"
  : "bg-primary/10 text-primary border-primary/20"

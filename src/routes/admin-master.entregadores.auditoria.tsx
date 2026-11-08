@@ -26,7 +26,7 @@ export const Route = createFileRoute("/admin-master/entregadores/auditoria")({
     return { applications };
     } catch (err) {
       console.error("[loader:admin-master.entregadores.auditoria] Unhandled loader error:", err);
-      return { applications: null };
+      return { applications: [] };
     }
   },
   component: AdminCourierAuditPage,
@@ -108,7 +108,7 @@ function AdminCourierAuditPage() {
           size="sm"
           onClick={() => refetch()}
           disabled={isFetching}
-          className="rounded-lg h-9 text-xs font-semibold gap-2"
+          className="rounded-lg h-9 text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
         >
           <ArrowsClockwise size={14} className={isFetching ? "animate-spin motion-reduce:animate-none" : ""} />
           <span>Atualizar Fila</span>
@@ -141,7 +141,7 @@ function AdminCourierAuditPage() {
 
       {/* Tabela de Inscrições */}
       <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scroll-area-carousel">
           <table className="w-full text-left text-xs">
             <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-mono uppercase text-2xs">
               <tr>
@@ -227,7 +227,7 @@ function AdminCourierAuditPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setSelectedApp(app)}
-                        className="rounded-lg h-8 px-3 text-xs font-semibold gap-1"
+                        className="rounded-lg h-8 px-3 text-xs font-semibold gap-1 min-h-11 sm:min-h-0"
                       >
                         <Eye size={13} />
                         <span>Inspecionar</span>
@@ -287,7 +287,7 @@ function AdminCourierAuditPage() {
                     <FileText size={14} />
                     <span>CNH / Documento</span>
                   </Label>
-                  <div className="aspect-[4/3] rounded-lg border border-border overflow-hidden bg-muted/30">
+                  <div className="aspect-4/3 rounded-lg border border-border overflow-hidden bg-muted/30">
                     <img
                       src={selectedApp.document_front_url}
                       alt="CNH"
@@ -302,7 +302,7 @@ function AdminCourierAuditPage() {
                     <Camera size={14} />
                     <span>Selfie Cadastrada</span>
                   </Label>
-                  <div className="aspect-[4/3] rounded-lg border border-border overflow-hidden bg-muted/30">
+                  <div className="aspect-4/3 rounded-lg border border-border overflow-hidden bg-muted/30">
                     <img
                       src={selectedApp.selfie_url}
                       alt="Selfie"
@@ -317,7 +317,7 @@ function AdminCourierAuditPage() {
                     <VideoCamera size={14} />
                     <span>Minivídeo Liveness (Prova de Vida)</span>
                   </Label>
-                  <div className="aspect-[4/3] rounded-lg border border-border overflow-hidden bg-foreground flex items-center justify-center">
+                  <div className="aspect-4/3 rounded-lg border border-border overflow-hidden bg-foreground flex items-center justify-center">
                     {selectedApp.liveness_video_url.endsWith(".mp4") ||
                     selectedApp.liveness_video_url.endsWith(".webm") ? (
                       <video
@@ -377,7 +377,7 @@ function AdminCourierAuditPage() {
                     handleAuditDecision(selectedApp.id, "requires_resubmission")
                   }
                   disabled={isPending}
-                  className="rounded-lg h-10 px-4 text-xs font-semibold"
+                  className="rounded-lg h-10 px-4 text-xs font-semibold min-h-11 sm:min-h-0"
                 >
                   Solicitar Reenvio de Documento
                 </Button>
@@ -390,7 +390,7 @@ function AdminCourierAuditPage() {
                       handleAuditDecision(selectedApp.id, "fraud_rejected", true)
                     }
                     disabled={isPending}
-                    className="rounded-lg h-10 px-4 text-xs font-bold gap-2 cursor-pointer"
+                    className="rounded-lg h-10 px-4 text-xs font-bold gap-2 cursor-pointer min-h-11 sm:min-h-0"
                   >
                     <Siren size={15} weight="bold" />
                     <span>Rejeitar Fraude e Registrar Notificação</span>
@@ -402,7 +402,7 @@ function AdminCourierAuditPage() {
                       handleAuditDecision(selectedApp.id, "match_approved")
                     }
                     disabled={isPending}
-                    className="rounded-lg h-10 px-5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2 cursor-pointer shadow-xs"
+                    className="rounded-lg h-10 px-5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-foreground gap-2 cursor-pointer shadow-xs min-h-11 sm:min-h-0"
                   >
                     <CheckCircle size={15} weight="bold" />
                     <span>Aprovar Credenciamento</span>

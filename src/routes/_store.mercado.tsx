@@ -15,7 +15,8 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { PageSkeleton } from "@/components/state/loading";
-import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
+import { getModularSurfaceFeed, resolveSurfacePageExperienceDocument } from "@/services/surface-cms.functions";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublishedProducts } from "@/services/catalog.functions";
@@ -87,7 +88,7 @@ export const Route = createFileRoute("/_store/mercado")({
   loader: async ({ location, deps: search }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [banners, hotpages, marketplaceFeed, productsRes, deliveryWindows, clubMemberData] = await Promise.all([
+      const [banners, hotpages, marketplaceFeed, productsRes, deliveryWindows, clubMemberData, surfaceExperience] = await Promise.all([
         listActiveBanners({ data: { placement: "mercado", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "mercado" } }).catch(() => []),
         getModularSurfaceFeed({ data: { surfaceSlug: "mercado", city: activeCity } }).catch(() => ({
@@ -99,6 +100,9 @@ export const Route = createFileRoute("/_store/mercado")({
         }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
         getSupermarketDeliveryWindows({ data: {} }).catch(() => []),
         getSupermarketClubMemberData({ data: {} }).catch(() => null),
+        resolveSurfacePageExperienceDocument({
+          data: { surfaceSlug: "mercado", city: activeCity },
+        }).catch(() => ({ mode: "canonical_cms" as const, documentId: null, document: null, liveData: null })),
       ]);
 
       return {
@@ -108,6 +112,7 @@ export const Route = createFileRoute("/_store/mercado")({
         catalogProducts: productsRes.status === "ok" ? (productsRes as any).data ?? [] : [],
         deliveryWindows: deliveryWindows || [],
         clubMemberData: clubMemberData || null,
+        surfaceExperience: surfaceExperience || null,
       };
     } catch (err) {
       console.error("[loader:_store.mercado] Unhandled error:", err);
@@ -138,7 +143,7 @@ function MercadoErrorComponent({ error, reset }: { error: any; reset: () => void
 
 function MercadoVerticalPage() {
   const loaderData = (Route.useLoaderData?.() as any) || {};
-  const { banners, marketplaceFeed, catalogProducts, deliveryWindows, clubMemberData } = loaderData;
+  const { banners, marketplaceFeed, catalogProducts, deliveryWindows, clubMemberData, surfaceExperience } = loaderData;
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const { globalCarts, addToCart, setIsCartOpen } = useCartContext() as any;
@@ -167,6 +172,36 @@ function MercadoVerticalPage() {
     const storeSection = marketplaceFeed?.sections?.find((s: any) => s.type === "store_rail");
     return storeSection?.items || [];
   }, [marketplaceFeed]);
+
+  // Mapeamento canônico para cartões iFood (Zero Mocks / Invariante B.33)
+  const stores: IFoodStoreCardData[] = useMemo(() => {
+    if (rawStores.length > 0) {
+      return rawStores.map((st: any, idx: number) => ({
+        id: st.id || `st-${idx}`,
+        name: st.name || st.title || "Supermercado Parceiro",
+        slug: st.slug || st.id || "",
+        logoUrl: st.logo_url || st.imageUrl || null,
+        coverUrl: st.cover_url || st.banner_url || null,
+        isAd: Boolean(st.is_featured || st.is_ad),
+        rating: typeof st.rating === "number" && st.rating > 0 ? st.rating : undefined,
+        reviewCount: typeof st.review_count === "number" && st.review_count > 0 ? st.review_count : undefined,
+        deliveryTime: st.delivery_time || undefined,
+        deliveryFee:
+          typeof st.delivery_fee === "number"
+            ? st.delivery_fee === 0
+              ? "Grátis"
+              : `R$ ${st.delivery_fee.toFixed(2)}`
+            : typeof st.delivery_fee === "string"
+              ? st.delivery_fee
+              : undefined,
+        couponBadge: st.coupon_badge || undefined,
+        secondaryBadges: Array.isArray(st.badges) ? st.badges : undefined,
+        hasHighlightCrown: Boolean(st.has_highlight_crown),
+      }));
+    }
+
+    return [];
+  }, [rawStores]);
 
   const activeStore = rawStores[0] || null;
   const storeName = activeStore?.name || activeStore?.title || "Seu Supermercado";
@@ -312,6 +347,25 @@ function MercadoVerticalPage() {
     return [];
   }, [banners]);
 
+  if (surfaceExperience?.mode === "omni_published" && surfaceExperience.document) {
+    const live = surfaceExperience.liveData || {};
+    return (
+      <main className="min-h-screen bg-background">
+        <OmniPageRenderer
+          document={surfaceExperience.document}
+          products={live.products?.length ? live.products : catalogProducts || []}
+          stores={live.stores?.length ? live.stores : rawStores}
+          banners={live.banners?.length ? live.banners : banners || []}
+          hotpages={live.hotpages?.length ? live.hotpages : loaderData?.hotpages || []}
+          onAddToCart={(productId) => {
+            const match = supermarketProducts.find((p) => p.id === productId);
+            if (match) handleAddToCart(match);
+          }}
+        />
+      </main>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-12 select-none">
       {/* ── 1. Header Canônico de Supermercado com Busca Pílula e Scanner ── */}
@@ -356,12 +410,12 @@ function MercadoVerticalPage() {
           </div>
 
           {/* ── 4. Chips de Benefícios e Incentivos (Frete Grátis e Cupons) ── */}
-          <div className="px-4 flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border border-emerald-600/30 text-xs font-bold shrink-0">
+          <div className="px-4 flex items-center gap-2 overflow-x-auto scroll-area-carousel scrollbar-none py-1">
+            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border border-emerald-600/30 text-xs font-bold shrink-0">
               <Gift size={15} weight="duotone" />
               <span>Frete grátis acima de R$ 150,00</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-600/10 text-blue-700 dark:text-blue-400 border border-blue-600/30 text-xs font-bold shrink-0">
+            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-blue-600/10 text-blue-700 dark:text-blue-400 border border-blue-600/30 text-xs font-bold shrink-0">
               <Truck size={15} weight="duotone" />
               <span>Entrega agendada no mesmo dia</span>
             </div>
@@ -413,9 +467,9 @@ function MercadoVerticalPage() {
       {cartItemCount > 0 ? (
         <aside
           aria-label="Resumo do Carrinho"
-          className="fixed bottom-16 sm:bottom-6 inset-x-4 max-w-md mx-auto z-30 flex items-center justify-between p-3 rounded-2xl bg-emerald-600 text-white shadow-lg animate-in fade-in select-none"
+          className="fixed bottom-16 sm:bottom-6 inset-x-4 max-w-md mx-auto z-30 flex items-center justify-between p-3 rounded-2xl bg-emerald-600 text-white shadow-overlay animate-in fade-in select-none"
         >
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="size-9 rounded-xl bg-white/20 flex items-center justify-center font-black text-xs shrink-0">
               {cartItemCount}
             </div>
@@ -428,7 +482,7 @@ function MercadoVerticalPage() {
           <button
             type="button"
             onClick={() => setIsSupermarketCartOpen(true)}
-            className="flex items-center gap-1.5 h-11 min-h-11 px-4 rounded-xl bg-white text-emerald-700 font-black text-xs hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white shrink-0"
+            className="flex items-center gap-2 h-11 min-h-11 px-4 rounded-xl bg-white text-emerald-700 font-black text-xs hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white shrink-0"
           >
             <span>R$ {(cartSubtotalCents / 100).toFixed(2).replace(".", ",")}</span>
             <ArrowRight size={14} weight="bold" />

@@ -145,7 +145,7 @@ export function StoreVitrineSectionsEditor({
   return (
     <section
       aria-label="Editor de Seções da Vitrine"
-      className="rounded-lg border border-border/80 bg-card p-4 sm:p-6 pb-20 sm:pb-24 space-y-6 shadow-sm animate-in fade-in duration-200"
+      className="rounded-lg border border-border/80 bg-card p-4 sm:p-6 pb-20 sm:pb-24 space-y-6  animate-in fade-in duration-200"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
         <div className="flex items-center gap-3">

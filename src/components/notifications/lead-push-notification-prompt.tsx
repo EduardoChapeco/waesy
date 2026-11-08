@@ -124,7 +124,7 @@ export function LeadPushNotificationPrompt({ storeId }: LeadPushNotificationProm
           variant="ghost"
           size="sm"
           onClick={() => setDismissed(true)}
-          className="h-9 px-3 text-xs text-muted-foreground rounded-lg"
+          className="h-9 px-3 text-xs text-muted-foreground rounded-lg min-h-11 sm:min-h-0"
         >
           Agora Não
         </Button>
@@ -133,7 +133,7 @@ export function LeadPushNotificationPrompt({ storeId }: LeadPushNotificationProm
           size="sm"
           onClick={handleEnablePush}
           disabled={isRegistering}
-          className="h-9 px-4 text-xs font-bold rounded-lg bg-foreground text-background hover:bg-foreground/90 shadow-sm"
+          className="h-9 px-4 text-xs font-bold rounded-lg bg-foreground text-background hover:bg-foreground/90  min-h-11 sm:min-h-0"
         >
           {isRegistering ? "Ativando..." : "Ativar Alertas"}
         </Button>

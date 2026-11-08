@@ -592,7 +592,7 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  {/* Navegação por Abas */}
- <div className="flex flex-nowrap overflow-x-auto no-scrollbar snap-x gap-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+ <div className="flex flex-nowrap overflow-x-auto scroll-area-carousel no-scrollbar snap-x gap-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
  <button
  type="button"
  onClick={() => setActiveTab("database")}
@@ -811,7 +811,7 @@ function AdminMasterIntegracoesPage() {
                   {testingKeyId === key.id ? (
                     <RefreshCw className="size-3 animate-spin motion-reduce:animate-none" />
                   ) : (
-                    <Zap className="size-3 text-amber-500" />
+                    <Zap className="size-3 text-warning-strong" />
                   )}
                   <span>Testar</span>
                 </Button>
@@ -1229,7 +1229,7 @@ function AdminMasterIntegracoesPage() {
                           ping.status === "online"
                             ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                             : ping.status === "degraded"
-                            ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                            ? "bg-warning/15 text-warning-strong  border-warning/30"
                             : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30"
                         }`}
                       >

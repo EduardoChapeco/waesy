@@ -18,7 +18,11 @@ import { StatTile, SegmentedControl } from "@/design-system/components";
 
 export const Route = createFileRoute("/workspace/")({
   head: () => ({ meta: [{ title: "Operação | Workspace Waesy" }] }),
-  loader: async () => {
+  validateSearch: (search: Record<string, unknown>): { storeId?: string } => ({
+    storeId: typeof search.storeId === "string" ? search.storeId : undefined,
+  }),
+  loaderDeps: ({ search }) => ({ storeId: search?.storeId }),
+  loader: async ({ deps }) => {
     try {
       let session: any = null;
       try {
@@ -28,11 +32,26 @@ export const Route = createFileRoute("/workspace/")({
       }
 
       const memberships = session?.memberships || [];
-      const activeStoreId = session?.store_id || memberships[0]?.store_id || null;
+      const isPlatformAdmin = Boolean(
+        session?.role === "platform_admin" ||
+        session?.role === "master" ||
+        session?.user?.role === "platform_admin" ||
+        session?.user?.user_metadata?.role === "platform_admin"
+      );
+      const queryStoreId = deps?.storeId;
+      const isQueryValid = queryStoreId && (isPlatformAdmin || memberships.some((m: any) => m.store_id === queryStoreId));
+
+      const activeStoreId =
+        (isQueryValid ? queryStoreId : null) ||
+        session?.store_id ||
+        memberships[0]?.store_id ||
+        null;
+
       const activeStore = memberships.find((m: any) => m.store_id === activeStoreId) || memberships[0] || null;
+      const resolvedStoreId = activeStore?.store_id || activeStoreId;
 
       const [dashboardMetrics, workspaceKpis] = await Promise.all([
-        getDashboardData().catch(() => ({
+        getDashboardData({ data: { storeId: resolvedStoreId } }).catch(() => ({
           salesTodayCents: 0,
           salesMonthCents: 0,
           salesLastMonthCents: 0,
@@ -57,7 +76,7 @@ export const Route = createFileRoute("/workspace/")({
           setupChecklist: [],
           setupProgressPercentage: 100,
         } as DashboardMetrics)),
-        getWorkspaceDashboardKpisFn({ data: { period: "30d" } }).catch(() => null),
+        getWorkspaceDashboardKpisFn({ data: { period: "30d", storeId: resolvedStoreId } }).catch(() => null),
       ]);
 
       return {
@@ -244,15 +263,15 @@ export default function WorkspaceDashboardPage() {
   const catalogDetails = getCatalogCardDetails();
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-4 md:px-0 space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+    <div className="w-full space-y-4 sm:space-y-6 animate-in fade-in duration-200">
       {/* ── 1. Top Header com Identificação do Negócio ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-4 p-4 sm:p-5 rounded-lg bg-card border border-border/40">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-card">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground/80">
               {activeStore?.name || "Meu Espaço"}
             </span>
-            <Badge variant="outline" className="text-xs py-0 px-2 bg-muted/40 font-semibold border-border/40">
+            <Badge variant="outline" className="text-xs py-0 px-2 bg-muted font-semibold">
               {semantics.name}
             </Badge>
           </div>
@@ -262,23 +281,19 @@ export default function WorkspaceDashboardPage() {
         </div>
 
         {/* Quick Top Actions Contextuais */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0 sm:flex-wrap no-scrollbar">
           {/* Chave de Operação Instantânea "Loja Aberta / Pausada" */}
           <button
             type="button"
             onClick={handleToggleStoreStatus}
             disabled={isTogglingStatus}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border transition-colors cursor-pointer h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-              isOpenNow
-                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15"
-                : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/15"
-            }`}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-transparent hover:bg-muted text-foreground transition-colors cursor-pointer h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Status Operacional"
           >
             {isTogglingStatus ? (
               <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
             ) : (
-              <span className={`size-2 rounded-full ${isOpenNow ? "bg-emerald-500" : "bg-rose-500"}`} />
+              <span className={`size-2 rounded-full ${isOpenNow ? "bg-success" : "bg-destructive"}`} />
             )}
             <span>{isOpenNow ? "Loja Aberta" : "Loja Pausada"}</span>
           </button>
@@ -338,7 +353,7 @@ export default function WorkspaceDashboardPage() {
       {/* ── 2. Bento Grid Operacional de Alta Performance (12 Colunas) ── */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-4 lg:gap-5 items-stretch">
         {/* Herói de Faturamento do Mês (7/8 cols no Desktop, 12 cols no Mobile) */}
-        <div className="col-span-12 lg:col-span-7 xl:col-span-8 p-5 sm:p-6 rounded-xl bg-card border border-border/70 flex flex-col justify-between gap-5">
+        <div className="col-span-12 lg:col-span-7 xl:col-span-8 p-5 sm:p-6 rounded-2xl bg-card flex flex-col justify-between gap-5">
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -364,7 +379,7 @@ export default function WorkspaceDashboardPage() {
               </div>
               {dashboardMetrics?.growthPercentage != null && (
                 <div className={`inline-flex items-center gap-2 text-xs font-semibold font-mono tabular-nums ${
-                  dashboardMetrics.growthPercentage >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                  dashboardMetrics.growthPercentage >= 0 ? "text-success-strong" : "text-destructive"
                 }`}>
                   {dashboardMetrics.growthPercentage >= 0 ? (
                     <TrendingUp className="size-3.5" />
@@ -382,7 +397,7 @@ export default function WorkspaceDashboardPage() {
           <div className="flex items-center gap-2 pt-3 border-t border-border/40">
             <Link
               to="/workspace/financeiro/caixa"
-              className="inline-flex items-center justify-center h-11 min-h-11 px-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex items-center justify-center h-11 min-h-11 px-4 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Fluxo de Caixa
             </Link>
@@ -406,7 +421,7 @@ export default function WorkspaceDashboardPage() {
               value={`${dashboardMetrics?.ordersTodayCount || 0} hoje`}
               sublabel={dashboardMetrics?.ordersMonthCount ? `${dashboardMetrics.ordersMonthCount} no mês` : "Operação ativa"}
               trend="up"
-              className="h-full hover:border-primary/50 transition-colors"
+              className="h-full hover:border-border transition-colors"
             />
           </Link>
 
@@ -419,7 +434,7 @@ export default function WorkspaceDashboardPage() {
               value={`+${dashboardMetrics?.newCustomers30d ?? 0}`}
               sublabel="Novos no mês"
               trend="up"
-              className="h-full hover:border-primary/50 transition-colors"
+              className="h-full hover:border-border transition-colors"
             />
           </Link>
 
@@ -432,7 +447,7 @@ export default function WorkspaceDashboardPage() {
               value={formatMoney(dashboardMetrics?.salesTodayCents || 0)}
               sublabel="Receita diária"
               trend={dashboardMetrics?.salesTodayCents ? "up" : "neutral"}
-              className="h-full hover:border-primary/50 transition-colors"
+              className="h-full hover:border-border transition-colors"
             />
           </Link>
 
@@ -446,7 +461,7 @@ export default function WorkspaceDashboardPage() {
               sublabel={catalogDetails.subtitle}
               trend={criticalStockCount > 0 ? "down" : "neutral"}
               trendValue={criticalStockCount > 0 ? "Atenção" : "OK"}
-              className="h-full hover:border-primary/50 transition-colors"
+              className="h-full hover:border-border transition-colors"
             />
           </Link>
         </div>
@@ -462,41 +477,41 @@ export default function WorkspaceDashboardPage() {
       {/* ── 4. Matriz Bilateral: Atividades Reais & Vitrine / Canais Contextuais ── */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-4 lg:gap-5 items-stretch">
         {/* Atividades Recentes do Banco de Dados (8 cols no Desktop, 12 cols no Mobile) */}
-        <Card className="col-span-12 lg:col-span-8 p-5 border border-border/40 bg-card rounded-lg flex flex-col justify-between h-full space-y-4 shadow-none">
+        <Card className="col-span-12 lg:col-span-8 p-5 bg-card rounded-2xl flex flex-col justify-between h-full space-y-4">
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-border/30">
+            <div className="flex items-center justify-between pb-3 border-b border-border/40">
               <div className="flex items-center gap-2">
-                <Clock className="size-4 text-primary" />
+                <Clock className="size-4 text-muted-foreground" />
                 <h3 className="font-bold text-sm text-foreground">Atividades</h3>
               </div>
-              <Link to={getOrdersDestination() as any} className="text-xs text-primary font-semibold hover:underline">
+              <Link to={getOrdersDestination() as any} className="text-xs text-foreground font-semibold hover:underline">
                 Ver todos os registros
               </Link>
             </div>
 
             {recentActivities.length === 0 ? (
-              <div className="py-8 text-center space-y-1 rounded-lg bg-muted/20">
+              <div className="py-8 text-center space-y-1 rounded-2xl bg-muted/40">
                 <Clock className="size-6 text-muted-foreground/40 mx-auto mb-1" />
-                <p className="text-xs font-semibold text-muted-foreground/75">Nenhuma atividade recente</p>
+                <p className="text-xs font-semibold text-muted-foreground">Nenhuma atividade recente</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {recentActivities.map((act: any) => (
                   <div
                     key={act.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/20 text-xs hover:bg-muted/40 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-xl bg-muted/40 text-xs hover:bg-muted/70 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <div className="size-9 rounded-xl bg-card text-foreground flex items-center justify-center shrink-0">
                         <CheckCircle2 className="size-4" />
                       </div>
                       <div>
                         <p className="font-semibold text-foreground">{act.title}</p>
-                        <p className="text-muted-foreground/75 text-xs">{act.subtitle}</p>
+                        <p className="text-muted-foreground text-xs">{act.subtitle}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-mono tabular-nums text-muted-foreground/75 block">{act.timeDisplay}</span>
+                      <span className="text-xs font-mono tabular-nums text-muted-foreground block">{act.timeDisplay}</span>
                       {act.totalCents != null && (
                         <span className="text-xs font-bold font-mono tabular-nums text-foreground">{formatMoney(act.totalCents)}</span>
                       )}
@@ -509,11 +524,11 @@ export default function WorkspaceDashboardPage() {
         </Card>
 
         {/* Vitrine & Ferramentas Contextuais da Empresa (4 cols no Desktop, 12 cols no Mobile) */}
-        <Card className="col-span-12 lg:col-span-4 p-5 border border-border/40 bg-card rounded-lg flex flex-col justify-between h-full space-y-4 shadow-none">
+        <Card className="col-span-12 lg:col-span-4 p-5 bg-card rounded-2xl flex flex-col justify-between h-full space-y-4">
           <div className="space-y-3">
-            <div className="flex items-center justify-between pb-3 border-b border-border/30">
+            <div className="flex items-center justify-between pb-3 border-b border-border/40">
               <div className="flex items-center gap-2">
-                <Megaphone className="size-4 text-primary" />
+                <Megaphone className="size-4 text-muted-foreground" />
                 <h3 className="font-bold text-sm text-foreground">Canais</h3>
               </div>
               <Badge variant="secondary" className="text-xs">Ativo</Badge>
@@ -526,13 +541,13 @@ export default function WorkspaceDashboardPage() {
                   <Link
                     key={idx}
                     to={link.path as any}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/60 text-xs font-medium transition-colors group h-11 min-h-11"
+                    className="flex items-center justify-between p-3 rounded-xl bg-muted/40 hover:bg-muted text-xs font-medium transition-colors group h-11 min-h-11"
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className="size-4 text-muted-foreground/80 group-hover:text-foreground transition-colors" />
+                      <Icon className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                       <span className="text-foreground">{link.label}</span>
                     </div>
-                    <ArrowUpRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+                    <ArrowUpRight className="size-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                   </Link>
                 );
               })}
@@ -542,42 +557,42 @@ export default function WorkspaceDashboardPage() {
       </div>
 
       {/* ── 5. Departamentos Corporativos Universais (Visão 360° da Empresa) ── */}
-      <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/40 space-y-3 sm:space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-border/30">
+      <div className="p-5 rounded-2xl bg-card space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-border/40">
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Layers className="size-4 text-primary" />
+            <Layers className="size-4 text-muted-foreground" />
             <span>Departamentos</span>
           </h3>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3 pt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
           {/* 1. Vitrine & Marketing */}
           <Link
             to="/workspace/marketing/banners"
-            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-2xl bg-muted/40 hover:bg-muted transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+            <div className="size-9 rounded-xl bg-card text-foreground flex items-center justify-center mb-3">
               <Megaphone className="size-4" />
             </div>
             <div>
-              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">Marketing</p>
-              <p className="text-xs text-muted-foreground/75">Vitrine</p>
+              <p className="font-semibold text-xs text-foreground">Marketing</p>
+              <p className="text-xs text-muted-foreground">Vitrine</p>
             </div>
           </Link>
 
           {/* 2. Vendas & CRM */}
           <Link
             to={semantics.nicheId === "tourism" ? "/workspace/comercial" : "/workspace/pedidos"}
-            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-2xl bg-muted/40 hover:bg-muted transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-lg bg-info/10 text-info flex items-center justify-center mb-3">
+            <div className="size-9 rounded-xl bg-card text-foreground flex items-center justify-center mb-3">
               <ShoppingBag className="size-4" />
             </div>
             <div>
-              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+              <p className="font-semibold text-xs text-foreground">
                 {semantics.nicheId === "tourism" ? "Comercial" : "Vendas"}
               </p>
-              <p className="text-xs text-muted-foreground/75">
+              <p className="text-xs text-muted-foreground">
                 {semantics.nicheId === "tourism" ? "Funil & CRM" : "Pedidos & PDV"}
               </p>
             </div>
@@ -586,44 +601,44 @@ export default function WorkspaceDashboardPage() {
           {/* 3. Financeiro & Caixa */}
           <Link
             to="/workspace/financeiro/caixa"
-            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-2xl bg-muted/40 hover:bg-muted transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+            <div className="size-9 rounded-xl bg-card text-foreground flex items-center justify-center mb-3">
               <DollarSign className="size-4" />
             </div>
             <div>
-              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">Financeiro</p>
-              <p className="text-xs text-muted-foreground/75">Caixa</p>
+              <p className="font-semibold text-xs text-foreground">Financeiro</p>
+              <p className="text-xs text-muted-foreground">Caixa</p>
             </div>
           </Link>
 
           {/* 4. RH & Pessoas */}
           <Link
             to="/workspace/configuracoes/equipe"
-            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-2xl bg-muted/40 hover:bg-muted transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+            <div className="size-9 rounded-xl bg-card text-foreground flex items-center justify-center mb-3">
               <Users className="size-4" />
             </div>
             <div>
-              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">Equipe</p>
-              <p className="text-xs text-muted-foreground/75">Folha</p>
+              <p className="font-semibold text-xs text-foreground">Equipe</p>
+              <p className="text-xs text-muted-foreground">Folha</p>
             </div>
           </Link>
 
           {/* 5. Logística & Estoque */}
           <Link
             to={semantics.nicheId === "tourism" ? "/workspace/turismo/embarques" : "/workspace/estoque"}
-            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-2xl bg-muted/40 hover:bg-muted transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+            <div className="size-9 rounded-xl bg-card text-foreground flex items-center justify-center mb-3">
               {semantics.nicheId === "tourism" ? <Bus className="size-4" /> : <Package className="size-4" />}
             </div>
             <div>
-              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+              <p className="font-semibold text-xs text-foreground">
                 {semantics.nicheId === "tourism" ? "Operações" : "Logística"}
               </p>
-              <p className="text-xs text-muted-foreground/75">
+              <p className="text-xs text-muted-foreground">
                 {semantics.nicheId === "tourism" ? "Embarques" : "Estoque"}
               </p>
             </div>
@@ -632,14 +647,14 @@ export default function WorkspaceDashboardPage() {
           {/* 6. Governança & Config */}
           <Link
             to="/workspace/configuracoes"
-            className="p-4 rounded-lg bg-muted/20 hover:bg-muted/40 border border-border/30 transition-colors text-left group flex flex-col justify-between min-h-24"
+            className="p-4 rounded-2xl bg-muted/40 hover:bg-muted transition-colors text-left group flex flex-col justify-between min-h-24"
           >
-            <div className="size-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mb-3">
+            <div className="size-9 rounded-xl bg-card text-foreground flex items-center justify-center mb-3">
               <Store className="size-4" />
             </div>
             <div>
-              <p className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">Governança</p>
-              <p className="text-xs text-muted-foreground/75">Geral</p>
+              <p className="font-semibold text-xs text-foreground">Governança</p>
+              <p className="text-xs text-muted-foreground">Geral</p>
             </div>
           </Link>
         </div>

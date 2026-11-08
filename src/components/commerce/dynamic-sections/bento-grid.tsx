@@ -31,14 +31,14 @@ export function BentoGrid({ content, node_id, block_type }: BentoGridProps) {
         return "@md:col-span-2 @md:row-span-1 aspect-video @md:aspect-auto @md:h-64";
       case "tall":
         /* design-lint-ignore DL-02 reason:"Proporção canônica 3/4 e altura de 512px para card alto da grade modular" expiry:"2027-12-31" */
-        return "@md:col-span-1 @md:row-span-2 aspect-[3/4] @md:aspect-auto @md:h-[512px]";
+        return "@md:col-span-1 @md:row-span-2 aspect-3/4 @md:aspect-auto @md:h-128";
       case "large":
         /* design-lint-ignore DL-02 reason:"Altura canônica de 512px para card grande da grade modular" expiry:"2027-12-31" */
-        return "@md:col-span-2 @md:row-span-2 aspect-square @md:aspect-auto @md:h-[512px]";
+        return "@md:col-span-2 @md:row-span-2 aspect-square @md:aspect-auto @md:h-128";
       case "small":
       default:
         /* design-lint-ignore DL-02 reason:"Proporção canônica 4/3 per AGENTS.md B.28 para card pequeno" expiry:"2027-12-31" */
-        return "@md:col-span-1 @md:row-span-1 aspect-[4/3] @md:aspect-auto @md:h-64";
+        return "@md:col-span-1 @md:row-span-1 aspect-4/3 @md:aspect-auto @md:h-64";
     }
   };
 

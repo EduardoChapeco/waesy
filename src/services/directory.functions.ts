@@ -1,4 +1,5 @@
 import { getServerIdentity } from "@/lib/server-access";
+import { microCache } from "@/lib/cache/micro-cache";
 /**
  * directory.functions.ts — BFF para o Guia & Diretório de Empresas e Especialistas (100% Real no Supabase)
  */
@@ -50,16 +51,19 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
       .optional(),
   )
   .handler(async ({ data }) => {
-    const supabase = getServerClient();
     const limit = data?.limit ?? 50;
+    const isSearch = Boolean(data?.search && data.search.trim());
 
-    let query = supabase
-      .from("directory_listings")
-      .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings, is_hidden_from_directory, access_type)")
-      .eq("status", "active")
-      .order("is_verified", { ascending: false })
-      .order("rating", { ascending: false })
-      .limit(limit);
+    const fetchDirectory = async () => {
+      const supabase = getServerClient();
+
+      let query = supabase
+        .from("directory_listings")
+        .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings, is_hidden_from_directory, access_type)")
+        .eq("status", "active")
+        .order("is_verified", { ascending: false })
+        .order("rating", { ascending: false })
+        .limit(limit);
 
     if (data?.category && data.category !== "todos") {
       query = query.eq("category", data.category);
@@ -156,6 +160,13 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
           created_at: row.created_at,
         };
       }) as DirectoryListingDTO[];
+    };
+
+    if (!isSearch) {
+      const cacheKey = `directory:public:${data?.city || "all"}:${data?.category || "all"}:${limit}`;
+      return microCache.getOrSet(cacheKey, 30_000, fetchDirectory);
+    }
+    return fetchDirectory();
   });
 
 export const getPublicDirectoryById = createServerFn({ method: "GET" })
@@ -387,6 +398,8 @@ export const updateDirectoryListingFn = createServerFn({ method: "POST" })
         await supabase.from("stores").update(storePayload).eq("id", targetStoreId);
       }
     }
+
+    microCache.invalidatePrefix("directory:");
 
     return {
       success: true,

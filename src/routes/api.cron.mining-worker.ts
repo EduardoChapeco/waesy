@@ -57,9 +57,10 @@ export async function handleCronWorker(request: Request): Promise<Response> {
     console.info(`[cron-mining-worker] Dispatching job="${jobType}" triggered_at="${triggeredAt}" source="${source}"`);
 
     const startTime = Date.now();
+    // Confinamento de lote defensivo (SPEC-20261104) para não violar limite de 10ms de CPU no Cloudflare Pages
     const result =
       jobType === "contact-enrichment"
-        ? await enrichListingContacts({ limit: 15 }).then((r) => ({ success: true, result: r as unknown }))
+        ? await enrichListingContacts({ limit: 3 }).then((r) => ({ success: true, result: r as unknown }))
         : await dispatchScheduledMiningJobFn({ data: { jobType } });
     const durationMs = Date.now() - startTime;
 

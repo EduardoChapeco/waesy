@@ -106,7 +106,7 @@ export function NativeCalendarWidget({
             type="button"
             onClick={prevMonth}
             aria-label="Mês anterior"
-            className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+            className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
           >
             <ChevronLeft className="size-4" />
           </button>
@@ -114,7 +114,7 @@ export function NativeCalendarWidget({
             type="button"
             onClick={nextMonth}
             aria-label="Próximo mês"
-            className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+            className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
           >
             <ChevronRight className="size-4" />
           </button>
@@ -144,7 +144,7 @@ export function NativeCalendarWidget({
               onClick={() => item.isCurrentMonth && onSelectDate?.(item.dateStr)}
               disabled={!item.isCurrentMonth}
               className={cn(
-                "relative h-10 w-full rounded-lg flex flex-col items-center justify-center text-xs font-medium transition-colors cursor-pointer",
+                "relative h-10 w-full rounded-lg flex flex-col items-center justify-center text-xs font-medium transition-colors cursor-pointer min-h-11 sm:min-h-0",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 !item.isCurrentMonth && "opacity-25 pointer-events-none",
                 item.isCurrentMonth && "hover:bg-muted/70",

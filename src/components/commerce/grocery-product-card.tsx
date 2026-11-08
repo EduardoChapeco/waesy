@@ -105,7 +105,7 @@ export function GroceryProductCard({
     return (
       <div
         className={cn(
-          "group relative flex items-center justify-between w-full min-h-[112px] sm:min-h-[124px] rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors content-auto-card overflow-hidden pl-28 sm:pl-36 pr-4 py-3 gap-3",
+          "group relative flex items-center justify-between w-full min-h-28 sm:min-h-31 rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors content-auto-card overflow-hidden pl-28 sm:pl-36 pr-4 py-3 gap-3",
           className,
         )}
       >
@@ -190,13 +190,13 @@ export function GroceryProductCard({
                   type="button"
                   onClick={handleDecrement}
                   disabled={isAdding}
-                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                   aria-label="Diminuir quantidade"
                 >
                   <Minus className="size-2.5" />
                 </button>
 
-                <span className="font-mono font-bold text-xs px-1 min-w-[16px] text-center">
+                <span className="font-mono font-bold text-xs px-1 min-w-4 text-center">
                   {currentQty}
                 </span>
 
@@ -204,7 +204,7 @@ export function GroceryProductCard({
                   type="button"
                   onClick={handleIncrement}
                   disabled={isAdding}
-                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="size-5 rounded-md bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                   aria-label="Aumentar quantidade"
                 >
                   <Plus className="size-2.5" />
@@ -214,7 +214,7 @@ export function GroceryProductCard({
               <Button
                 size="sm"
                 onClick={handleQuickAdd}
-                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-2xs sm:text-xs gap-1 cursor-pointer"
+                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-2xs sm:text-xs gap-1 cursor-pointer min-h-11 sm:min-h-0"
               >
                 <Plus className="size-3" />
                 <span>Pedir</span>
@@ -224,7 +224,7 @@ export function GroceryProductCard({
                 asChild
                 size="sm"
                 variant="outline"
-                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-2xs sm:text-xs border-border cursor-pointer"
+                className="rounded-lg h-7 sm:h-8 px-2 sm:px-3 font-bold text-2xs sm:text-xs border-border cursor-pointer min-h-11 sm:min-h-0"
               >
                 <Link
                   to="/produto/$slug"
@@ -338,13 +338,13 @@ export function GroceryProductCard({
  type="button"
  onClick={handleDecrement}
  disabled={isAdding}
- className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Diminuir quantidade"
  >
  <Minus className="size-3" />
  </button>
 
- <span className="font-mono font-bold text-xs px-1 min-w-[20px] text-center">
+ <span className="font-mono font-bold text-xs px-1 min-w-5 text-center">
  {currentQty}
  </span>
 
@@ -352,7 +352,7 @@ export function GroceryProductCard({
  type="button"
  onClick={handleIncrement}
  disabled={isAdding}
- className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Aumentar quantidade"
  >
  <Plus className="size-3" />

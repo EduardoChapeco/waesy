@@ -292,7 +292,7 @@ export function TravelPackageDetailView({
               size="sm"
               variant="outline"
               onClick={onEditClick}
-              className="h-11 min-h-11 px-4 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="h-11 min-h-11 px-4 text-xs border-warning/30 text-warning-strong  hover:bg-warning/10 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <Edit3 className="size-3.5" />
               Editar
@@ -303,8 +303,8 @@ export function TravelPackageDetailView({
 
       {/* ── Painel de Controle do Proprietário (Regra 23: Owner Edit Mode) ── */}
       {isOwner && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-medium">
+        <div className="bg-warning/10 border-b border-warning/20 px-4 py-2 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-warning-strong  font-medium">
             <Sliders className="size-3.5 shrink-0" />
             <span>Modo Proprietário: Visualização do Pacote Turístico.</span>
           </div>
@@ -312,7 +312,7 @@ export function TravelPackageDetailView({
             <button
               type="button"
               onClick={onEditClick}
-              className="text-amber-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-1 h-11 min-h-11 px-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-md cursor-pointer"
+              className="text-warning-strong  hover:underline font-semibold flex items-center gap-1 h-11 min-h-11 px-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-md cursor-pointer"
             >
               <Edit3 className="size-3" />
               Editar no Gestor
@@ -322,7 +322,7 @@ export function TravelPackageDetailView({
       )}
 
  {/* Abas dinâmicas com omissão de estados vazios (Invariante B.33), piso 44px (DL-14) e foco teclado (DL-15) */}
-        <nav className="flex w-full max-w-4xl mx-auto px-2 justify-between border-t border-border/40 text-xs font-semibold overflow-x-auto no-scrollbar">
+        <nav className="flex w-full max-w-4xl mx-auto px-2 justify-between border-t border-border/40 text-xs font-semibold overflow-x-auto scroll-area-carousel no-scrollbar">
           {availableTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = currentTab === tab.id;
@@ -383,7 +383,7 @@ export function TravelPackageDetailView({
 
  {/* Destaques em Círculos Visuais (Apenas se cadastrados) */}
  {((packageData?.story_highlights && packageData.story_highlights.length > 0) || (resort.highlights && resort.highlights.length > 0)) && (
- <section className="w-full pt-1 pb-2 overflow-x-auto no-scrollbar">
+ <section className="w-full pt-1 pb-2 overflow-x-auto scroll-area-carousel no-scrollbar">
  <div className="flex gap-4 px-4 sm:px-6">
  {(packageData?.story_highlights || resort.highlights || []).map((hl: any) => (
  <div key={hl.id} className="flex flex-col items-center gap-2 shrink-0 cursor-pointer group">
@@ -444,7 +444,7 @@ export function TravelPackageDetailView({
  <section className="px-4 sm:px-6 space-y-3">
  <div className="flex items-center justify-between">
  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
- <ShieldAlert className="size-4 text-amber-500" />
+ <ShieldAlert className="size-4 text-warning-strong" />
  <span>Não incluso (serviços opcionais / à parte)</span>
  </h3>
  <span className="text-xs font-mono text-muted-foreground">{exclusions.length} itens</span>
@@ -456,7 +456,7 @@ export function TravelPackageDetailView({
  key={idx}
  className="p-3 rounded-lg bg-muted/30 border border-border/60 flex items-center gap-2"
  >
- <div className="size-6 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+ <div className="size-6 rounded-lg bg-warning/10 text-warning-strong  flex items-center justify-center shrink-0">
  <X className="size-3.5 stroke-2" />
  </div>
  <span className="text-xs font-medium text-muted-foreground">{item}</span>
@@ -565,7 +565,7 @@ export function TravelPackageDetailView({
  {(destination.name || destination.city) && (
  <div className="bg-card rounded-lg p-4 sm:p-5 border border-border/70 space-y-2 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground">
- <Sun className="size-4 text-amber-500" />
+ <Sun className="size-4 text-warning-strong" />
  <h4 className="text-xs font-bold uppercase tracking-wider">Clima no Destino</h4>
  </div>
  <WeatherWidget city={destination.city || destination.name} compact={true} />
@@ -881,8 +881,8 @@ export function TravelPackageDetailView({
  <div className="flex items-center justify-between">
  <h5 className="text-xs font-bold text-foreground truncate">{rec.title}</h5>
  {rec.rating && (
- <span className="text-xs font-bold text-amber-500 flex items-center gap-1">
- <Star className="size-3 fill-amber-500" /> {rec.rating}
+ <span className="text-xs font-bold text-warning-strong flex items-center gap-1">
+ <Star className="size-3 fill-warning" /> {rec.rating}
  </span>
  )}
  </div>

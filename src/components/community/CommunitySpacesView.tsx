@@ -199,7 +199,7 @@ export function CommunitySpacesView({
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div className="flex items-end gap-4">
               {/* Avatar Squircle Grande */}
-              <div className="size-20 sm:size-24 rounded-2xl bg-card border-4 border-card shadow-md overflow-hidden flex items-center justify-center text-foreground font-black text-2xl shrink-0">
+              <div className="size-20 sm:size-24 rounded-2xl bg-card border-4 border-card  overflow-hidden flex items-center justify-center text-foreground font-black text-2xl shrink-0">
                 {community.avatarUrl ? (
                   <img
                     src={community.avatarUrl}
@@ -261,7 +261,7 @@ export function CommunitySpacesView({
       </div>
 
       {/* ── 2. Régua de Abas em Linha Única Horizontal Contínua (AGENTS.md B.39) ── */}
-      <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar p-1 rounded-2xl bg-muted/40 border border-border/60">
+      <div className="flex flex-nowrap items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar p-1 rounded-2xl bg-muted/40 border border-border/60">
         {threads.length > 0 && <button
           type="button"
           onClick={() => setActiveTab("threads")}

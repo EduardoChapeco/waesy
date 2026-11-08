@@ -110,7 +110,7 @@ function MemberMetricsPage() {
  asChild
  size="sm"
  variant="outline"
- className="rounded-lg font-semibold text-xs h-9 gap-2"
+ className="rounded-lg font-semibold text-xs h-9 gap-2 min-h-11 sm:min-h-0"
  >
  <Link to="/membro/$id" params={{ id: profile.username || profile.id }}>
  <Eye className="size-3.5" />
@@ -121,7 +121,7 @@ function MemberMetricsPage() {
  <Button
  asChild
  size="sm"
- className="rounded-lg font-bold text-xs h-9 bg-primary text-primary-foreground gap-2"
+ className="rounded-lg font-bold text-xs h-9 bg-primary text-primary-foreground gap-2 min-h-11 sm:min-h-0"
  >
  <Link to="/mural">
  <Plus className="size-3.5" />
@@ -350,13 +350,13 @@ function MemberMetricsPage() {
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
  <span className="flex items-center gap-2 text-muted-foreground">
- <Sliders className="size-3.5 text-amber-500" /> Zines e Notícias
+ <Sliders className="size-3.5 text-warning-strong" /> Zines e Notícias
  </span>
  <span className="font-bold">{formatDistribution.zine}</span>
  </div>
  <div className="h-2 rounded-full bg-muted overflow-hidden">
  <div
- className="h-full bg-amber-500 rounded-full transition-colors duration-200"
+ className="h-full bg-warning rounded-full transition-colors duration-200"
  style={{
  width: `${totalContentCount > 0 ? (formatDistribution.zine / totalContentCount) * 100 : 0}%`,
  }}
@@ -407,7 +407,7 @@ function MemberMetricsPage() {
  </div>
  </div>
 
- <Button asChild className="w-full rounded-lg font-bold text-xs h-10 bg-primary text-primary-foreground">
+ <Button asChild className="w-full rounded-lg font-bold text-xs h-10 bg-primary text-primary-foreground min-h-11 sm:min-h-0">
  <Link to="/mural">
  <Plus className="size-4 mr-2" /> Publicar Agora
  </Link>

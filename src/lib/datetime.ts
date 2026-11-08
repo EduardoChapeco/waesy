@@ -24,13 +24,29 @@ const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", {
  minute: "2-digit",
 });
 
-export function formatDate(iso: string | Date): string {
- return dateFmt.format(typeof iso === "string" ? new Date(iso) : iso);
+export function formatDate(iso: string | Date | null | undefined): string {
+  if (!iso) return "—";
+  try {
+    const d = typeof iso === "string" ? new Date(iso) : iso;
+    if (isNaN(d.getTime())) return "—";
+    return dateFmt.format(d);
+  } catch {
+    return "—";
+  }
 }
 
-export function formatDateTime(iso: string | Date): string {
- return dateTimeFmt.format(typeof iso === "string" ? new Date(iso) : iso);
+
+export function formatDateTime(iso: string | Date | null | undefined): string {
+  if (!iso) return "—";
+  try {
+    const d = typeof iso === "string" ? new Date(iso) : iso;
+    if (isNaN(d.getTime())) return "—";
+    return dateTimeFmt.format(d);
+  } catch {
+    return "—";
+  }
 }
+
 
 /**
  * Retorna tempo relativo como "há 2 horas", "há 3 dias", "há 1 mês".
@@ -39,8 +55,10 @@ export function formatDateTime(iso: string | Date): string {
  */
 const relTimeFmt = new Intl.RelativeTimeFormat("pt-BR", { numeric: "auto" });
 
-export function formatRelativeTime(iso: string | Date): string {
- const date = typeof iso === "string" ? new Date(iso) : iso;
+export function formatRelativeTime(iso: string | Date | null | undefined): string {
+  if (!iso) return "—";
+  const date = typeof iso === "string" ? new Date(iso) : iso;
+  if (!date || isNaN(date.getTime())) return "—";
  const diffMs = date.getTime() - Date.now();
  const diffSec = Math.round(diffMs / 1000);
  const diffMin = Math.round(diffSec / 60);

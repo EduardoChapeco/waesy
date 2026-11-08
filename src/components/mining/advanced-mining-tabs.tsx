@@ -155,7 +155,7 @@ export function DataJudMiningPanel() {
           <Button
             type="submit"
             disabled={isMining || !processNumber.trim()}
-            className="h-10 px-5 rounded-lg font-medium shrink-0"
+            className="h-10 px-5 rounded-lg font-medium shrink-0 min-h-11 sm:min-h-0"
           >
             {isMining ? (
               <>
@@ -331,7 +331,7 @@ export function PlacesMiningPanel() {
           <Button
             type="submit"
             disabled={isMining || !queryTerm.trim()}
-            className="h-10 px-5 rounded-lg font-medium"
+            className="h-10 px-5 rounded-lg font-medium min-h-11 sm:min-h-0"
           >
             {isMining ? (
               <>
@@ -396,7 +396,7 @@ export function PlacesMiningPanel() {
                     </span>
                   )}
                   {place.rating && (
-                    <Badge variant="outline" className="text-2xs font-mono border-amber-500/30 text-amber-400">
+                    <Badge variant="outline" className="text-2xs font-mono border-warning/30 text-warning-strong">
                        {place.rating} ({place.reviewsCount})
                     </Badge>
                   )}
@@ -472,7 +472,7 @@ export function SpecializedUrlMiningPanel() {
           <Button
             type="submit"
             disabled={isMining || !targetUrl.trim()}
-            className="h-10 px-5 rounded-lg font-medium shrink-0"
+            className="h-10 px-5 rounded-lg font-medium shrink-0 min-h-11 sm:min-h-0"
           >
             {isMining ? (
               <>

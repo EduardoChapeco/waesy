@@ -3,7 +3,7 @@ import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Users, Search, Plus, ArrowRight, TrendingUp, Building2, User, Phone, Mail, MapPin, Tag, AlertTriangle, Clock, CheckCircle2, Archive, ExternalLink, MessageCircle, MoreVertical, Filter, DollarSign, ShieldCheck, FileText, Plane, Ticket } from "lucide-react";
+import { Users, Search, Plus, ArrowRight, TrendingUp, Building2, User, Phone, Mail, MapPin, Tag, AlertTriangle, Clock, CheckCircle2, Archive, ExternalLink, MessageCircle, MoreVertical, Filter, DollarSign, ShieldCheck, FileText, Plane, Ticket, List, LayoutGrid, Kanban } from "lucide-react";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,7 @@ function CarteiraClientesPage() {
  const [statusFilter, setStatusFilter] = useState("all");
  const [kindFilter, setKindFilter] = useState("all");
  const [channelFilter, setChannelFilter] = useState("all");
+ const [viewMode, setViewMode] = useState<"table" | "cards" | "kanban">("table");
 
  // Filtros em memória
  const filteredCustomers = useMemo(() => {
@@ -173,7 +174,7 @@ function CarteiraClientesPage() {
   ], [isTourism, totalCount, activeCount, b2cCount, b2bCount, docsExpiringCount]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <WorkspaceCanonicalToolbar
         tabs={[
           { id: "all", label: `Todos (${t("clients")})`, icon: Users, count: totalCount },
@@ -254,6 +255,13 @@ function CarteiraClientesPage() {
           icon: Plus,
           onClick: () => setIsWizardOpen(true),
         }}
+        viewModes={[
+          { id: "table", label: "Tabela", icon: List },
+          { id: "cards", label: "Cards", icon: LayoutGrid },
+          { id: "kanban", label: "Funil CRM", icon: Kanban },
+        ]}
+        activeViewMode={viewMode}
+        onViewModeChange={(m) => setViewMode(m as any)}
       />
 
       <UniversalCrmSpreadsheetImporterModal
@@ -284,7 +292,7 @@ function CarteiraClientesPage() {
  setKindFilter("all");
  setChannelFilter("all");
  }}
- className="h-7 text-xs font-semibold text-primary"
+ className="h-7 text-xs font-semibold text-primary min-h-11 sm:min-h-0"
  >
  Limpar Filtros
  </Button>
@@ -294,7 +302,7 @@ function CarteiraClientesPage() {
 
       {/* ── 5. Carteira de Clientes (Dual View: Mobile Cards & Desktop Table) ── */}
       {filteredCustomers.length === 0 ? (
-        <div className="py-16 text-center rounded-lg border border-border/40 bg-card/60 space-y-4 px-4">
+        <div className="py-16 text-center rounded-lg border border-border/40 bg-card space-y-4 px-4">
           <div className="size-14 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Users className="size-6" />
           </div>
@@ -313,12 +321,237 @@ function CarteiraClientesPage() {
             className="h-11 px-6 rounded-lg font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
           >
             <Plus className="size-4" />
-            <span>Cadastrar ${t("client")}</span>
+            <span>Cadastrar {t("client")}</span>
           </Button>
         </div>
       ) : (
         <>
-          {isMobile ? (
+          {viewMode === "cards" ? (
+            /* ── CARDS GRID VIEW ── */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredCustomers.map((c: any) => {
+                const isCompany = c.kind === "company";
+                const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
+                const hasSoonDocs = (c.docAlerts?.soon || 0) > 0;
+
+                return (
+                  <div
+                    key={c.id}
+                    className="p-5 rounded-2xl border border-border/70 bg-card shadow-2xs hover:border-primary/40 transition-colors flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`size-11 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 border border-border/40 ${
+                              isCompany
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {isCompany ? (
+                              <Building2 className="size-5" />
+                            ) : (
+                              c.fullName[0]?.toUpperCase() || <User className="size-5" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <Link
+                              to="/workspace/clientes/$id"
+                              params={{ id: c.id }}
+                              className="font-bold text-sm text-foreground hover:text-primary transition-colors block truncate"
+                            >
+                              {c.fullName}
+                            </Link>
+                            <span className="text-xs text-muted-foreground block truncate font-mono">
+                              {c.document || (c.city ? `${c.city} - ${c.state || "UF"}` : "Sem documento")}
+                            </span>
+                          </div>
+                        </div>
+                        <Badge
+                          variant={c.status === "active" ? "secondary" : "outline"}
+                          className={`text-xs font-semibold px-2 py-1 rounded-full shrink-0 ${
+                            c.status === "active"
+                              ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {c.status === "active" ? "Ativo" : c.status === "blocked" ? "Bloqueado" : "Inativo"}
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        {c.email && (
+                          <div className="flex items-center gap-2 truncate">
+                            <Mail className="size-3.5 shrink-0" />
+                            <span className="truncate">{c.email}</span>
+                          </div>
+                        )}
+                        {c.phone && (
+                          <div className="flex items-center gap-2 font-mono">
+                            <Phone className="size-3.5 shrink-0 text-emerald-600" />
+                            <span>{c.phone}</span>
+                          </div>
+                        )}
+                        {(hasExpiredDocs || hasSoonDocs) && (
+                          <div className="pt-1">
+                            {hasExpiredDocs ? (
+                              <Badge variant="destructive" className="text-xs font-bold gap-1 px-2 py-1">
+                                <AlertTriangle className="size-3" />
+                                <span>{c.docAlerts.expired} Vencido</span>
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs font-bold bg-warning/20 text-warning-strong gap-1 px-2 py-1">
+                                <Clock className="size-3" />
+                                <span>{c.docAlerts.soon} Vence em breve</span>
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-3 border-t border-border/40">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold gap-2 border-border hover:bg-muted cursor-pointer"
+                      >
+                        <Link to="/workspace/clientes/$id" params={{ id: c.id }}>
+                          <FileText className="size-3.5 text-muted-foreground" />
+                          <span>Ficha 360°</span>
+                        </Link>
+                      </Button>
+                      {c.phone && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => openWhatsApp(c.phone, c.fullName)}
+                          className="size-11 min-w-11 min-h-11 rounded-lg border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+                          title="Conversar no WhatsApp"
+                          aria-label={`Conversar no WhatsApp com ${c.fullName}`}
+                        >
+                          <MessageCircle className="size-4" />
+                        </Button>
+                      )}
+                      <CrudActionsMenu
+                        triggerVariant="outline"
+                        triggerClassName="size-11 min-w-11 min-h-11 p-0 rounded-lg border-border hover:bg-muted shrink-0"
+                        onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
+                        viewLabel="Ver Ficha Completa"
+                        onArchive={() => handleArchive(c.id, c.fullName)}
+                        archiveTitle={`Arquivar cliente "${c.fullName}"?`}
+                        archiveDescription="O cliente será arquivado e não aparecerá nas listagens ativas."
+                        customActions={[
+                          {
+                            label: "Ficha Rápida",
+                            icon: ShieldCheck,
+                            onClick: () => setSelectedDrawerCustomer(c),
+                          },
+                          {
+                            label: "Criar Oportunidade",
+                            icon: Plane,
+                            onClick: () => router.navigate({ to: "/workspace/comercial" }),
+                          },
+                        ]}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : viewMode === "kanban" ? (
+            /* ── FUNIL CRM KANBAN VIEW ── */
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+              {[
+                {
+                  id: "new",
+                  title: "Novos Contatos",
+                  description: "Cadastrados recentemente",
+                  items: filteredCustomers.filter((c: any) => c.channel === "site" || c.channel === "direct" || !c.channel),
+                  badgeColor: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+                },
+                {
+                  id: "active",
+                  title: "Clientes Ativos",
+                  description: "Com compras e emissões",
+                  items: filteredCustomers.filter((c: any) => c.status === "active"),
+                  badgeColor: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+                },
+                {
+                  id: "alerts",
+                  title: "Alertas de Documento",
+                  description: "Passaporte ou CNH pendente",
+                  items: filteredCustomers.filter((c: any) => (c.docAlerts?.expired || 0) > 0 || (c.docAlerts?.soon || 0) > 0),
+                  badgeColor: "bg-warning/10 text-warning-strong border-warning/20",
+                },
+                {
+                  id: "inactive",
+                  title: "Inativos & Retenção",
+                  description: "Ações de fidelização",
+                  items: filteredCustomers.filter((c: any) => c.status !== "active"),
+                  badgeColor: "bg-muted text-muted-foreground border-border",
+                },
+              ].map((column) => (
+                <div
+                  key={column.id}
+                  className="p-4 rounded-2xl border border-border/70 bg-card/60 flex flex-col space-y-3 min-h-96"
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">{column.title}</h4>
+                      <p className="text-xs text-muted-foreground">{column.description}</p>
+                    </div>
+                    <Badge variant="outline" className={`text-xs font-bold font-mono px-2 py-1 rounded-full ${column.badgeColor}`}>
+                      {column.items.length}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2 flex-1 overflow-y-auto no-scrollbar">
+                    {column.items.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-muted-foreground">
+                        Nenhum contato nesta etapa
+                      </div>
+                    ) : (
+                      column.items.map((c: any) => (
+                        <div
+                          key={c.id}
+                          className="p-3 rounded-xl border border-border/60 bg-card shadow-2xs hover:border-primary/40 transition-colors space-y-2 cursor-pointer"
+                          onClick={() => setSelectedDrawerCustomer(c)}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-bold text-xs text-foreground truncate">
+                              {c.fullName}
+                            </span>
+                            <Badge variant="outline" className="text-xs uppercase shrink-0">
+                              {c.kind === "company" ? "PJ" : "PF"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span className="truncate">{c.city ? `${c.city}/${c.state || "UF"}` : "Local"}</span>
+                            {c.phone && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openWhatsApp(c.phone, c.fullName);
+                                }}
+                                className="text-emerald-600 hover:text-emerald-700 p-1 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+                                title="WhatsApp"
+                              >
+                                <MessageCircle className="size-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : isMobile ? (
             /* ── 1. Mobile List Layout (Zero-Cramping, Large Text & 44px Controls) ── */
             <div className="bg-card border-y border-border/40 divide-y divide-border/30">
             {filteredCustomers.map((c: any) => {
@@ -329,7 +562,7 @@ function CarteiraClientesPage() {
               return (
                 <div
                   key={c.id}
-                  className="px-4 py-4 min-h-[56px] space-y-3 active:bg-muted/30 transition-colors"
+                  className="px-4 py-4 min-h-14 space-y-3 active:bg-muted/30 transition-colors"
                 >
                   {/* Top: Avatar, Nome, Tipo & Status */}
                   <div className="flex items-start justify-between gap-3">
@@ -407,7 +640,7 @@ function CarteiraClientesPage() {
                             <span>{c.docAlerts.expired} Documento(s) Vencido(s)</span>
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 gap-1 px-3 py-1">
+                          <Badge variant="secondary" className="text-xs font-bold bg-warning/20 text-warning-strong  gap-1 px-3 py-1">
                             <Clock className="size-3" />
                             <span>{c.docAlerts.soon} Vence em breve</span>
                           </Badge>
@@ -425,7 +658,7 @@ function CarteiraClientesPage() {
                     >
                       <Link to="/workspace/clientes/$id" params={{ id: c.id }}>
                         <FileText className="size-4 text-muted-foreground" />
-                        <span>Ficha 360°</span>
+                        <span>Ficha do Cliente</span>
                       </Link>
                     </Button>
 
@@ -445,13 +678,13 @@ function CarteiraClientesPage() {
  triggerVariant="outline"
  triggerClassName="h-11 px-4 rounded-lg border-border/60 hover:bg-muted shrink-0"
  onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
- viewLabel="Ficha Completa 360°"
+ viewLabel="Ver Ficha Completa"
  onArchive={() => handleArchive(c.id, c.fullName)}
  archiveTitle={`Arquivar cliente "${c.fullName}"?`}
  archiveDescription="O cliente será arquivado e não aparecerá nas listagens ativas, podendo ser restaurado futuramente."
  customActions={[
  {
- label: "Gaveta 360° (Anamnese/Histórico)",
+ label: "Ficha Rápida",
  icon: ShieldCheck,
  onClick: () => setSelectedDrawerCustomer(c),
  },
@@ -502,7 +735,7 @@ function CarteiraClientesPage() {
             <Table>
               <TableHeader className="bg-muted/40">
                 <TableRow>
-                  <TableHead className="w-[300px] font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
+                  <TableHead className="w-75 font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
                     {isTourism ? "Passageiro / Titular" : "Cliente / Razão Social"}
                   </TableHead>
                   <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-4">
@@ -600,7 +833,7 @@ function CarteiraClientesPage() {
                             <span className="text-muted-foreground text-xs">—</span>
                           )}
                           {c.email && (
-                            <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                            <span className="text-xs text-muted-foreground truncate max-w-38">
                               {c.email}
                             </span>
                           )}
@@ -624,7 +857,7 @@ function CarteiraClientesPage() {
                         ) : hasSoonDocs ? (
                           <Badge
                             variant="secondary"
-                            className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 py-0 h-5 gap-1"
+                            className="text-xs font-bold bg-warning/20 text-warning-strong  py-0 h-5 gap-1"
                           >
                             <Clock className="size-2.5" />
                             <span>{c.docAlerts.soon} Vence em breve</span>
@@ -656,7 +889,7 @@ function CarteiraClientesPage() {
  params={{ id: c.id }}
  className="px-3 py-2 rounded-lg text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
  >
- Ficha 360°
+ Ficha do Cliente
  </Link>
  <CrudActionsMenu
  onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
@@ -666,7 +899,7 @@ function CarteiraClientesPage() {
  archiveDescription="O cliente será arquivado e poderá ser restaurado futuramente."
  customActions={[
  {
- label: "Gaveta 360° (Anamnese/Histórico)",
+ label: "Ficha Rápida",
  icon: ShieldCheck,
  onClick: () => setSelectedDrawerCustomer(c),
  },

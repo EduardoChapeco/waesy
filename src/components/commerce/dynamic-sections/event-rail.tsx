@@ -45,7 +45,7 @@ export function EventRail({ content, resolvedEvents, isEditing }: any) {
  "grid gap-6",
  layout === "grid"
  ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
- : "grid-cols-1 md:grid-cols-3 flex-nowrap overflow-x-auto no-scrollbar pb-4 snap-x",
+ : "grid-cols-1 md:grid-cols-3 flex-nowrap overflow-x-auto scroll-area-carousel no-scrollbar pb-4 snap-x",
  )}
  >
  {events.map((evt: any) => (
@@ -55,12 +55,12 @@ export function EventRail({ content, resolvedEvents, isEditing }: any) {
  elevation="md"
  padding="none"
  className={cn(
- "group flex flex-col h-full overflow-hidden transition-transform duration-200 duration-300 hover:scale-[1.02]",
- layout === "carousel" && "min-w-[300px] snap-center shrink-0",
+ "group flex flex-col h-full overflow-hidden transition-transform duration-200 duration-300 hover:scale-102",
+ layout === "carousel" && "min-w-75 snap-center shrink-0",
  )}
  >
  {/* Event Cover Image */}
- <div className="relative aspect-[4/3] bg-muted overflow-hidden">
+ <div className="relative aspect-4/3 bg-muted overflow-hidden">
  {evt.cover_image ? (
  <img
  src={evt.cover_image}

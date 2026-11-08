@@ -175,7 +175,7 @@ export function ListingPrecheckDialog({
               </Badge>
             )}
             {warnCount > 0 && (
-              <Badge variant="outline" className="gap-1 text-2xs font-semibold text-amber-500 border-amber-500/40">
+              <Badge variant="outline" className="gap-1 text-2xs font-semibold text-warning-strong border-warning/40">
                 <AlertTriangle className="size-3" />
                 {warnCount} aviso(s)
               </Badge>
@@ -191,13 +191,13 @@ export function ListingPrecheckDialog({
               className={cn(
                 "p-3 rounded-lg border flex items-start gap-3 transition-colors",
                 item.status === "fail" && "border-destructive/30 bg-destructive/5 text-destructive",
-                item.status === "warn" && "border-amber-500/30 bg-amber-500/5 text-amber-600 dark:text-amber-400",
+                item.status === "warn" && "border-warning/30 bg-warning/5 text-warning-strong ",
                 item.status === "pass" && "border-emerald-500/30 bg-emerald-500/5 text-foreground"
               )}
             >
               <div className="shrink-0 mt-1">
                 {item.status === "fail" && <XCircle className="size-4 text-destructive" />}
-                {item.status === "warn" && <AlertTriangle className="size-4 text-amber-500" />}
+                {item.status === "warn" && <AlertTriangle className="size-4 text-warning-strong" />}
                 {item.status === "pass" && <CheckCircle2 className="size-4 text-emerald-500" />}
               </div>
               <div className="flex-1 min-w-0">

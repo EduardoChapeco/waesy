@@ -175,7 +175,7 @@ function HotelPickerPanel({
         <button
           type="button"
           onClick={onClose}
-          className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
           aria-label="Fechar painel de hotéis"
         >
           <X className="size-4" />
@@ -199,7 +199,7 @@ function HotelPickerPanel({
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               aria-label="Limpar busca"
             >
               <X className="size-3.5" />
@@ -209,7 +209,7 @@ function HotelPickerPanel({
       </div>
 
       {/* Chips Rápidos de Filtro */}
-      <div className="px-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+      <div className="px-4 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
         {[
           { id: "all", label: "Todos" },
           { id: "all_inclusive", label: "All Inclusive" },
@@ -221,7 +221,7 @@ function HotelPickerPanel({
             type="button"
             onClick={() => setActiveFilter(chip.id)}
             className={cn(
-              "shrink-0 h-8 px-3 rounded-lg text-xs font-medium border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              "shrink-0 h-8 px-3 rounded-lg text-xs font-medium border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0",
               activeFilter === chip.id
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-muted/30 text-muted-foreground border-border/60 hover:text-foreground",
@@ -251,7 +251,7 @@ function HotelPickerPanel({
                     setSearchQuery(resort.name);
                   }
                 }}
-                className="shrink-0 h-9 px-3 rounded-lg text-xs font-medium border bg-card text-foreground border-border/70 hover:border-primary/50 hover:bg-primary/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="shrink-0 h-9 px-3 rounded-lg text-xs font-medium border bg-card text-foreground border-border/70 hover:border-primary/50 hover:bg-primary/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0"
               >
                 {resort.name}
               </button>
@@ -298,8 +298,8 @@ function HotelPickerPanel({
                         {hotel.name}
                       </span>
                       {hotel.stars > 0 && (
-                        <span className="inline-flex items-center text-2xs font-semibold text-amber-500">
-                          <Star className="size-3 fill-amber-500 mr-1" />
+                        <span className="inline-flex items-center text-2xs font-semibold text-warning-strong">
+                          <Star className="size-3 fill-warning mr-1" />
                           {hotel.stars}
                         </span>
                       )}
@@ -532,7 +532,7 @@ export function HotelCombobox({
                   • {selectedHotel.city}, {selectedHotel.state}
                 </span>
                 {selectedHotel.stars > 0 && (
-                  <span className="text-xs text-amber-500 font-semibold shrink-0">
+                  <span className="text-xs text-warning-strong font-semibold shrink-0">
                     {selectedHotel.stars}
                   </span>
                 )}

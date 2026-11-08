@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Plus, MoreHorizontal, Edit, Trash2, Copy, Search, ChevronDown, ChevronRight, Check, Image as ImageIcon, ImagePlus, X, Loader2, Utensils, Coffee, PlusCircle, Layers, Gift } from "lucide-react";
+import { Plus, MoreHorizontal, Edit, Trash2, Copy, Search, ChevronDown, ChevronRight, Check, Image as ImageIcon, ImagePlus, X, Loader2, Utensils, Coffee, PlusCircle, Layers, Gift, Sliders } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,7 +50,13 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-import { getNicheOptionGroupPresets, type OptionGroupPreset } from "@/lib/niche-presets";
+import {
+  getNicheOptionGroupPresets,
+  getNicheModifierPlaceholders,
+  searchOptionGroupPresets,
+  NICHE_LABELS,
+  type OptionGroupPreset,
+} from "@/lib/niche-presets";
 
 export const Route = createFileRoute("/workspace/catalogo/atributos")({
  head: () => ({ meta: [{ title: "Adicionais | Workspace Waesy" }] }),
@@ -80,10 +86,32 @@ function OptionGroupsPage() {
  const isGastro = semantics.nicheId === "gastronomy";
 
  const activePresets = useMemo(() => getNicheOptionGroupPresets(semantics.nicheId), [semantics.nicheId]);
+ const placeholders = useMemo(() => getNicheModifierPlaceholders(semantics.nicheId), [semantics.nicheId]);
  const router = useRouter();
  const [open, setOpen] = useState(false);
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [searchQuery, setSearchQuery] = useState("");
+ const [activeTab, setActiveTab] = useState<"my_groups" | "recommended" | "library">("my_groups");
+ const [librarySearchQuery, setLibrarySearchQuery] = useState("");
+ const [libraryNiche, setLibraryNiche] = useState("all");
+
+ const libraryPresets = useMemo(() => {
+   return searchOptionGroupPresets(librarySearchQuery, libraryNiche);
+ }, [librarySearchQuery, libraryNiche]);
+
+ const handleImportPreset = async (preset: OptionGroupPreset) => {
+   setIsSubmitting(true);
+   try {
+     await upsertOptionGroup({ data: preset.data });
+     toast.success(`Modelo "${preset.name}" importado com sucesso para seu catálogo!`);
+     setActiveTab("my_groups");
+     router.invalidate();
+   } catch (e: any) {
+     toast.error(e?.message || "Erro ao importar modelo.");
+   } finally {
+     setIsSubmitting(false);
+   }
+ };
 
  const filteredGroups = useMemo(() => {
  return groups.filter(
@@ -237,6 +265,51 @@ function OptionGroupsPage() {
  }
  />
 
+ {/* Navegação em Abas Segmentadas */}
+ <div className="flex flex-wrap items-center gap-2 p-1 bg-muted/40 rounded-xl border border-border/70 w-fit">
+ <button
+ type="button"
+ onClick={() => setActiveTab("my_groups")}
+ className={cn(
+ "flex items-center gap-2 h-11 min-h-11 px-4 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ activeTab === "my_groups"
+ ? "bg-background text-foreground shadow-xs font-bold"
+ : "text-muted-foreground hover:text-foreground",
+ )}
+ >
+ <Layers className="size-3.5 text-primary" />
+ <span>Meus Grupos ({groups.length})</span>
+ </button>
+ <button
+ type="button"
+ onClick={() => setActiveTab("recommended")}
+ className={cn(
+ "flex items-center gap-2 h-11 min-h-11 px-4 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ activeTab === "recommended"
+ ? "bg-background text-foreground shadow-xs font-bold"
+ : "text-muted-foreground hover:text-foreground",
+ )}
+ >
+ <Sliders className="size-3.5 text-primary" />
+ <span>Modelos Recomendados ({activePresets.length})</span>
+ </button>
+ <button
+ type="button"
+ onClick={() => setActiveTab("library")}
+ className={cn(
+ "flex items-center gap-2 h-11 min-h-11 px-4 py-2 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ activeTab === "library"
+ ? "bg-background text-foreground shadow-xs font-bold"
+ : "text-muted-foreground hover:text-foreground",
+ )}
+ >
+ <Gift className="size-3.5 text-primary" />
+ <span>Catálogo Global de Presets</span>
+ </button>
+ </div>
+
+ {activeTab === "my_groups" && (
+ <>
  {/* Barra de Busca */}
  <div className="flex items-center justify-between gap-4">
  <div className="relative flex-1 max-w-sm">
@@ -270,7 +343,7 @@ function OptionGroupsPage() {
  </div>
  <Button
  size="sm"
- className="rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 h-9"
+ className="rounded-lg font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 h-9 min-h-11 sm:min-h-0"
  onClick={() => {
  form.reset({
  internal_name: "",
@@ -293,12 +366,12 @@ function OptionGroupsPage() {
  <Table>
  <TableHeader>
  <TableRow className="hover:bg-transparent">
- <TableHead className="w-[36px]"></TableHead>
+ <TableHead className="w-9"></TableHead>
  <TableHead className="text-xs font-bold text-foreground">Nome de Exibição</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Tipo de Seleção</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Regras</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Adicionais e Fotos</TableHead>
- <TableHead className="w-[80px]"></TableHead>
+ <TableHead className="w-20"></TableHead>
  </TableRow>
  </TableHeader>
  <TableBody>
@@ -315,6 +388,211 @@ function OptionGroupsPage() {
  </Table>
  )}
  </div>
+ </>
+ )}
+
+ {activeTab === "recommended" && (
+ <div className="space-y-4">
+ <div className="p-4 rounded-xl border border-border/80 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+ <div>
+ <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+ <Sliders className="size-4 text-primary" />
+ Modelos Recomendados para {semantics.name}
+ </h3>
+ <p className="text-xs text-muted-foreground mt-1">
+ Templates canônicos pré-configurados com regras e valores para acelerar o cadastro no seu segmento.
+ </p>
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+ {activePresets.map((preset) => {
+ const Icon = preset.icon;
+ return (
+ <div
+ key={preset.id || preset.name}
+ className="p-4 rounded-xl border border-border/80 bg-card hover:border-primary/50 transition-colors flex flex-col justify-between space-y-4 shadow-2xs"
+ >
+ <div className="space-y-3">
+ <div className="flex items-start justify-between gap-2">
+ <div className="flex items-center gap-2">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <Icon className="size-5" />
+ </div>
+ <div>
+ <h4 className="text-sm font-bold text-foreground">{preset.name}</h4>
+ <span className="text-2xs text-muted-foreground">{preset.desc}</span>
+ </div>
+ </div>
+ <Badge variant="outline" className="text-2xs uppercase tracking-wider shrink-0 font-bold">
+ {preset.data.selection_type === "single" ? "Única" : "Múltipla"}
+ </Badge>
+ </div>
+
+ <div className="space-y-2 pt-2 border-t border-border/50">
+ <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+ Opções Inclusas ({preset.data.values.length}):
+ </p>
+ <div className="space-y-1 max-h-32 overflow-y-auto no-scrollbar">
+ {preset.data.values.map((val, idx) => (
+ <div key={idx} className="flex items-center justify-between text-xs py-1 px-2 rounded-md bg-muted/30">
+ <span className="text-foreground font-medium truncate">{val.label}</span>
+ <span className="text-muted-foreground font-mono text-2xs shrink-0">
+ {val.price_modifier_cents > 0
+ ? `+ R$ ${(val.price_modifier_cents / 100).toFixed(2).replace(".", ",")}`
+ : "Grátis"}
+ </span>
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
+
+ <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+ <Button
+ type="button"
+ size="sm"
+ onClick={() => handleImportPreset(preset)}
+ disabled={isSubmitting}
+ className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold gap-2"
+ >
+ <Plus className="size-3.5" />
+ <span>Importar</span>
+ </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => {
+ applyPreset(preset);
+ setOpen(true);
+ }}
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold"
+ >
+ Personalizar
+ </Button>
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ )}
+
+ {activeTab === "library" && (
+ <div className="space-y-4">
+ <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+ <div>
+ <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+ <Gift className="size-4 text-primary" />
+ Catálogo Global de Presets Waesy
+ </h3>
+ <p className="text-xs text-muted-foreground mt-1">
+ Explore modelos comerciais de todas as 17 verticais de negócio com importação em 1 clique.
+ </p>
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+ <div className="relative">
+ <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+ <Input
+ placeholder="Buscar por nome, adicional ou descrição..."
+ value={librarySearchQuery}
+ onChange={(e) => setLibrarySearchQuery(e.target.value)}
+ className="h-9 pl-9 text-xs rounded-lg"
+ />
+ </div>
+ <select
+ aria-label="Filtrar modelos por nicho de negócio"
+ value={libraryNiche}
+ onChange={(e) => setLibraryNiche(e.target.value)}
+ className="h-9 text-xs rounded-lg border border-border bg-background px-3 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <option value="all">Todas as 17 Verticais de Negócio</option>
+ {Object.entries(NICHE_LABELS).map(([k, label]) => (
+ <option key={k} value={k}>
+ {label}
+ </option>
+ ))}
+ </select>
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+ {libraryPresets.map((preset) => {
+ const Icon = preset.icon;
+ return (
+ <div
+ key={preset.id || preset.name}
+ className="p-4 rounded-xl border border-border/80 bg-card hover:border-primary/50 transition-colors flex flex-col justify-between space-y-4 shadow-2xs"
+ >
+ <div className="space-y-3">
+ <div className="flex items-start justify-between gap-2">
+ <div className="flex items-center gap-2">
+ <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <Icon className="size-5" />
+ </div>
+ <div>
+ <h4 className="text-sm font-bold text-foreground">{preset.name}</h4>
+ <span className="text-2xs text-muted-foreground">{preset.desc}</span>
+ </div>
+ </div>
+ <Badge variant="outline" className="text-2xs uppercase tracking-wider shrink-0 font-bold">
+ {preset.data.selection_type === "single" ? "Única" : "Múltipla"}
+ </Badge>
+ </div>
+
+ <div className="space-y-2 pt-2 border-t border-border/50">
+ <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
+ Opções Inclusas ({preset.data.values.length}):
+ </p>
+ <div className="space-y-1 max-h-32 overflow-y-auto no-scrollbar">
+ {preset.data.values.map((val, idx) => (
+ <div key={idx} className="flex items-center justify-between text-xs py-1 px-2 rounded-md bg-muted/30">
+ <span className="text-foreground font-medium truncate">{val.label}</span>
+ <span className="text-muted-foreground font-mono text-2xs shrink-0">
+ {val.price_modifier_cents > 0
+ ? `+ R$ ${(val.price_modifier_cents / 100).toFixed(2).replace(".", ",")}`
+ : "Grátis"}
+ </span>
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
+
+ <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+ <Button
+ type="button"
+ size="sm"
+ onClick={() => handleImportPreset(preset)}
+ disabled={isSubmitting}
+ className="flex-1 h-11 min-h-11 rounded-lg text-xs font-bold gap-2"
+ >
+ <Plus className="size-3.5" />
+ <span>Importar</span>
+ </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => {
+ applyPreset(preset);
+ setOpen(true);
+ }}
+ className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold"
+ >
+ Personalizar
+ </Button>
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ )}
 
  {/* SheetPage de Criação / Edição de Grupo de Opções */}
  <SheetPage /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
@@ -391,15 +669,7 @@ function OptionGroupsPage() {
  <Label className="text-xs font-bold text-foreground">Nome Interno</Label>
  <Input
  {...form.register("internal_name")}
- placeholder={
- isTourism
- ? "ex: REGIME_ALIMENTACAO"
- : isServices
- ? "ex: EXTRAS_PROCEDIMENTO"
- : isRetail
- ? "ex: GRADE_TAMANHO"
- : "ex: ADICIONAIS_PRATO"
- }
+ placeholder={placeholders.groupInternalPlaceholder}
  className="rounded-lg text-xs h-9"
  />
  {form.formState.errors.internal_name && (
@@ -412,15 +682,7 @@ function OptionGroupsPage() {
  <Label className="text-xs font-bold text-foreground">Nome para o Cliente (Vitrine)</Label>
  <Input
  {...form.register("display_name")}
- placeholder={
- isTourism
- ? "ex: Regime de Alimentação Incluso"
- : isServices
- ? "ex: Adicionais do Atendimento"
- : isRetail
- ? "ex: Selecione o Tamanho da Peça"
- : "ex: Turbine seu Prato ou Lanche"
- }
+ placeholder={placeholders.groupNamePlaceholder}
  className="rounded-lg text-xs h-9"
  />
  {form.formState.errors.display_name && (
@@ -435,15 +697,7 @@ function OptionGroupsPage() {
  <Label className="text-xs font-bold text-foreground">Instrução / Descrição (Opcional)</Label>
  <Input
  {...form.register("description")}
- placeholder={
- isTourism
- ? "ex: Escolha o plano de refeições desejado para a hospedagem"
- : isServices
- ? "ex: Selecione procedimentos extras para seu atendimento"
- : isRetail
- ? "ex: Escolha a cor e tamanho desejados"
- : "ex: Escolha seus adicionais favoritos para turbinar o item"
- }
+ placeholder={placeholders.groupDescPlaceholder}
  className="rounded-lg text-xs h-9"
  />
  </div>
@@ -511,7 +765,7 @@ function OptionGroupsPage() {
  type="button"
  variant="outline"
  size="sm"
- className="rounded-lg text-xs font-bold gap-2 h-8"
+ className="rounded-lg text-xs font-bold gap-2 h-8 min-h-11 sm:min-h-0"
  onClick={() =>
  append({
  label: "",
@@ -541,6 +795,7 @@ function OptionGroupsPage() {
  index={index}
  form={form}
  onRemove={() => remove(index)}
+ placeholders={placeholders}
  />
  ))}
  </div>
@@ -559,10 +814,12 @@ function OptionItemCard({
  index,
  form,
  onRemove,
+ placeholders,
 }: {
  index: number;
  form: any;
  onRemove: () => void;
+ placeholders?: any;
 }) {
  const imageUrl = form.watch(`values.${index}.image_url`);
  const [cropOpen, setCropOpen] = useState(false);
@@ -677,7 +934,7 @@ function OptionItemCard({
  <Label className="text-xs font-bold text-foreground">Nome do Adicional *</Label>
  <Input
  {...form.register(`values.${index}.label`)}
- placeholder="ex: Bacon Crocante Especial"
+ placeholder={placeholders?.optionLabelPlaceholder || "Nome do adicional / opção *"}
  className="h-8 text-xs rounded-lg"
  />
  </div>
@@ -697,7 +954,7 @@ function OptionItemCard({
  <div className="space-y-1">
  <Input
  {...form.register(`values.${index}.description`)}
- placeholder="Descrição curta (ex: 4 fatias defumadas em lenha)"
+ placeholder={placeholders?.optionDescPlaceholder || "Descrição curta da opção"}
  className="h-7 text-xs rounded-lg text-muted-foreground"
  />
  </div>
@@ -726,7 +983,7 @@ function OptionItemCard({
  type="button"
  variant="ghost"
  size="icon"
- className="size-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
+ className="size-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  onClick={onRemove}
  >
  <Trash2 className="size-3.5" />

@@ -69,7 +69,7 @@ export const NativeBackButton = React.forwardRef<HTMLButtonElement, NativeBackBu
       default:
         "text-foreground/80 hover:text-foreground hover:bg-muted/50 active:bg-muted/80",
       floating:
-        "bg-background text-foreground border border-border/80 shadow-sm active:bg-muted",
+        "bg-background text-foreground border border-border/80  active:bg-muted",
       card:
         "bg-card text-foreground border border-border/70 shadow-xs active:bg-muted",
       outline:
@@ -89,7 +89,7 @@ export const NativeBackButton = React.forwardRef<HTMLButtonElement, NativeBackBu
         aria-label={ariaLabel}
         {...props}
       >
-        <CaretLeft className="size-5 sm:size-5.5 stroke-[2.5]" aria-hidden="true" />
+        <CaretLeft className="size-5 sm:size-5.5 stroke-bold" aria-hidden="true" />
       </button>
     );
   }

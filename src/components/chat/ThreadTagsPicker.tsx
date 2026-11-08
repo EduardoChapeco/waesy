@@ -23,7 +23,7 @@ export interface ThreadTagsPickerProps {
 export const CANONICAL_TAGS = [
   { id: "vip", label: "VIP", color: "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30" },
   { id: "lead_quente", label: "Lead Quente", color: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30" },
-  { id: "aguardando_pix", label: "Aguardando PIX", color: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30" },
+  { id: "aguardando_pix", label: "Aguardando PIX", color: "bg-warning/15 text-warning-strong  border-warning/30" },
   { id: "reclamacao", label: "Reclamação", color: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" },
   { id: "pos_venda", label: "Pós-Venda", color: "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30" },
   { id: "suporte", label: "Suporte Técnico", color: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30" },
@@ -118,7 +118,7 @@ export function ThreadTagsPicker({
             <Plus className="size-4" />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-2 rounded-lg bg-card border border-border/80 shadow-md" align="start">
+        <PopoverContent className="w-64 p-2 rounded-lg bg-card border border-border/80 shadow-overlay" align="start">
           <div className="space-y-2">
             <p className="text-2xs font-bold text-muted-foreground px-2 py-1 uppercase tracking-wider">
               Tags de CRM / Atendimento

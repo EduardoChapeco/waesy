@@ -86,7 +86,7 @@ export function SuggestedFriendsBlock({ friends = [] }: SuggestedFriendsBlockPro
  <Button
  size="sm"
  variant={isFollowing ? "outline" : "default"}
- className="w-full h-7 text-xs rounded-lg font-medium"
+ className="w-full h-7 text-xs rounded-lg font-medium min-h-11 sm:min-h-0"
  disabled={isLoading}
  onClick={() => handleToggleFollow(friend.id, friend.name)}
  >

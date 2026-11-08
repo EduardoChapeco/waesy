@@ -68,7 +68,7 @@ export function IFoodVisualSpotlightRail({
       </div>
 
       {/* Trilho Deslizante Horizontal com Cards Visuais Grandes */}
-      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-3 sm:px-4 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_92%,transparent_100%)]">
+      <div className="flex items-center gap-3 overflow-x-auto scroll-area-carousel no-scrollbar px-3 sm:px-4 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_92%,transparent_100%)]">
         {stores.map((s) => (
           <IFoodStoreFeedCard
             key={s.id}

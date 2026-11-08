@@ -72,7 +72,8 @@ export const Route = createFileRoute("/_store/entrar")({
             throw redirect({ to: returnUrl as any });
           }
         }
-        throw redirect({ to: isMaster ? "/admin-master" : "/workspace" });
+        const hasStore = Boolean(session?.memberships && session.memberships.length > 0);
+        throw redirect({ to: hasStore ? "/workspace" : isMaster ? "/admin-master" : "/" });
       }
     } catch (e: any) {
       if (isRedirect(e)) {
@@ -205,11 +206,13 @@ function StepByStepAuthPage() {
  if (res.status === "success") {
  if ((res as any).session?.access_token && (res as any).session?.refresh_token) {
  try {
- const { getBrowserClient } = await import("@/lib/supabase");
+ const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+ sanitizeBrowserAuthCookies();
  await getBrowserClient().auth.setSession({
  access_token: (res as any).session.access_token,
  refresh_token: (res as any).session.refresh_token,
  });
+ sanitizeBrowserAuthCookies();
  } catch (clientErr) {
  console.warn("[auth] Falha ao sincronizar sessão no cliente:", clientErr);
  }
@@ -280,11 +283,13 @@ function StepByStepAuthPage() {
  if (res.status === "success") {
  if ((res as any).session?.access_token && (res as any).session?.refresh_token) {
  try {
- const { getBrowserClient } = await import("@/lib/supabase");
+ const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+ sanitizeBrowserAuthCookies();
  await getBrowserClient().auth.setSession({
  access_token: (res as any).session.access_token,
  refresh_token: (res as any).session.refresh_token,
  });
+ sanitizeBrowserAuthCookies();
  } catch (clientErr) {
  console.warn("[auth] Falha ao sincronizar sessão no cliente:", clientErr);
  }
@@ -532,9 +537,9 @@ function StepByStepAuthPage() {
  </>
  ) : isPortalMode ? (
  <>
- <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step1" ? "w-6 bg-amber-500" : "w-2 bg-muted"}`} />
- <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step2" ? "w-6 bg-amber-500" : "w-2 bg-muted"}`} />
- <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step3" ? "w-6 bg-amber-500" : "w-2 bg-muted"}`} />
+ <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step1" ? "w-6 bg-warning" : "w-2 bg-muted"}`} />
+ <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step2" ? "w-6 bg-warning" : "w-2 bg-muted"}`} />
+ <div className={`h-1.5 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step3" ? "w-6 bg-warning" : "w-2 bg-muted"}`} />
  </>
  ) : (
  <>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Waesy Ingest • WhatsApp Web</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    body {
+      width: 540px;
+      min-height: 560px;
+      max-height: 590px;
+      background: #090d16;
+      color: #f0f6fc;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 9999px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 14px;
+      margin-bottom: 12px;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .brand-subtitle {
+      font-size: 11px;
+      color: #8b949e;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .status-badge.online {
+      background: rgba(35, 134, 54, 0.15);
+      color: #3fb950;
+      border-color: rgba(63, 185, 80, 0.3);
+    }
+    .status-badge.offline {
+      background: rgba(217, 119, 6, 0.15);
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      background: #161b22;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      flex: 1;
+      height: 34px;
+      border: none;
+      background: transparent;
+      color: #8b949e;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      color: #f0f6fc;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tab-btn.active {
+      background: #21262d;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .tab-btn:focus-visible {
+      outline: 2px solid #38bdf8;
+      outline-offset: 1px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    .card {
+      background: #161b22;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #f0f6fc;
+    }
+    .badge-pill {
+      font-size: 11px;
+      color: #3fb950;
+      background: rgba(63, 185, 80, 0.1);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+
+    .btn-action {
+      width: 100%;
+      height: 44px;
+      min-height: 44px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: 8px;
+    }
+    .btn-action:focus-visible {
+      outline: 2px solid #58a6ff;
+      outline-offset: 2px;
+    }
+    .btn-primary {
+      background: #238636;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #2ea043;
+    }
+    .btn-primary:disabled {
+      background: #21262d;
+      color: #6e7681;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .btn-secondary:hover {
+      background: #30363d;
+      color: #ffffff;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .text-input {
+      width: 100%;
+      height: 44px;
+      background: #0d1117;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 13px;
+      color: #f0f6fc;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .text-input:focus {
+      border-color: #58a6ff;
+      outline: 2px solid rgba(88, 166, 255, 0.3);
+    }
+
+    .contacts-list {
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      background: #0d1117;
+      padding: 6px;
+      margin-bottom: 12px;
+    }
+    .contact-item {
+      background: #161b22;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .contact-item:last-child {
+      margin-bottom: 0;
+    }
+    .contact-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #f0f6fc;
+    }
+    .contact-phone {
+      font-size: 12px;
+      color: #58a6ff;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .empty-state {
+      padding: 24px 16px;
+      text-align: center;
+      color: #8b949e;
+      font-size: 12px;
+    }
+
+    .switch-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+    .switch-label {
+      font-size: 12px;
+      color: #c9d1d9;
+    }
+
+    .log-box {
+      background: #020617;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 10px;
+      height: 200px;
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      color: #8b949e;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .log-line {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log-line.success { color: #3fb950; }
+    .log-line.warn { color: #f59e0b; }
+    .log-line.error { color: #f85149; }
+    .log-line.info { color: #58a6ff; }
+
+    .footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 10px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #6e7681;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="brand-wrap">
+      <div class="brand-icon">W</div>
+      <div>
+        <div class="brand-title">Waesy Ingest</div>
+        <div class="brand-subtitle">Excelência Tour • WhatsApp Web & Grupos</div>
+      </div>
+    </div>
+    <div id="statusBadge" class="status-badge offline">
+      <span class="pulse-dot"></span>
+      <span id="statusText">Aguardando WhatsApp</span>
+    </div>
+  </div>
+
+  <!-- Abas -->
+  <div class="nav-tabs" role="tablist">
+    <button class="tab-btn active" data-tab="tab-extract" role="tab" aria-selected="true">
+      Captura de Contatos
+    </button>
+    <button class="tab-btn" data-tab="tab-config" role="tab" aria-selected="false">
+      Conexão Waesy
+    </button>
+    <button class="tab-btn" data-tab="tab-logs" role="tab" aria-selected="false">
+      Histórico & Logs
+    </button>
+  </div>
+
+  <!-- ABA 1: EXTRAÇÃO -->
+  <div id="tab-extract" class="tab-panel active">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Grupo / Conversa Ativa</span>
+        <span id="groupBadge" class="badge-pill">Nenhum</span>
+      </div>
+      <div id="activeGroupName" style="font-size: 14px; font-weight: 700; color: #f0f6fc;">
+        Abra uma conversa ou grupo no WhatsApp Web
+      </div>
+    </div>
+
+    <button id="scanGroupBtn" class="btn-action btn-secondary" style="margin-bottom: 12px;">
+      Escanear Participantes do Grupo
+    </button>
+
+    <div class="card" style="padding: 10px 14px; margin-bottom: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 12px; font-weight: 600;">Contatos Identificados</span>
+        <span id="contactsCountBadge" class="badge-pill">0 contatos</span>
+      </div>
+    </div>
+
+    <div id="contactsListContainer" class="contacts-list">
+      <div class="empty-state">Clique em "Escanear Participantes do Grupo" para extrair contatos da tela.</div>
+    </div>
+
+    <div class="switch-wrap">
+      <span class="switch-label">Simulação / Dry Run (valida sem gravar no banco)</span>
+      <input type="checkbox" id="dryRunCheckbox" style="accent-color: #58a6ff; width: 18px; height: 18px;">
+    </div>
+
+    <button id="sendToWaesyBtn" class="btn-action btn-primary" disabled>
+      Enviar ao Waesy CRM (Oportunidades)
+    </button>
+  </div>
+
+  <!-- ABA 2: CONEXÃO -->
+  <div id="tab-config" class="tab-panel">
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label" for="serverUrlInput">URL do Servidor Waesy</label>
+        <input id="serverUrlInput" type="text" class="text-input" value="https://waesy.com.br" placeholder="https://waesy.com.br">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="tokenInput">Token de Ingestão (Bearer Token)</label>
+        <input id="tokenInput" type="password" class="text-input" placeholder="wae_0123456789abcdef...">
+      </div>
+      <button id="saveConfigBtn" class="btn-action btn-primary">
+        Salvar Token e Conexão
+      </button>
+      <button id="testConnectionBtn" class="btn-action btn-secondary">
+        Validar Credencial (Whoami)
+      </button>
+      <div id="testConnResult" style="font-size: 11px; margin-top: 6px; text-align: center;"></div>
+    </div>
+  </div>
+
+  <!-- ABA 3: LOGS -->
+  <div id="tab-logs" class="tab-panel">
+    <div id="logBox" class="log-box"></div>
+    <button id="clearLogsBtn" class="btn-action btn-secondary">
+      Limpar Logs
+    </button>
+  </div>
+
+  <div class="footer">
+    <span>Waesy Ingest v2.1.0 • Manifest V3</span>
+    <span>Excelência Tour SMO</span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

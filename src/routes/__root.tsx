@@ -63,7 +63,7 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
           Não foi possível carregar esta página. Tente novamente ou volte ao início.
         </p>
         {normalizedError.message && (
-          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-left overflow-x-auto text-xs font-mono">
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-left overflow-x-auto scroll-area-carousel text-xs font-mono">
             <span className="font-bold block mb-1">Diagnóstico do Erro:</span>
             {normalizedError.message}
           </div>
@@ -143,8 +143,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  content: seoDesc,
  },
  { name: "author", content: storeName },
- { name: "theme-color", media: "(prefers-color-scheme: light)", content: "#ffffff" },
-      { name: "theme-color", media: "(prefers-color-scheme: dark)", content: theme?.background_color || "#09090b" },
+  // design-lint-ignore DL-01 reason:"Meta tag theme-color HTML nativa do browser exige valor de cor literal" expiry:"2027-12-31"
+  { name: "theme-color", media: "(prefers-color-scheme: light)", content: "#ffffff" },
+  // design-lint-ignore DL-01 reason:"Meta tag theme-color HTML nativa do browser exige valor de cor literal" expiry:"2027-12-31"
+  { name: "theme-color", media: "(prefers-color-scheme: dark)", content: theme?.background_color || "#09090b" },
  { name: "mobile-web-app-capable", content: "yes" },
  { name: "apple-mobile-web-app-capable", content: "yes" },
  { name: "apple-mobile-web-app-status-bar-style", content: "default" },
@@ -254,20 +256,7 @@ function RootShell({ children }: { children: ReactNode }) {
           />
         )}
 
-        {/* Speculation Rules API para navegações instantâneas (Skill web-performance) */}
-        <script
-          type="speculationrules"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              prerender: [
-                {
-                  where: { href_matches: "/*" },
-                  eagerness: "moderate",
-                },
-              ],
-            }),
-          }}
-        />
+        {/* Speculation Rules: prerender irrestrito desativado (SPEC-20261104) para evitar sobrecarga de SSR em background */}
 
         {/* Inject Google Analytics if configured */}
         {gaPixel && (
@@ -337,6 +326,30 @@ function RootShell({ children }: { children: ReactNode }) {
             }}
           />
         )}
+        <script
+          type="speculationrules"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              prerender: [
+                {
+                  source: "list",
+                  urls: ["/"],
+                  eagerness: "moderate",
+                },
+                {
+                  where: {
+                    and: [
+                      { href_matches: "/*" },
+                      { not: { href_matches: "/workspace/*" } },
+                      { not: { href_matches: "/painel/*" } },
+                    ],
+                  },
+                  eagerness: "moderate",
+                },
+              ],
+            }),
+          }}
+        />
       </head>
  <body className="w-full max-w-full viewport-lock antialiased select-none font-sans">
         <a href="#main-content" className="skip-link">
@@ -365,10 +378,21 @@ function RootComponent() {
     navigator.serviceWorker
      .register("/sw.js")
      .then((registration) => {
-      // Verifica atualizações periodicamente (a cada 60s) enquanto o app está aberto
+      // Verifica atualizações periodicamente (a cada 5min) apenas se a aba estiver visível
       setInterval(() => {
-       registration.update().catch(() => {});
-      }, 60_000);
+       if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        registration.update().catch(() => {});
+       }
+      }, 300_000);
+
+      // Revalida imediatamente quando o usuário retorna à aba
+      if (typeof document !== "undefined") {
+       document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+         registration.update().catch(() => {});
+        }
+       });
+      }
 
       // NÃO fazemos SKIP_WAITING automático aqui —
       // o PwaUpdatePrompt aguarda a ação explícita do utilizador (V120 design).
@@ -403,10 +427,39 @@ function RootComponent() {
   }
  }, []);
 
- // ── Sentinel de Segurança (passivo, não bloqueia UX) ──
+ // ── Sentinel de Segurança (passivo, não bloqueia UX) & Higienização de Cookies Auth ──
  useEffect(() => {
+  import("@/lib/supabase")
+   .then(({ sanitizeBrowserAuthCookies }) => sanitizeBrowserAuthCookies())
+   .catch(() => {});
   const cleanup = initSecuritySentinel();
   return cleanup;
+ }, []);
+
+ // ── Sincronização Contínua de Sessão e Auto-Refresh Zero-Bounce (DEC-445) ──
+ useEffect(() => {
+  if (typeof window === "undefined") return;
+  let authSubscription: { unsubscribe: () => void } | null = null;
+  import("@/lib/supabase").then(({ getBrowserClient }) => {
+   const client = getBrowserClient();
+   const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
+    if ((event === "TOKEN_REFRESHED" || event === "SIGNED_IN") && session?.access_token && session?.refresh_token) {
+     import("@/services/auth.functions").then(({ syncSessionToCookies }) => {
+      void syncSessionToCookies({
+       data: {
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+       },
+      }).catch(() => {});
+     });
+    }
+   });
+   authSubscription = subscription;
+  });
+
+  return () => {
+   if (authSubscription) authSubscription.unsubscribe();
+  };
  }, []);
 
  return (

@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { Plus, Trash2, Pencil, ArrowUp, ArrowDown, Layout, Sliders, Layers, Store, Tag, Shuffle, Eye, CheckCircle2, Grid } from "lucide-react";
+import { Plus, Trash2, Pencil, ArrowUp, ArrowDown, Layout, Sliders, Layers, Store, Tag, Shuffle, Eye, CheckCircle2, Grid, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { listAllSurfaces, listSurfaceSections, upsertSurfaceSection, deleteSurfaceSection, reorderSurfaceSections, type SurfaceSectionDTO, type SurfaceSectionType, type SurfaceDataSource, type SurfaceRankingStrategy, type SurfaceLayoutVariant, type MarketplaceSurfaceDTO } from "@/services/surface-cms.functions";
+import { listAllSurfaces, listSurfaceSections, upsertSurfaceSection, deleteSurfaceSection, reorderSurfaceSections, openOrCreatePageExperienceDocument, type SurfaceSectionDTO, type SurfaceSectionType, type SurfaceDataSource, type SurfaceRankingStrategy, type SurfaceLayoutVariant, type MarketplaceSurfaceDTO } from "@/services/surface-cms.functions";
 import { CANONICAL_CITIES } from "@/lib/constants/cities";
 
 const SearchSchema = z.object({
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/admin-master/vitrines")({
       return { surfaces };
     } catch (err) {
       console.error("[loader:admin-master.vitrines] Unhandled loader error:", err);
-      return { surfaces: null };
+      return { surfaces: [] };
     }
   },
   component: AdminMasterVitrinesPage,
@@ -113,6 +113,7 @@ function AdminMasterVitrinesPage() {
   const [endsAt, setEndsAt] = useState("");
   const [autoArchiveAt, setAutoArchiveAt] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOpeningOmniBuilder, setIsOpeningOmniBuilder] = useState(false);
   const [customButtons, setCustomButtons] = useState<Array<{ id: string; label: string; iconName: string; badge?: string }>>([]);
   const [newBtnLabel, setNewBtnLabel] = useState("");
   const [newBtnIcon, setNewBtnIcon] = useState("SuitcaseRolling");
@@ -159,6 +160,7 @@ function AdminMasterVitrinesPage() {
     setStartsAt("");
     setEndsAt("");
     setAutoArchiveAt("");
+    setCustomButtons([]);
     setIsDialogOpen(true);
   };
 
@@ -177,6 +179,7 @@ function AdminMasterVitrinesPage() {
     setStartsAt(sec.starts_at ? sec.starts_at.slice(0, 16) : "");
     setEndsAt(sec.ends_at ? sec.ends_at.slice(0, 16) : "");
     setAutoArchiveAt(sec.auto_archive_at ? sec.auto_archive_at.slice(0, 16) : "");
+    setCustomButtons(Array.isArray((sec.config as any)?.buttons) ? (sec.config as any).buttons : []);
     setIsDialogOpen(true);
   };
 
@@ -207,6 +210,10 @@ function AdminMasterVitrinesPage() {
           starts_at: startsAt ? new Date(startsAt).toISOString() : null,
           ends_at: endsAt ? new Date(endsAt).toISOString() : null,
           auto_archive_at: autoArchiveAt ? new Date(autoArchiveAt).toISOString() : null,
+          config: {
+            ...(((editingSection?.config as Record<string, any>) || {})),
+            buttons: customButtons,
+          },
         },
       });
 
@@ -268,18 +275,47 @@ function AdminMasterVitrinesPage() {
           </h1>
         </div>
 
-        <Button
-          onClick={handleOpenNewDialog}
-          size="sm"
-          className="h-11 sm:h-9 px-4 rounded-lg gap-2 font-semibold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <Plus className="size-4" />
-          <span>Nova Seção</span>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isOpeningOmniBuilder}
+            onClick={async () => {
+              setIsOpeningOmniBuilder(true);
+              try {
+                const res = await openOrCreatePageExperienceDocument({
+                  data: {
+                    pageSlug: selectedSurfaceSlug || "home",
+                    pageTitle: activeSurface?.title || `Vitrine ${selectedSurfaceSlug}`,
+                  },
+                });
+                window.location.href = `/workspace/builder/${res.documentId}/editor?from=admin-master`;
+              } catch (err: any) {
+                toast.error(err?.message || "Erro ao abrir vitrine no Omni Builder.");
+              } finally {
+                setIsOpeningOmniBuilder(false);
+              }
+            }}
+            className="h-11 min-h-11 sm:h-9 px-4 rounded-lg gap-2 font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Sparkles className="size-4" />
+            <span>{isOpeningOmniBuilder ? "Abrindo..." : "Editar no Omni Builder"}</span>
+          </Button>
+
+          <Button
+            onClick={handleOpenNewDialog}
+            size="sm"
+            className="h-11 min-h-11 sm:h-9 px-4 rounded-lg gap-2 font-semibold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Plus className="size-4" />
+            <span>Nova Seção</span>
+          </Button>
+        </div>
       </div>
 
       {/* Seletor Horizontal de Superfícies / Mercados */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-border/30">
+      <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-2 border-b border-border/30">
         {surfaces?.map((s: any) => {
           const isSelected = selectedSurfaceSlug === s.slug;
           return (
@@ -382,7 +418,7 @@ function AdminMasterVitrinesPage() {
                       variant="ghost"
                       disabled={index === 0}
                       onClick={() => handleMove(index, "up")}
-                      className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Mover para cima"
                     >
                       <ArrowUp className="size-4 sm:size-3.5" />
@@ -392,7 +428,7 @@ function AdminMasterVitrinesPage() {
                       variant="ghost"
                       disabled={index === sections.length - 1}
                       onClick={() => handleMove(index, "down")}
-                      className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Mover para baixo"
                     >
                       <ArrowDown className="size-4 sm:size-3.5" />
@@ -402,7 +438,7 @@ function AdminMasterVitrinesPage() {
                       size="icon"
                       variant="outline"
                       onClick={() => handleOpenEditDialog(sec)}
-                      className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="size-11 sm:size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Editar Seção"
                     >
                       <Pencil className="size-4 sm:size-3.5" />
@@ -412,7 +448,7 @@ function AdminMasterVitrinesPage() {
                       size="icon"
                       variant="ghost"
                       onClick={() => handleDeleteSection(sec.id)}
-                      className="size-11 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                      className="size-11 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                       title="Excluir Seção"
                     >
                       <Trash2 className="size-4 sm:size-3.5" />
@@ -437,7 +473,7 @@ function AdminMasterVitrinesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2 max-h-[70vh] overflow-y-auto no-scrollbar pr-1">
+          <div className="space-y-4 py-2 max-h-vh-70 overflow-y-auto no-scrollbar pr-1">
             {/* Live Truthful Preview */}
             <div className="p-3 bg-muted/30 rounded-lg border border-border/70 space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -461,7 +497,7 @@ function AdminMasterVitrinesPage() {
                   </div>
                 </div>
               ) : type === "custom_buttons_rail" ? (
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
                   <div className="px-3 py-2 rounded-lg bg-card border border-border/80 text-xs font-bold flex items-center gap-2 shadow-xs">
                     <Layers className="size-3 text-primary" />
                     <span>{title || "Atalho Rápido"}</span>
@@ -471,7 +507,7 @@ function AdminMasterVitrinesPage() {
                   </div>
                 </div>
               ) : type === "store_rail" ? (
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
                   <div className="w-28 p-2 rounded-lg bg-card border border-border/80 space-y-1">
                     <div className="size-6 rounded-full bg-muted" />
                     <div className="h-2 w-16 bg-foreground/20 rounded" />
@@ -483,7 +519,7 @@ function AdminMasterVitrinesPage() {
                   </div>
                 </div>
               ) : layoutVariant === "rail_feature_card" || layoutVariant === "rail_lead_banner" ? (
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
                   {/* Feature Lead Card Preview */}
                   <div className="w-28 p-3 rounded-lg bg-linear-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground space-y-2 shadow-xs shrink-0">
                     <span className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-card/20">#1 Top</span>
@@ -500,7 +536,7 @@ function AdminMasterVitrinesPage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
                   <div className="w-24 p-2 rounded-lg bg-card border border-border/80 space-y-2 shadow-xs">
                     <div className="aspect-square w-full rounded-lg bg-muted" />
                     <div className="h-2 w-16 bg-foreground/20 rounded" />
@@ -666,7 +702,7 @@ function AdminMasterVitrinesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setCustomButtons(customButtons.filter((_, i) => i !== idx))}
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0"
                         >
                           <Trash2 className="size-3.5" />
                         </Button>
@@ -726,7 +762,7 @@ function AdminMasterVitrinesPage() {
                             { id: "corporativo", label: "Corporativo", iconName: "Briefcase", badge: "VOLL" },
                           ]);
                         }}
-                        className="h-8 text-3xs font-semibold px-2"
+                        className="h-8 text-3xs font-semibold px-2 min-h-11 sm:min-h-0"
                       >
                         Carregar Preset CVC Completo
                       </Button>
@@ -749,7 +785,7 @@ function AdminMasterVitrinesPage() {
                         setNewBtnLabel("");
                         setNewBtnBadge("");
                       }}
-                      className="h-8 text-xs font-bold px-3"
+                      className="h-8 text-xs font-bold px-3 min-h-11 sm:min-h-0"
                     >
                       + Adicionar Botão
                     </Button>

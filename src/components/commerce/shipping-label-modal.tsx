@@ -130,7 +130,7 @@ export function ShippingLabelModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-0 gap-0 border-border/70 rounded-lg">
+      <DialogContent className="max-w-4xl max-h-vh-92 overflow-y-auto p-0 gap-0 border-border/70 rounded-lg">
         <DialogHeader className="p-5 border-b border-border/40 bg-muted/20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
@@ -151,7 +151,7 @@ export function ShippingLabelModal({
               <Button
                 size="sm"
                 onClick={handlePrint}
-                className="h-8 rounded-lg text-xs font-semibold gap-2"
+                className="h-8 rounded-lg text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
               >
                 <Printer className="size-3.5" />
                 <span>Imprimir</span>
@@ -195,7 +195,7 @@ export function ShippingLabelModal({
                 <div
                   ref={printableRef}
                   id="print-shipping-label"
-                  className="w-[100mm] min-h-[150mm] max-w-full bg-card text-foreground p-4 border-2 border-black rounded-sm shadow-md font-sans text-xs flex flex-col justify-between"
+                  className="w-[100mm] min-h-[150mm] max-w-full bg-card text-foreground p-4 border-2 border-black rounded-sm shadow-overlay font-sans text-xs flex flex-col justify-between"
                   style={{ boxSizing: "border-box" }}
                 >
                   {/* Topo / Chancelas */}
@@ -298,11 +298,38 @@ export function ShippingLabelModal({
                     </div>
                   </div>
 
-                  {/* Rodapé: Peso e Pedido */}
-                  <div className="pt-2 flex items-center justify-between text-2xs text-gray-600 font-mono">
-                    <span>Pedido #{labelData.order.order_number}</span>
-                    <span>Peso: {labelData.total_weight_kg} kg</span>
-                    <span>Volumes: 1/1</span>
+                  {/* Rodapé: Peso, Embalagem, WMS e Pedido */}
+                  <div className="pt-2 space-y-1 text-2xs text-gray-600 font-mono">
+                    <div className="flex items-center justify-between">
+                      <span>Pedido #{labelData.order.order_number}</span>
+                      <span>Peso: {labelData.chargeable_weight_kg || labelData.total_weight_kg} kg</span>
+                      <span>Volumes: 1/1</span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-gray-300 pt-1">
+                      <span>Emb: {labelData.packaging_label || "Caixa"} {labelData.dimensions_summary ? `(${labelData.dimensions_summary})` : ""}</span>
+                      {labelData.aisle_location && (
+                        <span className="font-bold text-foreground">Bin: {labelData.aisle_location}</span>
+                      )}
+                    </div>
+                    {(labelData.fragile || (labelData.thermal_control && labelData.thermal_control !== "ambient") || labelData.picking_notes) && (
+                      <div className="flex flex-wrap items-center gap-1 pt-1">
+                        {labelData.fragile && (
+                          <span className="px-2 py-1 border border-black font-black text-3xs uppercase text-foreground">
+                            CUIDADO FRÁGIL
+                          </span>
+                        )}
+                        {labelData.thermal_control && labelData.thermal_control !== "ambient" && (
+                          <span className="px-2 py-1 border border-black font-black text-3xs uppercase text-foreground">
+                            CONTROLE TÉRMICO ({labelData.thermal_control})
+                          </span>
+                        )}
+                        {labelData.picking_notes && (
+                          <span className="text-3xs text-gray-800 truncate">
+                            Obs: {labelData.picking_notes}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -310,7 +337,7 @@ export function ShippingLabelModal({
 
             {/* ── ABA 2: DECLARAÇÃO DE CONTEÚDO (A4 OFICIAL) ── */}
             {activeTab === "declaration" && (
-              <div className="bg-card text-foreground p-6 border border-gray-300 rounded-lg shadow-sm font-sans text-xs space-y-4 max-w-2xl mx-auto">
+              <div className="bg-card text-foreground p-6 border border-gray-300 rounded-lg shadow-overlay font-sans text-xs space-y-4 max-w-2xl mx-auto">
                 <div className="text-center border-b pb-3">
                   <h3 className="text-sm font-black uppercase tracking-wider">
                     DECLARAÇÃO DE CONTEÚDO
@@ -414,7 +441,7 @@ export function ShippingLabelModal({
                       size="sm"
                       variant="outline"
                       onClick={handleCopyZpl}
-                      className="h-8 text-xs font-semibold gap-2"
+                      className="h-8 text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
                     >
                       {copiedZpl ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
                       <span>{copiedZpl ? "Copiado" : "Copiar ZPL"}</span>
@@ -422,7 +449,7 @@ export function ShippingLabelModal({
                     <Button
                       size="sm"
                       onClick={handleDownloadZpl}
-                      className="h-8 text-xs font-semibold gap-2"
+                      className="h-8 text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
                     >
                       <Download className="size-3.5" />
                       <span>Baixar .zpl</span>
@@ -430,7 +457,7 @@ export function ShippingLabelModal({
                   </div>
                 </div>
 
-                <pre className="p-4 rounded-lg bg-muted/60 border border-border text-2xs font-mono overflow-x-auto max-h-80 text-foreground">
+                <pre className="p-4 rounded-lg bg-muted/60 border border-border text-2xs font-mono overflow-x-auto scroll-area-carousel max-h-80 text-foreground">
                   {zplScript || "Gerando script ZPL..."}
                 </pre>
               </div>
@@ -468,7 +495,7 @@ export function ShippingLabelModal({
                   type="submit"
                   size="sm"
                   disabled={savingDispatch}
-                  className="h-8 rounded-lg text-xs font-semibold"
+                  className="h-8 rounded-lg text-xs font-semibold min-h-11 sm:min-h-0"
                 >
                   {savingDispatch ? "Salvando..." : "Confirmar Despacho"}
                 </Button>

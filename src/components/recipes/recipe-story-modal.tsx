@@ -85,7 +85,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
           {/* 9:16 Canvas Card */}
           <div
             ref={cardRef}
-            className="w-[300px] h-[533px] bg-zinc-950 text-foreground rounded-lg p-5 flex flex-col justify-between relative overflow-hidden shadow-2xl shrink-0"
+            className="w-75 h-133 bg-zinc-950 text-foreground rounded-lg p-5 flex flex-col justify-between relative overflow-hidden shadow-overlay shrink-0"
             style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           >
             {/* Header Brand */}
@@ -104,7 +104,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
             </div>
 
             {/* Imagem de Destaque */}
-            <div className="relative w-full h-[210px] rounded-lg overflow-hidden my-2 bg-zinc-900 border border-zinc-800">
+            <div className="relative w-full h-53 rounded-lg overflow-hidden my-2 bg-zinc-900 border border-zinc-800">
               <img
                 src={
                   recipe.cover_image_url ||
@@ -117,7 +117,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
               <div className="absolute inset-0 bg-black/50" />
               {recipe.total_time && (
                 <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-zinc-900/90 px-2 py-1 rounded-md text-2xs font-mono text-zinc-200">
-                  <Clock className="size-3 text-amber-400" />
+                  <Clock className="size-3 text-warning-strong" />
                   {recipe.total_time}
                 </div>
               )}
@@ -179,7 +179,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
             onClick={handleDownloadStory}
             disabled={isGenerating}
             variant="default"
-            className="flex-1 rounded-lg h-9 text-xs font-semibold gap-2"
+            className="flex-1 rounded-lg h-9 text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
           >
             <Download className="size-3.5" />
             {isGenerating ? "Gerando Story..." : "Baixar Imagem (Story)"}
@@ -188,7 +188,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
           <Button
             onClick={handleCopyLink}
             variant="outline"
-            className="rounded-lg h-9 text-xs font-medium gap-2"
+            className="rounded-lg h-9 text-xs font-medium gap-2 min-h-11 sm:min-h-0"
           >
             {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
             {copied ? "Copiado!" : "Copiar Link"}

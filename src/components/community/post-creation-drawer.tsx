@@ -439,7 +439,7 @@ export function PostCreationDrawer({
  { id: "news", label: "Notícia / Artigo", icon: ChatCircleText, color: "text-primary" },
  { id: "travel", label: "Viagem / Roteiro", icon: MapPin, color: "text-sky-500" },
  { id: "threads", label: "Sequência", icon: ListBullets, color: "text-primary" },
- { id: "moment", label: "Vídeo Curto", icon: FilmStrip, color: "text-amber-500" },
+ { id: "moment", label: "Vídeo Curto", icon: FilmStrip, color: "text-warning-strong" },
  ] as const;
 
  return (
@@ -477,7 +477,7 @@ export function PostCreationDrawer({
  </DrawerHeader>
 
  {/* ── Seletor Horizontal de Formatos Sociais Puros ── */}
- <div className="px-4 py-3 bg-muted/20 overflow-x-auto no-scrollbar shrink-0 border-b border-border/40">
+ <div className="px-4 py-3 bg-muted/20 overflow-x-auto scroll-area-carousel no-scrollbar shrink-0 border-b border-border/40">
  <div className="flex items-center gap-2 min-w-max">
  {formats.map((fmt) => {
  const Icon = fmt.icon;
@@ -569,7 +569,7 @@ export function PostCreationDrawer({
  <button
  type="button"
  onClick={() => handleRemoveMedia(idx)}
- className="absolute top-1.5 right-1.5 size-8 min-h-8 min-w-8 rounded-full bg-foreground/70 text-foreground flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1.5 right-1.5 size-8 min-h-8 min-w-8 rounded-full bg-foreground/70 text-foreground flex items-center justify-center hover:bg-destructive transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Remover mídia"
  >
  <Trash size={12} weight="bold" />
@@ -677,7 +677,7 @@ export function PostCreationDrawer({
  </>
  ) : activeFormat === "moment" ? (
  <>
- <FilmStrip size={18} weight="bold" className="text-amber-500" />
+ <FilmStrip size={18} weight="bold" className="text-warning-strong" />
  <span>Adicionar Vídeo</span>
  </>
  ) : (
@@ -692,10 +692,10 @@ export function PostCreationDrawer({
  type="button"
  variant="outline"
  onClick={handleInsertHighlight}
- className="rounded-lg text-sm font-semibold h-11 gap-2 px-4 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer shadow-2xs"
+ className="rounded-lg text-sm font-semibold h-11 gap-2 px-4 hover:bg-warning/20 hover:text-warning-strong  transition-colors cursor-pointer shadow-2xs"
  title="Destacar texto (==texto==)"
  >
- <Highlighter size={18} className="text-amber-500" />
+ <Highlighter size={18} className="text-warning-strong" />
  <span>Destaque</span>
  </Button>
 

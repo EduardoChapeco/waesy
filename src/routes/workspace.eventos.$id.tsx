@@ -442,7 +442,7 @@ function SubPainelEventoPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleDeleteLot(lot.id)}
- className="size-11 sm:size-9 text-muted-foreground hover:text-destructive cursor-pointer"
+ className="size-11 sm:size-9 text-muted-foreground hover:text-destructive cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Excluir Lote"
  >
  <Trash2 className="size-4" />
@@ -543,7 +543,7 @@ function SubPainelEventoPage() {
 
  {/* ── Aba 3: Portaria & Check-in Rápido ── */}
  <TabsContent value="portaria" className="space-y-4">
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
  {/* Validador In-Place */}
  <div className="bg-card rounded-lg p-6 border border-border/60 space-y-4">
  <div>

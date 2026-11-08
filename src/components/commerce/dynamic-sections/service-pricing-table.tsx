@@ -75,12 +75,12 @@ export const ServicePricingTable: React.FC<ServicePricingTableProps> = ({
  className={cn(
  "rounded-lg p-6 sm:p-8 flex flex-col justify-between transition-colors duration-200 bg-card border",
  pkg.popular
- ? "border-primary shadow-xl ring-2 ring-primary/20 relative scale-102 z-10"
+ ? "border-primary  ring-2 ring-primary/20 relative scale-102 z-10"
  : "border-border/70 shadow-xs hover:border-border"
  )}
  >
  {pkg.popular && (
- <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-2xs font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-sm">
+ <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-2xs font-extrabold uppercase tracking-wider flex items-center gap-1 ">
  <Layers className="size-3" />
  <span>Mais Recomendado</span>
  </div>
@@ -113,7 +113,7 @@ export const ServicePricingTable: React.FC<ServicePricingTableProps> = ({
  <Button
  asChild
  className={cn(
- "w-full h-10 mt-6 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs",
+ "w-full h-10 mt-6 rounded-lg text-xs font-bold gap-2 cursor-pointer shadow-xs min-h-11 sm:min-h-0",
  pkg.popular
  ? "bg-primary text-primary-foreground hover:bg-primary/90"
  : "bg-muted hover:bg-muted/80 text-foreground border border-border/70"

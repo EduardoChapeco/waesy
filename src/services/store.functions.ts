@@ -8,60 +8,95 @@ export type { Weekday, TimeInterval, DaySchedule, WorkingHours };
 
 // --- DADOS DA LOJA ---
 
-export async function _getStoreSettings() {
- const identity = await getServerIdentity();
- const targetStoreId =
- identity?.store_id ||
- identity?.memberships?.[0]?.store_id ||
- null;
+export async function _getStoreSettings(input?: { store_id?: string | null }) {
+  const identity = await getServerIdentity();
+  let targetStoreId =
+    input?.store_id ||
+    identity?.store_id ||
+    identity?.memberships?.[0]?.store_id ||
+    null;
 
- if (!targetStoreId) {
- return null;
- }
+  if (!targetStoreId && identity?.id) {
+    try {
+      const db = getServerClient();
+      const { data: memberRecord } = await db
+        .from("workspace_members")
+        .select("store_id")
+        .eq("profile_id", identity.id)
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (memberRecord?.store_id) {
+        targetStoreId = memberRecord.store_id;
+      }
+    } catch {}
+  }
 
- const db = getServerClient();
- const { data: store, error } = await db
- .from("stores")
- .select(
- "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, pix_key, payment_instructions, settings, ai_knowledge_base",
- )
- .eq("id", targetStoreId)
- .maybeSingle();
+  if (
+    !targetStoreId &&
+    (identity?.isPlatformAdmin ||
+      identity?.role === "platform_admin" ||
+      identity?.role === "master")
+  ) {
+    const db = getServerClient();
+    const { data: latestStore } = await db
+      .from("stores")
+      .select("id")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    targetStoreId = latestStore?.id || null;
+  }
 
- if (error) throw new Error(`Falha ao carregar configurações da loja: ${error.message}`);
- if (!store) return null;
+  if (!targetStoreId) {
+    return null;
+  }
 
- const settings = (store.settings as Record<string, any>) || {};
- return {
- ...store,
- latitude: settings.latitude ?? null,
- longitude: settings.longitude ?? null,
- pix_key: store.pix_key || null,
- payment_instructions: store.payment_instructions || null,
- payment_processing_mode: settings.payment_processing_mode || "platform_gateway",
- logo_url: settings.logoUrl || settings.logo_url || null,
- segment: settings.segment || settings.type || settings.niche || null,
- type: settings.type || settings.segment || null,
- niche: settings.niche || settings.segment || null,
- order_types: settings.order_types || { delivery: true, takeout: true, dine_in: true },
- tourism_layout_mode: settings.tourism_layout_mode || "air_cover",
-  checkout_layout_mode: settings.checkout_layout_mode || "auto",
-  digital_delivery_type: settings.digital_delivery_type || "secure_link",
-  digital_external_url: settings.digital_external_url || null,
-  digital_instructions: settings.digital_instructions || null,
-  weighable_pricing_mode: settings.weighable_pricing_mode || "bands",
-  service_payment_policy: settings.service_payment_policy || "online_full",
-  service_deposit_percentage: settings.service_deposit_percentage ?? 30,
- wholesale_enabled: !!(
-  settings.wholesale_enabled ||
-  settings.wholesale_mode ||
-  settings.b2b_enabled ||
-  (Array.isArray(settings.enabled_modules) && settings.enabled_modules.includes("wholesale"))
- ),
- };
+  const db = getServerClient();
+  const { data: store, error } = await db
+    .from("stores")
+    .select(
+      "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, pix_key, payment_instructions, settings, ai_knowledge_base",
+    )
+    .eq("id", targetStoreId)
+    .maybeSingle();
+
+  if (error) throw new Error(`Falha ao carregar configurações da loja: ${error.message}`);
+  if (!store) return null;
+
+  const settings = (store.settings as Record<string, any>) || {};
+  return {
+    ...store,
+    latitude: settings.latitude ?? null,
+    longitude: settings.longitude ?? null,
+    pix_key: store.pix_key || null,
+    payment_instructions: store.payment_instructions || null,
+    payment_processing_mode: settings.payment_processing_mode || "platform_gateway",
+    logo_url: settings.logoUrl || settings.logo_url || null,
+    segment: settings.segment || settings.type || settings.niche || null,
+    type: settings.type || settings.segment || null,
+    niche: settings.niche || settings.segment || null,
+    order_types: settings.order_types || { delivery: true, takeout: true, dine_in: true },
+    tourism_layout_mode: settings.tourism_layout_mode || "air_cover",
+    checkout_layout_mode: settings.checkout_layout_mode || "auto",
+    digital_delivery_type: settings.digital_delivery_type || "secure_link",
+    digital_external_url: settings.digital_external_url || null,
+    digital_instructions: settings.digital_instructions || null,
+    weighable_pricing_mode: settings.weighable_pricing_mode || "bands",
+    service_payment_policy: settings.service_payment_policy || "online_full",
+    service_deposit_percentage: settings.service_deposit_percentage ?? 30,
+    wholesale_enabled: !!(
+      settings.wholesale_enabled ||
+      settings.wholesale_mode ||
+      settings.b2b_enabled ||
+      (Array.isArray(settings.enabled_modules) && settings.enabled_modules.includes("wholesale"))
+    ),
+  };
 }
 
-export const getStoreSettings = createServerFn({ method: "GET" }).handler(_getStoreSettings);
+export const getStoreSettings = createServerFn({ method: "GET" })
+  .validator((input?: { store_id?: string | null }) => input)
+  .handler(async (ctx) => _getStoreSettings(ctx?.data));
 
 export const saveStoreSettingsSchema = z.object({
  name: z.string().min(2).max(100),
@@ -72,6 +107,13 @@ export const saveStoreSettingsSchema = z.object({
  city: z.string().max(100).optional(),
  state: z.string().max(2).optional(),
  zip_code: z.string().max(9).optional(),
+ zipCode: z.string().max(9).optional(),
+ corporate_name: z.string().optional(),
+ trade_name: z.string().optional(),
+ cnae: z.any().optional(),
+ registration_status: z.string().optional(),
+ legal_nature: z.string().optional(),
+ neighborhood: z.string().optional(),
  latitude: z.number().optional().nullable(),
  longitude: z.number().optional().nullable(),
  description: z.string().max(500).optional(),
@@ -137,11 +179,23 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
   weighable_pricing_mode,
   service_payment_policy,
   service_deposit_percentage,
- latitude,
- longitude,
- ...columns
+  latitude,
+  longitude,
+  zipCode,
+  corporate_name,
+  trade_name,
+  cnae,
+  registration_status,
+  legal_nature,
+  neighborhood,
+  ...columns
  } = data;
  const db = getServerClient();
+
+ // Normaliza colunas estruturais
+ if (zipCode && !columns.zip_code) {
+   columns.zip_code = zipCode;
+ }
 
  // Get current settings to merge
  const { data: currentStore } = await db
@@ -153,6 +207,12 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  ...(currentStore?.settings || {}),
  ...(latitude !== undefined ? { latitude } : {}),
  ...(longitude !== undefined ? { longitude } : {}),
+ ...(corporate_name !== undefined ? { corporate_name } : {}),
+ ...(trade_name !== undefined ? { trade_name } : {}),
+ ...(cnae !== undefined ? { cnae } : {}),
+ ...(registration_status !== undefined ? { registration_status } : {}),
+ ...(legal_nature !== undefined ? { legal_nature } : {}),
+ ...(neighborhood !== undefined ? { neighborhood } : {}),
  ...(segment ? { segment, type: segment, niche: segment } : {}),
  ...(type && !segment ? { type, segment: type, niche: type } : {}),
  ...(niche && !segment && !type ? { niche, segment: niche, type: niche } : {}),
@@ -300,9 +360,13 @@ export async function _getPolicies() {
 export const getPolicies = createServerFn({ method: "GET" }).handler(_getPolicies);
 
 export const savePoliciesSchema = z.object({
- privacy_policy: z.string(),
- return_policy: z.string(),
- terms: z.string(),
+  privacy_policy: z.string().optional().default(""),
+  return_policy: z.string().optional().default(""),
+  terms: z.string().optional().default(""),
+  quotation_policy: z.string().optional().default(""),
+  sensitive_data_policy: z.string().optional().default(""),
+  cancellation_policy: z.string().optional().default(""),
+  custom_policies: z.record(z.string()).optional().default({}),
 });
 
 export async function _savePolicies(data: z.infer<typeof savePoliciesSchema>) {

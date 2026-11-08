@@ -68,14 +68,19 @@ const ROLE_DEFINITIONS: Record<
  color: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
  },
  seller: {
- label: "Vendedor / PDV",
- description: "Frente de caixa, criação de pedidos e atendimento",
+ label: "Vendedor / Comercial",
+ description: "Atendimento a clientes, pedidos e orçamentos",
  color: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+ },
+ cashier: {
+ label: "Operador de Caixa",
+ description: "Frente de caixa (PDV), abertura e fechamento de turno",
+ color: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30",
  },
  finance: {
  label: "Financeiro",
  description: "Extratos, fluxo de caixa, pagamentos e conciliação",
- color: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+ color: "bg-warning/15 text-warning-strong  border-warning/30",
  },
  stock: {
  label: "Estoque e Expedição",
@@ -123,7 +128,7 @@ export default function WorkspaceTeamPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviteRole, setInviteRole] = useState<
-    "admin" | "manager" | "seller" | "finance" | "content" | "stock" | "support"
+    "admin" | "manager" | "seller" | "cashier" | "finance" | "content" | "stock" | "support"
   >("seller");
   const [inviteContractType, setInviteContractType] = useState<"clt" | "pj" | "partner_law">("partner_law");
   const [inviteCommissionPercent, setInviteCommissionPercent] = useState<number>(60);
@@ -274,7 +279,7 @@ export default function WorkspaceTeamPage() {
  };
 
  return (
- <div className="space-y-6 max-w-6xl mx-auto w-full pb-20">
+ <div className="space-y-6 w-full pb-20">
  {/* ── PageHeader Canônico Clean ── */}
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="RH & Gestão"
@@ -491,7 +496,7 @@ export default function WorkspaceTeamPage() {
  variant="ghost"
  size="icon"
  onClick={() => setMemberToRemove(m)}
- className="size-8 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+ className="size-8 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  title="Revogar Acesso"
  >
  <Trash2 className="size-4" />
@@ -645,7 +650,7 @@ export default function WorkspaceTeamPage() {
                     });
                     setIsContractorOpen(true);
                   }}
-                  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 >
                   <Edit3 className="size-3.5" />
                 </Button>
@@ -662,7 +667,7 @@ export default function WorkspaceTeamPage() {
                       toast.error(err?.message || "Erro ao excluir prestador.");
                     }
                   }}
-                  className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10"
+                  className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 >
                   <Trash2 className="size-3.5" />
                 </Button>

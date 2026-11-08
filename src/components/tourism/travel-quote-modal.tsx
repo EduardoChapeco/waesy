@@ -175,7 +175,7 @@ export function TravelQuoteModal({
  Nossos consultores de viagem parceiros receberam seus detalhes e entrarão em contato no WhatsApp com as melhores opções de voos e hotéis.
  </p>
  </div>
- <Button onClick={resetAll} className="rounded-lg font-bold text-xs h-10 px-6 bg-foreground text-background">
+ <Button onClick={resetAll} className="rounded-lg font-bold text-xs h-10 px-6 bg-foreground text-background min-h-11 sm:min-h-0">
  Concluir
  </Button>
  </div>
@@ -207,7 +207,7 @@ export function TravelQuoteModal({
                 <button
                   type="button"
                   onClick={handleSwapLocations}
-                  className="size-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="size-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                   title="Inverter Origem e Destino"
                 >
                   <ArrowsLeftRight size={14} weight="bold" />
@@ -309,7 +309,7 @@ export function TravelQuoteModal({
  variant="outline"
  type="button"
  onClick={() => setRoomsCount(Math.max(1, roomsCount - 1))}
- className="size-8 rounded-lg"
+ className="size-8 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Minus size={14} />
  </Button>
@@ -319,7 +319,7 @@ export function TravelQuoteModal({
  variant="outline"
  type="button"
  onClick={() => setRoomsCount(Math.min(5, roomsCount + 1))}
- className="size-8 rounded-lg"
+ className="size-8 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Plus size={14} />
  </Button>
@@ -338,7 +338,7 @@ export function TravelQuoteModal({
  variant="outline"
  type="button"
  onClick={() => setAdultsCount(Math.max(1, adultsCount - 1))}
- className="size-8 rounded-lg"
+ className="size-8 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Minus size={14} />
  </Button>
@@ -348,7 +348,7 @@ export function TravelQuoteModal({
  variant="outline"
  type="button"
  onClick={() => setAdultsCount(Math.min(10, adultsCount + 1))}
- className="size-8 rounded-lg"
+ className="size-8 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Plus size={14} />
  </Button>
@@ -367,7 +367,7 @@ export function TravelQuoteModal({
  variant="outline"
  type="button"
  onClick={() => handleChildrenCountChange(childrenCount - 1)}
- className="size-8 rounded-lg"
+ className="size-8 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Minus size={14} />
  </Button>
@@ -377,7 +377,7 @@ export function TravelQuoteModal({
  variant="outline"
  type="button"
  onClick={() => handleChildrenCountChange(childrenCount + 1)}
- className="size-8 rounded-lg"
+ className="size-8 rounded-lg min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Plus size={14} />
  </Button>
@@ -490,7 +490,7 @@ export function TravelQuoteModal({
  type="button"
  variant="outline"
  onClick={() => setStep((step - 1) as any)}
- className="h-10 px-4 rounded-lg text-xs font-bold"
+ className="h-10 px-4 rounded-lg text-xs font-bold min-h-11 sm:min-h-0"
  >
  Voltar
  </Button>
@@ -502,7 +502,7 @@ export function TravelQuoteModal({
  <Button
  type="button"
  onClick={() => setStep((step + 1) as any)}
- className="h-10 px-6 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-1 "
+ className="h-10 px-6 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 gap-1  min-h-11 sm:min-h-0"
  >
  <span>Continuar</span>
  <CaretRight size={14} weight="bold" />
@@ -512,7 +512,7 @@ export function TravelQuoteModal({
  type="button"
  disabled={isSubmitting}
  onClick={handleSubmit}
- className="h-10 px-6 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 flex-1"
+ className="h-10 px-6 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 flex-1 min-h-11 sm:min-h-0"
  >
  <AirplaneTilt size={14} weight="bold" />
  <span>{isSubmitting ? "Enviando..." : "Solicitar Cotação Grátis"}</span>

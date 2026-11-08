@@ -13,7 +13,7 @@ function getSafetyLabel(level: SafetyLevel): string {
 
 function calculateDemandColor(score: number): string {
  if (score >= 85) return 'bg-emerald-500';
- if (score >= 60) return 'bg-amber-400';
+ if (score >= 60) return 'bg-warning';
  return 'bg-rose-400';
 }
 
@@ -81,7 +81,7 @@ describe('Microfase 9: Radar Global de Destinos & Inteligência de Mercado', () 
  });
  it('deve calcular cor de demanda por faixa', () => {
  expect(calculateDemandColor(95)).toBe('bg-emerald-500');
- expect(calculateDemandColor(75)).toBe('bg-amber-400');
+ expect(calculateDemandColor(75)).toBe('bg-warning');
  expect(calculateDemandColor(40)).toBe('bg-rose-400');
  });
  it('deve formatar pacote médio em formato compacto', () => {

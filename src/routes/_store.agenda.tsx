@@ -464,7 +464,7 @@ function AgendaPadronizadaPage() {
 
           {/* Atalhos Rápidos Inteligentes em Pílulas Flat (Snap & Fade Physics) */}
           <div
-            className="flex items-center gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory pr-6"
+            className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar snap-x snap-mandatory pr-6"
             style={{
               maskImage: "linear-gradient(to right, black 88%, transparent 100%)",
               WebkitMaskImage: "linear-gradient(to right, black 88%, transparent 100%)",
@@ -621,10 +621,10 @@ function AgendaPadronizadaPage() {
                     {group.items.map((item) => (
                       <div
                         key={item.id}
-                        className="min-w-72 sm:min-w-[310px] max-w-80 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-colors duration-200 select-none"
+                        className="min-w-72 sm:min-w-78 max-w-80 shrink-0 group flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-colors duration-200 select-none"
                       >
                         <Link to={item.to as any} className="block">
-                          <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40">
+                          <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/40">
                             {item.image ? (
                               <img
                                 src={item.image}
@@ -672,7 +672,7 @@ function AgendaPadronizadaPage() {
                           <span className="text-xs font-bold text-primary font-mono">
                             {item.priceOrStatus}
                           </span>
-                          <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-xs font-semibold gap-1">
+                          <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-xs font-semibold gap-1 min-h-11 sm:min-h-0">
                             <Link to={item.to as any}>
                               <span>{item.actionLabel}</span>
                               <CaretRight size={12} weight="bold" />
@@ -696,7 +696,7 @@ function AgendaPadronizadaPage() {
                   className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 flex flex-col justify-between"
                 >
                   <Link to={item.to as any} className="flex-1 flex flex-col cursor-pointer">
-                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40 shrink-0">
+                    <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/40 shrink-0">
                       {item.image ? (
                         <img
                           src={item.image}
@@ -748,7 +748,7 @@ function AgendaPadronizadaPage() {
                     <span className="text-xs font-bold text-primary font-mono">
                       {item.priceOrStatus}
                     </span>
-                    <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+                    <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 min-h-11 sm:min-h-0">
                       <Link to={item.to as any}>
                         <span>{item.actionLabel}</span>
                       </Link>
@@ -765,7 +765,7 @@ function AgendaPadronizadaPage() {
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 min-h-[136px] pl-32 sm:pl-44 w-full"
+                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 min-h-34 pl-32 sm:pl-44 w-full"
                 >
                   <Link
                     to={item.to as any}
@@ -790,7 +790,7 @@ function AgendaPadronizadaPage() {
                     </div>
                   </Link>
 
-                  <div className="p-4 sm:p-4 flex flex-col justify-between min-h-[136px] gap-2">
+                  <div className="p-4 sm:p-4 flex flex-col justify-between min-h-34 gap-2">
                     <Link to={item.to as any} className="space-y-1 block cursor-pointer">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-mono font-bold text-primary uppercase">
@@ -817,7 +817,7 @@ function AgendaPadronizadaPage() {
                         <span className="text-xs font-bold text-primary font-mono">
                           {item.priceOrStatus}
                         </span>
-                        <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+                        <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 min-h-11 sm:min-h-0">
                           <Link to={item.to as any}>
                             <span>{item.actionLabel}</span>
                             <ArrowRight size={13} className="ml-1" />

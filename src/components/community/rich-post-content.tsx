@@ -10,7 +10,7 @@ export interface RichPostContentProps {
 }
 
 const HIGHLIGHTER_PALETTES: Record<string, { bg: string; text: string }> = {
-  yellow: { bg: "bg-amber-300 dark:bg-amber-300", text: "text-neutral-950" },
+  yellow: { bg: "bg-warning/30 ", text: "text-neutral-950" },
   cyan: { bg: "bg-cyan-300 dark:bg-cyan-300", text: "text-neutral-950" },
   blue: { bg: "bg-sky-300 dark:bg-sky-300", text: "text-neutral-950" },
   pink: { bg: "bg-pink-300 dark:bg-pink-300", text: "text-neutral-950" },

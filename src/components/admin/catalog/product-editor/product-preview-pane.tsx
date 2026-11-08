@@ -24,7 +24,9 @@ import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { TravelPackageDetailView } from "@/components/commerce/travel/travel-package-detail-view";
 import { getBestInterestFreeInstallment } from "@/lib/payment/installment-calculator";
+import { calculateMatrixPricingAndStock } from "@/lib/catalog-channel-integrations";
 import type { TravelPackageData } from "@/types/travel-package";
+import type { RawVariant } from "@/types/catalog";
 
 export type ProductPreviewPaneViewport = "compact" | "medium" | "expanded";
 
@@ -43,6 +45,7 @@ export interface ProductPreviewPaneProps {
     status?: string;
     stock?: number;
   };
+  variants?: RawVariant[] | null;
   images: string[];
   activePreviewImage: number;
   setActivePreviewImage: (idx: number) => void;
@@ -58,8 +61,34 @@ export function ProductPreviewPane({
   activePreviewImage,
   setActivePreviewImage,
   store,
+  variants,
 }: ProductPreviewPaneProps) {
   const [viewport, setViewport] = React.useState<ProductPreviewPaneViewport>("compact");
+
+  const matrixStats = React.useMemo(() => {
+    return calculateMatrixPricingAndStock(
+      formValues.price_cents || 0,
+      formValues.stock || 0,
+      variants,
+    );
+  }, [formValues.price_cents, formValues.stock, variants]);
+
+  const variantImages = React.useMemo(() => {
+    if (!variants || variants.length === 0) return [];
+    const set = new Set<string>();
+    const list: string[] = [];
+    for (const v of variants) {
+      const u = v.image_url?.trim();
+      if (u && !set.has(u)) {
+        set.add(u);
+        list.push(u);
+      }
+    }
+    return list;
+  }, [variants]);
+
+  const effectiveImages = images.length > 0 ? images : variantImages;
+  const isUsingVariantImage = images.length === 0 && variantImages.length > 0;
 
   const bestInstallment = React.useMemo(() => {
     return getBestInterestFreeInstallment(formValues.price_cents || 0);
@@ -78,7 +107,7 @@ export function ProductPreviewPane({
         <div className="flex items-center gap-2 min-w-0">
           <Eye className="size-4 text-primary shrink-0" />
           <span className="text-xs font-bold text-foreground truncate">
-            Prévia ({isTravelPackageMode ? "Pacote Turístico" : isGroceryMode ? "Mercado & Perecíveis" : "Varejo Canônico"})
+            Prévia do Anúncio
           </span>
         </div>
 
@@ -139,8 +168,8 @@ export function ProductPreviewPane({
               productTitle={formValues.title || travelData.destination?.name || "Pacote de Viagem"}
               priceCents={formValues.price_cents || 425000}
               compareAtCents={formValues.compare_at_cents}
-              coverImageUrl={images[0]}
-              mediaUrls={images}
+              coverImageUrl={effectiveImages[0]}
+              mediaUrls={effectiveImages}
               storeName={store?.name}
               storePhone={store?.phone || store?.settings?.whatsapp}
               isInteractivePreview={true}
@@ -151,17 +180,21 @@ export function ProductPreviewPane({
             {/* Galeria de Fotos */}
             <div className="space-y-3">
               <div className="aspect-4/3 rounded-lg bg-muted/40 overflow-hidden relative border border-border flex items-center justify-center">
-                {images.length > 0 && images[activePreviewImage] ? (
+                {effectiveImages.length > 0 && effectiveImages[activePreviewImage] ? (
                   <img
-                    src={images[activePreviewImage]}
+                    src={effectiveImages[activePreviewImage]}
                     alt={formValues.title || "Foto do Produto"}
                     className="size-full object-contain p-2"
                   />
                 ) : (
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground/60">
-                    <Package className="size-12 stroke-1" />
-                    <span className="text-xs">Sem foto de capa</span>
+                  <div className="flex items-center justify-center text-muted-foreground/30">
+                    <Package className="size-10 stroke-1" />
                   </div>
+                )}
+                {isUsingVariantImage && (
+                  <Badge variant="outline" className="absolute bottom-3 left-3 text-xs bg-background/80 backdrop-blur-sm border-border text-foreground font-semibold">
+                    Foto da Variação
+                  </Badge>
                 )}
                 {formValues.status !== "published" && (
                   <Badge variant="secondary" className="absolute top-3 left-3 text-xs font-bold">
@@ -170,9 +203,9 @@ export function ProductPreviewPane({
                 )}
               </div>
 
-              {images.length > 1 && (
+              {effectiveImages.length > 1 && (
                 <div className="carousel flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                  {images.map((img, idx) => (
+                  {effectiveImages.map((img, idx) => (
                     <button /* focus-visible: */
                       key={idx}
                       type="button"
@@ -207,17 +240,25 @@ export function ProductPreviewPane({
 
               {/* Bloco de Preços */}
               <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
-                {formValues.compare_at_cents && formValues.price_cents && formValues.compare_at_cents > formValues.price_cents && (
+                {formValues.compare_at_cents && matrixStats.minPriceCents && formValues.compare_at_cents > matrixStats.minPriceCents && (
                   <span className="text-xs text-muted-foreground line-through block font-mono">
                     {formatMoney(formValues.compare_at_cents)}
                   </span>
                 )}
                 <div className="text-2xl font-black text-foreground font-mono">
-                  {formatMoney(formValues.price_cents || 0)}
+                  {matrixStats.hasVariants && matrixStats.hasPriceRange ? (
+                    <span className="text-sm font-bold text-muted-foreground mr-1 uppercase tracking-wide">A partir de</span>
+                  ) : null}
+                  {formatMoney(matrixStats.minPriceCents)}
                   <span className="text-xs text-muted-foreground font-normal ml-1">
                     /{formValues.selling_unit || "un"}
                   </span>
                 </div>
+                {matrixStats.hasVariants && matrixStats.hasPriceRange && (
+                  <p className="text-xs font-semibold text-primary">
+                    Varia até {formatMoney(matrixStats.maxPriceCents)} conforme a opção
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   {bestInstallment
                     ? bestInstallment.displayFormatted
@@ -227,11 +268,14 @@ export function ProductPreviewPane({
 
               {/* Selo de Estoque */}
               <div className="flex items-center gap-2 text-xs">
-                {(formValues.stock ?? 0) > 0 ? (
+                {matrixStats.totalStock > 0 ? (
                   <>
                     <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
                     <span className="text-muted-foreground font-medium">
-                      Disponível em estoque ({formValues.stock} unidades)
+                      Disponível em estoque ({matrixStats.totalStock} unidades
+                      {matrixStats.hasVariants && variants && variants.length > 0
+                        ? ` em ${variants.length} variações`
+                        : ""})
                     </span>
                   </>
                 ) : (

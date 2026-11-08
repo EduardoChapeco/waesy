@@ -239,7 +239,7 @@ export function BookingDossierModal({
           <div className="space-y-4 py-2">
             {/* 1. Alerta de Agendamento Passado sem Encerramento */}
             {isPast && (
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs space-y-1">
+              <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  text-xs space-y-1">
                 <div className="flex items-center gap-2 font-bold">
                   <AlertTriangle className="size-4 shrink-0" />
                   <span>Horário Ultrapassado — Aguardando Fechamento</span>

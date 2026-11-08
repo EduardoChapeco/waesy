@@ -5,7 +5,7 @@
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Plane, Hotel, Compass, Check, X, MapPin, Calendar, FileText, PhoneCall } from "lucide-react";
+import { Plane, Hotel, Compass, Check, X, MapPin, Calendar, FileText, PhoneCall, Car, Utensils } from "lucide-react";
 import { DocumentPage } from "./blocks/UI";
 
 interface TemplateProps {
@@ -159,6 +159,22 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                         </span>
                         <h4 className="font-bold text-lg text-foreground truncate">{d.title}</h4>
                       </div>
+                      {((d as any).city || (d as any).location || ((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          {((d as any).city || (d as any).location) && (
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-300 bg-slate-800/80 px-2 py-1 rounded-full font-medium">
+                              <MapPin className="size-3 text-slate-400" />
+                              {(d as any).city || (d as any).location}
+                            </span>
+                          )}
+                          {(((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-300 bg-slate-800/80 px-2 py-1 rounded-full font-medium">
+                              <Utensils className="size-3 text-slate-400" />
+                              {Array.isArray((d as any).meals) ? (d as any).meals.join(", ") : Array.isArray((d as any).included_meals) ? (d as any).included_meals.join(", ") : (d as any).meals || (d as any).included_meals}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-slate-400 text-sm leading-relaxed overflow-y-auto max-h-55 pr-2 whitespace-pre-wrap">
                         {d.description}
                       </p>
@@ -187,7 +203,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             <div>
               <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
                 <div className="flex items-center gap-3">
-                  <Hotel className="w-6 h-6 text-amber-500" />
+                  <Hotel className="w-6 h-6 text-warning-strong" />
                   <h2 className="text-2xl font-black tracking-tight text-foreground">
                     Onde você vai ficar
                   </h2>
@@ -235,7 +251,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                           </div>
                         </div>
                       </div>
-                      <div className="bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700/60 text-center text-xs font-bold text-amber-400 self-start mt-2">
+                      <div className="bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700/60 text-center text-xs font-bold text-warning-strong self-start mt-2">
                         Regime: {h.meal_plan || "Café da Manhã"}
                       </div>
                     </div>
@@ -245,7 +261,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             </div>
 
             <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
-              <span>Serviços de Alojamento Selecionados</span>
+              <span>Hospedagem</span>
               <span>Cotação #{p.number}</span>
             </div>
           </DocumentPage>
@@ -275,7 +291,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                   <div key={i} className="bg-slate-800/30 border border-slate-800 rounded-lg p-6">
                     <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
                       <span className="text-xs font-black uppercase tracking-widest text-slate-400">
-                        {f.airline || "Companhia Aérea"}
+                        {f.airline_name || f.airline || "Companhia Aérea"}
                       </span>
                       <span className="text-xs font-mono font-bold bg-slate-800 text-blue-400 px-2 py-1 rounded border border-slate-700">
                         {f.flight_number || "Voo"}
@@ -284,7 +300,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                     <div className="flex items-center justify-between text-center py-2">
                       <div>
                         <div className="text-4xl font-black text-foreground tracking-tight">
-                          {(f.origin || "---").slice(0, 3).toUpperCase()}
+                          {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-xs font-bold text-slate-400 mt-1">
                           {f.departure_time || "--:--"}
@@ -294,16 +310,16 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                       <div className="flex-1 px-6 relative flex flex-col items-center">
                         <div className="w-full border-t border-dashed border-slate-700" />
                         <span className="absolute -top-3.5 bg-slate-900 px-2 py-1 rounded-full border border-slate-800 text-3xs font-black uppercase text-slate-500">
-                          {f.stops === 0 ? "Direto" : `${f.stops} Parada${f.stops > 1 ? "s" : ""}`}
+                          {(f.stops_count ?? f.stops ?? 0) === 0 ? "Direto" : `${f.stops_count ?? f.stops} Parada${(f.stops_count ?? f.stops ?? 1) > 1 ? "s" : ""}`}
                         </span>
                         <span className="text-3xs text-slate-500 font-bold mt-2">
-                          {f.date ? formatDate(f.date) : ""}
+                          {f.departure_date ? formatDate(f.departure_date) : f.date ? formatDate(f.date) : ""}
                         </span>
                       </div>
 
                       <div>
                         <div className="text-4xl font-black text-foreground tracking-tight">
-                          {(f.destination || "---").slice(0, 3).toUpperCase()}
+                          {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                         </div>
                         <div className="text-xs font-bold text-slate-400 mt-1">
                           {f.arrival_time || "--:--"}
@@ -316,11 +332,97 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             </div>
 
             <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
-              <span>Bilhetes Emitidos / Franquias inclusas conforme regras de tarifa</span>
+              <span>Voos</span>
               <span>Cotação #{p.number}</span>
             </div>
           </DocumentPage>
         ))}
+
+      {/* ─── SLIDE: TRASLADOS & SERVIÇOS ─── */}
+      {vm.hasTransfers && (
+        <DocumentPage format={format} className="bg-slate-900 border-none p-12 justify-between">
+          <div>
+            <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+              <div className="flex items-center gap-3">
+                <Car
+                  className="w-6 h-6 text-brand"
+                  /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
+                  style={{ color: activeAccent }}
+                />
+                <h2 className="text-2xl font-black tracking-tight text-foreground">
+                  Traslados & Receptivo
+                </h2>
+              </div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                Logística Terrestre
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {p.transfers!.map((t, idx) => (
+                <div
+                  key={idx}
+                  className="bg-slate-800/40 border border-slate-800 rounded-lg p-6 flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-foreground font-bold text-base">{t.description || "Transfer"}</span>
+                    <span className="px-2 py-1 rounded text-3xs font-bold uppercase tracking-wider bg-slate-700 text-slate-200">
+                      {t.type === "shared" ? "Regular" : "Privativo"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    {t.vehicle && <span>Veículo: <strong className="text-slate-200">{t.vehicle}</strong> </span>}
+                    {t.date && <span>· Data: {formatDate(t.date)}</span>}
+                  </div>
+                  {t.notes && <p className="text-xs text-slate-400 italic">{t.notes}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
+            <span>Traslados</span>
+            <span>Cotação #{p.number}</span>
+          </div>
+        </DocumentPage>
+      )}
+
+      {/* ─── SLIDE: PASSEIOS & EXPERIÊNCIAS ─── */}
+      {vm.hasTours && (
+        <DocumentPage format={format} className="bg-slate-900 border-none p-12 justify-between">
+          <div>
+            <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+              <div className="flex items-center gap-3">
+                <Compass
+                  className="w-6 h-6 text-brand"
+                  /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
+                  style={{ color: activeAccent }}
+                />
+                <h2 className="text-2xl font-black tracking-tight text-foreground">
+                  Passeios & Experiências
+                </h2>
+              </div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                Atividades Especiais
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {p.tours!.map((tour, idx) => (
+                <div
+                  key={idx}
+                  className="bg-slate-800/40 border border-slate-800 rounded-lg p-6 flex flex-col gap-2"
+                >
+                  <span className="text-foreground font-bold text-base">{tour.description || (tour as any).title || "Passeio"}</span>
+                  {tour.date && <div className="text-xs text-slate-400">Duração / Data: {tour.date}</div>}
+                  {tour.notes && <p className="text-xs text-slate-400 whitespace-pre-wrap">{tour.notes}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
+            <span>Passeios</span>
+            <span>Cotação #{p.number}</span>
+          </div>
+        </DocumentPage>
+      )}
 
       {/* ─── SLIDE: INCLUSÕES / EXCLUSÕES ─── */}
       {(vm.hasIncludes || vm.hasExcludes) && (
@@ -417,7 +519,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                 {formatCurrency(vm.totals.total, p.currency)}
               </div>
               {p.valid_until && (
-                <span className="text-xs font-bold text-amber-500 block pt-2">
+                <span className="text-xs font-bold text-warning-strong block pt-2">
                   * Tarifa garantida até {formatDate(p.valid_until)}
                 </span>
               )}

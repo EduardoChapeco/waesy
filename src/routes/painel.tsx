@@ -183,11 +183,13 @@ function PainelAuthPage() {
       if (res.status === "success") {
         if ((res as any).session?.access_token && (res as any).session?.refresh_token) {
           try {
-            const { getBrowserClient } = await import("@/lib/supabase");
+            const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+            sanitizeBrowserAuthCookies();
             await getBrowserClient().auth.setSession({
               access_token: (res as any).session.access_token,
               refresh_token: (res as any).session.refresh_token,
             });
+            sanitizeBrowserAuthCookies();
           } catch (clientErr) {
             console.warn("[painel] Falha ao sincronizar sessão no cliente:", clientErr);
           }

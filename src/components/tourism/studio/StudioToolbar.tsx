@@ -39,7 +39,7 @@ export function StudioToolbar({
           <Link
             to={backTo as any}
             params={backParams as any}
-            className="flex h-8 w-8 items-center justify-center rounded-full border glass text-foreground/70 hover:glass-dark transition-colors shrink-0 cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-full border glass text-foreground/70 hover:glass-dark transition-colors shrink-0 cursor-pointer min-h-11 sm:min-h-0"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>

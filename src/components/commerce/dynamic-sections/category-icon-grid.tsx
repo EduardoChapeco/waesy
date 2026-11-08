@@ -43,7 +43,7 @@ export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
       case "plane":
         return <Plane className="size-6 text-sky-500" />;
       case "hotel":
-        return <Hotel className="size-6 text-amber-500" />;
+        return <Hotel className="size-6 text-warning-strong" />;
       case "luggage":
         return <Luggage className="size-6 text-indigo-500" />;
       case "shield":
@@ -87,7 +87,7 @@ export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
                 key={cat.id}
                 type="button"
                 onClick={() => onCategorySelect?.(cat)}
-                className="relative p-4 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 hover:border-primary/40 transition-colors duration-200 cursor-pointer flex flex-col items-center text-center justify-center gap-3 group shadow-2xs hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[110px]"
+                className="relative p-4 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 hover:border-primary/40 transition-colors duration-200 cursor-pointer flex flex-col items-center text-center justify-center gap-3 group shadow-2xs  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-28"
               >
                 {/* Badge de Desconto / Destaque */}
                 {(hasDiscount || hasBadge) && (

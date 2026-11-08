@@ -44,7 +44,7 @@ const CATEGORY_LABELS: Record<TicketCategory, string> = {
 };
 
 const STATUS_LABELS: Record<TicketStatus, { label: string; className: string }> = {
-  open: { label: "Aberto", className: "bg-amber-500/10 text-amber-600 border-amber-500/30" },
+  open: { label: "Aberto", className: "bg-warning/10 text-warning-strong border-warning/30" },
   in_progress: { label: "Em Análise", className: "bg-sky-500/10 text-sky-600 border-sky-500/30" },
   resolved: { label: "Resolvido", className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" },
   closed: { label: "Encerrado", className: "bg-muted text-muted-foreground border-border" },
@@ -204,7 +204,7 @@ function WorkspaceSupportPage() {
   }, [tickets, activeTab, categoryFilter, searchQuery]);
 
   return (
-    <div className="flex flex-col gap-4 min-h-96 max-w-7xl mx-auto px-0 sm:px-4 md:px-0 w-full">
+    <div className="flex flex-col gap-4 min-h-96 w-full px-0 sm:px-4 md:px-0 w-full">
       {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -369,7 +369,7 @@ function WorkspaceSupportPage() {
               label: "Erro no Sistema",
               value: tickets.filter((t) => t.category === "system_bug").length,
               total: Math.max(tickets.length, 1),
-              color: "bg-amber-500",
+              color: "bg-warning",
             },
             {
               label: "Integrações",
@@ -585,7 +585,7 @@ function WorkspaceSupportPage() {
                   {activeTicket.sla_due_at && (
                     <>
                       <span>•</span>
-                      <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                      <span className="text-warning-strong  font-semibold">
                         SLA: {new Date(activeTicket.sla_due_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </>

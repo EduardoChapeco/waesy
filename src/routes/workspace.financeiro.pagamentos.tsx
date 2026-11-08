@@ -196,7 +196,7 @@ function AdminPaymentsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
         eyebrow="Financeiro"
         title="Pagamentos"
@@ -231,10 +231,10 @@ function AdminPaymentsPage() {
 
         <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <Clock className="size-3.5 text-amber-500" />
+            <Clock className="size-3.5 text-warning-strong" />
             Aguardando Pagamento
           </span>
-          <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+          <div className="text-2xl font-mono font-bold text-warning-strong ">
             {formatMoney(kpis.totalPendingCents)}
           </div>
           <p className="text-xs text-muted-foreground font-mono">
@@ -281,7 +281,7 @@ function AdminPaymentsPage() {
           />
         </div>
 
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 self-start sm:self-auto overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 self-start sm:self-auto overflow-x-auto scroll-area-carousel no-scrollbar">
           <button
             type="button"
             onClick={() => setStatusFilter("all")}
@@ -376,7 +376,7 @@ function AdminPaymentsPage() {
                     </TableCell>
                     <TableCell>
                       {p.status === "awaiting_payment" ? (
-                        <Badge variant="outline" className="text-amber-600 border-amber-500/30 bg-amber-500/10 text-xs font-bold">
+                        <Badge variant="outline" className="text-warning-strong border-warning/30 bg-warning/10 text-xs font-bold">
                           Aguardando Pagamento
                         </Badge>
                       ) : p.status === "payment_processing" ? (
@@ -396,7 +396,7 @@ function AdminPaymentsPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => setRejectModal({ isOpen: true, order: p })}
-                            className="h-8 rounded-lg text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 cursor-pointer"
+                            className="h-8 rounded-lg text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 cursor-pointer min-h-11 sm:min-h-0"
                           >
                             <XCircle className="size-3.5 mr-1" />
                             Recusar
@@ -404,14 +404,14 @@ function AdminPaymentsPage() {
                           <Button
                             size="sm"
                             onClick={() => setApproveModal({ isOpen: true, order: p })}
-                            className="h-8 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                            className="h-8 rounded-lg text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer min-h-11 sm:min-h-0"
                           >
                             <CheckCircle2 className="size-3.5 mr-1" />
                             Aprovar
                           </Button>
                         </div>
                       ) : (
-                        <Button variant="ghost" size="sm" asChild className="h-8 rounded-lg text-xs font-bold">
+                        <Button variant="ghost" size="sm" asChild className="h-8 rounded-lg text-xs font-bold min-h-11 sm:min-h-0">
                           <Link to="/workspace/pedidos/$id" params={{ id: p.id }}>
                             Ver Pedido
                           </Link>
@@ -495,7 +495,7 @@ function AdminPaymentsPage() {
                 </SelectItem>
                 <SelectItem value="cash">
                   <div className="flex items-center gap-2">
-                    <Banknote className="size-4 text-amber-600" />
+                    <Banknote className="size-4 text-warning-strong" />
                     <span>Dinheiro em Espécie</span>
                   </div>
                 </SelectItem>

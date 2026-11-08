@@ -21,7 +21,7 @@ type PrepStation = "all" | "chapa" | "forno" | "bebidas" | "sobremesas";
 
 const STATIONS: Array<{ id: PrepStation; label: string; icon: any; color: string }> = [
  { id: "all", label: "Todas", icon: Utensils, color: "text-foreground" },
- { id: "chapa", label: "Chapa", icon: Thermometer, color: "text-amber-600 dark:text-amber-400" },
+ { id: "chapa", label: "Chapa", icon: Thermometer, color: "text-warning-strong " },
  { id: "forno", label: "Forno", icon: Flame, color: "text-destructive" },
  { id: "bebidas", label: "Bebidas", icon: Beer, color: "text-primary" },
  { id: "sobremesas", label: "Sobremesas", icon: CakeSlice, color: "text-accent-foreground" },
@@ -270,7 +270,7 @@ function KDSDashboard() {
  toolDescription="O painel KDS (Kitchen Display System) com tempos de cocção, alertas sonoros e divisão por estações de cozinha é desenhado especificamente para restaurantes e gastronomia."
  store={store}
  >
- <div className="flex flex-col h-[calc(100dvh-4rem)] max-w-full overflow-hidden bg-muted/15 text-foreground font-sans">
+ <div className="flex flex-col flex-1 h-full max-w-full overflow-hidden bg-muted/15 text-foreground font-sans">
  {/* ── Topbar da Cozinha ── */}
  <header className="flex flex-col gap-2 px-4 sm:px-6 pt-3 pb-2 bg-card border-b border-border/80 shrink-0">
  {/* Linha 1: Identidade + Ações */}
@@ -398,13 +398,13 @@ function KDSDashboard() {
  </header>
 
  {/* ── Kanban Board de Produção ── */}
- <main className="flex-1 overflow-x-auto no-scrollbar overflow-y-hidden p-4 md:p-6">
- <div className="flex gap-4 md:gap-6 h-full items-start min-w-[1080px]">
+ <main className="flex-1 overflow-x-auto scroll-area-carousel no-scrollbar overflow-y-hidden p-4 md:p-6">
+ <div className="flex gap-4 md:gap-6 h-full items-start min-w-270">
  <KitchenColumn
  title="Recebidos (Fila)"
  count={colPending.length}
  icon={UtensilsCrossed}
- headerClass="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+ headerClass="bg-warning/10 text-warning-strong  border-warning/30"
  orders={colPending}
  onAction={moveOrder}
  actionLabel="Iniciar Preparo"
@@ -618,17 +618,17 @@ function KitchenColumn({
  stationFilter,
 }: any) {
  return (
- <div className="flex flex-col w-[380px] shrink-0 h-full max-h-full rounded-lg border border-border/80 bg-card overflow-hidden shadow-xs">
- <div className={cn("p-4 border-b flex items-center justify-between shrink-0 font-bold", headerClass)}>
+ <div className="flex flex-col w-95 shrink-0 min-h-144 h-full max-h-full rounded-2xl bg-muted/50 dark:bg-muted/30 overflow-hidden">
+ <div className={cn("p-4 flex items-center justify-between shrink-0 font-bold", headerClass)}>
  <h2 className="text-sm flex items-center gap-2 font-bold">
  <Icon className="size-4" /> {title}
  </h2>
- <Badge variant="secondary" className="text-xs font-mono px-2 py-1 font-bold">
+ <Badge variant="secondary" className="text-xs font-mono px-2 py-1 font-bold bg-card">
  {count}
  </Badge>
  </div>
 
- <div className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-3">
+ <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-3 space-y-3">
  {orders.map((o: any) => (
  <KitchenTicketCard
  key={o.id}
@@ -644,7 +644,7 @@ function KitchenColumn({
  />
  ))}
  {orders.length === 0 && (
- <div className="h-40 flex flex-col items-center justify-center text-muted-foreground opacity-50 border border-dashed border-border/60 rounded-lg m-2">
+ <div className="h-40 flex flex-col items-center justify-center text-muted-foreground bg-card rounded-xl m-1">
  <AlertCircle className="size-7 mb-2" />
  <p className="text-xs font-medium">Nenhum pedido nesta etapa</p>
  </div>
@@ -679,29 +679,22 @@ function KitchenTicketCard({
  ? "Delivery"
  : "Balcão";
 
- // Classe de urgência para o card inteiro
- const cardUrgencyClass = {
- normal: "border-border/80",
- warning: "border-amber-500/70 ring-1 ring-amber-500/20",
- critical: "border-destructive ring-2 ring-destructive/30",
- }[urgency];
-
  // Classe do header do ticket
  const headerUrgencyClass = {
- normal: "bg-slate-900 dark:bg-slate-800",
- warning: "bg-amber-600",
- critical: "bg-destructive animate-pulse motion-reduce:animate-none",
+ normal: "bg-muted text-foreground",
+ warning: "bg-warning text-foreground",
+ critical: "bg-destructive text-destructive-foreground animate-pulse motion-reduce:animate-none",
  }[urgency];
 
  return (
- <div className={cn("rounded-lg border bg-card overflow-hidden flex flex-col transition-colors duration-200 shadow-2xs", cardUrgencyClass)}>
+ <div className="rounded-2xl bg-card overflow-hidden flex flex-col transition-colors duration-200">
  {/* Topo do Ticket */}
- <div className={cn("p-3 text-foreground flex justify-between items-center", headerUrgencyClass)}>
+ <div className={cn("p-3 flex justify-between items-center", headerUrgencyClass)}>
  <div className="flex items-center gap-2">
  <span className="font-black text-xl font-mono">#{ticketNumber}</span>
  <Badge
  variant="outline"
- className="text-xs uppercase font-mono font-bold bg-card/10 text-foreground border-white/20"
+ className="text-xs uppercase font-mono font-bold bg-card text-foreground"
  >
  {originLabel}
  </Badge>
@@ -712,7 +705,7 @@ function KitchenTicketCard({
  type="button"
  onClick={(e) => { e.stopPropagation(); onPrint(); }}
  title="Imprimir comanda térmica"
- className="size-10 sm:size-8 rounded-lg bg-card/15 hover:bg-card/30 flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-10 sm:size-8 rounded-lg bg-card hover:bg-card/30 flex items-center justify-center text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  >
  <Printer className="size-4" />
  </button>
@@ -736,7 +729,7 @@ function KitchenTicketCard({
  <div
  className={cn(
  "h-full transition-colors duration-200",
- urgency === "critical" ? "bg-destructive" : urgency === "warning" ? "bg-amber-500" : "bg-emerald-500",
+ urgency === "critical" ? "bg-destructive" : urgency === "warning" ? "bg-warning" : "bg-emerald-500",
  )}
  style={{
  width: urgency === "critical" ? "100%" : urgency === "warning" ? "65%" : `${Math.min((waitMinutes / 8) * 40, 40)}%`,
@@ -813,7 +806,7 @@ function KitchenTicketCard({
  return (
  <span
  key={oIdx}
- className="text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-2 py-1 rounded-md"
+ className="text-xs font-bold bg-warning/15 text-warning-strong  border border-warning/30 px-2 py-1 rounded-md"
  >
  + {label}
  </span>

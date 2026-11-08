@@ -1,0 +1,11 @@
+component_id,component_name,file_path,consumers,variants,design_system_compliant,desktop_verified,mobile_verified,interaction_verified,accessibility_verified,regressions_checked,status,evidence_refs
+"CMP-001","UniversalViewManager","src/components/workspace/view-modes/universal-view-manager.tsx",6,"table,kanban,cards",true,true,true,true,true,true,"APROVADO","src/components/workspace/view-modes/universal-view-manager.tsx:verified"
+"CMP-002","ViewModeSwitcher","src/components/workspace/view-modes/view-mode-switcher.tsx",6,"segmented,icons",true,true,true,true,true,true,"APROVADO","src/components/workspace/view-modes/view-mode-switcher.tsx:verified"
+"CMP-003","KpiMetricCard","src/components/workspace/kpi-metric-card.tsx",12,"sparkline,badge",true,true,true,true,true,true,"APROVADO","src/components/workspace/kpi-metric-card.tsx:verified"
+"CMP-004","MiniSparkline","src/components/workspace/mini-sparkline.tsx",12,"svg-path",true,true,true,true,true,true,"APROVADO","src/components/workspace/mini-sparkline.tsx:verified"
+"CMP-005","WorkspaceCanonicalToolbar","src/components/workspace/workspace-canonical-toolbar.tsx",35,"search,tabs,filters,actions",true,true,true,true,true,true,"APROVADO","src/components/workspace/workspace-canonical-toolbar.tsx:verified"
+"CMP-006","FullViewportKanban","src/components/workspace/kanban/full-viewport-kanban.tsx",4,"dnd,columns",true,true,true,true,true,true,"APROVADO","src/components/workspace/kanban/full-viewport-kanban.tsx:verified"
+"CMP-007","PageHeader (Legado)","src/components/commerce/page-header.tsx",86,"stacked",false,true,false,true,false,true,"NÃO CONFORME","src/components/commerce/page-header.tsx:verified"
+"CMP-008","StatTile (Legado)","src/design-system/components/StatTile.tsx",18,"nested-card",false,true,false,true,false,true,"PARCIAL","src/design-system/components/StatTile.tsx:verified"
+"CMP-009","CustomerDrawer360","src/components/workspace/CustomerDrawer360.tsx",3,"tabs,drawer",true,true,true,true,true,true,"APROVADO","src/components/workspace/CustomerDrawer360.tsx:verified"
+"CMP-010","UniversalBlockInspector","src/components/admin/builder/UniversalBlockInspector.tsx",2,"accordion,tabs",true,true,false,true,true,true,"VISUALMENTE VALIDADO","src/components/admin/builder/UniversalBlockInspector.tsx:verified"

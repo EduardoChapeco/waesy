@@ -51,7 +51,7 @@ export function BookingDetailDesktop({
         {/* Coluna Esquerda (7 cols): Imagem, Título, Detalhes, Especificações */}
         <div className="col-span-7 space-y-6">
           {/* Banner Principal */}
-          <div className="aspect-[16/9] w-full rounded-lg overflow-hidden bg-muted relative border border-border/60 ">
+          <div className="aspect-16/9 w-full rounded-lg overflow-hidden bg-muted relative border border-border/60 ">
             {service.image_url ? (
               <img
                 src={service.image_url}
@@ -89,7 +89,7 @@ export function BookingDetailDesktop({
               Profissional Certificado
             </span>
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
-              <Star size={14} weight="bold" className="text-amber-500" />
+              <Star size={14} weight="bold" className="text-warning-strong" />
               Biossegurança 100%
             </span>
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 border border-border/40 text-2xs font-semibold text-muted-foreground">
@@ -187,7 +187,7 @@ export function BookingDetailDesktop({
               </div>
 
               {store.slug && (
-                <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-bold h-9">
+                <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0">
                   <Link to="/loja/$slug" params={{ slug: store.slug }}>
                     <span>Conhecer o Espaço Completo</span>
                     <CaretRight size={14} className="ml-1" />
@@ -200,7 +200,7 @@ export function BookingDetailDesktop({
 
         {/* Coluna Direita (5 cols Sticky): Card de Preço & Agendamento */}
         <div className="col-span-5 space-y-5 sticky top-24">
-          <div className="p-6 rounded-lg border border-border/80 bg-card space-y-6 shadow-sm">
+          <div className="p-6 rounded-lg border border-border/80 bg-card space-y-6 ">
             {/* Preço */}
             <div className="space-y-1">
               <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block font-bold">
@@ -214,7 +214,7 @@ export function BookingDetailDesktop({
             {/* Botão Primário */}
             <Button
               onClick={onStartBooking}
-              className="w-full h-12 rounded-lg font-bold text-sm bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm hover:bg-primary/90"
+              className="w-full h-12 rounded-lg font-bold text-sm bg-primary text-primary-foreground gap-2 cursor-pointer  hover:bg-primary/90"
             >
               <CalendarDots size={18} weight="bold" />
               <span>Agendar Horário</span>
