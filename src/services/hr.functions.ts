@@ -1025,3 +1025,424 @@ export const analyzeLaborCompliance = createServerFn({ method: "GET" })
       scannedAt: now.toISOString(),
     };
   });
+
+
+export interface StoreEmployeeDTO {
+  id: string;
+  store_id: string;
+  profile_id?: string | null;
+  full_name: string;
+  cpf_masked?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  job_title: string;
+  employment_type: "clt" | "pj" | "internship" | "apprentice" | "temporary" | "freelancer";
+  status: "active" | "on_leave" | "vacation" | "terminated" | "suspended";
+  base_salary_cents: number;
+  hire_date: string;
+  work_schedule?: Record<string, any>;
+  metadata?: {
+    dependentsCount?: number;
+    monthlyHoursDivisor?: number;
+    transportVoucherCostCents?: number;
+    mealVoucherCopayCents?: number;
+    healthPlanCopayCents?: number;
+    pisPasep?: string;
+    cboCode?: string;
+    departmentName?: string;
+    pixKey?: string;
+    asoValidUntil?: string;
+  };
+  balanceCents?: number;
+}
+
+export const listStoreEmployees = createServerFn({ method: "GET" }).handler(
+  async (): Promise<StoreEmployeeDTO[]> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+
+    // 1. Carregar colaboradores cadastrados na tabela employees
+    const { data: dbEmployees, error: empErr } = await supabase
+      .from("employees")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .order("full_name", { ascending: true });
+
+    if (empErr) {
+      console.warn("[hr.functions] listStoreEmployees error:", empErr.message);
+    }
+
+    const employeesList: StoreEmployeeDTO[] = (dbEmployees || []).map((e: any) => ({
+      id: e.id,
+      store_id: e.store_id,
+      profile_id: e.profile_id,
+      full_name: e.full_name,
+      cpf_masked: e.cpf_masked,
+      email: e.email,
+      phone: e.phone,
+      job_title: e.job_title,
+      employment_type: e.employment_type || "clt",
+      status: e.status || "active",
+      base_salary_cents: e.base_salary_cents || 0,
+      hire_date: e.hire_date || new Date().toISOString().split("T")[0],
+      work_schedule: e.work_schedule || {},
+      metadata: e.metadata || {},
+    }));
+
+    // 2. Sincronização resiliente: carregar workspace_members e mesclar quem ainda não tiver ficha
+    const { data: members } = await supabase
+      .from("workspace_members")
+      .select("profile_id, role, profiles(full_name, email)")
+      .eq("store_id", identity.store_id);
+
+    if (members && members.length > 0) {
+      for (const m of members) {
+        const alreadyExists = employeesList.some(
+          (e) => e.profile_id === m.profile_id || (m.profile_id && e.id === m.profile_id),
+        );
+        if (!alreadyExists) {
+          const profile = m.profiles as any;
+          employeesList.push({
+            id: m.profile_id,
+            store_id: identity.store_id,
+            profile_id: m.profile_id,
+            full_name: profile?.full_name || "Membro de Equipe",
+            email: profile?.email || null,
+            job_title: m.role || "Colaborador",
+            employment_type: "clt",
+            status: "active",
+            base_salary_cents: 0,
+            hire_date: new Date().toISOString().split("T")[0],
+            metadata: {},
+          });
+        }
+      }
+    }
+
+    return employeesList;
+  },
+);
+
+export const upsertStoreEmployee = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      profileId: z.string().uuid().optional(),
+      fullName: z.string().min(2, "Nome obrigatório"),
+      cpfMasked: z.string().optional(),
+      email: z.string().email().optional().or(z.literal("")),
+      phone: z.string().optional(),
+      jobTitle: z.string().min(2, "Cargo obrigatório"),
+      employmentType: z
+        .enum(["clt", "pj", "internship", "apprentice", "temporary", "freelancer"])
+        .default("clt"),
+      status: z.enum(["active", "on_leave", "vacation", "terminated", "suspended"]).default("active"),
+      baseSalaryCents: z.number().int().min(0).default(0),
+      hireDate: z.string().optional(),
+      workSchedule: z.record(z.any()).optional(),
+      metadata: z.record(z.any()).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "finance"]);
+
+    const payload: Record<string, any> = {
+      store_id: identity.store_id,
+      full_name: data.fullName,
+      cpf_masked: data.cpfMasked || null,
+      email: data.email || null,
+      phone: data.phone || null,
+      job_title: data.jobTitle,
+      employment_type: data.employmentType,
+      status: data.status,
+      base_salary_cents: data.baseSalaryCents,
+      hire_date: data.hireDate || new Date().toISOString().split("T")[0],
+      work_schedule: data.workSchedule || { weekly_hours: 44, daily_hours: 8.8 },
+      metadata: data.metadata || {},
+    };
+
+    if (data.profileId) {
+      payload.profile_id = data.profileId;
+    }
+
+    let savedEmployee;
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("employees")
+        .update(payload)
+        .eq("id", data.id)
+        .eq("store_id", identity.store_id)
+        .select()
+        .single();
+
+      if (error) throw new Error("Erro ao atualizar colaborador: " + error.message);
+      savedEmployee = updated;
+    } else {
+      const { data: inserted, error } = await supabase
+        .from("employees")
+        .insert(payload)
+        .select()
+        .single();
+
+      if (error) throw new Error("Erro ao cadastrar colaborador: " + error.message);
+      savedEmployee = inserted;
+    }
+
+    return { status: "success", employee: savedEmployee };
+  });
+
+export const closePayrollAndPostToPayables = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      referencePeriod: z.string().regex(/^[0-9]{4}-[0-9]{2}$/, "Formato deve ser YYYY-MM"),
+      paymentDate: z.string().optional(),
+      payslips: z.array(
+        z.object({
+          employeeId: z.string().uuid(),
+          grossSalaryCents: z.number().int().min(0),
+          netSalaryCents: z.number().int().min(0),
+          inssDiscountCents: z.number().int().min(0).default(0),
+          irrfDiscountCents: z.number().int().min(0).default(0),
+          fgtsProvisionCents: z.number().int().min(0).default(0),
+          transportVoucherDiscountCents: z.number().int().min(0).default(0),
+          mealVoucherDiscountCents: z.number().int().min(0).default(0),
+          otherDiscountsCents: z.number().int().min(0).default(0),
+          bonusAdditionsCents: z.number().int().min(0).default(0),
+          overtimePayCents: z.number().int().min(0).default(0),
+          salaryBreakdown: z.array(z.any()).default([]),
+        }),
+      ),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "finance"]);
+
+    let totalGrossCents = 0;
+    let totalNetCents = 0;
+    let totalINSSCents = 0;
+    let totalFGTSCents = 0;
+
+    // 1. Gravar/Emitir todos os holerites da competência
+    for (const item of data.payslips) {
+      totalGrossCents += item.grossSalaryCents;
+      totalNetCents += item.netSalaryCents;
+      totalINSSCents += item.inssDiscountCents;
+      totalFGTSCents += item.fgtsProvisionCents;
+
+      await supabase.from("employee_payslips").upsert(
+        {
+          store_id: identity.store_id,
+          employee_id: item.employeeId,
+          reference_period: data.referencePeriod,
+          gross_salary_cents: item.grossSalaryCents,
+          net_salary_cents: item.netSalaryCents,
+          inss_discount_cents: item.inssDiscountCents,
+          irrf_discount_cents: item.irrfDiscountCents,
+          fgts_provision_cents: item.fgtsProvisionCents,
+          transport_voucher_discount_cents: item.transportVoucherDiscountCents,
+          meal_voucher_discount_cents: item.mealVoucherDiscountCents,
+          other_discounts_cents: item.otherDiscountsCents,
+          bonus_additions_cents: item.bonusAdditionsCents,
+          overtime_pay_cents: item.overtimePayCents,
+          salary_breakdown: item.salaryBreakdown,
+          payment_date: data.paymentDate || new Date().toISOString().split("T")[0],
+          status: "issued",
+        },
+        { onConflict: "employee_id, reference_period" },
+      );
+    }
+
+    // 2. Bilateralidade com Financeiro: Criar despesa de Folha em financial_transactions
+    if (totalNetCents > 0) {
+      const today = new Date().toISOString().split("T")[0];
+      const desc = `Folha de Pagamento - Competência ${data.referencePeriod} (${data.payslips.length} colaboradores)`;
+
+      await supabase.from("financial_transactions").insert({
+        store_id: identity.store_id,
+        type: "expense",
+        amount_cents: -totalNetCents,
+        category: "folha_pagamento",
+        description: desc,
+        reference_date: data.paymentDate || today,
+        created_by: identity.id,
+      });
+    }
+
+    return {
+      status: "success",
+      referencePeriod: data.referencePeriod,
+      totalNetCents,
+      totalGrossCents,
+      totalINSSCents,
+      totalFGTSCents,
+      count: data.payslips.length,
+    };
+  });
+
+export const upsertEmployeeDossier = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      employeeId: z.string().uuid(),
+      medicalExams: z.array(
+        z.object({
+          id: z.string().optional(),
+          type: z.enum(["admissional", "periodico", "demissional", "retorno_ao_trabalho", "mudanca_funcao"]),
+          examDate: z.string(),
+          validUntil: z.string(),
+          clinicName: z.string().optional(),
+          doctorCrm: z.string().optional(),
+          status: z.enum(["apt", "inapt", "apt_with_restrictions"]).default("apt"),
+          documentUrl: z.string().optional(),
+        })
+      ).optional(),
+      documents: z.array(
+        z.object({
+          id: z.string().optional(),
+          category: z.enum(["rg_cpf", "ctps", "residence", "contract", "medical_leave", "aso", "other"]),
+          title: z.string(),
+          fileUrl: z.string(),
+          uploadedAt: z.string().optional(),
+          notes: z.string().optional(),
+        })
+      ).optional(),
+      defaultBenefits: z.object({
+        vtEnabled: z.boolean().default(false),
+        vtMonthlyCents: z.number().int().min(0).default(0),
+        vrEnabled: z.boolean().default(false),
+        vrDailyCents: z.number().int().min(0).default(0),
+        healthPlanEnabled: z.boolean().default(false),
+        healthPlanCents: z.number().int().min(0).default(0),
+        otherDiscountsCents: z.number().int().min(0).default(0),
+      }).optional(),
+      posPermissions: z.object({
+        canOpenDrawer: z.boolean().default(true),
+        canVoidItemWithoutPin: z.boolean().default(false),
+        canGiveDiscountWithoutPin: z.boolean().default(false),
+        maxDiscountPct: z.number().default(5),
+        canRefund: z.boolean().default(false),
+        canSangriaSuprimento: z.boolean().default(false),
+      }).optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "finance", "manager"]);
+
+    const { data: emp, error: getErr } = await supabase
+      .from("employees")
+      .select("id, metadata")
+      .eq("id", data.employeeId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    if (getErr || !emp) throw new Error("Colaborador não encontrado.");
+
+    const currentMeta = (emp.metadata || {}) as Record<string, any>;
+    const updatedMeta = {
+      ...currentMeta,
+      ...(data.medicalExams !== undefined ? { medical_exams: data.medicalExams } : {}),
+      ...(data.documents !== undefined ? { documents: data.documents } : {}),
+      ...(data.defaultBenefits !== undefined ? { default_benefits: data.defaultBenefits } : {}),
+      ...(data.posPermissions !== undefined ? { pos_permissions: data.posPermissions } : {}),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error: updateErr } = await supabase
+      .from("employees")
+      .update({
+        metadata: updatedMeta,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.employeeId)
+      .eq("store_id", identity.store_id);
+
+    if (updateErr) throw new Error("Erro ao atualizar prontuário: " + updateErr.message);
+
+    return { status: "success", employeeId: data.employeeId, metadata: updatedMeta };
+  });
+
+export const batchUpdateDepartmentBenefits = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      departmentId: z.string().optional(),
+      departmentName: z.string().optional(),
+      benefits: z.object({
+        vtEnabled: z.boolean().optional(),
+        vtMonthlyCents: z.number().int().min(0).optional(),
+        vrEnabled: z.boolean().optional(),
+        vrDailyCents: z.number().int().min(0).optional(),
+        healthPlanEnabled: z.boolean().optional(),
+        healthPlanCents: z.number().int().min(0).optional(),
+      }),
+      salaryAdjustmentPercent: z.number().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "finance"]);
+
+    let query = supabase
+      .from("employees")
+      .select("id, base_salary_cents, metadata")
+      .eq("store_id", identity.store_id)
+      .eq("status", "active");
+
+    if (data.departmentId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.departmentId)) {
+      query = query.eq("department_id", data.departmentId);
+    }
+
+    const { data: emps, error: listErr } = await query;
+
+    if (listErr) throw new Error("Erro ao listar colaboradores do setor: " + listErr.message);
+
+    const targetDept = data.departmentName?.toLowerCase();
+    const candidateEmps = targetDept
+      ? (emps || []).filter((e: any) => (e.metadata?.departmentName || "Operações").toLowerCase() === targetDept)
+      : (emps || []);
+
+    if (candidateEmps.length === 0) return { status: "success", updatedCount: 0 };
+
+    let count = 0;
+    for (const emp of candidateEmps) {
+      const meta = (emp.metadata || {}) as Record<string, any>;
+      const existingBenefits = meta.default_benefits || {};
+      const updatedBenefits = {
+        ...existingBenefits,
+        ...(data.benefits.vtEnabled !== undefined ? { vtEnabled: data.benefits.vtEnabled } : {}),
+        ...(data.benefits.vtMonthlyCents !== undefined ? { vtMonthlyCents: data.benefits.vtMonthlyCents } : {}),
+        ...(data.benefits.vrEnabled !== undefined ? { vrEnabled: data.benefits.vrEnabled } : {}),
+        ...(data.benefits.vrDailyCents !== undefined ? { vrDailyCents: data.benefits.vrDailyCents } : {}),
+        ...(data.benefits.healthPlanEnabled !== undefined ? { healthPlanEnabled: data.benefits.healthPlanEnabled } : {}),
+        ...(data.benefits.healthPlanCents !== undefined ? { healthPlanCents: data.benefits.healthPlanCents } : {}),
+      };
+
+      let newBaseSalary = emp.base_salary_cents;
+      if (data.salaryAdjustmentPercent && data.salaryAdjustmentPercent !== 0) {
+        newBaseSalary = Math.round(emp.base_salary_cents * (1 + data.salaryAdjustmentPercent / 100));
+      }
+
+      await supabase
+        .from("employees")
+        .update({
+          base_salary_cents: newBaseSalary,
+          metadata: {
+            ...meta,
+            default_benefits: updatedBenefits,
+            last_batch_update: new Date().toISOString(),
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", emp.id);
+
+      count++;
+    }
+
+    return { status: "success", updatedCount: count };
+  });

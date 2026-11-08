@@ -2593,3 +2593,58 @@ export const batchCreateCatalogMenu = createServerFn({ method: "POST" })
 
 
 
+
+
+export const listStoreBrands = createServerFn({ method: "GET" })
+  .validator((input?: { store_id?: string | null }) => input || {})
+  .handler(async ({ data: input }) => {
+    try {
+      const identity = await getServerIdentity();
+      const targetStoreId = input?.store_id || identity.store_id || identity.memberships?.[0]?.store_id;
+      if (!targetStoreId) return [];
+      assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
+
+      const db = getServerClient();
+      const { data, error } = await db
+        .from("products")
+        .select("brand")
+        .eq("store_id", targetStoreId)
+        .not("brand", "is", null);
+
+      if (error) throw error;
+      const set = new Set<string>();
+      (data || []).forEach((row: { brand?: string | null }) => {
+        if (row.brand && row.brand.trim()) {
+          set.add(row.brand.trim());
+        }
+      });
+      return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+    } catch (e) {
+      console.error("[admin-catalog] listStoreBrands error:", e);
+      return [];
+    }
+  });
+
+export const createStoreBrand = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      name: z.string().min(1).max(120),
+      store_id: z.string().uuid().optional().nullable(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    try {
+      await requireAdmin();
+      const identity = await getServerIdentity();
+      const targetStoreId = await resolveStoreIdWithFallback(identity, input.store_id);
+      assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
+
+      const cleanName = input.name.trim();
+      return { name: cleanName, store_id: targetStoreId };
+    } catch (e: unknown) {
+      console.error("[admin-catalog] createStoreBrand error:", e);
+      throw new Error(
+        e instanceof Error ? e.message : "Erro ao cadastrar marca.",
+      );
+    }
+  });
