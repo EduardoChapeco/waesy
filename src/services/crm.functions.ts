@@ -693,17 +693,25 @@ export const createCustomerSchema = z.object({
  legalName: z.string().optional().nullable(),
  document: z.string().optional().nullable(),
  rg: z.string().optional().nullable(),
+ gender: z.string().optional().nullable(),
+ occupation: z.string().optional().nullable(),
  email: z.string().email("E-mail inválido").optional().or(z.literal("")).nullable(),
  phone: z.string().optional().nullable(),
  birthDate: z.string().optional().nullable(),
  status: z.enum(["active", "inactive", "blocked"]).default("active"),
  channel: z.string().default("direct"),
+ referralSource: z.string().optional().nullable(),
  city: z.string().optional().nullable(),
  state: z.string().optional().nullable(),
  zipcode: z.string().optional().nullable(),
  addressLine: z.string().optional().nullable(),
  creditLimitCents: z.number().int().nonnegative().default(0),
  assignedTo: z.string().uuid().optional().nullable(),
+ emergencyContactName: z.string().optional().nullable(),
+ emergencyContactPhone: z.string().optional().nullable(),
+ lgpdAccepted: z.boolean().optional().default(false),
+ allergies: z.string().optional().nullable(),
+ healthNotes: z.string().optional().nullable(),
  tags: z.array(z.string()).optional(),
  notes: z.string().optional().nullable(),
 });
@@ -753,6 +761,15 @@ export const createCustomer = createServerFn({ method: "POST" })
  address_line: input.addressLine?.trim() || null,
  credit_limit_cents: input.creditLimitCents || 0,
  assigned_to: input.assignedTo || null,
+ emergency_contact_name: input.emergencyContactName?.trim() || null,
+ emergency_contact_phone: input.emergencyContactPhone?.trim() || null,
+ lgpd_accepted: input.lgpdAccepted ?? false,
+ custom_fields: {
+ gender: input.gender || null,
+ occupation: input.occupation || null,
+ referral_source: input.referralSource || null,
+ allergies: input.allergies || null,
+ },
  tags: input.tags || [],
  notes: input.notes?.trim() || null,
  })
@@ -762,6 +779,26 @@ export const createCustomer = createServerFn({ method: "POST" })
  if (error) {
  console.error("[crm] error inserting customer:", error);
  throw new Error("Erro ao salvar cliente na base.");
+ }
+
+ if (input.allergies?.trim() || input.healthNotes?.trim()) {
+ try {
+ await supabase.from("crm_clinical_records").insert({
+ customer_id: inserted.id,
+ store_id: identity.store_id,
+ author_id: identity.id,
+ record_type: "anamnesis",
+ content: {
+ service_title: "Anamnese Inicial de Cadastro",
+ professional_name: (identity as any).name || "Recepção / Especialista",
+ notes: input.healthNotes?.trim() || "Cadastro inicial de anamnese",
+ allergies: input.allergies?.trim() || null,
+ },
+ attachments: [],
+ });
+ } catch (clinErr) {
+ console.warn("[crm] optional clinical record error:", clinErr);
+ }
  }
 
  return inserted;
