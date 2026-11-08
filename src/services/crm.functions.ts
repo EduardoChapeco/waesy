@@ -612,14 +612,29 @@ export const getCustomer360 = createServerFn({ method: "GET" })
   .eq("customer_id", customerId)
   .order("created_at", { ascending: false });
 
-  const clinicalRecords = (clinicalData || []).map((r: any) => ({
-  id: r.id,
-  service_title: r.content?.service_title || "Atendimento",
-  notes: r.content?.notes || "",
-  allergies: r.content?.allergies || null,
-  professional_name: r.content?.professional_name || null,
-  created_at: r.created_at,
-  }));
+  const clinicalRecords = (clinicalData || []).map((r: any) => {
+    let parsed: any = {};
+    if (typeof r.content === "string") {
+      try {
+        parsed = JSON.parse(r.content);
+      } catch {
+        parsed = { notes: r.content };
+      }
+    } else if (r.content && typeof r.content === "object") {
+      parsed = r.content;
+    }
+    return {
+      id: r.id,
+      service_title: parsed.service_title || "Atendimento",
+      notes: parsed.notes || (typeof r.content === "string" ? r.content : ""),
+      allergies: parsed.allergies || null,
+      medical_history: parsed.medical_history || null,
+      emergency_contact: parsed.emergency_contact || null,
+      preferred_professional: parsed.preferred_professional || null,
+      professional_name: parsed.professional_name || null,
+      created_at: r.created_at,
+    };
+  });
 
   return {
   profile: {

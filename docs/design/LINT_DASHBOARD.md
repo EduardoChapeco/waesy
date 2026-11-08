@@ -1,6 +1,6 @@
 # LINT_DASHBOARD.md — Painel Canônico de Saúde Visual e Catraca
 
-> Gerado automaticamente pelo Design Lint V2 em: `2026-11-08T11:57:04.949Z`
+> Gerado automaticamente pelo Design Lint V2 em: `2026-11-08T12:03:55.045Z`
 
 ## 1. Resumo Executivo
 

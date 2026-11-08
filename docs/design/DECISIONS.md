@@ -8927,3 +8927,28 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - `src/services/order.functions.ts` (`closePdvComanda`): Implementada liquidação transacional atômica quádrupla: (a) marcação de pedido como pago e entregue; (b) inserção em `payments`; (c) lançamento em `cash_register_entries` quando houver caixa aberto; (d) registro em `financial_transactions` (`type = 'revenue_pos_sale'`) para apuração contábil em DRE; (e) baixa atômica de saldo em `product_variants.stock_on_hand` com histórico em `stock_movements`; (f) registro de integridade no ledger SHA-256 (`recordLedgerEntryCore`).
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.25, B.26, B.33; DL-01 a DL-33; Apple HIG (Quiet State & Minimal Contrast); Princípio Zero-Jank e Consistência Transacional ERP.
 - **Consequências:** Zero ruído neon no dark theme, consolidação de mesas em fonte única da verdade no banco, reconciliação financeira em tempo real e rastreabilidade total de consumo por cliente no CRM.
+
+---
+
+### DEC-458: Módulo Integral de Insumos, Sub-Receitas (BOM), Dedução em Adicionais/Sabores, Etiquetas Térmicas e Calibração Anti-Neon
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-458
+- **Contexto:** Atendimento integral às necessidades da gastronomia profissional onde pratos finais (pizzas, hambúrgueres, combos, marmitas, nachos) consomem insumos compartilhados (matérias-primas e sub-receitas de pré-preparo como chilli, molhos, carnes, caldos, maionese verde caseira, massa de pizza). Necessidade de vincular receitas aos adicionais/sabores (`option_values`), dedução automática de insumos ao finalizar pedidos/comandas no PDV, cálculo em tempo real de gargalo produtivo para pausar pratos esgotados, registro sanitário de desperdício (`waste_logs`), impressão térmica de etiquetas de validade (58mm/80mm) e erradicação do tom neon nos indicadores de margem e tokens de sucesso no dark mode.
+- **Decisão Adotada:**
+  1. **Modelo Relacional Supabase:**
+     - Aplicadas as migrations `20270323000000` e `20270324000000` criando as tabelas relacionais `supplies`, `recipes`, `recipe_items`, `product_recipes`, `production_orders`, `waste_logs`, `supply_inventory_movements`, `expiration_labels`, `suppliers` e adicionando colunas `supply_id`, `recipe_id`, `consume_quantity`, `consume_unit` na tabela `option_values`.
+  2. **BFF de Insumos e Dedução Transacional Idempotente:**
+     - Implementado `src/services/gastronomy-supplies.functions.ts` com gerenciamento completo de insumos, receitas, vínculos no produto e ordens de pré-preparo.
+     - Implementado o motor de gargalo `calculateProductProducibleStock` identificando o insumo limitante da produção.
+     - Criada a função `deductSuppliesForOrder` idempotente, acionada em `closePdvComanda` para baixar atômica e simultaneamente os insumos do prato principal e dos complementos/sabores selecionados, com gravação no Kardex `supply_inventory_movements`.
+     - Atualizado `src/services/order.functions.ts` para sincronizar os dados acumulados do cliente no CRM (`customers.total_spent_cents`, `customers.total_orders_count`).
+  3. **Interface e Componentes Canônicos:**
+     - `src/components/admin/catalog/product-bom-card.tsx`: Conectado ao catálogo de insumos e sub-receitas, exibindo alertas de gargalo e métricas de margem sem classes neon.
+     - `src/components/admin/catalog/quick-option-group-dialog.tsx`: Permite vincular insumos e receitas diretamente a cada opção/adicional (ex: Bacon Extra -> 2 fatias de Bacon; Chilli -> 1 porção de Molho Chilli).
+     - `src/components/kitchen/gastronomy-pantry-hub.tsx`: Hub completo com 4 abas operacionais (Insumos, Fichas & POP, Desperdício, Etiquetas de Validade).
+     - `src/components/kitchen/thermal-expiration-ticket.tsx`: Modal para etiquetas térmicas sanitárias de 58mm/80mm com QR Code de rastreabilidade.
+     - `src/routes/workspace.estoque.index.tsx`: Chaveador entre Insumos & Despensa e Produtos de Revenda (SKUs).
+  4. **Tokens e Dark Mode (Anti-Neon):**
+     - Recalibrado o token `--success` no tema escuro em `src/styles.css` de `oklch(0.68 0.18 145)` para `oklch(0.62 0.11 150)` nas classes `.dark` e `[data-theme="dark"]`, mantendo contraste WCAG AA superior a 4.5:1 com estética silenciosa e sofisticada.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.25, B.26; DL-01 a DL-33; Apple HIG; Normas ANVISA para etiquetas térmicas de fracionamento de alimentos.
+- **Consequências:** Rastreabilidade industrial completa de custos e estoque na cozinha, baixa de ingredientes por adicionais sem necessidade de cadastrar infinitos produtos individuais, automação contra quebra de estoque e interface sóbria no tema dark sem ruídos fluorescentes.
