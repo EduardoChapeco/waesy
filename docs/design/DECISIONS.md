@@ -8976,3 +8976,23 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Realizado deploy de produção no Cloudflare Pages (`usewaesy`) via Wrangler, validado HTTP 200 OK em `https://waesy.com.br`.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1 a B.11, B.22, B.23, B.25, B.26, B.33; DL-01 a DL-33; WCAG 2.2 AA.
 - **Consequências:** Governança completa de fechamento de motoboys com adiantamentos rastreáveis, proteção médica e operacional em atendimentos de beleza/saúde e integridade transacional de cardápios sem dados falsos.
+
+---
+
+### DEC-460: Unificação Sistêmica de Mesas/Comandas/Reservas, Gestor de Pedidos iFood com Despacho Avançado, BOM Multi-Nicho e Erradicação de Cores Neon
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-460
+- **Contexto:** Auditoria de usabilidade, coerência arquitetural e conformidade estética apontadas pelo usuário e evidenciadas nas telas do salão, reservas, KDS e cadastro. Tratamento cirúrgico de 4 pilares: (1) Esclarecimento e unificação conceitual entre Mesas/Comandas (operação presente no salão) e Reservas (agendamento futuro), unificados na mesma SSOT de planta física (`store_floor_plans`) com editor integrado e abertura automática de comanda com CRM ao acomodar reservas; (2) Gestor de Pedidos estilo iFood (`workspace/pedidos/gestor`) com modal de despacho avançado (Waesy Go com taxa fixa de R$ 0,99 vs Frota Própria vs Retirada no Balcão), coluna "Despacho & Retirada", reimpressão de bobina térmica de 80mm e WhatsApp; (3) Ficha Técnica Universal (BOM) e Estoque Composto estendido a todos os nichos físicos e criação da aba "Insumos & Kit de Procedimento" em Serviços (`workspace/agenda/servicos`) para salões, oficinas, pet shops e clínicas; (4) Erradicação integral de cores fluorescentes neon em dark mode.
+- **Decisão Adotada:**
+  1. **Mesas & Reservas Integradas:**
+     - Ambas as rotas (`/workspace/pdv/comandas` e `/workspace/reservas`) consomem e persistem na mesma tabela `store_floor_plans`. Ao acomodar cliente em reserva, comanda é gerada imediatamente com dados do cliente no PDV.
+  2. **Gestor de Pedidos & Despacho:**
+     - Adicionado `CourierDispatchModal` com suporte a Waesy Go (0% comissão abusiva, R$ 0,99 fixo), Entregadores da frota interna (`listDrivers`) e Retirada no Balcão, além de botões térmicos e de notificação direta ao cliente.
+  3. **BOM Universal & Serviços Compostos:**
+     - Em `src/routes/workspace.catalogo.produtos.novo.tsx`, aba Insumos desbloqueada universalmente.
+     - Em `src/routes/workspace.agenda.servicos.index.tsx` e `src/services/services-erp.functions.ts`, implementada a gestão de insumos consumidos (`service_consumed_materials`) calculando custo unitário, margem bruta real e permitindo importação de insumos do almoxarifado.
+  4. **Design Lint Ratchet e Tokens Silenciosos:**
+     - Expurgadas classes neon em favor dos tokens Apple HIG (`text-primary`, `bg-primary/10`, `text-success`).
+     - Aprovada a catraca `node scripts/design-lint.mjs --ratchet` reduzindo o débito histórico para 777 violações totais (0 P0, 749 P1).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1 a B.11, B.22, B.23, B.25, B.26; DL-01 a DL-33; Apple HIG; WCAG 2.2 AA.
+- **Consequências:** Fim da ambiguidade entre módulos de salão, transparência operacional de pedidos e motoboys, rastreabilidade de custos em serviços e produtos de qualquer nicho de mercado e interface visual silenciosa e elegante.

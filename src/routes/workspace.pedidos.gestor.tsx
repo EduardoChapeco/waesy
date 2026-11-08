@@ -1585,7 +1585,7 @@ function KDSPage() {
  </Button>
  <Button
  type="button"
- className="flex-1 h-11 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-1.5"
+ className="flex-1 h-11 rounded-lg font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-2"
  onClick={() => {
  setOrderToDispatch(selectedOrder);
  setSelectedDriverId(selectedOrder.assigned_driver_id || (drivers[0]?.id || ""));
@@ -1721,7 +1721,7 @@ function KDSPage() {
  size="sm"
  variant="outline"
  onClick={() => handleNotifyCustomerWhatsApp(ord)}
- className="h-11 min-h-11 sm:h-9 text-xs font-bold text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 rounded-lg"
+ className="h-11 min-h-11 sm:h-9 text-xs font-bold text-primary border-primary/30 hover:bg-primary/10 rounded-lg"
  >
  <MessageCircle className="size-3.5 mr-1" />
  WhatsApp
@@ -1781,7 +1781,7 @@ function KDSPage() {
  : "border-border/80 bg-muted/20 hover:bg-muted/40 text-muted-foreground"
  )}
  >
- <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+ <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
  <Bike className="size-4" />
  </div>
  <div className="flex-1 min-w-0">
@@ -1791,7 +1791,7 @@ function KDSPage() {
  R$ 0,99 taxa fixa
  </Badge>
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Chama motoboy parceiro com telemetria GPS e 0% de comissão abusiva.
  </p>
  </div>
@@ -1807,7 +1807,7 @@ function KDSPage() {
  : "border-border/80 bg-muted/20 hover:bg-muted/40 text-muted-foreground"
  )}
  >
- <div className="size-8 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center shrink-0 mt-0.5">
+ <div className="size-8 rounded-lg bg-secondary text-secondary-foreground flex items-center justify-center shrink-0 mt-1">
  <Truck className="size-4" />
  </div>
  <div className="flex-1 min-w-0">
@@ -1817,7 +1817,7 @@ function KDSPage() {
  Frota Interna
  </Badge>
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  Vincular a um dos motoboys cadastrados na sua equipe.
  </p>
  </div>
@@ -1833,7 +1833,7 @@ function KDSPage() {
  : "border-border/80 bg-muted/20 hover:bg-muted/40 text-muted-foreground"
  )}
  >
- <div className="size-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center shrink-0 mt-0.5">
+ <div className="size-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center shrink-0 mt-1">
  <UserCheck className="size-4" />
  </div>
  <div className="flex-1 min-w-0">
@@ -1843,7 +1843,7 @@ function KDSPage() {
  Salão / Takeout
  </Badge>
  </div>
- <p className="text-xs text-muted-foreground mt-0.5">
+ <p className="text-xs text-muted-foreground mt-1">
  O cliente ou garçom retira diretamente no balcão de expedição.
  </p>
  </div>

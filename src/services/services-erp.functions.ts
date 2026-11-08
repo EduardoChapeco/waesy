@@ -130,7 +130,7 @@ export const listServiceConsumedMaterials = createServerFn({ method: "GET" })
 
     const { data, error } = await supabase
       .from("service_consumed_materials")
-      .select("*, products:product_id(id, title, price_cents, stock_quantity)")
+      .select("*, products:product_id(id, title, price_cents, stock_quantity), supplies:supply_id(id, name, cost_cents_per_unit, stock_on_hand, unit)")
       .eq("store_id", identity.store_id)
       .eq("service_id", serviceId);
 
@@ -147,10 +147,12 @@ export const saveServiceConsumedMaterials = createServerFn({ method: "POST" })
       serviceId: z.string().uuid(),
       materials: z.array(
         z.object({
-          product_id: z.string().uuid(),
+          product_id: z.string().uuid().optional().nullable(),
+          supply_id: z.string().uuid().optional().nullable(),
           quantity: z.number().positive(),
           unit_measure: z.string().default("unidade"),
           tolerance_extra: z.number().nonnegative().default(0),
+          cost_cents: z.number().nonnegative().default(0),
         }),
       ),
     }),
@@ -173,10 +175,12 @@ export const saveServiceConsumedMaterials = createServerFn({ method: "POST" })
     const rows = materials.map((m) => ({
       store_id: identity.store_id,
       service_id: serviceId,
-      product_id: m.product_id,
+      product_id: m.product_id || null,
+      supply_id: m.supply_id || null,
       quantity: m.quantity,
       unit_measure: m.unit_measure,
       tolerance_extra: m.tolerance_extra,
+      cost_cents: m.cost_cents || 0,
     }));
 
     const { error } = await supabase.from("service_consumed_materials").insert(rows);

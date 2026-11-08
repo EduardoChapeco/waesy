@@ -110,7 +110,6 @@ function AdminOrdersPage() {
     }
     if (isGastro) {
       return [
-        { id: "kitchen" as ViewMode, label: "Cozinha (KDS)", icon: ChefHat },
         { id: "table" as ViewMode, label: "Tabela de Pedidos", icon: List },
       ];
     }
@@ -133,7 +132,7 @@ function AdminOrdersPage() {
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (isTourism) return "emissions";
-    if (isGastro) return "kitchen";
+    if (isGastro) return "table";
     if (isRetail) return "picking";
     if (isServices) return "service_flow";
     return "table";
@@ -273,7 +272,7 @@ function AdminOrdersPage() {
  const pageTitle = isTourism
  ? "Emissões & Vendas de Viagens"
  : isGastro
- ? "Pedidos & Cozinha"
+ ? "Histórico de Pedidos"
  : isServices
  ? "Ordens de Serviço & Atendimentos"
  : semantics.ordersLabel || "Pedidos & Vendas";
@@ -334,6 +333,31 @@ function AdminOrdersPage() {
       <span>Grade de Agendamentos</span>
      </Link>
     </Button>
+   ) : isGastro ? (
+    <div className="flex items-center gap-2">
+     <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+     >
+      <Link to="/workspace/pedidos/gestor">
+       <ChefHat className="size-3.5 text-primary" />
+       <span>Gestor em Tempo Real</span>
+      </Link>
+     </Button>
+     <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+     >
+      <Link to="/workspace/pdv">
+       <Store className="size-3.5 text-primary" />
+       <span>Frente de Caixa (PDV)</span>
+      </Link>
+     </Button>
+    </div>
    ) : (
     <Button
      asChild
