@@ -839,6 +839,8 @@ export const updateCustomerSchema = z.object({
  assignedTo: z.string().uuid().optional().nullable(),
  tags: z.array(z.string()).optional(),
  notes: z.string().optional().nullable(),
+ emergencyContactName: z.string().optional().nullable(),
+ emergencyContactPhone: z.string().optional().nullable(),
 });
 
 export const updateCustomer = createServerFn({ method: "POST" })
@@ -867,6 +869,8 @@ export const updateCustomer = createServerFn({ method: "POST" })
  if (input.assignedTo !== undefined) updatePayload.assigned_to = input.assignedTo;
  if (input.tags !== undefined) updatePayload.tags = input.tags;
  if (input.notes !== undefined) updatePayload.notes = input.notes;
+ if (input.emergencyContactName !== undefined) updatePayload.emergency_contact_name = input.emergencyContactName;
+ if (input.emergencyContactPhone !== undefined) updatePayload.emergency_contact_phone = input.emergencyContactPhone;
 
  const { error } = await supabase
  .from("customers_crm")

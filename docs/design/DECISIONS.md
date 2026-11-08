@@ -8952,3 +8952,27 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Recalibrado o token `--success` no tema escuro em `src/styles.css` de `oklch(0.68 0.18 145)` para `oklch(0.62 0.11 150)` nas classes `.dark` e `[data-theme="dark"]`, mantendo contraste WCAG AA superior a 4.5:1 com estética silenciosa e sofisticada.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.25, B.26; DL-01 a DL-33; Apple HIG; Normas ANVISA para etiquetas térmicas de fracionamento de alimentos.
 - **Consequências:** Rastreabilidade industrial completa de custos e estoque na cozinha, baixa de ingredientes por adicionais sem necessidade de cadastrar infinitos produtos individuais, automação contra quebra de estoque e interface sóbria no tema dark sem ruídos fluorescentes.
+
+---
+
+### DEC-459: Fechamento dos Gaps Operacionais de Entregadores (Rotas & Vales), Anamnese Clínica 360° Belasis e Trifurcação Gastronômica
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-459
+- **Contexto:** Auditoria forense e confronto mecânico página a página entre o arquivo `promtos.pdf` (39 páginas) e a infraestrutura real do Waesy. Atendimento integral e sem simulações dos gaps identificados: (1) Visualização de rotas ativas consolidadas e espelho de fechamento/vales por entregador (Página 3); (2) Registro, edição e persistência do dossiê clínico, comorbidades, alergias críticas, profissional de preferência e contato de emergência no Cliente 360° padrão Belasis (Página 7); (3) Trifurcação canônica no cadastro gastronômico iFood entre Prato de Cozinha, Produto Pronto/Bebida e Item Pesável/Balança (Páginas 9 a 11); (4) Migration `20270325000000` de BOM universal multi-nicho e kits de procedimento aplicada em produção.
+- **Decisão Adotada:**
+  1. **Rotas Consolidadas & Espelho de Vales (Página 3):**
+     - Em `src/routes/workspace.pedidos.entregadores.index.tsx`, integrado o loader e query com `listDispatches()`.
+     - Implementada a visualização "Rotas Ativas" agrupando pedidos e itinerários em tempo real por entregador, com status de entrega, PIN de conferência, link público de telemetria e totalização de fretes.
+     - Implementada a aba "Espelho & Vales" apurando corridas, valor bruto acumulado, dedução de vales/adiantamentos de combustível/refeição com persistência e cálculo do saldo líquido com botão para copiar fechamento formatado para WhatsApp/Pix.
+     - Adicionado modal canônico para registro de novos vales com alvos de toque >= 44px (`min-h-11`) e foco teclado `:focus-visible:ring-2`.
+  2. **Dossiê Clínico & Anamnese Belasis 360° (Página 7):**
+     - Em `src/services/crm.functions.ts`, atualizados os endpoints `addCustomerClinicalRecord`, `getCustomer360` e `updateCustomer` para serializar e desserializar com segurança campos clínicos estruturados (`medicalHistory`, `emergencyContact`, `preferredProfessional`, `allergies`) em `crm_clinical_records.content` e `customers_crm`.
+     - Em `src/routes/workspace.clientes.$id.tsx`, adicionado painel visual de destaque para contato de emergência e histórico médico, lista cronológica de procedimentos com profissional atendente e profissional de preferência, além de Sheet lateral completo para cadastramento ágil da anamnese.
+  3. **Catálogo Gastronômico Padrão iFood (Páginas 9 a 11):**
+     - Consolidada a trifurcação canônica em `src/components/admin/catalog/product-food-specs-card.tsx` e `use-product-editor.ts`: (a) Prato Preparado (KDS, tempo de preparo, serve pessoas, ficha técnica BOM); (b) Produto Pronto / Bebida (EAN-13, integração PDV, volume ml/L, temperatura ambiente/gelada); (c) Item Pesável / Balança (pesagem ao vivo, precificação kg/unidade).
+  4. **Conformidade de CI e Design Lint:**
+     - Eliminadas todas as violações em arquivos sob escopo, reduzindo o teto histórico na catraca `node scripts/design-lint.mjs --ratchet` para 749 P1 e 0 P0 (Exit Code 0).
+     - Aplicada a migration `20270325000000_universal_multi_nicho_bom_and_service_kits.sql` no PostgreSQL do Supabase SA-East-1.
+     - Realizado deploy de produção no Cloudflare Pages (`usewaesy`) via Wrangler, validado HTTP 200 OK em `https://waesy.com.br`.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1 a B.11, B.22, B.23, B.25, B.26, B.33; DL-01 a DL-33; WCAG 2.2 AA.
+- **Consequências:** Governança completa de fechamento de motoboys com adiantamentos rastreáveis, proteção médica e operacional em atendimentos de beleza/saúde e integridade transacional de cardápios sem dados falsos.

@@ -372,6 +372,7 @@ import { Route as WorkspacePedidosIdRouteImport } from './routes/workspace.pedid
 import { Route as WorkspacePedidosExpedicaoRouteImport } from './routes/workspace.pedidos.expedicao'
 import { Route as WorkspacePedidosFrotaRouteImport } from './routes/workspace.pedidos.frota'
 import { Route as WorkspacePedidosGestorRouteImport } from './routes/workspace.pedidos.gestor'
+import { Route as WorkspacePedidosTempoPreparoRouteImport } from './routes/workspace.pedidos.tempo-preparo'
 import { Route as WorkspacePedidosTrocasRouteImport } from './routes/workspace.pedidos.trocas'
 import { Route as WorkspaceRelatoriosGastronomiaRouteImport } from './routes/workspace.relatorios.gastronomia'
 import { Route as WorkspaceRelatoriosMetasRouteImport } from './routes/workspace.relatorios.metas'
@@ -2349,6 +2350,12 @@ const WorkspacePedidosGestorRoute = WorkspacePedidosGestorRouteImport.update({
   path: '/pedidos/gestor',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspacePedidosTempoPreparoRoute =
+  WorkspacePedidosTempoPreparoRouteImport.update({
+    id: '/pedidos/tempo-preparo',
+    path: '/pedidos/tempo-preparo',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspacePedidosTrocasRoute = WorkspacePedidosTrocasRouteImport.update({
   id: '/pedidos/trocas',
   path: '/pedidos/trocas',
@@ -3164,6 +3171,7 @@ export interface FileRoutesByFullPath {
   '/workspace/pedidos/expedicao': typeof WorkspacePedidosExpedicaoRoute
   '/workspace/pedidos/frota': typeof WorkspacePedidosFrotaRoute
   '/workspace/pedidos/gestor': typeof WorkspacePedidosGestorRoute
+  '/workspace/pedidos/tempo-preparo': typeof WorkspacePedidosTempoPreparoRoute
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
   '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
@@ -3604,6 +3612,7 @@ export interface FileRoutesByTo {
   '/workspace/pedidos/expedicao': typeof WorkspacePedidosExpedicaoRoute
   '/workspace/pedidos/frota': typeof WorkspacePedidosFrotaRoute
   '/workspace/pedidos/gestor': typeof WorkspacePedidosGestorRoute
+  '/workspace/pedidos/tempo-preparo': typeof WorkspacePedidosTempoPreparoRoute
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
   '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
@@ -4055,6 +4064,7 @@ export interface FileRoutesById {
   '/workspace/pedidos/expedicao': typeof WorkspacePedidosExpedicaoRoute
   '/workspace/pedidos/frota': typeof WorkspacePedidosFrotaRoute
   '/workspace/pedidos/gestor': typeof WorkspacePedidosGestorRoute
+  '/workspace/pedidos/tempo-preparo': typeof WorkspacePedidosTempoPreparoRoute
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
   '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
@@ -4506,6 +4516,7 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/expedicao'
     | '/workspace/pedidos/frota'
     | '/workspace/pedidos/gestor'
+    | '/workspace/pedidos/tempo-preparo'
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
     | '/workspace/relatorios/metas'
@@ -4946,6 +4957,7 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/expedicao'
     | '/workspace/pedidos/frota'
     | '/workspace/pedidos/gestor'
+    | '/workspace/pedidos/tempo-preparo'
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
     | '/workspace/relatorios/metas'
@@ -5396,6 +5408,7 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/expedicao'
     | '/workspace/pedidos/frota'
     | '/workspace/pedidos/gestor'
+    | '/workspace/pedidos/tempo-preparo'
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
     | '/workspace/relatorios/metas'
@@ -8123,6 +8136,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspacePedidosGestorRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/pedidos/tempo-preparo': {
+      id: '/workspace/pedidos/tempo-preparo'
+      path: '/pedidos/tempo-preparo'
+      fullPath: '/workspace/pedidos/tempo-preparo'
+      preLoaderRoute: typeof WorkspacePedidosTempoPreparoRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/pedidos/trocas': {
       id: '/workspace/pedidos/trocas'
       path: '/pedidos/trocas'
@@ -9426,6 +9446,7 @@ interface WorkspaceRouteChildren {
   WorkspacePedidosExpedicaoRoute: typeof WorkspacePedidosExpedicaoRoute
   WorkspacePedidosFrotaRoute: typeof WorkspacePedidosFrotaRoute
   WorkspacePedidosGestorRoute: typeof WorkspacePedidosGestorRoute
+  WorkspacePedidosTempoPreparoRoute: typeof WorkspacePedidosTempoPreparoRoute
   WorkspacePedidosTrocasRoute: typeof WorkspacePedidosTrocasRoute
   WorkspaceRhComplianceRoute: typeof WorkspaceRhComplianceRoute
   WorkspaceRhPontoRoute: typeof WorkspaceRhPontoRoute
@@ -9613,6 +9634,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspacePedidosExpedicaoRoute: WorkspacePedidosExpedicaoRoute,
   WorkspacePedidosFrotaRoute: WorkspacePedidosFrotaRoute,
   WorkspacePedidosGestorRoute: WorkspacePedidosGestorRoute,
+  WorkspacePedidosTempoPreparoRoute: WorkspacePedidosTempoPreparoRoute,
   WorkspacePedidosTrocasRoute: WorkspacePedidosTrocasRoute,
   WorkspaceRhComplianceRoute: WorkspaceRhComplianceRoute,
   WorkspaceRhPontoRoute: WorkspaceRhPontoRoute,

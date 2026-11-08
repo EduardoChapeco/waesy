@@ -1487,7 +1487,7 @@ function KDSPage() {
  {selectedOrder.status === "shipped" && "Finalizar (Entregue)"}
  </Button>
  ) : (
- <Badge variant="outline" className="flex-1 h-11 justify-center rounded-lg text-xs font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+ <Badge variant="outline" className="flex-1 h-11 justify-center rounded-lg text-xs font-bold text-primary border-primary/30 bg-primary/10">
   Pedido Finalizado
  </Badge>
  )}

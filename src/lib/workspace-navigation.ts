@@ -98,18 +98,19 @@ const GROUP_GASTRO_CATALOG: NavGroup = {
 
 const GROUP_GASTRO_ORDERS: NavGroup = {
   id: "gastro-orders",
-  label: "Pedidos",
+  label: "Pedidos & Cozinha",
   icon: ClipboardList,
   section: "niche",
   items: [
-    { path: "/workspace/pedidos/gestor", label: "Gestor KDS", icon: ClipboardList },
+    { path: "/workspace/pedidos/gestor", label: "Gestor de Pedidos", icon: ClipboardList },
     { path: "/workspace/pdv/comandas", label: "Mesas", icon: UtensilsCrossed },
-    { path: "/workspace/pdv/cozinha", label: "Cozinha", icon: ChefHat },
-    { path: "/workspace/relatorios/gastronomia", label: "Tempo de Preparo", icon: Clock },
+    { path: "/workspace/pdv/cozinha", label: "KDS da Cozinha", icon: ChefHat },
+    { path: "/workspace/pedidos/tempo-preparo", label: "Tempo de Preparo", icon: Clock },
     { path: "/workspace/reservas", label: "Reservas", icon: Calendar },
-    { path: "/workspace/pedidos", label: "Histórico", icon: ShoppingBag },
-    { path: "/workspace/pdv", label: "PDV", icon: Store },
-    { path: "/workspace/pedidos/frota", label: "Despacho", icon: Truck },
+    { path: "/workspace/pedidos", label: "Histórico de Pedidos", icon: ShoppingBag },
+    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
+    { path: "/workspace/pedidos/frota", label: "Despacho & Motoboys", icon: Truck },
+    { path: "/workspace/relatorios/gastronomia", label: "Relatórios de Vendas", icon: FileSpreadsheet },
     { path: "/workspace/clientes", label: "Clientes", icon: Users },
   ],
 };
@@ -140,7 +141,7 @@ const GROUP_RETAIL_SALES: NavGroup = {
   items: [
     { path: "/workspace/pedidos", label: "Pedidos", icon: ShoppingBag },
     { path: "/workspace/pedidos/gestor", label: "Gestor", icon: ClipboardList },
-    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
     { path: "/workspace/pedidos/trocas", label: "Devoluções", icon: ArrowRightLeft },
     { path: "/workspace/logistica/tabelas", label: "Fretes", icon: Truck },
     { path: "/workspace/clientes", label: "Clientes", icon: Users },
@@ -170,7 +171,7 @@ const GROUP_SERVICES_CATALOG: NavGroup = {
   items: [
     { path: "/workspace/agenda/servicos", label: "Serviços", icon: Layers },
     { path: "/workspace/catalogo/produtos", label: "Produtos", icon: Package },
-    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
     { path: "/workspace/clientes", label: "Clientes", icon: Users },
   ],
 };
@@ -200,7 +201,7 @@ const GROUP_TECH_REPAIR: NavGroup = {
     { path: "/workspace/pedidos/gestor", label: "Ordens de Serviço", icon: ClipboardList },
     { path: "/workspace/agenda/servicos", label: "Mão de Obra", icon: Wrench },
     { path: "/workspace/catalogo/produtos", label: "Peças", icon: Package },
-    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
     { path: "/workspace/orcamentos", label: "Orçamentos", icon: FileText },
     { path: "/workspace/clientes", label: "Clientes", icon: Users },
   ],
@@ -373,7 +374,7 @@ const GROUP_PET: NavGroup = {
     { path: "/workspace/agenda", label: "Estética Pet", icon: Calendar },
     { path: "/workspace/agenda/servicos", label: "Vacinas", icon: HeartPulse },
     { path: "/workspace/catalogo/produtos", label: "Produtos Pet", icon: Package },
-    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
     { path: "/workspace/clientes", label: "Tutores", icon: Users },
   ],
 };
@@ -391,7 +392,7 @@ const GROUP_SUPERMARKET: NavGroup = {
     { path: "/workspace/estoque/alertas", label: "Validades", icon: AlertTriangle },
     { path: "/workspace/pedidos/gestor", label: "Separação", icon: ClipboardList },
     { path: "/workspace/pedidos/frota", label: "Entregas", icon: Truck },
-    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
   ],
 };
 
@@ -405,7 +406,7 @@ const GROUP_PHARMACY: NavGroup = {
     { path: "/workspace/catalogo/produtos", label: "Medicamentos", icon: Package },
     { path: "/workspace/pedidos/gestor", label: "Receituários", icon: ClipboardList },
     { path: "/workspace/pedidos/frota", label: "Tele-Entrega", icon: Truck },
-    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
     { path: "/workspace/clientes", label: "Pacientes", icon: Users },
   ],
 };
@@ -466,7 +467,7 @@ const GROUP_COMMERCIAL_SALES: NavGroup = {
     { path: "/workspace/comercial", label: "Funil", icon: Kanban },
     { path: "/workspace/atendimento", label: "Conversas", icon: MessageSquare },
     { path: "/workspace/orcamentos", label: "Orçamentos", icon: FileText },
-    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
     { path: "/workspace/pedidos", label: "Vendas", icon: ShoppingBag },
   ],
 };
@@ -520,7 +521,7 @@ const GROUP_LOGISTICS_EXPEDITION: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/pedidos/expedicao", label: "Expedição", icon: Package },
-    { path: "/workspace/pedidos/frota", label: "Despacho", icon: Truck },
+    { path: "/workspace/pedidos/frota", label: "Despacho & Motoboys", icon: Truck },
     { path: "/workspace/pedidos/entregadores", label: "Entregadores", icon: Users },
     { path: "/workspace/pedidos/trocas", label: "Trocas", icon: ArrowRightLeft },
     { path: "/workspace/logistica/pudo", label: "Pontos PUDO", icon: MapPin },
@@ -1327,6 +1328,8 @@ import { getNicheManifest, type NicheModuleKey } from "./niche-manifest";
 
 const PATH_TO_NICHE_MODULE: Record<string, NicheModuleKey> = {
   "/workspace/pedidos/gestor": "kds",
+  "/workspace/pdv/cozinha": "kds",
+  "/workspace/pedidos/tempo-preparo": "kds",
   "/workspace/pedidos/mesas": "tables",
   "/workspace/turismo/embarque": "boarding",
   "/workspace/turismo/embarques": "boarding",
