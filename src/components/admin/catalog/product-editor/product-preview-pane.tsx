@@ -62,7 +62,6 @@ export function ProductPreviewPane({
   activePreviewImage,
   setActivePreviewImage,
   store,
-  variants,
 }: ProductPreviewPaneProps) {
   const [viewport, setViewport] = React.useState<ProductPreviewPaneViewport>("compact");
 
