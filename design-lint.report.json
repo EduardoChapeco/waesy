@@ -1,18 +1,18 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-08T09:10:46.828Z",
+  "timestamp": "2026-11-08T09:36:08.387Z",
   "inspectedFiles": 2637,
-  "totalViolations": 780,
+  "totalViolations": 779,
   "summary": {
-    "totalViolations": 780,
+    "totalViolations": 779,
     "bySeverity": {
       "P0": 0,
-      "P1": 752,
+      "P1": 751,
       "P2": 24,
       "P3": 4
     },
     "byRule": {
-      "DL-02": 138,
+      "DL-02": 137,
       "DL-18": 59,
       "DL-05": 43,
       "DL-01": 384,
@@ -88,9 +88,9 @@
         "P3": 0
       },
       "routes/workspace": {
-        "total": 55,
+        "total": 54,
         "P0": 0,
-        "P1": 55,
+        "P1": 54,
         "P2": 0,
         "P3": 0
       },
@@ -130,7 +130,7 @@
         "P3": 0
       }
     },
-    "filesWithViolations": 237,
+    "filesWithViolations": 236,
     "filesCount": 2637
   },
   "config": {

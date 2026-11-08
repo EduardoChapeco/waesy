@@ -51,30 +51,30 @@ const TABLE_STATUS_STYLE: Record<TableStatus, {
  border: string; bg: string; text: string; badgeCn: string; label: string;
 }> = {
  free: {
- border: "border-emerald-500/50",
- bg: "bg-emerald-500/10 hover:bg-emerald-500/20",
- text: "text-emerald-700 dark:text-emerald-400",
- badgeCn: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+ border: "border-border/80 hover:border-foreground/30",
+ bg: "bg-card hover:bg-muted/40 shadow-2xs",
+ text: "text-foreground",
+ badgeCn: "bg-muted/60 text-muted-foreground border-border/80",
  label: "Livre",
  },
  reserved: {
- border: "border-blue-500/60",
- bg: "bg-blue-500/10 hover:bg-blue-500/20",
- text: "text-blue-700 dark:text-blue-400",
+ border: "border-blue-500/40",
+ bg: "bg-blue-500/10 hover:bg-blue-500/15",
+ text: "text-blue-600 dark:text-blue-400",
  badgeCn: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30",
  label: "Reservada",
  },
  pending: {
- border: "border-warning/60",
- bg: "bg-warning/10 hover:bg-warning/20",
+ border: "border-warning/50",
+ bg: "bg-warning/10 hover:bg-warning/15",
  text: "text-warning-strong ",
  badgeCn: "bg-warning/10 text-warning-strong  border-warning/30",
  label: "Pendente",
  },
  seated: {
- border: "border-purple-500/60",
- bg: "bg-purple-500/10 hover:bg-purple-500/20",
- text: "text-purple-700 dark:text-purple-400",
+ border: "border-purple-500/40",
+ bg: "bg-purple-500/10 hover:bg-purple-500/15",
+ text: "text-purple-600 dark:text-purple-400",
  badgeCn: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30",
  label: "Acomodado",
  },
@@ -334,7 +334,7 @@ export default function TableReservationsPage() {
  {(Object.entries(TABLE_STATUS_STYLE) as [TableStatus, typeof TABLE_STATUS_STYLE[TableStatus]][]).map(
  ([status, style]) => (
  <div key={status} className="flex items-center gap-2">
- <div className={cn("size-2.5 rounded-full", status === "free" ? "bg-emerald-500" : status === "reserved" ? "bg-blue-500" : status === "pending" ? "bg-warning" : "bg-purple-500")} />
+ <div className={cn("size-2.5 rounded-full", status === "free" ? "bg-muted-foreground/50" : status === "reserved" ? "bg-blue-500" : status === "pending" ? "bg-warning" : "bg-purple-500")} />
  <span className="text-xs font-semibold text-muted-foreground">
  {style.label} ({statusCounts[status]})
  </span>
@@ -390,12 +390,15 @@ export default function TableReservationsPage() {
  >
  {/* Ícone central */}
  <Armchair
- className={cn("size-8 transition-transform group-hover:scale-110", style.text)}
+ className={cn(
+ "size-8 transition-transform group-hover:scale-110",
+ status === "free" ? "text-muted-foreground/60 group-hover:text-foreground" : style.text,
+ )}
  />
 
  {/* Label + lugares */}
  <div>
- <p className={cn("text-xs font-black leading-none", style.text)}>{table.label}</p>
+ <p className={cn("text-xs font-black leading-none", status === "free" ? "text-foreground" : style.text)}>{table.label}</p>
  <p className="text-xs text-muted-foreground font-mono mt-1">
  {table.seats} lugares
  </p>
