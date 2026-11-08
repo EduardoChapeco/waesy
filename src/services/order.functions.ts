@@ -1110,6 +1110,39 @@ export const closePdvComanda = createServerFn({ method: "POST" })
         }
       }
 
+      // Dedução técnica de insumos e matérias-primas da cozinha (Gastronomia BOM & Kardex)
+      try {
+        const { deductSuppliesForOrder } = await import("./gastronomy-supplies.functions");
+        await deductSuppliesForOrder({ data: { orderId } });
+      } catch (suppliesErr: any) {
+        console.warn("[closePdvComanda] Falha defensiva ao abater insumos da cozinha:", suppliesErr.message);
+      }
+
+      // Atualização de fidelidade e histórico no CRM do cliente
+      if (order.customer_id) {
+        try {
+          const { data: customer } = await db
+            .from("customers")
+            .select("total_orders_count, total_spent_cents")
+            .eq("id", order.customer_id)
+            .single();
+
+          if (customer) {
+            await db
+              .from("customers")
+              .update({
+                total_orders_count: (customer.total_orders_count || 0) + 1,
+                total_spent_cents: (customer.total_spent_cents || 0) + (order.total_cents || 0),
+                last_order_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", order.customer_id);
+          }
+        } catch (crmErr: any) {
+          console.warn("[closePdvComanda] Erro defensivo ao atualizar CRM do cliente:", crmErr.message);
+        }
+      }
+
       // 7. Ledger Criptográfico SHA-256 — PDV Comanda Liquidada
       try {
         await recordLedgerEntryCore({

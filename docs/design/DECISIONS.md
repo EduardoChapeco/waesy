@@ -1,5 +1,40 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-458: Motor de Insumos, Fichas Técnicas, Sub-Receitas (BOM), Estoque Teórico com Gargalo de Produção (Auto-Pause) e Etiquetas Térmicas de Validade
+- **Data:** 2026-11-08
+- **Contexto:**
+  1. Em estabelecimentos de gastronomia e delivery (pizzarias, hamburguerias, cozinhas mexicanas, marmitarias), produtos de venda não possuem estoque unitário fixo de produto acabado, mas sim dependem de insumos (matérias-primas) e receitas intermediárias (ex.: massa de pizza, chilli, guacamole, molho artesanal).
+  2. Anteriormente, a aba "Insumos" no catálogo de produtos (`product-bom-card.tsx`) operava como um array JSON estático e desconectado no metadata, sem tabela de matérias-primas, sem kardex (`supply_inventory_movements`), sem cálculo do insumo limitante (gargalo de produção) e sem controle de perdas ou validade.
+  3. Presença de classes residuais de cores neon (`text-emerald-400`, `border-emerald-500`) em componentes de comanda e reservas.
+- **Decisão:**
+  1. **Modelagem Relacional e RLS no Supabase (`20270323000000_gastronomy_supplies_recipes_bom_and_production.sql`):**
+     - Criação de 9 tabelas relacionais com governança multi-tenant via `workspace_members`: `suppliers`, `supplies`, `recipes`, `recipe_items`, `product_recipes`, `production_orders`, `waste_logs`, `supply_inventory_movements`, `expiration_labels`.
+  2. **Server Functions BFF (`src/services/gastronomy-supplies.functions.ts`):**
+     - Implementação de CRUD de insumos, receitas, vínculos produto/modificador, lançamento de ordens de produção na cozinha, registro de perdas/desperdício por motivo e cálculo de estoque teórico vendível com identificação do insumo limitante (`calculateProductProducibleStock`).
+  3. **Componentes e Hub Operacional:**
+     - `src/components/admin/catalog/product-bom-card.tsx`: refatorado com seleção de insumos reais, banner de gargalo de produção e 0 violações de design lint.
+     - `src/components/kitchen/thermal-expiration-ticket.tsx`: modal e disparo nativo de impressão térmica para rolos de 58mm e 80mm com QR code sanitário.
+     - `src/components/kitchen/gastronomy-pantry-hub.tsx`: hub completo com 4 abas (Insumos, Fichas Técnicas & POP, Desperdício & Perdas, Etiquetas de Validade).
+     - `src/routes/workspace.estoque.index.tsx`: chaveador soberano de visualização ("Insumos & Despensa" vs "Produtos de Revenda SKUs").
+  4. **Erradicação de Cores Neon:**
+     - Substituição de classes de cores esmeralda/verde neon em `src/routes/workspace.reservas.tsx` por tokens semânticos neutros.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.31; SPEC-20261108-GASTRONOMY-SUPPLIES-RECIPES-BOM-PRODUCTION-ERP.
+- **Consequências:** Gastronomia Waesy opera com gestão real de produção e suprimentos, cálculo preventivo de ruptura de estoque (auto-pause), rastreabilidade de lote e conformidade sanitária por etiquetagem térmica.
+
+## DEC-457: Alinhamento Arquitetural e Unificação de Mesas, Comandas, Reservas, PDV e KDS
+- **Data:** 2026-11-08
+- **Contexto:**
+  1. Dúvida arquitetural sobre a coexistência dos módulos `/workspace/pdv/comandas` e `/workspace/reservas`, com aparência de redundância na representação de mesas do salão.
+  2. Necessidade de clarificar as fronteiras funcionais entre Mesa (espaço físico/recurso), Comanda (conta transacional/sessão de consumo), Reserva (agendamento futuro no calendário com alocação opcional de mesa) e os elos com Caixa/PDV, KDS e CRM de clientes.
+- **Decisão:**
+  1. Preservação da separação de domínios com unificação da base de dados física (`store_floor_plans`):
+     - `/workspace/reservas`: módulo de agenda/hospitalidade (pré-visita), cuidando de agendamentos futuros, confirmações, fila de espera e alocação prévia de mesa.
+     - `/workspace/pdv/comandas`: módulo operacional de salão em tempo real (visita ativa), cuidando da abertura de contas por garçom/totem, despacho de itens ao KDS da cozinha, apuração de parciais e fechamento de conta com pagamento no caixa.
+  2. Conexão bidirecional: ao acomodar uma reserva confirmada (`status = seated`), o sistema disponibiliza o botão "Comanda PDV", criando automaticamente a comanda no salão vinculada ao cliente e preenchendo seu histórico de consumo.
+  3. Edição da planta física unificada via `FloorPlanEditorSheet` em ambos os módulos.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.5, B.11; relatório técnico de auditoria forense.
+- **Consequências:** Coerência operacional sem duplicidade de infraestrutura, com integração ponta a ponta entre reservas, comandas, cozinha, financeiro e CRM.
+
 ## DEC-456: Blindagem Definitiva de Sessão, Persistência de Autenticação e Erradicação de Bounces no Workspace
 - **Data:** 2026-11-08
 - **Contexto:**
@@ -8872,3 +8907,23 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - `workspace.tarefas.tsx`: Separação das abas de escopo (`my-day`, `all`, `urgent`, `done`) dos modos de visualização (`kanban`, `table`, `calendar`), permitindo controle independente de escopo e layout.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.23, B.26 e B.33; DL-01 a DL-32.
 - **Consequências:** Zero dados sintéticos, sincronização bidirecional entre catálogo, checkout e precificação, e conformidade estrita com o piso WCAG 2.2 AA (44px) e design tokens canônicos.
+
+---
+
+### DEC-457: Unificação Arquitetural Mesas-Comandas-Reservas, Erradicação de Neon no Dark Theme e Liquidação Transacional Quádrupla no PDV
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-457
+- **Contexto:** Auditoria forense e alinhamento do ecossistema de salão/gastronomia (`/workspace/pdv/comandas` e `/workspace/reservas`): queixa de poluição visual por verde e âmbar fluorescentes (neon) no dark mode; aparente duplicidade de módulos; ausência de edição de salão em comandas; e verificação das amarrações sistêmicas end-to-end (KDS da cozinha, baixa de inventário, caixa diário, lançamento contábil de receitas e vínculo de cliente CRM na comanda).
+- **Decisão Adotada:**
+  1. **Erradicação do Neon no Dark Theme (Quiet UI / Apple HIG):**
+     - `src/routes/workspace.pdv.comandas.tsx`: Substituição de bordas e fundos em verde fluorescente (`emerald-500/30`, `emerald-500/5`, `text-emerald-400`) por cartões com casca silenciosa elegante (`border-border/80 bg-card hover:bg-muted/30 text-muted-foreground`), tipografia mono neutra nos KPIs e migração de `amber-500` para tokens semânticos `warning` / `warning-strong`.
+     - `src/routes/workspace.reservas.tsx`: Atualizado `TABLE_STATUS_STYLE.free` para repouso sóbrio (`border-border/80 bg-card hover:bg-muted/40 text-foreground`), mantendo mesas redondas e retangulares com affordance nítida, dot discreto de legenda e ícone de poltrona em `text-muted-foreground/60`.
+  2. **Unificação Conceitual de Salão (SSOT):**
+     - Estabelecido alinhamento taxonômico estrito: Mesa (ativo físico persistido), Reserva (agendamento temporal prévio) e Comanda (sessão ativa de consumo no salão).
+     - `src/services/order.functions.ts` (`getSalonTablesOverview`): Remoção do laço fixo de 24 mesas hardcoded; integração direta com a planta real da loja (`store_floor_plans`), com fallback para `DEFAULT_CANONICAL_TABLES`, unificando as mesas entre Comandas e Reservas.
+     - `src/routes/workspace.pdv.comandas.tsx`: Adicionado botão "Editar Salão" abrindo o `FloorPlanEditorSheet` para gerenciar mesas diretamente pelo PDV de comandas.
+  3. **Conexão End-to-End com CRM, KDS, Estoque e Frente de Caixa:**
+     - Criado `OpenTableModal` ao abrir mesa livre com campos para hóspede/cliente, telefone WhatsApp, ocupantes e busca rápida integrada ao CRM (`listCustomers`), gravando `orders.customer_id` e snapshot.
+     - `src/services/order.functions.ts` (`closePdvComanda`): Implementada liquidação transacional atômica quádrupla: (a) marcação de pedido como pago e entregue; (b) inserção em `payments`; (c) lançamento em `cash_register_entries` quando houver caixa aberto; (d) registro em `financial_transactions` (`type = 'revenue_pos_sale'`) para apuração contábil em DRE; (e) baixa atômica de saldo em `product_variants.stock_on_hand` com histórico em `stock_movements`; (f) registro de integridade no ledger SHA-256 (`recordLedgerEntryCore`).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.25, B.26, B.33; DL-01 a DL-33; Apple HIG (Quiet State & Minimal Contrast); Princípio Zero-Jank e Consistência Transacional ERP.
+- **Consequências:** Zero ruído neon no dark theme, consolidação de mesas em fonte única da verdade no banco, reconciliação financeira em tempo real e rastreabilidade total de consumo por cliente no CRM.

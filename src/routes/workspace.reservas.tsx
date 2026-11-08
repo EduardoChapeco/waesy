@@ -523,7 +523,7 @@ export default function TableReservationsPage() {
  variant="outline"
  size="sm"
  onClick={() => handleUpdateStatus({ data: { reservation_id: r.id, status: "confirmed" } })}
- className="text-xs font-bold gap-1 text-emerald-600 hover:text-emerald-700"
+ className="text-xs font-bold gap-1 text-primary hover:text-primary/90"
  >
  <CheckCircle2 className="size-3.5" /> Confirmar
  </Button>
@@ -645,7 +645,7 @@ export default function TableReservationsPage() {
  <Button
  size="sm"
  variant="outline"
- className="w-full font-bold text-xs text-emerald-600 border-emerald-500/40 gap-2"
+ className="w-full font-bold text-xs text-primary border-primary/40 gap-2"
  onClick={() => handleUpdateStatus({ data: { reservation_id: reservation.id, status: "confirmed" } })}
  >
  <CheckCircle2 className="size-3.5" /> Confirmar Reserva
@@ -746,7 +746,7 @@ export default function TableReservationsPage() {
 function ReservationStatusBadge({ status }: { status: string }) {
  const map: Record<string, { label: string; cn: string }> = {
  pending: { label: "Pendente", cn: "bg-warning/10 text-warning-strong  border-warning/30" },
- confirmed: { label: "Confirmada", cn: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" },
+ confirmed: { label: "Confirmada", cn: "bg-primary/10 text-primary border-primary/30" },
  seated: { label: "Acomodado", cn: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30" },
  cancelled: { label: "Cancelada", cn: "bg-destructive/10 text-destructive border-destructive/30" },
  no_show: { label: "Não compareceu", cn: "bg-muted/60 text-muted-foreground border-border/60" },

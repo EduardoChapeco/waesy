@@ -3,7 +3,9 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { SlidersHorizontal, Plus, Trash2, Sliders, Check, AlertCircle, Layers, Utensils, Coffee, PlusCircle, Image as ImageIcon, ImagePlus, X, Scissors, Gift, ShieldCheck, Loader2 } from 'lucide-react';
+import { SlidersHorizontal, Plus, Trash2, Sliders, Check, AlertCircle, Layers, Utensils, Coffee, PlusCircle, Image as ImageIcon, ImagePlus, X, Scissors, Gift, ShieldCheck, Loader2, Boxes } from 'lucide-react';
+import { useQuery } from "@tanstack/react-query";
+import { listSupplies, listRecipes } from "@/services/gastronomy-supplies.functions";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,10 @@ const optionValueSchema = z.object({
  max_quantity_per_item: z.number().int().min(1).default(1).optional(),
  is_default: z.boolean().default(false),
  is_active: z.boolean().default(true),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
 });
 
 const formSchema = z.object({
@@ -66,6 +72,18 @@ export function QuickOptionGroupDialog({
  const isRetail = semantics.nicheId === "retail" || semantics.nicheId === "supermarket" || semantics.nicheId === "wholesale";
 
  const activePresets = useMemo(() => getNicheOptionGroupPresets(semantics.nicheId), [semantics.nicheId]);
+
+ const { data: storeSupplies = [] } = useQuery({
+   queryKey: ["store-supplies-options"],
+   queryFn: () => listSupplies({}),
+   enabled: open,
+ });
+
+ const { data: storeRecipes = [] } = useQuery({
+   queryKey: ["store-recipes-options"],
+   queryFn: () => listRecipes({ type: "sub_recipe" }),
+   enabled: open,
+ });
 
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [cropDialogOpen, setCropDialogOpen] = useState(false);
@@ -123,8 +141,12 @@ export function QuickOptionGroupDialog({
  max_quantity_per_item: v.max_quantity_per_item ?? 1,
  is_default: v.is_default ?? false,
  is_active: v.is_active ?? true,
+ supply_id: v.supply_id || null,
+ recipe_id: v.recipe_id || null,
+ consume_quantity: v.consume_quantity ?? 1,
+ consume_unit: v.consume_unit || "un",
  }))
- : [{ label: "", description: "", image_url: "", price_modifier_cents: 0, is_default: false, is_active: true }],
+ : [{ label: "", description: "", image_url: "", price_modifier_cents: 0, is_default: false, is_active: true, supply_id: null, recipe_id: null, consume_quantity: 1, consume_unit: "un" }],
  });
  } else {
  form.reset({
@@ -525,6 +547,11 @@ export function QuickOptionGroupDialog({
  </div>
 
  <div className="space-y-3">
+ {fields.length === 0 && (
+ <div className="p-4 text-center text-xs text-muted-foreground border border-dashed rounded-lg">
+ Nenhuma opção adicionada neste grupo.
+ </div>
+ )}
  {fields.map((field, index) => {
  const imageUrl = form.watch(`values.${index}.image_url`);
  const isUploadingThis = uploadingIndex === index;
@@ -608,6 +635,85 @@ export function QuickOptionGroupDialog({
  {...form.register(`values.${index}.description` as const)}
  />
  </div>
+
+ {/* Vínculo de Insumo / Ficha Técnica (Baixa de Estoque) */}
+ {(storeSupplies.length > 0 || storeRecipes.length > 0) && (
+ <div className="pl-14 flex flex-wrap items-center gap-2 pt-1">
+ <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+ <Boxes className="size-3 text-primary" />
+ <span>Baixa de Estoque:</span>
+ </span>
+ <select
+ value={
+ form.watch(`values.${index}.supply_id` as const)
+ ? `supply:${form.watch(`values.${index}.supply_id` as const)}`
+ : form.watch(`values.${index}.recipe_id` as const)
+ ? `recipe:${form.watch(`values.${index}.recipe_id` as const)}`
+ : ""
+ }
+ onChange={(e) => {
+ const val = e.target.value;
+ if (!val) {
+ form.setValue(`values.${index}.supply_id` as const, null);
+ form.setValue(`values.${index}.recipe_id` as const, null);
+ } else if (val.startsWith("supply:")) {
+ const sid = val.replace("supply:", "");
+ form.setValue(`values.${index}.supply_id` as const, sid);
+ form.setValue(`values.${index}.recipe_id` as const, null);
+ const s = (storeSupplies as any[]).find((x: any) => x.id === sid);
+ if (s?.unit) form.setValue(`values.${index}.consume_unit` as const, s.unit);
+ } else if (val.startsWith("recipe:")) {
+ const rid = val.replace("recipe:", "");
+ form.setValue(`values.${index}.recipe_id` as const, rid);
+ form.setValue(`values.${index}.supply_id` as const, null);
+ const r = (storeRecipes as any[]).find((x: any) => x.id === rid);
+ if (r?.yield_unit) form.setValue(`values.${index}.consume_unit` as const, r.yield_unit);
+ }
+ }}
+ className="h-11 min-h-11 sm:h-8 sm:min-h-0 text-2xs rounded-lg bg-muted/40 border border-border/70 text-foreground px-2 focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+ >
+ <option value="">Não consome insumo (sem baixa)</option>
+ {storeSupplies.length > 0 && (
+ <optgroup label="Insumos / Matérias-Primas">
+ {(storeSupplies as any[]).map((s: any) => (
+ <option key={s.id} value={`supply:${s.id}`}>
+ Insumo: {s.name} ({s.stock_on_hand} {s.unit})
+ </option>
+ ))}
+ </optgroup>
+ )}
+ {storeRecipes.length > 0 && (
+ <optgroup label="Sub-Receitas / Pré-Preparo">
+ {(storeRecipes as any[]).map((r: any) => (
+ <option key={r.id} value={`recipe:${r.id}`}>
+ Receita: {r.name} ({r.yield_unit})
+ </option>
+ ))}
+ </optgroup>
+ )}
+ </select>
+
+ {(form.watch(`values.${index}.supply_id` as const) || form.watch(`values.${index}.recipe_id` as const)) && (
+ <div className="flex items-center gap-1">
+ <span className="text-3xs text-muted-foreground font-semibold">Qtd:</span>
+ <input
+ type="number"
+ step="0.01"
+ min="0.01"
+ placeholder="1"
+ value={form.watch(`values.${index}.consume_quantity` as const) ?? 1}
+ onChange={(e) =>
+ form.setValue(`values.${index}.consume_quantity` as const, parseFloat(e.target.value) || 1)
+ }
+ className="h-11 min-h-11 sm:h-8 sm:min-h-0 w-16 text-2xs font-mono font-bold rounded-lg bg-muted/40 border border-border/70 text-foreground px-2 text-center"
+ />
+ <span className="text-3xs text-muted-foreground font-mono">
+ {form.watch(`values.${index}.consume_unit` as const) || "un"}
+ </span>
+ </div>
+ )}
+ </div>
+ )}
  </div>
  );
  })}

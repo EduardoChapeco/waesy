@@ -1874,6 +1874,10 @@ const optionGroupSchema = z.object({
  max_selections: z.number().int().min(1).default(1),
  is_required: z.boolean().default(false),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
 });
 
 const optionValueSchema = z.object({
@@ -1884,6 +1888,10 @@ const optionValueSchema = z.object({
  is_default: z.boolean().default(false),
  is_active: z.boolean().default(true),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
 });
 
 /** Lista todos os grupos de opções de um produto com seus valores */
@@ -1936,6 +1944,10 @@ export const batchSaveOptionGroups = createServerFn({ method: "POST" })
  is_default: z.boolean().default(false),
  is_active: z.boolean().default(true),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
  }),
  ),
  }),
@@ -2020,7 +2032,7 @@ export const listOptionGroups = createServerFn({ method: "GET" }).handler(async 
  min_selections, max_selections, is_required,
  created_at, updated_at,
  values:option_values(
- id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order
+ id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order, supply_id, recipe_id, consume_quantity, consume_unit
  )
  `,
  )
@@ -2067,6 +2079,10 @@ export const upsertOptionGroup = createServerFn({ method: "POST" })
  is_default: z.boolean().default(false),
  is_active: z.boolean().default(true),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
  }),
  ),
  }),
@@ -2121,6 +2137,10 @@ export const upsertOptionGroup = createServerFn({ method: "POST" })
  is_default: v.is_default,
  is_active: v.is_active,
  sort_order: v.sort_order ?? index,
+ supply_id: v.supply_id || null,
+ recipe_id: v.recipe_id || null,
+ consume_quantity: v.consume_quantity ?? 1,
+ consume_unit: v.consume_unit || "un",
  }));
 
  // Remove values that are not in the payload anymore
@@ -2152,7 +2172,7 @@ export const upsertOptionGroup = createServerFn({ method: "POST" })
  min_selections, max_selections, is_required,
  created_at, updated_at,
  values:option_values(
- id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order
+ id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order, supply_id, recipe_id, consume_quantity, consume_unit
  )
  `,
  )
