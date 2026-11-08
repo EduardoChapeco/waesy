@@ -144,7 +144,11 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
         whatsapp: dirItem.contact_whatsapp || socialLinks.whatsapp || null,
         instagram: socialLinks.instagram || null,
         website: dirItem.website_url || socialLinks.website || null,
-        avatarUrl: dirItem.avatar_url || null,
+        avatarUrl:
+          dirItem.avatar_url ||
+          (dirItem as any).image_url ||
+          (Array.isArray(dirItem.photos) && typeof dirItem.photos[0] === "string" ? dirItem.photos[0] : null) ||
+          null,
         bannerUrl: dirItem.banner_url || null,
         galleryImages: Array.isArray(dirItem.photos) ? dirItem.photos : [],
         operatingHours: dirItem.working_hours || null,

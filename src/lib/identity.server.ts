@@ -64,7 +64,8 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     capturedCookie = getRequestHeader("cookie") || "";
   } catch {}
   try {
-    capturedHost = getRequestHeader("host") || "unknown-host";
+    const host = getRequestHeader("host") || "unknown-host";
+    capturedHost = host;
   } catch {}
 
   // 1. Micro-cache em memória de 10 segundos para Server Functions concorrentes

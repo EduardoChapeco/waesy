@@ -968,7 +968,50 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
       address: dirListing.address ?? null,
       city: dirListing.city ?? null,
       state: dirListing.state ?? null,
-      logoUrl: dirListing.avatar_url ?? null,
+      logoUrl:
+        dirListing.avatar_url ||
+        (dirListing as any).image_url ||
+        (dirListing as any).logo_url ||
+        (Array.isArray((dirListing as any).photos) && typeof (dirListing as any).photos[0] === "string" ? (dirListing as any).photos[0] : null) ||
+        (Array.isArray((dirListing as any).images) && typeof (dirListing as any).images[0] === "string" ? (dirListing as any).images[0] : null) ||
+        (dirListing as any).banner_url ||
+        dirListing.stores?.logo_url ||
+        dirSettings.logo_url ||
+        dirSettings.logoUrl ||
+        null,
+      logo_url:
+        dirListing.avatar_url ||
+        (dirListing as any).image_url ||
+        (dirListing as any).logo_url ||
+        (Array.isArray((dirListing as any).photos) && typeof (dirListing as any).photos[0] === "string" ? (dirListing as any).photos[0] : null) ||
+        (Array.isArray((dirListing as any).images) && typeof (dirListing as any).images[0] === "string" ? (dirListing as any).images[0] : null) ||
+        (dirListing as any).banner_url ||
+        dirListing.stores?.logo_url ||
+        dirSettings.logo_url ||
+        dirSettings.logoUrl ||
+        null,
+      avatarUrl:
+        dirListing.avatar_url ||
+        (dirListing as any).image_url ||
+        (dirListing as any).logo_url ||
+        (Array.isArray((dirListing as any).photos) && typeof (dirListing as any).photos[0] === "string" ? (dirListing as any).photos[0] : null) ||
+        (Array.isArray((dirListing as any).images) && typeof (dirListing as any).images[0] === "string" ? (dirListing as any).images[0] : null) ||
+        (dirListing as any).banner_url ||
+        dirListing.stores?.logo_url ||
+        dirSettings.logo_url ||
+        dirSettings.logoUrl ||
+        null,
+      avatar_url:
+        dirListing.avatar_url ||
+        (dirListing as any).image_url ||
+        (dirListing as any).logo_url ||
+        (Array.isArray((dirListing as any).photos) && typeof (dirListing as any).photos[0] === "string" ? (dirListing as any).photos[0] : null) ||
+        (Array.isArray((dirListing as any).images) && typeof (dirListing as any).images[0] === "string" ? (dirListing as any).images[0] : null) ||
+        (dirListing as any).banner_url ||
+        dirListing.stores?.logo_url ||
+        dirSettings.logo_url ||
+        dirSettings.logoUrl ||
+        null,
       bannerUrl: dirListing.banner_url ?? null,
       banner_url: dirListing.banner_url ?? null,
       coverUrl: dirListing.banner_url ?? null,
@@ -1014,13 +1057,17 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
   try {
    const { data: linkedListing } = await db
     .from("directory_listings")
-    .select("avatar_url, banner_url, photos")
+    .select("*")
     .or(`store_id.eq.${store.id},id.eq.${store.id},ghost_store_id.eq.${store.id}`)
     .limit(1)
     .maybeSingle();
 
    if (linkedListing) {
     resolvedLogoUrl =
+     (linkedListing as any).avatar_url ||
+     (linkedListing as any).image_url ||
+     (linkedListing as any).logo_url ||
+     (Array.isArray((linkedListing as any).images) && typeof (linkedListing as any).images[0] === "string" ? (linkedListing as any).images[0] : null) ||
      linkedListing.avatar_url ||
      (Array.isArray(linkedListing.photos) && typeof linkedListing.photos[0] === "string" ? linkedListing.photos[0] : null) ||
      null;

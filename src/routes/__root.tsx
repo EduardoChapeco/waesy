@@ -326,6 +326,30 @@ function RootShell({ children }: { children: ReactNode }) {
             }}
           />
         )}
+        <script
+          type="speculationrules"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              prerender: [
+                {
+                  source: "list",
+                  urls: ["/"],
+                  eagerness: "moderate",
+                },
+                {
+                  where: {
+                    and: [
+                      { href_matches: "/*" },
+                      { not: { href_matches: "/workspace/*" } },
+                      { not: { href_matches: "/painel/*" } },
+                    ],
+                  },
+                  eagerness: "moderate",
+                },
+              ],
+            }),
+          }}
+        />
       </head>
  <body className="w-full max-w-full viewport-lock antialiased select-none font-sans">
         <a href="#main-content" className="skip-link">

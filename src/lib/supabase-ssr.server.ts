@@ -136,6 +136,12 @@ export function getSSRClient(preCapturedHeaders?: Headers | null) {
           }
 
           const isProd = process.env.NODE_ENV === "production";
+          let cookieDomain: string | undefined = undefined;
+          if (host.includes("waesy.com.br")) {
+            cookieDomain = ".waesy.com.br";
+          } else if (host.includes("usewaesy.com")) {
+            cookieDomain = ".usewaesy.com";
+          }
           const legacyDomains = getLegacyCookieDomainsToPurge(host);
           const namesBeingSetWithValue = new Set<string>();
 
@@ -145,7 +151,7 @@ export function getSSRClient(preCapturedHeaders?: Headers | null) {
               namesBeingSetWithValue.add(name);
             }
 
-            // 1. Limpa variantes com Domain=.waesy.com.br / .usewaesy.com para eliminar split-brain
+            // 1. Limpa variantes com Domain=.waesy.com.br / .usewaesy.com para eliminar split-brain (domain: cookieDomain)
             for (const domain of legacyDomains) {
               safeAppendRawClearCookie(capturedResHeaders, name, domain, isProd);
             }

@@ -689,7 +689,7 @@ export default function WorkspaceConfiguracoesPage() {
  {/* Identidade Visual: Logotipo e Ícone */}
  <div className="space-y-4 pb-4 border-b border-border/40">
  <div className="space-y-1">
- <Label className="text-sm font-bold text-foreground">Identidade do Perfil</Label>
+ <Label className="text-sm font-bold text-foreground">Identidade do Perfil (1:1 Squircle)</Label>
  <p className="text-xs text-muted-foreground">
  Logotipo oficial que representa sua empresa na vitrine e nas sacolas de compras.
  </p>
