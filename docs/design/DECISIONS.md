@@ -1,5 +1,29 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-456: Blindagem Definitiva de Sessão, Persistência de Autenticação e Erradicação de Bounces no Workspace
+- **Data:** 2026-11-08
+- **Contexto:**
+  1. Usuários e lojistas sofriam com desconexões involuntárias ao carregar ou recarregar o Workspace ("eu entro cai de novo... não persiste").
+  2. No SSR (`typeof window === "undefined"`), o `beforeLoad` de `src/routes/workspace.tsx` disparava `throw redirect({ to: "/entrar" })` se `getUserSession()` oscilasse, abortando a requisição antes do navegador ter a chance de reconciliar a sessão persistida no `localStorage`.
+  3. No fluxo de login (`signInWithPassword`), a inicialização forçava `waesy_active_context = "civil"` e limpava `waesy_active_tenant`, rebaixando sumariamente lojistas para o contexto civil com `store_id = null`, provocando rejeição em `hasStore` e redirecionamento involuntário para `/criar-negocio`.
+  4. O fallback client-side executava `void syncSessionToCookies` de forma assíncrona desprotegida enquanto chamava `retrySession = await getUserSession()` concorrentemente, antes da gravação dos cookies no servidor.
+  5. A tabela `workspace_members` era consultada apenas por `profile_id`, ignorando a coluna `user_id` e proprietários registrados diretamente na tabela `stores`.
+- **Decisão:**
+  1. **Resolução Resiliente de Identidade (`src/lib/identity.server.ts`):**
+     - Consulta de vínculos societários expandida para `.or(\`profile_id.eq.${user.id},user_id.eq.${user.id}\`)` com fallbacks defensivos para `profiles.store_id` e `stores.owner_id = user.id`.
+     - Contexto e papéis harmonizados para preservar a autoridade da empresa principal (`finalRole`) mesmo em navegações não-escopadas.
+  2. **Inicialização Inteligente de Contexto no Login (`src/services/auth.functions.ts`):**
+     - `signInWithPassword` agora detecta se o usuário possui lojas cadastradas e grava imediatamente `waesy_active_context = "store"` e `waesy_active_tenant = targetStoreId`, eliminando o falso-positivo de ausência de negócio.
+     - `syncSessionToCookies` limpa explicitamente o cache de identidades em memória (`clearIdentityCache`).
+  3. **Erradicação do Bouncer de Rota (`src/routes/workspace.tsx`):**
+     - `beforeLoad` e `loader` aguardam com `await` a reconciliação síncrona de `syncSessionToCookies` antes de re-tentar `getUserSession()`.
+     - No SSR, se a requisição possui cookies de autenticação, não expulsa para `/entrar`, retornando flag de hidratação defensiva com spinner tátil neutro enquanto o cliente valida o token.
+     - `hasStore` expandido para contemplar papéis legítimos de operação (`owner`, `admin`, `manager`, `seller`, `collaborator`, `store_owner`, `platform_admin`).
+  4. **Debounce em Sincronização de Auth (`src/routes/__root.tsx`):**
+     - Sincronização de `onAuthStateChange` debounced em 300ms para evitar tempestade de requisições de cookies.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.31; skills `bigtech-board`, `state-sanitizer`, `supabase`.
+- **Consequências:** Sessão persistida perfeitamente no Workspace, zero laços de bounce para `/entrar`, eliminação de telas brancas e retenção íntegra do login.
+
 ## DEC-455: Alinhamento Sistêmico de Carrinho, Checkout Atômico, Reservas Universais e Despacho MotoLink
 - **Data:** 2026-11-07
 - **Contexto:**

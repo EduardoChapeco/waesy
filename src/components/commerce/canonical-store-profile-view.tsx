@@ -166,6 +166,9 @@ export function CanonicalStoreProfileView({
     store?.logo_url ||
     store?.avatar_url ||
     store?.avatarUrl ||
+    (Array.isArray(store?.photos) && store.photos.length > 0
+      ? typeof store.photos[0] === "string" ? store.photos[0] : store.photos[0]?.url
+      : null) ||
     settings?.logoUrl ||
     settings?.logo_url ||
     settings?.avatar_url ||

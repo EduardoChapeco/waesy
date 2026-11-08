@@ -69,7 +69,11 @@ export async function _calculateShipping({
  const storeType = settings.type || settings.segment || "ecommerce";
 
  // Se a loja desativou expressamente entregas, aceitando apenas retirada
- if (settings.allow_delivery === false || settings.delivery_enabled === false) {
+ if (
+   settings.allow_delivery === false ||
+   settings.delivery_enabled === false ||
+   settings.order_types?.delivery === false
+ ) {
  return [];
  }
  // CEP de origem dinâmico da loja (anti-GAP C2 - fix do hardcoded 01000000)

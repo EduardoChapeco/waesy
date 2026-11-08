@@ -935,7 +935,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
 
  let query = db
  .from("stores")
- .select("id, name, slug, description, phone, email, address, city, state, logo_url, banner_url, settings");
+ .select("id, name, slug, description, phone, email, address, city, state, logo_url, avatar_url, banner_url, settings");
 
  if (isUuid) {
  query = query.eq("id", storeIdToUse);
@@ -955,6 +955,18 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
 
  if (dirListing) {
     const dirSettings = (dirListing.stores?.settings ?? {}) as Record<string, any>;
+    const firstPhoto = Array.isArray(dirListing.photos) && dirListing.photos.length > 0
+      ? (typeof dirListing.photos[0] === "string" ? dirListing.photos[0] : (dirListing.photos[0] as any)?.url)
+      : null;
+    const resolvedDirLogo =
+      dirListing.avatar_url ||
+      (dirListing.metadata as any)?.logo_url ||
+      (dirListing.metadata as any)?.logoUrl ||
+      (dirListing.metadata as any)?.image_url ||
+      firstPhoto ||
+      dirListing.banner_url ||
+      null;
+
     return {
       id: dirListing.store_id || dirListing.id,
       name: dirListing.business_name || dirListing.stores?.name || "Empresa Local",
@@ -965,14 +977,18 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
       address: dirListing.address ?? null,
       city: dirListing.city ?? null,
       state: dirListing.state ?? null,
-      logoUrl: dirListing.avatar_url ?? null,
+      logoUrl: resolvedDirLogo,
       bannerUrl: dirListing.banner_url ?? null,
       banner_url: dirListing.banner_url ?? null,
       coverUrl: dirListing.banner_url ?? null,
       cover_url: dirListing.banner_url ?? null,
       instagramHandle: (dirListing as any).social_links?.instagram ?? null,
       businessHours: typeof dirListing.working_hours === "string" ? dirListing.working_hours : null,
-      settings: dirSettings,
+      settings: {
+        ...dirSettings,
+        logoUrl: resolvedDirLogo,
+        logo_url: resolvedDirLogo,
+      },
       type: "directory_listing",
       category: dirListing.category ?? null,
       pixKey: null,
@@ -995,6 +1011,39 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  (typeof settings.coverUrl === "string" ? settings.coverUrl : null) ||
  resolvedBannerUrl;
 
+ let resolvedLogoUrl =
+   (store.logo_url as string | null) ||
+   ((store as any).avatar_url as string | null) ||
+   (typeof settings.logoUrl === "string" ? settings.logoUrl : null) ||
+   (typeof settings.logo_url === "string" ? settings.logo_url : null) ||
+   (typeof settings.avatar_url === "string" ? settings.avatar_url : null) ||
+   (typeof settings.avatarUrl === "string" ? settings.avatarUrl : null) ||
+   null;
+
+ if (!resolvedLogoUrl) {
+   try {
+     const { data: linkedDir } = await db
+       .from("directory_listings")
+       .select("avatar_url, photos, banner_url, metadata")
+       .eq("store_id", store.id)
+       .limit(1)
+       .maybeSingle();
+     if (linkedDir) {
+       const firstPhoto = Array.isArray(linkedDir.photos) && linkedDir.photos.length > 0
+         ? (typeof linkedDir.photos[0] === "string" ? linkedDir.photos[0] : (linkedDir.photos[0] as any)?.url)
+         : null;
+       resolvedLogoUrl =
+         linkedDir.avatar_url ||
+         (linkedDir.metadata as any)?.logo_url ||
+         (linkedDir.metadata as any)?.logoUrl ||
+         (linkedDir.metadata as any)?.image_url ||
+         firstPhoto ||
+         linkedDir.banner_url ||
+         null;
+     }
+   } catch {}
+ }
+
  const profile: PublicStoreProfileDTO = {
  id: store.id as string,
  name: store.name as string,
@@ -1005,7 +1054,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  address: (store.address as string | null) ?? null,
  city: (store.city as string | null) ?? null,
  state: (store.state as string | null) ?? null,
- logoUrl: (store.logo_url as string | null) || (typeof settings.logoUrl === "string" ? settings.logoUrl : null) || (typeof settings.logo_url === "string" ? settings.logo_url : null),
+ logoUrl: resolvedLogoUrl,
  bannerUrl: resolvedBannerUrl,
  banner_url: resolvedBannerUrl,
  coverUrl: resolvedCoverUrl,
@@ -1015,6 +1064,8 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  businessHours: typeof settings.businessHours === "string" ? settings.businessHours : null,
  settings: {
  ...settings,
+ logoUrl: resolvedLogoUrl,
+ logo_url: resolvedLogoUrl,
  cover_url: resolvedCoverUrl,
  banner_url: resolvedBannerUrl,
  bannerUrl: resolvedBannerUrl,

@@ -35,6 +35,18 @@ export function NeighborhoodsManager({
  const [newNeighborhoodName, setNewNeighborhoodName] = useState("");
  const [newNeighborhoodFee, setNewNeighborhoodFee] = useState<number>(500);
 
+ const officialPresets = useMemo(() => getNeighborhoodsForCity(cityName), [cityName]);
+
+ const handleNewNameChange = (val: string) => {
+   setNewNeighborhoodName(val);
+   const matched = officialPresets.find(
+     (p) => p.name.toLowerCase().trim() === val.toLowerCase().trim()
+   );
+   if (matched && matched.defaultFeeCents) {
+     setNewNeighborhoodFee(matched.defaultFeeCents);
+   }
+ };
+
  // Edição inline de nome
   const handleImportOfficialNeighborhoods = () => {
     const presets = getNeighborhoodsForCity(cityName);
@@ -249,11 +261,19 @@ export function NeighborhoodsManager({
  <Label className="text-xs text-muted-foreground">Nome do Bairro *</Label>
  <Input
  value={newNeighborhoodName}
- onChange={(e) => setNewNeighborhoodName(e.target.value)}
- placeholder="Ex: Jardim América, Loteamento Universitário..."
- className="h-9 rounded-lg text-xs bg-background"
+ onChange={(e) => handleNewNameChange(e.target.value)}
+ list="official-neighborhoods-presets"
+ placeholder={`Ex: ${officialPresets[0]?.name || "Centro"}, ${officialPresets[1]?.name || "Bairro"}`}
+ className="h-11 min-h-11 rounded-lg text-xs bg-background"
  autoFocus
  />
+ <datalist id="official-neighborhoods-presets">
+   {officialPresets.map((p) => (
+     <option key={p.name} value={p.name}>
+       {p.name} (Sugerido: {(p.defaultFeeCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })})
+     </option>
+   ))}
+ </datalist>
  </div>
 
  <div className="sm:col-span-5 space-y-1">
@@ -262,7 +282,7 @@ export function NeighborhoodsManager({
  value={newNeighborhoodFee}
  onChange={(cents) => setNewNeighborhoodFee(cents || 0)}
  placeholder="0,00"
- className="h-9 text-xs rounded-lg font-mono"
+ className="h-11 min-h-11 text-xs rounded-lg font-mono"
  />
  </div>
  </div>

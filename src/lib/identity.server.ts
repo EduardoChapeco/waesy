@@ -127,13 +127,13 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     const [profileRes, wmRes] = await Promise.all([
       serverClient
         .from("profiles")
-        .select("id, full_name, username, avatar_url, role, phone, cpf")
+        .select("id, full_name, username, avatar_url, role, phone, cpf, store_id")
         .eq("id", user.id)
         .maybeSingle(),
       serverClient
         .from("workspace_members")
         .select("store_id, role")
-        .eq("profile_id", user.id),
+        .or(`profile_id.eq.${user.id},user_id.eq.${user.id}`),
     ]);
 
     userProfile = profileRes?.data || null;
@@ -141,6 +141,26 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     memberRows = wmRes?.data || [];
     if (wmRes?.error) {
       console.warn("[identity.server] Erro ao buscar workspace_members:", wmRes.error.message);
+    }
+
+    // Fallback defensivo de vínculo (DEC-446): se workspace_members não retornou linhas
+    // mas o profile possui store_id associado, inclui como vínculo canônico de lojista.
+    if ((!memberRows || memberRows.length === 0) && userProfile?.store_id) {
+      memberRows = [{ store_id: userProfile.store_id, role: userProfileRole || "owner" }];
+    }
+
+    // Fallback secundário: verifica se o usuário é proprietário direto cadastrado na tabela stores
+    if (!memberRows || memberRows.length === 0) {
+      try {
+        const { data: ownedStores } = await serverClient
+          .from("stores")
+          .select("id")
+          .eq("owner_id", user.id)
+          .limit(5);
+        if (ownedStores && ownedStores.length > 0) {
+          memberRows = ownedStores.map((s: any) => ({ store_id: s.id, role: "owner" }));
+        }
+      } catch {}
     }
   } catch (err) {
     console.warn("[identity.server] Erro ao buscar perfil ou workspace_members:", err);
@@ -256,16 +276,21 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       activeStoreId = memberships[0]?.store_id || null;
     }
   } else {
-    // Zero-Trust Civil Root: Qualquer outro valor ou ausência de contexto opera como civil pessoal.
-    // NUNCA promover silenciosamente para store apenas por coincidir com membership de loja.
-    activeStoreId = null;
-    activeContext = "civil";
+    // Se o cookie de contexto estiver ausente ou indefinido, mas o usuário possui lojas,
+    // adota a primeira loja como tenant padrão para não bloquear entrada no Workspace.
+    if (memberships.length > 0) {
+      activeContext = "store";
+      activeStoreId = memberships[0].store_id;
+    } else {
+      activeStoreId = null;
+      activeContext = "civil";
+    }
   }
 
   const currentMembership = activeStoreId
     ? memberships.find((m) => m.store_id === activeStoreId)
-    : null;
-  const storeRole = (currentMembership?.role as any) || "customer";
+    : memberships[0] || null;
+  const storeRole = (currentMembership?.role as any) || userProfileRole || "customer";
   const finalRole = isPlatformAdmin ? "platform_admin" : storeRole;
 
   const identityData = user.identities?.[0]?.identity_data as Record<string, any> | undefined;

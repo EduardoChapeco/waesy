@@ -41,33 +41,35 @@ export const Route = createFileRoute("/workspace")({
       session = null;
     }
 
-    // Fallback defensivo no cliente (DEC-443): previne loop de bounce se a requisição SSR
-    // falhou transitoriamente enquanto a sessão local no navegador ainda está ativa.
+    // Fallback defensivo no cliente (DEC-443/DEC-446): reconciliação síncrona com localStorage e cookies
     if (!session?.user && typeof window !== "undefined") {
       try {
         const { getBrowserClient } = await import("@/lib/supabase");
         const client = getBrowserClient();
         const { data: { session: browserSession } } = await client.auth.getSession();
         if (browserSession?.user) {
-          session = {
-            id: browserSession.user.id,
-            user: browserSession.user,
-            email: browserSession.user.email,
-            role: (browserSession.user.user_metadata?.role as any) || "owner",
-            store_id: browserSession.user.user_metadata?.store_id || null,
-            memberships: [],
-          };
           if (browserSession.access_token && browserSession.refresh_token) {
-            void syncSessionToCookies({
+            await syncSessionToCookies({
               data: {
                 access_token: browserSession.access_token,
                 refresh_token: browserSession.refresh_token,
               },
-            }).catch(() => {});
+            }).catch(() => null);
           }
           const retrySession = await getUserSession().catch(() => null);
           if (retrySession?.user) {
             session = retrySession;
+          } else {
+            const userMeta = browserSession.user.user_metadata || {};
+            const storeId = userMeta.store_id || null;
+            session = {
+              id: browserSession.user.id,
+              user: browserSession.user,
+              email: browserSession.user.email,
+              role: (userMeta.role as any) || "owner",
+              store_id: storeId,
+              memberships: storeId ? [{ store_id: storeId, role: "owner", name: "Minha Empresa" }] : [],
+            };
           }
         }
       } catch (browserAuthErr) {
@@ -76,7 +78,22 @@ export const Route = createFileRoute("/workspace")({
     }
 
     if (!session?.user) {
-      throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+      if (typeof window !== "undefined") {
+        throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+      }
+
+      let hasAnyAuthCookie = false;
+      try {
+        const { getRequestHeader } = await import("@tanstack/start-server-core");
+        const raw = getRequestHeader("cookie") || "";
+        hasAnyAuthCookie = raw.includes("waesy-auth-token") || raw.includes("-auth-token");
+      } catch {}
+
+      if (!hasAnyAuthCookie) {
+        throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+      }
+
+      return { session: null, needsClientHydration: true };
     }
 
     const isPlatformAdmin = isPlatformAdminUser(session);
@@ -85,6 +102,10 @@ export const Route = createFileRoute("/workspace")({
       Boolean(session?.store_id) ||
       session?.role === "store_owner" ||
       session?.role === "owner" ||
+      session?.role === "admin" ||
+      session?.role === "manager" ||
+      session?.role === "seller" ||
+      session?.role === "collaborator" ||
       isPlatformAdmin;
 
     // REGRA INVIOLÁVEL: O Workspace exige um negócio cadastrado.
@@ -114,25 +135,28 @@ export const Route = createFileRoute("/workspace")({
           const client = getBrowserClient();
           const { data: { session: browserSession } } = await client.auth.getSession();
           if (browserSession?.user) {
-            session = {
-              id: browserSession.user.id,
-              user: browserSession.user,
-              email: browserSession.user.email,
-              role: (browserSession.user.user_metadata?.role as any) || "owner",
-              store_id: browserSession.user.user_metadata?.store_id || null,
-              memberships: [],
-            };
             if (browserSession.access_token && browserSession.refresh_token) {
-              void syncSessionToCookies({
+              await syncSessionToCookies({
                 data: {
                   access_token: browserSession.access_token,
                   refresh_token: browserSession.refresh_token,
                 },
-              }).catch(() => {});
+              }).catch(() => null);
             }
             const retrySession = await getUserSession().catch(() => null);
             if (retrySession?.user) {
               session = retrySession;
+            } else {
+              const userMeta = browserSession.user.user_metadata || {};
+              const storeId = userMeta.store_id || null;
+              session = {
+                id: browserSession.user.id,
+                user: browserSession.user,
+                email: browserSession.user.email,
+                role: (userMeta.role as any) || "owner",
+                store_id: storeId,
+                memberships: storeId ? [{ store_id: storeId, role: "owner", name: "Minha Empresa" }] : [],
+              };
             }
           }
         } catch (browserAuthErr) {
@@ -141,7 +165,19 @@ export const Route = createFileRoute("/workspace")({
       }
 
       if (!session?.user) {
-        throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+        if (typeof window !== "undefined") {
+          throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+        }
+        let hasAnyAuthCookie = false;
+        try {
+          const { getRequestHeader } = await import("@tanstack/start-server-core");
+          const raw = getRequestHeader("cookie") || "";
+          hasAnyAuthCookie = raw.includes("waesy-auth-token") || raw.includes("-auth-token");
+        } catch {}
+
+        if (!hasAnyAuthCookie) {
+          throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+        }
       }
 
       const isPlatformAdmin = isPlatformAdminUser(session);
@@ -150,9 +186,14 @@ export const Route = createFileRoute("/workspace")({
         Boolean(session?.store_id) ||
         session?.role === "store_owner" ||
         session?.role === "owner" ||
-        isPlatformAdmin;
+        session?.role === "admin" ||
+        session?.role === "manager" ||
+        session?.role === "seller" ||
+        session?.role === "collaborator" ||
+        isPlatformAdmin ||
+        (context as any)?.needsClientHydration;
 
-      if (!hasStore) {
+      if (!hasStore && session?.user) {
         throw redirect({ to: "/criar-negocio" });
       }
 
@@ -310,7 +351,27 @@ function WorkspaceLayout() {
     }
   }
 
-  const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
+  const hasStore =
+    (session?.memberships && session.memberships.length > 0) ||
+    Boolean(session?.store_id) ||
+    session?.role === "store_owner" ||
+    session?.role === "owner" ||
+    session?.role === "admin" ||
+    session?.role === "manager" ||
+    session?.role === "seller" ||
+    session?.role === "collaborator" ||
+    isPlatformAdmin;
+
+  if (!session?.user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="size-8 rounded-full border-2 border-primary border-t-transparent animate-spin motion-reduce:animate-none" />
+          <p className="text-xs text-muted-foreground font-medium">Validando credenciais do Workspace...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!hasStore) {
     return null;

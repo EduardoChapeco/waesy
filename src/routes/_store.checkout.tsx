@@ -289,11 +289,13 @@ export function CheckoutPage() {
   const isPhysicalDelivery = !isTourismNiche && !isDigitalNiche && !isServiceNiche;
   const allowDelivery =
     storeProfile?.settings?.allow_delivery !== false &&
-    storeProfile?.settings?.delivery_enabled !== false;
+    storeProfile?.settings?.delivery_enabled !== false &&
+    storeProfile?.settings?.order_types?.delivery !== false;
   const allowPickup =
     storeProfile?.settings?.allow_pickup !== false &&
     storeProfile?.settings?.pickup_enabled !== false &&
-    storeProfile?.settings?.allow_takeaway !== false;
+    storeProfile?.settings?.allow_takeaway !== false &&
+    storeProfile?.settings?.order_types?.takeout !== false;
 
   // ── V200: Metamorphic States (Tourism / Digital / Services) ──
   const [travelDepartureDate, setTravelDepartureDate] = useState("");
