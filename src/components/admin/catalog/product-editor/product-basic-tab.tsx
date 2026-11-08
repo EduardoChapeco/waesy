@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Tag, Truck } from "lucide-react";
+import { Tag, Truck, UtensilsCrossed } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -156,8 +156,62 @@ export function ProductBasicTab({
         </div>
       )}
 
-      {/* Logística & Frete (Apenas para produtos físicos) */}
-      {!isTravelPackageMode && (
+      {/* Operação de Cozinha & Cardápio (Padrão iFood / Gastronomia) */}
+      {!isTravelPackageMode && nicheCtx?.isFoodBusiness && (
+        <div className="bg-card rounded-lg p-6 space-y-4 border border-border">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+            <UtensilsCrossed className="size-4 text-primary" />
+            <span>Preparo & Cozinha (Padrão Cardápio / Delivery)</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Tempo Médio de Cozinha (min)</Label>
+              <Input
+                {...register("preparation_time_days")}
+                type="number"
+                placeholder="20"
+                className="h-11 rounded-lg text-xs bg-background font-mono"
+              />
+              <span className="text-xs text-muted-foreground">Tempo estimado para despacho imediato</span>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Rendimento / Porção</Label>
+              <Select
+                value={formValues.selling_unit || "un"}
+                onValueChange={(val) => setValue("selling_unit", val)}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectValue placeholder="Serve quantas pessoas?" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="un">Individual (1 pessoa)</SelectItem>
+                  <SelectItem value="2_pessoas">Para 2 pessoas</SelectItem>
+                  <SelectItem value="familia">Família (3 a 4 pessoas)</SelectItem>
+                  <SelectItem value="porcao">Porção para compartilhar</SelectItem>
+                  <SelectItem value="lata">Lata / Bebida individual</SelectItem>
+                  <SelectItem value="garrafa">Garrafa / Embalagem econômica</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-muted-foreground">Indicação visual no cardápio</span>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Código de Barras / EAN (Bebidas/Prontos)</Label>
+              <Input
+                {...register("barcode")}
+                placeholder="789..."
+                className="h-11 rounded-lg text-xs bg-background font-mono"
+              />
+              <span className="text-xs text-muted-foreground">Opcional para produtos industrializados</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logística & Frete (Apenas para produtos físicos não-gastronomia) */}
+      {!isTravelPackageMode && !nicheCtx?.isFoodBusiness && (
         <div className="bg-card rounded-lg p-6 space-y-4 border border-border">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
             <Truck className="size-4 text-primary" />
