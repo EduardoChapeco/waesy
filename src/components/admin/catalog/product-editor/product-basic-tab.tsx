@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Tag, Clock, Users, ChefHat, Check, Leaf, ShieldCheck } from "lucide-react";
+import { Tag, Truck, UtensilsCrossed, Clock, Users, Check } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -253,15 +253,80 @@ export function ProductBasicTab({
         </div>
       )}
 
-      {/* 2. Configurações Gastronômicas & Preparo (Padrão iFood — Apenas Gastronomia) */}
-      {!isTravelPackageMode && isFoodOrRestaurant && foodSpecs && onFoodSpecsChange && (
-        <div className="bg-card rounded-lg p-6 space-y-5 border border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-              <ChefHat className="size-4 text-primary" />
-              <span>Conceito & Preparo na Cozinha</span>
+      {/* Operação de Cozinha & Cardápio (Padrão iFood / Gastronomia) */}
+      {!isTravelPackageMode && nicheCtx?.isFoodBusiness && (
+        <div className="bg-card rounded-lg p-6 space-y-4 border border-border">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+            <UtensilsCrossed className="size-4 text-primary" />
+            <span>Preparo & Cozinha (Padrão Cardápio / Delivery)</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Tempo Médio de Cozinha (min)</Label>
+              <Input
+                {...register("preparation_time_days")}
+                type="number"
+                placeholder="20"
+                className="h-11 rounded-lg text-xs bg-background font-mono"
+              />
+              <span className="text-xs text-muted-foreground">Tempo estimado para despacho imediato</span>
             </div>
-            <div className="flex items-center bg-muted p-1 rounded-lg gap-1">
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Rendimento / Porção</Label>
+              <Select
+                value={formValues.selling_unit || "un"}
+                onValueChange={(val) => setValue("selling_unit", val)}
+              >
+                <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
+                  <SelectValue placeholder="Serve quantas pessoas?" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="un">Individual (1 pessoa)</SelectItem>
+                  <SelectItem value="2_pessoas">Para 2 pessoas</SelectItem>
+                  <SelectItem value="familia">Família (3 a 4 pessoas)</SelectItem>
+                  <SelectItem value="porcao">Porção para compartilhar</SelectItem>
+                  <SelectItem value="lata">Lata / Bebida individual</SelectItem>
+                  <SelectItem value="garrafa">Garrafa / Embalagem econômica</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-muted-foreground">Indicação visual no cardápio</span>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Código de Barras / EAN (Bebidas/Prontos)</Label>
+              <Input
+                {...register("barcode")}
+                placeholder="789..."
+                className="h-11 rounded-lg text-xs bg-background font-mono"
+              />
+              <span className="text-xs text-muted-foreground">Opcional para produtos industrializados</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logística & Frete (Apenas para produtos físicos não-gastronomia) */}
+      {!isTravelPackageMode && !nicheCtx?.isFoodBusiness && showPhysicalPackaging && (
+        <div className="bg-card rounded-lg p-6 space-y-4 border border-border">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+            <Truck className="size-4 text-primary" />
+            <span>Logística e Frete</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-foreground">Peso (kg)</Label>
+              <Input
+                {...register("weight_kg")}
+                type="number"
+                step="0.01"
+                placeholder="0.5"
+                className="h-11 rounded-lg text-xs bg-background font-mono"
+              />
+            </div>
+            <div className="space-y-2"><Label className="text-xs font-medium text-foreground">Prazo de Expedição (dias)</Label><Input {...register("preparation_time_days")} type="number" min="0" placeholder="1" className="h-11 rounded-lg text-xs bg-background font-mono" /></div></div></div>)}{!isTravelPackageMode && Boolean(nicheCtx?.isFoodBusiness) && (<div className="bg-card rounded-lg p-6 space-y-4 border border-border"><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="flex items-center bg-muted p-1 rounded-lg gap-1">
               <button
                 type="button"
                 onClick={() => onFoodItemConceptChange?.("prepared")}
@@ -294,8 +359,8 @@ export function ProductBasicTab({
                   <Input
                     type="number"
                     min="0"
-                    value={foodSpecs.preparationTimeMinutes ?? 20}
-                    onChange={(e) => onFoodSpecsChange({ ...foodSpecs, preparationTimeMinutes: e.target.value ? parseInt(e.target.value, 10) : 0 })}
+                    value={foodSpecs?.preparationTimeMinutes ?? 20}
+                    onChange={(e) => onFoodSpecsChange?.({ dietaryRestrictions: [], beverageTags: [], ...foodSpecs, preparationTimeMinutes: e.target.value ? parseInt(e.target.value, 10) : 0 })}
                     placeholder="Ex: 20"
                     className="h-11 rounded-lg text-xs bg-background font-mono"
                   />
@@ -308,8 +373,8 @@ export function ProductBasicTab({
                     Serve quantas pessoas?
                   </Label>
                   <Select
-                    value={foodSpecs.servesCount || "1 pessoa"}
-                    onValueChange={(val) => onFoodSpecsChange({ ...foodSpecs, servesCount: val })}
+                    value={foodSpecs?.servesCount || "1 pessoa"}
+                    onValueChange={(val) => onFoodSpecsChange?.({ dietaryRestrictions: [], beverageTags: [], ...foodSpecs, servesCount: val })}
                   >
                     <SelectTrigger className="h-11 rounded-lg text-xs bg-background">
                       <SelectValue placeholder="Selecione" />
@@ -335,15 +400,15 @@ export function ProductBasicTab({
                     { id: "artesanal", label: "Produção Própria / Artesanal" },
                     { id: "sem_acucar", label: "Sem Açúcar" },
                   ].map((opt) => {
-                    const isSelected = (foodSpecs.dietaryRestrictions || []).includes(opt.id);
+                    const isSelected = ((foodSpecs?.dietaryRestrictions || []) as string[]).includes(opt.id);
                     return (
                       <button
                         key={opt.id}
                         type="button"
                         onClick={() => {
-                          const current = foodSpecs.dietaryRestrictions || [];
+                          const current = (foodSpecs?.dietaryRestrictions || []) as string[];
                           const next = isSelected ? current.filter((x) => x !== opt.id) : [...current, opt.id];
-                          onFoodSpecsChange({ ...foodSpecs, dietaryRestrictions: next });
+                          onFoodSpecsChange?.({ beverageTags: [], ...foodSpecs, dietaryRestrictions: next });
                         }}
                         className={`h-11 min-h-11 px-3 rounded-lg text-xs font-medium border transition-colors flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                           isSelected
@@ -364,8 +429,8 @@ export function ProductBasicTab({
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Código de Barras (EAN / GTIN)</Label>
                 <Input
-                  value={foodSpecs.barcodeEan || ""}
-                  onChange={(e) => onFoodSpecsChange({ ...foodSpecs, barcodeEan: e.target.value })}
+                  value={foodSpecs?.barcodeEan || ""}
+                  onChange={(e) => onFoodSpecsChange?.({ dietaryRestrictions: [], beverageTags: [], ...foodSpecs, barcodeEan: e.target.value })}
                   placeholder="Ex: 7894900010015"
                   className="h-11 rounded-lg text-xs bg-background font-mono"
                 />
@@ -374,8 +439,8 @@ export function ProductBasicTab({
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Volume / Conteúdo</Label>
                 <Input
-                  value={foodSpecs.portionWeight || ""}
-                  onChange={(e) => onFoodSpecsChange({ ...foodSpecs, portionWeight: e.target.value })}
+                  value={foodSpecs?.portionWeight || ""}
+                  onChange={(e) => onFoodSpecsChange?.({ dietaryRestrictions: [], beverageTags: [], ...foodSpecs, portionWeight: e.target.value })}
                   placeholder="Ex: 350ml, 2L, 500g"
                   className="h-11 rounded-lg text-xs bg-background"
                 />
@@ -384,10 +449,10 @@ export function ProductBasicTab({
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Temperatura de Servir</Label>
                 <Select
-                  value={(foodSpecs.beverageTags || []).includes("gelada") ? "gelada" : "ambiente"}
+                  value={((foodSpecs?.beverageTags || []) as string[]).includes("gelada") ? "gelada" : "ambiente"}
                   onValueChange={(val) => {
                     const next = val === "gelada" ? ["gelada"] : [];
-                    onFoodSpecsChange({ ...foodSpecs, beverageTags: next });
+                    onFoodSpecsChange?.({ dietaryRestrictions: [], ...foodSpecs, beverageTags: next });
                   }}
                 >
                   <SelectTrigger className="h-11 rounded-lg text-xs bg-background">

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CanonicalPage, CanonicalSplit } from "@/components/ui/canonical/page-layout";
-import { listCategories, listProductTypes, listOptionGroups, listStoreBrands, getStoreChannelIntegrationsStatus } from "@/services/admin-catalog.functions";
+import { listCategories, listProductTypes, listOptionGroups, listStoreBrands } from "@/services/admin-catalog.functions";
 import { ProductBomCard } from "@/components/admin/catalog/product-bom-card";
 import { ProductFoodSpecsCard } from "@/components/admin/catalog/product-food-specs-card";
 import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/novo")({
     try {
       const sessionStoreId = (context as any)?.session?.store_id;
       const [catsRes, typesRes, groupsRes, storeRes, brandsRes] = await Promise.all([
-        listCategories(sessionStoreId ? { data: { store_id: sessionStoreId } } : undefined).catch(() => []),
+        listCategories().catch(() => []),
         listProductTypes().catch(() => []),
         listOptionGroups().catch(() => []),
         getStoreSettings(sessionStoreId ? { data: { store_id: sessionStoreId } } : undefined).catch(() => null),
@@ -280,7 +280,7 @@ export function UnifiedNewProductPage() {
                       <TabsTrigger value="midias" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                         Fotos
                       </TabsTrigger>
-                      {semantics.nicheId === "manufacturing" && (
+                      {(nicheCtx?.isFoodBusiness || semantics.nicheId === "gastronomy") && (
                         <TabsTrigger value="insumos" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">
                           Insumos
                         </TabsTrigger>
@@ -510,7 +510,13 @@ export function UnifiedNewProductPage() {
                     />
                   </TabsContent>
 
-                  {(nicheCtx.isFoodBusiness || semantics.nicheId === "manufacturing") && (
+                  {nicheCtx.isFoodBusiness && (
+                    <TabsContent value="cardapio" className="space-y-4 m-0">
+                      <ProductFoodSpecsCard value={editor.foodSpecs} onChange={editor.setFoodSpecs} />
+                    </TabsContent>
+                  )}
+
+                  {(nicheCtx?.isFoodBusiness || semantics.nicheId === "gastronomy") && (
                     <TabsContent value="insumos" className="space-y-4 m-0">
                       <ProductBomCard
                         initialItems={editor.bomItems}
@@ -520,6 +526,8 @@ export function UnifiedNewProductPage() {
                           toast.success(`Custo calculado aplicado!`);
                         }}
                         onItemsChange={editor.setBomItems}
+                        optionGroups={editor.optionGroups}
+                        selectedOptionGroupIds={editor.selectedOptionGroupIds}
                       />
                     </TabsContent>
                   )}

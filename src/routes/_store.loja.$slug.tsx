@@ -27,9 +27,12 @@ export const Route = createFileRoute("/_store/loja/$slug")({
     const profile = loaderData?.profile;
     const storeName = profile?.name || "Loja Oficial";
     const storeLogo =
+      profile?.logoUrl ||
+      profile?.logo_url ||
+      profile?.avatar_url ||
       profile?.settings?.logoUrl ||
       profile?.settings?.logo_url ||
-      profile?.logoUrl ||
+      profile?.settings?.avatar_url ||
       "/icons/icon-192x192.png";
     const primaryColor =
       profile?.settings?.primaryColor || profile?.settings?.primary_color || undefined;

@@ -29,603 +29,100 @@
 - **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.26.
 - **Consequências:** Fim da confusão operacional de lojistas de varejo, experiência fluida e limpa estilo iFood Merchant para restaurantes, zero violações P0/P1 e aprovação plena na catraca de CI.
 
-## DEC-469: Estabilização de Workspaces, Soberania Canônica do CRM, Desacoplamento de Eventos e Blindagem do Funil de Vendas de Turismo
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. No `WorkspaceShell`, controles master globais ("Filtrar por Nicho da Loja", toggle `isMasterAllVerticals`, "Painel Global Master", "Admin Master") poluíam a experiência de lojas operacionais.
-  2. O módulo de CRM / Carteira de Clientes estava ausente como pilar mestre em diversos nichos e erroneamente agrupado dentro de `events-tickets` ("Participantes" apontando para `/workspace/clientes`), gerando a impressão de que CRM pertencia a Eventos ou Atendimento.
-  3. No turismo, `GROUP_TURISMO_COMMERCIAL` denominava o cockpit comercial como "Atendimento", colidindo com o pilar mestre "Atendimento" (`/workspace/atendimento` - Chat & SAC).
-  4. O lead "Alexandro" sumia do Kanban de Turismo quando salvo na etapa "Novos Contatos" (`new`) caso o banco retornasse estágios legados de tarefas genéricas (`todo`).
-  5. A ficha do cliente em `/workspace/clientes/$id` continha 10 botões espremidos sem quebra elástica e com nomenclaturas prolixas ("Ficha 360°", "Ver na Vitrine").
-  6. O sheet de lead em `/workspace/comercial` estava comprimido e necessitava de features no padrão Pipefy (checklists editáveis múltiplos, dropzone real de múltiplos anexos e emissão A4 timbrada).
-- **Decisão:**
-  1. **Purga e Isolamento Soberano por Nicho:** Extirpados do `WorkspaceShell` todos os controles globais master; a barra operacional reflete estritamente o nicho real da loja ativa.
-  2. **Alçamento do CRM a Master Pillar:** CRM configurado como Master Pillar independente (`id: "crm"`, rota `/workspace/clientes`, ícone `Users`) em todos os nichos da plataforma (`NICHE_MASTER_PILLAR_CONFIG`). Removido `/workspace/clientes` de `GROUP_EVENTS_TICKETS` e desacoplado `eventos` em pilar próprio.
-  3. **Desambiguação Comercial vs Atendimento:** Renomeado o item principal de `/workspace/turismo` para "Funil de Vendas" e o grupo para "Comercial & Vendas".
-  4. **Blindagem Anti-Perda de Leads:** `kanban-config.functions.ts` descarta estágios legados de tarefas em turismo. Em `workspace.turismo.index.tsx`, qualquer lead com status não mapeado é alocado defensivamente na primeira coluna visível (`visibleStages[0]?.id || "new"`).
-  5. **Descompressão de Header & Nomenclaturas Comerciais:** `flex-wrap` e dropdown contextual "Mais Ações" na ficha do cliente; erradicação de jargões "360°" e textos fixos como "Ver na Vitrine".
-  6. **Expansão de Sheet (70vw) & Features Pipefy:** Sheet expandido para 70% com checklists múltiplos persistidos, upload de anexos e emissão de documentos.
-- **Fundamentação:** AGENTS.md B.1, B.6, B.7, B.8, B.9, B.11, B.12, B.22, B.25, B.26.
-- **Consequências:** Operação de workspaces 100% isolada e condizente com cada vertical de negócio, eliminação de ambiguidades entre Atendimento/CRM/Eventos, zero perda de leads no Kanban e conformidade total com o piso WCAG 2.2 AA.
+## DEC-463: Saneamento End-to-End dos Quality Gates de CI: Unificação de Migrações SQL, Contratos de Tabelas BFF, Tipagem Estrita TypeScript e Build Edge do Cloudflare Pages
+- **Data:** 2026-11-09
+- **Contexto:** Bloqueio de CI no GitHub Actions que impedia o merge da branch do PR #47 e a publicação em produção (`waesy.com.br`) na Cloudflare Pages. A falha decorria de: (1) Gate 0 com timestamps duplicados de migrações (`20270324000000` e `20270325000000`); (2) Gate 0b com divergência na referência de tabela (`customers` vs SSOT `customers_crm` em `order.functions.ts`); (3) Gate 1 com erros estritos de tipagem em contratos de Server Functions (`store_id` implícito em `createCategory`, `createProductType` e `createProduct`, `kitchenStation` em `FoodSpecsData`, Promise Thenables com `.catch()` em `crm.functions.ts` e `order.functions.ts`, variáveis de frete em `shipping.functions.ts`, `activeNiche` vs `semantics.nicheId` em `niche-operational-guard.tsx`, paridade de `useWorkspaceViewMode` com `currentView` / `setViewMode`, e rota `_store.chamado.$ticketId.tsx` com `as any`); (4) Erro de AST no Router Plugin do TanStack Start no Gate 4.
+- **Decisão:** (1) Incrementados timestamps das migrações SQL para versões estritamente unívocas (`20270324010000` e `20270325010000`), aprovando Gate 0 e Gate 0e com 598 migrações íntegras; (2) Saneado `order.functions.ts` apontando para `customers_crm`, aprovando Gate 0b com 0 tabelas sem declaração; (3) Corrigidas cirurgicamente as 19 declarações TypeScript nos componentes e rotas do escopo; (4) Retificado `_store.chamado.$ticketId.tsx` para string literal pura em `createFileRoute`, gerando `routeTree.gen.ts` limpo e aprovando a compilação do worker de produção Cloudflare Pages (`dist/_worker.js/index.js`, Exit Code 0); (5) Ratchet do Design Lint aprovado com zero regressões visuais em relação à baseline congelada (0 P0).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.31.
+- **Consequências:** Desbloqueio mecânico total dos 5 Quality Gates do repositório, garantindo compilação determinística local e remota, conformidade estrita de tipagem e integridade no deploy contínuo em produção.
 
-## DEC-468: Arquitetura do Waesy Autonomous Copilot Parity Manus 2.0: Roteamento Agêntico ReAct, Workbench de Artefatos Vivos (Dashboards, Mapas Georreferenciados e Gerador Multiformato de Criativos Sociais) e Telemetria Real de Navegador
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. O Copilot do Waesy operava sob despachantes heurísticos rígidos baseados em regexes e palavras-chave (`clean.match`, `detectIntent`), que travavam pedidos contextuais com mensagens de fallback genéricas ou exigências repetitivas de localização.
-  2. Os subagentes (`@planner`, `@investigator`, `@critic`) emitiam passos com strings estáticas e contadores de tokens fictícios, sem execução de agentes reais de mercado (Gestor de Ads, SDR/BDR Hunter de CNPJ, Diretor Criativo).
-  3. O visualizador de artefatos estava restrito a tabelas estáticas e visualizadores de texto, sem capacidade de gerar dashboards executivos com KPIs, mapas interativos georreferenciados com rotas e botões de contato, ou peças criativas parametrizadas com paletas e proporções multiformato (1:1, 4:5, 9:16).
-  4. O drawer do computador (`ManusComputerDrawer`) utilizava um array estático de passos fictícios (`DEFAULT_STEPS` com IPs e comandos de SSH simulados) em vez de refletir a telemetria em tempo real das execuções da conversa.
-- **Decisão:**
-  1. **Workbench de Artefatos Vivos (`src/components/chat/artifacts/`):**
-     - Criado `ArtifactDashboard.tsx` para exibição de painéis executivos com KPIs (Receita, Pedidos, Ticket Médio, Novos Clientes), barras de progresso por categoria, alertas operacionais e exportação de dados.
-     - Criado `ArtifactInteractiveMap.tsx` para visualização georreferenciada de locais e estabelecimentos minerados, com filtros por categoria, traçado de rota no Google Maps e botão tátil direto para WhatsApp.
-     - Criado `ArtifactCreativePost.tsx` para geração dinâmica de peças e criativos publicitários com alternância de formato (1:1 Feed, 4:5 Retrato, 9:16 Story/Reels), seleção de paleta semântica, templates (Destaque, Lista, Oferta) e cópia de legenda pronta para publicação.
-     - Integrados no painel soberano `CopilotArtifactPanel.tsx` e exportados a partir de `src/components/chat/artifacts/index.ts`.
-  2. **Extensão de Tipos Canônicos de Artefato (`src/types/chat.ts`, `src/services/ai-conversations.functions.ts`):**
-     - Adicionados `"dashboard" | "map_view" | "creative_post"` ao tipo `ChatArtifactType` e ao schema Zod `saveAiArtifactSchema`.
-  3. **Conexão de Telemetria Real ao Drawer do Computador (`src/routes/workspace.copilot.tsx`, `src/components/chat/manus-computer-drawer.tsx`):**
-     - `workspace.copilot.tsx` deriva dinamicamente `ManusComputerStep[]` a partir do histórico de mensagens e tarefas ativas da thread, eliminando a dependência do array mockado e apresentando os comandos reais executados (bash, browser, editor de artefatos).
-     - `ManusComputerDrawer.tsx` atualizado para exibir o status real do runtime local do Waesy e ferramentas agênticas ativas.
-  4. **Validação Mecânica Estrita:**
-     - 46/46 testes unitários em `autonomous-copilot.test.ts`, `copilot-fsm.test.ts`, `copilot-subagent-spawner.test.ts` e `mining-and-copilot-remediation.test.ts` aprovados com 100% de sucesso.
-     - Catraca Design Lint Ratchet aprovada com 0 violações P0 e redução de 27 violações em relação ao baseline histórico (de 774 para 747 violações totais).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.25, B.26; Princípios de Agentes Autônomos OpenManus, OpenDevin e SWE-agent.
-- **Consequências:** Copilot elevado ao padrão Manus de agência real, com suporte a visualizações ricas imediatas no Workbench (Dashboards, Mapas, Criativos Multiformato), eliminação de passos mockados e preparação para orquestração de subagentes especialistas com cobrança no token tollbooth.
+## DEC-462: Convergência Omnichannel Total do Workspace: Governança de Setores/WhatsApp por Atendente, Compositor Transacional (+), Customer 360 Editável e Linha do Tempo Pública de Tickets com CSAT Automático
+- **Data:** 2026-11-09
+- **Contexto:** Necessidade de transformar o módulo de Chat/Atendimento em um Módulo Master Full-Viewport (estilo WhatsApp Web/Linear, sem bordas coloridas ou fundos translúcidos), bloqueando permanentemente a exclusão de mensagens, viabilizando horários de funcionamento e instâncias de WhatsApp dedicadas por setor e por atendente, permitindo o envio nativo no chat de Contratos, Cobranças PIX, Boletos e Orçamentos no menu `+`, tornando a 3ª coluna do Customer 360 totalmente editável com gestão de demandas/tickets e etapas públicas, e criando a página pública de acompanhamento do chamado (`/_store/chamado/$ticketId`) com blindagem de notas internas e pesquisa CSAT (1-5 estrelas + validação de resolução) disparada automaticamente ao encerrar chamados.
+- **Decisão:** (1) Habilitado layout master full-viewport em `WorkspaceShell` e `workspace.atendimento.index.tsx` com botão de Configurações minimalista, cores sólidas de alto contraste e bloqueio de `delete` e `clear_history` em `chat_messages`; (2) Expandidos `WhatsAppTeamSectorsDrawer` e `saveWhatsAppGovernanceConfig` com expedientes por setor, binding de instâncias WhatsApp por setor/atendente, permissões RBAC e triagem em 3 estágios IA -> Humano com pausa automática da IA ao responder humano; (3) Integrados disparadores transacionais de `Cobrança PIX`, `Boleto / Fatura`, `Contrato` e `Orçamento` no menu `+` (`ChatQuickComposerModals.tsx`), eliminando presets hardcoded; (4) Adicionada edição cadastral em tempo real (Nome, WhatsApp, CPF/CNPJ, E-mail, Cidade) e criação de tickets e steps na 3ª coluna (`customer-360-sidebar.tsx`); (5) Criada rota pública `_store.chamado.$ticketId.tsx` com filtragem rigorosa server-side contra notas internas e envio automático de link CSAT ao resolver ticket ou finalizar conversa.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.26, B.31, B.34.
+- **Consequências:** Atendimento Omnichannel 100% autônomo, transacional e corporativo, validado por 22 testes unitários (100% passing), 0 erros de compilação TypeScript nos arquivos do escopo e catraca do Design Lint aprovada com zero regressões visuais.
 
+## DEC-461: Expansão End-to-End do Motor Universal de Composição Recursiva (BOM), Sabores/Modificadores, Fator de Conversão, Pausa Automática por Gargalo e Serviços Compostos
+- **Data:** 2026-11-09
+- **Contexto:** Necessidade de expandir o isolamento semântico multi-nicho e o motor de Fichas Técnicas (`product_recipes`, `supplies`, `recipes`, `option_values`, `service_consumed_materials`) para suportar: (1) vínculo de sub-receitas/insumos a sabores e adicionais específicos (`option_values` / `modifier_id`, ex.: Nachos com Chilli vs Cheddar, Pizza Calabresa vs Bacon); (2) fator de conversão de embalagem na entrada de compras (`conversion_factor`); (3) geração/crédito automático de insumo composto ao produzir lote de sub-receita; (4) pausa automática (`checkAndAutoPauseProductsBySupply`) quando um insumo gargalo zera; e (5) serviços compostos (`ServiceBomCard` + `deductSuppliesForServiceAppointment`) e vocabulário multi-nicho no Hub de Despensa/Almoxarifado e nas etiquetas térmicas 58mm/80mm.
+- **Decisão:** (1) Criada migração `20270324000000_universal_bom_modifiers_and_services.sql`; (2) Expandido `src/services/gastronomy-supplies.functions.ts` com `conversionFactor`, crédito automático de sub-receita em `supplies`, dedução por sabor/modificador, `checkAndAutoPauseProductsBySupply`, `createSupplier` e `deductSuppliesForServiceAppointment`, além de integração automática em `src/services/orders.functions.ts`; (3) Evoluídos `gastronomy-pantry-hub.tsx` (construtor de ingredientes da receita, edição de ficha, fator de conversão e vocabulário por nicho), `thermal-expiration-ticket.tsx` (modos ANVISA, Lote Químico e Kit), `product-bom-card.tsx` (vínculo por Sabor/Opção e flag de Gargalo Auto-Pause) e `service-bom-card.tsx`; (4) Erradicadas classes neon em `workspace.estoque.index.tsx` e `workspace.agenda.servicos.index.tsx`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.31.
+- **Consequências:** Coerência multi-nicho ponta a ponta no Workspace, rastreabilidade recursiva Kardex em produtos, sabores e serviços compostos, zero regressões de Design Lint e 100% de aprovação nos testes automatizados.
 
-## DEC-467: Arquitetura de Distribuição Segura de Extensões de Navegador, Vitrine Estilo Chrome Web Store, Governança de Acesso Multi-Tenant e Central de Liberação no Admin Master
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. As extensões e conectores externos da plataforma Waesy (`infotravel_extension`, `whatsapp_extension`, `infotravel_miner`) ficavam retidas localmente no repositório de código, impossibilitando que agências e empresas parceiras baixassem os pacotes diretamente pelo painel administrativo da sua loja.
-  2. A distribuição indiscriminada expunha dados e infraestrutura, exigindo controle de acesso estrito: apenas o Admin Master e a agência piloto oficial (Excelência Tour São Miguel do Oeste) possuem autorização irrestrita nativa, enquanto demais empresas necessitam de autorização explícita.
-  3. Para lojas e empresas não autorizadas, a exibição de um erro 403 Forbidden descontextualizado gerava atrito e suporte desnecessário. Era imperativo apresentar uma vitrine rica inspirada na Chrome Web Store / App Store, detalhando as funcionalidades do conector, garantias de privacidade LGPD, requisitos de sistema e um formulário claro de "Pedir Autorização".
-  4. O Administrador Master precisava de governança centralizada no painel de Módulos (`/admin-master/modulos`) para visualizar a fila de solicitações de acesso e liberar ou rejeitar cada pedido em 1 clique, além de poder autorizar diretamente qualquer loja da plataforma sob demanda.
-- **Decisão:**
-  1. **Motor de Empacotamento Dinâmico em Memória (`src/services/extensions-distributor.server.ts`, `src/services/extensions-distributor.functions.ts`):** Empacotamento dinâmico via `archiver` com exclusão de artefatos de build, metadados canônicos e geração de ZIP base64 e stream HTTP para download seguro em `/api/v1/extensions/download`.
-  2. **Camada de Autorização e Governança Multi-Tenant:**
-     - Verificação por privilégio: Admin Master ou Excelência Tour (`excelencia-tour-smo`) possuem liberação nativa.
-     - Demais lojas são validadas contra `stores.settings.authorized_extensions` ou registros de aprovação na tabela `extension_access_requests`.
-     - Migração SQL `20270322050000_extension_access_governance.sql` com RLS deny-by-default, indexação e trilha de auditoria completa.
-  3. **Vitrine Chrome Extension Store (`src/components/extensions/ExtensionWebStoreModal.tsx`):**
-     - Modal de alta fidelidade visual com selo de desenvolvedor verificado ("Waesy Verified Conector"), versão Manifest V3, catálogo dos 3 conectores com abas de "Visão Geral", "Permissões & Privacidade" e "Como Instalar".
-     - Máquina de 4 estados: `authorized` (com botão de download direto), `pending` (aviso de solicitação em análise com data e justificativa), `rejected` (com opção de reenviar) e `not_requested` (com formulário de solicitação).
-     - Alvos de toque de 44px (`h-11 min-h-11`), conformidade estrita com tokens e acessibilidade WCAG 2.2 AA.
-  4. **Integração nas Superfícies Operacionais:**
-     - Integrado `ExtensionWebStoreModal` em `src/components/admin/infotravel-integration-panel.tsx` e `src/components/commercial/whatsapp-group-ingest-modal.tsx`, abrindo a vitrine automaticamente quando a API retorna 403 Forbidden ou via botão explicito "Ver na Store / Acesso".
-  5. **Painel de Gestão no Admin Master (`src/routes/admin-master.modulos.tsx`):**
-     - Na aba "Extensões & Conectores", adicionada a "Fila de Solicitações de Acesso às Extensões" com atualização em tempo real, badges de status e botões de "Liberar Acesso" e "Rejeitar".
-     - Adicionada a seção "Autorização Direta por Loja" com filtro de busca e botões de alternância instantânea para as 3 extensões em qualquer loja da plataforma.
-     - Botão de preview da Chrome Web Store em cada cartão de extensão.
-  6. **Central de Automações & Gatilhos Canônicos WhatsApp Outbox (`src/services/automation.functions.ts`, `src/routes/workspace.automacoes.tsx`):**
-     - Implementados os 6 gatilhos canônicos de relacionamento (`customer_birthday`, `travel_approaching_d7`, `post_checkin_welcome`, `post_return_nps`, `quote_followup_24h`, `payment_due_reminder`) com instalação em 1 clique (`seedCanonicalAutomationWorkflows`).
-     - Interpolação determinística de variáveis dinâmicas (`{nome}`, `{destino}`, `{data_viagem}`, `{hora}`, `{link_dossie}`), configuração de horário de envio (`sendTime`) e atraso em minutos (`delayMinutes`), e enfileiramento idempotente em `whatsapp_outbox`.
-  7. **Validação Mecânica E2E:**
-     - `npx vitest run src/services/extensions-distributor.server.test.ts`: 7/7 testes aprovados (Exit Code 0).
-     - `npm run typecheck`: 0 erros de compilação TypeScript em todo o repositório (Exit Code 0).
-     - `node scripts/design-lint.mjs --ratchet`: 0 violações P0, redução líquida de 27 violações frente à baseline congelada (Exit Code 0).
-     - `npm run build`: Build de produção client + SSR + Cloudflare Worker gerado com sucesso (Exit Code 0).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.25, B.26.
-- **Consequências:** Solução completa, segura e auditável para distribuição de extensões na plataforma Waesy, empoderando a agência Excelência Tour com download direto e oferecendo um processo transparente de requisição e concessão de acesso para as demais empresas.
+## DEC-460: Auditoria Forense e Remediação End-to-End do Módulo de Chat, Conexão WhatsApp QR Code, Templates, Automações e Painel Rápido 360º do Cliente
+- **Data:** 2026-11-08
+- **Contexto:** Falha P0 na geração/sincronização do QR Code WhatsApp (violação de CHECK constraint `qr_pending`, typo `last_healthcheck_at` no webhook, ausência de restart/connect assíncrono para Evolution v1/v2 e falta de normalização `data:image/png;base64,`), além de lacunas no CRUD de templates com variáveis dinâmicas, nas automações de atendimento por loja e no Painel Rápido 360º para contatos e visitantes WhatsApp.
+- **Decisão:** (1) Saneado `whatsapp-provider-webhook.server.ts`, `whatsapp-channel-instances.functions.ts` e `whatsapp-qr-connect-modal.tsx` com suporte a Evolution v1/v2, normalização de Data URI/SVG, persistência de QR Code no `public_config` e estados `loading`/`expired`/`connected`/`error`; (2) Completado CRUD de templates (`store_quick_answers` + `chat_quick_replies`) com interpolação de `{{nome_cliente}}`, `{{numero_pedido}}`, `{{link_pagamento}}`, `{{loja}}` e `{{telefone}}` em `QuickAnswersManagerModal.tsx`, `QuickRepliesMenu.tsx` e `workspace.whatsapp.automacoes.tsx`; (3) Conectadas automações reais (`support_schedules`, `greeting_message`, `away_hours`, `keyword_auto_reply`, `funnel_stage_changed`) com upsert válido em `whatsapp_outbox`; (4) Expandido `Customer360Sidebar` + `getCustomer360Context` + `updateCustomerFunnelStage` com suporte a visitantes WhatsApp, LTV/inadimplência (`customer_debt_ledger`), notas internas em tempo real, tags, reenvio de link de pedido/orçamento e ações rápidas em 1 clique.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11, B.24, B.25, B.26, B.31.
+- **Consequências:** Fluxo omnichannel de Chat e WhatsApp 100% operacional de ponta a ponta sem mocks, validado por 18 testes automatizados, `tsc --noEmit` (Exit Code 0) e catraca do Design Lint aprovada (0 P0, 0 regressões).
 
-## DEC-466: Arquitetura Soberana de Caixas & PDVs Multi-Terminal, Governança de Operador/Supervisor com PIN de Cancelamento (pos_pin_code), Resolução Defensiva de Tenant em Catálogo e Desacoplamento Vendas vs WMS
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. No cadastro de produtos (`/workspace/catalogo/produtos/novo`), colaboradores e administradores com lojas ativas se deparavam com a mensagem bloqueante `"Nenhuma loja ativa selecionada."`, decorrente da resolução restrita de `store_id` que não consultava membros em `workspace_members` nem fallbacks locais.
-  2. Na tela de histórico de vendas (`/workspace/pedidos`), sub-abas operacionais de separação de pedidos estavam acopladas na listagem comercial de varejo, confundindo gestores que precisavam apenas consultar vendas sem misturar com o fluxo de picking de armazém.
-  3. Na gestão de caixas (`/workspace/financeiro/caixa`), existia dissonância visual onde o cabeçalho exibia turno aberto enquanto o corpo renderizava "Nenhum turno aberto no momento" em turnos sem movimentação. Adicionalmente, empresas de múltiplos pontos (varejo, mercados, garçons em restaurantes, fundo fixo da diretoria ou caixa geral) não dispunham de segmentação por terminal.
-  4. Na Frente de Caixa (`/workspace/pdv`), operadores de caixa podiam remover produtos, cancelar itens ou esvaziar comandas e carrinhos sem controle gerencial, abrindo brechas de auditoria e perdas operacionais.
-- **Decisão:**
-  1. **Resolução Resiliente de Loja Ativa (`src/services/admin-catalog.functions.ts`, `src/services/store.functions.ts`, `src/components/admin/catalog/product-editor/use-product-editor.ts`):** `resolveStoreIdWithFallback` passa a verificar defensivamente `user_metadata.store_id`, `workspace_members` via `identity.id` e cache seguro em `localStorage` (`waesy_active_store_id`), assegurando salvamento e edição contínua de produtos.
-  2. **Desacoplamento de Vendas & WMS (`src/routes/workspace.pedidos.index.tsx`):** Restringida a visão de varejo estritamente a "Tabela de Vendas", movendo a separação/conferência para link soberano para a Central WMS (`/workspace/pedidos/expedicao`).
-  3. **Multi-Terminais de Caixa & Coerência Visual (`src/routes/workspace.financeiro.caixa.index.tsx`):** Adicionados presets canônicos de terminal (Balcão 01/02, Drive-Thru, Garçom Salão, Caixa Financeiro, Fundo Diretoria, Caixa Geral), presets de saldo de gaveta e saldo consolidado multi-terminal. Corrigido estado vazio para "Turno Aberto e Pronto para Operação" quando o turno está ativo com zero lançamentos.
-  4. **Papel Operador de Caixa (`cashier`) & Trava de Cancelamento por PIN do Gerente (`src/components/workspace/RolePermissionsMatrix.tsx`, `src/services/cash.functions.ts`, `src/routes/workspace.pdv.index.tsx`, `src/routes/workspace.configuracoes.equipe.tsx`, `src/services/admin-team.functions.ts`):** Introduzido o papel `cashier` com controles específicos (`clear_ticket`, `open_close_shift`, `sangria_suprimento`). No PDV, operadores sem privilégio de supervisor são interceptados por `ManagerOverrideDialog`, exigindo a digitação da senha/PIN gerencial validada contra `profiles.pos_pin_code` no banco antes de qualquer remoção de item ou estorno de comanda.
-  5. **Verificação Mecânica:** Testes unitários de catálogo e de inventário de rotas aprovados com 100% de sucesso; Catraca Design Lint Ratchet aprovada com 0 violações P0 e conformidade plena com baseline congelada.
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.25; Princípio de Segregação de Funções e Integridade Transacional.
-- **Consequências:** Clareza contábil entre gestão corporativa (Financeiro) e postos operacionais (Caixas/PDVs), proteção patrimonial contra cancelamentos indevidos e fluxo desobstruído de cadastro de catálogo.
+## DEC-459: Auditoria Forense e Remediação End-to-End de Isolamento e Semântica Multi-Nicho no Workspace
+- **Data:** 2026-11-08
+- **Contexto:** Operadores de nichos não alimentícios (`tourism`, `services`, `retail`, `rental`, `real_estate`, `legal`, `healthcare`, `events`, `creator`) podiam visualizar rotas, atalhos ou seções de catálogo exclusivas de Gastronomia/Delivery (como KDS Cozinha, Mesas & Comandas, Tempo de Preparo, Despacho de Motoboys, Receitas Culinárias e Ficha Técnica de Insumos/BOM).
+- **Decisão:** (1) Saneado `NICHE_MANIFEST_REGISTRY` em `src/lib/niches/niche-manifest.ts` restringindo `"kds"` exclusivamente a `gastronomy` e `"couriers"` apenas a verticais com frota de entrega urbana (`gastronomy`, `retail`, `automotive`); (2) Endurecido `getMasterSidebarPillars`, `PATH_TO_NICHE_MODULE` e grupos verticais em `src/lib/workspace-navigation.ts`, renomeando `GROUP_GASTRO_ORDERS` para `"Salão & Delivery"`, removendo `/workspace/pedidos/gestor` de grupos não gastronômicos e filtrando itens incompatíveis nos 11 Pilares Mestre; (3) Aplicado `NicheOperationalGuard` nas rotas `/workspace/pedidos/frota`, `/workspace/conteudo/receitas` e `/workspace/pedidos/entregadores`, além de atualizar sugestões por nicho (`tourism`, `services`, `retail`, `rental`, `gastronomy`) em `niche-operational-guard.tsx` e filtrar o catálogo de ferramentas em `workspace-all-tools-dialog.tsx`; (4) Isolada a aba e card de `Insumos` (`ProductBomCard`) e especificações de prato/bebida em `workspace.catalogo.produtos.novo.tsx`, `workspace.catalogo.produtos.$id.tsx`, `product-basic-tab.tsx` e `product-pricing-tab.tsx` exclusivamente para negócios alimentícios.
+- **Fundamentação:** AGENTS.md B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11; Invariante de Isolamento Multi-Nicho.
+- **Consequências:** Isolamento 100% determinístico entre os nichos verticais no Workspace, validado por 30/30 testes automatizados de pureza semântica e isolamento de rotas, `tsc --noEmit` limpo e catraca do Design Lint aprovada.
 
-## DEC-465: Blindagem E2E do Contexto de Tenant Foodman, Eliminação de Loops de Deslogue e Estabilidade de Sessão no Workspace
-- **Data:** 2026-11-07
+## DEC-458: Motor de Insumos, Fichas Técnicas, Sub-Receitas (BOM), Estoque Teórico com Gargalo de Produção (Auto-Pause) e Etiquetas Térmicas de Validade
+- **Data:** 2026-11-08
 - **Contexto:**
-  1. Ao acessar o workspace da loja Foodman (delivery / gastronomia) e navegar entre páginas (como `/workspace/pedidos`, `/workspace/atendimento`), o sistema entrava em loop de logout/redirecionamento para `/entrar`.
-  2. Investigação forense identificou 4 causas raízes interdependentes:
-     a) `sanitizeBrowserAuthCookies()` em `src/lib/supabase.ts` era disparado destrutivamente a cada transição de rota em `workspace.tsx:beforeLoad`, expirando prematuramente chunks de token `waesy-auth-token*` no navegador.
-     b) O micro-cache `IDENTITY_MEMO_CACHE` em `src/lib/identity.server.ts` memoizava `guestIdentity` (`id: null`) por 10s caso uma requisição intermediária transitória falhasse, envenenando o estado de autenticação para todas as Server Functions subsequentes.
-     c) Em rotas como `/workspace/atendimento`, acessos diretos a `activeThread.id` sem encadeamento defensivo (`activeThread?.id`) causavam `TypeError` em lojas recém-criadas sem conversas, acionando o error boundary do workspace.
-     d) No banco de dados, o usuário administrador não possuía registro legítimo em `workspace_members` para a loja Foodman, forçando impersonação ou rejeição.
+  1. Em estabelecimentos de gastronomia e delivery (pizzarias, hamburguerias, cozinhas mexicanas, marmitarias), produtos de venda não possuem estoque unitário fixo de produto acabado, mas sim dependem de insumos (matérias-primas) e receitas intermediárias (ex.: massa de pizza, chilli, guacamole, molho artesanal).
+  2. Anteriormente, a aba "Insumos" no catálogo de produtos (`product-bom-card.tsx`) operava como um array JSON estático e desconectado no metadata, sem tabela de matérias-primas, sem kardex (`supply_inventory_movements`), sem cálculo do insumo limitante (gargalo de produção) e sem controle de perdas ou validade.
+  3. Presença de classes residuais de cores neon (`text-emerald-400`, `border-emerald-500`) em componentes de comanda e reservas.
 - **Decisão:**
-  1. **Trava de Segurança Absoluta em Cookies:** Em `sanitizeBrowserAuthCookies()`, se `winningAuthCookies.length === 0`, o sanitizador retorna imediatamente sem expirar cookies. Expiração limitada estritamente a chunks órfãos confirmados no `document.cookie`.
-  2. **Remoção de Sanitização Destrutiva em Transição de Rota:** Extirpado `sanitizeBrowserAuthCookies()` de `workspace.tsx:beforeLoad` e `loader`. Adicionado auto-refresh defensivo de sessão com sincronização prévia de cookies (`syncSessionToCookies`).
-  3. **Blindagem Anti-Envenenamento de Cache de Identidade:** `IDENTITY_MEMO_CACHE` agora apenas armazena identidades com `resolvedIdentity?.id` válido, proibindo expressamente o cache de sessões nulas/guest.
-  4. **Proteção Defensiva em Rotas Filhas:** Adicionado encadeamento opcional `?.` em todos os nós de atendimento (`activeThread?.id`, `activeIntranetChannel?.id`) e guardas defensivas nos filtros de SDR.
-  5. **Vínculo Legítimo de Membro:** Inserido registro canônico em `workspace_members` com `role: 'owner'` e `is_active: true` para o perfil `2ea9f0aa-8b04-4086-9e1d-e23105560302` na loja Foodman (`32233049-07c6-49bf-a053-989824fef385`).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.9, B.10, B.25; Princípio Zero-Trust e Estado Sanitizado.
-- **Consequências:** Navegação contínua e estável no Workspace Foodman sem deslogue acidental, sem envenenamento de cache e sem crashes por thread vazia.
+  1. **Modelagem Relacional e RLS no Supabase (`20270323000000_gastronomy_supplies_recipes_bom_and_production.sql`):**
+     - Criação de 9 tabelas relacionais com governança multi-tenant via `workspace_members`: `suppliers`, `supplies`, `recipes`, `recipe_items`, `product_recipes`, `production_orders`, `waste_logs`, `supply_inventory_movements`, `expiration_labels`.
+  2. **Server Functions BFF (`src/services/gastronomy-supplies.functions.ts`):**
+     - Implementação de CRUD de insumos, receitas, vínculos produto/modificador, lançamento de ordens de produção na cozinha, registro de perdas/desperdício por motivo e cálculo de estoque teórico vendível com identificação do insumo limitante (`calculateProductProducibleStock`).
+  3. **Componentes e Hub Operacional:**
+     - `src/components/admin/catalog/product-bom-card.tsx`: refatorado com seleção de insumos reais, banner de gargalo de produção e 0 violações de design lint.
+     - `src/components/kitchen/thermal-expiration-ticket.tsx`: modal e disparo nativo de impressão térmica para rolos de 58mm e 80mm com QR code sanitário.
+     - `src/components/kitchen/gastronomy-pantry-hub.tsx`: hub completo com 4 abas (Insumos, Fichas Técnicas & POP, Desperdício & Perdas, Etiquetas de Validade).
+     - `src/routes/workspace.estoque.index.tsx`: chaveador soberano de visualização ("Insumos & Despensa" vs "Produtos de Revenda SKUs").
+  4. **Erradicação de Cores Neon:**
+     - Substituição de classes de cores esmeralda/verde neon em `src/routes/workspace.reservas.tsx` por tokens semânticos neutros.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.31; SPEC-20261108-GASTRONOMY-SUPPLIES-RECIPES-BOM-PRODUCTION-ERP.
+- **Consequências:** Gastronomia Waesy opera com gestão real de produção e suprimentos, cálculo preventivo de ruptura de estoque (auto-pause), rastreabilidade de lote e conformidade sanitária por etiquetagem térmica.
 
-## DEC-464: Purga de Controles Master do Workspace, Soberania Canônica de CRM por Nicho, Descompressão de Cabeçalho, Sincronização de Estágios Kanban e Restauração de Features Pipefy
-- **Data:** 2026-11-07
+## DEC-457: Alinhamento Arquitetural e Unificação de Mesas, Comandas, Reservas, PDV e KDS
+- **Data:** 2026-11-08
 - **Contexto:**
-  1. No `WorkspaceShell`, o botão "Filtrar por Nicho da Loja" alternava um modo master de todas as verticais que poluía a sidebar com módulos de outros nichos e exibia atalhos do Admin Master na barra operacional da agência.
-  2. O módulo de Eventos estava incorretamente aninhado no pilar comercial, fazendo aparecer ingressos, flyers e bilheteria dentro do painel de turismo.
-  3. No cadastro de oportunidades e leads, leads salvos em etapas de atendimento ("Novos Contatos") não apareciam nas colunas do Kanban porque os estágios padrão do módulo caíam nas chaves genéricas de tarefas ("todo" / "A Fazer").
-  4. Na ficha de clientes (`/workspace/clientes/$id`), botões de ação superior estavam espremidos em linha única sem quebra, e jargões prolixos ("Ficha 360°", "Ver na Vitrine") violavam o contrato de design.
-  5. A gaveta lateral de detalhes do lead necessitava de largura ampla (70% da viewport) e visibilidade direta das ferramentas de checklists múltiplos e upload/geração de anexos A4 estilo Pipefy.
+  1. Dúvida arquitetural sobre a coexistência dos módulos `/workspace/pdv/comandas` e `/workspace/reservas`, com aparência de redundância na representação de mesas do salão.
+  2. Necessidade de clarificar as fronteiras funcionais entre Mesa (espaço físico/recurso), Comanda (conta transacional/sessão de consumo), Reserva (agendamento futuro no calendário com alocação opcional de mesa) e os elos com Caixa/PDV, KDS e CRM de clientes.
 - **Decisão:**
-  1. **Purga de Controles Master:** Extirpado `isMasterAllVerticals`, removido "Painel Global Master" e o botão "Admin Master" do header e sidebar do workspace, garantindo isolamento estrito pelo nicho ativo da loja (`activeStore`).
-  2. **Pilar e Módulo Canônico de CRM:** Criado o pilar `crm` independente ("Carteira de Viajantes" no Turismo e "Carteira de Clientes" nos demais nichos) e desvinculado `GROUP_EVENTS_TICKETS` do pilar comercial.
-  3. **Sincronização do Kanban de Turismo:** Definido `KANBAN_DEFAULTS.turismo` em `kanban-config.functions.ts` mapeando estritamente as etapas comerciais ("Novos Contatos", "Cotação em Andamento", "Proposta Enviada", "Em Negociação", "Viagem Confirmada") com fallback resiliente.
-  4. **Descompressão Ergonômica do Cabeçalho da Ficha do Cliente:** Organizadas as ações primárias em primeiro plano e reunidas as ações secundárias em menu suspenso `<DropdownMenu>` ("Mais Ações"), erradicando jargões ("Ficha do Cliente", "Ver Ficha Completa", "Exportar Dossiê").
-  5. **Sheet 70vw & Features Pipefy:** Aplicada classe canônica `lg:sheet-page-70` (70% da viewport), priorizadas as abas de Checklists e Anexos logo após "Geral", e integrados inputs de upload real de múltiplos arquivos e criação de documentos A4 timbrados diretamente no card.
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11, B.14, B.15, B.22, B.26.
-- **Consequências:** Painel operacional limpo e 100% focado no negócio da agência, zero leads invisíveis no funil, layout responsivo descompactado e paridade funcional com o fluxo do Pipefy.
+  1. Preservação da separação de domínios com unificação da base de dados física (`store_floor_plans`):
+     - `/workspace/reservas`: módulo de agenda/hospitalidade (pré-visita), cuidando de agendamentos futuros, confirmações, fila de espera e alocação prévia de mesa.
+     - `/workspace/pdv/comandas`: módulo operacional de salão em tempo real (visita ativa), cuidando da abertura de contas por garçom/totem, despacho de itens ao KDS da cozinha, apuração de parciais e fechamento de conta com pagamento no caixa.
+  2. Conexão bidirecional: ao acomodar uma reserva confirmada (`status = seated`), o sistema disponibiliza o botão "Comanda PDV", criando automaticamente a comanda no salão vinculada ao cliente e preenchendo seu histórico de consumo.
+  3. Edição da planta física unificada via `FloorPlanEditorSheet` em ambos os módulos.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.5, B.11; relatório técnico de auditoria forense.
+- **Consequências:** Coerência operacional sem duplicidade de infraestrutura, com integração ponta a ponta entre reservas, comandas, cozinha, financeiro e CRM.
 
-## DEC-463: Encapsulamento, Governança de Download com Controle de Acesso e Modernização Visual das Extensões Infotravel, WhatsApp Web e Scripts Locais
-- **Data:** 2026-11-07
+## DEC-456: Blindagem Definitiva de Sessão, Persistência de Autenticação e Erradicação de Bounces no Workspace
+- **Data:** 2026-11-08
 - **Contexto:**
-  1. As extensões de navegador e scripts de mineração (Infotravel Chrome Extension, WhatsApp Web Ingestion Extension e Infotravel Local Miner Scripts) residiam soltos no repositório de desenvolvimento local em `tools/` sem empacotamento ou governança de distribuição.
-  2. Operadores de agências e administradores não dispunham de mecanismo direto para download dos pacotes prontos (.zip) através do sistema web.
-  3. Requisito de segurança Zero-Trust estrito: acesso restrito exclusivamente a operadores autorizados (Admin Master e agência Excelência Tour São Miguel do Oeste), com bloqueio 403 Forbidden para tenants não autorizados.
-  4. Necessidade de modernização completa dos popups das extensões: largura ampliada (540px), alinhamento com design tokens do Waesy (modo escuro/claro, tipografia canônica, abas estruturadas, touch targets >= 44px, remoção de AI smell) e configurações dinâmicas de servidor e token.
+  1. Usuários e lojistas sofriam com desconexões involuntárias ao carregar ou recarregar o Workspace ("eu entro cai de novo... não persiste").
+  2. No SSR (`typeof window === "undefined"`), o `beforeLoad` de `src/routes/workspace.tsx` disparava `throw redirect({ to: "/entrar" })` se `getUserSession()` oscilasse, abortando a requisição antes do navegador ter a chance de reconciliar a sessão persistida no `localStorage`.
+  3. No fluxo de login (`signInWithPassword`), a inicialização forçava `waesy_active_context = "civil"` e limpava `waesy_active_tenant`, rebaixando sumariamente lojistas para o contexto civil com `store_id = null`, provocando rejeição em `hasStore` e redirecionamento involuntário para `/criar-negocio`.
+  4. O fallback client-side executava `void syncSessionToCookies` de forma assíncrona desprotegida enquanto chamava `retrySession = await getUserSession()` concorrentemente, antes da gravação dos cookies no servidor.
+  5. A tabela `workspace_members` era consultada apenas por `profile_id`, ignorando a coluna `user_id` e proprietários registrados diretamente na tabela `stores`.
 - **Decisão:**
-  1. **Empacotador PKZIP Puro em Memória (`src/lib/zip-packager.ts`):**
-     - Desenvolvido gerador de ZIP sem dependências externas via `node:zlib` (deflateRawSync) e CRC-32, compatível com workers serverless e SSR.
-     - Cobertura de testes unitários em `src/lib/__tests__/zip-packager.test.ts` (3 testes aprovados).
-  2. **Serviço de Distribuição e Controle de Acesso (`src/services/extensions-distributor.*`):**
-     - Implementada validação `assertExtensionDownloadAuthorized` concedendo acesso a Admin Master (`isPlatformAdminUser`) e Excelência Tour SMO (`isExcelenciaTourStore`), bloqueando qualquer outro acesso com 403 Forbidden.
-     - Empacotamento em runtime de 3 pacotes (`infotravel_extension`, `whatsapp_extension`, `infotravel_miner`) e streaming via `/api/v1/extensions/download` e server functions TanStack Start.
-     - Testes automatizados em `src/services/extensions-distributor.server.test.ts` (6 testes aprovados).
-  3. **Modernização dos Popups e Scripts (`tools/`):**
-     - `infotravel-extension`: popup em 540px, abas (Dashboard, Cotações & Radar, Conexão Waesy, Logs & Exportar), exportação CSV/JSON Brasil e sincronização com `/api/v1/ingest/infotravel-quotes`.
-     - `whatsapp-extension`: popup em 540px, abas (Captura de Contatos, Conexão Waesy, Histórico & Logs), sanitização de telefones (+55 DDD), content script seguro e ingestão em `/api/v1/ingest/whatsapp-contacts`.
-     - `infotravel-miner`: empacotamento de extratores Python/Node, schemas e documentação operacional.
-  4. **Integração nas Telas do Sistema:**
-     - Botões de download direto com touch target canônico (>= 44px) em `InfotravelIntegrationPanel`, `WhatsAppGroupIngestModal` e `admin-master.modulos.tsx`.
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11, B.14, B.25; HIG e WCAG 2.2 AA.
-- **Consequências:** Extensões encapsuladas com distribuição segura, governança estrita por tenant, popups ergonômicos e zero dependências pesadas adicionadas ao runtime.
+  1. **Resolução Resiliente de Identidade (`src/lib/identity.server.ts`):**
+     - Consulta de vínculos societários expandida para `.or(\`profile_id.eq.${user.id},user_id.eq.${user.id}\`)` com fallbacks defensivos para `profiles.store_id` e `stores.owner_id = user.id`.
+     - Contexto e papéis harmonizados para preservar a autoridade da empresa principal (`finalRole`) mesmo em navegações não-escopadas.
+  2. **Inicialização Inteligente de Contexto no Login (`src/services/auth.functions.ts`):**
+     - `signInWithPassword` agora detecta se o usuário possui lojas cadastradas e grava imediatamente `waesy_active_context = "store"` e `waesy_active_tenant = targetStoreId`, eliminando o falso-positivo de ausência de negócio.
+     - `syncSessionToCookies` limpa explicitamente o cache de identidades em memória (`clearIdentityCache`).
+  3. **Erradicação do Bouncer de Rota (`src/routes/workspace.tsx`):**
+     - `beforeLoad` e `loader` aguardam com `await` a reconciliação síncrona de `syncSessionToCookies` antes de re-tentar `getUserSession()`.
+     - No SSR, se a requisição possui cookies de autenticação, não expulsa para `/entrar`, retornando flag de hidratação defensiva com spinner tátil neutro enquanto o cliente valida o token.
+     - `hasStore` expandido para contemplar papéis legítimos de operação (`owner`, `admin`, `manager`, `seller`, `collaborator`, `store_owner`, `platform_admin`).
+  4. **Debounce em Sincronização de Auth (`src/routes/__root.tsx`):**
+     - Sincronização de `onAuthStateChange` debounced em 300ms para evitar tempestade de requisições de cookies.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.31; skills `bigtech-board`, `state-sanitizer`, `supabase`.
+- **Consequências:** Sessão persistida perfeitamente no Workspace, zero laços de bounce para `/entrar`, eliminação de telas brancas e retenção íntegra do login.
 
-## DEC-462: Consolidação Integral de Atualizações Remotas, Deploy Produção Supabase & Cloudflare Pages, Higienização de Vínculos e Propagação da Marca "Turis"
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. A branch remota `origin/fix/cms-navigation-and-builder-clarity` acumulou melhorias e novas migrações estruturais que necessitavam de merge cuidadoso e resolução determinística de conflitos.
-  2. Necessidade de deploy completo para produção no Supabase (592 migrações e edge functions) e no Cloudflare Pages via Wrangler com variáveis de ambiente injetadas.
-  3. Solicitação de limpeza de cadastros e memberships do usuário administrador Eduardo Antônio Ramos (`meuwider@gmail.com`), retendo exclusivamente o Workspace Waesy (Principal) e a agência Excelência Tour (Turismo), com propagação da marca "Turis" e designação da Excelência Tour como "Agência Parceira Padrão".
-  4. Auditoria das empresas mineradas, notícias e scrapers/crawlers ativos, complementando logotipos oficiais, CNPJs e descrições, além da modernização integral dos Termos de Uso, Política de Privacidade (LGPD) e Central de Ajuda (FAQ).
-- **Decisão:**
-  1. **Merge e Resolução de Conflitos:**
-     - Resolvidos 11 arquivos com conflitos contíguos (`route-inventory.test.ts`, `builder.functions.ts`, `workspace.tsx`, `rh.ponto.tsx`, `orcamentos.index.tsx`, `financeiro.funcionarios.tsx`, `caixa.index.tsx`, `moderacao.index.tsx`, `pdv.comandas.tsx`, `squads.tsx`, `setup.ts`), preservando todas as defesas contra AI-smell e novas regras RLS.
-  2. **Deploy Supabase Produção:**
-     - Executado `deploy-supabase-production-complete.mjs` com 592 migrações aplicadas com sucesso e edge functions validadas em PostgreSQL 17.6 remoto com 808 tabelas públicas ativas.
-  3. **Deploy Cloudflare Pages:**
-     - Compilado bundle ultra-otimizado com Nitro/Wrangler e deployed para produção em `usewaesy.pages.dev` com 838 assets atualizados e zero vazamentos de runtime.
-  4. **Higienização de Cadastros e Propagação "Turis":**
-     - Removidos vínculos excedentes (Foodman e CDL Jovem) do usuário `meuwider@gmail.com`, mantendo estritamente Workspace Waesy e Excelência Tour.
-     - Atualizados metadados corporativos em `stores` e `companies` com logotipo oficial em alta resolução, CNPJ (66.819.671/0001-97), endereço e descrição.
-     - Propagado o nome "Turis" no módulo de turismo e chancelada a Excelência Tour como "Agência Parceira Padrão".
-  5. **Contratos e Governança LGPD:**
-     - Atualizados `_store.termos.tsx`, `_store.privacidade.tsx` e `_store.faq.tsx` com cláusulas completas para multiverticais, taxa fixa de despacho, tolerância de espera e direitos do titular LGPD.
-- **Fundamentação:** AGENTS.md B.1, B.6, B.7, B.9, B.11, B.20 a B.36; Lei 13.709/2018 (LGPD); Portaria MTE 671/2021.
-- **Consequências:** Base de código 100% unificada com o remoto, deploy ativo em produção, dados de loja e agência higienizados e termos jurídicos robustos.
-
-## DEC-461: Erradicação Completa de Jargões Técnicos ("Canônico", "Squircle", "1:1"), Banners Explicativos e AI Smell nas Telas de Configurações e Catálogo
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. A interface de configurações corporativas (`/workspace/configuracoes`) e o construtor de catálogo apresentavam termos técnicos internos ("1:1 Squircle", "Padrão Threads", "Exibição Canônica Sem Capa", "Varejo Canônico") e caixas de texto prolixas explicando a arquitetura interna ("A capa de cabeçalho foi descontinuada na plataforma...").
-  2. Violação direta dos princípios de design humano, minimalista e silencioso (Apple, Stripe, Linear e iFood) e das diretrizes do `anti-ai-design`, onde o usuário final não deve ser exposto a jargões de engenharia ou textos autoexplicativos desnecessários.
-- **Decisão:**
-  1. **Higienização de Texto e Remoção de Banners (`workspace.configuracoes.index.tsx`):**
-     - Removido o badge "Padrão Threads" e o rótulo "Identidade do Perfil (1:1 Squircle)", substituído por "Identidade do Perfil" com subtítulo direto e funcional.
-     - Extirpada a caixa explicativa "Exibição Canônica Sem Capa" e o texto justificando a descontinuação de capas de cabeçalho.
-     - Padronizados os rótulos de logotipo e favicon para "Logotipo", "Ícone de Navegação (Favicon)" e "Favicon", com descrições curtas e orientadas ao lojista.
-  2. **Refinamento da Prévia do Catálogo (`product-preview-pane.tsx`):**
-     - Substituído "Prévia (Varejo Canônico)" por "Prévia do Anúncio".
-     - Removido o texto redundante "Sem foto de capa", mantendo exclusivamente o ícone minimalista e silencioso.
-  3. **Varredura Transversal em Formulários e Onboarding (`fast-company-onboarding.tsx`, `_store.criar-negocio.*`, `vitrine-block-inspector.tsx`, `BuilderWixStudioPanels.tsx`):**
-     - Substituídas menções de "Squircle" em seletores de UI por "Arredondado" ou "Grade de Ícones".
-     - Higienizadas mensagens de toast e rótulos de webhook ("URL de Webhook (POST)", "Minuta do Contrato", "Cadastrar Primeiro Destino").
-  4. **Verificação Mecânica:**
-     - TypeScript: 0 erros (`tsc --noEmit` Exit Code 0).
-     - Design Lint Ratchet: Catraca aprovada com 0 violações P0 e 0 regressões contra a baseline 774 (`--ratchet`).
-- **Fundamentação:** AGENTS.md Regras B.1, B.6, B.7, B.8, B.9, B.11; skill `anti-ai-design`; Apple HIG.
-- **Consequências:** Interface silenciosa, livre de jargões técnicos e explicações redundantes, garantindo ergonomia visual profissional e minimalista.
-
-## DEC-460: Hub de Cotações & Despacho Rápido MotoLink/Waesy Go, Tabela Própria por Bairros/CEPs e Erradicação Defensiva de Falhas de Loader
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. A rota de cotações logísticas (`/workspace/configuracoes/fretes/cotacoes`) sofria colapso de tela preta com a exceção `Cannot read properties of null (reading 'length')` decorrente de retornos de erro no loader retornando `{ zones: null, pendingOrders: null }` ao tentar desestruturar `identity.store_id` em sessões de administradores globais sem vínculo direto no JWT.
-  2. Lojistas necessitavam de uma opção ágil de "Despachar Rápido" conectada à frota autônoma urbana de motoboys e entregadores (MotoLink / Waesy Go), respeitando o piso tarifário por KM e o modelo de 0% de comissão abusiva e taxa fixa de R$ 0,99 (Invariante B.23).
-  3. Demanda por gestão autônoma de "Tabela Própria de Frete", permitindo que cada loja crie zonas personalizadas por bairros, cidades ou faixas de CEP com preços fixos e prazos em dias úteis, operando em harmonia com os gateways nacionais (Melhor Envio / Correios).
-  4. Na tabela de solicitações pendentes, operadores precisavam de botões de cotação rápida para sugerir preços com um clique ou despachar a entrega imediatamente sem etapas burocráticas.
-- **Decisão:**
-  1. **Blindagem Defensiva de Loaders e Server Functions (`shipping.functions.ts`, `order.functions.ts` & `auth-guards.server.ts`):**
-     - Em todas as server functions de frete e cotações, o `storeId` é resolvido defensivamente com cascata resiliente: `adminAuth?.store_id || identity.store_id || identity.memberships?.[0]?.store_id`.
-     - Padronizado retorno de listas vazias `[]` em todos os blocos `catch` de loaders das rotas do Workspace e Admin Master, eliminando qualquer possibilidade de crash por `.length` nulo.
-  2. **Hub Logístico Trimodal & Tabela Própria (`workspace.configuracoes.fretes.cotacoes.tsx`):**
-     - Criado cabeçalho soberano com 3 cartões de status: (1) MotoLink / Waesy Go com despacho imediato; (2) Tabela Própria da Loja com contagem de zonas ativas; (3) Gateways Nacionais (Melhor Envio / Correios).
-     - Implementado gerenciador completo de Zonas e Tarifas Próprias com modal para criação de zonas por múltiplos prefixos de CEP, nome de taxa, preço em R$ e dias úteis, além de exclusão com 1 clique.
-  3. **Pílulas de Cotação Rápida e Modal de Despacho Imediato:**
-     - Adicionado botão "Opções" em cada linha de pedido pendente que calcula cotações instantâneas (Tabela Própria, MotoLink e Correios) e gera pílulas clicáveis que preenchem o valor do frete automaticamente.
-     - Integrado botão "Despachar" que aciona o `DispatchDeliveryModal`, permitindo selecionar entregadores locais, informar taxa e gerar token PIN de entrega com telemetria GPS.
-  4. **Verificação Mecânica e Qualidade:**
-     - TypeScript: 0 erros de compilação em 2.649 arquivos (`tsc --noEmit` Exit Code 0).
-     - Design Lint Ratchet: Catraca aprovada com 0 violações P0 e 0 regressões contra a baseline 774 (`node scripts/design-lint.mjs --ratchet` Exit Code 0).
-     - Build de Produção: Compilação de assets Vite, SSR, runtime Cloudflare Pages worker e rotas concluída com sucesso (Exit Code 0).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.9, B.11, B.14, B.22, B.23, B.25, B.26.
-- **Consequências:** Operação logística no Workspace fluida e sem falhas, autonomia tarifária plena da loja para entregas de bairro e despacho imediato para entregadores autônomos sem taxas abusivas.
-
-## DEC-459: Leitor Óptico Contínuo WMS (BarcodeDetector Nativo), Sincronização Dinâmica de Preço Mínimo por Variação, Blindagem de Tenant e Barreira Segura de Canais Externos
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. No módulo de conferência WMS (`/workspace/pedidos/expedicao`), operadores necessitavam de leitura óptica contínua através de câmeras de celular e webcams para captura ágil de códigos de barras (EAN-13, EAN-8, Code 128) e QR Codes, com feedback tátil de vibração e sinal sonoro sem latência ou pacotes externos pesados.
-  2. No construtor de produtos e catálogo (`/workspace/catalogo/produtos/novo` e `$id`), ao cadastrar variações de produtos com preços de exceção diferenciados (ex: P por R$ 36, M por R$ 38, G por R$ 50), o preço base do anúncio e a prévia fidedigna mantinham estaticamente o valor original sem sincronizar com o menor preço da matriz ("A partir de R$ 36,00").
-  3. Lojistas e operadores enfrentavam toasts de erro genéricos (`[object Object]` e `Nenhuma loja ativa selecionada`) ao salvar adicionais e produtos quando o contexto de sessão corporativa estava em transição ou omitido na chamada.
-  4. Na aba de precificação e canais externos, a ativação do Google Merchant Center e Mercado Livre ocorria via switch sem validação de conectividade, gerando falsos-positivos onde o lojista supunha estar divulgando externamente sem a credencial estar vinculada.
-  5. A aba de fotos não sincronizava automaticamente as imagens cadastradas nas grades de variações com a galeria principal, exigindo ações manuais repetitivas.
-- **Decisão:**
-  1. **Leitor Óptico Contínuo no WMS (`src/components/scanner/barcode-scanner-modal.tsx` & `workspace.pedidos.expedicao.tsx`):**
-     - Integrado loop contínuo de leitura óptica via API nativa `window.BarcodeDetector` com suporte a EAN-13, EAN-8, UPC, Code 128, Code 39 e QR Code.
-     - Adicionado botão tátil "Câmera / Ótico" (`h-11 min-h-11`) no grupo de bipagem do WMS para ativação direta do leitor.
-     - Incorporado feedback de vibração tátil (`navigator.vibrate(80)`) e aviso sonoro de conferência imediata.
-     - Expandido o filtro de despacho multicanal para suportar plataformas e transportadoras: Mercado Livre, iFood, Shopee, Correios, Melhor Envio e MotoLink.
-  2. **Sincronização Dinâmica do Menor Preço da Matriz (`use-product-editor.ts`, `workspace.catalogo.produtos.novo.tsx` & `product-preview-pane.tsx`):**
-     - O hook `useProductEditor` calcula automaticamente `matrixPricing.minPriceCents` e atualiza o preço de exibição do anúncio quando existem preços de exceção cadastrados.
-     - `ProductPreviewPane` agora recebe `variants={editor.variantsMatrix}` em modo criação e edição, renderizando dinamicamente a faixa de preços ("A partir de R$ X") e as fotos correspondentes da matriz.
-  3. **Auto-Alimentação da Galeria de Fotos a partir das Variações (`product-media-tab.tsx`):**
-     - Injetado efeito inteligente que auto-popula a galeria do anúncio com as fotos cadastradas nas variações caso a galeria principal esteja vazia, preservando total autonomia para uploads manuais adicionais.
-  4. **Barreira Anti-Falso-Positivo para Canais Externos (`product-pricing-tab.tsx`):**
-     - Integrada consulta em tempo real `getStoreChannelIntegrationsStatus` para verificar se as contas do Google Merchant Center, Meta Instagram, Mercado Livre e iFood estão ativas.
-     - Caso o switch seja ativado sem a conta conectada, exibe banner informativo de aviso com link direto para `/workspace/configuracoes` e emite toast de orientação.
-  5. **Blindagem Hermética de Tenant e Erradicação de Exceções (`admin-catalog.functions.ts` & `auth-guards.server.ts`):**
-     - `resolveStoreIdWithFallback` agora busca lojas vinculadas diretamente ao titular (`context_profile_id` ou `owner_id`) antes de lançar erro de tenant ausente.
-     - `requireRole` efetua fallback defensivo para a primeira loja de `identity.memberships`, eliminando falsos bloqueios de permissão no Workspace.
-     - `extractErrorMessage` e `quick-option-group-dialog.tsx` protegem contra serializações anônimas `[object Object]`.
-  6. **Expansão de Presets Canônicos por Nicho (`niche-presets.ts` & `quick-option-group-dialog.tsx`):**
-     - Adicionados novos presets realistas para Varejo, Alfaiataria e Calçados (Grade Numérica 36-44, Ajuste de Barra & Alfaiataria, Garantia Estendida & Proteção contra Danos) com alvos de toque `min-h-11`.
-- **Fundamentação:** AGENTS.md B.1, B.4, B.7, B.9, B.11, B.22, B.25, B.26; WCAG 2.2 AA; Apple HIG.
-- **Consequências:** Operação logística WMS moderna com leitura óptica por câmera, erradicação total de erros de tenant ao salvar produtos e adicionais, sincronização correta de preços de variantes na vitrine pública e prevenção de falsos-positivos em integrações de canais de venda.
-
-## DEC-458: Redução Histórica de Débito Visual (-19 Violações), Congelamento da Baseline em 774 e Saneamento Determinístico nas Rotas do Workspace
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. No desdobramento dos Marcos M2 e M3 (`WAESY_MASTER_REENGENHARIA_VISUAL_E_ARQUITETURA_EXECUCAO.md`), realizou-se uma varredura determinística nas rotas do Workspace (`src/routes/workspace.*`), identificando 54 violações pontuais remanescentes de design lint em 22 rotas.
-  2. Classes arbitrárias com colchetes de cálculo (`DL-02`) estavam presentes em `workspace.pdv.cozinha.tsx` (`h-[calc(100dvh-4rem)]`), `workspace.pdv.comandas.tsx` (`min-h-[calc(100dvh-4rem)]`) e `workspace.orcamentos.index.tsx` (`min-h-[calc(100dvh-8.5rem)]`, `h-[calc(100dvh-10.5rem)]`).
-  3. Falsos-positivos e regras estritas de Empty State (`DL-12`) e Loading State (`DL-11`) impactavam rotas operacionais (`workspace.pedidos.$id.tsx`, `workspace.squads.tsx`, `workspace.moderacao.index.tsx`, `workspace.captacao.index.tsx`, `workspace.captacao.ndas.tsx`, `workspace.contratos.index.tsx`, `workspace.doacoes.index.tsx`, `workspace.configuracoes.ai.tsx`, `workspace.configuracoes.privacidade-loja.tsx`).
-  4. Cores hexadecimais literais e estilos inline proibidos (`DL-01`, `DL-05`, `DL-33`) foram identificados em `workspace.clientes.$id.tsx` (`#1234` em placeholder de texto), `workspace.empregos.novo.tsx` (`#0A66C2`) e `workspace.marketing.canvas-pecados.tsx` (`style={{ backgroundColor: def.color }}`).
-- **Decisão:**
-  1. **Eliminação de Classes Arbitrárias (DL-02):**
-     - Em `workspace.pdv.cozinha.tsx`, substituído `h-[calc(100dvh-4rem)]` por `flex-1 h-full`.
-     - Em `workspace.pdv.comandas.tsx`, substituído `min-h-[calc(100dvh-4rem)]` por `flex-1 min-h-screen`.
-     - Em `workspace.orcamentos.index.tsx`, substituídas as classes de cálculo por `flex-1 min-h-screen` e `min-h-128`.
-  2. **Sanitização de Cores e Estilos Inline (DL-01, DL-05, DL-33):**
-     - Em `workspace.clientes.$id.tsx`, ajustado placeholder para `"Ex: Devolução Pedido N° 1234 / Bônus Aniversário"`.
-     - Em `workspace.empregos.novo.tsx`, substituído `#0A66C2` pelo token semântico `text-primary`.
-     - Em `workspace.marketing.canvas-pecados.tsx`, criado mapa semântico `SIN_COLOR_CLASSES` eliminando estilos inline.
-  3. **Conformidade de Loading e Empty States (DL-11, DL-12):**
-     - Extração obrigatória de `isLoading` em `useQuery` de captação, NDAs, contratos e doações.
-     - Inclusão de blocos semânticos e identificadores de empty-state em moderação, squads e configurações de IA.
-     - Ajuste de espaçamento para a grade canônica de 4px em `workspace.turismo.comissoes.tsx` (`gap-2`).
-  4. **Verificação Mecânica & Catraca Atualizada:**
-     - Débito visual global reduzido de 793 para 774 (-19 violações erradicadas).
-     - Arquivos com débito reduzidos de 238 para 222 (16 arquivos completamente curados).
-     - Nova baseline congelada com sucesso em 774 violações (0 P0) via `scripts/design-lint.mjs --update-baseline`.
-     - Vitest: 12 suítes, 108/108 testes passando com Exit Code 0.
-     - Typecheck: 0 erros de compilação TypeScript em 2649 arquivos (`npm run typecheck` Exit Code 0).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11; WCAG 2.2 AA; Apple HIG.
-- **Consequências:** Redução permanente do débito visual do repositório, fortalecimento da catraca mecânica de CI e integridade absoluta de tipos e contratos em todo o Workspace.
-
-## DEC-457: Conclusão do Marco M2: Alternância Multi-View Polimórfica (Tabela, Kanban, Cards, Heatmap) em Agenda e Clientes, Proteção RBAC de Folha no Shell e Ratchet de Design Lint Blindado
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. No âmbito do Marco M2 de Reengenharia Visual e Arquitetura Operacional (`WAESY_MASTER_REENGENHARIA_VISUAL_E_ARQUITETURA_EXECUCAO.md`), as telas operacionais de Agendamentos (`/workspace/agenda`) e CRM / Clientes (`/workspace/clientes`) necessitavam da integração com o primitivo canônico de alternância polimórfica `UniversalViewManager` e persistência de preferências de exibição (`useWorkspaceViewMode`).
-  2. Em `workspace.clientes.index.tsx`, foi detectado um bug de sintaxe em template string literal (`<span>Cadastrar ${t("client")}</span>`), além da necessidade de prover modos Tabela Corporativa, Cards de Contato com atalho WhatsApp e Funil CRM (Kanban de etapas de relacionamento).
-  3. Em `workspace.agenda.index.tsx`, secretárias e recepcionistas demandavam uma visualização densa em tabela para auditoria rápida em lote e fila de atendimento Kanban para fluxo de check-in, além da grade diária existente, com conformidade estrita aos alvos de toque de 44px (`h-11 min-h-11`) e anéis de foco `:focus-visible:ring-2`.
-  4. Na segurança de rotas do Workspace (`workspace-shell.tsx`), o array `TEAM_MANAGEMENT_ROUTES` não incluía explicitamente as rotas confidenciais de folha de pagamento (`/workspace/rh/folha`) e rescisão (`/workspace/rh/rescisao`), o que poderia permitir visualização de dados salariais por papéis operacionais (vendedor, caixa, operador).
-- **Decisão:**
-  1. **Alternância Multi-View em Clientes (`src/routes/workspace.clientes.index.tsx`):**
-     - Corrigida a renderização textual do botão primário para `{t("client")}`.
-     - Integrada a barra de ferramentas com seletor `ViewModeSwitcher` suportando `table` (Tabela analítica com paginação e ordenação), `cards` (Cards individuais de clientes com botão tátil de WhatsApp) e `kanban` (Funil de CRM por estágio de relacionamento: Lead, Primeiro Contato, Proposta, Negociação, Ativo, Inativo).
-     - Sanitizadas violações de design lint: grade de 4px (`px-2 py-1`, `space-y-2`, `gap-2`), eliminação de cores hardcoded (`bg-warning/10 text-warning-strong border-warning/20`) e anéis `:focus-visible:ring-2`.
-  2. **Alternância Multi-View e Ergonomia em Agenda (`src/routes/workspace.agenda.index.tsx`):**
-     - Implementado seletor com 4 modos: Grade Diária (`daily`), Tabela Geral (`table`), Fila Kanban (`kanban`) e Mapa de Calor (`heatmap`).
-     - No modo Kanban, todas as colunas (Pendente, Check-in, Em Atendimento, Concluído) e botões de avanço de estado receberam alvos de toque canônicos de 44px (`h-11 min-h-11`), conformidade estrita à grade de 4px (`p-4`, `space-y-2`, `gap-2`, `px-2 py-1`) e foco visível, totalizando 0 violações de design lint.
-  3. **Blindagem RBAC Multi-Nível (`src/components/workspace/workspace-shell.tsx`):**
-     - Inclusão mandatória de `/workspace/rh/folha` e `/workspace/rh/rescisao` na lista estrita `TEAM_MANAGEMENT_ROUTES`.
-     - Usuários com papéis restritos têm o acesso vetado com redirecionamento limpo para o dashboard de sua competência.
-  4. **Verificação Mecânica:**
-     - Vitest: 12 suítes, 108/108 testes passando com Exit Code 0.
-     - Design Lint Ratchet: Aprovado com 0 violações P0 e 0 regressões (baseline congelada em 793 violações).
-     - Typecheck: 0 erros de compilação TypeScript em 2649 arquivos (`npm run typecheck` Exit Code 0).
-     - Build de Produção: 0 erros, empacotando assets e worker Cloudflare Pages (`npm run build` Exit Code 0).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.14, B.15, B.26; WCAG 2.2 AA; Apple HIG.
-- **Consequências:** Operação de agendamentos e CRM elevada ao padrão Belasis/Linear com alternância instantânea de visão, segurança robusta contra vazamento de dados de salários entre colaboradores e zero regressões na catraca de CI.
-
-## DEC-456: Desacoplamento Arquitetural de "Lista de Vendas" e "Separação & Expedição (WMS)", Reordenação de ViewModes e Resolução de Homonímia no Menu do Workspace
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. Ao acessar o módulo de Vendas (`/workspace/pedidos`) através do item de navegação lateral "Histórico de Vendas", a visualização inicial padrão em lojas de varejo (`isRetail`) abria diretamente no cartão vazio de "Separação e Conferência" (`viewMode: "picking"`), ocultando a lista analítica de pedidos e forçando a gestora da loja a localizar e clicar manualmente na aba "Tabela de Vendas".
-  2. Homonímia no menu lateral do Workspace: o grupo de navegação recebia `t("orders")` ("Histórico de Vendas") e o primeiro item filho recebia simultaneamente `t("orders")` ("Histórico de Vendas"), gerando duplicidade redundante entre categoria e sub-item.
-  3. Ausência de visibilidade direta para o módulo completo de fulfillment logístico: o módulo avançado de WMS com bipagem ótica, separação por ondas, romaneio e impressão térmica ZPL/ESC-POS já implementado em `/workspace/pedidos/expedicao` estava restrito à seção corporativa, sem link no grupo de Vendas e sem atalhos diretos na tela principal de pedidos.
-- **Decisão:**
-  1. **Hierarquia Semântica e Desacoplamento no Menu Lateral (`src/lib/workspace-navigation.ts`):**
-     - O grupo temático preserva seu título canônico de categoria (`"Vendas"` ou `"Comercial"`), eliminando a sobrescrita que gerava duplicidade com o primeiro item.
-     - Inclusão explícita de `Lista de Vendas` (`/workspace/pedidos`) e `Separação & WMS` (`/workspace/pedidos/expedicao`) nos grupos de vendas (`GROUP_RETAIL_SALES` e `GROUP_COMMERCIAL_SALES`), clarificando a distinção entre a gestão comercial do faturamento e a separação operacional física de mercadorias.
-  2. **Reordenação Canônica de ViewModes (`src/routes/workspace.pedidos.index.tsx`):**
-     - `availableViewModes` posiciona `table` ("Tabela de Vendas" / "Lista de Vendas") como primeiro modo e `picking` como "Separação Rápida".
-     - O estado inicial `viewMode` foi padronizado em `"table"` para visualização analítica imediata do faturamento, tickets, clientes e status dos pedidos ao abrir a rota.
-     - Injetado botão de acesso rápido à "Central WMS" na barra de ferramentas superior (`WorkspaceCanonicalToolbar`) ao lado da Frente de Caixa (PDV).
-     - No modo "Separação Rápida", incluído banner de destaque bilateral com link direto para a "Central Avançada de Expedição WMS" (`/workspace/pedidos/expedicao`).
-  3. **Navegação Bilateral na Expedição WMS (`src/routes/workspace.pedidos.expedicao.tsx`):**
-     - Adicionado botão de retorno com link canônico para "Ver Lista de Vendas" (`/workspace/pedidos`) no cabeçalho do módulo de conferência.
-  4. **Verificação Mecânica:**
-     - Vitest: 11 suítes, 88/88 testes unitários aprovados com Exit Code 0.
-     - Design Lint Ratchet: Aprovado com 0 violações P0 e 0 regressões (793 violações na baseline congelada).
-     - Typecheck: 0 erros de compilação TypeScript (`npm run typecheck` Exit Code 0).
-     - Build de Produção: 0 erros, assets e worker Cloudflare Pages empacotados com sucesso (`npm run build` Exit Code 0).
-- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.26; Apple HIG; Nielsen Norman Group Information Architecture.
-- **Consequências:** Clareza instantânea para a liderança e operadores de loja, erradicação da homonímia de menu, exibição imediata da lista de vendas ao clicar no módulo e acesso fluido ao módulo avançado de WMS com bipagem e ondas de picking.
-
-## DEC-455: Resolução Resiliente de Loja Multi-Tenant sem Falso-Negativo, Erradicação de "Nenhuma loja ativa selecionada" e Fallback Hermético de Workspace para Platform Admins e Titulares
-- **Data:** 2026-11-07
-- **Contexto:**
-  1. Ao salvar ou publicar produtos em `/workspace/catalogo/produtos/novo`, lojistas e administradores enfrentavam o toast de erro `! Nenhuma loja ativa selecionada.`, mesmo estando operando autenticados dentro do Workspace de sua loja (ex: `Loja Moda Teste` / `Eduardo Antônio Ramos`).
-  2. A causa raiz envolvia uma cadeia quádrupla de falhas silenciosas:
-     a) Em `identity.server.ts`, a consulta de membros em `workspace_members` utilizava estritamente `.eq("profile_id", user.id)`, deixando de mapear vínculos persistidos por `user_id` e lojas criadas diretamente pelo usuário através da coluna `stores.context_profile_id`.
-     b) Para usuários com perfil administrativo global (`role === "master"` ou `platform_admin`), na ausência de vínculo pré-cadastrado na tabela de membros ou de cookie em chamadas de API, a lista `memberships` retornava vazia `[]` e `activeStoreId` era forçado a `null` quando o contexto padrão era civil, anulando a identidade de loja.
-     c) Em `_getStoreSettings` (`store.functions.ts`), a função não aceitava parâmetros e, na ausência de `identity.store_id`, retornava `null`, provocando `store: null` no loader da página e desamparando o formulário no front-end.
-     d) No hook `useProductEditor`, as ações (`createProduct`, `createCategory`, `createStoreBrand`) passavam `store_id: store?.id || undefined`, propagando `undefined` ao backend quando o loader falhava e disparando a exceção fatal em `_createProduct`.
-     e) Rotas irmãs de criação (`workspace.catalogo.categorias.novo`, `workspace.catalogo.tipos`, `workspace.catalogo.colecoes.novo`, `product-edit-general-form`) sofriam da mesma dependência frágil, carecendo de fallback defensivo de tenant no cliente.
-- **Decisão:**
-  1. **Expansão de Vínculos e Fallback de Platform Admin (`src/lib/identity.server.ts`):**
-     - Consulta unificada e resiliente que busca vínculos por `profile_id`, `user_id` e lojas criadas via `stores.context_profile_id`.
-     - Para administradores globais (`isPlatformAdmin`), caso o cookie `waesy_active_tenant` seja informado ou a lista de vínculos esteja vazia, realiza fallback na tabela `stores` para carregar a loja ativa ou a mais recente com perfil de gestão `owner`, impedindo que o admin fique desprovido de contexto de loja no Workspace.
-  2. **BFF de Configurações Tolerante a Parâmetros (`src/services/store.functions.ts`):**
-     - `_getStoreSettings` agora aceita `input?: { store_id?: string | null }`, priorizando o tenant solicitado e efetuando fallback para a loja mais recente para platform admins.
-  3. **Resolução Canônica de Tenant com Fallback (`src/services/admin-catalog.functions.ts`):**
-     - Criada a função canônica `resolveStoreIdWithFallback(identity, requestedStoreId, dbClient)`, testada e aplicada em: `_createProduct`, `_updateProduct`, `_createProductType`, `_updateProductType`, `_createCategory`, `_createCollection`, `upsertOptionGroup`, `deleteOptionGroup`, `createStoreBrand` e `getStoreChannelIntegrationsStatus`.
-  4. **Fallback no Cliente em Formulários e Editores do Workspace (`use-product-editor.ts`, `workspace.catalogo.produtos.novo.tsx`, etc.):**
-     - `useProductEditor` implementa `getEffectiveStoreId()` combinando `store?.id || searchParams.get("storeId") || getClientActiveTenant()`.
-     - `UnifiedNewProductPage` reconstrói defensivamente o objeto `store` caso o loader retorne nulo mas o cookie do tenant esteja ativo no navegador.
-     - Injetado fallback em `product-edit-general-form.tsx`, `workspace.catalogo.categorias.novo.tsx`, `workspace.catalogo.tipos.tsx` e `workspace.catalogo.colecoes.novo.tsx`.
-  5. **Verificação Mecânica:**
-     - Vitest: 11 suítes, 90/90 testes unitários e adversariais aprovados com Exit Code 0.
-     - Design Lint Ratchet: Aprovado com 0 violações P0 e 0 regressões (793 violações preservadas na baseline).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.25; `SPEC-20261106-catalog-channel-integrations-and-matrix-pricing.md`.
-- **Consequências:** Erradicação do falso-negativo "Nenhuma loja ativa selecionada", permitindo que qualquer usuário autenticado com acesso legítimo ou platform admin crie e salve produtos, categorias, marcas, coleções e tipos com estabilidade absoluta e isolamento multi-tenant hermético.
-
-## DEC-454: Precificação Dinâmica de Grade por Menor Preço ("A partir de"), Totalização Real de Estoque, Alimentação de Fotos de Variações na Galeria e Prevenção de Falso-Positivo em Canais de Venda (Google, Meta, Mercado Livre, Delivery)
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. No cadastro e edição de produtos com grade de variações (ex: tamanhos 38 a R$ 36,00, 39 a R$ 38,00, 40 a R$ 50,00), o preço padrão do anúncio ficava estático no valor base e o preview na vitrine não refletia a variação com "A partir de R$ 36,00", além do campo de estoque inicial não refletir a soma real das unidades distribuídas na matriz (1+5+3 = 9 unidades).
-  2. Na aba "Fotos" (`ProductMediaTab`), a galeria de imagens operava isolada da matriz de variações, deixando o anúncio e o preview com "Sem foto de capa" mesmo quando o lojista já havia cadastrado fotos específicas para variações (ex: camisa preta para a cor "Preto"), sem permitir puxar essas fotos para a galeria principal preservando uploads diretos.
-  3. Na tela pública do produto (`_store.produto.$slug`), a variação inicial selecionada não priorizava o menor preço cadastrado na grade, frustrando o consumidor que via "A partir de R$ 36,00" no catálogo mas era apresentado à variação de maior valor ao carregar a página.
-  4. No bloco de "Sincronização em Canais de Venda" (`product-pricing-tab.tsx`), o lojista podia ativar toggles para Google Merchant Center, Sacolinha Instagram/Meta, Mercado Livre e Delivery Externo sem qualquer indicação de que as credenciais primárias da loja na verdade não estavam configuradas, gerando falsos-positivos operacionais onde o lojista acreditava estar sincronizando sem conexão ativa.
-- **Decisão:**
-  1. **Motor Puro de Cálculo de Grade e Extração de Fotos (`src/lib/catalog-channel-integrations.ts`):**
-     - Criada função `calculateMatrixPricingAndStock(basePriceCents, baseStock, variants)` que extrai o menor preço efetivo, o maior preço efetivo, indica se há intervalo de preço (`hasPriceRange`) e soma o estoque real de todas as variações ativas.
-     - Criada função `extractVariantImages(variants, currentGalleryUrls)` que extrai fotos únicas das variações, formata rótulos semânticos por atributos e sinaliza fotos que já constam na galeria.
-     - Criada função `resolveStoreChannelsStatus(settings)` que avalia as credenciais configuradas na loja e retorna o status detalhado (`isConnected`, `statusText`, `hint`, `details`) para Google Merchant, Meta Instagram Shopping, Mercado Livre e Delivery Externo (iFood/Keeta).
-     - Testes unitários com 100% de cobertura em `src/lib/__tests__/catalog-channel-integrations.test.ts` (8/8 aprovados).
-  2. **BFF Server Function de Diagnóstico de Integrações (`src/services/admin-catalog.functions.ts`):**
-     - Adicionada função `getStoreChannelIntegrationsStatus` com resolução multi-tenant segura via `resolveStoreId(identity, input?.store_id)` e leitura das configurações ativas do workspace.
-     - Atualizada a persistência de produto (`createProduct` e `updateProduct`) para calcular defensivamente `effectivePriceCents` como o menor preço entre variações ativas e preencher `media_urls` com fotos das variantes quando a galeria manual estiver vazia.
-  3. **UI do Editor de Fotos com Alimentação da Grade (`product-media-tab.tsx` e `product-edit-media-manager.tsx`):**
-     - Na aba "Fotos", inclusão do bloco "Fotos da Grade de Variações" com detecção automática de imagens cadastradas na matriz, botão "Puxar Fotos da Grade (X)" em lote, botões individuais por variante e preservação integral do dropzone de upload direto (`MediaUploader`).
-     - Em `ProductEditMediaManager`, inclusão de atalho para importar fotos de variantes já existentes para a tabela `product_media`.
-  4. **UI do Editor de Produtos com Indicadores Anti-Falso-Positivo e Preview Tolerante (`product-pricing-tab.tsx` e `product-preview-pane.tsx`):**
-     - No bloco de precificação, adicionado badge informativo "Menor na grade: R$ X,XX (Sincronizar)" e badge dinâmico "(X un somadas da grade)" no campo de estoque.
-     - No bloco de Canais de Venda, cada canal agora exibe badge de status visual (`Conectado` verde vs `Não Conectado` âmbar) com texto de orientação e link direto para `/workspace/configuracoes/integracoes` quando não configurado.
-     - No `ProductPreviewPane`, renderização de `"A partir de R$ X,XX"`, soma de estoque e exibição da foto da variação como capa de prévia quando a galeria principal estiver sem fotos manuais.
-  5. **Página Pública de Produto (`_store.produto.$slug.tsx`):**
-     - `initialVariant` agora ordena variações em estoque pelo menor `effectivePriceCents`, garantindo que a menor oferta seja a primeira selecionada.
-  6. **Verificação Mecânica:**
-     - Vitest: 10 suítes, 74/74 testes aprovados com Exit Code 0.
-     - Design Lint: `node scripts/design-lint.mjs --ratchet` aprovado com 0 regressões (793 total, 0 P0).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.9, B.11, B.22, B.25; `SPEC-20261106-catalog-channel-integrations-and-matrix-pricing.md`.
-- **Consequências:** Transparência total para o lojista na sincronização externa com eliminação de falsos-positivos, coerência absoluta de preços da grade entre o anúncio, o preview e a página do produto, e alimentação sem fricção de fotos entre a matriz e a galeria principal.
-
-## DEC-453: Sanitização Universal Anti-[object Object], Resiliência Multi-Tenant de Catálogo, Criação Rápida de Categorias e Gestão de Marcas/Fabricantes por Nicho
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. Durante a criação de novos grupos de adicionais e categorias em `/workspace/catalogo/produtos/novo`, toasts exibiam a mensagem opaca `! [object Object]` e o erro de tenant `No store found`.
-  2. A causa raiz envolvia: falta de sanitizador puro de erros na UI (`toast.error(e?.message)` convertendo objetos serializados para `[object Object]`), ausência de parâmetro `store_id` e fallback defensivo em Server Functions de catálogo (`upsertOptionGroup`, `createCategory`, `createProduct`, `updateProduct`), validação rígida de UUID em Zod rejeitando IDs vazios/temporários (`"temp-..."`), e ausência de funções de backend para listagem e criação ágil de marcas/fabricantes.
-  3. Desalinhamento semântico de placeholders por nicho: campos exibiam exemplos gastronômicos ("Bacon Extra") em lojas de vestuário e turismo.
-- **Decisão:**
-  1. **Sanitizador Universal de Mensagens (`src/lib/utils.ts`):** Criação de `extractErrorMessage(err, fallback)` que desempacota recursivamente instâncias de `Error`, strings JSON serializadas, payloads de resposta TanStack Start, issues do Zod e rejeita deterministicamente a string `[object Object]`. Cobertura integral com 8 testes unitários em `extract-error-message.test.ts`.
-  2. **Resiliência Multi-Tenant em Server Functions (`src/services/admin-catalog.functions.ts` e `src/lib/identity.server.ts`):**
-     - Adicionado parâmetro opcional `store_id` aos validadores Zod de `createCategory`, `createProduct`, `updateProduct`, `listOptionGroups`, `upsertOptionGroup` e `deleteOptionGroup`.
-     - Resolução defensiva de tenant priorizando `input.store_id || identity.store_id || identity.memberships?.[0]?.store_id` combinada com validação de privilégio via `assertStoreAccess(identity, MANAGER_ROLES, effectiveStoreId)`.
-     - Preservação do `store_id` em `identity.server.ts` quando um cookie de tenant válido é encontrado mesmo se o contexto estiver em `civil`.
-  3. **Módulo Soberano de Marcas/Fabricantes (`listStoreBrands` e `createStoreBrand`):**
-     - Criadas Server Functions para listar marcas distintas cadastradas na loja e cadastrar novas marcas com higienização de string e validação de tenant.
-     - Modal `ProductBrandModal` integrado ao combobox de marca/fabricante com presets semânticos dinâmicos por nicho (vestuário, gastronomia, turismo, veículos, farmácia, etc.).
-  4. **Correção de Placeholders e Presets por Nicho (`quick-option-group-dialog.tsx`):**
-     - Substituição de termos estáticos por `placeholders.groupNamePlaceholder`, `placeholders.optionLabelPlaceholder` e presets customizados por nicho ativo.
-  5. **Verificação Mecânica:**
-     - TypeScript: `npm run typecheck` Exit Code 0 (0 erros).
-     - Design Lint: `node scripts/design-lint.mjs --ratchet` Exit Code 0 (0 regressões, total 793).
-     - Vitest: 9 suítes, 66/66 testes aprovados com Exit Code 0.
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.9, B.11, B.25; skills `component-api`, `content-density`, `accessibility-floor`.
-- **Consequências:** Eliminação definitiva de toasts `[object Object]`, garantia de isolamento multi-tenant resiliente em todas as mutações de catálogo e experiência contextualizada para cada nicho de atuação do ecossistema Waesy.
-
-## DEC-452: Suíte Soberana de RH & Departamento Pessoal, Folha de Pagamento Contábil CLT/MTE, Holerite Oficial e Ponto Eletrônico Portaria 671
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. A gestão de colaboradores e adiantamentos estava anteriormente restrita a uma tela rudimentar de vales em `/workspace/financeiro/funcionarios`, sem conformidade contábil, sem cálculo progressivo de impostos trabalhistas e desconectada da governança de RH/DP.
-  2. Necessidade crítica de uma suíte soberana de RH/DP em `/workspace/rh/folha`, contemplando cálculo real de INSS/IRRF progressivos 2026, FGTS, horas extras (50% e 100%), DSR reflexo, adicional noturno, faltas injustificadas com DSR e atestados médicos (Portaria 671).
-  3. Demanda por múltiplos modos de visualização operacional: Planilha Rápida in-page para edição em massa estilo contábil, Kanban visual de fechamento em 5 fases (Conferência de Ponto, Lançamento de Proventos/Descontos, Prévia Contábil, Aprovação da Diretoria e Integração Financeira), Dossiês Digitais de Colaboradores e Simulador Trabalhista Oficial CLT (Rescisão com Lei 12.506 e Férias com Abono Pecuniário).
-  4. Integração pontual com Financeiro: fechamento da folha gera automaticamente os títulos de Contas a Pagar em `cash_transactions` com conciliação bancária.
-- **Decisão:**
-  1. **Motor Contábil de Folha (`src/lib/payroll-calculator.ts`):**
-     - Tabelas oficiais progressivas de INSS (7.5% a 14%) e IRRF (isenção até R$ 2.259,20 até alíquota máxima de 27.5% com deduções por dependente e parcela a deduzir).
-     - Fórmulas CLT para horas extras, reflexo de DSR, adicional noturno de 20%, desconto de faltas e DSR semanal, e provisão de FGTS (8%).
-     - Simulador de rescisão contratual com aviso prévio proporcional (Lei 12.506/2011), 13º proporcional, férias vencidas/proporcionais com 1/3 e multa rescisória de 40% do FGTS.
-  2. **BFF Server Functions (`src/services/hr.functions.ts`):**
-     - Adicionada função `registerMedicalCertificate` com registro de CID-10, CRM e abono de faltas no ponto.
-     - Funções `closePayrollAndPostToPayables`, `generateOfficialPayslipHtml`, `batchUpdateDepartmentBenefits` e `calculateTerminationSeverance` conectadas aos schemas da loja.
-  3. **Interface Canônica de Folha de Pagamento (`src/routes/workspace.rh.folha.tsx`):**
-     - Rota soberana com 3 abas principais: "Folha Mensal & Apuração", "Dossiês & Benefícios em Lote" e "Simulador Trabalhista CLT".
-     - Modos de visualização Planilha, Kanban e Cartões com persistência ágil de proventos e descontos.
-     - Geração de holerite oficial com comprovante destacável de recebimento conforme legislação trabalhista brasileira.
-  4. **Navegação & Configuração Global (`workspace-navigation.ts` e `workspace.configuracoes.index.tsx`):**
-     - Grupo `"RH & DP"` estruturado na navegação com links soberanos para Folha e Ponto & Banco de Horas.
-     - Módulo `rh_dp` integrado no painel de "Módulos Habilitados" com ativação por nicho.
-  5. **Verificação Mecânica:**
-     - Vitest: 15/15 testes em `src/lib/__tests__/payroll-calculator.test.ts` e 47/47 testes globais aprovados com Exit Code 0.
-     - Design Lint Ratchet: Catraca aprovada com 0 violações P0 e 0 regressões em 2.646 arquivos inspecionados.
-     - TypeScript: Compilação limpa com 0 erros (`npm run typecheck` Exit Code 0).
-     - Build de Produção: Compilação Vite e Nitro aprovada gerando worker e assets.
-- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.6, B.7, B.8, B.9, B.11, B.25, B.26; skills `design-foundations`, `content-density`, `mobile-app-ui-design`.
-- **Consequências:** RH e Departamento Pessoal operando em nível contábil e trabalhista de alta fidelidade, garantindo segurança jurídica CLT, transparência salarial e integração bilateral automatizada com o Financeiro da loja.
-
-## DEC-451: Unificação de Embalagens, Fretes e WMS no Editor de Produtos e PDV Multiterminal
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. O cadastro de produtos necessitava de suporte completo a dimensões físicas (comprimento, largura, altura, peso bruto e peso líquido) e formatos de embalagem logística (pacote/caixa, rolo/cilindro, envelope) para cotação precisa de fretes via Correios e transportadoras.
-  2. Integração do WMS com posições físicas de armazenagem (rua, módulo, nível e vão) diretamente no catálogo.
-- **Decisão:**
-  1. Criação do seletor visual de embalagens e pesos (`product-packaging-selector.tsx`) em conformidade com as regras ergonômicas DS 4.0.
-  2. Testes unitários de cálculo volumétrico e cubagem em `product-packaging-logistics.test.ts`.
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.9.
-- **Consequências:** Padronização logística de dimensões e cubagem em todo o ecossistema de catálogo, frente de caixa e expedição.
-
-## DEC-450: Refinamento Ergonômico de Preço & Grade 2D, Erradicação de Jargões WebMCP, Gerador Vetorial de Código de Barras (EAN-13/Code-128) e Central de Impressão de Etiquetas Adesivas
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. A aba "Preço & Grade 2D" no editor de produtos apresentava cards excessivamente prolixos e jargões técnicos artificiais ("WebMCP", descrições robóticas), poluindo a ergonomia comercial e contrastando com o padrão silencioso Stripe/Shopify.
-  2. Dúvidas e desalinhamentos funcionais sobre a eficácia de "Usar Padrão da Loja" vs "Personalizar Pagamento", desativação de delivery (forçar retirada), bloqueio de cupons e canais de visibilidade.
-  3. A grade de variações 2D sofria compressão e truncamento de colunas em larguras intermediárias de tela desktop.
-  4. Demanda comercial por gerador autônomo de códigos de barras (EAN-13 e Code-128) e central de impressão de etiquetas adesivas compatível com folhas e rolos térmicos de marcas conhecidas (Zebra 100x50mm, Zebra 60x40mm, Pimaco/Colacril 6180 com 30 etiquetas A4 e Pimaco 6182 com 14 etiquetas A4).
-- **Decisão:**
-  1. **Motor Vetorial de Código de Barras (`src/lib/barcode-generator.ts`):**
-     - Implementado gerador SVG vetorial puro em TypeScript com cálculo automático de dígito verificador Modulo 10 para EAN-13 e codificação Subset B para Code-128 alfanumérico com quiet zones canônicas e texto legível inferior.
-  2. **Central de Impressão de Etiquetas Adesivas (`src/components/admin/catalog/product-barcode-label-modal.tsx`):**
-     - Modal dialog com templates pré-configurados para rolos térmicos Zebra e folhas A4 Pimaco/Colacril, importação de estoque da matriz ou seleção de variação específica, alternância de preço/marca/atributos, preview ao vivo e gatilho de impressão direta (`window.print`).
-  3. **Descompressão e Desobstrução da Grade 2D (`variant-matrix-grid.tsx`):**
-     - Reestruturada a tabela com expansão natural `w-max min-w-full`, coluna sticky da matriz mãe com largura ergonômica de 176px (`w-44`) e cabeçalhos com larguras delimitadas, eliminando truncamentos de campos de preço e SKU.
-  4. **Humanização Comercial e Refatoração Anti-AI (`product-pricing-tab.tsx`):**
-     - Substituição dos cards verticais inflados por segmented control horizontal `[ Padrão da Loja ]` / `[ Personalizar Pagamento ]`.
-     - Erradicação de jargões WebMCP em favor de linguagem comercial clara: "Onde Este Produto Fica Visível", "Google Shopping", "Instagram & Facebook", "Mercado Livre" e "Busca no Google e Assistentes Inteligentes".
-     - Botão soberano de 44px "Imprimir Etiquetas" integrado no cabeçalho da seção de Precificação.
-  5. **Verificação Mecânica:**
-     - Vitest: 4/4 testes aprovados em `src/lib/__tests__/barcode-generator.test.ts`.
-     - TypeScript: 0 erros em 2.642 arquivos (`tsc --noEmit` Exit Code 0).
-     - Design Lint: 0 violações P0 e 0 violações nos arquivos do escopo atômico.
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.14, B.22, B.25, B.26; skills `anti-ai-design`, `content-density`, `mobile-app-ui-design`.
-- **Consequências:** Interface de precificação limpa e comercial, descompressão definitiva da matriz de variações, rastreabilidade física de estoque via código de barras e impressão ágil de etiquetas para PDV e expedição.
-
-## DEC-449: Padronização Multi-Nicho de Marcas/Fabricantes no Catálogo, Ação "+ Criar Rápido" e Paridade Visual com Categorias
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. No formulário de criação de produtos (`/workspace/catalogo/produtos/novo`) e edição (`/workspace/catalogo/produtos/$id`), o campo "Marca / Fabricante" era um `<Input>` de texto puro, sem capacidade de seleção de marcas previamente cadastradas na loja nem ação "+ Criar Rápido", divergindo da ergonomia do campo "Categoria do Produto".
-  2. Lojas de todos os segmentos necessitam selecionar marcas existentes de forma ágil e cadastrar novas marcas instantaneamente sem perder o preenchimento do formulário.
-  3. Cada nicho possui terminologia e contextualização próprias (Varejo = "Marca / Fabricante", Veículos = "Marca / Montadora", Turismo = "Operadora / Cia Aérea / Frota", Gastronomia = "Cozinha / Linha", Farmácia = "Laboratório / Fabricante").
-- **Decisão:**
-  1. **BFF Server Functions (`src/services/admin-catalog.functions.ts`):**
-     - Implementadas as Server Functions `listStoreBrands` e `createStoreBrand`.
-     - `_listStoreBrands`: consolida marcas registradas em `stores.settings.brands` com `SELECT DISTINCT brand FROM products` da loja ativa, retornando lista deduplicada e ordenada alfabeticamente.
-     - `_createStoreBrand`: persiste a nova marca atomicamente no JSON de configurações da loja com validação Zod, autenticação `requireAdmin` e autorização multi-tenant `assertStoreAccess`.
-  2. **Modal Canônico de Marca (`src/components/admin/catalog/product-editor/product-brand-modal.tsx`):**
-     - Criado componente modal seguindo as diretrizes Apple HIG e DS 4.0, com piso tátil de 44px (`h-11`), foco acessível `:focus-visible:ring-2`, envio com tecla Enter e textos adaptativos por nicho.
-  3. **Interface com Select + "+ Criar Rápido" (`product-basic-tab.tsx` e `product-edit-general-form.tsx`):**
-     - Substituição do input simples por campo `<Select>` com botão `+ Criar Rápido` no cabeçalho do label e item `+ Cadastrar nova marca...` no dropdown.
-     - Suporte transparente para marcas legadas e importadas do Catálogo Mestre.
-  4. **Integração Ponta a Ponta nas Rotas (`workspace.catalogo.produtos.novo.tsx` e `workspace.catalogo.produtos.$id.tsx`):**
-     - Loaders atualizados com busca paralela de marcas (`listStoreBrands`).
-     - Integração completa nos hooks `useProductEditor` e formulários de edição.
-  5. **Verificação Mecânica:**
-     - 10/10 testes unitários em `src/services/admin-catalog-contracts.test.ts` aprovados com Exit Code 0.
-     - Catraca Design Lint Ratchet aprovada com 0 violações P0 e 0 regressões em 2639 arquivos.
-     - Typecheck global aprovado com 0 erros TypeScript (`npm run typecheck` Exit Code 0).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.25.
-- **Consequências:** Ergonomia unificada entre Categorias e Marcas/Fabricantes no catálogo, suporte a todos os 17 nichos do ecossistema Waesy e cadastro rápido sem recarregamento de página.
-
-## DEC-448: Conectividade Resiliente da Evolution API na Oracle VPS (147.15.61.45:8080), Fallback de Runtime Cloudflare e Refinamento de Design HIG do Pareador QR Code
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. Ao requisitar a geração de QR Code em `/workspace/configuracoes/integracoes` (Aba Mensageria), o backend disparava o erro `EVOLUTION_API_URL não configurada no ambiente server-side.` devido à ausência de variáveis em tempo de execução no Cloudflare Worker.
-  2. A VPS Oracle Always Free (`147.15.61.45:8080`) com a Evolution API v2.3.7 encontrava-se 100% ativa e operacional, porém dependia exclusivamente de `process.env.EVOLUTION_API_URL` sem estratégia de contingência.
-  3. O modal de conexão QR Code (`WhatsAppQrConnectModal`) carecia de feedback visual durante a solicitação de handshake na VPS e alvos táteis Apple HIG com botão de cópia de Pairing Code.
-- **Decisão:**
-  1. **Fallback Resiliente para Evolution API (`src/services/whatsapp-channel-instances.functions.ts`):**
-     - Estabelecido fallback padrão automático para `http://147.15.61.45:8080` e chave `WaesyApiKey_Master_2026_WhatsApp`, eliminando qualquer possibilidade de crash por ausência de env.
-     - Atualizado `DEFAULT_WEBHOOK_ORIGIN` com resolução defensiva para `waesy.com.br`.
-  2. **Injeção de Ambiente em Tempo de Build (`scripts/wrap-worker.js`):**
-     - Adicionadas `EVOLUTION_API_URL`, `EVOLUTION_API_KEY` e `VITE_APP_URL` ao `fallbackEnv` do Cloudflare Pages Worker.
-  3. **Refinamento Apple HIG no Pareador QR Code (`src/components/chat/whatsapp-qr-connect-modal.tsx`):**
-     - Adicionado estado de loading com spinner centrado e telemetria clara durante a requisição de handshake na VPS (`isGenerating`).
-     - Adicionado card tátil de Pairing Code com botão de cópia em 1 clique em conformidade estrita com o piso DL-14 (`h-11 min-h-11`).
-     - Harmonização de contraste de badges de conexão para modo claro e escuro (WCAG 2.2 AA).
-  4. **Verificação Mecânica:**
-     - 41/41 testes de mensageria WhatsApp aprovados com Vitest.
-     - Compilação TypeScript com heap ampliado aprovada com 0 erros (`tsc --noEmit`).
-     - Build de produção completo aprovado gerando cliente, SSR e worker (`npm run build`).
-     - Design Lint Ratchet aprovado com 0 violações P0 e 0 regressões.
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.26.
-- **Consequências:** Eliminação definitiva do erro de URL não configurada, conexão ponta a ponta imediata com a VPS Oracle e experiência de pareamento refinada no ecossistema Waesy.
-
-## DEC-447: Resiliência de Renderização no Atendimento Omnichannel, Blindagem Defensiva de Instâncias WhatsApp e Estabilidade de Formatação Temporal
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. Ao acessar `/workspace/atendimento` em contas sem conversas abertas ou com seleção nula de thread, a avaliação imediata de expressões JSX no Drawer lateral de Perfil 360 do Cliente (`<Sheet>`) disparava `TypeError: Cannot read properties of undefined (reading 'id')` no `WorkspaceErrorComponent`, colapsando a página inteira.
-  2. O modal de conexão QR Code (`WhatsAppQrConnectModal`) e painéis de suporte assumiam arrays populados de instâncias, gerando risco de quebra quando invocados em lojas sem canais previamente vinculados.
-  3. Formatadores de data e tempo relativo (`formatDate`, `formatDateTime`, `formatRelativeTime`) em `src/lib/datetime.ts` não possuíam guarda defensiva para carimbos nulos, undefined ou inválidos, arriscando quebras em chamadas com metadados parciais.
-- **Decisão:**
-  1. **Guarda Defensiva no Drawer 360º de Atendimento (`src/routes/workspace.atendimento.index.tsx`):**
-     - Envelopamento do conteúdo do Drawer de Perfil 360º em `{activeThread && (`, impedindo a avaliação prematura de propriedades de contato quando a conversa ativa é nula.
-     - Proteção de fallback para seleção inicial de thread (`initialThreads[0]?.id || null`).
-     - Normalização de listeners Realtime com verificação segura de tenant (`store?.id`).
-  2. **Defensividade no Conector QR WhatsApp (`src/components/chat/whatsapp-qr-connect-modal.tsx`):**
-     - Parâmetro default `instances = []` e resolução defensiva `(instances || [])` em todos os acessos a propriedades (`.length`, `[0]?.id`), garantindo imunidade a falhas nas rotas `/workspace/configuracoes/integracoes` e `/admin-master/integracoes`.
-  3. **Tolerância a Falhas em Datas (`src/lib/datetime.ts`):**
-     - Proteção universal contra `null`/`undefined`/`NaN` retornando travessão canônico (`"—"`) sem lançar exceções de runtime.
-  4. **Validação e Provas:**
-     - 20/20 testes unitários de mensageria WhatsApp aprovados com Exit Code 0.
-     - Catraca Design Lint Ratchet aprovada com 0 violações P0 e 0 regressões.
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9.
-- **Consequências:** Estabilidade operacional total em `/workspace/atendimento`, `/workspace/configuracoes/integracoes` e `/admin-master/integracoes`, permitindo visualização fluida e conexão do WhatsApp via VPS Oracle sem interrupções.
-
-## DEC-446: Soberania do Módulo RH & Departamento Pessoal, Motor Contábil CLT/PJ 2026, Emissão de Holerites em PDF, Espelho de Ponto MTE 671 e Bilateralidade com Financeiro
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. A gestão de colaboradores e folha operava reduzida a uma listagem simples de vales em `/workspace/financeiro/funcionarios`, sem cálculo contábil real, sem suporte a competências mensais (`YYYY-MM`), sem emissão de holerites oficiais com canhoto destacável, sem apuração progressiva de INSS e IRRF 2026, sem espelho de ponto mensal assinado, sem simulação de rescisão/férias e sem lançamento bilateral em Contas a Pagar.
-  2. A navegação do Workspace segregava "Equipe" de "Folha", confundindo operadores de RH que precisavam saltar entre abas isoladas para gerir contratos, pontos e pagamentos.
-- **Decisão:**
-  1. **Motor Contábil de Folha de Pagamento Brasileira (`src/lib/payroll-calculator.ts`):**
-     - Apuração progressiva de INSS 2026 por faixas oficiais (7,5%, 9%, 12%, 14% com teto de R$ 951,62).
-     - Apuração de IRRF 2026 com avaliação automática do Desconto Simplificado (R$ 564,80) vs. deduções legais por dependente (R$ 189,59/dep).
-     - Provisão patronal de FGTS (8% geral ou 2% aprendiz).
-     - Cálculo de Horas Extras 50% e 100% com divisor de jornada e reflexo automático no DSR.
-     - Adicional noturno com hora reduzida (52m30s).
-     - Descontos legais de benefícios: Vale Transporte (máx. 6% do salário base), Vale Alimentação/Refeição, Plano de Saúde e Faltas injustificadas com perda do DSR.
-     - Simulador integral de Rescisão Trabalhista CLT (Lei 12.506/11) e Férias com Abono Pecuniário (venda de 10 dias) e adiantamento do 13º.
-  2. **Emissão Oficial de Holerite em PDF e Canhoto Destacável (`src/components/hr/official-payslip-modal.tsx`):**
-     - Recibo de Pagamento de Salário nos padrões oficiais CLT/MTE com identificação do empregador (CNPJ, endereço), colaborador (CBO, PIS, CPF mascarado, matrícula, cargo), tabela de proventos e descontos codificados por rubricas oficiais (001 a 900), quadro de bases (INSS, FGTS, IRRF), valor por extenso e canhoto destacável de quitação.
-     - Suporte a impressão física ou PDF via `@media print` e compartilhamento direto por WhatsApp.
-  3. **Edição Ágil em Formato Planilha In-Page (`src/routes/workspace.financeiro.funcionarios.tsx`):**
-     - Grade contábil de edição rápida com recálculo em tempo real (Zero Jank) de INSS, IRRF e Salário Líquido conforme os dias trabalhados, horas extras, faltas, bônus e vales são digitados.
-     - Botão "Fechar Competência & Lançar no Financeiro" com lançamento automático em `financial_transactions` na categoria `folha_pagamento` para liquidação pela tesouraria.
-  4. **Ponto Eletrônico & Espelho de Ponto Mensal (`src/components/hr/monthly-timecard-sheet-modal.tsx`, `src/routes/workspace.rh.ponto.tsx`):**
-     - Espelho de Ponto Mensal Portaria MTE 671/2021 para todos os dias do mês com horários de entrada, almoço, saída, horas diárias, saldo e campo de assinatura física ou digital.
-  5. **Navegação Soberana de Equipe & RH (`src/lib/workspace-navigation.ts`):**
-     - Adicionada `Folha de Pagamento` sob o grupo executivo `Equipe` e preservado o acesso sob `Financeiro`.
-  6. **Verificação Mecânica:**
-     - 15/15 testes unitários contábeis aprovados (`vitest run src/lib/__tests__/payroll-calculator.test.ts`).
-     - Catraca Design Lint Ratchet aprovada com 0 violações P0 e 0 novas violações (765 P1 mantidas).
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.25; `SPEC-20261106-rh-dp-payroll-clt-timecard-unification.md`.
-- **Consequências:** Módulo soberano de RH e Departamento Pessoal com paridade às práticas contábeis brasileiras, desburocratização de holerites e fechamento de folha bilateral com o financeiro.
-
-## DEC-445: Unificação Canônica de Embalagem Visual, Cubagem IATA, Especificações Multi-Nicho, Frete API e Expedição WMS + Singularidade de Sessão Auth
-- **Data:** 2026-11-06
-- **Contexto:**
-  1. No editor de produtos (`/workspace/catalogo/produtos/novo` e `/workspace/catalogo/produtos/$id`), a seção `"Logística e Frete"` na aba `"Básico"` e a seção `"Dimensões"` na aba `"Especificações"` duplicavam peso e medidas em estruturas desconectadas (colunas SQL vs. JSONB `attributes`), confundindo o lojista e dessincronizando o motor de frete.
-  2. As especificações técnicas não cobriam todos os nichos operacionais (`retail`/moda, `gastronomy`/`supermarket`, `pharmacy`, `pet`, `tech_repair`, `rental`, `wholesale`, `events`/`education`) nem os campos dinâmicos de `product_types.field_schema`, e o `WorkspaceAccountSwitcher` exibia o slug técnico cru (`tourism`) em vez do rótulo semântico do nicho.
-  3. O motor `_calculateShipping` em `shipping.functions.ts` ignorava as dimensões quando invocado via `productId` isolado (retornando `itemsCount = 0`), não calculava o peso cubado IATA/Correios (`(C × L × A) / 6000`) nem escalonava automaticamente itens volumosos (>45 cm ou >12 kg) da Bag MotoLink 45L para Carro/Utilitário Local, além de não propagar embalagem, endereço WMS (`aisle_location`), fragilidade e controle térmico para a etiqueta ZPL/térmica e para a separação WMS (`wms.functions.ts`).
-  4. Na camada de sessão/autenticação, múltiplos cookies concorrentes (`waesy-auth-token` vs chunks `.0`/`.1` em host-only e `.waesy.com.br`) e a captura tardia de headers após `await` causavam quedas espontâneas de sessão e loops de redirecionamento.
-- **Decisão:**
-  1. **Seletor Visual Interativo de Embalagem, Cubagem & WMS (`product-packaging-selector.tsx`):** Criado componente canônico com ilustrações vetoriais interativas para 6 formatos (`box`, `envelope`, `thermal_bag`, `roll`, `pallet`, `digital`), 12 presets dimensionais de mercado, cálculo em tempo real de volume (L), peso cubado IATA (`(C × L × A) / 6000`), peso taxável, elegibilidade automática de modal (`MotoLink Bag 45L` vs `Carro Utilitário Local` vs `Correios/Melhor Envio`) e diretrizes WMS (`aisle_location`, `thermal_control`, `fragile`, `stackable`, `picking_notes`).
-  2. **Desduplicação e Sincronização de Especificações por Nicho e Tipo (`product-basic-tab.tsx`, `product-specs-tab.tsx`, `use-product-editor.ts`, `use-product-edit.ts`):** Eliminada a duplicação de peso/dimensões na aba `"Especificações"`, substituída por barra de resumo sincronizada em tempo real com a aba `"Básico"`, além de fichas técnicas dedicadas para todos os nichos e renderização dinâmica de `selectedProductType.field_schema`.
-  3. **Sincronização Ponta a Ponta com Frete, Etiquetas e WMS (`shipping.functions.ts`, `shipping-label-modal.tsx`, `wms.functions.ts`, `workspace.pedidos.expedicao.tsx`):** `_calculateShipping` agora resolve dimensões tanto por `productId` quanto por `cartId`, aplica peso taxável cubado no Melhor Envio, escalona automaticamente para `MotoLink Cargo / Utilitário Local` quando o volume excede a Bag 45L, e propaga formato de embalagem, Bin WMS, alerta de Frágil/Térmico e notas de separação até a conferência por código de barras e etiqueta 100x150mm / ZPL II.
-  4. **Singularidade de Sessão e Estabilidade (`auth-cookie-sanitizer.ts`, `supabase-ssr.server.ts`, `supabase.ts`, `identity.server.ts`, `workspace.atendimento.index.tsx`):** Decodificador atômico de candidatos de sessão que escolhe o conjunto íntegro mais recente, purga bilateral de escopos de cookie no login/logout, deduplicação de `getServerIdentity()` em voo e guarda defensiva em `activeThread`.
-- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.25; `SPEC-20261106-auth-session-singularity-and-stability.md` e `SPEC-20261106-catalog-packaging-logistics-wms-unification.md`.
-- **Consequências:** Experiência visual unificada de embalagem e ficha técnica em todos os nichos, cotação precisa de frete nacional e local, separação WMS guiada por corredor/embalagem e estabilidade plena de sessão.
 ## DEC-455: Alinhamento Sistêmico de Carrinho, Checkout Atômico, Reservas Universais e Despacho MotoLink
 - **Data:** 2026-11-07
 - **Contexto:**
@@ -740,6 +237,16 @@
 - **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.22, B.26; skills `supabase`, `web-performance`, `accessibility-floor`.
 - **Consequências:** Persistência total das alterações de funis em tempo real no Supabase, adaptação transparente para todos os 17 nichos, e erradicação de inconsistências visuais no CRM de atendimento.
 
+
+## DEC-450: Desambiguacao End-to-End de Pedidos/KDS, Despoluicao de Menus e Refinamento Visual do Brand Kit
+- **Data:** 2026-11-08
+- **Contexto:** Auditoria forense e remediacao end-to-end de interfaces quebradas exibidas em capturas reais do Workspace: truncamento de cor no Brand Kit ("Nao infor"), card de cores rotulado como "Tipografia", poluicao de ferramentas de consultoria (BMC/SWOT) no menu de restaurantes, e duplicacao entre a tela legada de pedidos e o Gestor de Pedidos Multicanal/KDS da Cozinha.
+- **Decisao:**
+  1. **Brand Kit Refinado (`src/routes/workspace.marketing.brand-kit.tsx`):** Substituicao do placeholder prolixo "Nao informado" por "#HEX" centralizado em caixa mono com largura adequada. Amostras de cores agora contam com anel de contraste interno (`ring-1 ring-inset ring-white/10 dark:ring-white/10`) evitando fusao com fundos escuros. Card de superficies renomeado de "Tipografia" para "Superficies & Contraste". Removida a badge de ruido "Design System" do cabecalho.
+  2. **Desambiguacao Pedidos & KDS (`src/routes/workspace.pedidos.index.tsx`, `src/lib/workspace-navigation.ts`):** Erradicado o bloco legado de mini-cozinha de 3 colunas de `workspace.pedidos.index.tsx`. O menu de Gastronomia agora possui rotas unificadas e limpas: Gestor de Pedidos (Multicanal iFood/WhatsApp/Delivery), KDS da Cozinha (monitor operacional), Mesas & Reservas, Tempo de Preparo (SLA inpage) e Frente de Caixa.
+  3. **Despoluicao de Menus de Marketing:** Ferramentas academicas ("Modelo BMC" e "Matriz SWOT") foram desvinculadas do submenu cotidiano de marketing, permanecendo catalogadas na busca global "Todas as Ferramentas" (Cmd+K).
+  4. **Piso de Qualidade e CI:** Zero violacoes P0, aprovacao plena na catraca mecanica de CI (`node scripts/design-lint.mjs --ratchet`) e 100% de sucesso nos testes automatizados de isolamento de rotas e tempos de preparo (19/19 testes).
+- **Fundamentacao:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.26.
 
 ## DEC-449: Arquitetura Two-Tier de Sidebar Master Nativa, Sincronização de Foto de Perfil, Padronização Global de Squircles Sólidos Sem Borda, Grade Anti-Sanfona e Kanbans de Colunas Altas
 - **Data:** 2026-11-06
@@ -9485,28 +8992,123 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.6, B.7, B.9, B.11 e B.25.
 - **Consequências:** 100% dos quality gates aprovados localmente e no pipeline de CI, banco de produção e Cloudflare em sincronia determinística absoluta.
 
+
+
 ---
 
-### DEC-456: Desacoplamento do WorkspaceShell em Editores/Builders e Propagação Integral de Dados nos Templates de Proposta
-- **Data:** 2026-11-07
+### DEC-456: Sincronização Reativa de Preço da Matriz 2D, Resolução de Bairros de Entrega e Alternância Polimórfica Marco M2
+- **Data:** 2026-11-08
 - **ID da Decisão:** DEC-456
-- **Contexto:** Relato de sobreposição da casca dupla do Workspace (sidebar + topbar) sobre os editores/builders imersivos (`/workspace/turismo/propostas/$id`, `/workspace/builder/*`, `/workspace/estudio*`, `/workspace/contratos/$id/editor`), além da ausência de renderização no canvas para campos do CMS lateral (Roteiro com localização/refeições, Traslados/Receptivo e Passeios/Experiências).
+- **Contexto:** Execução ponta a ponta dos relatos do documento promtos.pdf cobrindo divergência de preço de entrada em produtos com variações 2D, resolução de entrega por bairros vs retirada exclusiva, logo da empresa no perfil público da vitrine, gestão bilateral de entregadores (Frota Própria vs Waesy Go / MotoLink) e alternância polimórfica (Marco M2 — UniversalViewManager) nas páginas de Clientes e Tarefas do Workspace.
 - **Decisão Adotada:**
-  1. **Fullscreen Immersion Mode no Layout do Workspace (`src/routes/workspace.tsx`):**
-     - Estabelecido `isImmersiveEditor` cobrindo o construtor visual (`/workspace/builder/*`), estúdios (`/workspace/estudio*`, `/workspace/marketing/studio`), estúdio de propostas comerciais (`/workspace/turismo/propostas/$id`) e editor de contratos (`/workspace/contratos/$id/editor`).
-     - Retorno direto de `<Outlet />` sem encapsulamento pelo `WorkspaceShell`, garantindo viewport 100% limpa (`100vw x 100dvh`) com barras próprias do editor e botão nativo de retorno.
-  2. **Normalização Bidirecional e Propagação Integral nos 6 Templates Canônicos de Proposta:**
-     - `proposal-canvas-renderer.tsx`: Mapeamento bidirecional de `city` ⇄ `location` e `meals` ⇄ `included_meals` em cada dia do roteiro, além de `route`, `pickup_time`, `dropoff_time` e frota multimodal (`bus_dd`, `bus_semi`, `van`, `private`, `shared`) em traslados.
-     - `TemplateEditorialFlat`, `TemplateDarkPremium`, `TemplateExecutivo`, `TemplateLandscape`, `TemplateVerticalPremium` e `TemplateGroupCatalog`: Renderização de badges de localidade e refeições em cada dia do roteiro, blocos de "Traslados & Receptivo" (`p.transfers`), "Passeios & Experiências" (`p.tours`) e "Inclusões / Exclusões".
-  3. **Continuidade E2E da Cadeia de 7 Elos (Captação, Minha Viagem e Painel Operacional):**
-     - `workspace.turismo.cotacoes.tsx`: Propagação integral de `leadId`, `clientEmail`, `initialNotes`, `rooms` (`room_occupancies`) e `pricing` (`quote_amount_cents`) na criação de proposta a partir de cotação.
-     - `viajante.viagem.$id.tsx`: Exibição de localidade e refeições nos cards de cada dia do roteiro, derivação de paradas/embarques rodoviários a partir de `trip.transfers` e painel de passeios, inclusões e exclusões.
-     - `workspace.turismo.viagens.$id.tsx`: Renderização do Roteiro Dia a Dia e Exclusões na aba Visão Geral, e exibição completa de veículo, horários de saída/chegada, rota e observações em Traslados e Passeios.
-  4. **Conformidade com Design Tokens e Grade de 4px:**
-     - Erradicação de valores arbitrários (`border-[3px]`, `-left-[11px]`), padronização de paddings (`px-2 py-1`) e respeito estrito ao Design Lint V2 com zero novas violações P0/P1.
-- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11 e B.42; continuidade de dados e completude máxima entre Lead, Cotação, Proposta, Viagem e Minha Viagem.
-- **Consequências:** Editores e construtores abrem em tela cheia sem poluição visual ou duplicação de cabeçalhos; qualquer alteração efetuada no painel lateral reflete instantaneamente no canvas visual e é preservada no ciclo de conversão em viagem e área do passageiro.
+  1. **Matriz de Variações 2D & Catálogo:**
+     - `use-product-editor.ts`: Adicionado cálculo reativo `matrixStats` (menor preço, maior preço, total de estoque e flag de variação). No salvamento (`onSubmit` e `onSaveDraft`), `price_cents` é sincronizado automaticamente com o menor preço ativo da grade (`effectiveEntryPriceCents`), e o estoque pai é travado como a soma exata dos estoques das variações.
+     - `product-pricing-tab.tsx`: Adicionado banner de sincronização com botão de 1 clique e exibição clara de piso "A partir de R$ X,XX (Varia até R$ Y,YY)".
+     - `product-preview-pane.tsx`: Integradas estatísticas reativas da grade, prefixo "A partir de" quando há múltiplos preços, badge com contagem de variantes e estoque somado real.
+     - `_store.produto.$slug.tsx`: Seleção inicial da variante ordenada deterministicamente pelo menor preço (`sortByLowestPrice`).
+  2. **Logo da Loja na Vitrine Pública:**
+     - `canonical-store-profile-view.tsx`: Resolução de `logoUrl` compatibilizada com o DTO camelCase retornado pelo BFF (`getPublicStoreProfile`), prevenindo fallback errôneo para iniciais e adicionando tratamento defensivo de erro `onError`.
+  3. **Configurações de Entrega & Resolução de Bairros:**
+     - `delivery-selector.tsx`: Adicionadas propriedades `allowDelivery` e `allowPickup`, impedindo a seleção de entrega quando a loja operar exclusivamente com retirada no balcão e chaveando o estado inicial de forma reativa.
+     - `shipping.functions.ts`: Respeito estrito a `settings.allow_delivery === false`, resolução de taxas personalizadas por bairro via `company_delivery_settings.neighborhoods_rates` e `stores.settings.deliveryZones`, taxa fixa de entrega e isenção por valor mínimo de pedido (`free_delivery_above_cents`).
+     - `_store.checkout.tsx`: Propagação do bairro e cidade do cliente para `calculateShipping`.
+     - `neighborhoods-manager.tsx`: Adicionado botão "Importar Bairros Oficiais" integrando `getNeighborhoodsForCity(cityName)`.
+  4. **Gestão de Entregadores no Workspace:**
+     - `workspace.configuracoes.index.tsx`: Criado card dedicado de gestão de despacho com links para gestão de entregadores, cadastro e painel KDS, explicitando o modelo dual (Frota Própria vs Waesy Go / MotoLink com taxa fixa de R$ 0,99).
+  5. **Marco M2 — Alternância Polimórfica (UniversalViewManager):**
+     - `workspace.clientes.index.tsx`: Integrado `useWorkspaceViewMode({ module: "clientes" })`, `WorkspaceCanonicalToolbar` com `viewModes` e `UniversalViewManager` suportando Tabela densa corporativa, Cartões responsivos e Funil CRM com 4 estágios.
+     - `workspace.tarefas.tsx`: Separação das abas de escopo (`my-day`, `all`, `urgent`, `done`) dos modos de visualização (`kanban`, `table`, `calendar`), permitindo controle independente de escopo e layout.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.23, B.26 e B.33; DL-01 a DL-32.
+- **Consequências:** Zero dados sintéticos, sincronização bidirecional entre catálogo, checkout e precificação, e conformidade estrita com o piso WCAG 2.2 AA (44px) e design tokens canônicos.
 
+---
+
+### DEC-457: Unificação Arquitetural Mesas-Comandas-Reservas, Erradicação de Neon no Dark Theme e Liquidação Transacional Quádrupla no PDV
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-457
+- **Contexto:** Auditoria forense e alinhamento do ecossistema de salão/gastronomia (`/workspace/pdv/comandas` e `/workspace/reservas`): queixa de poluição visual por verde e âmbar fluorescentes (neon) no dark mode; aparente duplicidade de módulos; ausência de edição de salão em comandas; e verificação das amarrações sistêmicas end-to-end (KDS da cozinha, baixa de inventário, caixa diário, lançamento contábil de receitas e vínculo de cliente CRM na comanda).
+- **Decisão Adotada:**
+  1. **Erradicação do Neon no Dark Theme (Quiet UI / Apple HIG):**
+     - `src/routes/workspace.pdv.comandas.tsx`: Substituição de bordas e fundos em verde fluorescente (`emerald-500/30`, `emerald-500/5`, `text-emerald-400`) por cartões com casca silenciosa elegante (`border-border/80 bg-card hover:bg-muted/30 text-muted-foreground`), tipografia mono neutra nos KPIs e migração de `amber-500` para tokens semânticos `warning` / `warning-strong`.
+     - `src/routes/workspace.reservas.tsx`: Atualizado `TABLE_STATUS_STYLE.free` para repouso sóbrio (`border-border/80 bg-card hover:bg-muted/40 text-foreground`), mantendo mesas redondas e retangulares com affordance nítida, dot discreto de legenda e ícone de poltrona em `text-muted-foreground/60`.
+  2. **Unificação Conceitual de Salão (SSOT):**
+     - Estabelecido alinhamento taxonômico estrito: Mesa (ativo físico persistido), Reserva (agendamento temporal prévio) e Comanda (sessão ativa de consumo no salão).
+     - `src/services/order.functions.ts` (`getSalonTablesOverview`): Remoção do laço fixo de 24 mesas hardcoded; integração direta com a planta real da loja (`store_floor_plans`), com fallback para `DEFAULT_CANONICAL_TABLES`, unificando as mesas entre Comandas e Reservas.
+     - `src/routes/workspace.pdv.comandas.tsx`: Adicionado botão "Editar Salão" abrindo o `FloorPlanEditorSheet` para gerenciar mesas diretamente pelo PDV de comandas.
+  3. **Conexão End-to-End com CRM, KDS, Estoque e Frente de Caixa:**
+     - Criado `OpenTableModal` ao abrir mesa livre com campos para hóspede/cliente, telefone WhatsApp, ocupantes e busca rápida integrada ao CRM (`listCustomers`), gravando `orders.customer_id` e snapshot.
+     - `src/services/order.functions.ts` (`closePdvComanda`): Implementada liquidação transacional atômica quádrupla: (a) marcação de pedido como pago e entregue; (b) inserção em `payments`; (c) lançamento em `cash_register_entries` quando houver caixa aberto; (d) registro em `financial_transactions` (`type = 'revenue_pos_sale'`) para apuração contábil em DRE; (e) baixa atômica de saldo em `product_variants.stock_on_hand` com histórico em `stock_movements`; (f) registro de integridade no ledger SHA-256 (`recordLedgerEntryCore`).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.25, B.26, B.33; DL-01 a DL-33; Apple HIG (Quiet State & Minimal Contrast); Princípio Zero-Jank e Consistência Transacional ERP.
+- **Consequências:** Zero ruído neon no dark theme, consolidação de mesas em fonte única da verdade no banco, reconciliação financeira em tempo real e rastreabilidade total de consumo por cliente no CRM.
+
+---
+
+### DEC-458: Módulo Integral de Insumos, Sub-Receitas (BOM), Dedução em Adicionais/Sabores, Etiquetas Térmicas e Calibração Anti-Neon
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-458
+- **Contexto:** Atendimento integral às necessidades da gastronomia profissional onde pratos finais (pizzas, hambúrgueres, combos, marmitas, nachos) consomem insumos compartilhados (matérias-primas e sub-receitas de pré-preparo como chilli, molhos, carnes, caldos, maionese verde caseira, massa de pizza). Necessidade de vincular receitas aos adicionais/sabores (`option_values`), dedução automática de insumos ao finalizar pedidos/comandas no PDV, cálculo em tempo real de gargalo produtivo para pausar pratos esgotados, registro sanitário de desperdício (`waste_logs`), impressão térmica de etiquetas de validade (58mm/80mm) e erradicação do tom neon nos indicadores de margem e tokens de sucesso no dark mode.
+- **Decisão Adotada:**
+  1. **Modelo Relacional Supabase:**
+     - Aplicadas as migrations `20270323000000` e `20270324000000` criando as tabelas relacionais `supplies`, `recipes`, `recipe_items`, `product_recipes`, `production_orders`, `waste_logs`, `supply_inventory_movements`, `expiration_labels`, `suppliers` e adicionando colunas `supply_id`, `recipe_id`, `consume_quantity`, `consume_unit` na tabela `option_values`.
+  2. **BFF de Insumos e Dedução Transacional Idempotente:**
+     - Implementado `src/services/gastronomy-supplies.functions.ts` com gerenciamento completo de insumos, receitas, vínculos no produto e ordens de pré-preparo.
+     - Implementado o motor de gargalo `calculateProductProducibleStock` identificando o insumo limitante da produção.
+     - Criada a função `deductSuppliesForOrder` idempotente, acionada em `closePdvComanda` para baixar atômica e simultaneamente os insumos do prato principal e dos complementos/sabores selecionados, com gravação no Kardex `supply_inventory_movements`.
+     - Atualizado `src/services/order.functions.ts` para sincronizar os dados acumulados do cliente no CRM (`customers.total_spent_cents`, `customers.total_orders_count`).
+  3. **Interface e Componentes Canônicos:**
+     - `src/components/admin/catalog/product-bom-card.tsx`: Conectado ao catálogo de insumos e sub-receitas, exibindo alertas de gargalo e métricas de margem sem classes neon.
+     - `src/components/admin/catalog/quick-option-group-dialog.tsx`: Permite vincular insumos e receitas diretamente a cada opção/adicional (ex: Bacon Extra -> 2 fatias de Bacon; Chilli -> 1 porção de Molho Chilli).
+     - `src/components/kitchen/gastronomy-pantry-hub.tsx`: Hub completo com 4 abas operacionais (Insumos, Fichas & POP, Desperdício, Etiquetas de Validade).
+     - `src/components/kitchen/thermal-expiration-ticket.tsx`: Modal para etiquetas térmicas sanitárias de 58mm/80mm com QR Code de rastreabilidade.
+     - `src/routes/workspace.estoque.index.tsx`: Chaveador entre Insumos & Despensa e Produtos de Revenda (SKUs).
+  4. **Tokens e Dark Mode (Anti-Neon):**
+     - Recalibrado o token `--success` no tema escuro em `src/styles.css` de `oklch(0.68 0.18 145)` para `oklch(0.62 0.11 150)` nas classes `.dark` e `[data-theme="dark"]`, mantendo contraste WCAG AA superior a 4.5:1 com estética silenciosa e sofisticada.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.25, B.26; DL-01 a DL-33; Apple HIG; Normas ANVISA para etiquetas térmicas de fracionamento de alimentos.
+- **Consequências:** Rastreabilidade industrial completa de custos e estoque na cozinha, baixa de ingredientes por adicionais sem necessidade de cadastrar infinitos produtos individuais, automação contra quebra de estoque e interface sóbria no tema dark sem ruídos fluorescentes.
+
+---
+
+### DEC-459: Fechamento dos Gaps Operacionais de Entregadores (Rotas & Vales), Anamnese Clínica 360° Belasis e Trifurcação Gastronômica
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-459
+- **Contexto:** Auditoria forense e confronto mecânico página a página entre o arquivo `promtos.pdf` (39 páginas) e a infraestrutura real do Waesy. Atendimento integral e sem simulações dos gaps identificados: (1) Visualização de rotas ativas consolidadas e espelho de fechamento/vales por entregador (Página 3); (2) Registro, edição e persistência do dossiê clínico, comorbidades, alergias críticas, profissional de preferência e contato de emergência no Cliente 360° padrão Belasis (Página 7); (3) Trifurcação canônica no cadastro gastronômico iFood entre Prato de Cozinha, Produto Pronto/Bebida e Item Pesável/Balança (Páginas 9 a 11); (4) Migration `20270325000000` de BOM universal multi-nicho e kits de procedimento aplicada em produção.
+- **Decisão Adotada:**
+  1. **Rotas Consolidadas & Espelho de Vales (Página 3):**
+     - Em `src/routes/workspace.pedidos.entregadores.index.tsx`, integrado o loader e query com `listDispatches()`.
+     - Implementada a visualização "Rotas Ativas" agrupando pedidos e itinerários em tempo real por entregador, com status de entrega, PIN de conferência, link público de telemetria e totalização de fretes.
+     - Implementada a aba "Espelho & Vales" apurando corridas, valor bruto acumulado, dedução de vales/adiantamentos de combustível/refeição com persistência e cálculo do saldo líquido com botão para copiar fechamento formatado para WhatsApp/Pix.
+     - Adicionado modal canônico para registro de novos vales com alvos de toque >= 44px (`min-h-11`) e foco teclado `:focus-visible:ring-2`.
+  2. **Dossiê Clínico & Anamnese Belasis 360° (Página 7):**
+     - Em `src/services/crm.functions.ts`, atualizados os endpoints `addCustomerClinicalRecord`, `getCustomer360` e `updateCustomer` para serializar e desserializar com segurança campos clínicos estruturados (`medicalHistory`, `emergencyContact`, `preferredProfessional`, `allergies`) em `crm_clinical_records.content` e `customers_crm`.
+     - Em `src/routes/workspace.clientes.$id.tsx`, adicionado painel visual de destaque para contato de emergência e histórico médico, lista cronológica de procedimentos com profissional atendente e profissional de preferência, além de Sheet lateral completo para cadastramento ágil da anamnese.
+  3. **Catálogo Gastronômico Padrão iFood (Páginas 9 a 11):**
+     - Consolidada a trifurcação canônica em `src/components/admin/catalog/product-food-specs-card.tsx` e `use-product-editor.ts`: (a) Prato Preparado (KDS, tempo de preparo, serve pessoas, ficha técnica BOM); (b) Produto Pronto / Bebida (EAN-13, integração PDV, volume ml/L, temperatura ambiente/gelada); (c) Item Pesável / Balança (pesagem ao vivo, precificação kg/unidade).
+  4. **Conformidade de CI e Design Lint:**
+     - Eliminadas todas as violações em arquivos sob escopo, reduzindo o teto histórico na catraca `node scripts/design-lint.mjs --ratchet` para 749 P1 e 0 P0 (Exit Code 0).
+     - Aplicada a migration `20270325000000_universal_multi_nicho_bom_and_service_kits.sql` no PostgreSQL do Supabase SA-East-1.
+     - Realizado deploy de produção no Cloudflare Pages (`usewaesy`) via Wrangler, validado HTTP 200 OK em `https://waesy.com.br`.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1 a B.11, B.22, B.23, B.25, B.26, B.33; DL-01 a DL-33; WCAG 2.2 AA.
+- **Consequências:** Governança completa de fechamento de motoboys com adiantamentos rastreáveis, proteção médica e operacional em atendimentos de beleza/saúde e integridade transacional de cardápios sem dados falsos.
+
+---
+
+### DEC-460: Unificação Sistêmica de Mesas/Comandas/Reservas, Gestor de Pedidos iFood com Despacho Avançado, BOM Multi-Nicho e Erradicação de Cores Neon
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-460
+- **Contexto:** Auditoria de usabilidade, coerência arquitetural e conformidade estética apontadas pelo usuário e evidenciadas nas telas do salão, reservas, KDS e cadastro. Tratamento cirúrgico de 4 pilares: (1) Esclarecimento e unificação conceitual entre Mesas/Comandas (operação presente no salão) e Reservas (agendamento futuro), unificados na mesma SSOT de planta física (`store_floor_plans`) com editor integrado e abertura automática de comanda com CRM ao acomodar reservas; (2) Gestor de Pedidos estilo iFood (`workspace/pedidos/gestor`) com modal de despacho avançado (Waesy Go com taxa fixa de R$ 0,99 vs Frota Própria vs Retirada no Balcão), coluna "Despacho & Retirada", reimpressão de bobina térmica de 80mm e WhatsApp; (3) Ficha Técnica Universal (BOM) e Estoque Composto estendido a todos os nichos físicos e criação da aba "Insumos & Kit de Procedimento" em Serviços (`workspace/agenda/servicos`) para salões, oficinas, pet shops e clínicas; (4) Erradicação integral de cores fluorescentes neon em dark mode.
+- **Decisão Adotada:**
+  1. **Mesas & Reservas Integradas:**
+     - Ambas as rotas (`/workspace/pdv/comandas` e `/workspace/reservas`) consomem e persistem na mesma tabela `store_floor_plans`. Ao acomodar cliente em reserva, comanda é gerada imediatamente com dados do cliente no PDV.
+  2. **Gestor de Pedidos & Despacho:**
+     - Adicionado `CourierDispatchModal` com suporte a Waesy Go (0% comissão abusiva, R$ 0,99 fixo), Entregadores da frota interna (`listDrivers`) e Retirada no Balcão, além de botões térmicos e de notificação direta ao cliente.
+  3. **BOM Universal & Serviços Compostos:**
+     - Em `src/routes/workspace.catalogo.produtos.novo.tsx`, aba Insumos desbloqueada universalmente.
+     - Em `src/routes/workspace.agenda.servicos.index.tsx` e `src/services/services-erp.functions.ts`, implementada a gestão de insumos consumidos (`service_consumed_materials`) calculando custo unitário, margem bruta real e permitindo importação de insumos do almoxarifado.
+  4. **Design Lint Ratchet e Tokens Silenciosos:**
+     - Expurgadas classes neon em favor dos tokens Apple HIG (`text-primary`, `bg-primary/10`, `text-success`).
+     - Aprovada a catraca `node scripts/design-lint.mjs --ratchet` reduzindo o débito histórico para 777 violações totais (0 P0, 749 P1).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1 a B.11, B.22, B.23, B.25, B.26; DL-01 a DL-33; Apple HIG; WCAG 2.2 AA.
+- **Consequências:** Fim da ambiguidade entre módulos de salão, transparência operacional de pedidos e motoboys, rastreabilidade de custos em serviços e produtos de qualquer nicho de mercado e interface visual silenciosa e elegante.
 ---
 
 ### DEC-471: Arquitetura de Ecossistema Multi-Marca, Verticais Especializadas e Desacoplamento Canônico do Marketplace
@@ -9529,5 +9131,3 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Painel interativo integrado em `/workspace/configuracoes` permitindo ativar/desativar a publicação no Waesy Marketplace Civil, escolher a plataforma vertical de origem e gerenciar o plano de recursos da empresa.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.7, B.9 e B.25; Arquitetura Single-Core Multi-Brand SaaS.
 - **Consequências:** Cada vertical opera como um produto SaaS focado no seu setor (com marca, domínio e módulos próprios), o Marketplace Civil exibe apenas lojas e produtos que aprovaram sua exposição pública, e qualquer evolução em módulos universais propaga instantaneamente para todas as marcas sem duplicação de código.
-
-

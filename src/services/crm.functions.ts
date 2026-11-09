@@ -612,14 +612,29 @@ export const getCustomer360 = createServerFn({ method: "GET" })
   .eq("customer_id", customerId)
   .order("created_at", { ascending: false });
 
-  const clinicalRecords = (clinicalData || []).map((r: any) => ({
-  id: r.id,
-  service_title: r.content?.service_title || "Atendimento",
-  notes: r.content?.notes || "",
-  allergies: r.content?.allergies || null,
-  professional_name: r.content?.professional_name || null,
-  created_at: r.created_at,
-  }));
+  const clinicalRecords = (clinicalData || []).map((r: any) => {
+    let parsed: any = {};
+    if (typeof r.content === "string") {
+      try {
+        parsed = JSON.parse(r.content);
+      } catch {
+        parsed = { notes: r.content };
+      }
+    } else if (r.content && typeof r.content === "object") {
+      parsed = r.content;
+    }
+    return {
+      id: r.id,
+      service_title: parsed.service_title || "Atendimento",
+      notes: parsed.notes || (typeof r.content === "string" ? r.content : ""),
+      allergies: parsed.allergies || null,
+      medical_history: parsed.medical_history || null,
+      emergency_contact: parsed.emergency_contact || null,
+      preferred_professional: parsed.preferred_professional || null,
+      professional_name: parsed.professional_name || null,
+      created_at: r.created_at,
+    };
+  });
 
   return {
   profile: {
@@ -693,17 +708,25 @@ export const createCustomerSchema = z.object({
  legalName: z.string().optional().nullable(),
  document: z.string().optional().nullable(),
  rg: z.string().optional().nullable(),
+ gender: z.string().optional().nullable(),
+ occupation: z.string().optional().nullable(),
  email: z.string().email("E-mail inválido").optional().or(z.literal("")).nullable(),
  phone: z.string().optional().nullable(),
  birthDate: z.string().optional().nullable(),
  status: z.enum(["active", "inactive", "blocked"]).default("active"),
  channel: z.string().default("direct"),
+ referralSource: z.string().optional().nullable(),
  city: z.string().optional().nullable(),
  state: z.string().optional().nullable(),
  zipcode: z.string().optional().nullable(),
  addressLine: z.string().optional().nullable(),
  creditLimitCents: z.number().int().nonnegative().default(0),
  assignedTo: z.string().uuid().optional().nullable(),
+ emergencyContactName: z.string().optional().nullable(),
+ emergencyContactPhone: z.string().optional().nullable(),
+ lgpdAccepted: z.boolean().optional().default(false),
+ allergies: z.string().optional().nullable(),
+ healthNotes: z.string().optional().nullable(),
  tags: z.array(z.string()).optional(),
  notes: z.string().optional().nullable(),
 });
@@ -753,6 +776,15 @@ export const createCustomer = createServerFn({ method: "POST" })
  address_line: input.addressLine?.trim() || null,
  credit_limit_cents: input.creditLimitCents || 0,
  assigned_to: input.assignedTo || null,
+ emergency_contact_name: input.emergencyContactName?.trim() || null,
+ emergency_contact_phone: input.emergencyContactPhone?.trim() || null,
+ lgpd_accepted: input.lgpdAccepted ?? false,
+ custom_fields: {
+ gender: input.gender || null,
+ occupation: input.occupation || null,
+ referral_source: input.referralSource || null,
+ allergies: input.allergies || null,
+ },
  tags: input.tags || [],
  notes: input.notes?.trim() || null,
  })
@@ -762,6 +794,26 @@ export const createCustomer = createServerFn({ method: "POST" })
  if (error) {
  console.error("[crm] error inserting customer:", error);
  throw new Error("Erro ao salvar cliente na base.");
+ }
+
+ if (input.allergies?.trim() || input.healthNotes?.trim()) {
+ try {
+ await supabase.from("crm_clinical_records").insert({
+ customer_id: inserted.id,
+ store_id: identity.store_id,
+ author_id: identity.id,
+ record_type: "anamnesis",
+ content: {
+ service_title: "Anamnese Inicial de Cadastro",
+ professional_name: (identity as any).name || "Recepção / Especialista",
+ notes: input.healthNotes?.trim() || "Cadastro inicial de anamnese",
+ allergies: input.allergies?.trim() || null,
+ },
+ attachments: [],
+ });
+ } catch (clinErr) {
+ console.warn("[crm] optional clinical record error:", clinErr);
+ }
  }
 
  return inserted;
@@ -787,6 +839,8 @@ export const updateCustomerSchema = z.object({
  assignedTo: z.string().uuid().optional().nullable(),
  tags: z.array(z.string()).optional(),
  notes: z.string().optional().nullable(),
+ emergencyContactName: z.string().optional().nullable(),
+ emergencyContactPhone: z.string().optional().nullable(),
 });
 
 export const updateCustomer = createServerFn({ method: "POST" })
@@ -815,6 +869,8 @@ export const updateCustomer = createServerFn({ method: "POST" })
  if (input.assignedTo !== undefined) updatePayload.assigned_to = input.assignedTo;
  if (input.tags !== undefined) updatePayload.tags = input.tags;
  if (input.notes !== undefined) updatePayload.notes = input.notes;
+ if (input.emergencyContactName !== undefined) updatePayload.emergency_contact_name = input.emergencyContactName;
+ if (input.emergencyContactPhone !== undefined) updatePayload.emergency_contact_phone = input.emergencyContactPhone;
 
  const { error } = await supabase
  .from("customers_crm")
@@ -934,6 +990,9 @@ export const addCustomerClinicalRecord = createServerFn({ method: "POST" })
  professionalName: z.string().optional(),
  notes: z.string().min(3),
  allergies: z.string().optional().nullable(),
+ medicalHistory: z.string().optional().nullable(),
+ emergencyContact: z.string().optional().nullable(),
+ preferredProfessional: z.string().optional().nullable(),
  attachments: z.array(z.string().url()).optional(),
  }),
  )
@@ -942,6 +1001,16 @@ export const addCustomerClinicalRecord = createServerFn({ method: "POST" })
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
 
+ const contentPayload = {
+ service_title: input.serviceTitle,
+ professional_name: input.professionalName || (identity as any).name || "Especialista",
+ notes: input.notes,
+ allergies: input.allergies || null,
+ medical_history: input.medicalHistory || null,
+ emergency_contact: input.emergencyContact || null,
+ preferred_professional: input.preferredProfessional || null,
+ };
+
  const { data, error } = await supabase
  .from("crm_clinical_records")
  .insert({
@@ -949,16 +1018,21 @@ export const addCustomerClinicalRecord = createServerFn({ method: "POST" })
  store_id: identity.store_id,
  author_id: identity.id,
  record_type: "anamnesis",
- content: {
- service_title: input.serviceTitle,
- professional_name: input.professionalName || (identity as any).name || "Especialista",
- notes: input.notes,
- allergies: input.allergies || null,
- },
+ content: JSON.stringify(contentPayload),
  attachments: input.attachments || [],
  })
  .select()
  .single();
+
+ if (input.emergencyContact?.trim()) {
+ try {
+ await supabase
+ .from("customers_crm")
+ .update({ emergency_contact_phone: input.emergencyContact.trim() })
+ .eq("id", input.customerId)
+ .eq("store_id", identity.store_id);
+ } catch {}
+ }
 
  if (error) {
  console.warn("[clinical_records] Registro salvo com fallback:", error.message);

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/reservas")({
  head: () => ({ meta: [{ title: "Reservas | Workspace Waesy" }] }),
+ beforeLoad: () => { throw redirect({ to: "/workspace/pdv/comandas" }); },
  loader: async () => {
  try {
  const store = await getStoreSettings().catch(() => null);
@@ -51,37 +52,39 @@ const TABLE_STATUS_STYLE: Record<TableStatus, {
  border: string; bg: string; text: string; badgeCn: string; label: string;
 }> = {
  free: {
- border: "border-emerald-500/50",
- bg: "bg-emerald-500/10 hover:bg-emerald-500/20",
- text: "text-emerald-700 dark:text-emerald-400",
- badgeCn: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+ border: "border-border/80 hover:border-foreground/30",
+ bg: "bg-card hover:bg-muted/40 shadow-2xs",
+ text: "text-foreground",
+ badgeCn: "bg-muted/60 text-muted-foreground border-border/80",
  label: "Livre",
  },
  reserved: {
- border: "border-blue-500/60",
- bg: "bg-blue-500/10 hover:bg-blue-500/20",
- text: "text-blue-700 dark:text-blue-400",
- badgeCn: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30",
+ border: "border-primary/40",
+ bg: "bg-primary/10 hover:bg-primary/15",
+ text: "text-primary",
+ badgeCn: "bg-primary/10 text-primary border-primary/30",
  label: "Reservada",
  },
  pending: {
- border: "border-warning/60",
- bg: "bg-warning/10 hover:bg-warning/20",
+ border: "border-warning/50",
+ bg: "bg-warning/10 hover:bg-warning/15",
  text: "text-warning-strong ",
  badgeCn: "bg-warning/10 text-warning-strong  border-warning/30",
  label: "Pendente",
  },
  seated: {
- border: "border-purple-500/60",
- bg: "bg-purple-500/10 hover:bg-purple-500/20",
- text: "text-purple-700 dark:text-purple-400",
- badgeCn: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30",
+ border: "border-border",
+ bg: "bg-muted/60 hover:bg-muted",
+ text: "text-foreground",
+ badgeCn: "bg-muted text-foreground border-border",
  label: "Acomodado",
  },
 };
 
-export default function TableReservationsPage() {
- const { store } = ((Route.useLoaderData?.() as any) || {});
+export default function TableReservationsPage({ embedded = false, storeProp }: { embedded?: boolean; storeProp?: any } = {}) {
+ const { store: loaderStore } = ((Route.useLoaderData?.() as any) || {});
+ const store = storeProp ?? loaderStore;
+ // store resolved from storeProp ?? loaderStore
  const navigate = useNavigate();
  const queryClient = useQueryClient();
  const [activeView, setActiveView] = useState<"map" | "list">("map");
@@ -334,7 +337,7 @@ export default function TableReservationsPage() {
  {(Object.entries(TABLE_STATUS_STYLE) as [TableStatus, typeof TABLE_STATUS_STYLE[TableStatus]][]).map(
  ([status, style]) => (
  <div key={status} className="flex items-center gap-2">
- <div className={cn("size-2.5 rounded-full", status === "free" ? "bg-emerald-500" : status === "reserved" ? "bg-blue-500" : status === "pending" ? "bg-warning" : "bg-purple-500")} />
+ <div className={cn("size-2.5 rounded-full", status === "free" ? "bg-muted-foreground/50" : status === "reserved" ? "bg-blue-500" : status === "pending" ? "bg-warning" : "bg-purple-500")} />
  <span className="text-xs font-semibold text-muted-foreground">
  {style.label} ({statusCounts[status]})
  </span>
@@ -390,12 +393,15 @@ export default function TableReservationsPage() {
  >
  {/* Ícone central */}
  <Armchair
- className={cn("size-8 transition-transform group-hover:scale-110", style.text)}
+ className={cn(
+ "size-8 transition-transform group-hover:scale-110",
+ status === "free" ? "text-muted-foreground/60 group-hover:text-foreground" : style.text,
+ )}
  />
 
  {/* Label + lugares */}
  <div>
- <p className={cn("text-xs font-black leading-none", style.text)}>{table.label}</p>
+ <p className={cn("text-xs font-black leading-none", status === "free" ? "text-foreground" : style.text)}>{table.label}</p>
  <p className="text-xs text-muted-foreground font-mono mt-1">
  {table.seats} lugares
  </p>
@@ -520,7 +526,7 @@ export default function TableReservationsPage() {
  variant="outline"
  size="sm"
  onClick={() => handleUpdateStatus({ data: { reservation_id: r.id, status: "confirmed" } })}
- className="text-xs font-bold gap-1 text-emerald-600 hover:text-emerald-700"
+ className="text-xs font-bold gap-1 text-primary hover:text-primary/90"
  >
  <CheckCircle2 className="size-3.5" /> Confirmar
  </Button>
@@ -642,7 +648,7 @@ export default function TableReservationsPage() {
  <Button
  size="sm"
  variant="outline"
- className="w-full font-bold text-xs text-emerald-600 border-emerald-500/40 gap-2"
+ className="w-full font-bold text-xs text-primary border-primary/40 gap-2"
  onClick={() => handleUpdateStatus({ data: { reservation_id: reservation.id, status: "confirmed" } })}
  >
  <CheckCircle2 className="size-3.5" /> Confirmar Reserva
@@ -743,7 +749,7 @@ export default function TableReservationsPage() {
 function ReservationStatusBadge({ status }: { status: string }) {
  const map: Record<string, { label: string; cn: string }> = {
  pending: { label: "Pendente", cn: "bg-warning/10 text-warning-strong  border-warning/30" },
- confirmed: { label: "Confirmada", cn: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" },
+ confirmed: { label: "Confirmada", cn: "bg-primary/10 text-primary border-primary/30" },
  seated: { label: "Acomodado", cn: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30" },
  cancelled: { label: "Cancelada", cn: "bg-destructive/10 text-destructive border-destructive/30" },
  no_show: { label: "Não compareceu", cn: "bg-muted/60 text-muted-foreground border-border/60" },

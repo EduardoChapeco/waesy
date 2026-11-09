@@ -9,7 +9,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { requireAdmin, getServerIdentity, assertStoreAccess, MANAGER_ROLES } from "@/lib/server-access";
+import { requireAdmin, getServerIdentity } from "@/lib/server-access";
+import { assertStoreAccess, MANAGER_ROLES } from "@/lib/identity-core";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { purgeEdgeCacheTags, CACHE_TAGS } from "@/lib/cache/edge-cache";
 
@@ -42,129 +43,74 @@ export const listProductTypes = createServerFn({ method: "GET" }).handler(async 
  }
 });
 
-export async function resolveStoreIdWithFallback(
-  identity: any,
-  requestedStoreId?: string | null,
-  dbClient?: any,
-): Promise<string> {
-  if (requestedStoreId && requestedStoreId.trim()) return requestedStoreId.trim();
-  if (identity?.store_id) return identity.store_id;
-  if (identity?.user_metadata?.store_id) return identity.user_metadata.store_id;
-  if (identity?.memberships && identity.memberships.length > 0 && identity.memberships[0]?.store_id) {
-    return identity.memberships[0].store_id;
-  }
-  const db = dbClient || getServerClient();
-  if (
-    identity?.role === "platform_admin" ||
-    identity?.role === "master" ||
-    Boolean(identity?.isPlatformAdmin)
-  ) {
-    try {
-      const { data: latestStore } = await db
-        .from("stores")
-        .select("id")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (latestStore?.id) return latestStore.id;
-    } catch {}
-  }
-
-  if (identity?.id) {
-    try {
-      const { data: memberRecord } = await db
-        .from("workspace_members")
-        .select("store_id")
-        .eq("profile_id", identity.id)
-        .eq("is_active", true)
-        .limit(1)
-        .maybeSingle();
-      if (memberRecord?.store_id) return memberRecord.store_id;
-    } catch {}
-
-    try {
-      const query = db.from("stores").select("id");
-      const filtered = typeof query.or === "function"
-        ? query.or(`context_profile_id.eq.${identity.id},owner_id.eq.${identity.id}`)
-        : query;
-      const { data: userStore } = await filtered
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (userStore?.id) return userStore.id;
-    } catch {}
-  }
-  throw new Error("Nenhuma loja ativa selecionada.");
-}
-
 export async function _createProductType(input: {
-  store_id?: string | null;
-  name: string;
-  slug: string;
-  field_schema: any[];
+ name: string;
+ slug: string;
+ field_schema: any[];
 }) {
-  const db = getServerClient();
-  const identity = await getServerIdentity();
-  const effectiveStoreId = await resolveStoreIdWithFallback(identity, input.store_id, db);
-  assertStoreAccess(identity, MANAGER_ROLES, effectiveStoreId);
+ const db = getServerClient();
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const identity = await getServerIdentity();
+	const store_id = identity.store_id;
+ if (!store_id) throw new Error("Nenhuma loja ativa selecionada.");
 
-  const { data: storeData } = await db
-    .from("stores")
-    .select("organization_id")
-    .eq("id", effectiveStoreId)
-    .maybeSingle();
+ const { data: storeData } = await db
+ .from("stores")
+ .select("organization_id")
+ .eq("id", store_id)
+ .maybeSingle();
 
-  const { data, error } = await db
-    .from("product_types")
-    .insert({
-      organization_id: storeData?.organization_id || null,
-      store_id: effectiveStoreId,
-      name: input.name,
-      slug: input.slug,
-      field_schema: input.field_schema,
-    })
-    .select()
-    .single();
+ const { data, error } = await db
+ .from("product_types")
+ .insert({
+ organization_id: storeData?.organization_id || null,
+ store_id: store_id,
+ name: input.name,
+ slug: input.slug,
+ field_schema: input.field_schema,
+ })
+ .select()
+ .single();
 
-  if (error) throw error;
-  return data;
+ if (error) throw error;
+ return data;
 }
 
 export const createProductType = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      store_id: z.string().uuid().optional().nullable(),
-      name: z.string().min(1).max(100),
-      slug: z.string().regex(/^[a-z0-9-]+$/),
-      field_schema: z.array(z.unknown()), // JSON representation of fields
-    }),
-  )
-  .handler(async ({ data: input }) => {
-    try {
-      await requireAdmin(); // SECURITY FIX
-      const data = await _createProductType(input);
-      return data;
-    } catch (e: unknown) {
-      console.error("[admin-catalog] createProductType error:", e);
-      throw new Error(
-        e instanceof Error
-          ? e.message
-          : "Erro ao criar tipo de produto.",
-      );
-    }
-  });
+ .validator(
+ z.object({
+ name: z.string().min(1).max(100),
+ slug: z.string().regex(/^[a-z0-9-]+$/),
+ field_schema: z.array(z.unknown()), // JSON representation of fields
+ }),
+ )
+ .handler(async ({ data: input }) => {
+ try {
+ await requireAdmin(); // SECURITY FIX
+ const data = await _createProductType(input);
+ return data;
+ } catch (e: unknown) {
+ console.error("[admin-catalog] createProductType error:", e);
+ throw new Error(
+ e instanceof Error
+ ? e instanceof Error
+ ? e.message
+ : String(e)
+ : "Erro ao criar tipo de produto.",
+ );
+ }
+ });
 
 export async function _updateProductType(input: {
-  id: string;
-  store_id?: string | null;
-  name: string;
-  slug: string;
-  field_schema: any[];
+ id: string;
+ name: string;
+ slug: string;
+ field_schema: any[];
 }) {
-  const db = getServerClient();
-  const identity = await getServerIdentity();
-  const effectiveStoreId = await resolveStoreIdWithFallback(identity, input.store_id, db);
-  assertStoreAccess(identity, MANAGER_ROLES, effectiveStoreId);
+ const db = getServerClient();
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity();
+ if (!store_id) throw new Error("Acesso não autorizado.");
 
  const { data, error } = await db
  .from("product_types")
@@ -174,7 +120,7 @@ export async function _updateProductType(input: {
  field_schema: input.field_schema,
  })
  .eq("id", input.id)
- .eq("store_id", effectiveStoreId)
+ .eq("store_id", store_id)
  .select()
  .single();
 
@@ -183,15 +129,14 @@ export async function _updateProductType(input: {
 }
 
 export const updateProductType = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      id: z.string().uuid(),
-      store_id: z.string().uuid().optional().nullable(),
-      name: z.string().min(1).max(100),
-      slug: z.string().regex(/^[a-z0-9-]+$/),
-      field_schema: z.array(z.unknown()),
-    }),
-  )
+ .validator(
+ z.object({
+ id: z.string().uuid(),
+ name: z.string().min(1).max(100),
+ slug: z.string().regex(/^[a-z0-9-]+$/),
+ field_schema: z.array(z.unknown()),
+ }),
+ )
  .handler(async ({ data: input }) => {
  try {
  await requireAdmin(); // SECURITY FIX
@@ -282,7 +227,6 @@ export const listAdminProducts = createServerFn({ method: "GET" })
 });
 
 export async function _createProduct(input: {
- store_id?: string | null;
  type_id?: string | null;
  title: string;
  slug: string;
@@ -323,11 +267,29 @@ export async function _createProduct(input: {
  requires_payment_for_backorder?: boolean;
  }[];
 }) {
-  const db = getServerClient();
-  
-  const identity = await getServerIdentity();
-  const effectiveStoreId = await resolveStoreIdWithFallback(identity, input.store_id, db);
-  assertStoreAccess(identity, MANAGER_ROLES, effectiveStoreId);
+ const db = getServerClient();
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const identity = await getServerIdentity();
+ const effectiveStoreId = identity.store_id;
+ if (!effectiveStoreId) throw new Error("Nenhuma loja ativa selecionada.");
+
+  // Calcula menor preço de entrada entre variantes se houver matriz (DEC-433)
+  let effectiveBasePriceCents = input.price_cents;
+  if (input.variants && input.variants.length > 0) {
+    let minVariantPrice = Infinity;
+    for (const v of input.variants) {
+      const varPrice =
+        v.price_override_cents != null && Number(v.price_override_cents) > 0
+          ? Number(v.price_override_cents)
+          : input.price_cents;
+      if (varPrice > 0 && varPrice < minVariantPrice) {
+        minVariantPrice = varPrice;
+      }
+    }
+    if (minVariantPrice !== Infinity && minVariantPrice > 0) {
+      effectiveBasePriceCents = Math.min(input.price_cents, minVariantPrice);
+    }
+  }
 
  // 1. Tenta RPC atômico primeiro se existir
  try {
@@ -360,16 +322,6 @@ export async function _createProduct(input: {
  // Utiliza organizationId padrão
  }
 
- let effectivePriceCents = input.price_cents;
- if (input.variants && input.variants.length > 0) {
- const prices = input.variants
- .map((v) => (v.price_override_cents != null && Number(v.price_override_cents) > 0 ? Number(v.price_override_cents) : input.price_cents))
- .filter((p) => p > 0);
- if (prices.length > 0) {
- effectivePriceCents = Math.min(...prices);
- }
- }
-
  const { data: insertedProduct, error: insertError } = await db
  .from("products")
  .insert({
@@ -382,7 +334,7 @@ export async function _createProduct(input: {
  short_description: input.short_description || null,
  status: input.status || "draft",
  brand: input.brand || null,
- price_cents: effectivePriceCents,
+ price_cents: effectiveBasePriceCents,
  compare_at_cents: input.compare_at_cents || null,
  cost_cents: input.cost_cents || null,
  attributes: input.attributes || {},
@@ -446,6 +398,37 @@ export async function _createProduct(input: {
 		await db.from("product_option_groups").insert(optRows);
 	} catch (err) {
 		console.warn("[admin-catalog] Erro ao associar option_groups:", err);
+	}
+	}
+
+	// Sincroniza Ficha Técnica (bom_items) na tabela relacional product_recipes
+	const bomItemsCreate = Array.isArray((input.attributes as any)?.bom_items)
+		? ((input.attributes as any).bom_items as any[])
+		: [];
+	if (bomItemsCreate.length > 0) {
+		try {
+			const recipeRows = bomItemsCreate
+				.filter((bi: any) => bi.supplyId || bi.recipeId)
+				.map((bi: any) => ({
+					store_id: effectiveStoreId,
+					product_id: productId,
+					supply_id: bi.supplyId || null,
+					recipe_id: bi.recipeId || null,
+					modifier_id: bi.modifierOptionId || null,
+					modifier_option_label: bi.modifierOptionLabel || null,
+					is_primary_gargalo: bi.isPrimaryGargalo ?? true,
+					quantity: Number(bi.quantity || 1),
+					unit: bi.unit || "un",
+				}));
+			if (recipeRows.length > 0) {
+				await db.from("product_recipes").insert(recipeRows);
+			}
+		} catch (bomErr) {
+			console.warn("[admin-catalog] Falha defensiva ao sincronizar product_recipes no create:", bomErr);
+		}
+	}
+	if (false) {
+		if (true) {
 	}
 	}
 
@@ -530,9 +513,8 @@ export async function _createProduct(input: {
 }
 
 export const createProduct = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      store_id: z.string().uuid().optional().nullable(),
+ .validator(
+ z.object({
  type_id: z.string().uuid().optional().nullable(),
  title: z.string().min(1).max(300),
  slug: z.string().regex(/^[a-z0-9-]+$/),
@@ -615,24 +597,21 @@ export async function _listCategories(store_id?: string) {
  return data;
 }
 
-export const listCategories = createServerFn({ method: "GET" })
-  .validator((d: { store_id?: string | null } | undefined) => d)
-  .handler(async ({ data: input }) => {
-    try {
-      await requireAdmin(); // SECURITY FIX
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const { store_id } = await getServerIdentity().catch(() => ({ store_id: null }));
-      const data = await _listCategories(input?.store_id || store_id || undefined);
-      return data;
-    } catch (e) {
-      if (e instanceof SupabaseUnconfiguredError) throw e;
-      console.error("[admin-catalog] listCategories error:", e);
-      throw new Error("Erro ao listar categorias.");
-    }
-  });
+export const listCategories = createServerFn({ method: "GET" }).handler(async () => {
+ try {
+ await requireAdmin(); // SECURITY FIX
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity().catch(() => ({ store_id: null }));
+ const data = await _listCategories(store_id || undefined);
+ return data;
+ } catch (e) {
+ if (e instanceof SupabaseUnconfiguredError) throw e;
+ console.error("[admin-catalog] listCategories error:", e);
+ throw new Error("Erro ao listar categorias.");
+ }
+});
 
 export async function _createCategory(input: {
- store_id?: string | null;
  name: string;
  slug: string;
  parent_id?: string | null;
@@ -642,11 +621,13 @@ export async function _createCategory(input: {
  icon_url?: string | null;
  icon_name?: string | null;
 }) {
-  const db = getServerClient();
-  const identity = await getServerIdentity();
-  const effectiveStoreId = await resolveStoreIdWithFallback(identity, input.store_id, db);
-  assertStoreAccess(identity, MANAGER_ROLES, effectiveStoreId);
-  const storeData = { id: effectiveStoreId };
+ const db = getServerClient();
+
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity();
+ if (!store_id) throw new Error("No store found");
+ const storeData = { id: store_id };
+ if (!storeData) throw new Error("No store found");
 
  const { data, error } = await db
  .from("categories")
@@ -662,9 +643,8 @@ export async function _createCategory(input: {
 }
 
 export const createCategory = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      store_id: z.string().uuid().optional().nullable(),
+ .validator(
+ z.object({
  name: z.string().min(1).max(100),
  slug: z.string().regex(/^[a-z0-9-]+$/),
  parent_id: z.string().uuid().optional().nullable(),
@@ -800,42 +780,41 @@ export const listCollections = createServerFn({ method: "GET" }).handler(async (
 });
 
 export async function _createCollection(input: {
-  store_id?: string | null;
-  name: string;
-  slug: string;
-  status: "active" | "inactive";
-  description?: string | null;
-  cover_url?: string | null;
-  rules?: Record<string, any> | null;
+ name: string;
+ slug: string;
+ status: "active" | "inactive";
+ description?: string | null;
+ cover_url?: string | null;
+ rules?: Record<string, any> | null;
 }) {
-  const db = getServerClient();
-  const identity = await getServerIdentity();
-  const targetStoreId = await resolveStoreIdWithFallback(identity, input.store_id, db);
-  assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
-  const storeData = { id: targetStoreId };
+ const db = getServerClient();
 
-  const { rules, store_id: _ignored, ...collectionPayload } = input;
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity();
+ if (!store_id) throw new Error("No store found");
+ const storeData = { id: store_id };
 
-  const { data, error } = await db
-    .from("collections")
-    .insert({
-      store_id: storeData.id,
-      ...collectionPayload,
-    })
-    .select()
-    .single();
+ const { rules, ...collectionPayload } = input;
 
-  if (error) throw error;
-  return data;
+ const { data, error } = await db
+ .from("collections")
+ .insert({
+ store_id: storeData.id,
+ ...collectionPayload,
+ })
+ .select()
+ .single();
+
+ if (error) throw error;
+ return data;
 }
 
 export const createCollection = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      store_id: z.string().uuid().optional().nullable(),
-      name: z.string().min(1).max(100),
-      slug: z.string().regex(/^[a-z0-9-]+$/),
-      status: z.enum(["active", "inactive"]).default("active"),
+ .validator(
+ z.object({
+ name: z.string().min(1).max(100),
+ slug: z.string().regex(/^[a-z0-9-]+$/),
+ status: z.enum(["active", "inactive"]).default("active"),
  description: z.string().optional().nullable(),
  cover_url: z.string().optional().nullable(),
  rules: z.record(z.any()).optional().nullable(),
@@ -1005,7 +984,6 @@ export const getProductById = createServerFn({ method: "POST" })
  });
 
 export async function _updateProduct(input: {
- store_id?: string | null;
  id: string;
  title?: string;
  description?: string | null;
@@ -1044,10 +1022,9 @@ export async function _updateProduct(input: {
  }[];
 }) {
  const db = getServerClient();
- const identity = await getServerIdentity();
- const effectiveStoreId = input.store_id || identity.store_id || identity.memberships?.[0]?.store_id;
- if (!effectiveStoreId) throw new Error("Acesso não autorizado.");
- assertStoreAccess(identity, MANAGER_ROLES, effectiveStoreId);
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity();
+ if (!store_id) throw new Error("Acesso não autorizado.");
 
  const { id, category_ids, option_group_ids, variants, ...updates } = input;
 
@@ -1056,7 +1033,7 @@ export async function _updateProduct(input: {
  .from("products")
  .update(updates)
  .eq("id", id)
- .eq("store_id", effectiveStoreId)
+ .eq("store_id", store_id)
  .select()
  .single();
 
@@ -1090,6 +1067,37 @@ export async function _updateProduct(input: {
  }
  }
 
+ // Sincroniza Ficha Técnica (bom_items) na tabela relacional product_recipes
+ if (Array.isArray((input.attributes as any)?.bom_items)) {
+   try {
+     await db.from("product_recipes").delete().eq("product_id", id).eq("store_id", store_id);
+     const bomItemsUpdate = ((input.attributes as any).bom_items as any[]).filter(
+       (bi: any) => bi.supplyId || bi.recipeId,
+     );
+     if (bomItemsUpdate.length > 0) {
+       await db.from("product_recipes").insert(
+         bomItemsUpdate.map((bi: any) => ({
+           store_id,
+           product_id: id,
+           supply_id: bi.supplyId || null,
+           recipe_id: bi.recipeId || null,
+           modifier_id: bi.modifierOptionId || null,
+           modifier_option_label: bi.modifierOptionLabel || null,
+           is_primary_gargalo: bi.isPrimaryGargalo ?? true,
+           quantity: Number(bi.quantity || 1),
+           unit: bi.unit || "un",
+         })),
+       );
+     }
+   } catch (bomErr) {
+     console.warn("[admin-catalog] Falha defensiva ao sincronizar product_recipes no update:", bomErr);
+   }
+ }
+ if (false) {
+   if (true) {
+ }
+ }
+
  // Sincroniza a matriz de variantes se fornecida
  if (variants && variants.length > 0) {
  const matrix = variants.map((v) => ({
@@ -1109,9 +1117,8 @@ export async function _updateProduct(input: {
 }
 
 export const updateProduct = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      store_id: z.string().uuid().optional().nullable(),
+ .validator(
+ z.object({
  id: z.string().uuid(),
  title: z.string().min(1).max(300).optional(),
  slug: z.string().optional(),
@@ -1329,6 +1336,25 @@ export async function _batchUpsertVariantMatrix(input: {
  (error instanceof Error ? error.message : String(error)) ||
  "Erro atômico ao atualizar matriz.",
  );
+ }
+
+ // Sincroniza o menor preço efetivo da matriz no preço pai do produto (DEC-433)
+ if (input.matrix && input.matrix.length > 0) {
+  let minVariantPrice = Infinity;
+  for (const v of input.matrix) {
+   if (v.price_override_cents != null && Number(v.price_override_cents) > 0) {
+    if (Number(v.price_override_cents) < minVariantPrice) {
+     minVariantPrice = Number(v.price_override_cents);
+    }
+   }
+  }
+  if (minVariantPrice !== Infinity && minVariantPrice > 0) {
+   await db
+    .from("products")
+    .update({ price_cents: minVariantPrice })
+    .eq("id", input.product_id)
+    .eq("store_id", store_id);
+  }
  }
 
  return data;
@@ -1919,6 +1945,10 @@ const optionGroupSchema = z.object({
  max_selections: z.number().int().min(1).default(1),
  is_required: z.boolean().default(false),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
 });
 
 const optionValueSchema = z.object({
@@ -1929,6 +1959,10 @@ const optionValueSchema = z.object({
  is_default: z.boolean().default(false),
  is_active: z.boolean().default(true),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
 });
 
 /** Lista todos os grupos de opções de um produto com seus valores */
@@ -1981,6 +2015,10 @@ export const batchSaveOptionGroups = createServerFn({ method: "POST" })
  is_default: z.boolean().default(false),
  is_active: z.boolean().default(true),
  sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
  }),
  ),
  }),
@@ -2050,224 +2088,205 @@ export const batchSaveOptionGroups = createServerFn({ method: "POST" })
 // Option Groups (Library / Global)
 // ---------------------------------------------------------------------------
 
-export const listOptionGroups = createServerFn({ method: "GET" })
-  .validator(z.object({ store_id: z.string().uuid().optional().nullable() }).optional())
-  .handler(async ({ data: input }) => {
-    try {
-      await requireAdmin();
-      const db = getServerClient();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      const targetStoreId =
-        input?.store_id ||
-        identity?.store_id ||
-        identity?.memberships?.[0]?.store_id ||
-        null;
+export const listOptionGroups = createServerFn({ method: "GET" }).handler(async () => {
+ try {
+ await requireAdmin();
+ const db = getServerClient();
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity();
 
-      if (!targetStoreId) return [];
-      assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
+ const { data, error } = await db
+ .from("option_groups")
+ .select(
+ `
+ id, internal_name, display_name, description, selection_type,
+ min_selections, max_selections, is_required,
+ created_at, updated_at,
+ values:option_values(
+ id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order, supply_id, recipe_id, consume_quantity, consume_unit
+ )
+ `,
+ )
+ .eq("store_id", store_id)
+ .order("created_at", { ascending: false });
 
-      const { data, error } = await db
-        .from("option_groups")
-        .select(
-          `
-        id, internal_name, display_name, description, selection_type,
-        min_selections, max_selections, is_required,
-        created_at, updated_at,
-        values:option_values(
-          id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order
-        )
-        `,
-        )
-        .eq("store_id", targetStoreId)
-        .order("created_at", { ascending: false });
+ if (error) throw error;
 
-      if (error) throw error;
+ // Sort values inside each group
+ if (data) {
+ data.forEach((group) => {
+ if (group.values) {
+ group.values.sort((a: any, b: any) => a.sort_order - b.sort_order);
+ }
+ });
+ }
 
-      if (data) {
-        data.forEach((group) => {
-          if (group.values) {
-            group.values.sort((a, b) => a.sort_order - b.sort_order);
-          }
-        });
-      }
-
-      return data || [];
-    } catch (e) {
-      console.error("[admin-catalog] listOptionGroups error:", e);
-      return [];
-    }
-  });
+ return data || [];
+ } catch (e) {
+ console.error("[admin-catalog] listOptionGroups error:", e);
+ return [];
+ }
+});
 
 export const upsertOptionGroup = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      id: z.string().uuid().optional().nullable().or(z.literal("")),
-      store_id: z.string().uuid().optional().nullable(),
-      internal_name: z.string().min(1),
-      display_name: z.string().min(1),
-      description: z.string().optional().nullable(),
-      selection_type: z.enum(["single", "multiple"]),
-      min_selections: z.number().int().min(0),
-      max_selections: z.number().int().min(1),
-      is_required: z.boolean(),
-      values: z.array(
-        z.object({
-          id: z.string().uuid().optional().nullable().or(z.literal("")),
-          label: z.string().min(1),
-          description: z.string().optional().nullable(),
-          image_url: z.string().optional().nullable(),
-          price_modifier_cents: z.number().int().default(0),
-          max_quantity_per_item: z.number().int().min(1).default(1).optional(),
-          is_default: z.boolean().default(false),
-          is_active: z.boolean().default(true),
-          sort_order: z.number().int().default(0),
-        }),
-      ),
-    }),
-  )
-  .handler(async ({ data: input }) => {
-    try {
-      await requireAdmin();
-      const db = getServerClient();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      const targetStoreId = await resolveStoreIdWithFallback(identity, input.store_id, db);
-      assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
+ .validator(
+ z.object({
+ id: z.string().uuid().optional(),
+ internal_name: z.string().min(1),
+ display_name: z.string().min(1),
+ description: z.string().optional().nullable(),
+ selection_type: z.enum(["single", "multiple"]),
+ min_selections: z.number().int().min(0),
+ max_selections: z.number().int().min(1),
+ is_required: z.boolean(),
+ values: z.array(
+ z.object({
+ id: z.string().uuid().optional(),
+ label: z.string().min(1),
+ description: z.string().optional().nullable(),
+ image_url: z.string().optional().nullable(),
+ price_modifier_cents: z.number().int().default(0),
+ max_quantity_per_item: z.number().int().min(1).default(1).optional(),
+ is_default: z.boolean().default(false),
+ is_active: z.boolean().default(true),
+ sort_order: z.number().int().default(0),
+ supply_id: z.string().uuid().optional().nullable(),
+ recipe_id: z.string().uuid().optional().nullable(),
+ consume_quantity: z.number().min(0).default(1).optional(),
+ consume_unit: z.string().default("un").optional(),
+ }),
+ ),
+ }),
+ )
+ .handler(async ({ data: input }) => {
+ try {
+ await requireAdmin();
+ const db = getServerClient();
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity();
 
-      const cleanGroupId = input.id && input.id.trim() && !input.id.startsWith("temp-") ? input.id.trim() : undefined;
-      let groupId = cleanGroupId;
+ let groupId = input.id;
 
-      const groupPayload = {
-        store_id: targetStoreId,
-        internal_name: input.internal_name,
-        display_name: input.display_name,
-        description: input.description || null,
-        selection_type: input.selection_type,
-        min_selections: input.min_selections,
-        max_selections: input.max_selections,
-        is_required: input.is_required,
-      };
+ const groupPayload = {
+ store_id,
+ internal_name: input.internal_name,
+ display_name: input.display_name,
+ description: input.description || null,
+ selection_type: input.selection_type,
+ min_selections: input.min_selections,
+ max_selections: input.max_selections,
+ is_required: input.is_required,
+ };
 
-      if (!groupId) {
-        const { data, error } = await db
-          .from("option_groups")
-          .insert(groupPayload)
-          .select("id")
-          .single();
-        if (error) throw error;
-        groupId = data.id;
-      } else {
-        const { error } = await db
-          .from("option_groups")
-          .update(groupPayload)
-          .eq("id", groupId)
-          .eq("store_id", targetStoreId);
-        if (error) throw error;
-      }
+ if (!groupId) {
+ const { data, error } = await db
+ .from("option_groups")
+ .insert(groupPayload)
+ .select("id")
+ .single();
+ if (error) throw error;
+ groupId = data.id;
+ } else {
+ const { error } = await db
+ .from("option_groups")
+ .update(groupPayload)
+ .eq("id", groupId)
+ .eq("store_id", store_id);
+ if (error) throw error;
+ }
 
-      // Sync Values
-      if (input.values && input.values.length > 0) {
-        const valuesToUpsert = input.values.map((v, index) => {
-          const cleanValId = v.id && v.id.trim() && !v.id.startsWith("temp-") ? v.id.trim() : undefined;
-          return {
-            ...(cleanValId ? { id: cleanValId } : {}),
-            group_id: groupId,
-            label: v.label,
-            description: v.description || null,
-            image_url: v.image_url || null,
-            price_modifier_cents: v.price_modifier_cents,
-            max_quantity_per_item: v.max_quantity_per_item ?? 1,
-            is_default: v.is_default,
-            is_active: v.is_active,
-            sort_order: v.sort_order ?? index,
-          };
-        });
+ // Sync Values
+ if (input.values && input.values.length > 0) {
+ const valuesToUpsert = input.values.map((v, index) => ({
+ ...(v.id ? { id: v.id } : {}),
+ group_id: groupId,
+ label: v.label,
+ description: v.description || null,
+ image_url: v.image_url || null,
+ price_modifier_cents: v.price_modifier_cents,
+ max_quantity_per_item: v.max_quantity_per_item ?? 1,
+ is_default: v.is_default,
+ is_active: v.is_active,
+ sort_order: v.sort_order ?? index,
+ supply_id: v.supply_id || null,
+ recipe_id: v.recipe_id || null,
+ consume_quantity: v.consume_quantity ?? 1,
+ consume_unit: v.consume_unit || "un",
+ }));
 
-        const keepIds = input.values
-          .map((v) => (v.id && v.id.trim() && !v.id.startsWith("temp-") ? v.id.trim() : null))
-          .filter(Boolean);
+ // Remove values that are not in the payload anymore
+ const keepIds = input.values.map((v) => v.id).filter(Boolean) as string[];
+ if (keepIds.length > 0) {
+ await db
+ .from("option_values")
+ .delete()
+ .eq("group_id", groupId)
+ .not("id", "in", `(${keepIds.join(",")})`);
+ } else {
+ await db.from("option_values").delete().eq("group_id", groupId);
+ }
 
-        if (keepIds.length > 0) {
-          await db
-            .from("option_values")
-            .delete()
-            .eq("group_id", groupId)
-            .not("id", "in", `(${keepIds.join(",")})`);
-        } else {
-          await db.from("option_values").delete().eq("group_id", groupId);
-        }
+ const { error: upsertErr } = await db
+ .from("option_values")
+ .upsert(valuesToUpsert, { onConflict: "id" });
+ if (upsertErr) throw upsertErr;
+ } else {
+ await db.from("option_values").delete().eq("group_id", groupId);
+ }
 
-        const { error: upsertErr } = await db
-          .from("option_values")
-          .upsert(valuesToUpsert, { onConflict: "id" });
-        if (upsertErr) throw upsertErr;
-      } else {
-        await db.from("option_values").delete().eq("group_id", groupId);
-      }
+ // Busca o grupo completo para retorno atômico
+ const { data: fullGroup } = await db
+ .from("option_groups")
+ .select(
+ `
+ id, internal_name, display_name, description, selection_type,
+ min_selections, max_selections, is_required,
+ created_at, updated_at,
+ values:option_values(
+ id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order, supply_id, recipe_id, consume_quantity, consume_unit
+ )
+ `,
+ )
+ .eq("id", groupId)
+ .single();
 
-      // Busca o grupo completo para retorno atômico
-      const { data: fullGroup, error: fetchErr } = await db
-        .from("option_groups")
-        .select(
-          `
-          id, internal_name, display_name, description, selection_type,
-          min_selections, max_selections, is_required,
-          created_at, updated_at,
-          values:option_values(
-            id, label, description, image_url, price_modifier_cents, max_quantity_per_item, is_default, is_active, sort_order
-          )
-          `,
-        )
-        .eq("id", groupId)
-        .single();
+ if (fullGroup?.values) {
+ fullGroup.values.sort((a: any, b: any) => a.sort_order - b.sort_order);
+ }
 
-      if (fetchErr) throw fetchErr;
-
-      if (fullGroup?.values) {
-        fullGroup.values.sort((a, b) => a.sort_order - b.sort_order);
-      }
-
-      return { success: true, group: fullGroup };
-    } catch (e) {
-      console.error("[admin-catalog] upsertOptionGroup error:", e);
-      throw new Error(
-        (e instanceof Error ? e.message : String(e)) || "Erro ao salvar Option Group.",
-      );
-    }
-  });
+ return { success: true, group: fullGroup };
+ } catch (e: unknown) {
+ console.error("[admin-catalog] upsertOptionGroup error:", e);
+ throw new Error(
+ (e instanceof Error ? e.message : String(e)) || "Erro ao salvar Option Group.",
+ );
+ }
+ });
 
 export const deleteOptionGroup = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      id: z.string().uuid(),
-      store_id: z.string().uuid().optional().nullable(),
-    }),
-  )
-  .handler(async ({ data: { id, store_id: inputStoreId } }) => {
-    try {
-      await requireAdmin();
-      const db = getServerClient();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
-      const targetStoreId = await resolveStoreIdWithFallback(identity, inputStoreId, db);
-      assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
+ .validator(z.object({ id: z.string().uuid() }))
+ .handler(async ({ data: { id } }) => {
+ try {
+ await requireAdmin();
+ const db = getServerClient();
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity();
 
-      const { error } = await db
-        .from("option_groups")
-        .delete()
-        .eq("id", id)
-        .eq("store_id", targetStoreId);
+ const { error } = await db
+ .from("option_groups")
+ .delete()
+ .eq("id", id)
+ .eq("store_id", store_id);
 
-      if (error) throw error;
-      return { success: true };
-    } catch (e) {
-      console.error("[admin-catalog] deleteOptionGroup error:", e);
-      throw new Error(
-        (e instanceof Error ? e.message : String(e)) || "Erro ao remover Option Group.",
-      );
-    }
-  });
+ if (error) throw error;
+ return { success: true };
+ } catch (e: unknown) {
+ console.error("[admin-catalog] deleteOptionGroup error:", e);
+ throw new Error(
+ (e instanceof Error ? e.message : String(e)) || "Erro ao remover Option Group.",
+ );
+ }
+ });
 
 export const quickUpdateOptionValue = createServerFn({ method: "POST" })
  .validator(
@@ -2647,11 +2666,44 @@ export const batchCreateCatalogMenu = createServerFn({ method: "POST" })
 
 
 
+export async function resolveStoreIdWithFallback(
+  identity: any,
+  requestedStoreId?: string | null,
+  dbClient?: any,
+): Promise<string> {
+  if (requestedStoreId && requestedStoreId.trim()) return requestedStoreId.trim();
+  if (identity?.store_id) return identity.store_id;
+  if (identity?.user_metadata?.store_id) return identity.user_metadata.store_id;
+  if (identity?.memberships && identity.memberships.length > 0 && identity.memberships[0]?.store_id) {
+    return identity.memberships[0].store_id;
+  }
+  const db = dbClient || getServerClient();
+  if (
+    identity?.role === "platform_admin" ||
+    identity?.role === "master" ||
+    Boolean(identity?.isPlatformAdmin)
+  ) {
+    try {
+      const { data: latestStore } = await db
+        .from("stores")
+        .select("id")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestStore?.id) return latestStore.id;
+    } catch {}
+  }
+  const resolved = identity?.store_id || "";
+  if (!resolved) {
+    throw new Error("Nenhuma loja ativa selecionada.");
+  }
+  return resolved;
+}
+
 export const listStoreBrands = createServerFn({ method: "GET" })
   .validator((input?: { store_id?: string | null }) => input || {})
   .handler(async ({ data: input }) => {
     try {
-      
       const identity = await getServerIdentity();
       const targetStoreId = input?.store_id || identity.store_id || identity.memberships?.[0]?.store_id;
       if (!targetStoreId) return [];
@@ -2688,7 +2740,6 @@ export const createStoreBrand = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     try {
       await requireAdmin();
-      
       const identity = await getServerIdentity();
       const targetStoreId = await resolveStoreIdWithFallback(identity, input.store_id);
       assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
@@ -2697,9 +2748,7 @@ export const createStoreBrand = createServerFn({ method: "POST" })
       return { name: cleanName, store_id: targetStoreId };
     } catch (e: unknown) {
       console.error("[admin-catalog] createStoreBrand error:", e);
-      throw new Error(
-        e instanceof Error ? e.message : "Erro ao cadastrar marca.",
-      );
+      throw new Error(e instanceof Error ? e.message : "Erro ao cadastrar marca.");
     }
   });
 
@@ -2707,38 +2756,52 @@ export const getStoreChannelIntegrationsStatus = createServerFn({ method: "GET" 
   .validator((input?: { store_id?: string | null }) => input || {})
   .handler(async ({ data: input }) => {
     try {
-      const { resolveStoreChannelsStatus } = await import("@/lib/catalog-channel-integrations");
       const identity = await getServerIdentity();
-      let targetStoreId: string | null = null;
-      try {
-        targetStoreId = await resolveStoreIdWithFallback(identity, input?.store_id);
-      } catch {
-        targetStoreId = null;
-      }
+      const targetStoreId = input?.store_id || identity?.store_id || identity?.memberships?.[0]?.store_id;
       if (!targetStoreId) {
-        return resolveStoreChannelsStatus([], []);
+        return {
+          google_merchant: { isConnected: false },
+          meta_catalog: { isConnected: false },
+          whatsapp_catalog: { isConnected: false },
+          ifood: { isConnected: false },
+        meta_instagram: { isConnected: false },
+        mercadolivre: { isConnected: false },
+
+
+        };
       }
-      assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
-
       const db = getServerClient();
-      const [credsRes, connectorsRes] = await Promise.all([
-        db
-          .from("integration_credentials")
-          .select("provider, is_active")
-          .eq("store_id", targetStoreId),
-        db
-          .from("marketplace_connectors")
-          .select("platform, status")
-          .eq("store_id", targetStoreId),
-      ]);
+      const { data: storeRow } = await db
+        .from("stores")
+        .select("settings")
+        .eq("id", targetStoreId)
+        .maybeSingle();
+      const integrations = (storeRow?.settings as Record<string, any>)?.integrations || {};
+      return {
+        google_merchant: { isConnected: Boolean(integrations?.google_merchant?.enabled || integrations?.google_merchant?.connected) },
+        meta_catalog: { isConnected: Boolean(integrations?.meta_catalog?.enabled || integrations?.meta_pixel_id) },
+        whatsapp_catalog: { isConnected: Boolean(integrations?.whatsapp_catalog?.enabled || integrations?.whatsapp?.connected) },
+        ifood: { isConnected: Boolean(integrations?.ifood?.enabled || integrations?.ifood?.connected) },
+        meta_instagram: { isConnected: Boolean(integrations?.meta_instagram?.enabled || integrations?.meta_catalog?.enabled || integrations?.meta_pixel_id) },
+        mercadolivre: { isConnected: Boolean(integrations?.mercadolivre?.enabled || integrations?.mercadolivre?.connected) },
+      };
+    } catch {
+      return {
+        google_merchant: { isConnected: false },
+        meta_catalog: { isConnected: false },
+        whatsapp_catalog: { isConnected: false },
+        ifood: { isConnected: false },
+        meta_instagram: { isConnected: false },
+        mercadolivre: { isConnected: false },
+      };
+    }
+  });
 
-      const creds = credsRes.data || [];
-      const connectors = connectorsRes.data || [];
-
-      return resolveStoreChannelsStatus(creds, connectors);
-    } catch (e) {
-      console.error("[admin-catalog] getStoreChannelIntegrationsStatus error:", e);
-      const { resolveStoreChannelsStatus } = await import("@/lib/catalog-channel-integrations");
-      return resolveStoreChannelsStatus([], []);
+const _unusedCreateStoreBrandTail = createServerFn({ method: "POST" }).handler(async () => { try { return null;
+    } catch (e: unknown) {
+      console.error("[admin-catalog] createStoreBrand error:", e);
+      throw new Error(
+        e instanceof Error ? e.message : "Erro ao cadastrar marca.",
+      );
     }
   });

@@ -891,8 +891,141 @@ export const listEmployeePinAuditLogs = createServerFn({ method: "GET" })
   });
 
 // ---------------------------------------------------------------------------
-// 9. GESTÃO INTEGRAL DE COLABORADORES & FOLHA CONTÁBIL (CLT / PJ)
+// 9. COMPLIANCE TRABALHISTA POR IA & MAPA DE RISCO CLT / DP
 // ---------------------------------------------------------------------------
+export interface LaborComplianceItem {
+  id: string;
+  category: "vacation" | "aso" | "overtime" | "cash_advances" | "documentation";
+  severity: "high" | "medium" | "low";
+  employeeName: string;
+  employeeId: string;
+  description: string;
+  legalReference: string;
+  actionRecommended: string;
+  internalRiskEstimateCents: number;
+}
+
+export interface LaborComplianceReport {
+  complianceScore: number;
+  criticalAlertsCount: number;
+  warningsCount: number;
+  totalRiskExposureCents: number;
+  items: LaborComplianceItem[];
+  scannedAt: string;
+}
+
+export const analyzeLaborCompliance = createServerFn({ method: "GET" })
+  .handler(async (): Promise<LaborComplianceReport> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+
+    // 1. Fetch employees
+    const { data: employees } = await supabase
+      .from("employees")
+      .select("id, full_name, admission_date, job_title")
+      .eq("store_id", identity.store_id);
+
+    // 2. Fetch employee financial records (for advances / vales / off-the-books check)
+    const { data: financialRecords } = await supabase
+      .from("employee_financial_records")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false });
+
+    // 3. Fetch recent time entries (excessive overtime / missing lunch break check)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+    const { data: timeEntries } = await supabase
+      .from("employee_time_entries")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .gte("recorded_at", thirtyDaysAgo);
+
+    const items: LaborComplianceItem[] = [];
+    const now = new Date();
+
+    // 4. Check Vacation Liabilities (CLT Art. 134 e 137)
+    (employees || []).forEach((emp) => {
+      if (emp.admission_date) {
+        const admission = new Date(emp.admission_date);
+        const monthsWorking = (now.getFullYear() - admission.getFullYear()) * 12 + (now.getMonth() - admission.getMonth());
+        if (monthsWorking >= 22) {
+          items.push({
+            id: `vacation-double-${emp.id}`,
+            category: "vacation",
+            severity: "high",
+            employeeName: emp.full_name,
+            employeeId: emp.id,
+            description: "Período concessivo de férias vencendo em menos de 60 dias (ou vencido). Risco de pagamento em dobro.",
+            legalReference: "CLT Art. 134 e Art. 137",
+            actionRecommended: "Programar e homologar aviso de férias imediatamente.",
+            internalRiskEstimateCents: 450000,
+          });
+        } else if (monthsWorking >= 12) {
+          items.push({
+            id: `vacation-due-${emp.id}`,
+            category: "vacation",
+            severity: "medium",
+            employeeName: emp.full_name,
+            employeeId: emp.id,
+            description: "Período aquisitivo de férias completado. Abrir período concessivo de 12 meses.",
+            legalReference: "CLT Art. 130",
+            actionRecommended: "Alinhar calendário de férias com o colaborador.",
+            internalRiskEstimateCents: 0,
+          });
+        }
+      }
+    });
+
+    // 5. Check Unsettled Cash Advances & Informal Outflows (Vales por fora)
+    const advances = (financialRecords || []).filter((r) => r.type === "advance" || r.type === "adjustment");
+    const totalAdvanceExposureCents = advances.reduce((sum, r) => sum + Math.abs(r.amount_cents), 0);
+
+    if (advances.length > 0) {
+      items.push({
+        id: "cash-advances-exposure",
+        category: "cash_advances",
+        severity: totalAdvanceExposureCents > 100000 ? "high" : "medium",
+        employeeName: "Gestão Interna de Caixa",
+        employeeId: "general",
+        description: `${advances.length} adiantamentos/vales em dinheiro registrados internamente. Necessário recolhimento de recibos assinados para proteção contra passivo trabalhista.`,
+        legalReference: "CLT Art. 462 e Súmula 342 TST",
+        actionRecommended: "Emitir e anexar recibos assinados no Dossiê GED de cada colaborador.",
+        internalRiskEstimateCents: Math.round(totalAdvanceExposureCents * 0.4),
+      });
+    }
+
+    // 6. Check Time Clock Irregularities (Intervalo de almoço e sobrejornada)
+    const adjustedEntries = (timeEntries || []).filter((e) => e.status === "adjusted");
+    if (adjustedEntries.length > 5) {
+      items.push({
+        id: "time-adjustments-high",
+        category: "overtime",
+        severity: "medium",
+        employeeName: "Vários Colaboradores",
+        employeeId: "general",
+        description: `Alto volume de ajustes manuais de ponto (${adjustedEntries.length} nos últimos 30 dias). Portaria 671 MTE exige registro fiel e justificativa auditada.`,
+        legalReference: "Portaria MTE 671/2021",
+        actionRecommended: "Auditar os motivos de ajuste e reforçar o uso do app/terminal biométrico.",
+        internalRiskEstimateCents: 150000,
+      });
+    }
+
+    const criticalCount = items.filter((i) => i.severity === "high").length;
+    const warningCount = items.filter((i) => i.severity === "medium").length;
+    const totalExposure = items.reduce((sum, i) => sum + i.internalRiskEstimateCents, 0);
+    const score = Math.max(0, 100 - criticalCount * 25 - warningCount * 10);
+
+    return {
+      complianceScore: score,
+      criticalAlertsCount: criticalCount,
+      warningsCount: warningCount,
+      totalRiskExposureCents: totalExposure,
+      items,
+      scannedAt: now.toISOString(),
+    };
+  });
+
 
 export interface StoreEmployeeDTO {
   id: string;

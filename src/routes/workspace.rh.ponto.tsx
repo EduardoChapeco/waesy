@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Clock, MapPin, ShieldCheck, UserCheck, AlertCircle, CheckCircle2, Edit3, Search, Users, TrendingUp, SlidersHorizontal, FileText, Printer, Calendar, Wallet, Stethoscope } from "lucide-react";
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/workspace/rh/ponto")({
 });
 
 function WorkspaceRHPontoPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
   const [adjustmentReason, setAdjustmentReason] = useState("");
@@ -147,6 +148,7 @@ function WorkspaceRHPontoPage() {
         searchPlaceholder="Buscar por colaborador ou matrícula..."
         onMetricsClick={() => setIsDashboardOpen(true)}
         metricsBadge={`${stats.total} registros`}
+        primaryAction={{ label: "Auditoria de Compliance", onClick: () => navigate({ to: "/workspace/rh/compliance" }) }}
       />
 
       {/* ── Dashboard Drawer Sob Demanda ── */}

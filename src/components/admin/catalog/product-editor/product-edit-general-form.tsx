@@ -276,8 +276,7 @@ export function ProductEditGeneralForm({
           name: newCategoryName,
           slug,
           status: "active",
-          store_id: effectiveStoreId || undefined,
-        },
+                  },
       });
       if (res) {
         toast.success("Categoria criada com sucesso!");

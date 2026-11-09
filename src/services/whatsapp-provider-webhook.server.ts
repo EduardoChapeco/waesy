@@ -146,7 +146,7 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   let body: JsonObject;
   try { body = JSON.parse(rawBody) as JsonObject; } catch { return json({ error: "Invalid JSON payload" }, 400); }
   const db = getServerClient();
-  const { data: instance, error: instanceError } = await db.from("whatsapp_channel_instances").select("id, store_id, provider, instance_key, secret_payload_encrypted, is_active").eq("provider", provider).eq("instance_key", instanceKey).maybeSingle();
+  const { data: instance, error: instanceError } = await db.from("whatsapp_channel_instances").select("id, store_id, provider, instance_key, secret_payload_encrypted, is_active, public_config").eq("provider", provider).eq("instance_key", instanceKey).maybeSingle();
   if (instanceError || !instance || !instance.is_active) return json({ error: "Unknown or inactive WhatsApp instance" }, 404);
   const secrets = secretConfig(instance.secret_payload_encrypted);
   const secret = firstString(secrets.webhook_secret, secrets.webhookSecret, secrets.secret, secrets.api_key);
@@ -154,10 +154,27 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   if (!verification.ok) return json({ error: "Invalid webhook signature" }, 401);
   const name = eventName(body);
   if (name === "connection.update" || name === "qrcode.updated") {
-    const state = firstString(body.data?.state, body.state) || (name === "qrcode.updated" ? "qr_pending" : "connecting");
-    const statusMap = state === "open" ? "connected" : state === "close" ? "disconnected" : "qr_pending";
+    const state = firstString(body.data?.state, body.state) || (name === "qrcode.updated" ? "connecting" : "connecting");
+    const statusMap = state === "open" ? "connected" : state === "close" ? "disconnected" : "pending";
     const ownerPhone = remotePhone(firstString(body.data?.ownerJid, body.data?.wuid, body.sender));
-    await db.from("whatsapp_channel_instances").update({ status: statusMap, ...(ownerPhone ? { display_phone_number: ownerPhone } : {}), last_healthcheck_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", instance.id);
+    const rawQr = firstString(body.data?.qrcode?.base64, body.qrcode?.base64, body.data?.base64);
+    const normalizedQr = rawQr ? (rawQr.startsWith("data:") ? rawQr : `data:image/png;base64,${rawQr}`) : null;
+    const pairingCode = firstString(body.data?.qrcode?.pairingCode, body.qrcode?.pairingCode, body.data?.pairingCode);
+    const currentPublicConfig = (instance.public_config && typeof instance.public_config === "object" ? instance.public_config : {}) as Record<string, unknown>;
+    const nextPublicConfig: Record<string, unknown> = {
+      ...currentPublicConfig,
+      ...(normalizedQr ? { qr_code_url: normalizedQr, last_qr_generated_at: new Date().toISOString() } : {}),
+      ...(statusMap === "connected" ? { qr_code_url: null } : {}),
+      ...(pairingCode ? { pairing_code: pairingCode } : {}),
+      last_webhook_state: state,
+    };
+    await db.from("whatsapp_channel_instances").update({
+      status: statusMap,
+      ...(ownerPhone ? { display_phone_number: ownerPhone } : {}),
+      public_config: nextPublicConfig,
+      last_health_check_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq("id", instance.id);
     return json({ ok: true, provider, instance: instanceKey, event: name, status: statusMap });
   }
   const isDelivery = name.includes("update") || name.includes("receipt") || name.includes("status");

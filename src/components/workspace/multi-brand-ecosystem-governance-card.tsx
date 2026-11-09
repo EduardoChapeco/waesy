@@ -187,7 +187,7 @@ export function MultiBrandEcosystemGovernanceCard({
               {waesyEnabled ? (
                 <Globe className="size-4 text-primary" />
               ) : (
-                <Lock className="size-4 text-amber-600" />
+                <Lock className="size-4 text-warning" />
               )}
               <span>Distribuição no Marketplace Waesy</span>
             </h3>
@@ -201,7 +201,7 @@ export function MultiBrandEcosystemGovernanceCard({
               "text-xs font-bold px-3 py-1 self-start sm:self-center",
               waesyEnabled
                 ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
-                : "bg-amber-500/10 text-amber-600 border-amber-500/30",
+                : "bg-warning/10 text-warning border-warning/30",
             )}
           >
             {waesyEnabled ? "Canal Marketplace Ativo (Opt-In)" : "Modo 100% SaaS Privado (White-Label)"}
@@ -230,7 +230,7 @@ export function MultiBrandEcosystemGovernanceCard({
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            {isSavingOptIn && <Loader2 className="size-4 animate-spin text-primary" />}
+            {isSavingOptIn && <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />}
             <Switch
               id="waesy-marketplace-optin-switch"
               checked={waesyEnabled}
@@ -296,7 +296,7 @@ export function MultiBrandEcosystemGovernanceCard({
                   {brand.targetSegments.slice(0, 3).map((seg) => (
                     <span
                       key={seg}
-                      className="text-xs px-2 py-0.5 rounded-md bg-background text-muted-foreground font-medium"
+                      className="text-xs px-2 py-1 rounded-md bg-background text-muted-foreground font-medium"
                     >
                       {seg}
                     </span>
@@ -336,7 +336,7 @@ export function MultiBrandEcosystemGovernanceCard({
                 )}
               >
                 <div className="flex items-center justify-between w-full">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-2">
                     <Sparkles className="size-3.5 text-primary" />
                     Plano {tier.name}
                   </span>
@@ -354,7 +354,7 @@ export function MultiBrandEcosystemGovernanceCard({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-end pt-2">
           <div className="space-y-2">
-            <Label htmlFor="custom-whitelabel-domain" className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <Label htmlFor="custom-whitelabel-domain" className="text-xs font-bold text-foreground flex items-center gap-2">
               <ExternalLink className="size-3.5 text-primary" />
               <span>Domínio Próprio / Subdomínio White-Label</span>
             </Label>
@@ -376,7 +376,7 @@ export function MultiBrandEcosystemGovernanceCard({
               className="h-11 min-h-11 px-6 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring w-full sm:w-auto"
             >
               {isSavingBrand ? (
-                <Loader2 className="size-4 animate-spin text-primary" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
               ) : (
                 <CheckCircle2 className="size-4 text-primary" />
               )}

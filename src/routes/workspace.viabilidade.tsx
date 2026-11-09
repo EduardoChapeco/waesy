@@ -29,6 +29,9 @@ import {
   listViabilityStudies,
   runCortexViabilityAndGeomarketingStudy,
   saveViabilityCanvasAndSwot,
+  inspectCompetitorWebPresence,
+  exportViabilityStudyDossier,
+  type CompetitorWebAuditDTO,
   type ViabilityBusinessModelCanvas,
   type ViabilityStudyDTO,
   type ViabilitySwotMatrix,
@@ -107,15 +110,15 @@ export function WorkspaceViabilityPage() {
 
   // Estado do formulário de simulação (Pré-Negócio / Incubadora ou Loja Existente)
   const [businessName, setBusinessName] = useState<string>(
-    activeStudy?.business_name || store?.name || " Bistrô & Café Especial Oeste",
+    activeStudy?.business_name || store?.name || "Empreendimento Comercial Local",
   );
   const [nicheSlug, setNicheSlug] = useState<string>(
-    activeStudy?.niche_slug || "gastronomia",
+    activeStudy?.niche_slug || (String(store?.niche || store?.category || "").toLowerCase().includes("turism") || String(store?.niche || store?.category || "").toLowerCase().includes("tourism") ? "turismo" : String(store?.niche || store?.category || "").toLowerCase().includes("servic") ? "servicos" : String(store?.niche || store?.category || "").toLowerCase().includes("varejo") || String(store?.niche || store?.category || "").toLowerCase().includes("retail") ? "varejo" : "gastronomia"),
   );
   const [ideaDescription, setIdeaDescription] = useState<string>(
     activeStudy?.idea_description ||
       store?.description ||
-      "Operação gastronômica com cafés especiais, brunches rápidos, pedidos digitais pelo celular e entrega expressa MotoLink em até 25 minutos.",
+      "Operação comercial integrada com vitrine digital, atendimento consultivo e operação inteligente na microrregião.",
   );
   const [city, setCity] = useState<string>(activeStudy?.city || store?.city || "Chapecó");
   const [stateCode, setStateCode] = useState<string>(activeStudy?.state || store?.state || "SC");
@@ -138,6 +141,57 @@ export function WorkspaceViabilityPage() {
   const [isSavingCanvas, setIsSavingCanvas] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusBanner, setStatusBanner] = useState<string | null>(null);
+  const [webAudits, setWebAudits] = useState<Record<string, CompetitorWebAuditDTO>>({});
+  const [inspectingCompId, setInspectingCompId] = useState<string | null>(null);
+  const [isExportingPdf, setIsExportingPdf] = useState<boolean>(false);
+
+  async function handleInspectCompetitor(comp: any) {
+    setInspectingCompId(comp.id);
+    try {
+      const audit = await inspectCompetitorWebPresence({
+        data: {
+          competitorId: comp.id,
+          competitorName: comp.name,
+          category: comp.category || nicheSlug,
+          city: activeStudy?.city || city,
+          estimatedTicketCents: comp.estimatedTicketCents || 5500,
+        },
+      });
+      setWebAudits((prev) => ({ ...prev, [comp.id]: audit }));
+    } finally {
+      setInspectingCompId(null);
+    }
+  }
+
+  async function handleExportExecutivePdf() {
+    if (!activeStudy) return;
+    setIsExportingPdf(true);
+    try {
+      const dossierEl = document.getElementById("waesy-viability-executive-dossier");
+      const htmlContent = dossierEl ? dossierEl.innerHTML : activeStudy.executive_summary;
+      await exportViabilityStudyDossier({
+        data: {
+          studyId: activeStudy.id,
+          storeId: store?.id || activeStudy.store_id || null,
+          htmlContent,
+        },
+      });
+      setStatusBanner(`Dossiê Executivo armazenado em viability-reports/${store?.id || "workspace"}/${activeStudy.id}.pdf e pronto para impressão A4.`);
+      if (typeof window !== "undefined") {
+        window.print();
+      }
+    } finally {
+      setIsExportingPdf(false);
+    }
+  }
+
+  function handleShareWhatsAppDossier() {
+    if (!activeStudy) return;
+    const text = `*Dossiê Executivo de Viabilidade Waesy*\n*Negócio:* ${activeStudy.business_name}\n*Cidade:* ${activeStudy.city}/${activeStudy.state}\n*Score:* ${activeStudy.viability_score}/100 (${activeStudy.verdict})\n*SOM Mensal:* ${formatBrlFromCents(activeStudy.som_monthly_cents)}\n*Resumo:* ${activeStudy.executive_summary}`;
+    if (typeof window !== "undefined") {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    }
+  }
 
   const [editableSwot, setEditableSwot] = useState<ViabilitySwotMatrix | null>(
     activeStudy?.swot_analysis || null,
@@ -294,6 +348,34 @@ export function WorkspaceViabilityPage() {
                 <span>Voltar ao Onboarding</span>
               </Link>
             </Button>
+            <Button asChild variant="outline" className="h-11 px-4 rounded-lg text-xs font-semibold gap-2">
+              <Link to="/workspace/simlab/focus-group">
+                <Users className="size-4 text-primary" />
+                <span>SimLab Focus-Group</span>
+              </Link>
+            </Button>
+            {activeStudy && (
+              <>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={isExportingPdf}
+                  onClick={() => void handleExportExecutivePdf()}
+                  className="h-11 px-4 rounded-lg text-xs font-bold gap-2"
+                >
+                  <ShieldCheck className="size-4 text-primary" />
+                  <span>{isExportingPdf ? "Gerando PDF..." : "Exportar Dossiê em PDF"}</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleShareWhatsAppDossier}
+                  className="h-11 px-4 rounded-lg text-xs font-semibold gap-2"
+                >
+                  <span>Enviar no WhatsApp</span>
+                </Button>
+              </>
+            )}
             <Button asChild variant="outline" className="h-11 px-4 rounded-lg text-xs font-semibold gap-2">
               <Link to="/workspace/inteligencia/radar">
                 <Compass className="size-4" />
@@ -478,7 +560,7 @@ export function WorkspaceViabilityPage() {
       )}
 
       {statusBanner && (
-        <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 flex items-center justify-between gap-3">
+        <div className="p-4 rounded-lg border border-border bg-muted/40 text-foreground flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs sm:text-sm font-medium">
             <CheckCircle2 className="size-4 shrink-0" />
             <span>{statusBanner}</span>
@@ -737,9 +819,9 @@ export function WorkspaceViabilityPage() {
                   </p>
                 </div>
 
-                <div className="p-5 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+                <div className="p-5 rounded-lg border border-border bg-card space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400">
+                    <span className="text-xs font-bold uppercase text-primary">
                       Faturamento Estimado
                     </span>
                     <Badge variant="secondary" className="text-xs">
@@ -949,7 +1031,7 @@ export function WorkspaceViabilityPage() {
 
                 {activeStudy.comperator_matrix.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground text-xs">
-                    Nenhum concorrente direto listado neste raio.
+                    Nenhum concorrente cadastrado nesta coordenada.
                   </div>
                 ) : (
                   <div className="overflow-x-auto table border border-border/50 rounded-lg">
@@ -987,7 +1069,32 @@ export function WorkspaceViabilityPage() {
                             <td className="p-3 text-muted-foreground">
                               {comp.strengths.join(" · ")}
                             </td>
-                            <td className="p-3 text-emerald-700 dark:text-emerald-400 font-medium">
+                            <td className="p-3 text-foreground font-medium">
+                              <div className="pt-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={inspectingCompId === comp.id}
+                                  onClick={() => void handleInspectCompetitor(comp)}
+                                  className="h-9 min-h-11 sm:min-h-0 px-3 rounded-lg text-xs font-semibold"
+                                >
+                                  {inspectingCompId === comp.id ? "Inspecionando..." : "Auditar Presença Web & Tom"}
+                                </Button>
+                              </div>
+                              {webAudits[comp.id] && (
+                                <div className="mt-2 p-3 rounded-lg border border-border bg-muted/30 space-y-1 text-xs">
+                                  <div className="font-bold text-foreground">
+                                    Tom: {webAudits[comp.id].communicationTone} · Nota ~{webAudits[comp.id].estimatedRating}
+                                  </div>
+                                  <div className="text-muted-foreground font-mono">
+                                    Faixa Pública: {webAudits[comp.id].publicPriceRange} · Maturidade Digital: {webAudits[comp.id].digitalMaturityScore}/100
+                                  </div>
+                                  <div className="text-foreground">
+                                    {webAudits[comp.id].strategicWeaknessToExploit}
+                                  </div>
+                                </div>
+                              )}
                               {comp.weaknesses.join(" · ")}
                             </td>
                           </tr>
@@ -1081,8 +1188,8 @@ export function WorkspaceViabilityPage() {
 
               {/* Matriz de Pontos Fortes, Melhorias, Oportunidades e Riscos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2">
-                  <span className="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400 block">
+                <div className="p-4 rounded-lg border border-border bg-card space-y-2">
+                  <span className="text-xs font-bold uppercase text-foreground block">
                     Pontos Fortes
                   </span>
                   <textarea
@@ -1129,8 +1236,8 @@ export function WorkspaceViabilityPage() {
                   />
                 </div>
 
-                <div className="p-4 rounded-lg border border-blue-500/30 bg-blue-500/5 space-y-2">
-                  <span className="text-xs font-bold uppercase text-blue-700 dark:text-blue-400 block">
+                <div className="p-4 rounded-lg border border-border bg-card space-y-2">
+                  <span className="text-xs font-bold uppercase text-primary block">
                     Oportunidades
                   </span>
                   <textarea
@@ -1177,6 +1284,89 @@ export function WorkspaceViabilityPage() {
                   />
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ── 5 FORÇAS DE PORTER, SEXY CANVAS, RECOMENDAÇÕES TÁTICAS E DOSSIÊ EXECUTIVO A4 ── */}
+          {activeStudy && (
+            <div id="waesy-viability-executive-dossier" className="space-y-6">
+              {activeStudy.porter_five_forces && (
+                <div className="p-5 rounded-lg border border-border/70 bg-card space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-base font-bold text-foreground">
+                      5 Forças de Porter Aplicadas ao Território ({activeStudy.city}/{activeStudy.state})
+                    </h2>
+                    <Badge variant="outline" className="text-xs font-mono">
+                      Malha Raio {activeStudy.radius_km} km
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    {[
+                      { label: "1. Rivalidade Local", item: activeStudy.porter_five_forces.rivalry_among_competitors },
+                      { label: "2. Poder dos Clientes", item: activeStudy.porter_five_forces.buyer_bargaining_power },
+                      { label: "3. Poder de Fornecedores", item: activeStudy.porter_five_forces.supplier_bargaining_power },
+                      { label: "4. Novos Entrantes", item: activeStudy.porter_five_forces.threat_of_new_entrants },
+                      { label: "5. Produtos Substitutos", item: activeStudy.porter_five_forces.threat_of_substitutes },
+                    ].map((force) => (
+                      <div key={force.label} className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-foreground">{force.label}</span>
+                          <Badge variant="secondary" className="text-xs font-mono">
+                            {force.item.level} ({force.item.score})
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{force.item.diagnosis}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeStudy.sexy_canvas && (
+                <div className="p-5 rounded-lg border border-border/70 bg-card space-y-4">
+                  <h2 className="text-base font-bold text-foreground">
+                    Sexy Canvas — Gatilhos Emocionais e Aspiracionais da Persona
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+                    <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
+                      <span className="font-bold text-foreground block">Desejo & Status</span>
+                      <p className="text-muted-foreground">{activeStudy.sexy_canvas.lust_desire}</p>
+                    </div>
+                    <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
+                      <span className="font-bold text-foreground block">Zero Fricção</span>
+                      <p className="text-muted-foreground">{activeStudy.sexy_canvas.sloth_convenience}</p>
+                    </div>
+                    <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
+                      <span className="font-bold text-foreground block">Pertencimento</span>
+                      <p className="text-muted-foreground">{activeStudy.sexy_canvas.pride_belonging}</p>
+                    </div>
+                    <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
+                      <span className="font-bold text-foreground block">Vantagem Percebida</span>
+                      <p className="text-muted-foreground">{activeStudy.sexy_canvas.greed_advantage}</p>
+                    </div>
+                    <div className="p-3 rounded-lg border border-border/60 bg-muted/20 space-y-1">
+                      <span className="font-bold text-foreground block">Segurança & Confiança</span>
+                      <p className="text-muted-foreground">{activeStudy.sexy_canvas.security_trust}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeStudy.tactical_recommendations && activeStudy.tactical_recommendations.length > 0 && (
+                <div className="p-5 rounded-lg border border-border/70 bg-card space-y-3">
+                  <h2 className="text-base font-bold text-foreground">
+                    5 Recomendações Táticas Imediatas (Waesy Consulting Standard)
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    {activeStudy.tactical_recommendations.map((rec, idx) => (
+                      <div key={idx} className="p-3 rounded-lg border border-border/60 bg-muted/15 space-y-1 text-xs">
+                        <span className="font-mono font-bold text-primary block">Ação 0{idx + 1}</span>
+                        <p className="text-foreground leading-relaxed">{rec}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

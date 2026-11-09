@@ -51,6 +51,31 @@ function conditionMatches(condition: any, input: Record<string, any>) {
   return true;
 }
 
+export function isOutsideSupportSchedule(
+  schedules: Array<{ day: string; hours: string; active: boolean }> | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (!Array.isArray(schedules) || schedules.length === 0) return false;
+  const dayIndex = now.getDay();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const matchSchedule = schedules.find((item) => {
+    const d = String(item.day || "").toLowerCase();
+    if (dayIndex === 0) return d.includes("dom");
+    if (dayIndex === 6) return d.includes("sáb") || d.includes("sab");
+    return d.includes("seg") || d.includes("úteis") || d.includes("uteis");
+  });
+
+  if (!matchSchedule) return false;
+  if (!matchSchedule.active) return true;
+
+  const rangeMatch = String(matchSchedule.hours || "").match(/(\d{1,2}):(\d{2})\s*(?:às|as|-|a)\s*(\d{1,2}):(\d{2})/i);
+  if (!rangeMatch) return false;
+  const startMinutes = Number(rangeMatch[1]) * 60 + Number(rangeMatch[2]);
+  const endMinutes = Number(rangeMatch[3]) * 60 + Number(rangeMatch[4]);
+  return currentMinutes < startMinutes || currentMinutes > endMinutes;
+}
+
 /**
  * Verifica se o horário atual está fora do expediente da loja e enfileira resposta automática de ausência
  */
@@ -60,48 +85,88 @@ export async function checkStoreBusinessHoursAndAutoReply(input: {
   provider: string;
   threadId: string;
   phone: string;
+  senderName?: string | null;
 }) {
   const db = getServerClient();
-  const { data: store } = await db.from("stores").select("settings").eq("id", input.storeId).maybeSingle();
+  const { data: store } = await db.from("stores").select("name, settings").eq("id", input.storeId).maybeSingle();
   const supportSettings = (store?.settings as any)?.support_settings;
 
   if (!supportSettings || supportSettings.auto_reply_enabled === false) return false;
 
-  const awayMessage = String(supportSettings.away_message || "").trim();
-  if (!awayMessage) return false;
-
-  // Idempotência: envia mensagem de ausência no máximo 1x a cada 12 horas para o mesmo telefone
   const todayKey = new Date().toISOString().slice(0, 10);
-  const idempotencyKey = `away:${input.storeId}:${input.phone}:${todayKey}`;
+  const customerName = input.senderName?.trim() || "Cliente";
+  const storeName = store?.name || "Nossa Loja";
 
-  await db.from("whatsapp_outbox").upsert(
-    {
-      store_id: input.storeId,
-      thread_id: input.threadId,
-      channel_instance_id: input.instanceId,
-      provider: input.provider,
-      idempotency_key: idempotencyKey,
-      recipient_phone: input.phone,
-      message_type: "text",
-      payload: { text: awayMessage },
-      status: "pending",
-    },
-    { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }
-  );
+  const isOutside = isOutsideSupportSchedule(supportSettings.support_schedules);
+  const awayMessage = String(supportSettings.away_message || "").trim();
+  const greetingMessage = String(supportSettings.greeting_message || "").trim();
 
-  return true;
+  if (isOutside && awayMessage) {
+    const renderedAway = awayMessage
+      .replace(/\{\{\s*(nome_cliente|nome|senderName)\s*\}\}/gi, customerName)
+      .replace(/\{\{\s*loja\s*\}\}/gi, storeName);
+    const idempotencyKey = `away:${input.storeId}:${input.phone}:${todayKey}`;
+
+    await db.from("whatsapp_outbox").upsert(
+      {
+        store_id: input.storeId,
+        thread_id: input.threadId,
+        channel_instance_id: input.instanceId,
+        provider: input.provider,
+        idempotency_key: idempotencyKey,
+        recipient_phone: input.phone,
+        message_type: "text",
+        payload: { text: renderedAway },
+        status: "pending",
+      },
+      { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }
+    );
+    return true;
+  }
+
+  if (greetingMessage && supportSettings.greeting_enabled !== false) {
+    const renderedGreeting = greetingMessage
+      .replace(/\{\{\s*(nome_cliente|nome|senderName)\s*\}\}/gi, customerName)
+      .replace(/\{\{\s*loja\s*\}\}/gi, storeName);
+    const idempotencyKey = `greeting:${input.storeId}:${input.phone}:${todayKey}`;
+
+    await db.from("whatsapp_outbox").upsert(
+      {
+        store_id: input.storeId,
+        thread_id: input.threadId,
+        channel_instance_id: input.instanceId,
+        provider: input.provider,
+        idempotency_key: idempotencyKey,
+        recipient_phone: input.phone,
+        message_type: "text",
+        payload: { text: renderedGreeting },
+        status: "pending",
+      },
+      { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }
+    );
+    return true;
+  }
+
+  return false;
 }
 
 export async function dispatchWhatsAppInboundFlows(input: { storeId: string; instanceId: string | null; provider: string; threadId: string; identityId: string; phone: string; text: string; eventId?: string | null; payload: Record<string, any> }) {
   const db = getServerClient();
-  const { data: flows, error } = await db.from("store_workflows").select("id, nodes, edges, workflow_version, execution_count, channel_instance_id").eq("store_id", input.storeId).eq("channel", "whatsapp").eq("trigger_type", "whatsapp_inbound").eq("status", "active");
+  const { data: flows, error } = await db.from("store_workflows").select("id, nodes, edges, workflow_version, execution_count, channel_instance_id, trigger_type, channel").eq("store_id", input.storeId).eq("status", "active");
   if (error) throw new Error(`flow_lookup_failed:${error.message}`);
   const results: Array<{ workflowId: string; runId?: string; status: string; error?: string }> = [];
+  const senderName = String(input.payload?.pushName || input.payload?.senderName || "Cliente");
 
-  // 1. Checa mensagem de ausência fora de horário de expediente
-  await checkStoreBusinessHoursAndAutoReply(input).catch(() => null);
+  // 1. Checa mensagem de ausência fora de horário de expediente ou saudação
+  await checkStoreBusinessHoursAndAutoReply({ ...input, senderName }).catch(() => null);
 
-  for (const flow of flows || []) {
+  const eligibleFlows = (flows || []).filter(
+    (f: any) =>
+      f.channel === "whatsapp" ||
+      ["whatsapp_inbound", "greeting_message", "keyword_auto_reply", "away_hours"].includes(String(f.trigger_type || "")),
+  );
+
+  for (const flow of eligibleFlows) {
     if (flow.channel_instance_id && flow.channel_instance_id !== input.instanceId) continue;
     const nodes = Array.isArray(flow.nodes) ? flow.nodes : [];
 
@@ -123,7 +188,7 @@ export async function dispatchWhatsAppInboundFlows(input: { storeId: string; ins
     try {
       let sent = 0;
       for (const node of nodes.filter((n: any) => n.type === "action")) {
-        const action = node.config?.action;
+        const action = node.config?.action || (node.config?.messageTemplate ? "send_text" : undefined);
         if (action === "set_consent") {
           const consent = node.config?.consent_status;
           if (["unknown", "opted_in", "opted_out"].includes(consent)) await db.from("whatsapp_contact_identities").update({ consent_status: consent, consent_source: `flow:${flow.id}`, consent_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", input.identityId).eq("store_id", input.storeId);
@@ -138,8 +203,12 @@ export async function dispatchWhatsAppInboundFlows(input: { storeId: string; ins
             await db.from("chat_threads").update({ tags: [...currentTags, node.config.tag], updated_at: new Date().toISOString() }).eq("id", input.threadId).eq("store_id", input.storeId);
           }
         } else if (action === "send_text") {
-          const body = String(node.config?.text || "").trim();
-          if (!body) continue;
+          const rawBody = String(node.config?.text || node.config?.messageTemplate || "").trim();
+          if (!rawBody) continue;
+          const body = rawBody
+            .replace(/\{\{\s*(senderName|nome_cliente|nome)\s*\}\}/gi, senderName)
+            .replace(/\{\{\s*(senderMobile|telefone)\s*\}\}/gi, input.phone)
+            .replace(/\{(nome_cliente|nome)\}/gi, senderName);
           const { data: outbox, error: outboxError } = await db.from("whatsapp_outbox").upsert({ store_id: input.storeId, thread_id: input.threadId, channel_instance_id: input.instanceId, provider: input.provider, idempotency_key: `flow:${flow.id}:run:${run.id}:node:${node.id}`, recipient_phone: input.phone, message_type: "text", payload: { text: body }, status: "pending" }, { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }).select("id").maybeSingle();
           if (outboxError) throw new Error(`outbox_enqueue_failed:${outboxError.message}`);
           if (outbox?.id) sent++;

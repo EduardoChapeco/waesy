@@ -1,8 +1,9 @@
 import * as React from "react";
-import { useState, useMemo } from "react";
-import { Zap, Search, ArrowRight } from "lucide-react";
+import { useMemo } from "react";
+import { Zap, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { interpolateTemplateVariables } from "@/services/chat-operations.functions";
 
 export interface QuickReplyItem {
   id: string;
@@ -17,7 +18,10 @@ export interface QuickRepliesMenuProps {
   searchTerm: string; // The text typed after '/'
   quickReplies: QuickReplyItem[];
   customerName?: string;
+  customerPhone?: string;
   storeName?: string;
+  orderNumber?: string;
+  paymentLink?: string;
   onSelectReply: (expandedText: string) => void;
   onClose: () => void;
   className?: string;
@@ -27,9 +31,11 @@ export function QuickRepliesMenu({
   searchTerm,
   quickReplies,
   customerName = "Cliente",
+  customerPhone,
   storeName = "Nossa Loja",
+  orderNumber,
+  paymentLink,
   onSelectReply,
-  onClose,
   className,
 }: QuickRepliesMenuProps) {
   const cleanFilter = (searchTerm.startsWith("/") ? searchTerm.slice(1) : searchTerm)
@@ -47,10 +53,13 @@ export function QuickRepliesMenu({
   }, [quickReplies, cleanFilter]);
 
   const handleSelect = (qr: QuickReplyItem) => {
-    // Variable substitution
-    const expanded = qr.content
-      .replaceAll("{{nome}}", customerName)
-      .replaceAll("{{loja}}", storeName);
+    const expanded = interpolateTemplateVariables(qr.content, {
+      customerName,
+      customerPhone,
+      storeName,
+      orderNumber,
+      paymentLink,
+    });
     onSelectReply(expanded);
   };
 
@@ -74,7 +83,7 @@ export function QuickRepliesMenu({
         className
       )}
     >
-      <div className="p-2 border-b border-border/40 bg-muted/30 flex items-center justify-between text-2xs text-muted-foreground font-mono">
+      <div className="p-2 border-b border-border/40 bg-muted/30 flex items-center justify-between text-xs text-muted-foreground font-mono">
         <span className="flex items-center gap-2 font-bold text-foreground">
           <Zap className="size-3.5 text-primary" />
           <span>Respostas Rápidas ("/")</span>
@@ -99,12 +108,12 @@ export function QuickRepliesMenu({
                   {qr.title}
                 </span>
                 {qr.category && (
-                  <Badge variant="outline" className="text-3xs px-2 py-0 font-normal">
+                  <Badge variant="outline" className="text-xs px-2 py-0 font-normal">
                     {qr.category}
                   </Badge>
                 )}
               </div>
-              <p className="text-2xs text-muted-foreground line-clamp-1">
+              <p className="text-xs text-muted-foreground line-clamp-1">
                 {qr.content}
               </p>
             </div>

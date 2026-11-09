@@ -1,40 +1,39 @@
 {
   "version": "2.0.0",
-  "timestamp": "2026-11-07T13:58:55.385Z",
-  "totalViolations": 774,
-  "filesInspected": 2649,
-  "filesWithViolations": 222,
+  "timestamp": "2026-11-08T14:20:34.902Z",
+  "totalViolations": 747,
+  "filesInspected": 2674,
+  "filesWithViolations": 220,
   "bySeverity": {
     "P0": 0,
-    "P1": 746,
-    "P2": 24,
+    "P1": 720,
+    "P2": 23,
     "P3": 4
   },
   "byRule": {
-    "DL-02": 132,
+    "DL-02": 131,
     "DL-18": 59,
     "DL-05": 42,
-    "DL-01": 395,
+    "DL-01": 382,
     "DL-13": 9,
     "DL-12": 21,
     "DL-11": 11,
-    "DL-03": 47,
-    "DL-33": 14,
+    "DL-03": 42,
+    "DL-33": 8,
     "DL-14": 13,
-    "DL-25": 1,
-    "DL-28": 3,
     "DL-29": 1,
     "DL-30": 2,
     "DL-07": 17,
     "DL-23": 5,
-    "DL-27": 2
+    "DL-27": 2,
+    "DL-28": 2
   },
   "byModule": {
     "components/app": {
-      "total": 246,
+      "total": 221,
       "P0": 0,
-      "P1": 245,
-      "P2": 1,
+      "P1": 221,
+      "P2": 0,
       "P3": 0
     },
     "components/chat": {
@@ -101,9 +100,9 @@
       "P3": 0
     },
     "routes/other": {
-      "total": 4,
+      "total": 2,
       "P0": 0,
-      "P1": 4,
+      "P1": 2,
       "P2": 0,
       "P3": 0
     },

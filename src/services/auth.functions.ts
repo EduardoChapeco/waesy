@@ -337,38 +337,85 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  ]);
  }
 
-    // Zero-Trust Civil Initialization: Login sempre inicia com Identidade Civil Pessoal limpa
-    const isProd = process.env.NODE_ENV === "production";
-    const contextCookies = [
-      { name: "waesy_active_context", value: "civil", maxAge: 60 * 60 * 24 * 365 },
-      { name: "waesy_active_tenant", value: "", maxAge: 0 },
-      { name: "waesy_store_id", value: "", maxAge: 0 },
-      { name: "waesy_active_creator", value: "", maxAge: 0 },
-    ];
+    // Inicialização Inteligente de Contexto no Login (DEC-446):
+    // Se o usuário possui empresa/loja vinculada, ativa automaticamente o contexto 'store'
+    // e seu tenant primário, garantindo que o redirecionamento ao Workspace não caia em laço civil.
     try {
       const { setCookie } = await import("@tanstack/start-server-core");
-      for (const c of contextCookies) {
-        try {
-          setCookie(c.name, c.value, {
-            path: "/",
-            maxAge: c.maxAge,
-            httpOnly: false,
-            secure: isProd,
-            sameSite: "lax",
-          });
-        } catch {
-          resHeaders?.append(
-            "Set-Cookie",
-            serializeCookieHeader(c.name, c.value, {
-              path: "/",
-              maxAge: c.maxAge,
-              httpOnly: false,
-              secure: isProd,
-              sameSite: "lax",
-            }),
-          );
-        }
+      const isProd = process.env.NODE_ENV === "production";
+      const adminDb = getServerClient();
+
+      let targetStoreId: string | null = null;
+      if (data.user?.id) {
+        const [wmRes, profRes] = await Promise.all([
+          adminDb
+            .from("workspace_members")
+            .select("store_id")
+            .or(`profile_id.eq.${data.user.id},user_id.eq.${data.user.id}`)
+            .limit(1)
+            .maybeSingle(),
+          adminDb
+            .from("profiles")
+            .select("store_id")
+            .eq("id", data.user.id)
+            .maybeSingle(),
+        ]);
+        targetStoreId = wmRes?.data?.store_id || profRes?.data?.store_id || null;
       }
+
+      if (targetStoreId) {
+        setCookie("waesy_active_context", "store", {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+        setCookie("waesy_active_tenant", targetStoreId, {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+        setCookie("waesy_store_id", targetStoreId, {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+      } else {
+        setCookie("waesy_active_context", "civil", {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+        setCookie("waesy_active_tenant", "", {
+          path: "/",
+          maxAge: 0,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+        setCookie("waesy_store_id", "", {
+          path: "/",
+          maxAge: 0,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+      }
+
+      setCookie("waesy_active_creator", "", {
+        path: "/",
+        maxAge: 0,
+        httpOnly: false,
+        secure: isProd,
+        sameSite: "lax",
+      });
       const { clearIdentityCache } = await import("@/lib/server-access");
       clearIdentityCache();
     } catch (cookieErr) {

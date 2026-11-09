@@ -13,6 +13,7 @@ import { listCouriers, type CourierSummaryDTO } from "@/services/fleet.functions
 import { listLogisticsPriceTables, saveLogisticsPriceTable, deleteLogisticsPriceTable, type MobilityServiceType } from "@/services/mobility.functions";
 import { formatMoney } from "@/lib/money";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 
 export const Route = createFileRoute("/workspace/pedidos/frota")({
  head: () => ({ meta: [{ title: "Frota e Despacho de Entregas | Waesy" }] }),
@@ -30,7 +31,15 @@ export const Route = createFileRoute("/workspace/pedidos/frota")({
      return { dispatches: null, priceTables: null, pendingOrders: null, couriers: null };
    }
  },
- component: FrotaEntregasPage,
+ component: () => (
+   <NicheOperationalGuard
+     requiredNiches={["gastronomy", "retail", "supermarket", "pharmacy"]}
+     toolTitle="Despacho & Frota de Motoboys"
+     toolDescription="O painel de despacho de motoboys e tele-entrega é destinado a operações de gastronomia, delivery e varejo com frota própria."
+   >
+     <FrotaEntregasPage />
+   </NicheOperationalGuard>
+ ),
 });
 
 function FrotaEntregasPage() {

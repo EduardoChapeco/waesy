@@ -25,6 +25,8 @@ import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
 import { generateContractFromOrder } from "@/services/contracts.functions";
+import { KDSPage } from "@/routes/workspace.pedidos.gestor";
+import { Kanban } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/pedidos/")({
  head: () => ({ meta: [{ title: "Pedidos | Workspace Waesy" }] }),
@@ -43,7 +45,7 @@ export const Route = createFileRoute("/workspace/pedidos/")({
  component: AdminOrdersPage,
 });
 
-type ViewMode = "emissions" | "kitchen" | "picking" | "service_flow" | "table";
+type ViewMode = "emissions" | "picking" | "service_flow" | "table" | "kanban";
 
 function getStatusLabel(status: string, semantics?: any) {
  const isGastro = semantics?.nicheId === "gastronomy";
@@ -110,8 +112,8 @@ function AdminOrdersPage() {
     }
     if (isGastro) {
       return [
-        { id: "table" as ViewMode, label: "Tabela de Pedidos", icon: List },
-        { id: "kitchen" as ViewMode, label: "Cozinha (KDS)", icon: ChefHat },
+        { id: "kanban" as ViewMode, label: "Gestor Multicanal (Kanban)", icon: Kanban },
+        { id: "table" as ViewMode, label: "Tabela Analítica & Fiscal", icon: List },
       ];
     }
     if (isRetail) {
@@ -130,8 +132,13 @@ function AdminOrdersPage() {
     ];
   }, [isTourism, isGastro, isRetail, isServices]);
 
-  // Lista de Vendas/Pedidos sempre inicia como visualização padrão
-  const [viewMode, setViewMode] = useState<ViewMode>(() => "table");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (isTourism) return "emissions";
+    if (isGastro) return "kanban";
+    if (isRetail) return "picking";
+    if (isServices) return "service_flow";
+    return "table";
+  });
 
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [isProcessing, setIsProcessing] = useState(false);
@@ -267,7 +274,7 @@ function AdminOrdersPage() {
  const pageTitle = isTourism
  ? "Emissões & Vendas de Viagens"
  : isGastro
- ? "Pedidos & Cozinha"
+ ? "Histórico de Pedidos"
  : isServices
  ? "Ordens de Serviço & Atendimentos"
  : semantics.ordersLabel || "Pedidos & Vendas";
@@ -302,7 +309,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
       <Link to="/workspace/turismo/grupos">
-       <Users className="size-3.5 text-primary" />
+       <Users className="size-4 text-primary" />
        <span>Grupos e Excursões</span>
       </Link>
      </Button>
@@ -312,7 +319,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
      >
       <Link to="/workspace/turismo/propostas" search={{ new: true }}>
-       <Layers className="size-3.5" />
+       <Layers className="size-4" />
        <span>+ Nova Proposta</span>
       </Link>
      </Button>
@@ -324,10 +331,35 @@ function AdminOrdersPage() {
      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
     >
      <Link to="/workspace/agenda">
-      <Calendar className="size-3.5" />
+      <Calendar className="size-4" />
       <span>Grade de Agendamentos</span>
      </Link>
     </Button>
+   ) : isGastro ? (
+    <div className="flex items-center gap-2">
+     <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+     >
+      <Link to="/workspace/pdv/cozinha">
+       <ChefHat className="size-4 text-primary" />
+       <span>KDS Praças de Cozinha</span>
+      </Link>
+     </Button>
+     <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
+     >
+      <Link to="/workspace/pdv">
+       <Store className="size-4 text-primary" />
+       <span>Frente de Caixa (PDV)</span>
+      </Link>
+     </Button>
+    </div>
    ) : (
     <div className="flex items-center gap-2">
      <Button
@@ -337,7 +369,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
       <Link to="/workspace/pedidos/expedicao">
-       <PackageCheck className="size-3.5 text-primary" />
+       <PackageCheck className="size-4 text-primary" />
        <span>Central WMS</span>
       </Link>
      </Button>
@@ -348,7 +380,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
       <Link to="/workspace/pdv">
-       <Store className="size-3.5 text-primary" />
+       <Store className="size-4 text-primary" />
        <span>Frente de Caixa (PDV)</span>
       </Link>
      </Button>
@@ -396,6 +428,16 @@ function AdminOrdersPage() {
           trend="up"
         />
       </div>
+
+      {/* ── MODO 0: GESTOR MULTICANAL COMPLETO (KANBAN / KDS / MOTOBOYS / ETIQUETAS / CONTRATOS) ── */}
+      {viewMode === "kanban" ? (
+        <KDSPage
+          initialOrdersProp={orders}
+          storeProp={store}
+          onOpenShippingLabel={(id) => setSelectedShippingLabelOrderId(id)}
+          onGenerateContract={(id) => handleGenerateContract(id)}
+        />
+      ) : null}
 
       {/* ── MODO 1: KANBAN DE EMISSÕES & VIAGENS (TURISMO) ── */}
  {viewMode === "emissions" && isTourism ? (
@@ -564,7 +606,7 @@ function AdminOrdersPage() {
  className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 min-h-11 gap-1"
  >
  <span>Liberar Voucher</span>
- <ArrowRight className="size-3.5" />
+ <ArrowRight className="size-4" />
  </Button>
  <Button
  asChild
@@ -638,7 +680,7 @@ function AdminOrdersPage() {
  disabled={isProcessing}
  className="flex-1 rounded-lg font-bold text-xs h-11 min-h-11 border-success/40 text-success hover:bg-success/10"
  >
- <CheckCircle2 className="size-3.5 mr-1" />
+ <CheckCircle2 className="size-4 mr-1" />
  Concluir Viagem
  </Button>
  <Button
@@ -665,7 +707,7 @@ function AdminOrdersPage() {
  <div className="space-y-3">
  <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-blue-500" />
+ <span className="size-2.5 rounded-full bg-primary" />
  <h3 className="text-sm font-bold text-foreground">Viagens Concluídas</h3>
  </div>
  <Badge variant="secondary" className="font-bold text-xs bg-card">
@@ -716,319 +758,6 @@ function AdminOrdersPage() {
  </div>
  ) : null}
 
- {/* ── MODO 2: COCKPIT DE COZINHA (EXCLUSIVO PARA GASTRONOMIA) ── */}
- {viewMode === "kitchen" && isGastro ? (
- <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
- {/* Coluna 1: Novos Pedidos */}
- <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144">
- <div className="flex items-center justify-between px-1 pb-2">
- <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-destructive animate-pulse motion-reduce:animate-none" />
- <h3 className="text-sm font-bold text-foreground">Novos Pedidos</h3>
- </div>
- <Badge variant="secondary" className="font-bold text-xs bg-card">
- {newOrders.length}
- </Badge>
- </div>
-
- <div className="space-y-3">
- {newOrders.length === 0 ? (
- <div className="py-8 rounded-xl bg-card text-center text-xs text-muted-foreground">
- Nenhum pedido novo pendente
- </div>
- ) : (
- newOrders.map((order) => (
- <div
- key={order.id}
- className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
- >
- <div className="flex items-start justify-between gap-2">
- <div>
- <div className="flex items-center gap-2">
- <span className="font-mono font-black text-sm text-foreground">
- #{order.public_token || order.id.slice(0, 6)}
- </span>
- <span className="font-bold text-xs text-foreground">
- {order.customer_snapshot?.name || "Cliente"}
- </span>
- </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-muted text-foreground uppercase">
- {order.shipping_method === "pickup" ? "Retirada Balcão" : "Entrega Parceira"}
- </span>
- </div>
-
- <div className="text-right">
- <span className="text-xs font-black text-foreground">
- {formatMoney(order.total_cents)}
- </span>
- <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
- <Clock className="size-3" />
- <span>Hoje</span>
- </div>
- </div>
- </div>
-
- {Array.isArray(order.items_snapshot) && order.items_snapshot.length > 0 && (
- <div className="space-y-2 py-2 border-y border-border/40 text-xs">
- {order.items_snapshot.map((item: any, idx: number) => (
- <div key={idx} className="flex items-start justify-between gap-2">
- <div className="flex items-start gap-2">
- <span className="font-bold text-foreground bg-muted px-2 py-1 rounded text-xs">
- {item.quantity || 1}x
- </span>
- <div>
- <p className="font-medium text-foreground leading-tight">
- {item.title || item.product_name || item.name || "Item"}
- </p>
- {item.notes && (
- <p className="text-xs text-warning-strong  font-mono">
- Obs: {item.notes}
- </p>
- )}
- </div>
- </div>
- </div>
- ))}
- </div>
- )}
-
- <div className="flex items-center gap-2 pt-2 border-t border-border/40">
- <Button
- size="sm"
- onClick={() => handleQuickApprove(order.id)}
- disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-foreground text-background text-xs h-11 min-h-11"
- >
- Aceitar Pedido
- </Button>
- <Button
- asChild
- variant="outline"
- size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
- title="Ver Comanda"
- >
- <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
- <Printer className="size-4" />
- </Link>
- </Button>
- </div>
- </div>
- ))
- )}
- </div>
- </div>
-
- {/* Coluna 2: Em Preparo na Cozinha */}
- <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144">
- <div className="flex items-center justify-between px-1 pb-2">
- <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-warning" />
- <h3 className="text-sm font-bold text-foreground">Em Preparo</h3>
- </div>
- <Badge variant="secondary" className="font-bold text-xs bg-card">
- {processingOrders.length}
- </Badge>
- </div>
-
- <div className="space-y-3">
- {processingOrders.length === 0 ? (
- <div className="py-8 rounded-xl bg-card text-center text-xs text-muted-foreground">
- Nenhum pedido em produção na cozinha
- </div>
- ) : (
- processingOrders.map((order) => (
- <div
- key={order.id}
- className="p-4 rounded-2xl bg-card space-y-3 transition-colors"
- >
- <div className="flex items-start justify-between gap-2">
- <div>
- <div className="flex items-center gap-2">
- <span className="font-mono font-black text-sm text-foreground">
- #{order.public_token || order.id.slice(0, 6)}
- </span>
- <span className="font-bold text-xs text-foreground">
- {order.customer_snapshot?.name || "Cliente"}
- </span>
- </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-muted text-warning-strong uppercase">
- Cozinha Produzindo
- </span>
- </div>
-
- <span className="text-xs font-black text-foreground">
- {formatMoney(order.total_cents)}
- </span>
- </div>
-
- {Array.isArray(order.items_snapshot) && order.items_snapshot.length > 0 && (
- <div className="space-y-2 py-2 border-y border-border/40 text-xs">
- {order.items_snapshot.map((item: any, idx: number) => (
- <div key={idx} className="flex items-start justify-between gap-2">
- <div className="flex items-start gap-2">
- <span className="font-bold text-foreground bg-muted px-2 py-1 rounded text-xs">
- {item.quantity || 1}x
- </span>
- <div>
- <p className="font-medium text-foreground leading-tight">
- {item.title || item.product_name || item.name || "Item"}
- </p>
- {item.notes && (
- <p className="text-xs text-warning-strong  font-mono">
- Obs: {item.notes}
- </p>
- )}
- </div>
- </div>
- </div>
- ))}
- </div>
- )}
-
- <div className="flex items-center gap-2 pt-2 border-t border-border/40">
- <Button
- size="sm"
- onClick={() =>
- handleStatusChange(
- order.id,
- order.shipping_method === "pickup" ? "ready_for_pickup" : "shipped",
- )
- }
- disabled={isProcessing}
- className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 min-h-11 gap-1"
- >
- <span>Pronto p/ Despacho</span>
- <ArrowRight className="size-3.5" />
- </Button>
- <Button
- asChild
- variant="outline"
- size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
- >
- <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
- <Printer className="size-4" />
- </Link>
- </Button>
- {(order as any).danfe_pdf_url && (
- <Button
- asChild
- variant="outline"
- size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0 text-success-strong border-success/30 hover:bg-success/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
- title="Baixar DANFE (PDF da Nota Fiscal)"
- >
- <a href={(order as any).danfe_pdf_url} target="_blank" rel="noopener noreferrer">
- <FileText className="size-4" />
- </a>
- </Button>
- )}
- </div>
- </div>
- ))
- )}
- </div>
- </div>
-
- {/* Coluna 3: Prontos / Em Rota */}
- <div className="space-y-3 p-3 rounded-2xl bg-muted/50 dark:bg-muted/30 min-h-144">
- <div className="flex items-center justify-between px-1 pb-2">
- <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-success" />
- <h3 className="text-sm font-bold text-foreground">Prontos / Em Rota</h3>
- </div>
- <Badge variant="secondary" className="font-bold text-xs bg-card">
- {readyOrders.length}
- </Badge>
- </div>
-
- <div className="space-y-3">
- {readyOrders.length === 0 ? (
- <div className="py-8 rounded-xl bg-card text-center text-xs text-muted-foreground">
- Nenhum pedido despachado
- </div>
- ) : (
- readyOrders.map((order) => (
- <div
- key={order.id}
- className="p-4 rounded-2xl bg-card space-y-3"
- >
- <div className="flex items-start justify-between gap-2">
- <div>
- <div className="flex items-center gap-2">
- <span className="font-mono font-black text-sm text-foreground">
- #{order.public_token || order.id.slice(0, 6)}
- </span>
- <span className="font-bold text-xs text-foreground">
- {order.customer_snapshot?.name || "Cliente"}
- </span>
- </div>
- <span className="inline-block mt-1 px-2 py-1 rounded-md text-xs font-bold bg-muted text-success-strong uppercase">
- {order.status === "ready_for_pickup"
- ? "Aguardando Retirada"
- : "Entregador a Caminho"}
- </span>
- </div>
-
- <span className="text-xs font-black text-foreground">
- {formatMoney(order.total_cents)}
- </span>
- </div>
-
- {Array.isArray(order.items_snapshot) && order.items_snapshot.length > 0 && (
- <div className="space-y-2 py-2 border-y border-border/40 text-xs">
- {order.items_snapshot.map((item: any, idx: number) => (
- <div key={idx} className="flex items-start justify-between gap-2">
- <div className="flex items-start gap-2">
- <span className="font-bold text-foreground bg-muted px-2 py-1 rounded text-xs">
- {item.quantity || 1}x
- </span>
- <div>
- <p className="font-medium text-foreground leading-tight">
- {item.title || item.product_name || item.name || "Item"}
- </p>
- {item.notes && (
- <p className="text-xs text-warning-strong  font-mono">
- Obs: {item.notes}
- </p>
- )}
- </div>
- </div>
- </div>
- ))}
- </div>
- )}
-
- <div className="flex items-center gap-2 pt-2 border-t border-border/40">
- <Button
- size="sm"
- variant="outline"
- onClick={() => handleStatusChange(order.id, "delivered")}
- disabled={isProcessing}
- className="flex-1 rounded-lg font-bold text-xs h-11 min-h-11 border-success/40 text-success hover:bg-success/10"
- >
- Confirmar Entrega
- </Button>
- <Button
- asChild
- variant="outline"
- size="icon"
- className="size-11 sm:size-9 rounded-lg shrink-0 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
- >
- <Link to={`/workspace/pedidos/${order.id}` as never}>
- <Eye className="size-4" />
- </Link>
- </Button>
- </div>
- </div>
- ))
- )}
- </div>
- </div>
- </div>
- ) : null}
-
  {/* ── MODO 3: SEPARAÇÃO RÁPIDA (CONEXÃO DIRETA COM CENTRAL WMS) ── */}
  {viewMode === "picking" && isRetail ? (
  <div className="space-y-6">
@@ -1054,7 +783,7 @@ function AdminOrdersPage() {
    >
     <Link to="/workspace/pedidos/expedicao">
      <span>Abrir Módulo WMS Completo</span>
-     <ArrowRight className="size-3.5" />
+     <ArrowRight className="size-4" />
     </Link>
    </Button>
   </div>
@@ -1168,7 +897,7 @@ function AdminOrdersPage() {
  : "border-border bg-card"
  }`}
  >
- {isChecked && <CheckCircle2 className="size-3.5" />}
+ {isChecked && <CheckCircle2 className="size-4" />}
  </div>
  <div className="min-w-0">
  <p
@@ -1303,7 +1032,7 @@ function AdminOrdersPage() {
 
               {/* Input de busca flexível */}
               <div className="relative flex-1 min-w-0 sm:w-64 sm:flex-initial">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   placeholder={isTourism ? "Buscar passageiro ou token..." : "Buscar por código ou cliente..."}
                   value={searchQuery}
@@ -1406,7 +1135,7 @@ function AdminOrdersPage() {
                         </DropdownMenuLabel>
                         <DropdownMenuItem asChild>
                           <Link to={`/workspace/pedidos/${order.id}` as never}>
-                            <Eye className="size-3.5 mr-2" />
+                            <Eye className="size-4 mr-2" />
                             {isTourism ? "Ver Ficha do Passageiro" : "Ver Ficha 360 do Pedido"}
                           </Link>
                         </DropdownMenuItem>
@@ -1415,23 +1144,23 @@ function AdminOrdersPage() {
                             to={`/workspace/pedidos/${order.id}/recibo` as never}
                             target="_blank"
                           >
-                            <ReceiptText className="size-3.5 mr-2" />
+                            <ReceiptText className="size-4 mr-2" />
                             {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => setSelectedShippingLabelOrderId(order.id)}>
-                          <Printer className="size-3.5 mr-2 text-primary" />
+                          <Printer className="size-4 mr-2 text-primary" />
                           {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
                         </DropdownMenuItem>
                         <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleGenerateContract(order.id)}>
-                          <FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                          <FileText className="size-4 mr-2 text-primary" />
                           Gerar Contrato e Assinatura Digital
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
 
                         {order.status === "awaiting_payment" && (
                           <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleQuickApprove(order.id)}>
-                            <CheckCircle2 className="size-3.5 mr-2 text-success" />
+                            <CheckCircle2 className="size-4 mr-2 text-success" />
                             {isTourism ? "Aprovar Pagamento da Reserva" : "Aprovar Pagamento"}
                           </DropdownMenuItem>
                         )}
@@ -1440,7 +1169,7 @@ function AdminOrdersPage() {
                           <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                             onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
                           >
-                            <CheckCircle2 className="size-3.5 mr-2 text-primary" />
+                            <CheckCircle2 className="size-4 mr-2 text-primary" />
                             {isTourism ? "Liberar Voucher p/ Embarque" : "Pronto p/ Retirada"}
                           </DropdownMenuItem>
                         )}
@@ -1449,7 +1178,7 @@ function AdminOrdersPage() {
                           <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                             onClick={() => handleStatusChange(order.id, "delivered")}
                           >
-                            <PackageCheck className="size-3.5 mr-2 text-success" />
+                            <PackageCheck className="size-4 mr-2 text-success" />
                             {isTourism ? "Confirmar Viagem Concluída" : "Confirmar Entrega"}
                           </DropdownMenuItem>
                         )}
@@ -1459,7 +1188,7 @@ function AdminOrdersPage() {
                             onClick={() => handleStatusChange(order.id, "cancelled")}
                             className="text-destructive focus:text-destructive"
                           >
-                            <XCircle className="size-3.5 mr-2" />
+                            <XCircle className="size-4 mr-2" />
                             Cancelar
                           </DropdownMenuItem>
                         )}
@@ -1567,7 +1296,7 @@ function AdminOrdersPage() {
                               </DropdownMenuLabel>
                               <DropdownMenuItem asChild>
                                 <Link to={`/workspace/pedidos/${order.id}` as never}>
-                                  <Eye className="size-3.5 mr-2" />
+                                  <Eye className="size-4 mr-2" />
                                   {isTourism ? "Ver Ficha do Passageiro" : "Ver Ficha 360 do Pedido"}
                                 </Link>
                               </DropdownMenuItem>
@@ -1576,23 +1305,23 @@ function AdminOrdersPage() {
                                   to={`/workspace/pedidos/${order.id}/recibo` as never}
                                   target="_blank"
                                 >
-                                  <ReceiptText className="size-3.5 mr-2" />
+                                  <ReceiptText className="size-4 mr-2" />
                                   {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => setSelectedShippingLabelOrderId(order.id)}>
-                                <Printer className="size-3.5 mr-2 text-primary" />
+                                <Printer className="size-4 mr-2 text-primary" />
                                 {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
                               </DropdownMenuItem>
                               <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleGenerateContract(order.id)}>
-                                <FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                                <FileText className="size-4 mr-2 text-primary" />
                                 Gerar Contrato e Assinatura Digital
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
 
                               {order.status === "awaiting_payment" && (
                                 <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleQuickApprove(order.id)}>
-                                  <CheckCircle2 className="size-3.5 mr-2 text-success" />
+                                  <CheckCircle2 className="size-4 mr-2 text-success" />
                                   {isTourism ? "Aprovar Pagamento da Reserva" : "Aprovar Pagamento"}
                                 </DropdownMenuItem>
                               )}
@@ -1601,7 +1330,7 @@ function AdminOrdersPage() {
                                 <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                                   onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
                                 >
-                                  <CheckCircle2 className="size-3.5 mr-2 text-primary" />
+                                  <CheckCircle2 className="size-4 mr-2 text-primary" />
                                   {isTourism ? "Liberar Voucher p/ Embarque" : "Pronto p/ Retirada"}
                                 </DropdownMenuItem>
                               )}
@@ -1610,7 +1339,7 @@ function AdminOrdersPage() {
                                 <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                                   onClick={() => handleStatusChange(order.id, "delivered")}
                                 >
-                                  <PackageCheck className="size-3.5 mr-2 text-success" />
+                                  <PackageCheck className="size-4 mr-2 text-success" />
                                   {isTourism ? "Confirmar Viagem Concluída" : "Confirmar Entrega"}
                                 </DropdownMenuItem>
                               )}
@@ -1620,7 +1349,7 @@ function AdminOrdersPage() {
                                   onClick={() => handleStatusChange(order.id, "cancelled")}
                                   className="text-destructive focus:text-destructive"
                                 >
-                                  <XCircle className="size-3.5 mr-2" />
+                                  <XCircle className="size-4 mr-2" />
                                   Cancelar
                                 </DropdownMenuItem>
                               )}

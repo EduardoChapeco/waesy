@@ -577,19 +577,13 @@ function ProductContent({
  const match = product.variants.find((v: VariantDTO) => v.id === search.v);
  if (match) return match;
  }
-    // Prefer variant with stock, then backorder-enabled, then first — ordered by lowest price!
-    const hasStock = product.variants
-      .filter((v: VariantDTO) => v.availableQty > 0)
-      .sort((a: VariantDTO, b: VariantDTO) => a.effectivePriceCents - b.effectivePriceCents);
-    const hasBackorder = product.variants
-      .filter((v: VariantDTO) => v.availableQty <= 0 && v.allowBackorder)
-      .sort((a: VariantDTO, b: VariantDTO) => a.effectivePriceCents - b.effectivePriceCents);
-    return hasStock.length > 0
-      ? hasStock[0]
-      : hasBackorder.length > 0
-      ? hasBackorder[0]
-      : [...product.variants].sort((a: VariantDTO, b: VariantDTO) => a.effectivePriceCents - b.effectivePriceCents)[0];
-  }, [product.variants, search.v]);
+ // Prefer variant with stock sorted by lowest price, then backorder-enabled, then lowest price variant (DEC-433)
+ const sortByLowestPrice = (a: VariantDTO, b: VariantDTO) => (a.effectivePriceCents || 0) - (b.effectivePriceCents || 0);
+ const hasStock = product.variants.filter((v: VariantDTO) => v.availableQty > 0).sort(sortByLowestPrice);
+ const hasBackorder = product.variants.filter((v: VariantDTO) => v.availableQty <= 0 && v.allowBackorder).sort(sortByLowestPrice);
+ const allSorted = [...product.variants].sort(sortByLowestPrice);
+ return hasStock.length > 0 ? hasStock[0] : hasBackorder.length > 0 ? hasBackorder[0] : allSorted[0];
+ }, [product.variants, search.v]);
 
  // Initialize selected attributes with the first variant's attributes
  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>(

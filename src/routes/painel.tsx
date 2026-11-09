@@ -83,6 +83,9 @@ export const Route = createFileRoute("/painel")({
           session?.role === "store_owner" ||
           session?.role === "owner" ||
           session?.role === "admin" ||
+          session?.role === "manager" ||
+          session?.role === "seller" ||
+          session?.role === "collaborator" ||
           session?.role === "platform_admin";
 
         const customReturn = search?.returnUrl;
@@ -207,6 +210,9 @@ function PainelAuthPage() {
           userSession?.role === "store_owner" ||
           userSession?.role === "owner" ||
           userSession?.role === "admin" ||
+          userSession?.role === "manager" ||
+          userSession?.role === "seller" ||
+          userSession?.role === "collaborator" ||
           userSession?.role === "platform_admin";
 
         if (hasStore) {

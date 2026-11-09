@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Boxes, PackageCheck, Clock, AlertTriangle, Plus, Minus, Search, History, ArrowRightLeft, Truck, ShieldAlert, SlidersHorizontal, Box, ScanBarcode } from "lucide-react";
+import { Boxes, PackageCheck, Clock, AlertTriangle, Plus, Minus, Search, History, ArrowRightLeft, Truck, ShieldAlert, SlidersHorizontal, Box, ScanBarcode, ChefHat } from "lucide-react";
 import { BarcodeScannerModal } from "@/components/scanner/barcode-scanner-modal";
+import { GastronomyPantryHub } from "@/components/kitchen/gastronomy-pantry-hub";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
@@ -28,17 +29,19 @@ export const Route = createFileRoute("/workspace/estoque/")({
   head: () => ({ meta: [{ title: "Estoque Operacional | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [resStock, resLocations] = await Promise.all([
+      const [resStock, resLocations, resStore] = await Promise.all([
         getStockLevels({ data: {} }).catch(() => []),
         listInventoryLocations().catch(() => []),
+        getStoreSettings().catch(() => null),
       ]);
       return {
         stock: Array.isArray(resStock) ? resStock : [],
         locations: Array.isArray(resLocations) ? resLocations : [],
+        store: resStore || null,
       };
     } catch (err) {
       console.error("[loader:workspace.estoque.index] Unhandled loader error:", err);
-      return { stock: [], locations: [] };
+      return { stock: [], locations: [], store: null };
     }
   },
   component: AdminStockPage,
@@ -118,7 +121,7 @@ function StockMobileView({ filteredStock, onOpenMovementModal }: StockViewProps)
                 type="button"
                 variant="outline"
                 onClick={() => onOpenMovementModal(variant, "purchase")}
-                className="h-11 min-h-11 flex-1 rounded-lg text-xs font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                className="h-11 min-h-11 flex-1 rounded-lg text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
               >
                 <Plus className="size-4 mr-1" /> Entrada
               </Button>
@@ -202,7 +205,7 @@ function StockDesktopView({ filteredStock, onOpenMovementModal }: StockViewProps
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs h-9 px-3 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer min-h-11 sm:min-h-0"
+                      className="text-xs h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
                       onClick={() => onOpenMovementModal(variant, "purchase")}
                     >
                       <Plus className="size-3.5 mr-1" /> Entrada
@@ -239,6 +242,8 @@ function AdminStockPage() {
   const loaderData = Route.useLoaderData() as any;
   const rawStock = Array.isArray(loaderData) ? loaderData : loaderData?.stock;
   const rawLocations = Array.isArray(loaderData?.locations) ? loaderData.locations : [];
+  const store = loaderData?.store || null;
+  const isGastronomy = store?.settings?.niche === "gastronomy" || store?.niche === "gastronomy";
 
   const router = useRouter();
   const { isCompact } = useWindowSizeClass();
@@ -251,6 +256,9 @@ function AdminStockPage() {
   const [search, setSearch] = useState("");
   const [statusTab, setStatusTab] = useState<string>("all");
   const [destLocationId, setDestLocationId] = useState<string>("");
+  const [stockSection, setStockSection] = useState<"kitchen_supplies" | "finished_goods">(
+    isGastronomy ? "kitchen_supplies" : "finished_goods"
+  );
   const [isUpdating, setIsUpdating] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
 
@@ -411,10 +419,41 @@ function AdminStockPage() {
 
   return (
     <div className="space-y-6 w-full px-0 sm:px-4 md:px-0">
-      <PageHeader
-        eyebrow="Opera��es"
-        title="Estoque"
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <PageHeader
+          eyebrow="Operações"
+          title={stockSection === "kitchen_supplies" ? "Despensa & Insumos" : "Estoque"}
+        />
+
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant={stockSection === "finished_goods" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setStockSection("finished_goods")}
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Boxes className="size-4" />
+            <span>Produtos & SKUs</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant={stockSection === "kitchen_supplies" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setStockSection("kitchen_supplies")}
+            className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <ChefHat className="size-4" />
+            <span>Despensa & Insumos</span>
+          </Button>
+        </div>
+      </div>
+
+      {stockSection === "kitchen_supplies" ? (
+        <GastronomyPantryHub />
+      ) : (
+        <>
 
       {/* Grid de KPIs de Estoque */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -662,6 +701,8 @@ function AdminStockPage() {
  </div>
  </form>
  </SheetPage>
+        </>
+      )}
 
       <BarcodeScannerModal
         open={scannerOpen}

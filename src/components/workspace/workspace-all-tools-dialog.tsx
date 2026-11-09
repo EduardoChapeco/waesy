@@ -397,6 +397,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Equipe de Trabalho", path: "/workspace/configuracoes/equipe", icon: Users },
       { title: "Ponto Eletrônico", path: "/workspace/rh/ponto", icon: Clock },
       { title: "Folha de Pagamento", path: "/workspace/rh/folha", icon: Wallet },
+      { title: "Compliance Trabalhista", path: "/workspace/rh/compliance", icon: ShieldCheck },
       { title: "Recrutamento e Vagas", path: "/workspace/empregos/candidatos", icon: Briefcase, badge: "RH" },
       { title: "Portal de Vagas", path: "/workspace/empregos", icon: Briefcase },
       { title: "Banco de Talentos", path: "/workspace/curriculo/editor", icon: Briefcase },
@@ -500,6 +501,31 @@ export function WorkspaceAllToolsDialog({
  // Filtro dinâmico por palavra-chave e priorização por nicho
  const filteredSectors = useMemo(() => {
  let baseSectors = [...SECTOR_TOOL_GROUPS];
+ if (semantics.nicheId !== "gastronomy") {
+ const gastroExclusivePaths = new Set([
+ "/workspace/pedidos/gestor",
+ "/workspace/pdv/comandas",
+ "/workspace/pdv/cozinha",
+ "/workspace/pedidos/tempo-preparo",
+ "/workspace/reservas",
+ "/workspace/relatorios/gastronomia",
+ "/workspace/conteudo/receitas",
+ ]);
+ const courierPaths = new Set(["/workspace/pedidos/frota", "/workspace/pedidos/entregadores"]);
+ const allowCouriers = ["retail", "supermarket", "pharmacy", "automotive"].includes(semantics.nicheId);
+ baseSectors = baseSectors.map((s) => ({
+ ...s,
+ description: s.id === "commerce" ? "Gestão de vendas, catálogo, orçamentos e atendimento" : s.description,
+ tools: s.tools.filter((t) => {
+ if (gastroExclusivePaths.has(t.path)) return false;
+ if (!allowCouriers && courierPaths.has(t.path)) return false;
+ return true;
+ }),
+ }));
+ }
+ if (semantics.nicheId !== "tourism") {
+ baseSectors = baseSectors.filter((s) => s.id !== "tourism");
+ }
 
  if (semantics.nicheId === "tourism") {
  const tourismIdx = baseSectors.findIndex((s) => s.id === "tourism");

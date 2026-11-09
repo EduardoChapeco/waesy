@@ -168,10 +168,46 @@ function requireEvolutionMasterKey(): string {
   const key = process.env.EVOLUTION_API_KEY?.trim();
   if (key) return key;
   return "WaesyApiKey_Master_2026_WhatsApp";
-
 }
 
-const ConnectQrSchema = z.object({
+export function normalizeWhatsAppQrDataUri(rawQr: unknown): string | null {
+  if (typeof rawQr !== "string") return null;
+  const trimmed = rawQr.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("data:image/")) return trimmed;
+  if (trimmed.startsWith("<svg")) {
+    return `data:image/svg+xml;utf8,${encodeURIComponent(trimmed)}`;
+  }
+  return `data:image/png;base64,${trimmed}`;
+}
+
+export function extractEvolutionQrPayload(payload: Record<string, any> | null | undefined): {
+  qrCodeBase64: string | null;
+  pairingCode: string | null;
+} {
+  if (!payload || typeof payload !== "object") {
+    return { qrCodeBase64: null, pairingCode: null };
+  }
+  const rawQr =
+    payload?.base64 ||
+    payload?.qrcode?.base64 ||
+    payload?.data?.base64 ||
+    payload?.data?.qrcode?.base64 ||
+    payload?.qr ||
+    null;
+  const rawPairing =
+    payload?.pairingCode ||
+    payload?.qrcode?.pairingCode ||
+    payload?.data?.pairingCode ||
+    payload?.data?.qrcode?.pairingCode ||
+    null;
+  return {
+    qrCodeBase64: normalizeWhatsAppQrDataUri(rawQr),
+    pairingCode: typeof rawPairing === "string" && rawPairing.trim() ? rawPairing.trim() : null,
+  };
+}
+
+export const ConnectQrSchema = z.object({
   id: z.string().uuid().optional(),
   storeId: z.string().uuid().optional(),
   displayName: z.string().trim().min(2).max(100).default("WhatsApp Principal"),
@@ -183,65 +219,93 @@ const ConnectQrSchema = z.object({
 export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
   .validator(ConnectQrSchema)
   .handler(async ({ data }) => {
+    const {
+      id: instanceId,
+      storeId: inputStoreId,
+      displayName,
+      instanceKey,
+      department,
+      isGlobalMaster,
+    } = data;
+
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória para conectar WhatsApp.");
 
     const isMaster = identity.role === "platform_admin";
-    if (data.isGlobalMaster && !isMaster) {
+    if (isGlobalMaster && !isMaster) {
       throw new Error("Apenas o Admin Master pode configurar o Número Global da plataforma.");
     }
     if (!isMaster) {
       assertStoreAccess(identity, ["owner", "admin", "manager"]);
     }
 
-    const storeId = data.storeId || identity.store_id;
-    if (!storeId) throw new Error(" Contexto de loja obrigatório para criar instância WhatsApp.");
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Contexto de loja obrigatório para criar instância WhatsApp.");
 
     const db = getServerClient();
     let existing: WhatsAppChannelInstanceDTO | null = null;
-    if (data.id) {
+    if (instanceId) {
       const { data: found } = await db
         .from("whatsapp_channel_instances")
         .select(PublicFields)
-        .eq("id", data.id)
+        .eq("id", instanceId)
         .eq("store_id", storeId)
         .maybeSingle();
       existing = (found as WhatsAppChannelInstanceDTO | null) || null;
     }
 
     const shortStore = storeId.replace(/-/g, "").slice(0, 8);
-    const cleanKey = (data.instanceKey || existing?.instance_key || `wa_${shortStore}`).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+    const cleanKey = (instanceKey || existing?.instance_key || `wa_${shortStore}`).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
     const externalName = existing?.external_instance_id || `waesy_${shortStore}_${cleanKey}`.slice(0, 48);
     const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(cleanKey)}`;
 
     let qrBase64: string | null = null;
     let pairingCode: string | null = null;
-    let connectionState = "connecting";
+    let connectionState: "connected" | "connecting" | "error" = "connecting";
+    let gatewayErrorCode: string | null = null;
+    let gatewayErrorMessage: string | null = null;
     const baseUrl = requireEvolutionBaseUrl();
+    const apiKey = requireEvolutionMasterKey();
+
+    const fetchInstanceConnectQr = async (): Promise<{ qrCodeBase64: string | null; pairingCode: string | null }> => {
+      const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
+        method: "GET",
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!connectRes.ok) return { qrCodeBase64: null, pairingCode: null };
+      const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
+      return extractEvolutionQrPayload(connectJson);
+    };
 
     // 1. Verificar se a instância já existe na Evolution API
     try {
       const stateRes = await fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
         method: "GET",
-        headers: { apikey: requireEvolutionMasterKey() },
+        headers: { apikey: apiKey },
         signal: AbortSignal.timeout(8000),
       });
 
       if (stateRes.ok) {
         const stateJson = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
-        const rawState = String(stateJson?.instance?.state || "").toLowerCase();
+        const rawState = String(stateJson?.instance?.state || stateJson?.state || "").toLowerCase();
         if (rawState === "open") {
           connectionState = "connected";
         } else {
-          const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
-            method: "GET",
-            headers: { apikey: requireEvolutionMasterKey() },
-            signal: AbortSignal.timeout(10000),
-          });
-          if (connectRes.ok) {
-            const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
-            qrBase64 = connectJson?.base64 || connectJson?.qrcode?.base64 || null;
-            pairingCode = connectJson?.pairingCode || connectJson?.qrcode?.pairingCode || null;
+          const firstConnect = await fetchInstanceConnectQr();
+          qrBase64 = firstConnect.qrCodeBase64;
+          pairingCode = firstConnect.pairingCode;
+
+          // Se a instância existente travou sem emitir QR Code, reinicia sessão e busca novamente
+          if (!qrBase64) {
+            await fetch(`${baseUrl}/instance/restart/${encodeURIComponent(externalName)}`, {
+              method: "PUT",
+              headers: { apikey: apiKey },
+              signal: AbortSignal.timeout(6000),
+            }).catch(() => null);
+            const retryConnect = await fetchInstanceConnectQr();
+            qrBase64 = retryConnect.qrCodeBase64;
+            pairingCode = retryConnect.pairingCode || pairingCode;
           }
         }
       } else {
@@ -249,7 +313,7 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
         const createRes = await fetch(`${baseUrl}/instance/create`, {
           method: "POST",
           headers: {
-            apikey: requireEvolutionMasterKey(),
+            apikey: apiKey,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -273,14 +337,33 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
         });
 
         const createJson = (await createRes.json().catch(() => ({}))) as Record<string, any>;
-        if (!createRes.ok) {
+        if (createRes.ok) {
+          const extracted = extractEvolutionQrPayload(createJson);
+          qrBase64 = extracted.qrCodeBase64;
+          pairingCode = extracted.pairingCode;
+        } else if (createRes.status === 403 || createRes.status === 400 || createRes.status === 409) {
+          // Caso a instância já exista na Evolution API mas não respondeu ao connectionState inicial
+          const fallbackConnect = await fetchInstanceConnectQr();
+          qrBase64 = fallbackConnect.qrCodeBase64;
+          pairingCode = fallbackConnect.pairingCode;
+          if (!qrBase64) {
+            throw new Error(createJson?.response?.message?.[0] || createJson?.message || `Evolution API HTTP ${createRes.status}`);
+          }
+        } else {
           throw new Error(createJson?.response?.message?.[0] || createJson?.message || `Evolution API HTTP ${createRes.status}`);
         }
-        qrBase64 = createJson?.qrcode?.base64 || createJson?.base64 || null;
-        pairingCode = createJson?.qrcode?.pairingCode || null;
+
+        // Evolution API v2 frequentemente inicializa o socket de forma assíncrona após /instance/create
+        if (!qrBase64) {
+          const followUpConnect = await fetchInstanceConnectQr();
+          qrBase64 = followUpConnect.qrCodeBase64;
+          pairingCode = followUpConnect.pairingCode || pairingCode;
+        }
       }
     } catch (err) {
-      throw new Error(`Falha ao comunicar com servidor WhatsApp (${baseUrl}): ${err instanceof Error ? err.message : "Erro de rede"}`);
+      connectionState = "error";
+      gatewayErrorCode = "GATEWAY_QR_ERROR";
+      gatewayErrorMessage = `Falha ao comunicar com servidor WhatsApp (${baseUrl}): ${err instanceof Error ? err.message : "Erro de rede"}`;
     }
 
     const updatedPublicConfig = {
@@ -288,33 +371,37 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
       base_url: baseUrl,
       qr_code_url: qrBase64,
       pairing_code: pairingCode,
-      department: data.department || existing?.public_config?.department || "Geral",
-      is_global_master: data.isGlobalMaster || Boolean(existing?.public_config?.is_global_master),
+      department: department || existing?.public_config?.department || "Geral",
+      is_global_master: isGlobalMaster || Boolean(existing?.public_config?.is_global_master),
       last_qr_generated_at: new Date().toISOString(),
+      last_error_message: gatewayErrorMessage,
     };
 
     const secretEncrypted = encryptSecret(
       JSON.stringify({
-        api_key: requireEvolutionMasterKey(),
+        api_key: apiKey,
         base_url: baseUrl,
       }),
     );
 
     const isConnected = connectionState === "connected";
+    const mappedDbStatus = isConnected ? "connected" : connectionState === "error" ? "error" : "pending";
     const upsertPayload = {
       ...(existing?.id ? { id: existing.id } : {}),
       store_id: storeId,
-      display_name: data.displayName || existing?.display_name || "WhatsApp Principal",
+      display_name: displayName || existing?.display_name || "WhatsApp Principal",
       provider: "evolution_api" as const,
       connection_mode: "unofficial" as const,
       instance_key: cleanKey,
       external_instance_id: externalName,
       webhook_url: webhookUrl,
-      status: isConnected ? "connected" : "pending",
+      status: mappedDbStatus,
       is_active: true,
       is_default: existing?.is_default ?? true,
       public_config: updatedPublicConfig,
       secret_payload_encrypted: secretEncrypted,
+      last_error_code: gatewayErrorCode,
+      last_error_message: gatewayErrorMessage,
       last_health_check_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       created_by: identity.id,
@@ -328,62 +415,86 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
 
     if (error) throw new Error(`Erro ao persistir instância QR Code: ${error.message}`);
 
-    await audit(String(saved.id), storeId, identity.id, "instance.qr_requested", "info", {
-      external_instance_id: externalName,
-      connection_state: connectionState,
-      is_global_master: data.isGlobalMaster,
-    });
+    await audit(
+      String(saved.id),
+      storeId,
+      identity.id,
+      connectionState === "error" ? "instance.qr_error" : "instance.qr_requested",
+      connectionState === "error" ? "error" : "info",
+      {
+        external_instance_id: externalName,
+        connection_state: connectionState,
+        is_global_master: isGlobalMaster,
+        error_message: gatewayErrorMessage,
+      },
+    );
 
     return {
       instance: saved as WhatsAppChannelInstanceDTO,
       qrCodeBase64: qrBase64,
       pairingCode,
       connectionState,
+      errorMessage: gatewayErrorMessage,
     };
   });
 
 export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid(), storeId: z.string().uuid().optional() }))
   .handler(async ({ data }) => {
+    const { id: instanceId, storeId: inputStoreId } = data;
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória.");
-    const storeId = data.storeId || identity.store_id;
+    const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
 
     const db = getServerClient();
     const { data: instance, error } = await db
       .from("whatsapp_channel_instances")
       .select(PublicFields)
-      .eq("id", data.id)
+      .eq("id", instanceId)
       .eq("store_id", storeId)
       .single();
 
     if (error || !instance) throw new Error("Instância WhatsApp não encontrada.");
     if (instance.provider !== "evolution_api") {
-      return { instance: instance as WhatsAppChannelInstanceDTO, state: instance.status };
+      return {
+        instance: instance as WhatsAppChannelInstanceDTO,
+        state: instance.status,
+        qrCodeBase64: normalizeWhatsAppQrDataUri((instance.public_config as any)?.qr_code_url),
+        pairingCode: ((instance.public_config as any)?.pairing_code as string) || null,
+        errorMessage: instance.last_error_message || null,
+      };
     }
 
     const externalName = instance.external_instance_id || instance.instance_key;
     const baseUrl = String((instance.public_config as any)?.base_url || requireEvolutionBaseUrl()).replace(/\/$/, "");
+    const apiKey = requireEvolutionMasterKey();
 
     let liveState = "close";
     let connectedPhone: string | null = instance.display_phone_number;
+    let qrCodeBase64: string | null = normalizeWhatsAppQrDataUri((instance.public_config as any)?.qr_code_url);
+    let pairingCode: string | null = ((instance.public_config as any)?.pairing_code as string) || null;
+    let syncErrorMessage: string | null = null;
 
     try {
       const stateRes = await fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
         method: "GET",
-        headers: { apikey: requireEvolutionMasterKey() },
+        headers: { apikey: apiKey },
         signal: AbortSignal.timeout(6000),
       });
       if (stateRes.ok) {
         const json = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
-        liveState = String(json?.instance?.state || "close").toLowerCase();
+        liveState = String(json?.instance?.state || json?.state || "close").toLowerCase();
+      } else {
+        syncErrorMessage = `Gateway HTTP ${stateRes.status}`;
       }
 
       if (liveState === "open") {
+        qrCodeBase64 = null;
+        pairingCode = null;
         const infoRes = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
           method: "GET",
-          headers: { apikey: requireEvolutionMasterKey() },
+          headers: { apikey: apiKey },
           signal: AbortSignal.timeout(6000),
         });
         if (infoRes.ok) {
@@ -395,16 +506,39 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
             if (digits.length >= 8) connectedPhone = `+${digits}`;
           }
         }
+      } else {
+        // Busca QR Code atualizado enquanto aguarda leitura
+        const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
+          method: "GET",
+          headers: { apikey: apiKey },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (connectRes.ok) {
+          const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
+          const extracted = extractEvolutionQrPayload(connectJson);
+          if (extracted.qrCodeBase64) qrCodeBase64 = extracted.qrCodeBase64;
+          if (extracted.pairingCode) pairingCode = extracted.pairingCode;
+        }
       }
-    } catch {
-      // Mantém estado anterior em caso de oscilação momentânea
+    } catch (err) {
+      syncErrorMessage = err instanceof Error ? err.message : "Oscilação de rede ao consultar gateway WhatsApp";
     }
 
-    const mappedStatus = liveState === "open" ? "connected" : liveState === "connecting" ? "pending" : "disconnected";
+    const mappedStatus =
+      liveState === "open"
+        ? "connected"
+        : liveState === "connecting" || Boolean(qrCodeBase64)
+          ? "pending"
+          : syncErrorMessage
+            ? "error"
+            : "disconnected";
+
     const nextPublicConfig = {
       ...(instance.public_config || {}),
-      ...(mappedStatus === "connected" ? { qr_code_url: null } : {}),
+      qr_code_url: mappedStatus === "connected" ? null : qrCodeBase64,
+      pairing_code: mappedStatus === "connected" ? null : pairingCode,
       last_synced_state: liveState,
+      ...(mappedStatus !== "connected" && qrCodeBase64 ? { last_qr_generated_at: new Date().toISOString() } : {}),
     };
 
     const { data: updated } = await db
@@ -414,6 +548,8 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
         is_active: mappedStatus === "connected" || instance.is_active,
         display_phone_number: connectedPhone,
         public_config: nextPublicConfig,
+        last_error_code: mappedStatus === "connected" ? null : syncErrorMessage ? "SYNC_ERROR" : instance.last_error_code,
+        last_error_message: mappedStatus === "connected" ? null : syncErrorMessage || instance.last_error_message,
         last_health_check_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -424,25 +560,29 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
     return {
       instance: (updated || instance) as WhatsAppChannelInstanceDTO,
       state: mappedStatus,
+      qrCodeBase64: mappedStatus === "connected" ? null : qrCodeBase64,
+      pairingCode: mappedStatus === "connected" ? null : pairingCode,
+      errorMessage: mappedStatus === "connected" ? null : syncErrorMessage || instance.last_error_message || null,
     };
   });
 
 export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid(), storeId: z.string().uuid().optional() }))
   .handler(async ({ data }) => {
+    const { id: instanceId, storeId: inputStoreId } = data;
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória.");
     if (identity.role !== "platform_admin") {
       assertStoreAccess(identity, ["owner", "admin", "manager"]);
     }
-    const storeId = data.storeId || identity.store_id;
+    const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
 
     const db = getServerClient();
     const { data: instance } = await db
       .from("whatsapp_channel_instances")
       .select(PublicFields)
-      .eq("id", data.id)
+      .eq("id", instanceId)
       .eq("store_id", storeId)
       .single();
 
@@ -486,13 +626,13 @@ export const WhatsAppDepartmentSchema = z.object({
   assignedAgentIds: z.array(z.string()).default([]),
   roundRobinEnabled: z.boolean().default(true),
   aiSdrEnabled: z.boolean().default(true),
-  slaMinutes: z.number().min(1).max(1440).default(15),
+  slaMinutes: z.number().min(1).max(1440).default(15), scheduleStart: z.string().default("08:00"), scheduleEnd: z.string().default("18:00"), scheduleDays: z.string().default("Seg a Sex"), awayMessage: z.string().optional(), whatsappInstanceId: z.string().optional(), aiTriageStages: z.array(z.object({ id: z.string(), title: z.string(), instruction: z.string(), handoffToHuman: z.boolean().default(false) })).optional(),
 });
 
 export type WhatsAppDepartmentDTO = z.infer<typeof WhatsAppDepartmentSchema>;
 
 export const WhatsAppGovernanceConfigSchema = z.object({
-  instanceId: z.string().uuid(),
+  instanceId: z.string().uuid().optional(), agentPermissions: z.array(z.object({ agentId: z.string(), name: z.string().optional(), whatsappInstanceId: z.string().optional(), onlyAssignedOrSector: z.boolean().default(false), canTransfer: z.boolean().default(true), canCloseTicket: z.boolean().default(true), canManageQr: z.boolean().default(false) })).optional(),
   departments: z.array(WhatsAppDepartmentSchema),
   permissions: z.object({
     onlyManagersCanViewQr: z.boolean().default(true),
@@ -518,6 +658,10 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
     if (!storeId) throw new Error("Loja obrigatória.");
 
     const db = getServerClient();
+    const { data: storeRow } = await db.from("stores").select("settings").eq("id", storeId).maybeSingle();
+    const currentSettings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+    await db.from("stores").update({ settings: { ...currentSettings, whatsapp_governance: { departments: data.departments, permissions: data.permissions, agentPermissions: data.agentPermissions || [], updated_at: new Date().toISOString() } } }).eq("id", storeId);
+    if (!data.instanceId) return { id: storeId, store_id: storeId, public_config: { departments: data.departments, governance_permissions: data.permissions, agent_permissions: data.agentPermissions || [] } } as unknown as WhatsAppChannelInstanceDTO;
     const { data: current } = await db
       .from("whatsapp_channel_instances")
       .select(PublicFields)
@@ -531,6 +675,7 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
       ...(current.public_config || {}),
       departments: data.departments,
       governance_permissions: data.permissions,
+      agent_permissions: data.agentPermissions || [],
       updated_governance_at: new Date().toISOString(),
     };
 

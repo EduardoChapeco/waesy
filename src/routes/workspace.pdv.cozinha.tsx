@@ -270,7 +270,7 @@ function KDSDashboard() {
  toolDescription="O painel KDS (Kitchen Display System) com tempos de cocção, alertas sonoros e divisão por estações de cozinha é desenhado especificamente para restaurantes e gastronomia."
  store={store}
  >
- <div className="flex flex-col flex-1 h-full max-w-full overflow-hidden bg-muted/15 text-foreground font-sans">
+ <div className="flex flex-col h-full max-w-full overflow-hidden bg-muted/15 text-foreground font-sans">
  {/* ── Topbar da Cozinha ── */}
  <header className="flex flex-col gap-2 px-4 sm:px-6 pt-3 pb-2 bg-card border-b border-border/80 shrink-0">
  {/* Linha 1: Identidade + Ações */}
@@ -436,7 +436,7 @@ function KDSDashboard() {
  title="Pronto p/ Expedição"
  count={colReady.length}
  icon={PackageCheck}
- headerClass="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+ headerClass="bg-primary/10 text-primary border-primary/30"
  orders={colReady}
  onAction={moveOrder}
  actionLabel="Despachar Pedido"
@@ -729,7 +729,7 @@ function KitchenTicketCard({
  <div
  className={cn(
  "h-full transition-colors duration-200",
- urgency === "critical" ? "bg-destructive" : urgency === "warning" ? "bg-warning" : "bg-emerald-500",
+ urgency === "critical" ? "bg-destructive" : urgency === "warning" ? "bg-warning" : "bg-primary",
  )}
  style={{
  width: urgency === "critical" ? "100%" : urgency === "warning" ? "65%" : `${Math.min((waitMinutes / 8) * 40, 40)}%`,
@@ -777,7 +777,7 @@ function KitchenTicketCard({
  aria-label="Marcar item preparado"
  >
  {isChecked ? (
- <CheckSquare className="size-5 text-emerald-500" />
+ <CheckSquare className="size-5 text-primary" />
  ) : (
  <Square className="size-5" />
  )}
@@ -785,10 +785,10 @@ function KitchenTicketCard({
 
  <div className="min-w-0 flex-1">
  <div className="flex items-baseline gap-2">
- <span className="text-base font-black text-primary font-mono leading-none">
+ <span className="text-xl sm:text-2xl font-black text-primary font-mono leading-none">
  {item.qty ?? item.quantity ?? 1}x
  </span>
- <h3 className="text-sm font-bold text-foreground leading-tight tracking-tight">
+ <h3 className="text-base sm:text-lg font-black text-foreground leading-tight tracking-tight">
  {item.product_title || item.product_name || "Item sem título"}
  </h3>
  {stationInfo && stationInfo.id !== "all" && (
