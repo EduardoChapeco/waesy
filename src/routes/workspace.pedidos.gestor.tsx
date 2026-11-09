@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, redirect } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -25,6 +25,7 @@ import { getStoreSettings } from "@/services/store.functions";
 
 export const Route = createFileRoute("/workspace/pedidos/gestor")({
  head: () => ({ meta: [{ title: "KDS - Gestor de Pedidos em Tempo Real | Workspace Waesy" }] }),
+ beforeLoad: () => { throw redirect({ to: "/workspace/pedidos" }); },
  loader: async () => {
    try {
  const { getUserSession } = await import("@/services/auth.functions");
@@ -50,13 +51,13 @@ function playOrderChime() {
   playNewOrderAlert();
 }
 
-export function KDSPage({ initialOrdersProp, storeProp }: { initialOrdersProp?: any[]; storeProp?: any } = {}) {
+export function KDSPage({ initialOrdersProp, storeProp, onOpenShippingLabel, onGenerateContract }: { initialOrdersProp?: any[]; storeProp?: any; onOpenShippingLabel?: (orderId: string) => void; onGenerateContract?: (orderId: string) => void } = {}) {
   const { isCompact: isMobile } = useWindowSizeClass();
   const router = useRouter();
   const loaderData = (Route.useLoaderData() as any) || {};
-  const initialOrders = loaderData.initialOrders || [];
+  const initialOrders = initialOrdersProp ?? loaderData.initialOrders ?? [];
   const storeId = loaderData.storeId || null;
-  const store = loaderData.store || null;
+  const store = storeProp ?? loaderData.store ?? null;
   const [orders, setOrders] = useState<any[]>(initialOrders);
  const [viewMode, setViewMode] = useState<"kanban" | "live_dashboard">("kanban");
  const [alertModalOpen, setAlertModalOpen] = useState(false);
@@ -1549,6 +1550,14 @@ export function KDSPage({ initialOrdersProp, storeProp }: { initialOrdersProp?: 
  >
  <FileText className="size-5" />
  </Button>
+ {onOpenShippingLabel && (
+ <Button type="button" variant="outline" size="icon" onClick={() => onOpenShippingLabel(selectedOrder.id)} title="Emitir Etiqueta de Envio & Declaração" className="size-11 rounded-lg shrink-0 border-border hover:bg-muted cursor-pointer">
+ <Truck className="size-5 text-primary" />
+ </Button>
+ )}
+ <Button type="button" variant="outline" size="icon" onClick={() => onGenerateContract ? onGenerateContract(selectedOrder.id) : window.open(`/workspace/pedidos/${selectedOrder.id}/recibo`, "_blank")} title="Gerar Contrato e Assinatura Digital" className={cn("size-11 rounded-lg shrink-0 border-border hover:bg-muted cursor-pointer", !onGenerateContract && "hidden")}>
+ <FileText className="size-5 text-primary" />
+ </Button>
 
  {(selectedOrder.customer_snapshot?.phone || selectedOrder.customer?.phone) && (
  <Button
@@ -1680,7 +1689,7 @@ export function KDSPage({ initialOrdersProp, storeProp }: { initialOrdersProp?: 
  <Dialog open={alertModalOpen} onOpenChange={setAlertModalOpen}>
  <DialogContent className="sm:max-w-lg">
  <DialogHeader>
- <DialogTitle className="text-base font-bold flex items-center gap-2 text-rose-600">
+ <DialogTitle className="text-base font-bold flex items-center gap-2 text-destructive">
  <AlertTriangle className="size-5" />
  Intervenção Operacional: Pedidos com Estouro de SLA
  </DialogTitle>

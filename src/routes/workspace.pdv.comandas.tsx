@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { FiscalActionCluster } from "@/components/workspace/FiscalActionCluster";
+import TableReservationsPage from "@/routes/workspace.reservas";
 
 export const Route = createFileRoute("/workspace/pdv/comandas")({
  head: () => ({ meta: [{ title: "Comandas | PDV | Workspace Waesy" }] }),
@@ -68,16 +69,16 @@ const STATUS_CONFIG: Record<
  delayed: {
  label: "Atraso (>40m)",
  badgeVariant: "destructive",
- cardClass: "border-rose-500/50 bg-rose-500/10 hover:border-rose-500/70 shadow-2xs",
- textClass: "text-rose-600 dark:text-rose-400 font-semibold",
- dotClass: "bg-rose-500",
+ cardClass: "border-destructive/50 bg-destructive/10 hover:border-destructive/70 shadow-2xs",
+ textClass: "text-destructive font-semibold",
+ dotClass: "bg-destructive",
  },
  reserved: {
  label: "Reservada",
  badgeVariant: "outline",
- cardClass: "border-indigo-500/40 bg-indigo-500/10 hover:border-indigo-500/60 shadow-2xs",
- textClass: "text-indigo-600 dark:text-indigo-400 font-semibold",
- dotClass: "bg-indigo-500",
+ cardClass: "border-border bg-muted/40 hover:border-primary/40 shadow-2xs",
+ textClass: "text-foreground font-semibold",
+ dotClass: "bg-primary",
  },
 };
 
@@ -263,7 +264,7 @@ function PdvComandasPage() {
  onClick={() => setActiveView("grid")}
  >
  <LayoutGrid className="size-3.5" />
- Mesas
+ Mapa de Mesas
  </Button>
  <Button
  size="sm"
@@ -281,7 +282,11 @@ function PdvComandasPage() {
  onClick={() => setActiveView("reservations")}
  >
  <CalendarDays className="size-3.5" />
- Reservas ({reservations.length})
+ Reservas do Dia ({reservations.length})
+ </Button>
+ <Button size="sm" variant="ghost" className="h-7 px-3 text-xs font-semibold rounded-lg gap-2 min-h-11 sm:min-h-0" onClick={() => setFloorPlanOpen(true)}>
+ <Columns className="size-3.5" />
+ Planta & Mesas
  </Button>
  </div>
 
@@ -342,11 +347,11 @@ function PdvComandasPage() {
  <div className="p-3 rounded-lg bg-card border border-border/70 flex items-center justify-between">
  <div className="space-y-1">
  <span className="text-xs font-bold text-muted-foreground uppercase">Reservadas</span>
- <p className="text-xl font-bold text-indigo-400 font-mono">
+ <p className="text-xl font-bold text-foreground font-mono">
  {summary?.reserved_count || 0}
  </p>
  </div>
- <div className="size-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-500/20" />
+ <div className="size-2.5 rounded-full bg-primary ring-4 ring-primary/20" />
  </div>
 
  <div className="p-3 rounded-lg bg-card border border-border/70 col-span-2 sm:col-span-1 flex items-center justify-between">
@@ -452,7 +457,7 @@ function PdvComandasPage() {
  })}
  </div>
  ) : (
- /* ── VISÃO CLÁSSICA EM LISTA DE COMANDAS ── */
+ /* ── VISÃO CLÁSSICA EM LISTA DE COMANDAS ── */ activeView === "list" ?
  activeComandas.length === 0 ? (
  <div className="flex flex-col items-center justify-center p-12 text-center rounded-lg bg-card border border-border/60">
  <Receipt className="size-12 text-muted-foreground mb-3" />
@@ -527,7 +532,8 @@ function PdvComandasPage() {
  ) : (
  /* ── ABA 3: RESERVAS DO DIA INTEGRADAS AO SALAO ── */
  <div className="space-y-4">
- <div className="flex items-center justify-between p-4 rounded-xl border border-border/80 bg-card">
+ <TableReservationsPage embedded storeProp={store} />
+<div className="flex items-center justify-between p-4 rounded-xl border border-border/80 bg-card">
  <div>
  <h3 className="text-sm font-bold text-foreground">Reservas Ativas do Salão</h3>
  <p className="text-xs text-muted-foreground">Clientes agendados com alocação automática nas mesas</p>
@@ -537,7 +543,7 @@ function PdvComandasPage() {
  size="sm"
  className="h-11 min-h-11 sm:h-9 sm:min-h-0 gap-2 font-bold text-xs"
  >
- <Link to="/workspace/reservas">
+ <Link to="/workspace/pdv/comandas">
  <Plus className="size-3.5" />
  <span>Gerenciar / Nova Reserva</span>
  </Link>
@@ -566,6 +572,12 @@ function PdvComandasPage() {
  <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-2 font-mono">
  <span>{res.party_size || 2} pessoas</span>
  <span className="font-bold text-foreground">{res.reservation_time?.slice(0, 5) || "Horário flexível"}</span>
+ </div>
+ <div className="pt-2">
+ <Button type="button" size="sm" className="w-full h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer" onClick={() => openTableMutation.mutate({ tableNumber: String(res.table_number || res.assigned_table || "01").replace(/\D/g, "") || "01", guestName: res.customer_name || "Cliente Reserva", customerPhone: res.customer_phone || undefined, guestsCount: res.party_size || 2 })}>
+ <UtensilsCrossed className="size-3.5" />
+ <span>Acomodar na Mesa</span>
+ </Button>
  </div>
  </div>
  ))}

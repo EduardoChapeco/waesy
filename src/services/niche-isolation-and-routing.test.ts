@@ -185,6 +185,9 @@ describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => 
       expect(tourismPaths).not.toContain("/workspace/pedidos/entregadores");
       expect(tourismPaths).toContain("/workspace/turismo/vouchers");
       expect(tourismPaths).toContain("/workspace/turismo/embarques");
+      expect(tourismPillars.find((p) => p.id === "comercial")?.label).toBe("Vendas & Vouchers");
+      expect(tourismPillars.find((p) => p.id === "catalogo")?.label).toBe("Pacotes & Roteiros");
+      expect(tourismPillars.find((p) => p.id === "logistica")?.label).toBe("Embarques & Transfers");
 
       const gastroPillars = getMasterSidebarPillars(getSidebarConfig("gastronomy"), "gastronomy");
       const gastroPaths = gastroPillars.flatMap((p) => p.items.map((i) => i.path));

@@ -277,7 +277,7 @@ export function ProductBomCard({
  disabled={items.length === 0}
  className="rounded-lg text-xs font-bold h-11 px-4 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
- <CheckCircle2 className="size-3.5" />
+ <CheckCircle2 className="size-4" />
  <span>Aplicar Custo ({formatMoney(summary.totalCostCents)})</span>
  </Button>
  </div>
@@ -468,7 +468,7 @@ export function ProductBomCard({
  type="submit"
  className="w-full h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Incluir</span>
  </Button>
  </div>
@@ -538,9 +538,9 @@ export function ProductBomCard({
  <div className="flex items-center gap-3 min-w-0">
  <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
  {item.type === "packaging" ? (
- <Package className="size-3.5" />
+ <Package className="size-4" />
  ) : (
- <Utensils className="size-3.5" />
+ <Utensils className="size-4" />
  )}
  </div>
  <div className="min-w-0">
@@ -575,7 +575,7 @@ export function ProductBomCard({
  onClick={() => handleRemoveItem(item.id)}
   className="size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
  >
- <Trash2 className="size-3.5" />
+ <Trash2 className="size-4" />
  </Button>
  </div>
  </div>

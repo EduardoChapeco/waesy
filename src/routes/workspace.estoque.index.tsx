@@ -445,13 +445,13 @@ function AdminStockPage() {
             className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <ChefHat className="size-4" />
-            <span>{nicheCtx.isFoodBusiness ? "Despensa & Insumos" : "Almoxarifado & Insumos"}</span>
+            <span>Despensa & Insumos</span>
           </Button>
         </div>
       </div>
 
       {stockSection === "kitchen_supplies" ? (
-        <GastronomyPantryHub nicheId={nicheCtx.isFoodBusiness ? "gastronomy" : "retail"} />
+        <GastronomyPantryHub />
       ) : (
         <>
 

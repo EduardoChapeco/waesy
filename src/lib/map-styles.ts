@@ -12,10 +12,10 @@ export const CANONICAL_MAP_STYLE_LIGHT: StyleSpecification = {
  "carto-voyager": {
  type: "raster",
  tiles: [
- "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
- "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
- "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
- "https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
+ "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+ "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+ "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+ "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
  ],
  tileSize: 256,
  attribution:
@@ -39,10 +39,10 @@ export const CANONICAL_MAP_STYLE_DARK: StyleSpecification = {
  "carto-dark": {
  type: "raster",
  tiles: [
- "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
- "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
- "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
- "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+ "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+ "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+ "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+ "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
  ],
  tileSize: 256,
  attribution:

@@ -37,7 +37,8 @@ export interface DepartmentItem {
   assignedAgentIds: string[]
   aiSdrEnabled: boolean
   aiSdrSkillPrompt: string
-  autoGreetingMessage: string
+  autoGreetingMessage: string; scheduleStart?: string; scheduleEnd?: string; scheduleDays?: string; awayMessage?: string; whatsappInstanceId?: string; aiTriageStages?: Array<{ id: string; title: string; instruction: string; handoffToHuman: boolean }>; }
+export interface AgentPermissionItem { agentId: string; name?: string; whatsappInstanceId?: string; onlyAssignedOrSector: boolean; canTransfer: boolean; canCloseTicket: boolean; canManageQr: boolean;
 }
 
 export interface GovernanceConfigState {
@@ -49,6 +50,7 @@ export interface GovernanceConfigState {
   enableCatalogSalesBot: boolean
   enableCorporateTravelBot: boolean
   departments: DepartmentItem[]
+  agentPermissions?: AgentPermissionItem[]
 }
 
 interface WhatsAppTeamSectorsDrawerProps {
@@ -58,6 +60,7 @@ interface WhatsAppTeamSectorsDrawerProps {
   instanceId?: string
   initialConfig?: Partial<GovernanceConfigState>
   availableAgents?: Array<{ id: string; name: string; role: string }>
+  availableInstances?: Array<{ id: string; displayName: string; phone?: string | null }>
   onSaved?: (config: GovernanceConfigState) => void
 }
 
@@ -114,10 +117,11 @@ export function WhatsAppTeamSectorsDrawer({
   companyId,
   instanceId,
   initialConfig,
-  availableAgents = [],
+  availableAgents = [], availableInstances = [],
   onSaved,
 }: WhatsAppTeamSectorsDrawerProps) {
-  const [activeSection, setActiveSection] = useState<'sectors' | 'rbac' | 'concierge'>('sectors')
+  const [activeSection, setActiveSection] = useState<'sectors' | 'triage' | 'agents' | 'rbac' | 'concierge'>('sectors')
+  const [agentPermissions, setAgentPermissions] = useState<Record<string, AgentPermissionItem>>(() => { const map: Record<string, AgentPermissionItem> = {}; for (const ap of initialConfig?.agentPermissions || []) map[ap.agentId] = ap; return map; })
   const [isSaving, setIsSaving] = useState(false)
 
   const [onlyManagersCanViewQr, setOnlyManagersCanViewQr] = useState(
@@ -173,6 +177,16 @@ export function WhatsAppTeamSectorsDrawer({
       aiSdrEnabled: true,
       aiSdrSkillPrompt: '',
       autoGreetingMessage: `Olá! Você foi conectado ao setor ${newDeptName.trim()}.`,
+      scheduleStart: '08:00',
+      scheduleEnd: '18:00',
+      scheduleDays: 'Seg a Sex',
+      awayMessage: 'Nosso setor está fora do horário de expediente. Retornaremos no próximo turno.',
+      whatsappInstanceId: instanceId || '',
+      aiTriageStages: [
+        { id: 'st-1', title: '1. Recepção IA', instruction: 'Recepcionar cliente, identificar demanda e responder dúvidas rápidas.', handoffToHuman: false },
+        { id: 'st-2', title: '2. Qualificação', instruction: 'Coletar dados essenciais do pedido ou chamado.', handoffToHuman: false },
+        { id: 'st-3', title: '3. Passagem p/ Humano', instruction: 'Transferir para atendente do setor com resumo e pausar IA.', handoffToHuman: true },
+      ],
     }
     setDepartments((prev) => [...prev, nextDept])
     setNewDeptName('')
@@ -211,10 +225,11 @@ export function WhatsAppTeamSectorsDrawer({
         enableCorporateTravelBot,
         departments,
       }
-      if (instanceId) {
+      if (true) {
         await saveWhatsAppGovernanceConfig({
           data: {
-            instanceId,
+            ...(instanceId ? { instanceId } : {}),
+            agentPermissions: Object.values(agentPermissions),
             departments: departments.map((d) => ({
               id: d.id,
               name: d.name,
@@ -224,7 +239,7 @@ export function WhatsAppTeamSectorsDrawer({
               assignedAgentIds: d.assignedAgentIds,
               roundRobinEnabled: d.routingMode === 'round_robin',
               aiSdrEnabled: d.aiSdrEnabled,
-              slaMinutes: 15,
+              slaMinutes: 15, scheduleStart: d.scheduleStart || '08:00', scheduleEnd: d.scheduleEnd || '18:00', scheduleDays: d.scheduleDays || 'Seg a Sex', awayMessage: d.awayMessage || '', whatsappInstanceId: d.whatsappInstanceId || instanceId || '', aiTriageStages: d.aiTriageStages || [],
             })),
             permissions: {
               onlyManagersCanViewQr,
@@ -267,25 +282,29 @@ export function WhatsAppTeamSectorsDrawer({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 rounded-xl bg-muted/60 p-1 mt-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 rounded-xl bg-muted p-1 mt-3">
             <button
               type="button"
               onClick={() => setActiveSection('sectors')}
               className={`flex h-11 min-h-11 items-center justify-center gap-2 rounded-lg text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
                 activeSection === 'sectors'
-                  ? 'bg-background text-foreground shadow-xs'
+                  ? 'bg-background text-foreground font-bold'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <Users className="size-3.5" />
               Setores ({departments.length})
             </button>
+            <button type="button" onClick={() => setActiveSection('triage')} className={`flex h-11 min-h-11 items-center justify-center gap-1 rounded-lg text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary ${activeSection === 'triage' ? 'bg-background text-foreground font-bold' : 'text-muted-foreground hover:text-foreground'}`}>IA & Etapas</button>
+            <button type="button" onClick={() => setActiveSection('agents')} className={`flex h-11 min-h-11 items-center justify-center gap-1 rounded-lg text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary ${activeSection === 'agents' ? 'bg-background text-foreground font-bold' : 'text-muted-foreground hover:text-foreground'}`}>Atendentes</button>
+            <button type="button" className="hidden" onClick={() => {}}>
+            </button>
             <button
               type="button"
               onClick={() => setActiveSection('rbac')}
               className={`flex h-11 min-h-11 items-center justify-center gap-2 rounded-lg text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
                 activeSection === 'rbac'
-                  ? 'bg-background text-foreground shadow-xs'
+                  ? 'bg-background text-foreground font-bold'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -297,7 +316,7 @@ export function WhatsAppTeamSectorsDrawer({
               onClick={() => setActiveSection('concierge')}
               className={`flex h-11 min-h-11 items-center justify-center gap-2 rounded-lg text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
                 activeSection === 'concierge'
-                  ? 'bg-background text-foreground shadow-xs'
+                  ? 'bg-background text-foreground font-bold'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -393,6 +412,18 @@ export function WhatsAppTeamSectorsDrawer({
 
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
+                      <Label className="text-xs text-muted-foreground">Diretriz da IA e Horário do Setor</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <Input value={dept.scheduleDays || 'Seg a Sex'} onChange={(e) => setDepartments((prev) => prev.map((d) => d.id === dept.id ? { ...d, scheduleDays: e.target.value } : d))} placeholder="Dias (Seg a Sex)" className="h-11 text-xs" />
+                        <Input type="time" value={dept.scheduleStart || '08:00'} onChange={(e) => setDepartments((prev) => prev.map((d) => d.id === dept.id ? { ...d, scheduleStart: e.target.value } : d))} className="h-11 text-xs" />
+                        <Input type="time" value={dept.scheduleEnd || '18:00'} onChange={(e) => setDepartments((prev) => prev.map((d) => d.id === dept.id ? { ...d, scheduleEnd: e.target.value } : d))} className="h-11 text-xs" />
+                        <select value={dept.whatsappInstanceId || instanceId || ''} onChange={(e) => setDepartments((prev) => prev.map((d) => d.id === dept.id ? { ...d, whatsappInstanceId: e.target.value } : d))} className="h-11 rounded-md border border-input bg-background px-2 text-xs focus-visible:ring-2 focus-visible:ring-primary">
+                          <option value="">WhatsApp Padrão</option>
+                          {availableInstances.map((inst) => (<option key={inst.id} value={inst.id}>{inst.displayName} {inst.phone ? `(${inst.phone})` : ''}</option>))}
+                        </select>
+                      </div>
+                      <Input value={dept.awayMessage || ''} onChange={(e) => setDepartments((prev) => prev.map((d) => d.id === dept.id ? { ...d, awayMessage: e.target.value } : d))} placeholder="Mensagem automática fora do horário deste setor..." className="h-11 text-xs" />
+                      <Label className="text-xs text-muted-foreground block pt-1">
                         Diretriz da IA SDR neste setor
                       </Label>
                       <Input
@@ -439,6 +470,89 @@ export function WhatsAppTeamSectorsDrawer({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {activeSection === 'triage' && (
+            <div className="space-y-4">
+              {departments.map((dept) => {
+                const stages = dept.aiTriageStages && dept.aiTriageStages.length > 0 ? dept.aiTriageStages : [
+                  { id: 'st-1', title: 'Etapa 1: Recepção IA', instruction: 'Recepcionar cliente, entender o que ele deseja e responder dúvidas imediatas.', handoffToHuman: false },
+                  { id: 'st-2', title: 'Etapa 2: Qualificação', instruction: 'Coletar dados essenciais (pedido, CPF ou item desejado).', handoffToHuman: false },
+                  { id: 'st-3', title: 'Etapa 3: Passagem p/ Humano', instruction: 'Transferir para atendente do setor com resumo da conversa e pausar IA.', handoffToHuman: true },
+                ];
+                return (
+                  <div key={dept.id} className="rounded-xl bg-muted/40 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-foreground">{dept.name}</span>
+                      <Badge variant="secondary" className="text-xs">IA Atende 1º → Humano Assume</Badge>
+                    </div>
+                    <div className="space-y-2">
+                      {stages.map((st, idx) => (
+                        <div key={st.id} className="rounded-lg bg-card p-3 space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-foreground">{st.title}</span>
+                            <Badge variant={st.handoffToHuman ? 'default' : 'secondary'} className="text-xs">{st.handoffToHuman ? 'Transfere p/ Humano' : 'Automático IA'}</Badge>
+                          </div>
+                          <Input
+                            value={st.instruction}
+                            onChange={(e) => {
+                              const nextStages = stages.map((item, i) => i === idx ? { ...item, instruction: e.target.value } : item);
+                              setDepartments((prev) => prev.map((d) => d.id === dept.id ? { ...d, aiTriageStages: nextStages } : d));
+                            }}
+                            className="h-11 text-xs"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {activeSection === 'agents' && (
+            <div className="space-y-3">
+              {availableAgents.length === 0 ? (
+                <div className="rounded-xl bg-muted/40 p-6 text-center text-xs text-muted-foreground">Nenhum atendente cadastrado na equipe.</div>
+              ) : (
+                availableAgents.map((agent) => {
+                  const perm = agentPermissions[agent.id] || { agentId: agent.id, name: agent.name, whatsappInstanceId: '', onlyAssignedOrSector: false, canTransfer: true, canCloseTicket: true, canManageQr: false };
+                  const updatePerm = (patch: Partial<AgentPermissionItem>) => setAgentPermissions((prev) => ({ ...prev, [agent.id]: { ...perm, ...patch } }));
+                  return (
+                    <div key={agent.id} className="rounded-xl bg-muted/40 p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-bold text-foreground">{agent.name}</p>
+                          <p className="text-xs text-muted-foreground uppercase">{agent.role}</p>
+                        </div>
+                        <select
+                          value={perm.whatsappInstanceId || ''}
+                          onChange={(e) => updatePerm({ whatsappInstanceId: e.target.value })}
+                          className="h-11 rounded-lg border border-input bg-background px-3 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <option value="">WhatsApp Geral da Loja</option>
+                          {availableInstances.map((inst) => (<option key={inst.id} value={inst.id}>Vincular: {inst.displayName} {inst.phone ? `(${inst.phone})` : ''}</option>))}
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                        <button type="button" onClick={() => updatePerm({ onlyAssignedOrSector: !perm.onlyAssignedOrSector })} className={`h-11 min-h-11 rounded-lg px-3 text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${perm.onlyAssignedOrSector ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground'}`}>
+                          <span>Restrito ao Setor</span>
+                          <span>{perm.onlyAssignedOrSector ? 'Sim' : 'Não'}</span>
+                        </button>
+                        <button type="button" onClick={() => updatePerm({ canTransfer: !perm.canTransfer })} className={`h-11 min-h-11 rounded-lg px-3 text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${perm.canTransfer ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground'}`}>
+                          <span>Transferir Chat</span>
+                          <span>{perm.canTransfer ? 'Sim' : 'Não'}</span>
+                        </button>
+                        <button type="button" onClick={() => updatePerm({ canCloseTicket: !perm.canCloseTicket })} className={`h-11 min-h-11 rounded-lg px-3 text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${perm.canCloseTicket ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground'}`}>
+                          <span>Fechar Ticket</span>
+                          <span>{perm.canCloseTicket ? 'Sim' : 'Não'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           )}
 

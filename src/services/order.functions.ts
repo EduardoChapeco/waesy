@@ -336,6 +336,15 @@ export async function _updateOrderStatus(
  }
  }
 
+ if (["paid", "processing", "ready_for_pickup", "shipped", "delivered"].includes(status)) {
+   try {
+     const { deductSuppliesForOrder } = await import("./gastronomy-supplies.functions");
+     await deductSuppliesForOrder({ data: { orderId } });
+   } catch (suppliesErr) {
+     console.warn("[order.functions] Falha defensiva na dedução de insumos:", suppliesErr);
+   }
+ }
+
  return { status: "ok" as const, message: "Status do pedido atualizado." };
 }
 
@@ -1129,16 +1138,16 @@ export const closePdvComanda = createServerFn({ method: "POST" })
       if (order.customer_id) {
         try {
           const { data: customer } = await db
-            .from("customers")
-            .select("total_orders_count, total_spent_cents")
+            .from("customers_crm")
+            .select("total_orders, total_spent_cents")
             .eq("id", order.customer_id)
             .single();
 
           if (customer) {
             await db
-              .from("customers")
+              .from("customers_crm")
               .update({
-                total_orders_count: (customer.total_orders_count || 0) + 1,
+                total_orders: (customer.total_orders || 0) + 1,
                 total_spent_cents: (customer.total_spent_cents || 0) + (order.total_cents || 0),
                 last_order_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),

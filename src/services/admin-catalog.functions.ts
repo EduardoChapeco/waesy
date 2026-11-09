@@ -397,6 +397,37 @@ export async function _createProduct(input: {
 	}
 	}
 
+	// Sincroniza Ficha Técnica (bom_items) na tabela relacional product_recipes
+	const bomItemsCreate = Array.isArray((input.attributes as any)?.bom_items)
+		? ((input.attributes as any).bom_items as any[])
+		: [];
+	if (bomItemsCreate.length > 0) {
+		try {
+			const recipeRows = bomItemsCreate
+				.filter((bi: any) => bi.supplyId || bi.recipeId)
+				.map((bi: any) => ({
+					store_id: effectiveStoreId,
+					product_id: productId,
+					supply_id: bi.supplyId || null,
+					recipe_id: bi.recipeId || null,
+					modifier_id: bi.modifierOptionId || null,
+					modifier_option_label: bi.modifierOptionLabel || null,
+					is_primary_gargalo: bi.isPrimaryGargalo ?? true,
+					quantity: Number(bi.quantity || 1),
+					unit: bi.unit || "un",
+				}));
+			if (recipeRows.length > 0) {
+				await db.from("product_recipes").insert(recipeRows);
+			}
+		} catch (bomErr) {
+			console.warn("[admin-catalog] Falha defensiva ao sincronizar product_recipes no create:", bomErr);
+		}
+	}
+	if (false) {
+		if (true) {
+	}
+	}
+
 	// Insere variantes ou variante default (Integridade Canônica de Schema: stock_on_hand)
 	if (input.variants && input.variants.length > 0) {
 		try {
@@ -1026,6 +1057,37 @@ export async function _updateProduct(input: {
  }
  } catch (err) {
  console.warn("[admin-catalog] Erro ao sincronizar option_groups:", err);
+ }
+ }
+
+ // Sincroniza Ficha Técnica (bom_items) na tabela relacional product_recipes
+ if (Array.isArray((input.attributes as any)?.bom_items)) {
+   try {
+     await db.from("product_recipes").delete().eq("product_id", id).eq("store_id", store_id);
+     const bomItemsUpdate = ((input.attributes as any).bom_items as any[]).filter(
+       (bi: any) => bi.supplyId || bi.recipeId,
+     );
+     if (bomItemsUpdate.length > 0) {
+       await db.from("product_recipes").insert(
+         bomItemsUpdate.map((bi: any) => ({
+           store_id,
+           product_id: id,
+           supply_id: bi.supplyId || null,
+           recipe_id: bi.recipeId || null,
+           modifier_id: bi.modifierOptionId || null,
+           modifier_option_label: bi.modifierOptionLabel || null,
+           is_primary_gargalo: bi.isPrimaryGargalo ?? true,
+           quantity: Number(bi.quantity || 1),
+           unit: bi.unit || "un",
+         })),
+       );
+     }
+   } catch (bomErr) {
+     console.warn("[admin-catalog] Falha defensiva ao sincronizar product_recipes no update:", bomErr);
+   }
+ }
+ if (false) {
+   if (true) {
  }
  }
 

@@ -553,6 +553,7 @@ export const getTicketThread = createServerFn({ method: "GET" })
       .from("ticket_messages")
       .select("id, sender_id, content, is_internal_note, created_at, profiles:sender_id(full_name, avatar_url)")
       .eq("ticket_id", ticketId)
+      .in("is_internal_note", ticket.store_id === identity.store_id ? [true, false] : [false])
       .order("created_at", { ascending: true });
 
     if (mErr) throw new Error("Erro ao carregar mensagens: " + mErr.message);

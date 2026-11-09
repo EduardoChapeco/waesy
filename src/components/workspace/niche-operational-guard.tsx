@@ -192,12 +192,12 @@ export function NicheOperationalGuard({
  </h2>
  <p className="text-xs text-muted-foreground leading-relaxed">
  {toolDescription} Sua empresa (<strong>{store?.name || "sua conta"}</strong>) está
- operando no segmento de <strong>{semantics.name}</strong>.
+ operando no segmento de <strong>{semantics.name}</strong>.{effectiveNiches.includes("gastronomy") ? " Este módulo é exclusivo para Gastronomia e Salão." : ""}
  </p>
  </div>
 
  <div className="space-y-3 pt-2">
- <span className="text-xs font-bold text-foreground block">
+ <span className="text-xs font-bold text-foreground block">{suggestions[0] && (<span className="block pb-3"><Button asChild size="sm" className="h-11 min-h-11 px-4 text-xs font-semibold"><Link to={suggestions[0].path as any}>{activeNiche === "tourism" ? "Ir para Vendas & Vouchers de Turismo" : `Ir para ${suggestions[0].title}`}<ChevronRight className="size-4 ml-1" /></Link></Button></span>)}
  Ferramentas recomendadas para o seu negócio:
  </span>
 

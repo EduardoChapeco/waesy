@@ -112,7 +112,8 @@ function AdminOrdersPage() {
     }
     if (isGastro) {
       return [
-        { id: "table" as ViewMode, label: "Histórico de Vendas", icon: List },
+        { id: "kanban" as ViewMode, label: "Gestor Multicanal (Kanban)", icon: Kanban },
+        { id: "table" as ViewMode, label: "Tabela Analítica & Fiscal", icon: List },
       ];
     }
     if (isRetail) {
@@ -342,9 +343,9 @@ function AdminOrdersPage() {
       size="sm"
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
-      <Link to="/workspace/pedidos/gestor">
+      <Link to="/workspace/pdv/cozinha">
        <ChefHat className="size-4 text-primary" />
-       <span>Gestor em Tempo Real</span>
+       <span>KDS Praças de Cozinha</span>
       </Link>
      </Button>
      <Button
@@ -427,6 +428,16 @@ function AdminOrdersPage() {
           trend="up"
         />
       </div>
+
+      {/* ── MODO 0: GESTOR MULTICANAL COMPLETO (KANBAN / KDS / MOTOBOYS / ETIQUETAS / CONTRATOS) ── */}
+      {viewMode === "kanban" ? (
+        <KDSPage
+          initialOrdersProp={orders}
+          storeProp={store}
+          onOpenShippingLabel={(id) => setSelectedShippingLabelOrderId(id)}
+          onGenerateContract={(id) => handleGenerateContract(id)}
+        />
+      ) : null}
 
       {/* ── MODO 1: KANBAN DE EMISSÕES & VIAGENS (TURISMO) ── */}
  {viewMode === "emissions" && isTourism ? (
@@ -696,7 +707,7 @@ function AdminOrdersPage() {
  <div className="space-y-3">
  <div className="flex items-center justify-between px-1 pb-2">
  <div className="flex items-center gap-2">
- <span className="size-2.5 rounded-full bg-blue-500" />
+ <span className="size-2.5 rounded-full bg-primary" />
  <h3 className="text-sm font-bold text-foreground">Viagens Concluídas</h3>
  </div>
  <Badge variant="secondary" className="font-bold text-xs bg-card">
@@ -1455,7 +1466,7 @@ function AdminOrdersPage() {
                           {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
                         </DropdownMenuItem>
                         <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleGenerateContract(order.id)}>
-                          <FileText className="size-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                          <FileText className="size-4 mr-2 text-primary" />
                           Gerar Contrato e Assinatura Digital
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -1616,7 +1627,7 @@ function AdminOrdersPage() {
                                 {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
                               </DropdownMenuItem>
                               <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleGenerateContract(order.id)}>
-                                <FileText className="size-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                                <FileText className="size-4 mr-2 text-primary" />
                                 Gerar Contrato e Assinatura Digital
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />

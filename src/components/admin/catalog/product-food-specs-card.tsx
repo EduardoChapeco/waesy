@@ -270,15 +270,15 @@ export function ProductFoodSpecsCard({
               </div>
 
               {/* Tempo de Preparo na Cozinha */}
-              <div className="sm:col-span-4 space-y-2">
+              <div className="sm:col-span-2 space-y-2">
                 <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
                   <Clock className="size-3.5 text-primary" />
-                  <span>Preparo na Cozinha</span>
+                  <span>Tempo SLA</span>
                 </Label>
                 <div className="relative">
                   <Input
                     type="number"
-                    placeholder="Minutos (ex: 20)"
+                    placeholder="Min (20)"
                     value={value.preparationTimeMinutes ?? 20}
                     onChange={(e) =>
                       onChange({
@@ -292,6 +292,29 @@ export function ProductFoodSpecsCard({
                     min
                   </span>
                 </div>
+              </div>
+
+              {/* Praça / Setor de Produção da Cozinha */}
+              <div className="sm:col-span-2 space-y-2">
+                <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                  <UtensilsCrossed className="size-3.5 text-muted-foreground" />
+                  <span>Praça KDS</span>
+                </Label>
+                <Select
+                  value={value.kitchenStation || "geral"}
+                  onValueChange={(val: any) => onChange({ ...value, kitchenStation: val })}
+                >
+                  <SelectTrigger className="h-11 rounded-lg text-xs">
+                    <SelectValue placeholder="Praça de Produção" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg text-xs">
+                    <SelectItem value="geral">Geral / Montagem</SelectItem>
+                    <SelectItem value="chapa">Chapa / Grelhados</SelectItem>
+                    <SelectItem value="forno">Forno / Pizzaria</SelectItem>
+                    <SelectItem value="bebidas">Bar & Bebidas</SelectItem>
+                    <SelectItem value="sobremesas">Sobremesas / Café</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

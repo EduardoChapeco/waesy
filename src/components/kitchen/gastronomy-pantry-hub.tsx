@@ -37,6 +37,7 @@ import {
   deleteSupply,
   listRecipes,
   createRecipe,
+  updateRecipe,
   createProductionOrder,
   listWasteLogs,
   registerWaste,
@@ -87,7 +88,7 @@ export function GastronomyPantryHub({
   const { data: supplies = [], isLoading: isLoadingSupplies } = useQuery({
     queryKey: ["gastronomy-supplies", suppliesCategory, suppliesSearch, suppliesLowStockOnly],
     queryFn: () =>
-      listSupplies({
+      (listSupplies as any)({
         category: suppliesCategory === "all" ? undefined : (suppliesCategory as any),
         search: suppliesSearch,
         lowStockOnly: suppliesLowStockOnly,
@@ -101,7 +102,7 @@ export function GastronomyPantryHub({
 
   const { data: wasteData, isLoading: isLoadingWaste } = useQuery({
     queryKey: ["gastronomy-waste"],
-    queryFn: () => listWasteLogs({ limit: 40 }),
+    queryFn: () => (listWasteLogs as any)({ limit: 40 }),
   });
 
   const { data: suppliers = [] } = useQuery({
@@ -111,7 +112,7 @@ export function GastronomyPantryHub({
 
   const { data: printedLabels = [], isLoading: isLoadingLabels } = useQuery({
     queryKey: ["gastronomy-labels"],
-    queryFn: () => listExpirationLabels({ limit: 20 }),
+    queryFn: () => (listExpirationLabels as any)({ limit: 20 }),
   });
 
   // Métricas do Topo
@@ -231,7 +232,7 @@ export function GastronomyPantryHub({
 
   // Mutations
   const createSupplyMutation = useMutation({
-    mutationFn: createSupply,
+    mutationFn: (payload: any) => (createSupply as any)(payload),
     onSuccess: () => {
       toast.success("Insumo cadastrado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["gastronomy-supplies"] });
@@ -243,7 +244,7 @@ export function GastronomyPantryHub({
   });
 
   const updateRecipeMutation = useMutation({
-    mutationFn: updateRecipe,
+    mutationFn: (payload: any) => (updateRecipe as any)(payload),
     onSuccess: () => {
       toast.success("Ficha técnica atualizada com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["gastronomy-recipes"] });
@@ -255,7 +256,7 @@ export function GastronomyPantryHub({
   });
 
   const createRecipeMutation = useMutation({
-    mutationFn: createRecipe,
+    mutationFn: (payload: any) => (createRecipe as any)(payload),
     onSuccess: () => {
       toast.success("Ficha técnica cadastrada com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["gastronomy-recipes"] });
@@ -267,7 +268,7 @@ export function GastronomyPantryHub({
   });
 
   const executeProductionMutation = useMutation({
-    mutationFn: createProductionOrder,
+    mutationFn: (payload: any) => (createProductionOrder as any)(payload),
     onSuccess: (data: any) => {
       toast.success(`Lote ${data.batch_code} produzido! Estoques atualizados.`);
       queryClient.invalidateQueries({ queryKey: ["gastronomy-supplies"] });
@@ -288,7 +289,7 @@ export function GastronomyPantryHub({
   });
 
   const registerWasteMutation = useMutation({
-    mutationFn: registerWaste,
+    mutationFn: (payload: any) => (registerWaste as any)(payload),
     onSuccess: () => {
       toast.success("Perda registrada com sucesso no livro de desperdício!");
       queryClient.invalidateQueries({ queryKey: ["gastronomy-supplies"] });
@@ -301,7 +302,7 @@ export function GastronomyPantryHub({
   });
 
   const purchaseEntryMutation = useMutation({
-    mutationFn: recordSupplyPurchaseEntry,
+    mutationFn: (payload: any) => (recordSupplyPurchaseEntry as any)(payload),
     onSuccess: () => {
       toast.success("Entrada de estoque realizada e custo médio atualizado!");
       queryClient.invalidateQueries({ queryKey: ["gastronomy-supplies"] });

@@ -1035,8 +1035,8 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           <div
             className={cn(
               "w-full mx-auto flex-1 flex flex-col min-h-0",
-              currentPath.startsWith("/workspace/estudio")
-                ? "max-w-none p-0"
+              currentPath.startsWith("/workspace/estudio") || currentPath.startsWith("/workspace/atendimento") || currentPath.startsWith("/workspace/whatsapp") || currentPath.startsWith("/workspace/suporte")
+                ? "max-w-none p-0 h-full overflow-hidden"
                 : "max-w-none px-4 sm:px-6 lg:px-6 py-4 sm:py-5 pb-28 lg:pb-8"
             )}
           >

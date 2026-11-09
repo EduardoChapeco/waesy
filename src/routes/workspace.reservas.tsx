@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/reservas")({
  head: () => ({ meta: [{ title: "Reservas | Workspace Waesy" }] }),
+ beforeLoad: () => { throw redirect({ to: "/workspace/pdv/comandas" }); },
  loader: async () => {
  try {
  const store = await getStoreSettings().catch(() => null);
@@ -58,10 +59,10 @@ const TABLE_STATUS_STYLE: Record<TableStatus, {
  label: "Livre",
  },
  reserved: {
- border: "border-blue-500/40",
- bg: "bg-blue-500/10 hover:bg-blue-500/15",
- text: "text-blue-600 dark:text-blue-400",
- badgeCn: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30",
+ border: "border-primary/40",
+ bg: "bg-primary/10 hover:bg-primary/15",
+ text: "text-primary",
+ badgeCn: "bg-primary/10 text-primary border-primary/30",
  label: "Reservada",
  },
  pending: {
@@ -72,16 +73,18 @@ const TABLE_STATUS_STYLE: Record<TableStatus, {
  label: "Pendente",
  },
  seated: {
- border: "border-purple-500/40",
- bg: "bg-purple-500/10 hover:bg-purple-500/15",
- text: "text-purple-600 dark:text-purple-400",
- badgeCn: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30",
+ border: "border-border",
+ bg: "bg-muted/60 hover:bg-muted",
+ text: "text-foreground",
+ badgeCn: "bg-muted text-foreground border-border",
  label: "Acomodado",
  },
 };
 
-export default function TableReservationsPage() {
- const { store } = ((Route.useLoaderData?.() as any) || {});
+export default function TableReservationsPage({ embedded = false, storeProp }: { embedded?: boolean; storeProp?: any } = {}) {
+ const { store: loaderStore } = ((Route.useLoaderData?.() as any) || {});
+ const store = storeProp ?? loaderStore;
+ // store resolved from storeProp ?? loaderStore
  const navigate = useNavigate();
  const queryClient = useQueryClient();
  const [activeView, setActiveView] = useState<"map" | "list">("map");

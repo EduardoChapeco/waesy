@@ -626,13 +626,13 @@ export const WhatsAppDepartmentSchema = z.object({
   assignedAgentIds: z.array(z.string()).default([]),
   roundRobinEnabled: z.boolean().default(true),
   aiSdrEnabled: z.boolean().default(true),
-  slaMinutes: z.number().min(1).max(1440).default(15),
+  slaMinutes: z.number().min(1).max(1440).default(15), scheduleStart: z.string().default("08:00"), scheduleEnd: z.string().default("18:00"), scheduleDays: z.string().default("Seg a Sex"), awayMessage: z.string().optional(), whatsappInstanceId: z.string().optional(), aiTriageStages: z.array(z.object({ id: z.string(), title: z.string(), instruction: z.string(), handoffToHuman: z.boolean().default(false) })).optional(),
 });
 
 export type WhatsAppDepartmentDTO = z.infer<typeof WhatsAppDepartmentSchema>;
 
 export const WhatsAppGovernanceConfigSchema = z.object({
-  instanceId: z.string().uuid(),
+  instanceId: z.string().uuid().optional(), agentPermissions: z.array(z.object({ agentId: z.string(), name: z.string().optional(), whatsappInstanceId: z.string().optional(), onlyAssignedOrSector: z.boolean().default(false), canTransfer: z.boolean().default(true), canCloseTicket: z.boolean().default(true), canManageQr: z.boolean().default(false) })).optional(),
   departments: z.array(WhatsAppDepartmentSchema),
   permissions: z.object({
     onlyManagersCanViewQr: z.boolean().default(true),
@@ -658,6 +658,10 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
     if (!storeId) throw new Error("Loja obrigatória.");
 
     const db = getServerClient();
+    const { data: storeRow } = await db.from("stores").select("settings").eq("id", storeId).maybeSingle();
+    const currentSettings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+    await db.from("stores").update({ settings: { ...currentSettings, whatsapp_governance: { departments: data.departments, permissions: data.permissions, agentPermissions: data.agentPermissions || [], updated_at: new Date().toISOString() } } }).eq("id", storeId);
+    if (!data.instanceId) return { id: storeId, store_id: storeId, public_config: { departments: data.departments, governance_permissions: data.permissions, agent_permissions: data.agentPermissions || [] } } as unknown as WhatsAppChannelInstanceDTO;
     const { data: current } = await db
       .from("whatsapp_channel_instances")
       .select(PublicFields)
@@ -671,6 +675,7 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
       ...(current.public_config || {}),
       departments: data.departments,
       governance_permissions: data.permissions,
+      agent_permissions: data.agentPermissions || [],
       updated_governance_at: new Date().toISOString(),
     };
 
