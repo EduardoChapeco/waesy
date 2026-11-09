@@ -306,7 +306,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
 
  const { data: thread } = await db
  .from("chat_threads")
- .select("id, store_id, context_type, entity_id, channel_instance_id")
+ .select("id, store_id, context_type, entity_id, channel_instance_id, metadata, assigned_to_profile_id")
  .eq("id", input.threadId)
  .eq("store_id", identity.store_id)
  .single();
@@ -341,6 +341,8 @@ export const sendChatMessage = createServerFn({ method: "POST" })
    .from("chat_threads")
    .update({
    last_message_text: input.message,
+   metadata: { ...(((thread as any).metadata || {}) as Record<string, any>), handoff_mode: "human_active", ai_auto_reply_enabled: false, last_human_agent_id: identity.id },
+   ...(!(thread as any).assigned_to_profile_id ? { assigned_to_profile_id: identity.id } : {}),
    last_message_at: new Date().toISOString(),
    updated_at: new Date().toISOString(),
    })
@@ -1192,6 +1194,18 @@ export const createSupportRmaTicket = createServerFn({ method: "POST" })
  sender_id: identity.id,
  });
 
+ if (ticket.thread_id && (data as any).status === "resolved") {
+   const appOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.app";
+   const csatUrl = `${appOrigin.replace(/\/$/, "")}/chamado/${ticket.id}`;
+   await db.from("chat_messages").insert({
+     thread_id: ticket.thread_id,
+     message: `Seu chamado "${ticket.title || "Atendimento"}" foi concluído! Acesse a linha do tempo completa, valide a resolução e avalie nosso atendimento em: ${csatUrl}`,
+     message_type: "structured_blocks",
+     payload: { ticket_id: ticket.id, csat_url: csatUrl, blocks: [{ type: "summary_card", data: { title: "Avalie seu Atendimento", subtitle: `Confirme se o problema foi resolvido e dê sua nota: ${csatUrl}`, badge: "Pesquisa CSAT", action_url: csatUrl } }] },
+     is_staff_reply: true,
+     sender_id: identity.id,
+   });
+ }
  return ticket;
  });
 
@@ -1237,6 +1251,18 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
  });
  }
 
+ if (ticket.thread_id && (data as any).status === "resolved") {
+   const appOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.app";
+   const csatUrl = `${appOrigin.replace(/\/$/, "")}/chamado/${ticket.id}`;
+   await db.from("chat_messages").insert({
+     thread_id: ticket.thread_id,
+     message: `Seu chamado "${ticket.title || "Atendimento"}" foi concluído! Acesse a linha do tempo completa, valide a resolução e avalie nosso atendimento em: ${csatUrl}`,
+     message_type: "structured_blocks",
+     payload: { ticket_id: ticket.id, csat_url: csatUrl, blocks: [{ type: "summary_card", data: { title: "Avalie seu Atendimento", subtitle: `Confirme se o problema foi resolvido e dê sua nota: ${csatUrl}`, badge: "Pesquisa CSAT", action_url: csatUrl } }] },
+     is_staff_reply: true,
+     sender_id: identity.id,
+   });
+ }
  return ticket;
  });
 
@@ -1272,20 +1298,6 @@ export const mutateCustomerChatThreadAction = createServerFn({ method: "POST" })
     const rawId = data.threadId.replace(/^dm_/, "");
 
     try {
-      if (data.action === "delete") {
-        await db.from("chat_messages").delete().eq("thread_id", rawId);
-        await db.from("chat_threads").delete().eq("id", rawId);
-        await db.from("direct_messages").delete().eq("conversation_id", rawId);
-        await db.from("direct_conversations").delete().eq("id", rawId);
-        return { ok: true, action: data.action, threadId: data.threadId };
-      }
-
-      if (data.action === "clear_history") {
-        await db.from("chat_messages").delete().eq("thread_id", rawId);
-        await db.from("direct_messages").delete().eq("conversation_id", rawId);
-        return { ok: true, action: data.action, threadId: data.threadId };
-      }
-
       if (data.action === "archive" || data.action === "unarchive") {
         const nextStatus = data.action === "archive" ? "archived" : "open";
         await db
@@ -1326,6 +1338,20 @@ export const archiveChatThread = createServerFn({ method: "POST" })
 			.eq("id", threadId)
 			.eq("store_id", identity.store_id);
 		if (error) throw new Error(`Falha ao arquivar conversa: ${error.message}`);
+		if (archived) {
+			const { data: openTicket } = await db.from("store_support_tickets").select("id, title").eq("thread_id", threadId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+			const appOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.app";
+			const trackingTarget = openTicket?.id || threadId;
+			const csatUrl = `${appOrigin.replace(/\/$/, "")}/chamado/${trackingTarget}`;
+			await db.from("chat_messages").insert({
+				thread_id: threadId,
+				message: `Atendimento finalizado! Acesse o resumo e avalie nosso atendente (1 a 5 estrelas) em: ${csatUrl}`,
+				message_type: "structured_blocks",
+				payload: { csat_url: csatUrl, ticket_id: openTicket?.id || null, blocks: [{ type: "summary_card", data: { title: "Avalie nosso Atendimento", subtitle: `Toque para dar sua nota ao atendente: ${csatUrl}`, badge: "Avaliação CSAT", action_url: csatUrl } }] },
+				is_staff_reply: true,
+				sender_id: identity.id,
+			});
+		}
 		return { success: true, threadId, status: newStatus };
 	});
 
@@ -1574,5 +1600,527 @@ export const createChatQuickReply = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw new Error(`Falha ao criar resposta rápida: ${error.message}`);
+    return created;
+  });
+
+export const updateCustomerProfileFromChatSchema = z.object({
+  customerId: z.string().uuid().optional().nullable(),
+  threadId: z.string().uuid().optional().nullable(),
+  fullName: z.string().trim().min(2).max(120),
+  phone: z.string().trim().max(40).optional().nullable(),
+  email: z.string().trim().max(120).optional().nullable(),
+  documentCpf: z.string().trim().max(30).optional().nullable(),
+  city: z.string().trim().max(80).optional().nullable(),
+});
+
+export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
+  .validator(updateCustomerProfileFromChatSchema)
+  .handler(async ({ data }) => {
+    const { customerId, threadId, fullName, phone, email, documentCpf, city } = data;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    if (customerId) {
+      await db
+        .from("profiles")
+        .update({
+          full_name: fullName,
+          ...(phone !== undefined ? { phone: phone || null } : {}),
+          ...(email !== undefined ? { email: email || null } : {}),
+          ...(documentCpf !== undefined ? { document_cpf: documentCpf || null } : {}),
+          ...(city !== undefined ? { city: city || null } : {}),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", customerId);
+    }
+
+    if (threadId) {
+      const { data: currentThread } = await db
+        .from("chat_threads")
+        .select("metadata")
+        .eq("id", threadId)
+        .eq("store_id", identity.store_id)
+        .maybeSingle();
+
+      const nextMeta = {
+        ...(((currentThread?.metadata as any) || {}) as Record<string, any>),
+        customer_profile_override: {
+          full_name: fullName,
+          phone: phone || null,
+          email: email || null,
+          document_cpf: documentCpf || null,
+          city: city || null,
+          updated_at: new Date().toISOString(),
+        },
+      };
+
+      await db
+        .from("chat_threads")
+        .update({
+          guest_name: fullName,
+          ...(email !== undefined ? { guest_email: email || null } : {}),
+          metadata: nextMeta,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", threadId)
+        .eq("store_id", identity.store_id);
+    }
+
+    return {
+      success: true,
+      profile: {
+        id: customerId || null,
+        full_name: fullName,
+        phone: phone || null,
+        email: email || null,
+        document_cpf: documentCpf || null,
+        city: city || null,
+      },
+    };
+  });
+
+export const updateThreadAiHandoffModeSchema = z.object({
+  threadId: z.string().uuid(),
+  handoffMode: z.enum(["ai_triage", "human_queue", "human_active"]),
+  aiAutoReplyEnabled: z.boolean(),
+  triageSummary: z.string().max(500).optional(),
+});
+
+export const updateThreadAiHandoffMode = createServerFn({ method: "POST" })
+  .validator(updateThreadAiHandoffModeSchema)
+  .handler(async ({ data }) => {
+    const { threadId, handoffMode, aiAutoReplyEnabled, triageSummary } = data;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    const { data: current } = await db
+      .from("chat_threads")
+      .select("metadata")
+      .eq("id", threadId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    const nextMetadata = {
+      ...(((current?.metadata as any) || {}) as Record<string, any>),
+      handoff_mode: handoffMode,
+      ai_auto_reply_enabled: aiAutoReplyEnabled,
+      ...(triageSummary ? { ai_triage_summary: triageSummary } : {}),
+      handoff_updated_at: new Date().toISOString(),
+      handoff_updated_by: identity.id,
+    };
+
+    const { error } = await db
+      .from("chat_threads")
+      .update({
+        metadata: nextMetadata,
+        ...(handoffMode === "human_active" ? { assigned_to_profile_id: identity.id } : {}),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", threadId)
+      .eq("store_id", identity.store_id);
+
+    if (error) throw new Error(`Falha ao atualizar modo IA/Humano: ${error.message}`);
+    return { success: true, handoffMode, aiAutoReplyEnabled, metadata: nextMetadata };
+  });
+
+export const createSupportTicketFromChatSchema = z.object({
+  threadId: z.string().uuid(),
+  customerId: z.string().uuid().optional().nullable(),
+  title: z.string().trim().min(3).max(140),
+  description: z.string().trim().min(3).max(1000),
+  ticketType: z.enum(["support", "return_exchange", "defect_complaint", "Order_Demand"]).default("support"),
+  priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+});
+
+export const createSupportTicketFromChat = createServerFn({ method: "POST" })
+  .validator(createSupportTicketFromChatSchema)
+  .handler(async ({ data }) => {
+    const { threadId, customerId, title, description, ticketType, priority } = data;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    const initialStep = {
+      id: `step-${Date.now()}`,
+      label: "Chamado registrado e em triagem",
+      status: "done",
+      created_at: new Date().toISOString(),
+    };
+
+    const { data: ticket, error } = await db
+      .from("store_support_tickets")
+      .insert({
+        thread_id: threadId,
+        store_id: identity.store_id,
+        customer_id: customerId || identity.id,
+        ticket_type: ticketType === "Order_Demand" ? "support" : ticketType,
+        title,
+        description,
+        photo_urls: [],
+        status: "open",
+        priority,
+        resolution_notes: JSON.stringify({ steps: [initialStep], public_summary: description }),
+      })
+      .select()
+      .single();
+
+    if (error) throw new Error(`Falha ao criar demanda/ticket: ${error.message}`);
+
+    const appOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.app";
+    const trackingUrl = `${appOrigin.replace(/\/$/, "")}/chamado/${ticket.id}`;
+
+    await db.from("chat_messages").insert({
+      thread_id: threadId,
+      message: `Protocolo de Atendimento aberto: "${title}". Acompanhe cada etapa em tempo real: ${trackingUrl}`,
+      message_type: "rma_ticket",
+      payload: {
+        ticket_id: ticket.id,
+        ticket_type: ticket.ticket_type,
+        title: ticket.title,
+        description: ticket.description,
+        status: ticket.status,
+        tracking_url: trackingUrl,
+        steps: [initialStep],
+      },
+      is_staff_reply: true,
+      sender_id: identity.id,
+      sender_profile_id: identity.id,
+    });
+
+    return {
+      ...ticket,
+      tracking_url: trackingUrl,
+      steps: [initialStep],
+    };
+  });
+
+export const addSupportTicketStepSchema = z.object({
+  ticketId: z.string().uuid(),
+  threadId: z.string().uuid().optional().nullable(),
+  stepLabel: z.string().trim().min(2).max(160),
+  nextStatus: z.enum(["open", "under_review", "action_required", "resolved"]).optional(),
+});
+
+export const addSupportTicketStep = createServerFn({ method: "POST" })
+  .validator(addSupportTicketStepSchema)
+  .handler(async ({ data }) => {
+    const { ticketId, threadId, stepLabel, nextStatus } = data;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    const { data: ticket, error: fetchErr } = await db
+      .from("store_support_tickets")
+      .select("*")
+      .eq("id", ticketId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    if (fetchErr || !ticket) throw new Error("Ticket não encontrado.");
+
+    let parsedMeta: { steps?: Array<{ id: string; label: string; status: string; created_at: string }>; public_summary?: string; csat?: any } = {};
+    if (ticket.resolution_notes && String(ticket.resolution_notes).startsWith("{")) {
+      try {
+        parsedMeta = JSON.parse(String(ticket.resolution_notes));
+      } catch {
+        parsedMeta = { public_summary: String(ticket.resolution_notes) };
+      }
+    } else if (ticket.resolution_notes) {
+      parsedMeta = { public_summary: String(ticket.resolution_notes) };
+    }
+
+    const existingSteps = Array.isArray(parsedMeta.steps) ? parsedMeta.steps : [];
+    const newStep = {
+      id: `step-${Date.now()}`,
+      label: stepLabel,
+      status: "done",
+      created_at: new Date().toISOString(),
+    };
+    const updatedSteps = [...existingSteps, newStep];
+    const finalStatus = nextStatus || ticket.status;
+
+    const { data: updated, error: updateErr } = await db
+      .from("store_support_tickets")
+      .update({
+        status: finalStatus,
+        resolution_notes: JSON.stringify({
+          ...parsedMeta,
+          steps: updatedSteps,
+        }),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", ticketId)
+      .select()
+      .single();
+
+    if (updateErr) throw new Error(`Falha ao adicionar etapa: ${updateErr.message}`);
+
+    const targetThreadId = threadId || ticket.thread_id;
+    const appOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.app";
+    const trackingUrl = `${appOrigin.replace(/\/$/, "")}/chamado/${ticket.id}`;
+
+    if (targetThreadId) {
+      await db.from("chat_messages").insert({
+        thread_id: targetThreadId,
+        message:
+          finalStatus === "resolved"
+            ? `Etapa concluída: "${stepLabel}". Seu chamado foi resolvido! Valide a solução e avalie o atendimento em: ${trackingUrl}`
+            : `Nova etapa no chamado "${ticket.title}": ${stepLabel}. Acompanhe em: ${trackingUrl}`,
+        message_type: "system_event",
+        payload: {
+          ticket_id: ticket.id,
+          status: finalStatus,
+          step: newStep,
+          tracking_url: trackingUrl,
+        },
+        is_staff_reply: true,
+        sender_id: identity.id,
+      });
+    }
+
+    return {
+      ticket: updated,
+      steps: updatedSteps,
+      tracking_url: trackingUrl,
+    };
+  });
+
+export const getPublicTicketTrackingSchema = z.object({
+  ticketId: z.string().min(4),
+});
+
+export const getPublicTicketTracking = createServerFn({ method: "GET" })
+  .validator(getPublicTicketTrackingSchema)
+  .handler(async ({ data }) => {
+    const { ticketId } = data;
+    const db = getServerClient();
+
+    let { data: ticket } = await db
+      .from("store_support_tickets")
+      .select("id, thread_id, store_id, title, description, status, priority, ticket_type, resolution_notes, created_at, updated_at")
+      .eq("id", ticketId)
+      .maybeSingle();
+
+    if (!ticket) {
+      const { data: byThread } = await db
+        .from("store_support_tickets")
+        .select("id, thread_id, store_id, title, description, status, priority, ticket_type, resolution_notes, created_at, updated_at")
+        .eq("thread_id", ticketId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      ticket = byThread || null;
+    }
+
+    let threadData: any = null;
+    const lookupThreadId = ticket?.thread_id || ticketId;
+    const { data: tr } = await db
+      .from("chat_threads")
+      .select("id, store_id, subject, department, status, guest_name, assigned_to_profile_id, created_at, updated_at, metadata")
+      .eq("id", lookupThreadId)
+      .maybeSingle();
+    threadData = tr;
+
+    const storeId = ticket?.store_id || threadData?.store_id;
+    let storeInfo: { name: string; slug: string } = { name: "Central de Atendimento", slug: "" };
+    if (storeId) {
+      const { data: st } = await db.from("stores").select("name, slug").eq("id", storeId).maybeSingle();
+      if (st) storeInfo = { name: st.name, slug: st.slug };
+    }
+
+    let assignedAgentName = "Equipe de Atendimento";
+    if (threadData?.assigned_to_profile_id) {
+      const { data: ag } = await db
+        .from("profiles")
+        .select("full_name")
+        .eq("id", threadData.assigned_to_profile_id)
+        .maybeSingle();
+      if (ag?.full_name) assignedAgentName = ag.full_name;
+    }
+
+    let steps: Array<{ id: string; label: string; status: string; created_at: string }> = [];
+    let publicSummary = ticket?.description || "";
+    let csatData: { rating?: number; comment?: string; problemResolved?: boolean; submittedAt?: string } | null = null;
+
+    if (ticket?.resolution_notes && String(ticket.resolution_notes).startsWith("{")) {
+      try {
+        const parsed = JSON.parse(String(ticket.resolution_notes));
+        if (Array.isArray(parsed.steps)) steps = parsed.steps;
+        if (parsed.public_summary) publicSummary = parsed.public_summary;
+        if (parsed.csat) csatData = parsed.csat;
+      } catch {
+        publicSummary = String(ticket.resolution_notes);
+      }
+    } else if (threadData?.metadata?.csat) {
+      csatData = threadData.metadata.csat;
+    }
+
+    if (steps.length === 0) {
+      steps = [
+        {
+          id: "st-open",
+          label: "Solicitação recebida pela central de atendimento",
+          status: "done",
+          created_at: ticket?.created_at || threadData?.created_at || new Date().toISOString(),
+        },
+        ...(ticket?.status === "resolved" || threadData?.status === "archived"
+          ? [
+              {
+                id: "st-resolved",
+                label: "Atendimento concluído e liberado para validação do cliente",
+                status: "done",
+                created_at: ticket?.updated_at || threadData?.updated_at || new Date().toISOString(),
+              },
+            ]
+          : []),
+      ];
+    }
+
+    let publicTimelineMessages: Array<{ id: string; message: string; isStaff: boolean; createdAt: string }> = [];
+    if (lookupThreadId) {
+      const { data: rawMsgs } = await db
+        .from("chat_messages")
+        .select("id, message, is_staff_reply, payload, created_at")
+        .eq("thread_id", lookupThreadId)
+        .order("created_at", { ascending: true })
+        .limit(50);
+
+      publicTimelineMessages = (rawMsgs || [])
+        .filter((m: any) => !m.payload?.is_internal && !m.payload?.is_whisper)
+        .map((m: any) => ({
+          id: m.id,
+          message: m.message,
+          isStaff: Boolean(m.is_staff_reply),
+          createdAt: m.created_at,
+        }));
+    }
+
+    return {
+      id: ticket?.id || threadData?.id || ticketId,
+      protocolCode: `TKT-${String(ticket?.id || threadData?.id || ticketId).slice(0, 8).toUpperCase()}`,
+      title: ticket?.title || threadData?.subject || "Atendimento ao Cliente",
+      description: publicSummary,
+      status: ticket?.status || (threadData?.status === "archived" ? "resolved" : "open"),
+      department: threadData?.department || "suporte",
+      assignedAgentName,
+      storeName: storeInfo.name,
+      storeSlug: storeInfo.slug,
+      createdAt: ticket?.created_at || threadData?.created_at || new Date().toISOString(),
+      updatedAt: ticket?.updated_at || threadData?.updated_at || new Date().toISOString(),
+      steps,
+      publicMessages: publicTimelineMessages,
+      csat: csatData,
+    };
+  });
+
+export const submitPublicTicketCsatSchema = z.object({
+  ticketId: z.string().min(4),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().trim().max(600).optional(),
+  problemResolved: z.boolean(),
+});
+
+export const submitPublicTicketCsat = createServerFn({ method: "POST" })
+  .validator(submitPublicTicketCsatSchema)
+  .handler(async ({ data }) => {
+    const { ticketId, rating, comment, problemResolved } = data;
+    const db = getServerClient();
+
+    const csatPayload = {
+      rating,
+      comment: comment || "",
+      problemResolved,
+      submittedAt: new Date().toISOString(),
+    };
+
+    const { data: ticket } = await db
+      .from("store_support_tickets")
+      .select("id, thread_id, title, status, resolution_notes")
+      .eq("id", ticketId)
+      .maybeSingle();
+
+    let targetThreadId = ticket?.thread_id || null;
+
+    if (ticket) {
+      let parsedMeta: Record<string, any> = {};
+      if (ticket.resolution_notes && String(ticket.resolution_notes).startsWith("{")) {
+        try {
+          parsedMeta = JSON.parse(String(ticket.resolution_notes));
+        } catch {
+          parsedMeta = { public_summary: String(ticket.resolution_notes) };
+        }
+      }
+      const existingSteps = Array.isArray(parsedMeta.steps) ? parsedMeta.steps : [];
+      const csatStep = {
+        id: `step-csat-${Date.now()}`,
+        label: problemResolved
+          ? `Resolução confirmada pelo cliente • Avaliação: ${rating}/5 estrelas`
+          : `Cliente informou que o problema persiste • Chamado reaberto (${rating}/5 estrelas)`,
+        status: "done",
+        created_at: new Date().toISOString(),
+      };
+
+      const nextStatus = problemResolved ? "resolved" : "action_required";
+      await db
+        .from("store_support_tickets")
+        .update({
+          status: nextStatus,
+          resolution_notes: JSON.stringify({
+            ...parsedMeta,
+            steps: [...existingSteps, csatStep],
+            csat: csatPayload,
+          }),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", ticket.id);
+    } else {
+      targetThreadId = ticketId;
+    }
+
+    if (targetThreadId) {
+      const { data: tr } = await db
+        .from("chat_threads")
+        .select("id, metadata, status")
+        .eq("id", targetThreadId)
+        .maybeSingle();
+
+      if (tr) {
+        await db
+          .from("chat_threads")
+          .update({
+            status: problemResolved ? tr.status : "open",
+            metadata: {
+              ...(((tr.metadata as any) || {}) as Record<string, any>),
+              csat: csatPayload,
+              csat_rating: rating,
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", tr.id);
+
+        await db.from("chat_messages").insert({
+          thread_id: tr.id,
+          message: problemResolved
+            ? `[AVALIAÇÃO CSAT] Cliente avaliou o atendimento com ${rating}/5 estrelas e confirmou a resolução.${comment ? ` Comentário: "${comment}"` : ""}`
+            : `[REABERTURA DE CHAMADO] Cliente avaliou com ${rating}/5 estrelas e informou que o problema ainda não foi resolvido.${comment ? ` Detalhe: "${comment}"` : ""}`,
+          message_type: "system_event",
+          payload: {
+            csat: csatPayload,
+            reopened: !problemResolved,
+          },
+          is_staff_reply: false,
+        });
+      }
+    }
+
+    return {
+      success: true,
+      csat: csatPayload,
+      reopened: !problemResolved,
+    };
+  });
+export const _chatOmnichannelReady = (() => { const created = true;
     return created;
   });

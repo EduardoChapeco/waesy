@@ -29,7 +29,7 @@ import { Link } from "@tanstack/react-router";
 import {
   getCustomer360Context,
   assignChatThread,
-  updateCustomerFunnelStage,
+  updateCustomerFunnelStage, updateCustomerProfileFromChat, updateThreadAiHandoffMode, createSupportTicketFromChat, addSupportTicketStep,
 } from "@/services/chat.functions";
 import { ThreadTagsPicker } from "@/components/chat/ThreadTagsPicker";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
@@ -80,6 +80,20 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [funnelStage, setFunnelStage] = useState<string>("new");
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editCpf, setEditCpf] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [handoffMode, setHandoffMode] = useState<"ai_triage" | "human_queue" | "human_active">("ai_triage");
+  const [isCreatingTicket, setIsCreatingTicket] = useState(false);
+  const [newTicketTitle, setNewTicketTitle] = useState("");
+  const [newTicketDesc, setNewTicketDesc] = useState("");
+  const [newTicketPriority, setNewTicketPriority] = useState<"low" | "normal" | "high" | "urgent">("normal");
+  const [isSavingTicket, setIsSavingTicket] = useState(false);
+  const [stepInputByTicket, setStepInputByTicket] = useState<Record<string, string>>({});
 
   const loadContext = useCallback(() => {
     if (!storeId || (!customerId && !threadId && !guestPhone && !guestName)) return;
@@ -98,6 +112,12 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         setData(res);
         setInternalNotes(res?.threadContext?.internal_notes || "");
         setFunnelStage(res?.linkedLead?.status || "new");
+        setEditName(res?.profile?.full_name || guestName || "");
+        setEditPhone(res?.profile?.phone || guestPhone || "");
+        setEditEmail(res?.profile?.email || "");
+        setEditCpf(res?.profile?.document_cpf || "");
+        setEditCity(res?.profile?.city || "");
+        if ((res?.threadContext as any)?.metadata?.handoff_mode) setHandoffMode((res.threadContext as any).metadata.handoff_mode);
       })
       .catch((err) => {
         console.error("Erro ao carregar Customer 360:", err);
@@ -162,6 +182,44 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       navigator.clipboard.writeText(messageText);
       toast.success("Link copiado para a área de transferência!");
     }
+  };
+  const handleSaveCustomerProfile = async () => {
+    if (!editName.trim()) { toast.error("Informe o nome do cliente."); return; }
+    setIsSavingProfile(true);
+    try {
+      const res = await updateCustomerProfileFromChat({ data: { customerId: data?.profile?.id || customerId || null, threadId: threadId || null, fullName: editName.trim(), phone: editPhone.trim() || null, email: editEmail.trim() || null, documentCpf: editCpf.trim() || null, city: editCity.trim() || null } });
+      setData((prev: any) => (prev ? { ...prev, profile: { ...(prev.profile || {}), ...res.profile } } : prev));
+      setIsEditingProfile(false);
+      toast.success("Dados do cliente atualizados!");
+    } catch (err: any) { toast.error(err?.message || "Erro ao atualizar cliente."); } finally { setIsSavingProfile(false); }
+  };
+  const handleChangeHandoff = async (mode: "ai_triage" | "human_queue" | "human_active") => {
+    setHandoffMode(mode);
+    if (!threadId) return;
+    try {
+      await updateThreadAiHandoffMode({ data: { threadId, handoffMode: mode, aiAutoReplyEnabled: mode === "ai_triage" } });
+      toast.success(mode === "ai_triage" ? "IA ativada na recepção desta conversa." : mode === "human_queue" ? "Conversa na fila humana." : "Atendimento assumido pelo humano (IA pausada).");
+    } catch (err: any) { toast.error(err?.message || "Erro ao alternar modo IA/Humano."); }
+  };
+  const handleCreateDemandTicket = async () => {
+    if (!threadId || !newTicketTitle.trim() || !newTicketDesc.trim()) { toast.error("Preencha o título e a descrição da demanda."); return; }
+    setIsSavingTicket(true);
+    try {
+      const created = await createSupportTicketFromChat({ data: { threadId, customerId: data?.profile?.id || customerId || null, title: newTicketTitle.trim(), description: newTicketDesc.trim(), priority: newTicketPriority } });
+      setData((prev: any) => (prev ? { ...prev, tickets: [created, ...(prev.tickets || [])] } : prev));
+      setNewTicketTitle(""); setNewTicketDesc(""); setIsCreatingTicket(false);
+      toast.success("Demanda aberta e link enviado no chat!");
+    } catch (err: any) { toast.error(err?.message || "Erro ao criar demanda."); } finally { setIsSavingTicket(false); }
+  };
+  const handleAddTicketStep = async (ticketId: string, customLabel?: string, nextStatus?: "open" | "under_review" | "action_required" | "resolved") => {
+    const label = (customLabel || stepInputByTicket[ticketId] || "").trim();
+    if (!label) { toast.error("Informe a descrição da etapa."); return; }
+    try {
+      const res = await addSupportTicketStep({ data: { ticketId, threadId: threadId || null, stepLabel: label, nextStatus } });
+      setStepInputByTicket((prev) => ({ ...prev, [ticketId]: "" }));
+      setData((prev: any) => prev ? { ...prev, tickets: (prev.tickets || []).map((t: any) => (t.id === ticketId ? { ...t, ...res.ticket, steps: res.steps } : t)) } : prev);
+      toast.success(nextStatus === "resolved" ? "Chamado resolvido e link CSAT enviado ao cliente!" : "Etapa adicionada à linha do tempo do chamado!");
+    } catch (err: any) { toast.error(err?.message || "Erro ao adicionar etapa."); }
   };
 
   if (!customerId && !threadId && !guestPhone && !guestName) {
@@ -239,7 +297,40 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             {profile?.email || "Sem e-mail cadastrado"}
           </p>
         </div>
+        <Button type="button" size="sm" onClick={() => setIsEditingProfile((prev) => !prev)} className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-muted text-foreground hover:bg-foreground hover:text-background cursor-pointer">
+          {isEditingProfile ? "Fechar" : "Editar"}
+        </Button>
       </div>
+      {isEditingProfile && (
+        <div className="p-3 rounded-xl bg-muted/50 space-y-2">
+          <p className="text-xs font-bold text-foreground">Editar Cadastro do Cliente</p>
+          <input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nome completo" className="w-full h-11 rounded-lg bg-background px-3 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+          <div className="grid grid-cols-2 gap-2">
+            <input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="WhatsApp / Telefone" className="w-full h-11 rounded-lg bg-background px-3 text-xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+            <input value={editCpf} onChange={(e) => setEditCpf(e.target.value)} placeholder="CPF / CNPJ" className="w-full h-11 rounded-lg bg-background px-3 text-xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <input value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="E-mail" className="w-full h-11 rounded-lg bg-background px-3 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+            <input value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="Cidade / Bairro" className="w-full h-11 rounded-lg bg-background px-3 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+          </div>
+          <Button type="button" disabled={isSavingProfile} onClick={handleSaveCustomerProfile} className="w-full h-11 min-h-11 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer">
+            {isSavingProfile ? "Salvando..." : "Salvar Cadastro"}
+          </Button>
+        </div>
+      )}
+      {threadId && (
+        <div className="p-3 rounded-xl bg-muted/40 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground">Estágio IA → Humano</span>
+            <Badge variant="secondary" className="text-xs">{handoffMode === "ai_triage" ? "IA Atendendo" : handoffMode === "human_queue" ? "Fila Humana" : "Humano Ativo"}</Badge>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
+            <button type="button" onClick={() => handleChangeHandoff("ai_triage")} className={`h-11 min-h-11 rounded-lg px-2 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${handoffMode === "ai_triage" ? "bg-primary text-primary-foreground" : "bg-card text-foreground"}`}>1. IA 1º</button>
+            <button type="button" onClick={() => handleChangeHandoff("human_queue")} className={`h-11 min-h-11 rounded-lg px-2 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${handoffMode === "human_queue" ? "bg-primary text-primary-foreground" : "bg-card text-foreground"}`}>2. Fila</button>
+            <button type="button" onClick={() => handleChangeHandoff("human_active")} className={`h-11 min-h-11 rounded-lg px-2 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${handoffMode === "human_active" ? "bg-foreground text-background" : "bg-card text-foreground"}`}>3. Humano</button>
+          </div>
+        </div>
+      )}
 
       {/* Tags de CRM e Status no Funil */}
       <div className="space-y-3 border-b border-border/50 pb-4">
@@ -392,7 +483,84 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   )}
 
  {/* Tickets / Chamados Abertos */}
- {tickets.length > 0 && (
+ {/* Tickets / Chamados Abertos & Gestão de Demandas */}
+ {(true || tickets.length > 0) && (
+ <div className="space-y-2 border-b border-border/50 pb-4">
+ <div className="flex items-center justify-between gap-2">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
+ <ShieldAlert className="size-3.5 text-primary" />
+ Demandas & Tickets ({tickets.length})
+ </span>
+ {threadId && (
+   <Button type="button" size="sm" onClick={() => setIsCreatingTicket((prev) => !prev)} className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer">
+     {isCreatingTicket ? "Cancelar" : "+ Demanda"}
+   </Button>
+ )}
+ </div>
+ {isCreatingTicket && (
+   <div className="p-3 rounded-xl bg-muted/50 space-y-2">
+     <input value={newTicketTitle} onChange={(e) => setNewTicketTitle(e.target.value)} placeholder="Título da demanda ou chamado..." className="w-full h-11 rounded-lg bg-background px-3 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+     <textarea value={newTicketDesc} onChange={(e) => setNewTicketDesc(e.target.value)} placeholder="Descrição pública para acompanhamento do cliente..." rows={2} className="w-full rounded-lg bg-background p-2 text-xs text-foreground resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
+     <div className="flex items-center gap-2">
+       <select value={newTicketPriority} onChange={(e) => setNewTicketPriority(e.target.value as any)} className="h-11 rounded-lg bg-background px-3 text-xs font-semibold text-foreground flex-1">
+         <option value="normal">Prioridade Normal</option>
+         <option value="high">Prioridade Alta</option>
+         <option value="urgent">Urgente</option>
+       </select>
+       <Button type="button" disabled={isSavingTicket} onClick={handleCreateDemandTicket} className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-foreground text-background cursor-pointer">
+         {isSavingTicket ? "Criando..." : "Criar Ticket"}
+       </Button>
+     </div>
+   </div>
+ )}
+ <div className="space-y-2 max-h-72 overflow-y-auto no-scrollbar pr-1">
+ {tickets.map((t: any) => {
+   let parsedSteps: Array<{ id: string; label: string }> = Array.isArray(t.steps) ? t.steps : [];
+   if (parsedSteps.length === 0 && t.resolution_notes && String(t.resolution_notes).startsWith("{")) {
+     try { const parsed = JSON.parse(String(t.resolution_notes)); if (Array.isArray(parsed.steps)) parsedSteps = parsed.steps; } catch {}
+   }
+   const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.app";
+   const publicTicketUrl = `${origin}/chamado/${t.id}`;
+   return (
+     <div key={t.id} className="p-3 rounded-xl bg-muted/40 text-xs space-y-2">
+       <div className="flex items-center justify-between gap-2">
+         <span className="font-bold text-foreground truncate">{t.title}</span>
+         <Badge variant={t.status === "resolved" ? "secondary" : "default"} className="text-xs">{t.status === "resolved" ? "Resolvido" : "Em Aberto"}</Badge>
+       </div>
+       {parsedSteps.length > 0 && (
+         <div className="space-y-1 pl-2 border-l-2 border-primary/40">
+           {parsedSteps.map((st) => (
+             <p key={st.id} className="text-xs text-muted-foreground truncate">• {st.label}</p>
+           ))}
+         </div>
+       )}
+       <div className="flex items-center gap-1">
+         <input
+           value={stepInputByTicket[t.id] || ""}
+           onChange={(e) => setStepInputByTicket((prev) => ({ ...prev, [t.id]: e.target.value }))}
+           placeholder="Adicionar etapa na timeline..."
+           className="flex-1 h-11 rounded-lg bg-background px-2 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+         />
+         <Button type="button" size="sm" onClick={() => handleAddTicketStep(t.id)} className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer">
+           + Etapa
+         </Button>
+       </div>
+       <div className="grid grid-cols-2 gap-1 pt-1">
+         <button type="button" onClick={() => handleSendOrCopyLink(`Acompanhe a linha do tempo do seu chamado "${t.title}" em tempo real: ${publicTicketUrl}`)} className="h-11 min-h-11 rounded-lg bg-card text-foreground text-xs font-bold px-2 flex items-center justify-center gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
+           <Send className="size-3" />
+           <span>Enviar Link</span>
+         </button>
+         <button type="button" onClick={() => handleAddTicketStep(t.id, "Atendimento finalizado e solucionado", "resolved")} className="h-11 min-h-11 rounded-lg bg-foreground text-background text-xs font-bold px-2 flex items-center justify-center gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
+           <span>Resolver & CSAT</span>
+         </button>
+       </div>
+     </div>
+   );
+ })}
+ </div>
+ </div>
+ )}
+ {false && tickets.length > 0 && (
  <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-2">

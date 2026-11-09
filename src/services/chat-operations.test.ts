@@ -10,6 +10,14 @@ import {
   extractEvolutionQrPayload,
 } from "@/services/whatsapp-channel-instances.functions";
 import { isOutsideSupportSchedule } from "@/services/whatsapp-automation-runtime.server";
+import {
+  updateCustomerProfileFromChatSchema,
+  updateThreadAiHandoffModeSchema,
+  createSupportTicketFromChatSchema,
+  addSupportTicketStepSchema,
+  getPublicTicketTrackingSchema,
+  submitPublicTicketCsatSchema,
+} from "@/services/chat.functions";
 
 describe("Chat Operations Schemas (Whaticket CRM Convergence)", () => {
   it("valida criação de resposta rápida com atalho limpo", () => {
@@ -124,5 +132,94 @@ describe("Chat Operations Schemas (Whaticket CRM Convergence)", () => {
     expect(isOutsideSupportSchedule(schedules, new Date("2026-11-05T00:00:00.000Z"))).toBe(true);
     // Domingo 10:00 UTC-3 (13:00 UTC) -> Fora do horário
     expect(isOutsideSupportSchedule(schedules, new Date("2026-11-08T13:00:00.000Z"))).toBe(true);
+  });
+
+  describe("Customer 360, AI Triage & Ticket Schemas", () => {
+    it("valida atualização cadastral do cliente a partir do Chat (Customer 360)", () => {
+      const valid = updateCustomerProfileFromChatSchema.safeParse({
+        fullName: "Carlos Eduardo Silva",
+        phone: "+5549999887766",
+        email: "carlos@exemplo.com",
+        documentCpf: "123.456.789-00",
+        city: "Chapecó - SC",
+      });
+      expect(valid.success).toBe(true);
+      if (valid.success) {
+        expect(valid.data.fullName).toBe("Carlos Eduardo Silva");
+        expect(valid.data.city).toBe("Chapecó - SC");
+      }
+
+      const invalid = updateCustomerProfileFromChatSchema.safeParse({
+        fullName: "",
+      });
+      expect(invalid.success).toBe(false);
+    });
+
+    it("valida alternância de estágio de handoff IA -> Humano", () => {
+      const validAi = updateThreadAiHandoffModeSchema.safeParse({
+        threadId: "a0000000-0000-0000-0000-000000000001",
+        handoffMode: "ai_triage",
+        aiAutoReplyEnabled: true,
+      });
+      expect(validAi.success).toBe(true);
+
+      const validHuman = updateThreadAiHandoffModeSchema.safeParse({
+        threadId: "a0000000-0000-0000-0000-000000000001",
+        handoffMode: "human_active",
+        aiAutoReplyEnabled: false,
+      });
+      expect(validHuman.success).toBe(true);
+
+      const invalid = updateThreadAiHandoffModeSchema.safeParse({
+        threadId: "a0000000-0000-0000-0000-000000000001",
+        handoffMode: "modo_invalido",
+      });
+      expect(invalid.success).toBe(false);
+    });
+
+    it("valida abertura de demanda/ticket e adição de etapas públicas", () => {
+      const validTicket = createSupportTicketFromChatSchema.safeParse({
+        threadId: "a0000000-0000-0000-0000-000000000001",
+        title: "Problema com entrega atrasada",
+        description: "Cliente relata que o pedido não chegou no prazo.",
+        priority: "urgent",
+      });
+      expect(validTicket.success).toBe(true);
+
+      const validStep = addSupportTicketStepSchema.safeParse({
+        ticketId: "b0000000-0000-0000-0000-000000000002",
+        stepLabel: "Pacote despachado para rota prioritária",
+        nextStatus: "under_review",
+      });
+      expect(validStep.success).toBe(true);
+
+      const invalidStep = addSupportTicketStepSchema.safeParse({
+        ticketId: "b0000000-0000-0000-0000-000000000002",
+        stepLabel: "",
+      });
+      expect(invalidStep.success).toBe(false);
+    });
+
+    it("valida consulta e avaliação pública de chamado (CSAT 1-5 estrelas e resolução)", () => {
+      const validQuery = getPublicTicketTrackingSchema.safeParse({
+        ticketId: "b0000000-0000-0000-0000-000000000002",
+      });
+      expect(validQuery.success).toBe(true);
+
+      const validCsat = submitPublicTicketCsatSchema.safeParse({
+        ticketId: "b0000000-0000-0000-0000-000000000002",
+        rating: 5,
+        comment: "Atendimento excelente e rápido!",
+        problemResolved: true,
+      });
+      expect(validCsat.success).toBe(true);
+
+      const invalidRating = submitPublicTicketCsatSchema.safeParse({
+        ticketId: "b0000000-0000-0000-0000-000000000002",
+        rating: 6,
+        problemResolved: true,
+      });
+      expect(invalidRating.success).toBe(false);
+    });
   });
 });

@@ -240,19 +240,34 @@ export const NICHE_ECONOMIC_BENCHMARKS: Record<
     ],
   },
   turismo: {
-    label: "Turismo, Hospedagem & Experiências",
+    label: "Turismo, Viagens, Hospedagem & Experiências",
     monthlySpendShare: 0.045,
     targetAudienceShare: 0.24,
     osmTags: [
+      { key: "amenity", value: "travel_agency" },
       { key: "tourism", value: "hotel" },
-      { key: "tourism", value: "guest_house" },
-      { key: "tourism", value: "attraction" },
+      { key: "tourism", value: "information" },
     ],
     defaultFeatures: [
-      "Reserva Instantânea Confirmada",
-      "Roteiro Guiado / Experiência",
-      "Cancelamento Flexível",
+      "Emissão de Vouchers & Passagens",
+      "Pacotes & Roteiros Guiados",
+      "Tarifário Dinâmico & Disponibilidade",
       "Suporte Concierge WhatsApp",
+    ],
+  },
+  imobiliario: {
+    label: "Imobiliário, Locação & Gestão Patrimonial",
+    monthlySpendShare: 0.12,
+    targetAudienceShare: 0.18,
+    osmTags: [
+      { key: "office", value: "estate_agent" },
+      { key: "office", value: "architect" },
+    ],
+    defaultFeatures: [
+      "Vistoria Digital & Assinatura Eletrônica",
+      "Captação Exclusiva na Região",
+      "Gestão de Garantias e Locação",
+      "Atendimento Consultivo",
     ],
   },
   fitness: {

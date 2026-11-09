@@ -859,7 +859,7 @@ export function ChatQuickComposerModals({
           <div className="p-4 space-y-3">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-foreground block">Título / Referência</label>
-              <Input value={txTitle} onChange={(e) => setTxTitle(e.target.value)} placeholder={currentModal === "contract" ? "Ex: Contrato de Prestação de Serviços" : "Ex: Fatura Mensal / Pedido #104"} className="h-11 text-xs" />
+              <Input value={txTitle} onChange={(e) => setTxTitle(e.target.value)} placeholder={currentModal === "contract" ? "Ex: Contrato de Prestação de Serviços" : "Ex: Fatura Mensal ou Pedido 104"} className="h-11 text-xs" />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">

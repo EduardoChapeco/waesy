@@ -936,7 +936,7 @@ function WorkspaceAtendimentoPage() {
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "live"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
@@ -956,7 +956,7 @@ function WorkspaceAtendimentoPage() {
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "intranet"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
@@ -974,7 +974,7 @@ function WorkspaceAtendimentoPage() {
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "sdr"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
@@ -994,7 +994,7 @@ function WorkspaceAtendimentoPage() {
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "metrics"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
@@ -1009,7 +1009,7 @@ function WorkspaceAtendimentoPage() {
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "whatsapp"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
@@ -1024,12 +1024,16 @@ function WorkspaceAtendimentoPage() {
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "hours"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
             <Clock className="size-4" />
             <span>Horários & Setores</span>
+          </button>
+          <button type="button" onClick={() => setTeamSectorsDrawerOpen(true)} className="px-4 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-2 bg-foreground text-background cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary">
+            <Sliders className="size-4" />
+            <span>Configurações</span>
           </button>
         </div>
       </header>
@@ -1359,7 +1363,7 @@ function WorkspaceAtendimentoPage() {
                     ) : (
                       <>
                         <Archive className="size-4" />
-                        <span className="hidden sm:inline">Arquivar</span>
+                        <span className="hidden sm:inline">Finalizar & CSAT</span>
                       </>
                     )}
                   </Button>
@@ -1843,7 +1847,7 @@ function WorkspaceAtendimentoPage() {
                     <div className="flex items-center gap-2">
                       <Bot className="size-4 text-primary" />
                       <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        AI Assistant Control
+                        IA Automática
                       </span>
                     </div>
                     <Switch
@@ -1868,7 +1872,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Setor / Fila (Assigned Team Router)
+                    Setor / Fila
                   </Label>
                   <select
                     value={activeThread?.department || "geral"}
@@ -1885,7 +1889,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Atendente Responsável (Assigned To)
+                    Atendente Responsável
                   </Label>
                   <select
                     value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
@@ -1939,7 +1943,7 @@ function WorkspaceAtendimentoPage() {
                     <div className="flex items-center gap-2">
                       <Bot className="size-4 text-primary" />
                       <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        AI Assistant Control
+                        IA Automática
                       </span>
                     </div>
                     <Switch
@@ -1964,7 +1968,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Setor / Fila (Assigned Team Router)
+                    Setor / Fila
                   </Label>
                   <select
                     value={activeThread?.department || "geral"}
@@ -1981,7 +1985,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Atendente Responsável (Assigned To)
+                    Atendente Responsável
                   </Label>
                   <select
                     value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
@@ -3390,6 +3394,8 @@ function WorkspaceAtendimentoPage() {
         onOpenChange={setTeamSectorsDrawerOpen}
         companyId={store?.id || ""}
         instanceId={whatsappInstances[0]?.id}
+        initialConfig={(store?.settings as any)?.whatsapp_governance}
+        availableInstances={(whatsappInstances || []).map((inst: any) => ({ id: String(inst.id), displayName: String(inst.display_name || inst.instance_key || "WhatsApp"), phone: inst.display_phone_number || null }))}
         availableAgents={(teamMembers || []).map((m: any) => ({
           id: String(m.id || m.user_id),
           name: String(m.full_name || m.name || m.email || "Atendente"),

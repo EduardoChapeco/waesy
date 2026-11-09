@@ -297,8 +297,6 @@ export function WhatsAppTeamSectorsDrawer({
             </button>
             <button type="button" onClick={() => setActiveSection('triage')} className={`flex h-11 min-h-11 items-center justify-center gap-1 rounded-lg text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary ${activeSection === 'triage' ? 'bg-background text-foreground font-bold' : 'text-muted-foreground hover:text-foreground'}`}>IA & Etapas</button>
             <button type="button" onClick={() => setActiveSection('agents')} className={`flex h-11 min-h-11 items-center justify-center gap-1 rounded-lg text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary ${activeSection === 'agents' ? 'bg-background text-foreground font-bold' : 'text-muted-foreground hover:text-foreground'}`}>Atendentes</button>
-            <button type="button" className="hidden" onClick={() => {}}>
-            </button>
             <button
               type="button"
               onClick={() => setActiveSection('rbac')}
@@ -411,7 +409,6 @@ export function WhatsAppTeamSectorsDrawer({
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">
                       <Label className="text-xs text-muted-foreground">Diretriz da IA e Horário do Setor</Label>
                       <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                         <Input value={dept.scheduleDays || 'Seg a Sex'} onChange={(e) => setDepartments((prev) => prev.map((d) => d.id === dept.id ? { ...d, scheduleDays: e.target.value } : d))} placeholder="Dias (Seg a Sex)" className="h-11 text-xs" />
