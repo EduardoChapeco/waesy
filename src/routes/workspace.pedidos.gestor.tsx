@@ -24,7 +24,7 @@ import { NicheOperationalGuard } from "@/components/workspace/niche-operational-
 import { getStoreSettings } from "@/services/store.functions";
 
 export const Route = createFileRoute("/workspace/pedidos/gestor")({
- head: () => ({ meta: [{ title: "KDS - Gestor de Pedidos em Tempo Real | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Gestor de Pedidos Omnichannel | Workspace Waesy" }] }),
  beforeLoad: () => { throw redirect({ to: "/workspace/pedidos" }); },
  loader: async () => {
    try {
@@ -465,7 +465,7 @@ export function KDSPage({ initialOrdersProp, storeProp, onOpenShippingLabel, onG
  className="h-11 min-h-11 sm:h-9 sm:min-h-9 text-xs font-bold rounded-lg gap-2"
  >
  <Kanban className="size-3.5" />
- Kanban KDS
+ Quadro Kanban
  </Button>
  <Button
  variant={viewMode === "live_dashboard" ? "default" : "ghost"}

@@ -80,6 +80,7 @@
     "src/components/news/article-ad-config-modal.tsx": "modal reutilizável de configuração publicitária de artigos",
     "src/components/admin/builder/PhotoStudioModal.tsx": "modal de estúdio fotográfico e recorte proporcional para o Omni Builder",
     "src/components/news/economic-indicators-bar.tsx": "barra de indicadores econômicos e cotações para o portal de notícias",
-    "src/components/tourism/checkout/TravelerVerificationFlow.tsx": "fluxo de verificação de identidade e documentação de viajantes"
+    "src/components/tourism/checkout/TravelerVerificationFlow.tsx": "fluxo de verificação de identidade e documentação de viajantes",
+    "src/components/admin/services/service-bom-card.tsx": "componente modular para ficha técnica de insumos em serviços compostos"
   }
 }

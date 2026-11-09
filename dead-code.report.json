@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-11-07T12:34:06.952Z",
-  "totalFiles": 2635,
-  "totalImported": 2041,
-  "discoveredUnreferencedCount": 69,
-  "intentionalUnreferencedCount": 69,
+  "timestamp": "2026-11-09T13:37:12.568Z",
+  "totalFiles": 2675,
+  "totalImported": 2069,
+  "discoveredUnreferencedCount": 70,
+  "intentionalUnreferencedCount": 70,
   "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
     "src/components/admin/builder/builder-canvas.tsx",
@@ -13,6 +13,7 @@
     "src/components/admin/builder/builder-top-bar.tsx",
     "src/components/admin/builder/guided-section-picker.tsx",
     "src/components/admin/classified-form.tsx",
+    "src/components/admin/services/service-bom-card.tsx",
     "src/components/admin/working-hours-editor.tsx",
     "src/components/builder/GiftCardCommerceBlocks.tsx",
     "src/components/classifieds/ad-details.tsx",
