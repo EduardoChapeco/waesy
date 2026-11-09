@@ -343,8 +343,8 @@ function PainelAuthPage() {
     return getBrandVerticalById("waesy_studio");
   })();
   const brandName =
-    hostBrand.id !== "waesy_marketplace" && hostBrand.id !== "waesy_studio"
-      ? hostBrand.name
+    hostBrand.id !== "waesy" && hostBrand.id !== "waesy_studio"
+      ? hostBrand.brandName
       : brand?.company_name || brand?.site_name || hostBrand.shortName || "Waesy";
 
   return (

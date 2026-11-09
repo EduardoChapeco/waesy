@@ -27,7 +27,7 @@ import {
   getBrandVerticalById,
   resolveBrandContextFromHost,
   canAccessModule,
-  type SubscriptionTier,
+  type SubscriptionTierId,
 } from "@/lib/multi-brand-engine";
 
 
@@ -178,12 +178,12 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     if (explicitBrand) return getBrandVerticalById(explicitBrand);
     if (typeof window !== "undefined") {
       const hostResolved = resolveBrandContextFromHost(window.location.host);
-      if (hostResolved.id !== "waesy_marketplace") return hostResolved;
+      if (hostResolved.id !== "waesy") return hostResolved;
     }
     return getBrandVerticalById("waesy_studio");
   })();
-  const activeStoreTier: SubscriptionTier =
-    (rawStoreEntity?.subscription_tier || rawStoreEntity?.settings?.subscription_tier || "pro") as SubscriptionTier;
+  const activeStoreTier: SubscriptionTierId =
+    (rawStoreEntity?.subscription_tier || rawStoreEntity?.settings?.subscription_tier || "pro") as SubscriptionTierId;
   const activeEnabledModules: string[] = Array.isArray(rawStoreEntity?.enabled_modules)
     ? rawStoreEntity.enabled_modules
     : Array.isArray(rawStoreEntity?.settings?.enabled_modules)
@@ -200,12 +200,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
       items: group.items.filter((item) => {
         if (isPlatformAdmin) return true;
         if (activeStoreTier === "starter" && activeEnabledModules.length > 0) {
-          return canAccessModule({
-            moduleKey: group.id,
-            tier: activeStoreTier,
-            enabledModules: activeEnabledModules,
-            brandId: activeBrandVertical.id,
-          });
+          return canAccessModule(rawStoreEntity, group.id);
         }
         return true;
       }),
