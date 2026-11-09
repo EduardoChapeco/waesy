@@ -338,6 +338,22 @@ export function parseRawCookieStringPreservingDuplicates(cookieString: string): 
 }
 
 /**
+ * Retorna o domínio canônico compartilhado para cookies de autenticação da plataforma
+ * (ex: `.waesy.com.br` para permitir acesso unificado a painel, studio, turis e vitrine).
+ * Retorna `undefined` para localhost, IPs ou domínios de sufixo público (ex: `.pages.dev`).
+ */
+export function resolveCanonicalCookieDomain(hostname: string): string | undefined {
+  const clean = (hostname || "").toLowerCase().split(":")[0].trim();
+  if (clean.includes("waesy.com.br")) {
+    return ".waesy.com.br";
+  }
+  if (clean.includes("usewaesy.com")) {
+    return ".usewaesy.com";
+  }
+  return undefined;
+}
+
+/**
  * Retorna a lista de domínios legados que devem ser expirados proativamente
  * para erradicar cookies duplicados (`Domain=.waesy.com.br` vs host-only).
  */

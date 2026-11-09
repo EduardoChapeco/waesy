@@ -17,6 +17,7 @@ import {
   getLegacyCookieDomainsToPurge,
   parseRawCookieStringPreservingDuplicates,
   resolveCanonicalAuthCookies,
+  resolveCanonicalCookieDomain,
   resolveOrphanAuthCookiesToExpire,
 } from "./auth-cookie-sanitizer";
 
@@ -101,13 +102,20 @@ export function getSSRClient(preCapturedHeaders?: Headers | null) {
     } catch {}
   }
 
+  const isProd = process.env.NODE_ENV === "production";
+  let cookieDomain: string | undefined = resolveCanonicalCookieDomain(capturedHost);
+  if (!cookieDomain && capturedHost.includes("waesy.com.br")) {
+    cookieDomain = ".waesy.com.br";
+  }
+
   return createServerClient(env.data.VITE_SUPABASE_URL, env.data.VITE_SUPABASE_ANON_KEY, {
     cookieOptions: {
       name: "waesy-auth-token",
       maxAge: 60 * 60 * 24 * 365,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: isProd,
       path: "/",
+      ...(cookieDomain ? { domain: cookieDomain } : {}),
     },
     cookies: {
       getAll() {
@@ -135,14 +143,7 @@ export function getSSRClient(preCapturedHeaders?: Headers | null) {
             } catch {}
           }
 
-          const isProd = process.env.NODE_ENV === "production";
-          let cookieDomain: string | undefined = undefined;
-          if (host.includes("waesy.com.br")) {
-            cookieDomain = ".waesy.com.br";
-          } else if (host.includes("usewaesy.com")) {
-            cookieDomain = ".usewaesy.com";
-          }
-          const legacyDomains = getLegacyCookieDomainsToPurge(host);
+          const activeCookieDomain = resolveCanonicalCookieDomain(host) || cookieDomain;
           let cookieHeader = capturedCookieHeader;
           if (!cookieHeader) {
             try {
@@ -154,29 +155,33 @@ export function getSSRClient(preCapturedHeaders?: Headers | null) {
           cookiesToSet.forEach(({ name, value, options }) => {
             const isDeleting = !value || options?.maxAge === 0;
 
-            // 1. Limpa variantes com Domain=.waesy.com.br / .usewaesy.com para eliminar split-brain (domain: cookieDomain)
-            for (const domain of legacyDomains) {
-              safeAppendRawClearCookie(capturedResHeaders, name, domain, isProd);
+            // Se operando com domínio canônico compartilhado (.waesy.com.br),
+            // expira eventual variante host-only (sem domain) para eliminar colisões
+            if (activeCookieDomain) {
+              safeEmitCookie(capturedResHeaders, name, "", {
+                path: "/",
+                maxAge: 0,
+                sameSite: "lax",
+                secure: isProd,
+              });
             }
 
-            // 2. Grava (ou expira) o cookie canônico host-only (sem domain wildcard)
-            const cleanOptions = { ...options };
-            delete cleanOptions.domain;
-
+            // Grava o cookie canônico (com domain em produção ou host-only em dev/pages.dev)
             safeEmitCookie(capturedResHeaders, name, isDeleting ? "" : value, {
-              ...cleanOptions,
+              ...options,
               maxAge: isDeleting ? 0 : (options?.maxAge ?? 60 * 60 * 24 * 365),
               sameSite: options?.sameSite === "none" ? "none" : "lax",
               secure: isProd,
               path: "/",
+              ...(activeCookieDomain ? { domain: activeCookieDomain } : {}),
             });
           });
 
           // 3. Expira exclusivamente chunks órfãos comprovados, preservando chunks inalterados da sessão ativa
           const orphanNames = resolveOrphanAuthCookiesToExpire(rawEntries, cookiesToSet);
           for (const orphanName of orphanNames) {
-            for (const domain of legacyDomains) {
-              safeAppendRawClearCookie(capturedResHeaders, orphanName, domain, isProd);
+            if (activeCookieDomain) {
+              safeAppendRawClearCookie(capturedResHeaders, orphanName, activeCookieDomain, isProd);
             }
             safeEmitCookie(capturedResHeaders, orphanName, "", {
               maxAge: 0,

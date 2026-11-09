@@ -295,7 +295,9 @@ function StepByStepAuthPage() {
  }
  }
  toast.success("Sessão iniciada.");
- const destination = returnUrl && returnUrl !== "/entrar" ? returnUrl : "/";
+ const destination = returnUrl && returnUrl !== "/entrar" && returnUrl !== "/"
+   ? returnUrl
+   : (res as any).destination || "/";
  await router.invalidate();
  navigate({ to: destination as any, replace: true });
  return;

@@ -340,27 +340,20 @@ export const signInWithPassword = createServerFn({ method: "POST" })
     // Inicialização Inteligente de Contexto no Login (DEC-446):
     // Se o usuário possui empresa/loja vinculada, ativa automaticamente o contexto 'store'
     // e seu tenant primário, garantindo que o redirecionamento ao Workspace não caia em laço civil.
+    let targetStoreId: string | null = null;
     try {
       const { setCookie } = await import("@tanstack/start-server-core");
       const isProd = process.env.NODE_ENV === "production";
       const adminDb = getServerClient();
 
-      let targetStoreId: string | null = null;
       if (data.user?.id) {
-        const [wmRes, profRes] = await Promise.all([
-          adminDb
-            .from("workspace_members")
-            .select("store_id")
-            .or(`profile_id.eq.${data.user.id},user_id.eq.${data.user.id}`)
-            .limit(1)
-            .maybeSingle(),
-          adminDb
-            .from("profiles")
-            .select("store_id")
-            .eq("id", data.user.id)
-            .maybeSingle(),
-        ]);
-        targetStoreId = wmRes?.data?.store_id || profRes?.data?.store_id || null;
+        const wmRes = await adminDb
+          .from("workspace_members")
+          .select("store_id")
+          .or(`profile_id.eq.${data.user.id},user_id.eq.${data.user.id}`)
+          .limit(1)
+          .maybeSingle();
+        targetStoreId = wmRes?.data?.store_id || null;
       }
 
       if (targetStoreId) {
@@ -422,8 +415,27 @@ export const signInWithPassword = createServerFn({ method: "POST" })
       console.warn("[auth:signInWithPassword] Erro ao sanitizar cookies:", cookieErr);
     }
 
+    const MASTER_EMAILS = [
+      "contato@usewaesy.com",
+      "admin@usewaesy.com",
+      "meuwaesy@gmail.com",
+      "meuwider@gmail.com",
+      "excelenciatour.smo@gmail.com",
+      "admin@jah.com",
+    ];
+    const userEmail = (data.user?.email || "").toLowerCase();
+    const isMaster = Boolean(
+      data.user?.user_metadata?.is_admin_master ||
+      data.user?.user_metadata?.is_superadmin ||
+      MASTER_EMAILS.includes(userEmail)
+    );
+    const defaultDestination = targetStoreId ? "/workspace" : isMaster ? "/admin-master" : "/";
+
     return {
       status: "success" as const,
+      destination: redirectTo || defaultDestination,
+      hasStore: Boolean(targetStoreId),
+      isMaster,
       session: data.session
         ? {
             access_token: data.session.access_token,

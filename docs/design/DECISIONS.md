@@ -1,5 +1,18 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-472: Saneamento Holístico da Autenticação Multi-Subdomínio, Erradicação de Erro 400 PostgREST em `profiles.store_id`, Prevenção de Autodestruição de Cookies no SSR e Roteamento Canônico Pós-Login
+- **Data:** 2026-11-09
+- **Contexto:**
+  1. Quebra estrutural recorrente no fluxo de login: PostgREST retornava erro HTTP 400 (`column profiles.store_id does not exist`) em todas as requisições autenticadas porque `src/lib/identity.server.ts` e `src/services/auth.functions.ts` consultavam `store_id` diretamente na tabela `public.profiles`. Esse erro anulava silenciosamente o perfil do usuário em `getServerIdentity()`, rebaixando operadores e master para role `"customer"`.
+  2. Split-Brain e Autodestruição de Cookies no SSR/Browser: `supabase-ssr.server.ts` e `supabase.ts` emitiam `Set-Cookie: ... Max-Age=0` com atributo Domain no mesmo payload de resposta em que gravavam o cookie de sessão recém-criado, gerando colisões destrutivas no Chrome/Safari. Além disso, a falta de resolução canônica de domínio compartilhava os cookies incorretamente entre `waesy.com.br`, `painel.waesy.com.br`, `studio.waesy.com.br` e `turis.waesy.com.br`.
+  3. Redirecionamento e Contexto: `_store.entrar.tsx` e `painel.tsx` redirecionavam cegamente para `"/"` ao invés de bifurcar para `/workspace` (lojistas), `/admin-master` (plataforma) ou `"/"` (civis), causando rebaixamento involuntário para contexto civil.
+- **Decisão:**
+  1. **Remoção de Coluna Fantasma PostgREST (`src/lib/identity.server.ts`, `src/services/auth.functions.ts`):** Erradicada a coluna inexistente `store_id` das consultas a `public.profiles`. O vínculo com empresas é resolvido estritamente através da relação canônica em `public.workspace_members`.
+  2. **Domínio Canônico Unificado de Cookies (`src/lib/auth-cookie-sanitizer.ts`, `src/lib/supabase-ssr.server.ts`, `src/lib/supabase.ts`):** Criada a função `resolveCanonicalCookieDomain(hostname)`, definindo `Domain=.waesy.com.br` para o ecossistema `*.waesy.com.br` e `Domain=.usewaesy.com` para `*.usewaesy.com`. Chunks de domínio ativos nunca são expirados durante a gravação; purgam-se exclusivamente cookies host-only obsoletos (sem Domain).
+  3. **Roteamento Inteligente e Preservação de Contexto (`src/services/auth.functions.ts`, `src/routes/_store.entrar.tsx`, `src/routes/painel.tsx`):** `signInWithPassword` agora retorna `{ destination, hasStore, isMaster }` e define defensivamente os cookies de contexto (`waesy_active_context=store`, `waesy_active_tenant`, `waesy_store_id`), encaminhando lojistas a `/workspace`, master a `/admin-master` e civis a `"/"` (ou `returnUrl`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.31.
+- **Consequências:** Estabilidade plena de autenticação em todos os subdomínios, fim das sessões perdidas pós-login, zero erros PostgREST e aprovação integral nos 3340 testes automatizados, typecheck e build Cloudflare Pages.
+
 ## DEC-471: Remediação Definitiva de Persistência de Sessão, Proteção Contra Escrita Diferencial de Chunks no `@supabase/ssr` e Blindagem do Ciclo Auth
 - **Data:** 2026-11-08
 - **Contexto:**

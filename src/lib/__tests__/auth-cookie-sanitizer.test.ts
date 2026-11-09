@@ -5,6 +5,7 @@ import {
   inspectEncodedSessionString,
   parseRawCookieStringPreservingDuplicates,
   resolveCanonicalAuthCookies,
+  resolveCanonicalCookieDomain,
   resolveOrphanAuthCookiesToExpire,
 } from "../auth-cookie-sanitizer";
 
@@ -137,6 +138,16 @@ describe("auth-cookie-sanitizer", () => {
       ".www.usewaesy.com",
     ]);
     expect(getLegacyCookieDomainsToPurge("localhost:3000")).toEqual([]);
+  });
+
+  it("resolves canonical shared cookie domain for subdomains and apex domains", () => {
+    expect(resolveCanonicalCookieDomain("waesy.com.br")).toBe(".waesy.com.br");
+    expect(resolveCanonicalCookieDomain("painel.waesy.com.br")).toBe(".waesy.com.br");
+    expect(resolveCanonicalCookieDomain("studio.waesy.com.br:443")).toBe(".waesy.com.br");
+    expect(resolveCanonicalCookieDomain("turis.waesy.com.br")).toBe(".waesy.com.br");
+    expect(resolveCanonicalCookieDomain("usewaesy.com")).toBe(".usewaesy.com");
+    expect(resolveCanonicalCookieDomain("usewaesy.pages.dev")).toBeUndefined();
+    expect(resolveCanonicalCookieDomain("localhost:3000")).toBeUndefined();
   });
 
   it("NEVER expires waesy-auth-token.0 when @supabase/ssr performs a differential write of only waesy-auth-token.1", () => {

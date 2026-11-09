@@ -162,7 +162,7 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     try {
       const profilePromise = serverClient
         .from("profiles")
-        .select("id, full_name, username, avatar_url, role, phone, cpf, store_id")
+        .select("id, full_name, username, avatar_url, role, phone, cpf")
         .eq("id", user.id)
         .maybeSingle();
 

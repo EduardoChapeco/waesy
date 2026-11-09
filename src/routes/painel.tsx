@@ -205,6 +205,7 @@ function PainelAuthPage() {
         // Verifica se tem loja para encaminhar adequadamente
         const userSession = await getUserSession().catch(() => null);
         const hasStore =
+          Boolean((res as any).hasStore) ||
           (userSession?.memberships && userSession.memberships.length > 0) ||
           Boolean(userSession?.store_id) ||
           userSession?.role === "store_owner" ||
