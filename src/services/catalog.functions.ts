@@ -241,6 +241,9 @@ export const listPublishedProducts = createServerFn({ method: "GET" })
  query = query.eq("store_id", storeId);
  }
 
+ if (isPublicNicheQuery) {
+ query = query.neq("is_published_to_marketplace", false);
+ }
  // Para a lógica de variantes funcionarem com !inner, temos que garantir que estão ativas e com estoque
  query = query.eq("product_variants.status", "active");
 
@@ -951,7 +954,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  if (error || !store) {
  const { data: dirListing } = await db
  .from("directory_listings")
- .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings)")
+ .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, logo_url, banner_url, settings)")
  .or(isUuid ? `id.eq.${storeIdToUse},store_id.eq.${storeIdToUse}` : `slug.eq.${storeIdToUse},id.eq.${storeIdToUse}`)
  .limit(1)
  .maybeSingle();
@@ -1050,6 +1053,10 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
   (typeof settings.avatarUrl === "string" ? settings.avatarUrl : null) ||
   (typeof settings.image_url === "string" ? settings.image_url : null) ||
   (typeof settings.imageUrl === "string" ? settings.imageUrl : null) ||
+  (typeof settings.brand_kit?.logo_url === "string" ? settings.brand_kit.logo_url : null) ||
+  (typeof settings.brand_kit?.logoUrl === "string" ? settings.brand_kit.logoUrl : null) ||
+  (typeof settings.brandKit?.logo_url === "string" ? settings.brandKit.logo_url : null) ||
+  (typeof settings.brandKit?.logoUrl === "string" ? settings.brandKit.logoUrl : null) ||
   rawSettingsPhotos ||
   null;
 
@@ -1058,7 +1065,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
    const { data: linkedListing } = await db
     .from("directory_listings")
     .select("*")
-    .or(`store_id.eq.${store.id},id.eq.${store.id},ghost_store_id.eq.${store.id}`)
+    .or(`store_id.eq.${store.id},id.eq.${store.id}${store.slug ? `,slug.eq.${store.slug}` : ""}`)
     .limit(1)
     .maybeSingle();
 
@@ -1069,11 +1076,35 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
      (linkedListing as any).logo_url ||
      (Array.isArray((linkedListing as any).images) && typeof (linkedListing as any).images[0] === "string" ? (linkedListing as any).images[0] : null) ||
      linkedListing.avatar_url ||
+     (linkedListing as any).banner_url ||
      (Array.isArray(linkedListing.photos) && typeof linkedListing.photos[0] === "string" ? linkedListing.photos[0] : null) ||
      null;
    }
   } catch {
    // Silencioso
+  }
+  if (!resolvedLogoUrl && store.name) {
+   try {
+    const { data: byNameListing } = await db
+     .from("directory_listings")
+     .select("avatar_url, image_url, logo_url, banner_url, photos, images")
+     .ilike("business_name", store.name)
+     .limit(1)
+     .maybeSingle();
+    if (byNameListing) {
+     resolvedLogoUrl =
+      (byNameListing as any).avatar_url ||
+      (byNameListing as any).image_url ||
+      (byNameListing as any).logo_url ||
+      (Array.isArray((byNameListing as any).images) && typeof (byNameListing as any).images[0] === "string" ? (byNameListing as any).images[0] : null) ||
+      (Array.isArray((byNameListing as any).photos) && typeof (byNameListing as any).photos[0] === "string" ? (byNameListing as any).photos[0] : null) ||
+      (byNameListing as any).banner_url ||
+      null;
+    }
+   } catch {}
+  }
+  if (!resolvedLogoUrl && resolvedBannerUrl) {
+   resolvedLogoUrl = resolvedBannerUrl;
   }
  }
 

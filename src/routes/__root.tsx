@@ -440,10 +440,32 @@ function RootComponent() {
  useEffect(() => {
   if (typeof window === "undefined") return;
   let authSubscription: { unsubscribe: () => void } | null = null;
-  import("@/lib/supabase").then(({ getBrowserClient }) => {
+  let lastSyncedAccessToken: string | null = null;
+  import("@/lib/supabase").then(async ({ getBrowserClient }) => {
+   const {
+    inspectCanonicalSessionFromCookies,
+    parseRawCookieStringPreservingDuplicates,
+   } = await import("@/lib/auth-cookie-sanitizer");
    const client = getBrowserClient();
    const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
-    if ((event === "TOKEN_REFRESHED" || event === "SIGNED_IN") && session?.access_token && session?.refresh_token) {
+    if (
+     (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") &&
+     session?.access_token &&
+     session?.refresh_token
+    ) {
+     if (lastSyncedAccessToken === session.access_token) {
+      return;
+     }
+     if (event === "SIGNED_IN" && typeof document !== "undefined") {
+      const existingMeta = inspectCanonicalSessionFromCookies(
+       parseRawCookieStringPreservingDuplicates(document.cookie || ""),
+      );
+      if (existingMeta?.accessToken === session.access_token) {
+       lastSyncedAccessToken = session.access_token;
+       return;
+      }
+     }
+     lastSyncedAccessToken = session.access_token;
      import("@/services/auth.functions").then(({ syncSessionToCookies }) => {
       void syncSessionToCookies({
        data: {

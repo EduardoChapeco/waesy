@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { microCache } from "@/lib/cache/micro-cache";
+import { shouldPublishStoreToMarketplace, shouldPublishItemToMarketplace } from "@/lib/multi-brand-engine";
 
 export interface FlashOfferDTO {
   id: string;
@@ -274,7 +275,7 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
       // 1. Busca lojas ativas reais no Supabase, filtradas pelo nicho se aplicável
     let storesQuery = supabase
       .from("stores")
-      .select("id, name, slug, settings, logo_url")
+      .select("id, name, slug, settings, logo_url, publish_to_marketplace, waesy_marketplace_enabled")
       .limit(30);
 
     const { data: storesData, error: storeErr } = await storesQuery;
@@ -282,7 +283,9 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
       console.warn("[marketplace] Erro na busca de lojas do feed:", storeErr.message);
     }
 
-    let allDbStores: StoreCardDTO[] = (storesData || []).map((s: any) => ({
+    let allDbStores: StoreCardDTO[] = (storesData || [])
+      .filter((s: any) => shouldPublishStoreToMarketplace(s))
+      .map((s: any) => ({
       id: s.id,
       name: s.name,
       slug: s.slug || `loja-${s.id.slice(0, 6)}`,
@@ -340,7 +343,9 @@ export const getMarketplaceFeed = createServerFn({ method: "GET" })
       console.warn("[marketplace] Erro na busca de produtos do feed:", prodErr.message);
     }
 
-    let products: FlashOfferDTO[] = (productsData || []).map((p: any) => {
+    let products: FlashOfferDTO[] = (productsData || [])
+      .filter((p: any) => shouldPublishItemToMarketplace(p) && shouldPublishStoreToMarketplace(p.store))
+      .map((p: any) => {
       const sortedMedia = Array.isArray(p.media)
         ? [...p.media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
         : [];
@@ -495,7 +500,7 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
     }
 
     const dbProducts: FlashOfferDTO[] = (discountedProducts || [])
-      .filter((p: any) => p.compare_at_cents && p.compare_at_cents > p.price_cents)
+      .filter((p: any) => p.compare_at_cents && p.compare_at_cents > p.price_cents && shouldPublishItemToMarketplace(p) && shouldPublishStoreToMarketplace(p.store))
       .map((p: any) => {
         const sortedMedia = Array.isArray(p.media)
           ? [...p.media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
@@ -531,10 +536,12 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
     // 2. Busca lojas ativas
     const { data: storesData } = await supabase
       .from("stores")
-      .select("id, name, slug, settings, logo_url")
+      .select("id, name, slug, settings, logo_url, publish_to_marketplace, waesy_marketplace_enabled")
       .limit(50);
 
-    const allDbStores: StoreCardDTO[] = (storesData || []).map((s: any) => ({
+    const allDbStores: StoreCardDTO[] = (storesData || [])
+      .filter((s: any) => shouldPublishStoreToMarketplace(s))
+      .map((s: any) => ({
       id: s.id,
       name: s.name,
       slug: s.slug || `loja-${s.id.slice(0, 6)}`,

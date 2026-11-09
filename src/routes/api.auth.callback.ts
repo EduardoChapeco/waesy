@@ -14,13 +14,23 @@ export const Route = createFileRoute("/api/auth/callback")({
         const code = url.searchParams.get("code");
         const next = normalizeInternalReturnPath(url.searchParams.get("next"), "/");
 
-        // Extract guest session token from headers BEFORE async bounds
+        // Extract guest session token and response headers BEFORE async bounds
         const guestSessionToken = readCookieFromRequest(request, "waesy_guest_session");
+        let capturedResHeaders: Headers | null = null;
+        try {
+          capturedResHeaders = (getResponseHeaders() as unknown as Headers) || null;
+        } catch {
+          capturedResHeaders = null;
+        }
 
         if (code) {
-          const supabase = await getSSRClient();
+          const supabase = await getSSRClient(capturedResHeaders);
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (!error && data.session) {
+            try {
+              const { clearIdentityCache } = await import("@/lib/server-access");
+              clearIdentityCache();
+            } catch {}
             try {
               await mergeGuestCartLogic(
                 data.session.user.id,
@@ -34,7 +44,7 @@ export const Route = createFileRoute("/api/auth/callback")({
             const headers = new Headers();
             headers.set("Location", next);
             try {
-              const resHeaders = getResponseHeaders();
+              const resHeaders = capturedResHeaders || getResponseHeaders();
               if (resHeaders) {
                 const setCookies =
                   typeof (resHeaders as any).getSetCookie === "function"

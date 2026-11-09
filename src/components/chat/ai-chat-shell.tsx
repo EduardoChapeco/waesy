@@ -113,6 +113,72 @@ export interface AIChatShellProps {
   mobileFallbackHref?: string;
 }
 
+const THREAD_TYPE_LABELS: Record<string, string> = {
+  ai_assistant: "Assessor IA",
+  project: "Projeto Operacional",
+  direct: "Conversa Direta",
+  support: "Atendimento",
+};
+
+const MEMORY_KEY_LABELS: Record<string, string> = {
+  last_places_query: "Última busca",
+  last_travel_destination: "Destino",
+  last_creative_topic: "Tema criativo",
+  last_mining_task: "Última mineração",
+  last_platform_search: "Busca na plataforma",
+  last_interaction_topic: "Tópico recente",
+  active_city: "Cidade ativa",
+  active_niche: "Vertical ativa",
+};
+
+const MEMORY_VALUE_LABELS: Record<string, string> = {
+  lodging_tourism: "Hospedagem & Turismo",
+  food_service: "Gastronomia & Delivery",
+  beauty_wellness: "Beleza & Bem-Estar",
+  retail_commerce: "Comércio & Varejo",
+  services: "Serviços Profissionais",
+  spreadsheet: "Planilha Estruturada",
+  document: "Documento Técnico",
+};
+
+function formatWorkingMemoryLabel(key: string): string {
+  return MEMORY_KEY_LABELS[key] || key.replace(/_/g, " ");
+}
+
+function formatWorkingMemoryValue(val: unknown): string {
+  if (val === null || val === undefined) return "—";
+  if (typeof val === "string") {
+    return MEMORY_VALUE_LABELS[val] || val;
+  }
+  if (typeof val === "number" || typeof val === "boolean") {
+    return String(val);
+  }
+  if (Array.isArray(val)) {
+    return val.map((item) => formatWorkingMemoryValue(item)).filter(Boolean).join(", ") || "—";
+  }
+  if (typeof val === "object") {
+    const obj = val as Record<string, unknown>;
+    const summary =
+      obj.query ||
+      obj.term ||
+      obj.topic ||
+      obj.city ||
+      obj.category ||
+      obj.niche ||
+      obj.title ||
+      obj.name ||
+      (typeof obj.total === "number" ? `${obj.total} resultados` : null) ||
+      (typeof obj.count === "number" ? `${obj.count} itens` : null);
+    if (summary) return String(summary);
+    const pairs = Object.entries(obj)
+      .filter(([, v]) => typeof v === "string" || typeof v === "number")
+      .slice(0, 2)
+      .map(([, v]) => String(v));
+    return pairs.length > 0 ? pairs.join(" · ") : "Sincronizado";
+  }
+  return String(val);
+}
+
 export function AIChatShell({
   threads,
   activeThreadId,
@@ -775,7 +841,7 @@ export function AIChatShell({
                 Tipo de Conversa
               </span>
               <Badge variant="outline" className="text-xs font-medium border-border/60">
-                {activeThread.type}
+                {THREAD_TYPE_LABELS[activeThread.type] || activeThread.type}
               </Badge>
             </div>
 
@@ -791,16 +857,17 @@ export function AIChatShell({
                   {Object.entries(activeThread.workingMemory)
                     .filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp"))
                     .map(([k, v]) => {
-                      const friendlyLabel =
+                      const _legacyLabel =
                         k === "last_places_query" ? "Última busca" :
                         k === "last_travel_destination" ? "Destino" :
                         k === "last_creative_topic" ? "Tema criativo" :
-                        k.replace(/_/g, " ");
+                        k === "last_creative_topic" ? "Tema criativo" : k;
+                      const friendlyLabel = formatWorkingMemoryLabel(k);
                       return (
                         <div key={k} className="flex justify-between gap-2">
                           <span className="text-muted-foreground truncate capitalize">{friendlyLabel}:</span>
                           <span className="font-medium text-foreground truncate">
-                            {String(v)}
+                            {formatWorkingMemoryValue(v)}
                           </span>
                         </div>
                       );
@@ -838,7 +905,7 @@ export function AIChatShell({
                         </Badge>
                       </div>
                       <span className="text-2xs text-muted-foreground block">
-                        {m.artifact!.type}
+                        {MEMORY_VALUE_LABELS[m.artifact!.type] || m.artifact!.type}
                       </span>
                     </button>
                   ))}
@@ -899,7 +966,7 @@ export function AIChatShell({
                   Tipo de Conversa
                 </span>
                 <Badge variant="outline" className="text-xs font-medium border-border/60">
-                  {activeThread.type}
+                  {THREAD_TYPE_LABELS[activeThread.type] || activeThread.type}
                 </Badge>
               </div>
 
@@ -915,16 +982,17 @@ export function AIChatShell({
                     {Object.entries(activeThread.workingMemory)
                       .filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp"))
                       .map(([k, v]) => {
-                        const friendlyLabel =
+                        const _legacyLabel =
                           k === "last_places_query" ? "Última busca" :
                           k === "last_travel_destination" ? "Destino" :
                           k === "last_creative_topic" ? "Tema criativo" :
-                          k.replace(/_/g, " ");
+                          k === "last_creative_topic" ? "Tema criativo" : k;
+                      const friendlyLabel = formatWorkingMemoryLabel(k);
                         return (
                           <div key={k} className="flex justify-between gap-2">
                             <span className="text-muted-foreground truncate capitalize">{friendlyLabel}:</span>
                             <span className="font-medium text-foreground truncate">
-                              {String(v)}
+                              {formatWorkingMemoryValue(v)}
                             </span>
                           </div>
                         );
@@ -964,7 +1032,7 @@ export function AIChatShell({
                           </Badge>
                         </div>
                         <span className="text-2xs text-muted-foreground block">
-                          {m.artifact!.type}
+                          {MEMORY_VALUE_LABELS[m.artifact!.type] || m.artifact!.type}
                         </span>
                       </button>
                     ))}

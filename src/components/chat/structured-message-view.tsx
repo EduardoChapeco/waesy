@@ -609,7 +609,7 @@ function CardCarouselBlock({
         {items.map((item, idx) => (
           <div
             key={idx}
-            className="snap-start shrink-0 w-56 rounded-lg border border-border/80 bg-card p-3 space-y-2"
+            className="snap-start shrink-0 w-56 rounded-lg border border-border/80 bg-card p-3 flex flex-col justify-between gap-2"
           >
             {item.image_url && typeof item.image_url === "string" && item.image_url.trim().length > 0 && (
               <img
@@ -623,7 +623,12 @@ function CardCarouselBlock({
             )}
             <h5 className="text-xs font-bold text-foreground line-clamp-1">{item.title}</h5>
             {item.subtitle && (
-              <p className="text-xs text-muted-foreground line-clamp-1">{item.subtitle}</p>
+              <p className="text-xs text-muted-foreground line-clamp-1">
+                {String(item.subtitle)
+                  .replace(/^store\s*·\s*/i, "Empresa · ")
+                  .replace(/^classified\s*·\s*/i, "Anúncio · ")
+                  .replace(/^product\s*·\s*/i, "Produto · ")}
+              </p>
             )}
             {item.description && (
               <p className="text-xs text-muted-foreground/90 leading-relaxed line-clamp-2">
@@ -651,7 +656,7 @@ function CardCarouselBlock({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="w-full h-11 rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="w-full h-11 mt-auto rounded-md text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 onClick={() => /* focus-visible:ring-2 */ onAction?.(item.action)}
               >
                 {item.action.label || "Selecionar"}

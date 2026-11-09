@@ -25,6 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getNicheSemantics } from "@/lib/niche-semantics";
+import { MultiBrandEcosystemGovernanceCard } from "@/components/workspace/multi-brand-ecosystem-governance-card";
 
 export const Route = createFileRoute("/workspace/configuracoes/")({
  head: () => ({ meta: [{ title: "Configurações | Workspace Waesy" }] }),
@@ -1054,6 +1055,10 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
  </Card>
 
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5">
+  <MultiBrandEcosystemGovernanceCard storeId={store?.id} onUpdated={() => router.invalidate()} />
+ </Card>
+
  {/* ── Gerenciador de Módulos Habilitados ── */}
  <Card className="p-6 rounded-lg border-border bg-card space-y-5">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
@@ -1477,7 +1482,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ABA: Entrega, Tempo de Preparo & Bairros */}
  <TabsContent value="entrega" className="space-y-6">
- <Card className="p-6 rounded-lg border-border bg-card space-y-6">
+ <div className="space-y-6">
  <DeliveryTimeAndRadiusMatrix
  value={deliveryConfig}
  onChange={setDeliveryConfig}
@@ -1502,7 +1507,7 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
  }
  />
- </Card>
+ </div>
  </TabsContent>
 
  {/* ABA 3: Horários de Atendimento */}

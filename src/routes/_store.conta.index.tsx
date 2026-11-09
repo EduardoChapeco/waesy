@@ -4,7 +4,8 @@ import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { listCustomerOrders } from "@/services/order.functions";
-import { getProfile, getUserSession, signOut } from "@/services/auth.functions";
+import { getProfile, getUserSession, signOut, syncSessionToCookies } from "@/services/auth.functions";
+import { getBrowserClient } from "@/lib/supabase";
 import { getMyStoresList } from "@/services/store.functions";
 import { listUserNotifications } from "@/services/notifications.functions";
 import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
@@ -20,7 +21,24 @@ export const Route = createFileRoute("/_store/conta/")({
   head: () => ({ meta: [{ title: "Conta | Waesy" }] }),
   loader: async () => {
     try {
-      const session = await getUserSession().catch(() => null);
+      let session = await getUserSession().catch(() => null);
+      if ((!session || (!session.id && !session.user)) && typeof window !== "undefined") {
+        try {
+          const supabase = getBrowserClient();
+          const { data } = await supabase.auth.getSession();
+          if (data?.session?.access_token && data?.session?.refresh_token) {
+            await syncSessionToCookies({
+              data: {
+                access_token: data.session.access_token,
+                refresh_token: data.session.refresh_token,
+              },
+            }).catch(() => null);
+            session = await getUserSession().catch(() => null);
+          }
+        } catch {
+          // Fallback silencioso
+        }
+      }
       if (!session || (!session.id && !session.user)) {
         return {
           orders: [],
@@ -140,9 +158,13 @@ function AccountDashboardPage() {
   const handleSignOut = async () => {
     setIsLoggingOut(true);
     try {
+      if (typeof window !== "undefined") {
+        await getBrowserClient().auth.signOut().catch(() => {});
+      }
       await signOut();
       toast.success("Sessão encerrada com sucesso.");
       if (typeof window !== "undefined") {
+        setClientContextCookies({ context: "civil" });
         window.location.href = "/";
       }
     } catch {

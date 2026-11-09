@@ -306,6 +306,7 @@ export async function _createProduct(input: {
  preparation_time_days?: number | null;
  preparation_time_minutes?: number | null;
  show_stock_publicly?: boolean;
+ is_published_to_marketplace?: boolean;
  media_urls?: string[];
  category_ids?: string[];
  option_group_ids?: string[];
@@ -394,6 +395,7 @@ export async function _createProduct(input: {
  preparation_time_days: input.preparation_time_days || null,
  preparation_time_minutes: input.preparation_time_minutes || null,
  show_stock_publicly: input.show_stock_publicly ?? false,
+ is_published_to_marketplace: (input as any).is_published_to_marketplace ?? (input.attributes as any)?.is_published_to_marketplace ?? true,
  })
  .select()
  .single();
@@ -555,6 +557,7 @@ export const createProduct = createServerFn({ method: "POST" })
  preparation_time_days: z.number().int().min(0).optional().nullable(),
  preparation_time_minutes: z.number().int().min(0).optional().nullable(),
  show_stock_publicly: z.boolean().default(false).optional(),
+ is_published_to_marketplace: z.boolean().optional(),
  media_urls: z.array(z.string().url()).optional(),
  category_ids: z.array(z.string().uuid()).optional(),
  option_group_ids: z.array(z.string().uuid()).optional(),
@@ -1026,6 +1029,7 @@ export async function _updateProduct(input: {
  preparation_time_minutes?: number | null;
  type_id?: string | null;
  show_stock_publicly?: boolean;
+ is_published_to_marketplace?: boolean;
  category_ids?: string[];
  option_group_ids?: string[];
  options?: any;
@@ -1132,6 +1136,7 @@ export const updateProduct = createServerFn({ method: "POST" })
  preparation_time_minutes: z.number().int().min(0).optional().nullable(),
  type_id: z.string().uuid().optional().nullable(),
  show_stock_publicly: z.boolean().optional(),
+ is_published_to_marketplace: z.boolean().optional(),
  category_ids: z.array(z.string().uuid()).optional(),
  option_group_ids: z.array(z.string().uuid()).optional(),
  options: z.unknown().optional(),

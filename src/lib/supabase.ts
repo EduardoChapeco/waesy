@@ -24,6 +24,7 @@ import {
   getLegacyCookieDomainsToPurge,
   parseRawCookieStringPreservingDuplicates,
   resolveCanonicalAuthCookies,
+  resolveOrphanAuthCookiesToExpire,
 } from "./auth-cookie-sanitizer";
 
 // ---------------------------------------------------------------------------
@@ -225,13 +226,10 @@ export function getBrowserClient(): SupabaseClient {
           if (typeof document === "undefined" || typeof window === "undefined") return;
           const isSecure = window.location.protocol === "https:";
           const legacyDomains = getLegacyCookieDomainsToPurge(window.location.hostname);
-          const namesBeingSetWithValue = new Set<string>();
+          const rawEntries = parseRawCookieStringPreservingDuplicates(document.cookie || "");
 
           cookiesToSet.forEach(({ name, value, options }) => {
             const isDeleting = !value || options?.maxAge === 0;
-            if (!isDeleting) {
-              namesBeingSetWithValue.add(name);
-            }
 
             // Expira variantes legadas com Domain explícito
             for (const domain of legacyDomains) {
@@ -256,26 +254,23 @@ export function getBrowserClient(): SupabaseClient {
             });
           });
 
-          if (namesBeingSetWithValue.size > 0) {
-            for (const candidateName of AUTH_COOKIE_CHUNK_NAMES) {
-              if (!namesBeingSetWithValue.has(candidateName)) {
-                for (const domain of legacyDomains) {
-                  document.cookie = serializeCookieHeader(candidateName, "", {
-                    path: "/",
-                    maxAge: 0,
-                    domain,
-                    sameSite: "lax",
-                    secure: isSecure,
-                  });
-                }
-                document.cookie = serializeCookieHeader(candidateName, "", {
-                  path: "/",
-                  maxAge: 0,
-                  sameSite: "lax",
-                  secure: isSecure,
-                });
-              }
+          const orphanNames = resolveOrphanAuthCookiesToExpire(rawEntries, cookiesToSet);
+          for (const orphanName of orphanNames) {
+            for (const domain of legacyDomains) {
+              document.cookie = serializeCookieHeader(orphanName, "", {
+                path: "/",
+                maxAge: 0,
+                domain,
+                sameSite: "lax",
+                secure: isSecure,
+              });
             }
+            document.cookie = serializeCookieHeader(orphanName, "", {
+              path: "/",
+              maxAge: 0,
+              sameSite: "lax",
+              secure: isSecure,
+            });
           }
         },
       },

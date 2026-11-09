@@ -31,6 +31,7 @@ import {
 } from "@/services/auth.functions";
 import { getPublicBrandSettings } from "@/services/master.functions";
 import { LegalTermsSheet } from "@/components/legal/legal-terms-sheet";
+import { resolveBrandContextFromHost, getBrandVerticalById, type BrandVerticalId } from "@/lib/multi-brand-engine";
 
 function getClientGeoTelemetry() {
   if (typeof window === "undefined") return undefined;
@@ -281,6 +282,20 @@ function PainelAuthPage() {
         return;
       }
 
+      if ((result as any).session?.access_token && (result as any).session?.refresh_token) {
+        try {
+          const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+          sanitizeBrowserAuthCookies();
+          await getBrowserClient().auth.setSession({
+            access_token: (result as any).session.access_token,
+            refresh_token: (result as any).session.refresh_token,
+          });
+          sanitizeBrowserAuthCookies();
+        } catch (clientErr) {
+          console.warn("[painel] Falha ao sincronizar sessão pós-cadastro no cliente:", clientErr);
+        }
+      }
+
       toast.success("Conta criada com sucesso! Iniciando abertura do seu negócio.");
       if (typeof window !== "undefined") {
         sessionStorage.setItem("waesy_just_registered", "true");
@@ -318,7 +333,19 @@ function PainelAuthPage() {
     }
   };
 
-  const brandName = brand?.company_name || brand?.site_name || "Waesy";
+  const hostBrand = (() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryBrand = params.get("brand") as BrandVerticalId | null;
+      if (queryBrand) return getBrandVerticalById(queryBrand);
+      return resolveBrandContextFromHost(window.location.host);
+    }
+    return getBrandVerticalById("waesy_studio");
+  })();
+  const brandName =
+    hostBrand.id !== "waesy_marketplace" && hostBrand.id !== "waesy_studio"
+      ? hostBrand.name
+      : brand?.company_name || brand?.site_name || hostBrand.shortName || "Waesy";
 
   return (
     <div className="min-h-dvh w-full flex flex-col lg:flex-row bg-background text-foreground">
@@ -333,8 +360,8 @@ function PainelAuthPage() {
               <Building2 className="size-6" />
             </div>
             <div>
-              <span className="text-xl font-bold tracking-tight text-foreground">{brandName} Business</span>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Painel Operacional</p>
+              <span className="text-xl font-bold tracking-tight text-foreground">{brandName}</span>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{hostBrand.tagline}</p>
             </div>
           </div>
 

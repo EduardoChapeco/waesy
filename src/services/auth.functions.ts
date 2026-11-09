@@ -132,9 +132,17 @@ export const syncSessionToCookies = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data: { access_token, refresh_token } }) => {
+    let resHeaders: Headers | undefined;
     try {
-      const ssrClient = await getSSRClient();
+      resHeaders = getResponseHeaders() as unknown as Headers;
+    } catch {
+      resHeaders = undefined;
+    }
+    try {
+      const ssrClient = await getSSRClient(resHeaders);
       await ssrClient.auth.setSession({ access_token, refresh_token });
+      const { clearIdentityCache } = await import("@/lib/server-access");
+      clearIdentityCache();
       return { success: true };
     } catch (e: any) {
       console.warn("[auth] Falha ao sincronizar cookies de sessão:", e?.message);
@@ -212,6 +220,8 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  }
  const ip = request ? getClientIp(request) : "unknown";
  let matchedProfileId: string | null = null;
+ const guestSessionToken = request ? readCookieFromRequest(request, "waesy_guest_session") : null;
+ const supabase = await getSSRClient(resHeaders);
 
  try {
  // --- Rate limit check (before touching Supabase) ---
@@ -266,11 +276,6 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  }
  }
 
- // Extract guest session manually before async context drops
- const guestSessionToken = request ? readCookieFromRequest(request, "waesy_guest_session") : null;
-
- // Use captured resHeaders to ensure Set-Cookie is persisted even if unctx drops after await
- const supabase = await getSSRClient(resHeaders);
  const { data, error } = await supabase.auth.signInWithPassword({
  email: targetEmail,
  password,
@@ -430,12 +435,20 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
  .validator(RegisterSchema)
  .handler(async ({ data: { email, password, fullName, cpf, phone, redirectTo, isConsentLgpd, deviceFingerprint, clientLocation } }) => {
  let request: Request | null = null;
+ let resHeaders: Headers | undefined;
  try {
  request = getRequest();
  } catch {
  request = null;
  }
+ try {
+ resHeaders = getResponseHeaders() as unknown as Headers;
+ } catch {
+ resHeaders = undefined;
+ }
  const ip = request ? getClientIp(request) : "unknown";
+ const guestSessionToken = request ? readCookieFromRequest(request, "waesy_guest_session") : null;
+ const supabase = await getSSRClient(resHeaders);
 
  try {
  // --- Rate limit check (Anti-Bot / Anti-DDoS) ---
@@ -483,11 +496,6 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
  );
  }
  }
-
- // Extract guest session manually before async context drops
- const guestSessionToken = request ? readCookieFromRequest(request, "waesy_guest_session") : null;
-
- const supabase = await getSSRClient();
 
  // 1. Verifica se o e-mail já existe
  const { data: existingUserList } = await adminDb.auth.admin.listUsers({ perPage: 1000 }).catch(() => ({ data: { users: [] } }));
@@ -591,9 +599,62 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
  }
  }
 
+ // Zero-Trust Civil Initialization: Cadastro sempre inicia com Identidade Civil Pessoal limpa
+ try {
+   const isProd = process.env.NODE_ENV === "production";
+   const contextCookies = [
+     { name: "waesy_active_context", value: "civil", maxAge: 60 * 60 * 24 * 365 },
+     { name: "waesy_active_tenant", value: "", maxAge: 0 },
+     { name: "waesy_store_id", value: "", maxAge: 0 },
+     { name: "waesy_active_creator", value: "", maxAge: 0 },
+   ];
+   const { setCookie } = await import("@tanstack/start-server-core");
+   for (const c of contextCookies) {
+     try {
+       setCookie(c.name, c.value, {
+         path: "/",
+         maxAge: c.maxAge,
+         httpOnly: false,
+         secure: isProd,
+         sameSite: "lax",
+       });
+     } catch {
+       resHeaders?.append(
+         "Set-Cookie",
+         serializeCookieHeader(c.name, c.value, {
+           path: "/",
+           maxAge: c.maxAge,
+           httpOnly: false,
+           secure: isProd,
+           sameSite: "lax",
+         }),
+       );
+     }
+   }
+   const { clearIdentityCache } = await import("@/lib/server-access");
+   clearIdentityCache();
+ } catch (cookieErr) {
+   console.warn("[auth:signUpWithPassword] Erro ao sanitizar cookies:", cookieErr);
+ }
+
  return {
  success: true,
  sessionActive: !!signInData?.session,
+ session: signInData?.session
+   ? {
+       access_token: signInData.session.access_token,
+       refresh_token: signInData.session.refresh_token,
+       expires_at: signInData.session.expires_at,
+     }
+   : null,
+ user: signInData?.user
+   ? {
+       id: signInData.user.id,
+       email: signInData.user.email,
+     }
+   : createdUserId
+     ? { id: createdUserId, email }
+     : null,
  };
  } catch (e: unknown) {
  const message = e instanceof Error ? e.message : "Erro desconhecido";
@@ -612,32 +673,30 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
    let resHeaders: Headers | undefined;
    try { request = getRequest(); } catch (err) { console.warn("[auth:signOut] getRequest error:", err); }
    try { resHeaders = getResponseHeaders() as unknown as Headers; } catch { resHeaders = undefined; }
+   const supabase = await getSSRClient(resHeaders);
    let userId: string | null = null;
    try {
     const identity = await getServerIdentity();
     userId = identity.id || null;
    } catch (err) { console.warn("[auth:signOut] getServerIdentity error:", err); }
 
-   const supabase = await getSSRClient(resHeaders);
  const { error } = await supabase.auth.signOut();
 
  if (error) {
  throw new Error(error.message);
  }
 
-  const guestClearCookie = `waesy_guest_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${
-  getEnvVar("VITE_SITE_URL")?.includes("localhost") ? "" : "; Secure"
-  }`;
-  try {
-    setResponseHeader("Set-Cookie", guestClearCookie);
-  } catch {
-    resHeaders?.append("Set-Cookie", guestClearCookie);
-  }
-
-  // Purga atômica de todos os cookies de contexto e tenant corporativo
+  // Purga atômica de todos os cookies de contexto, guest_session e tenant corporativo
+  // NUNCA usar setResponseHeader("Set-Cookie", ...), pois headers.set() apaga os Set-Cookie do signOut!
   try {
     const { setCookie } = await import("@tanstack/start-server-core");
     const isProd = process.env.NODE_ENV === "production";
+    const guestPurgeOpts = { path: "/", maxAge: 0, httpOnly: true, secure: isProd, sameSite: "lax" as const };
+    try {
+      setCookie("waesy_guest_session", "", guestPurgeOpts);
+    } catch {
+      resHeaders?.append("Set-Cookie", serializeCookieHeader("waesy_guest_session", "", guestPurgeOpts));
+    }
     const purgeOpts = { path: "/", maxAge: 0, httpOnly: false, secure: isProd, sameSite: "lax" as const };
     for (const cName of ["waesy_active_context", "waesy_active_tenant", "waesy_store_id", "waesy_active_creator"]) {
       try {

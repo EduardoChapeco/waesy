@@ -177,6 +177,13 @@ export function CanonicalStoreProfileView({
     settings.image_url ||
     settings.imageUrl ||
     (Array.isArray(settings.photos) && typeof settings.photos[0] === "string" ? settings.photos[0] : null) ||
+    settings.brand_kit?.logo_url ||
+    settings.brand_kit?.logoUrl ||
+    settings.brandKit?.logo_url ||
+    settings.brandKit?.logoUrl ||
+    store?.bannerUrl ||
+    store?.banner_url ||
+    coverUrl ||
     null;
 
   const [logoFailed, setLogoFailed] = useState(false);

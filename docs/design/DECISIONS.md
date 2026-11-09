@@ -1,5 +1,19 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-471: Remediação Definitiva de Persistência de Sessão, Proteção Contra Escrita Diferencial de Chunks no `@supabase/ssr` e Blindagem do Ciclo Auth
+- **Data:** 2026-11-08
+- **Contexto:**
+  1. No `@supabase/ssr` v0.12.1 (`applyServerStorage`), o servidor filtra os chunks enviados para `setAll(cookiesToSet)` comparando com `getAll()`: apenas os chunks modificados são repassados. Durante `syncSessionToCookies` ou `setSession` pós-login, `expires_in` no final do JSON (em `waesy-auth-token.1`) mudava enquanto `waesy-auth-token.0` permanecia idêntico; o loop de limpeza em `supabase-ssr.server.ts` e `supabase.ts` expirava (`Max-Age=0`) qualquer chunk ausente de `cookiesToSet`, destruindo `waesy-auth-token.0` ~100ms após o login.
+  2. Em `signOut` (`src/services/auth.functions.ts`), `setResponseHeader("Set-Cookie", guestClearCookie)` sobrescrevia todos os cabeçalhos `Set-Cookie` emitidos por `supabase.auth.signOut()`.
+  3. Em `signUpWithPassword`, `resHeaders` não era capturado antes dos `await`s administrativos e a sessão (`access_token`, `refresh_token`) não era retornada ao cliente para sincronização imediata do `getBrowserClient()`.
+  4. Em `getServerIdentity()` (`src/lib/identity.server.ts`), quando `getUser()` falhava com `AuthSessionMissingError`, `_removeSession()` limpava o storage em memória antes de `refreshSession()`, fazendo `refreshSession()` sem argumentos falhar mesmo com `refresh_token` válido no cookie.
+- **Decisão:**
+  1. **Resolução Segura de Órfãos (`src/lib/auth-cookie-sanitizer.ts`, `src/lib/supabase-ssr.server.ts`, `src/lib/supabase.ts`):** Implementada `resolveOrphanAuthCookiesToExpire(rawCookies, cookiesToSet)` e `inspectCanonicalSessionFromCookies(rawCookies)`, garantindo que escritas diferenciais do `@supabase/ssr` e cookies `-code-verifier` jamais expirem chunks inalterados da sessão canônica ativa.
+  2. **Integridade de Headers e Sessão no BFF (`src/services/auth.functions.ts`, `src/services/identity.functions.ts`, `src/routes/api.auth.callback.ts`, `src/routes/api.auth.confirm.ts`):** Captura síncrona de `resHeaders` e instanciação de `getSSRClient(resHeaders)` antes de qualquer `await`; substituição de `setResponseHeader("Set-Cookie", ...)` por `setCookie` + `resHeaders.append`; retorno de `session` em `signUpWithPassword` com hidratação imediata em `_store.entrar.tsx`, `_store.cadastro.tsx` e `painel.tsx`.
+  3. **Deduplicação de Sync, Refresh Resiliente e Hidratação Reativa de Rotas/Shells (`src/routes/__root.tsx`, `src/lib/identity.server.ts`, `src/routes/_store.tsx`, `src/routes/_store.conta.tsx`, `src/routes/_store.conta.index.tsx`, `src/routes/_store.criar-negocio.tsx`, `src/components/shell/AccountSwitcherDrawer.tsx`, `src/components/shell/global-menu-hub.tsx`, `src/components/workspace/workspace-shell.tsx`, `src/components/admin/admin-shell.tsx`):** `__root.tsx` evita disparar `syncSessionToCookies` redundante em `SIGNED_IN` quando `document.cookie` já contém o mesmo `access_token`; `getServerIdentity()` passa `{ refresh_token }` explicitamente para `refreshSession()`; `_store.tsx` hidrata `activeSession` reativamente no cliente; guardas de conta/onboarding possuem fallback resiliente para `getBrowserClient().auth.getSession()` e todos os fluxos de logout limpam simultaneamente o cliente navegador e o servidor.
+- **Fundamentação:** AGENTS.md Regras B.1, B.5, B.6, B.7, B.8, B.9, B.11, B.31; `SPEC-20261108-AUTH-PERSISTENCE-CONSOLIDATION.md`.
+- **Consequências:** Persistência estável de login e cadastro entre SSR, Server Functions e cliente, zero destruição de chunks `.0` em escritas diferenciais e 39/39 testes automatizados de autenticação aprovados.
+
 ## DEC-470: Reorganização da Matriz de Entrega, Separação Semântica por Nicho (Gastronomia vs Varejo) e Eliminação de AI-Smell em Configurações
 - **Data:** 2026-11-07
 - **Contexto:**
@@ -9492,4 +9506,28 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Erradicação de valores arbitrários (`border-[3px]`, `-left-[11px]`), padronização de paddings (`px-2 py-1`) e respeito estrito ao Design Lint V2 com zero novas violações P0/P1.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11 e B.42; continuidade de dados e completude máxima entre Lead, Cotação, Proposta, Viagem e Minha Viagem.
 - **Consequências:** Editores e construtores abrem em tela cheia sem poluição visual ou duplicação de cabeçalhos; qualquer alteração efetuada no painel lateral reflete instantaneamente no canvas visual e é preservada no ciclo de conversão em viagem e área do passageiro.
+
+---
+
+### DEC-471: Arquitetura de Ecossistema Multi-Marca, Verticais Especializadas e Desacoplamento Canônico do Marketplace
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-471
+- **Contexto:** Necessidade de transformar o núcleo único de engenharia da Waesy em múltiplas plataformas verticais SaaS soberanas por nicho (`wowbook`, `tableway`, `turis`, `passhub`, `lexcloud`, `talentlink`, `omnipage`, `signflow`, `waesy_news`, `waesy_copilot`, `waesy_studio`) mantendo 100% de compartilhamento do motor BFF/Banco de Dados, além de desacoplar o sistema de gestão empresarial do Marketplace Civil (`waesy.com.br`) mediante Opt-In explícito por loja e por item.
+- **Decisão Adotada:**
+  1. **Especificação Normativa (`docs/specs/SPEC-MULTI-BRAND-VERTICAL-ECOSYSTEM.md`):**
+     - Formalização dos requisitos EARS-01 a EARS-08 regendo resolução de marca por host, desacoplamento Opt-In, sincronização bidirecional de flags e matriz de planos.
+  2. **Migração e Persistência (`supabase/migrations/20270326000000_multi_brand_vertical_ecosystem_and_marketplace_opt_in.sql`):**
+     - Adição das colunas `publish_to_marketplace`, `waesy_marketplace_enabled`, `brand_origin`, `subscription_tier`, `enabled_modules` e `custom_domain` em `public.stores`, com trigger `trg_sync_store_marketplace_opt_in` mantendo paridade automática entre `publish_to_marketplace` e `waesy_marketplace_enabled`.
+     - Adição da coluna `is_published_to_marketplace` em `public.products`, `public.services` e `public.directory_listings`, com índices compostos parciais para filtragem em vitrines públicas.
+  3. **Motor Canônico Multi-Marca e Entitlements (`src/lib/multi-brand-engine.ts` & `src/server.ts`):**
+     - Catálogo de 12 marcas verticais (`BRAND_VERTICALS_REGISTRY`) e 3 planos de assinatura (`SUBSCRIPTION_TIERS_REGISTRY`: Starter, Pro, Enterprise).
+     - Resolução determinística de marca por hostname no Cloudflare Worker (`src/server.ts`) com injeção de headers `x-waesy-brand-id`, `x-waesy-brand-name` e `x-waesy-primary-niche` e roteamento automático de domínios SaaS dedicados para `/painel` ou `/workspace/copilot`.
+  4. **Contratos BFF e Filtragem Soberana de Vitrine (`src/services/multi-brand.functions.ts`, `catalog.functions.ts`, `copilot-internal-search.ts`):**
+     - Server Functions `getStoreMultiBrandGovernanceFn`, `updateStoreMarketplaceOptInFn`, `updateStoreBrandAndTierFn` e `toggleProductMarketplaceVisibilityFn`.
+     - Filtragem estrita em `listPublishedProducts` e `copilot-internal-search.ts` omitindo itens ou empresas com `publish_to_marketplace = false` ou `is_published_to_marketplace = false`.
+  5. **Superfície de Governança no Workspace (`src/components/workspace/multi-brand-ecosystem-governance-card.tsx`):**
+     - Painel interativo integrado em `/workspace/configuracoes` permitindo ativar/desativar a publicação no Waesy Marketplace Civil, escolher a plataforma vertical de origem e gerenciar o plano de recursos da empresa.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.7, B.9 e B.25; Arquitetura Single-Core Multi-Brand SaaS.
+- **Consequências:** Cada vertical opera como um produto SaaS focado no seu setor (com marca, domínio e módulos próprios), o Marketplace Civil exibe apenas lojas e produtos que aprovaram sua exposição pública, e qualquer evolução em módulos universais propaga instantaneamente para todas as marcas sem duplicação de código.
+
 

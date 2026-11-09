@@ -56,7 +56,7 @@ export async function _getStoreSettings(input?: { store_id?: string | null }) {
   const { data: store, error } = await db
     .from("stores")
     .select(
-      "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, pix_key, payment_instructions, settings, ai_knowledge_base",
+      "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, logo_url, banner_url, pix_key, payment_instructions, settings, ai_knowledge_base, brand_origin, subscription_tier, enabled_modules, publish_to_marketplace, waesy_marketplace_enabled, custom_domain",
     )
     .eq("id", targetStoreId)
     .maybeSingle();
@@ -72,7 +72,8 @@ export async function _getStoreSettings(input?: { store_id?: string | null }) {
     pix_key: store.pix_key || null,
     payment_instructions: store.payment_instructions || null,
     payment_processing_mode: settings.payment_processing_mode || "platform_gateway",
-    logo_url: settings.logoUrl || settings.logo_url || null,
+    logo_url: store.logo_url || settings.logoUrl || settings.logo_url || null,
+    banner_url: store.banner_url || settings.bannerUrl || settings.banner_url || null,
     segment: settings.segment || settings.type || settings.niche || null,
     type: settings.type || settings.segment || null,
     niche: settings.niche || settings.segment || null,
@@ -129,6 +130,14 @@ export const saveStoreSettingsSchema = z.object({
  faviconUrl: z.string().optional(),
  hideNameWithLogo: z.boolean().optional(),
  custom_checkout_fields: z.array(z.any()).optional(),
+ customCheckoutFields: z.array(z.any()).optional(),
+ deliveryZones: z.array(z.any()).optional(),
+ delivery_matrix: z.record(z.any()).optional(),
+ holidayExceptions: z.array(z.any()).optional(),
+ emergencyPauseUntil: z.string().nullable().optional(),
+ opening_date: z.string().optional(),
+ capital_social: z.number().optional(),
+ socios: z.array(z.any()).optional(),
  delivery_zones: z.array(z.any()).optional(),
  holiday_exceptions: z.array(z.any()).optional(),
  emergency_pause_until: z.string().nullable().optional(),
@@ -166,6 +175,14 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  faviconUrl,
  hideNameWithLogo,
  custom_checkout_fields,
+ customCheckoutFields,
+ deliveryZones,
+ delivery_matrix,
+ holidayExceptions,
+ emergencyPauseUntil,
+ opening_date,
+ capital_social,
+ socios,
  checkout_config,
  delivery_zones,
  holiday_exceptions,
@@ -212,7 +229,15 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  ...(cnae !== undefined ? { cnae } : {}),
  ...(registration_status !== undefined ? { registration_status } : {}),
  ...(legal_nature !== undefined ? { legal_nature } : {}),
- ...(neighborhood !== undefined ? { neighborhood } : {}),
+  ...(neighborhood !== undefined ? { neighborhood } : {}),
+  ...(opening_date !== undefined ? { opening_date } : {}),
+  ...(capital_social !== undefined ? { capital_social } : {}),
+  ...(socios !== undefined ? { socios } : {}),
+  ...(delivery_matrix !== undefined ? { delivery_matrix } : {}),
+  ...((delivery_zones ?? deliveryZones) !== undefined ? { delivery_zones: delivery_zones ?? deliveryZones } : {}),
+  ...((custom_checkout_fields ?? customCheckoutFields) !== undefined ? { custom_checkout_fields: custom_checkout_fields ?? customCheckoutFields } : {}),
+  ...((holiday_exceptions ?? holidayExceptions) !== undefined ? { holiday_exceptions: holiday_exceptions ?? holidayExceptions } : {}),
+  ...((emergency_pause_until ?? emergencyPauseUntil) !== undefined ? { emergency_pause_until: emergency_pause_until ?? emergencyPauseUntil } : {}),
  ...(segment ? { segment, type: segment, niche: segment } : {}),
  ...(type && !segment ? { type, segment: type, niche: type } : {}),
  ...(niche && !segment && !type ? { niche, segment: niche, type: niche } : {}),
@@ -224,24 +249,24 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  faviconUrl,
  hideNameWithLogo,
  custom_checkout_fields:
- custom_checkout_fields !== undefined
- ? custom_checkout_fields
+ (custom_checkout_fields ?? customCheckoutFields) !== undefined
+ ? (custom_checkout_fields ?? customCheckoutFields)
  : currentStore?.settings?.custom_checkout_fields,
  checkout_config:
  checkout_config !== undefined
  ? checkout_config
  : currentStore?.settings?.checkout_config,
  delivery_zones:
- delivery_zones !== undefined
- ? delivery_zones
+ (delivery_zones ?? deliveryZones) !== undefined
+ ? (delivery_zones ?? deliveryZones)
  : currentStore?.settings?.delivery_zones,
  holiday_exceptions:
- holiday_exceptions !== undefined
- ? holiday_exceptions
+ (holiday_exceptions ?? holidayExceptions) !== undefined
+ ? (holiday_exceptions ?? holidayExceptions)
  : currentStore?.settings?.holiday_exceptions,
  emergency_pause_until:
- emergency_pause_until !== undefined
- ? emergency_pause_until
+ (emergency_pause_until ?? emergencyPauseUntil) !== undefined
+ ? (emergency_pause_until ?? emergencyPauseUntil)
  : currentStore?.settings?.emergency_pause_until,
  order_types:
  order_types !== undefined
@@ -258,7 +283,7 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
 
  const { error } = await db
  .from("stores")
- .update({ ...columns, settings })
+ .update({ ...columns, ...(logoUrl !== undefined ? { logo_url: logoUrl || null } : {}), ...(bannerUrl !== undefined ? { banner_url: bannerUrl || null } : {}), ...(enabled_modules !== undefined ? { enabled_modules } : {}), settings })
  .eq("id", identity.store_id);
 
  if (error) {

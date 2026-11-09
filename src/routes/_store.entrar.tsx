@@ -362,6 +362,20 @@ function StepByStepAuthPage() {
  return;
  }
 
+ if ((result as any).session?.access_token && (result as any).session?.refresh_token) {
+ try {
+ const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+ sanitizeBrowserAuthCookies();
+ await getBrowserClient().auth.setSession({
+ access_token: (result as any).session.access_token,
+ refresh_token: (result as any).session.refresh_token,
+ });
+ sanitizeBrowserAuthCookies();
+ } catch (clientErr) {
+ console.warn("[auth] Falha ao sincronizar sessão pós-cadastro no cliente:", clientErr);
+ }
+ }
+
  toast.success("Conta criada com sucesso.");
  await router.invalidate();
  navigate({ to: (returnUrl || "/") as any, replace: true });

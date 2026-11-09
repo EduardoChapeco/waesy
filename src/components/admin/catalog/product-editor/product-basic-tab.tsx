@@ -429,6 +429,22 @@ export function ProductBasicTab({
         />
       )}
 
+      {/* Governança de Publicação no Waesy Marketplace Civil (Opt-In por Item) */}
+      <div className="bg-card rounded-lg p-4 border border-border flex items-center justify-between gap-4">
+        <div className="space-y-1">
+          <Label className="text-xs font-bold text-foreground">Exibir no Waesy Marketplace Civil</Label>
+          <p className="text-xs text-muted-foreground">
+            Quando ativo, este item também aparece nas buscas globais e vitrines públicas do Waesy (se a loja estiver com o Marketplace habilitado).
+          </p>
+        </div>
+        <input
+          type="checkbox"
+          checked={formValues.is_published_to_marketplace !== false}
+          onChange={(e) => setValue("is_published_to_marketplace", e.target.checked)}
+          className="size-5 rounded border-border accent-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+        />
+      </div>
+
       {/* Otimização Universal de SEO, GEO e Agentes de IA */}
       <SeoGeoOptimizationPanel
         value={{
