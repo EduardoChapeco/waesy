@@ -1025,9 +1025,10 @@ export const closePdvComanda = createServerFn({ method: "POST" })
             ? "credit_card"
             : "manual";
 
-      await db
-        .from("payments")
-        .insert({
+      try {
+        await db
+          .from("payments")
+          .insert({
           order_id: orderId,
           store_id: identity.store_id,
           method: dbPaymentMethod,
@@ -1037,9 +1038,9 @@ export const closePdvComanda = createServerFn({ method: "POST" })
           paid_at: new Date().toISOString(),
           provider_name: `PDV Comanda (${paymentMethod.toUpperCase()})`,
         })
-        .catch((payErr: any) => {
-          console.warn("[closePdvComanda] Erro ao registrar payment:", payErr.message);
-        });
+      } catch (payErr: any) {
+        console.warn("[closePdvComanda] Erro ao registrar payment:", payErr?.message);
+      }
 
       // 4. Se houver caixa aberto, lançar entrada no caixa físico
       const { data: activeRegister } = await db

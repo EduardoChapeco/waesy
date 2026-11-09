@@ -1025,12 +1025,13 @@ export const addCustomerClinicalRecord = createServerFn({ method: "POST" })
  .single();
 
  if (input.emergencyContact?.trim()) {
+ try {
  await supabase
  .from("customers_crm")
  .update({ emergency_contact_phone: input.emergencyContact.trim() })
  .eq("id", input.customerId)
- .eq("store_id", identity.store_id)
- .catch(() => null);
+ .eq("store_id", identity.store_id);
+ } catch {}
  }
 
  if (error) {

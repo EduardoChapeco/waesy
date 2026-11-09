@@ -148,8 +148,7 @@ function WorkspaceRHPontoPage() {
         searchPlaceholder="Buscar por colaborador ou matrícula..."
         onMetricsClick={() => setIsDashboardOpen(true)}
         metricsBadge={`${stats.total} registros`}
-        actionButtonText="Auditoria de Compliance"
-        onActionClick={() => navigate({ to: "/workspace/rh/compliance" })}
+        primaryAction={{ label: "Auditoria de Compliance", onClick: () => navigate({ to: "/workspace/rh/compliance" }) }}
       />
 
       {/* ── Dashboard Drawer Sob Demanda ── */}

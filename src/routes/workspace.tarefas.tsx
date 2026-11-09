@@ -55,7 +55,7 @@ function WorkspaceTasksPage() {
   const [stages, setStages] = useState<KanbanStageDTO[]>(initialStages || []);
   const [digest, setDigest] = useState(initialDigest);
   const [activeTab, setActiveTab] = useState<"my-day" | "all" | "urgent" | "done">("my-day");
-  const { mode: viewMode, setMode: setViewMode } = useWorkspaceViewMode({
+  const { currentView: viewMode, setViewMode } = useWorkspaceViewMode({
     module: "tarefas",
     defaultMode: "kanban",
   });
@@ -282,7 +282,7 @@ function WorkspaceTasksPage() {
 
       {/* ── 2. Área Principal de Visualização ── */}
       <div className="flex-1 min-h-0">
-        {viewMode === "calendar" ? (
+        {(viewMode as string) === "calendar" ? (
           <TaskCalendarView
             tasks={filteredTasks}
             onSelectTask={(task) => {

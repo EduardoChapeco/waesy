@@ -700,7 +700,6 @@ function cleanAddressSegment(text: string): string {
                 <img
                   src={logoUrl}
                   alt={store.name || store.business_name}
-                  onError={() => setLogoFailed(true)}
                   className="size-full object-cover select-none"
                   onError={() => setLogoLoadError(true)}
                 />

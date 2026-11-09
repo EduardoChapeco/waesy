@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Palette, Save, Wand2, RefreshCw, CheckCircle2, Plus, Trash2, Eye, Type, Layers, Image as ImageIcon, Sliders, Globe } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

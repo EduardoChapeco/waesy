@@ -80,8 +80,7 @@ function WorkspaceRHCompliancePage() {
         searchPlaceholder="Buscar por colaborador, artigo ou irregularidade..."
         onMetricsClick={() => setIsDashboardOpen(true)}
         metricsBadge={`Score: ${report?.complianceScore ?? 100}%`}
-        actionButtonText="Re-auditar com IA"
-        onActionClick={handleRefresh}
+        primaryAction={{ label: "Re-auditar com IA", onClick: handleRefresh }}
       />
 
       {/* ── 2. Banner de Governança Interna Zero-Vazamento (AGENTS.md B.24 / B.31) ── */}
@@ -192,26 +191,26 @@ function WorkspaceRHCompliancePage() {
           {
             label: "Score de Conformidade",
             value: `${report?.complianceScore ?? 100}%`,
-            change: report?.complianceScore && report.complianceScore >= 80 ? "Conforme" : "Atenção",
-            trend: report?.complianceScore && report.complianceScore >= 80 ? "up" : "down",
+            subtext: report?.complianceScore && report.complianceScore >= 80 ? "Conforme" : "Atenção",
+            trend: { value: report?.complianceScore && report.complianceScore >= 80 ? "Conforme" : "Atenção", direction: report?.complianceScore && report.complianceScore >= 80 ? "up" : "down" },
           },
           {
             label: "Alertas Críticos",
             value: String(report?.criticalAlertsCount ?? 0),
-            change: "Ação imediata requerida",
-            trend: (report?.criticalAlertsCount ?? 0) > 0 ? "down" : "neutral",
+            subtext: "Ação imediata requerida",
+            trend: { value: "Ação imediata", direction: (report?.criticalAlertsCount ?? 0) > 0 ? "down" : "neutral" },
           },
           {
             label: "Alertas Moderados",
             value: String(report?.warningsCount ?? 0),
-            change: "Monitoramento",
-            trend: "neutral",
+            subtext: "Monitoramento",
+            trend: { value: "Estável", direction: "neutral" },
           },
           {
             label: "Exposição Financeira Mapeada",
             value: formatMoney(report?.totalRiskExposureCents ?? 0),
-            change: "Passivo contingente",
-            trend: (report?.totalRiskExposureCents ?? 0) > 0 ? "down" : "neutral",
+            subtext: "Passivo contingente",
+            trend: { value: "Risco mapeado", direction: (report?.totalRiskExposureCents ?? 0) > 0 ? "down" : "neutral" },
           },
         ]}
       />

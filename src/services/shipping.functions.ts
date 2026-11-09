@@ -113,6 +113,8 @@ export async function _calculateShipping({
  let dominantPackagingType: string = "box";
  let hasFragileItem = false;
  let requiresThermalBag = false;
+  let chargeableWeightKg = 0.5;
+  let exceedsMotoBag = false;
 
  if (cartId) {
  const { data: cartItems } = await supabase
@@ -190,6 +192,8 @@ export async function _calculateShipping({
  if (itemsCount === 0) {
  hasMissingDimensions = true;
  }
+ chargeableWeightKg = Math.max(0.1, totalWeightKg);
+ exceedsMotoBag = totalWeightKg > 15 || maxW > 45 || maxH > 45 || maxL > 45;
 
  // 1.0 Resolução de Taxas Personalizadas por Bairro e Entrega Própria da Empresa
  try {

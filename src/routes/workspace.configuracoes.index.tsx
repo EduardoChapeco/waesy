@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus, Bike, Users } from 'lucide-react';
+import { Search, Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus, Bike, Users } from 'lucide-react';
 import { getStoreSettings, saveStoreSettings, getWorkingHours, saveWorkingHours, getPolicies, savePolicies } from "@/services/store.functions";
 import { lookupCnpj, lookupCep } from "@/services/public-apis.functions";
 import { listManualPaymentMethods, saveManualPaymentMethod, deleteManualPaymentMethod } from "@/services/payment.functions";

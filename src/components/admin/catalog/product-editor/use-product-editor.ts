@@ -263,8 +263,7 @@ export function useProductEditor(
         data: {
           name: quickCategoryName.trim(),
           slug,
-          store_id: getEffectiveStoreId(),
-        },
+                  },
       });
       setCategoriesList((prev) => [...prev, newCat]);
       form.setValue("category_id", newCat.id);
@@ -289,8 +288,7 @@ export function useProductEditor(
       const res = await createStoreBrand({
         data: {
           name: clean,
-          store_id: getEffectiveStoreId(),
-        },
+                  },
       });
       const createdName = res?.name || clean;
       setBrandsList((prev) =>
@@ -416,8 +414,7 @@ export function useProductEditor(
 
       await createProduct({
         data: {
-          store_id: getEffectiveStoreId(),
-          title: data.title.trim(),
+                    title: data.title.trim(),
           slug: generatedSlug,
           description: data.description || null,
           short_description: data.short_description || null,
@@ -436,8 +433,7 @@ export function useProductEditor(
           height_cm: isTravelPackageMode ? null : data.height_cm ? Number(data.height_cm) : null,
           length_cm: isTravelPackageMode ? null : data.length_cm ? Number(data.length_cm) : null,
           preparation_time_days: data.preparation_time_days ? Number(data.preparation_time_days) : null,
-          preparation_time_minutes: foodSpecs.preparationTimeMinutes ? Number(foodSpecs.preparationTimeMinutes) : null,
-          show_stock_publicly: data.show_stock_publicly ?? false,
+                    show_stock_publicly: data.show_stock_publicly ?? false,
           media_urls: effectiveMediaUrls,
           category_ids: data.category_id ? [data.category_id] : [],
           option_group_ids: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined,
@@ -529,8 +525,7 @@ export function useProductEditor(
 
       await createProduct({
         data: {
-          store_id: getEffectiveStoreId(),
-          title: data.title.trim(),
+                    title: data.title.trim(),
           slug: generatedSlug,
           description: data.description || null,
           short_description: data.short_description || null,
@@ -549,8 +544,7 @@ export function useProductEditor(
           height_cm: isTravelPackageMode ? null : data.height_cm ? Number(data.height_cm) : null,
           length_cm: isTravelPackageMode ? null : data.length_cm ? Number(data.length_cm) : null,
           preparation_time_days: data.preparation_time_days ? Number(data.preparation_time_days) : null,
-          preparation_time_minutes: foodSpecs.preparationTimeMinutes ? Number(foodSpecs.preparationTimeMinutes) : null,
-          show_stock_publicly: data.show_stock_publicly ?? false,
+                    show_stock_publicly: data.show_stock_publicly ?? false,
           media_urls: effectiveMediaUrls,
           category_ids: data.category_id ? [data.category_id] : [],
           option_group_ids: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined,

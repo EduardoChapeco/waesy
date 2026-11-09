@@ -157,6 +157,7 @@ import { Route as StoreAgendarIdRouteImport } from './routes/_store.agendar.$id'
 import { Route as StoreBioSlugRouteImport } from './routes/_store.bio.$slug'
 import { Route as StoreCSlugRouteImport } from './routes/_store.c.$slug'
 import { Route as StoreCategoriaSlugRouteImport } from './routes/_store.categoria.$slug'
+import { Route as StoreChamadoTicketIdRouteImport } from './routes/_store.chamado.$ticketId'
 import { Route as StoreClassificadosIndexRouteImport } from './routes/_store.classificados.index'
 import { Route as StoreClassificadosIdRouteImport } from './routes/_store.classificados.$id'
 import { Route as StoreColecaoSlugRouteImport } from './routes/_store.colecao.$slug'
@@ -1202,6 +1203,11 @@ const StoreCSlugRoute = StoreCSlugRouteImport.update({
 const StoreCategoriaSlugRoute = StoreCategoriaSlugRouteImport.update({
   id: '/categoria/$slug',
   path: '/categoria/$slug',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreChamadoTicketIdRoute = StoreChamadoTicketIdRouteImport.update({
+  id: '/chamado/$ticketId',
+  path: '/chamado/$ticketId',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreClassificadosIndexRoute = StoreClassificadosIndexRouteImport.update({
@@ -3004,6 +3010,7 @@ export interface FileRoutesByFullPath {
   '/bio/$slug': typeof StoreBioSlugRoute
   '/c/$slug': typeof StoreCSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
+  '/chamado/$ticketId': typeof StoreChamadoTicketIdRoute
   '/classificados/$id': typeof StoreClassificadosIdRoute
   '/colecao/$slug': typeof StoreColecaoSlugRoute
   '/concurso/$id': typeof StoreConcursoIdRoute
@@ -3448,6 +3455,7 @@ export interface FileRoutesByTo {
   '/bio/$slug': typeof StoreBioSlugRoute
   '/c/$slug': typeof StoreCSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
+  '/chamado/$ticketId': typeof StoreChamadoTicketIdRoute
   '/classificados/$id': typeof StoreClassificadosIdRoute
   '/colecao/$slug': typeof StoreColecaoSlugRoute
   '/concurso/$id': typeof StoreConcursoIdRoute
@@ -3901,6 +3909,7 @@ export interface FileRoutesById {
   '/_store/bio/$slug': typeof StoreBioSlugRoute
   '/_store/c/$slug': typeof StoreCSlugRoute
   '/_store/categoria/$slug': typeof StoreCategoriaSlugRoute
+  '/_store/chamado/$ticketId': typeof StoreChamadoTicketIdRoute
   '/_store/classificados/$id': typeof StoreClassificadosIdRoute
   '/_store/colecao/$slug': typeof StoreColecaoSlugRoute
   '/_store/concurso/$id': typeof StoreConcursoIdRoute
@@ -4355,6 +4364,7 @@ export interface FileRouteTypes {
     | '/bio/$slug'
     | '/c/$slug'
     | '/categoria/$slug'
+    | '/chamado/$ticketId'
     | '/classificados/$id'
     | '/colecao/$slug'
     | '/concurso/$id'
@@ -4799,6 +4809,7 @@ export interface FileRouteTypes {
     | '/bio/$slug'
     | '/c/$slug'
     | '/categoria/$slug'
+    | '/chamado/$ticketId'
     | '/classificados/$id'
     | '/colecao/$slug'
     | '/concurso/$id'
@@ -5251,6 +5262,7 @@ export interface FileRouteTypes {
     | '/_store/bio/$slug'
     | '/_store/c/$slug'
     | '/_store/categoria/$slug'
+    | '/_store/chamado/$ticketId'
     | '/_store/classificados/$id'
     | '/_store/colecao/$slug'
     | '/_store/concurso/$id'
@@ -6654,6 +6666,13 @@ declare module '@tanstack/react-router' {
       path: '/categoria/$slug'
       fullPath: '/categoria/$slug'
       preLoaderRoute: typeof StoreCategoriaSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/chamado/$ticketId': {
+      id: '/_store/chamado/$ticketId'
+      path: '/chamado/$ticketId'
+      fullPath: '/chamado/$ticketId'
+      preLoaderRoute: typeof StoreChamadoTicketIdRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/classificados/': {
@@ -9044,6 +9063,7 @@ interface StoreRouteChildren {
   StoreBioSlugRoute: typeof StoreBioSlugRoute
   StoreCSlugRoute: typeof StoreCSlugRoute
   StoreCategoriaSlugRoute: typeof StoreCategoriaSlugRoute
+  StoreChamadoTicketIdRoute: typeof StoreChamadoTicketIdRoute
   StoreClassificadosIdRoute: typeof StoreClassificadosIdRoute
   StoreColecaoSlugRoute: typeof StoreColecaoSlugRoute
   StoreConcursoIdRoute: typeof StoreConcursoIdRoute
@@ -9153,6 +9173,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreBioSlugRoute: StoreBioSlugRoute,
   StoreCSlugRoute: StoreCSlugRoute,
   StoreCategoriaSlugRoute: StoreCategoriaSlugRoute,
+  StoreChamadoTicketIdRoute: StoreChamadoTicketIdRoute,
   StoreClassificadosIdRoute: StoreClassificadosIdRoute,
   StoreColecaoSlugRoute: StoreColecaoSlugRoute,
   StoreConcursoIdRoute: StoreConcursoIdRoute,

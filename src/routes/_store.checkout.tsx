@@ -533,9 +533,10 @@ export function CheckoutPage() {
  setIsCalculatingShipping(true);
  setNoShippingRatesFound(false);
  try {
+ let zipData: any = null;
  if (!skipAutofill) {
  const zipRes = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
- const zipData = await zipRes.json();
+ zipData = await zipRes.json();
  if (!zipData.erro) {
  setFormData((prev) => ({
  ...prev,

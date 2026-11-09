@@ -23,6 +23,7 @@ export interface FoodSpecsData {
   portionWeight?: string; // "750"
   portionUnit?: string; // "g", "kg", "ml", "L", "un", "fatias"
   preparationTimeMinutes?: number; // 20
+  kitchenStation?: "geral" | "chapa" | "forno" | "bebidas" | "sobremesas";
   posCode?: string; // "XGAHTQ"
   spiceLevel?: "none" | "mild" | "medium" | "hot";
 

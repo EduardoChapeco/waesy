@@ -64,6 +64,8 @@ export function ProductPreviewPane({
   store,
 }: ProductPreviewPaneProps) {
   const [viewport, setViewport] = React.useState<ProductPreviewPaneViewport>("compact");
+  const effectiveImages = React.useMemo(() => Array.isArray(images) ? images.filter(Boolean) : [], [images]);
+  const isUsingVariantImage = false;
 
   // Cálculo de estatísticas e limites da matriz de variações (DEC-433)
   const variantStats = React.useMemo(() => {
@@ -213,7 +215,7 @@ export function ProductPreviewPane({
 
               {effectiveImages.length > 1 && (
                 <div className="carousel flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                  {effectiveImages.map((img, idx) => (
+                  {effectiveImages.map((img: string, idx: number) => (
                     <button /* focus-visible: */
                       key={idx}
                       type="button"

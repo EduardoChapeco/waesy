@@ -3,7 +3,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { SlidersHorizontal, Plus, Trash2, Sliders, Check, AlertCircle, Layers, Utensils, Coffee, PlusCircle, Image as ImageIcon, ImagePlus, X, Scissors, Gift, ShieldCheck, Loader2, Boxes } from 'lucide-react';
+import { Search, SlidersHorizontal, Plus, Trash2, Sliders, Check, AlertCircle, Layers, Utensils, Coffee, PlusCircle, Image as ImageIcon, ImagePlus, X, Scissors, Gift, ShieldCheck, Loader2, Boxes } from 'lucide-react';
 import { useQuery } from "@tanstack/react-query";
 import { listSupplies, listRecipes } from "@/services/gastronomy-supplies.functions";
 
@@ -83,13 +83,13 @@ export function QuickOptionGroupDialog({
 
  const { data: storeSupplies = [] } = useQuery({
    queryKey: ["store-supplies-options"],
-   queryFn: () => listSupplies({}),
+   queryFn: () => listSupplies({ data: {} }),
    enabled: open,
  });
 
  const { data: storeRecipes = [] } = useQuery({
    queryKey: ["store-recipes-options"],
-   queryFn: () => listRecipes({ type: "sub_recipe" }),
+   queryFn: () => listRecipes({ data: { type: "sub_recipe" } }),
    enabled: open,
  });
 

@@ -197,7 +197,7 @@ export function NicheOperationalGuard({
  </div>
 
  <div className="space-y-3 pt-2">
- <span className="text-xs font-bold text-foreground block">{suggestions[0] && (<span className="block pb-3"><Button asChild size="sm" className="h-11 min-h-11 px-4 text-xs font-semibold"><Link to={suggestions[0].path as any}>{activeNiche === "tourism" ? "Ir para Vendas & Vouchers de Turismo" : `Ir para ${suggestions[0].title}`}<ChevronRight className="size-4 ml-1" /></Link></Button></span>)}
+ <span className="text-xs font-bold text-foreground block">{suggestions[0] && (<span className="block pb-3"><Button asChild size="sm" className="h-11 min-h-11 px-4 text-xs font-semibold"><Link to={suggestions[0].path as any}>{semantics.nicheId === "tourism" ? "Ir para Vendas & Vouchers de Turismo" : `Ir para ${suggestions[0].title}`}<ChevronRight className="size-4 ml-1" /></Link></Button></span>)}
  Ferramentas recomendadas para o seu negócio:
  </span>
 

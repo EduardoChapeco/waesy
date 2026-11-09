@@ -21,11 +21,11 @@ import {
 } from "@/services/chat.functions";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_store/chamado/$ticketId" as any)({
+export const Route = createFileRoute("/_store/chamado/$ticketId")({
   head: () => ({
     meta: [{ title: "Acompanhamento de Atendimento | Waesy" }],
   }),
-  loader: async ({ params }: { params: { ticketId: string } }) => {
+  loader: async ({ params }) => {
     try {
       const tracking = await getPublicTicketTracking({
         data: { ticketId: params.ticketId },

@@ -66,7 +66,7 @@ function CarteiraClientesPage() {
  const [statusFilter, setStatusFilter] = useState("all");
  const [kindFilter, setKindFilter] = useState("all");
  const [channelFilter, setChannelFilter] = useState("all");
-  const { mode: viewMode, setMode: setViewMode } = useWorkspaceViewMode({
+  const { currentView: viewMode, setViewMode } = useWorkspaceViewMode({
     module: "clientes",
     defaultMode: "table",
   });
@@ -266,13 +266,6 @@ function CarteiraClientesPage() {
           icon: Plus,
           onClick: () => setIsWizardOpen(true),
         }}
-        viewModes={[
-          { id: "table", label: "Tabela", icon: List },
-          { id: "cards", label: "Cards", icon: LayoutGrid },
-          { id: "kanban", label: "Funil CRM", icon: Kanban },
-        ]}
-        activeViewMode={viewMode}
-        onViewModeChange={(m) => setViewMode(m as any)}
       />
 
       <UniversalCrmSpreadsheetImporterModal

@@ -93,8 +93,7 @@ function ProductTypesPage() {
             name: values.name,
             slug: values.slug,
             field_schema: values.fields,
-            store_id: clientTenant || undefined,
-          },
+                      },
         });
         if (res) {
           toast.success("Tipo de produto atualizado!");
@@ -111,8 +110,7 @@ function ProductTypesPage() {
             name: values.name,
             slug: values.slug,
             field_schema: values.fields,
-            store_id: clientTenant || undefined,
-          },
+                      },
         });
 
  if (res) {
