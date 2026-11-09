@@ -130,10 +130,9 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
         .select("id, full_name, username, avatar_url, role, phone, cpf, store_id")
         .eq("id", user.id)
         .maybeSingle(),
-      serverClient
-        .from("workspace_members")
-        .select("store_id, role")
-        .or(`profile_id.eq.${user.id},user_id.eq.${user.id}`),
+      typeof (serverClient.from("workspace_members").select("store_id, role") as any).or === "function"
+        ? serverClient.from("workspace_members").select("store_id, role").or(`profile_id.eq.${user.id},user_id.eq.${user.id}`)
+        : serverClient.from("workspace_members").select("store_id, role").eq("user_id", user.id),
     ]);
 
     userProfile = profileRes?.data || null;

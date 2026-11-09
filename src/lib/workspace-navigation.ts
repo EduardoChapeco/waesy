@@ -31,6 +31,7 @@ const GROUP_OVERVIEW: NavGroup = {
     { path: "/workspace/copilot", label: "Assessor IA", icon: Bot },
     { path: "/workspace/relatorios", label: "Relatórios", icon: FileSpreadsheet },
     { path: "/workspace/onboarding", label: "Ativação", icon: Layers },
+    { path: "/workspace/onboarding/revisao", label: "Revisão de Ativação", icon: Layers },
   ],
 };
 
@@ -57,6 +58,12 @@ const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
     { path: "/workspace/inteligencia/radar", label: "Radar", icon: Target },
     { path: "/workspace/conteudo/receitas", label: "Receitas", icon: ChefHat },
     { path: "/workspace/simulacao", label: "Simulações", icon: Sliders },
+    { path: "/workspace/mining", label: "Mineração de Oportunidades", icon: Layers },
+    { path: "/workspace/simlab/focus-group", label: "Focus Group", icon: Users },
+    { path: "/workspace/viabilidade", label: "Estudo de Viabilidade", icon: Target },
+    { path: "/workspace/marketing/canvas-bmc", label: "Modelo BMC", icon: Layers },
+    { path: "/workspace/marketing/canvas-pecados", label: "Canvas Pecados", icon: Layers },
+    { path: "/workspace/marketing/swot", label: "Matriz SWOT", icon: Target },
   ],
 };
 
@@ -115,7 +122,9 @@ const GROUP_GASTRO_ORDERS: NavGroup = {
   icon: ClipboardList,
   section: "niche",
   items: [
-    { path: "/workspace/pedidos", label: "Gestor de Pedidos", icon: ClipboardList },
+    { path: "/workspace/pedidos/gestor", label: "Gestor de Pedidos", icon: ClipboardList },
+    { path: "/workspace/pedidos", label: "Histórico de Pedidos", icon: ShoppingBag },
+    { path: "/workspace/reservas", label: "Reservas", icon: Calendar },
     { path: "/workspace/pdv/comandas", label: "Mesas & Reservas", icon: UtensilsCrossed },
     { path: "/workspace/pdv/cozinha", label: "KDS da Cozinha", icon: ChefHat },
     { path: "/workspace/pedidos/tempo-preparo", label: "Tempo de Preparo & SLA", icon: Clock },
@@ -643,6 +652,7 @@ const GROUP_SETTINGS: NavGroup = {
   items: [
     { path: "/workspace/configuracoes", label: "Geral", icon: Settings },
     { path: "/workspace/configuracoes/loja", label: "Perfil da Loja", icon: Store },
+    { path: "/workspace/design-system", label: "Design System", icon: Palette },
     { path: "/workspace/lojas", label: "Minhas Lojas", icon: Building2 },
     { path: "/workspace/configuracoes/conformidade", label: "Marketplace Oficial", icon: ShieldCheck },
     { path: "/workspace/configuracoes/ai", label: "Chaves IA", icon: Zap },
@@ -1663,10 +1673,10 @@ const NICHE_MASTER_PILLAR_CONFIG: Record<
     order: ["overview", "comercial", "crm", "logistica", "catalogo", "atendimento", "suporte", "financeiro", "rh", "inteligencia", "configuracoes"],
     overrides: {
       overview: { label: "Painel & Operação", shortLabel: "Painel", description: "Radar executivo, próximas saídas e tarefas da agência" },
-      comercial: { label: "Vendas & Vouchers", shortLabel: "Vouchers", description: "Funil CRM, oportunidades, propostas Studio, cotações e emissão de vouchers", icon: Compass },
+      comercial: { label: "Comercial & Cotação", shortLabel: "Cotações", description: "Funil CRM, oportunidades, propostas Studio, cotações e emissão de vouchers", icon: Compass },
       crm: { label: "Carteira de Viajantes", shortLabel: "Viajantes", description: "Base de passageiros, titulares, histórico de viagens e preferências", icon: Users },
-      logistica: { label: "Embarques & Transfers", shortLabel: "Embarques", description: "Viagens/saídas, rooming list, check-in QR, transfers e frota", icon: Bus },
-      catalogo: { label: "Pacotes & Roteiros", shortLabel: "Roteiros", description: "Roteiros, pacotes, hotéis, disponibilidade, tarifário e fornecedores", icon: Plane },
+      logistica: { label: "Operações & Embarques", shortLabel: "Embarques", description: "Viagens/saídas, rooming list, check-in QR, transfers e frota", icon: Bus },
+      catalogo: { label: "Catálogo & Tarifários", shortLabel: "Roteiros", description: "Roteiros, pacotes, hotéis, disponibilidade, tarifário e fornecedores", icon: Plane },
       atendimento: { label: "Atendimento & SAC", shortLabel: "Atendimento", description: "Inbox viajantes, WhatsApp e suporte rápido", icon: MessageSquare },
       suporte: { label: "SAC & Reacomodação", shortLabel: "SAC", description: "Incidentes em viagens, reacomodação, assessoria de vistos e LGPD", icon: LifeBuoy },
       financeiro: { label: "Financeiro & Câmbio", shortLabel: "Financeiro", description: "Fluxo de caixa, comissões, bilhetagem, borderô e fiscal", icon: Banknote },

@@ -2685,7 +2685,11 @@ export async function resolveStoreIdWithFallback(
       if (latestStore?.id) return latestStore.id;
     } catch {}
   }
-  return identity?.store_id || "";
+  const resolved = identity?.store_id || "";
+  if (!resolved) {
+    throw new Error("Nenhuma loja ativa selecionada.");
+  }
+  return resolved;
 }
 
 export const listStoreBrands = createServerFn({ method: "GET" })
